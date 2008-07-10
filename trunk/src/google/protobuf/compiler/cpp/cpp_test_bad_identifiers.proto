@@ -1,0 +1,87 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// This file tests that various identifiers work as field and type names even
+// though the same identifiers are used internally by the C++ code generator.
+
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+package protobuf_unittest;
+
+// Test that fields can have names like "input" and "i" which are also used
+// internally by the code generator for local variables.
+message TestConflictingSymbolNames {
+  message BuildDescriptors {}
+  message TypeTraits {}
+
+  optional int32 input = 1;
+  optional int32 output = 2;
+  optional string length = 3;
+  repeated int32 i = 4;
+  repeated string new_element = 5 [ctype=STRING_PIECE];
+  optional int32 total_size = 6;
+  optional int32 tag = 7;
+
+  optional int32 source = 8;
+  optional int32 value = 9;
+  optional int32 file = 10;
+  optional int32 from = 11;
+  optional int32 handle_uninterpreted = 12;
+  repeated int32 index = 13;
+  optional int32 controller = 14;
+  optional int32 already_here = 15;
+
+  optional uint32 uint32 = 16;
+  optional uint64 uint64 = 17;
+  optional string string = 18;
+  optional int32 memset = 19;
+  optional int32 int32 = 20;
+  optional int64 int64 = 21;
+
+  optional uint32 cached_size = 22;
+  optional uint32 extensions = 23;
+  optional uint32 bit = 24;
+  optional uint32 bits = 25;
+  optional uint32 offsets = 26;
+  optional uint32 reflection = 27;
+
+  message Cord {}
+  optional string some_cord = 28 [ctype=CORD];
+
+  message StringPiece {}
+  optional string some_string_piece = 29 [ctype=STRING_PIECE];
+
+  // Some keywords.
+  optional uint32 int = 30;
+  optional uint32 friend = 31;
+
+  // The generator used to #define a macro called "DO" inside the .cc file.
+  message DO {}
+  optional DO do = 32;
+
+  extensions 1000 to max;
+}
+
+message DummyMessage {}
+
+service TestConflictingMethodNames {
+  rpc Closure(DummyMessage) returns (DummyMessage);
+}

@@ -1,0 +1,37 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Author: robinson@google.com (Will Robinson)
+
+
+package google.protobuf.internal;
+
+// A message where tag numbers are listed out of order, to allow us to test our
+// canonicalization of serialized output, which should always be in tag order.
+// We also mix in some extensions for extra fun.
+message OutOfOrderFields {
+  optional   sint32 optional_sint32   =  5;
+  extensions 4 to 4;
+  optional   uint32 optional_uint32   =  3;
+  extensions 2 to 2;
+  optional    int32 optional_int32    =  1;
+};
+
+
+extend OutOfOrderFields {
+  optional   uint64 optional_uint64   =  4;
+  optional    int64 optional_int64    =  2;
+}
