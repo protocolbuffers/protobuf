@@ -1,0 +1,286 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// The messages in this file describe the definitions found in .proto files.
+// A valid .proto file can be translated directly to a FileDescriptorProto
+// without any other information (e.g. without reading its imports).
+
+
+
+package google.protobuf;
+option java_package = "com.google.protobuf";
+option java_outer_classname = "DescriptorProtos";
+
+// descriptor.proto must be optimized for speed because reflection-based
+// algorithms don't work during bootstrapping.
+option optimize_for = SPEED;
+
+// Describes a complete .proto file.
+message FileDescriptorProto {
+  optional string name = 1;       // file name, relative to root of source tree
+  optional string package = 2;    // e.g. "foo", "foo.bar", etc.
+
+  // Names of files imported by this file.
+  repeated string dependency = 3;
+
+  // All top-level definitions in this file.
+  repeated DescriptorProto message_type = 4;
+  repeated EnumDescriptorProto enum_type = 5;
+  repeated ServiceDescriptorProto service = 6;
+  repeated FieldDescriptorProto extension = 7;
+
+  optional FileOptions options = 8;
+}
+
+// Describes a message type.
+message DescriptorProto {
+  optional string name = 1;
+
+  repeated FieldDescriptorProto field = 2;
+  repeated FieldDescriptorProto extension = 6;
+
+  repeated DescriptorProto nested_type = 3;
+  repeated EnumDescriptorProto enum_type = 4;
+
+  message ExtensionRange {
+    optional int32 start = 1;
+    optional int32 end = 2;
+  }
+  repeated ExtensionRange extension_range = 5;
+
+  optional MessageOptions options = 7;
+}
+
+// Describes a field within a message.
+message FieldDescriptorProto {
+  enum Type {
+    // 0 is reserved for errors.
+    // Order is weird for historical reasons.
+    TYPE_DOUBLE         = 1;
+    TYPE_FLOAT          = 2;
+    TYPE_INT64          = 3;   // Not ZigZag encoded.  Negative numbers
+                               // take 10 bytes.  Use TYPE_SINT64 if negative
+                               // values are likely.
+    TYPE_UINT64         = 4;
+    TYPE_INT32          = 5;   // Not ZigZag encoded.  Negative numbers
+                               // take 10 bytes.  Use TYPE_SINT32 if negative
+                               // values are likely.
+    TYPE_FIXED64        = 6;
+    TYPE_FIXED32        = 7;
+    TYPE_BOOL           = 8;
+    TYPE_STRING         = 9;
+    TYPE_GROUP          = 10;  // Tag-delimited aggregate.
+    TYPE_MESSAGE        = 11;  // Length-delimited aggregate.
+
+    // New in version 2.
+    TYPE_BYTES          = 12;
+    TYPE_UINT32         = 13;
+    TYPE_ENUM           = 14;
+    TYPE_SFIXED32       = 15;
+    TYPE_SFIXED64       = 16;
+    TYPE_SINT32         = 17;  // Uses ZigZag encoding.
+    TYPE_SINT64         = 18;  // Uses ZigZag encoding.
+  };
+
+  enum Label {
+    // 0 is reserved for errors
+    LABEL_OPTIONAL      = 1;
+    LABEL_REQUIRED      = 2;
+    LABEL_REPEATED      = 3;
+    // TODO(sanjay): Should we add LABEL_MAP?
+  };
+
+  optional string name = 1;
+  optional int32 number = 3;
+  optional Label label = 4;
+
+  // If type_name is set, this need not be set.  If both this and type_name
+  // are set, this must be either TYPE_ENUM or TYPE_MESSAGE.
+  optional Type type = 5;
+
+  // For message and enum types, this is the name of the type.  If the name
+  // starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
+  // rules are used to find the type (i.e. first the nested types within this
+  // message are searched, then within the parent, on up to the root
+  // namespace).
+  optional string type_name = 6;
+
+  // For extensions, this is the name of the type being extended.  It is
+  // resolved in the same manner as type_name.
+  optional string extendee = 2;
+
+  // For numeric types, contains the original text representation of the value.
+  // For booleans, "true" or "false".
+  // For strings, contains the default text contents (not escaped in any way).
+  // For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
+  // TODO(kenton):  Base-64 encode?
+  optional string default_value = 7;
+
+  optional FieldOptions options = 8;
+}
+
+// Describes an enum type.
+message EnumDescriptorProto {
+  optional string name = 1;
+
+  repeated EnumValueDescriptorProto value = 2;
+
+  optional EnumOptions options = 3;
+}
+
+// Describes a value within an enum.
+message EnumValueDescriptorProto {
+  optional string name = 1;
+  optional int32 number = 2;
+
+  optional EnumValueOptions options = 3;
+}
+
+// Describes a service.
+message ServiceDescriptorProto {
+  optional string name = 1;
+  repeated MethodDescriptorProto method = 2;
+
+  optional ServiceOptions options = 3;
+}
+
+// Describes a method of a service.
+message MethodDescriptorProto {
+  optional string name = 1;
+
+  // Input and output type names.  These are resolved in the same way as
+  // FieldDescriptorProto.type_name, but must refer to a message type.
+  optional string input_type = 2;
+  optional string output_type = 3;
+
+  optional MethodOptions options = 4;
+}
+
+// ===================================================================
+// Options
+
+// Each of the definitions above may have "options" attached.  These are
+// just annotations which may cause code to be generated slightly differently
+// or may contain hints for code that manipulates protocol messages.
+
+// TODO(kenton):  Allow extensions to options.
+
+message FileOptions {
+
+  // Sets the Java package where classes generated from this .proto will be
+  // placed.  By default, the proto package is used, but this is often
+  // inappropriate because proto packages do not normally start with backwards
+  // domain names.
+  optional string java_package = 1;
+
+
+  // If set, all the classes from the .proto file are wrapped in a single
+  // outer class with the given name.  This applies to both Proto1
+  // (equivalent to the old "--one_java_file" option) and Proto2 (where
+  // a .proto always translates to a single class, but you may want to
+  // explicitly choose the class name).
+  optional string java_outer_classname = 8;
+
+  // If set true, then the Java code generator will generate a separate .java
+  // file for each top-level message, enum, and service defined in the .proto
+  // file.  Thus, these types will *not* be nested inside the outer class
+  // named by java_outer_classname.  However, the outer class will still be
+  // generated to contain the file's getDescriptor() method as well as any
+  // top-level extensions defined in the file.
+  optional bool java_multiple_files = 10 [default=false];
+
+  // Generated classes can be optimized for speed or code size.
+  enum OptimizeMode {
+    SPEED = 1;      // Generate complete code for parsing, serialization, etc.
+    CODE_SIZE = 2;  // Use ReflectionOps to implement these methods.
+  }
+  optional OptimizeMode optimize_for = 9 [default=CODE_SIZE];
+}
+
+message MessageOptions {
+  // Set true to use the old proto1 MessageSet wire format for extensions.
+  // This is provided for backwards-compatibility with the MessageSet wire
+  // format.  You should not use this for any other reason:  It's less
+  // efficient, has fewer features, and is more complicated.
+  //
+  // The message must be defined exactly as follows:
+  //   message Foo {
+  //     option message_set_wire_format = true;
+  //     extensions 4 to max;
+  //   }
+  // Note that the message cannot have any defined fields; MessageSets only
+  // have extensions.
+  //
+  // All extensions of your type must be singular messages; e.g. they cannot
+  // be int32s, enums, or repeated messages.
+  //
+  // Because this is an option, the above two restrictions are not enforced by
+  // the protocol compiler.
+  optional bool message_set_wire_format = 1 [default=false];
+}
+
+message FieldOptions {
+  // The ctype option instructs the C++ code generator to use a different
+  // representation of the field than it normally would.  See the specific
+  // options below.  This option is not yet implemented in the open source
+  // release -- sorry, we'll try to include it in a future version!
+  optional CType ctype = 1;
+  enum CType {
+    CORD = 1;
+
+    STRING_PIECE = 2;
+  }
+
+  // EXPERIMENTAL.  DO NOT USE.
+  // For "map" fields, the name of the field in the enclosed type that
+  // is the key for this map.  For example, suppose we have:
+  //   message Item {
+  //     required string name = 1;
+  //     required string value = 2;
+  //   }
+  //   message Config {
+  //     repeated Item items = 1 [experimental_map_key="name"];
+  //   }
+  // In this situation, the map key for Item will be set to "name".
+  // TODO: Fully-implement this, then remove the "experimental_" prefix.
+  optional string experimental_map_key = 9;
+}
+
+message EnumOptions {
+}
+
+message EnumValueOptions {
+}
+
+message ServiceOptions {
+
+  // Note:  Field numbers 1 through 32 are reserved for Google's internal RPC
+  //   framework.  We apologize for hoarding these numbers to ourselves, but
+  //   we were already using them long before we decided to release Protocol
+  //   Buffers.
+}
+
+message MethodOptions {
+
+  // Note:  Field numbers 1 through 32 are reserved for Google's internal RPC
+  //   framework.  We apologize for hoarding these numbers to ourselves, but
+  //   we were already using them long before we decided to release Protocol
+  //   Buffers.
+}

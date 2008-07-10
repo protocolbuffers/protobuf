@@ -1,0 +1,150 @@
+This directory contains Google Test, described below.  It is used by the
+Protocol Buffer C++ unit tests.  If you would like to use Google Test
+yourself, you should probably download it from the URL mentioned below,
+not attempt to use the sources in this package.
+
+Two changes were made from the original sources:
+* gtest.cc's #include of gtest-internal-inl.h was modified to reflect the
+  environment it is being built in (replaced "src/" with "gtest/").
+* GetThreadCount() in gtest-port.h was hard-coded to return 1 rather than 0,
+  since the Protocol Buffer tests do not use threads.
+
+The original Google Test README follows.
+
+======================================================================
+
+Google C++ Testing Framework
+============================
+http://code.google.com/p/googletest/
+
+Overview
+--------
+Google's framework for writing C++ tests on a variety of platforms (Linux, Mac
+OS X, Windows, Windows CE, and Symbian). Based on the xUnit architecture.
+Supports automatic test discovery, a rich set of assertions, user-defined
+assertions, death tests, fatal and non-fatal failures, various options for
+running the tests, and XML test report generation.
+
+Please see the project page above for more information as well as mailing lists
+for questions, discussions, and development. There is also an IRC channel on
+OFTC (irc.oftc.net) #gtest available. Please join us!
+
+Requirements
+------------
+Google Test is designed to have fairly minimal requirements to build and use
+with your projects, but there are some. Currently, the only Operating System
+(OS) on which Google Test is known to build properly is Linux, but we are
+actively working on Windows and Mac support as well. The source code itself is
+already portable across many other platforms, but we are still developing
+robust build systems for each.
+
+### Linux Requirements ###
+These are the base requirements to build and use Google Test from a source
+package (as described below):
+  * GNU-compatible Make or "gmake"
+  * POSIX-standard shell
+  * POSIX(-2) Regular Expressions (regex.h)
+  * A C++98 standards compliant compiler
+
+Furthermore, if you are building Google Test from a VCS Checkout (also
+described below), there are further requirements:
+  * Automake version 1.9 or newer
+  * Autoconf version 2.59 or newer
+  * Libtool / Libtoolize
+  * Python version 2.4 or newer
+
+Getting the Source
+------------------
+There are two primary ways of getting Google Test's source code: you can
+download a source release in your preferred archive format, or directly check
+out the source from a Version Control System (VCS, we use Google Code's
+Subversion hosting). The VCS checkout requires a few extra steps and some extra
+software packages on your system, but lets you track development, and make
+patches to contribute much more easily, so we highly encourage it.
+
+### VCS Checkout: ###
+The first step is to select whether you want to check out the main line of
+development on Google Test, or one of the released branches. The former will be
+much more active and have the latest features, but the latter provides much
+more stability and predictability. Choose whichever fits your needs best, and
+proceed with the following Subversion commands:
+
+  $ svn checkout http://googletest.googlecode.com/svn/trunk/ gtest-svn
+
+or for a release version X.Y.*'s branch:
+
+  $ svn checkout http://googletest.googlecode.com/svn/branches/release-X.Y/ gtest-X.Y-svn
+
+Next you will need to prepare the GNU Autotools build system. Enter the
+target directory of the checkout command you used ('gtest-svn' or
+'gtest-X.Y-svn' above) and proceed with the following commands:
+
+  $ aclocal-1.9  # Where "1.9" must match the following automake command
+  $ libtoolize -c
+  $ autoheader
+  $ automake-1.9 -ac  # See Automake version requirements above
+  $ autoconf
+
+While this is a bit complicated, it will most often be automatically re-run by
+your "make" invocations, so in practice you shouldn't need to worry too much.
+Once you have completed these steps, your VCS checkout should be equivalent to
+a source package, and you may continue with those directions, skipping over the
+acquiring and unpacking of the source itself, as the VCS has done that for you.
+
+### Source Package: ###
+Google Test is also released in source packages which can be downloaded from
+its Google Code download page[1]. Several different archive formats are
+provided, but the only difference is the tools used to manipulate them, and the
+size of the resulting file. Download whichever you are most comfortable with.
+
+  [1] Google Test Downloads: http://code.google.com/p/googletest/downloads/list
+
+Once downloaded expand the archive using whichever tools you prefer for that
+type. This will always result in a new directory with the name "gtest-X.Y.Z"
+which contains all of the source code. Here are some examples in Linux:
+
+  $ tar -xvzf gtest-X.Y.Z.tar.gz
+  $ tar -xvjf gtest-X.Y.Z.tar.bz2
+  $ unzip gtest-X.Y.Z.zip
+
+Building the Source
+-------------------
+There are two primary options for building the source at this point: build it
+inside the source code tree, or in a separate directory. We recommend building
+in a separate directory as that tends to produce both more consistent results
+and be easier to clean up should anything go wrong, but both patterns are
+supported. The only hard restriction is that while the build directory can be
+a subdirectory of the source directory, the opposite is not possible and will
+result in errors. Once you have selected where you wish to build Google Test,
+create the directory if necessary, and enter it. The following steps apply for
+either approach by simply substituting the shell variable SRCDIR with "." for
+building inside the source directory, and the relative path to the source
+directory otherwise.
+
+  $ ${SRCDIR}/configure  # Standard GNU configure script, --help for more info
+  $ make  # Standard makefile following GNU conventions
+
+Other programs will only be able to use Google Test's functionality if you
+install it in a location which they can access, in Linux this is typically
+under '/usr/local'. The following command will install all of the Google Test
+libraries, public headers, and utilities necessary for other programs and
+libraries to leverage it:
+
+  $ sudo make install  # Not necessary, but allows use by other programs
+
+TODO(chandlerc@google.com): This section needs to be expanded when the
+'gtest-config' script is finished and Autoconf macro's are provided (or not
+provided) in order to properly reflect the process for other programs to
+locate, include, and link against Google Test.
+
+Finally, should you need to remove Google Test from your system after having
+installed it, run the following command, and it will back out its changes.
+However, note carefully that you must run this command on the *same* Google
+Test build that you ran the install from, or the results are not predictable.
+If you install Google Test on your system, and are working from a VCS checkout,
+make sure you run this *before* updating your checkout of the source in order
+to uninstall the same version which you installed.
+
+  $ sudo make uninstall  # Must be run against the exact same build as "install"
+
+Happy testing!

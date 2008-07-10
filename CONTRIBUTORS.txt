@@ -1,0 +1,35 @@
+This file contains a list of people who have made large contributions
+to the public version of Protocol Buffers.
+
+Original Protocol Buffers design and implementation:
+  Sanjay Ghemawat <sanjay@google.com>
+  Jeff Dean <jeff@google.com>
+  Daniel Dulitz <daniel@google.com>
+  Craig Silverstein
+  Paul Haahr <haahr@google.com>
+  Corey Anderson <corin@google.com>
+  (and many others)
+
+Proto2 C++ and Java primary author:
+  Kenton Varda <kenton@google.com>
+
+Proto2 Python primary authors:
+  Will Robinson <robinson@google.com>
+  Petar Petrov <petar@google.com>
+
+Large code contributions:
+  Joseph Schorr <jschorr@google.com>
+  Wenbo Zhu <wenboz@google.com>
+
+Large quantity of code reviews:
+  Scott Bruce <sbruce@google.com>
+  Frank Yellin
+  Neal Norwitz <nnorwitz@google.com>
+  Jeffrey Yasskin <jyasskin@google.com>
+  Ambrose Feinstein <ambrose@google.com>
+
+Documentation:
+  Lisa Carey <lcarey@google.com>
+
+Maven packaging:
+  Gregory Kick <gak@google.com>

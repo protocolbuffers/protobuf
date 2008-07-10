@@ -1,0 +1,53 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Author: kenton@google.com (Kenton Varda)
+//
+// A proto file which tests the java_multiple_files option.
+
+
+import "google/protobuf/unittest.proto";
+
+package protobuf_unittest;
+
+option java_multiple_files = true;
+option java_outer_classname = "MultipleFilesTestProto";
+
+message MessageWithNoOuter {
+  message NestedMessage {
+    optional int32 i = 1;
+  }
+  enum NestedEnum {
+    BAZ = 3;
+  }
+  optional NestedMessage nested = 1;
+  repeated TestAllTypes foreign = 2;
+  optional NestedEnum nested_enum = 3;
+  optional EnumWithNoOuter foreign_enum = 4;
+}
+
+enum EnumWithNoOuter {
+  FOO = 1;
+  BAR = 2;
+}
+
+service ServiceWithNoOuter {
+  rpc Foo(MessageWithNoOuter) returns(TestAllTypes);
+}
+
+extend TestAllExtensions {
+  optional int32 extension_with_outer = 1234567;
+}

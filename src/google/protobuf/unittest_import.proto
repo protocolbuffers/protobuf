@@ -1,0 +1,47 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file which is imported by unittest.proto to test importing.
+
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+// In test_util.h we do
+// "using namespace unittest_import = protobuf_unittest_import".
+package protobuf_unittest_import;
+
+option optimize_for = SPEED;
+
+// Excercise the java_package option.
+option java_package = "com.google.protobuf.test";
+
+// Do not set a java_outer_classname here to verify that Proto2 works without
+// one.
+
+message ImportMessage {
+  optional int32 d = 1;
+}
+
+enum ImportEnum {
+  IMPORT_FOO = 7;
+  IMPORT_BAR = 8;
+  IMPORT_BAZ = 9;
+}
+

@@ -1,0 +1,58 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// This file contains messages for testing message_set_wire_format.
+
+package protobuf_unittest;
+
+option optimize_for = SPEED;
+
+// A message with message_set_wire_format.
+message TestMessageSet {
+  option message_set_wire_format = true;
+  extensions 4 to max;
+}
+
+message TestMessageSetContainer {
+  optional TestMessageSet message_set = 1;
+}
+
+message TestMessageSetExtension1 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension1 message_set_extension = 1545008;
+  }
+  optional int32 i = 15;
+}
+
+message TestMessageSetExtension2 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension2 message_set_extension = 1547769;
+  }
+  optional string str = 25;
+}
+
+// MessageSet wire format is equivalent to this.
+message RawMessageSet {
+  repeated group Item = 1 {
+    required int32 type_id = 2;
+    required bytes message = 3;
+  }
+}
+
