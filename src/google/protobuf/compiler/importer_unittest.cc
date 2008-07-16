@@ -492,6 +492,7 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
   source_tree_.MapPath("dir3", "./foo/bar/.");
   source_tree_.MapPath("dir4", ".");
   source_tree_.MapPath("", "/qux");
+  source_tree_.MapPath("dir5", "/quux/");
 
   string virtual_file;
   string shadowing_disk_file;
@@ -530,6 +531,12 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
     source_tree_.DiskFileToVirtualFile(
       "/qux/baz", &virtual_file, &shadowing_disk_file));
   EXPECT_EQ("baz", virtual_file);
+
+  // "/quux/bar" is under "/quux".
+  EXPECT_EQ(DiskSourceTree::CANNOT_OPEN,
+    source_tree_.DiskFileToVirtualFile(
+      "/quux/bar", &virtual_file, &shadowing_disk_file));
+  EXPECT_EQ("dir5/bar", virtual_file);
 }
 
 }  // namespace

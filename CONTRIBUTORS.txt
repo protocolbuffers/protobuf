@@ -33,3 +33,6 @@ Documentation:
 
 Maven packaging:
   Gregory Kick <gak@google.com>
+
+Non-Google patch contributors:
+  Kevin Ko <kevin.s.ko@gmail.com>

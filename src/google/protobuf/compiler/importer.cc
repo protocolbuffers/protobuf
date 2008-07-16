@@ -280,10 +280,18 @@ static bool ApplyMapping(const string& filename,
       // Not an exact match.  Is the next character a '/'?  Otherwise,
       // this isn't actually a match at all.  E.g. the prefix "foo/bar"
       // does not match the filename "foo/barbaz".
+      int after_prefix_start = -1;
       if (filename[old_prefix.size()] == '/') {
+        after_prefix_start = old_prefix.size() + 1;
+      } else if (filename[old_prefix.size() - 1] == '/') {
+        // old_prefix is never empty, and canonicalized paths never have
+        // consecutive '/' characters.
+        after_prefix_start = old_prefix.size();
+      }
+      if (after_prefix_start != -1) {
         // Yep.  So the prefixes are directories and the filename is a file
         // inside them.
-        string after_prefix = filename.substr(old_prefix.size() + 1);
+        string after_prefix = filename.substr(after_prefix_start);
         if (ContainsParentReference(after_prefix)) {
           // We do not allow the file name to use "..".
           return false;
