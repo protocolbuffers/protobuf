@@ -174,9 +174,9 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   inline const ::std::string& dependency(int index) const;
   inline ::std::string* mutable_dependency(int index);
   inline void set_dependency(int index, const ::std::string& value);
-  inline void set_dependency(int index, const char* value);
   inline ::std::string* add_dependency();
   inline void add_dependency(const ::std::string& value);
+  inline void set_dependency(int index, const char* value);
   inline void add_dependency(const char* value);
   
   // repeated .google.protobuf.DescriptorProto message_type = 4;
@@ -1835,14 +1835,14 @@ inline ::std::string* FileDescriptorProto::mutable_dependency(int index) {
 inline void FileDescriptorProto::set_dependency(int index, const ::std::string& value) {
   dependency_.Mutable(index)->assign(value);
 }
-inline void FileDescriptorProto::set_dependency(int index, const char* value) {
-  dependency_.Mutable(index)->assign(value);
-}
 inline ::std::string* FileDescriptorProto::add_dependency() {
   return dependency_.Add();
 }
 inline void FileDescriptorProto::add_dependency(const ::std::string& value) {
   dependency_.Add()->assign(value);
+}
+inline void FileDescriptorProto::set_dependency(int index, const char* value) {
+  dependency_.Mutable(index)->assign(value);
 }
 inline void FileDescriptorProto::add_dependency(const char* value) {
   dependency_.Add()->assign(value);

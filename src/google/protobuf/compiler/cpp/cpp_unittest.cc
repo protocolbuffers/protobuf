@@ -172,6 +172,19 @@ TEST(GeneratedMessageTest, Clear) {
             &message.optional_import_message());
 }
 
+TEST(GeneratedMessageTest, EmbeddedNullsInBytesCharStar) {
+  unittest::TestAllTypes message;
+
+  const char* value = "\0lalala\0\0";
+  message.set_optional_bytes(value, 9);
+  ASSERT_EQ(9, message.optional_bytes().size());
+  EXPECT_EQ(0, memcmp(value, message.optional_bytes().data(), 9));
+
+  message.add_repeated_bytes(value, 9);
+  ASSERT_EQ(9, message.repeated_bytes(0).size());
+  EXPECT_EQ(0, memcmp(value, message.repeated_bytes(0).data(), 9));
+}
+
 TEST(GeneratedMessageTest, ClearOneField) {
   // Set every field to a unique value, then clear one value and insure that
   // only that one value is cleared.
