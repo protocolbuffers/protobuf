@@ -64,6 +64,24 @@ class FooUnitTest(unittest.TestCase):
     self.assertEqual('Method Bar not implemented.',
                      rpc_controller.failure_message)
     self.assertEqual(None, self.callback_response)
+    
+    class MyServiceImpl(unittest_pb2.TestService):
+      def Foo(self, rpc_controller, request, done):
+        self.foo_called = True
+      def Bar(self, rpc_controller, request, done):
+        self.bar_called = True
+
+    srvc = MyServiceImpl()
+    rpc_controller.failure_message = None
+    srvc.Foo(rpc_controller, unittest_pb2.FooRequest(), MyCallback)
+    self.assertEqual(None, rpc_controller.failure_message)
+    self.assertEqual(True, srvc.foo_called)
+
+    rpc_controller.failure_message = None
+    srvc.CallMethod(service_descriptor.methods[1], rpc_controller,
+                    unittest_pb2.BarRequest(), MyCallback)
+    self.assertEqual(None, rpc_controller.failure_message)
+    self.assertEqual(True, srvc.bar_called)
 
   def testServiceStub(self):
     class MockRpcChannel(service.RpcChannel):
