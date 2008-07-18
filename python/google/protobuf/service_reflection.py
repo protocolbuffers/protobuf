@@ -160,8 +160,8 @@ class _ServiceBuilder(object):
     if method_descriptor.containing_service != self.descriptor:
       raise RuntimeError(
           'CallMethod() given method descriptor for wrong service type.')
-    method = getattr(self.cls, method_descriptor.name)
-    method(srvc, rpc_controller, request, callback)
+    method = getattr(srvc, method_descriptor.name)
+    method(rpc_controller, request, callback)
 
   def _GetRequestClass(self, method_descriptor):
     """Returns the class of the request protocol message.
