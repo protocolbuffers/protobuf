@@ -14,10 +14,27 @@
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
   <version>2.0.1-SNAPSHOT</version>
-  <name>Protocol Buffer Java API</name>
   <packaging>jar</packaging>
+  <name>Protocol Buffer Java API</name>
+  <description>
+    Protocol Buffers are a way of encoding structured data in an efficient yet
+    extensible format.
+  </description>
   <inceptionYear>2008</inceptionYear>
   <url>http://code.google.com/p/protobuf</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>http://code.google.com/p/protobuf/source/browse</url>
+    <connection>
+      scm:svn:http://protobuf.googlecode.com/svn/trunk/
+    </connection>
+  </scm>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -89,7 +106,8 @@
                   <arg value="../src/google/protobuf/unittest.proto" />
                   <arg value="../src/google/protobuf/unittest_import.proto" />
                   <arg value="../src/google/protobuf/unittest_mset.proto" />
-                  <arg value="src/test/java/com/google/protobuf/multiple_files_test.proto" />
+                  <arg
+                    value="src/test/java/com/google/protobuf/multiple_files_test.proto" />
                   <arg
                     value="../src/google/protobuf/unittest_optimize_for.proto" />
                 </exec>

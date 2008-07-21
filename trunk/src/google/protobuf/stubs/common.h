@@ -147,7 +147,7 @@ typedef uint64_t uint64;
 #endif
 
 static const int32 kint32max = 0x7FFFFFFF;
-static const int32 kint32min = -kint32min - 1;
+static const int32 kint32min = -kint32max - 1;
 static const int64 kint64max = GOOGLE_LONGLONG(0x7FFFFFFFFFFFFFFF);
 static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;

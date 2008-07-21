@@ -50,6 +50,17 @@ TEST(VersionTest, VersionMatchesConfig) {
 
 #endif  // PACKAGE_VERSION
 
+TEST(CommonTest, IntMinMaxConstants) {
+  // kint32min was declared incorrectly in the first release of protobufs.
+  // Ugh.
+  EXPECT_LT(kint32min, kint32max);
+  EXPECT_EQ(static_cast<uint32>(kint32min), static_cast<uint32>(kint32max) + 1);
+  EXPECT_LT(kint64min, kint64max);
+  EXPECT_EQ(static_cast<uint64>(kint64min), static_cast<uint64>(kint64max) + 1);
+  EXPECT_EQ(0, kuint32max + 1);
+  EXPECT_EQ(0, kuint64max + 1);
+}
+
 vector<string> captured_messages_;
 
 void CaptureLog(LogLevel level, const char* filename, int line,

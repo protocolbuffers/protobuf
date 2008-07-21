@@ -29,6 +29,7 @@
 #endif
 #include <errno.h>
 #include <iostream>
+#include <ctype.h>
 
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/importer.h>
@@ -67,6 +68,20 @@ static const char* kPathSeparator = ";";
 #else
 static const char* kPathSeparator = ":";
 #endif
+
+// Returns true if the text looks like a Windows-style absolute path, starting
+// with a drive letter.  Example:  "C:\foo".
+static bool IsWindowsAbsolutePath(const string& text) {
+#if defined(_WIN32) || defined(__CYGWIN__)
+  return text.size() >= 3 && text[1] == ':' &&
+         isalpha(text[0]) &&
+         (text[2] == '/' || text[2] == '\\') &&
+         text.find_last_of(':') == 1;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
@@ -502,18 +517,14 @@ bool CommandLineInterface::InterpretArgument(const string& name,
     directive.generator = iter->second.generator;
 
     // Split value at ':' to separate the generator parameter from the
-    // filename.
-    vector<string> parts;
-    SplitStringUsing(value, ":", &parts);
-
-    if (parts.size() == 1) {
-      directive.output_location = parts[0];
-    } else if (parts.size() == 2) {
-      directive.parameter = parts[0];
-      directive.output_location = parts[1];
+    // filename.  However, avoid doing this if the colon is part of a valid
+    // Windows-style absolute path.
+    string::size_type colon_pos = value.find_first_of(':');
+    if (colon_pos == string::npos || IsWindowsAbsolutePath(value)) {
+      directive.output_location = value;
     } else {
-      cerr << "Invalid value for flag " << name << "." << endl;
-      return false;
+      directive.parameter = value.substr(0, colon_pos);
+      directive.output_location = value.substr(colon_pos + 1);
     }
 
     output_directives_.push_back(directive);

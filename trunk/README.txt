@@ -10,8 +10,8 @@ incompatible way in the future.  It's unlikely that any big changes
 will be made, but we can make no promises.  Expect a non-beta release
 sometime in August 2008.
 
-C++ Installation
-================
+C++ Installation - Unix
+=======================
 
 To build and install the C++ Protocol Buffer runtime and the Protocol
 Buffer compiler (protoc) execute the following:
@@ -27,7 +27,19 @@ Proceed at your own risk.
 
 "make install" may require superuser privileges.
 
-For advanced usage information on configure and make, see INSTALL.
+For advanced usage information on configure and make, see INSTALL.txt.
+
+** Hint on insall location **
+
+  By default, the package will be installed to /usr/local.  However,
+  on many platforms, /usr/local/lib is not part of LD_LIBRARY_PATH.
+  You can add it, but it may be easier to just install to /usr
+  instead.  To do this, invoke configure as follows:
+
+    ./configure --prefix=/usr
+
+  If you already built the package with a different prefix, make sure
+  to run "make clean" before building again.
 
 ** Note for Solaris users **
 
@@ -38,6 +50,14 @@ For advanced usage information on configure and make, see INSTALL.
     ./configure LDFLAGS=-L$PWD/src/solaris
 
   See src/solaris/libstdc++.la for more info on this bug.
+
+C++ Installation - Windows
+==========================
+
+If you are using Micosoft Visual C++, see vsprojects/readme.txt.
+
+If you are using Cygwin or MinGW, follow the Unix installation
+instructions, above.
 
 Java and Python Installation
 ============================

@@ -51,6 +51,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // Methods to set up the test (called before Run()).
 
   class MockCodeGenerator;
+  class NullCodeGenerator;
 
   // Registers a MockCodeGenerator with the given name.
   MockCodeGenerator* RegisterGenerator(const string& generator_name,
@@ -62,6 +63,10 @@ class CommandLineInterfaceTest : public testing::Test {
                                             const string& flag_name,
                                             const string& filename,
                                             const string& help_text);
+
+  // Registers a CodeGenerator which will not actually generate anything,
+  // but records the parameter passed to the generator.
+  NullCodeGenerator* RegisterNullGenerator(const string& flag_name);
 
   // Create a temp file within temp_directory_ with the given name.
   // The containing directory is also created if necessary.
@@ -122,7 +127,7 @@ class CommandLineInterfaceTest : public testing::Test {
   string error_text_;
 
   // Pointers which need to be deleted later.
-  vector<MockCodeGenerator*> mock_generators_to_delete_;
+  vector<CodeGenerator*> mock_generators_to_delete_;
 };
 
 // A mock CodeGenerator which outputs information about the context in which
@@ -157,6 +162,25 @@ class CommandLineInterfaceTest::MockCodeGenerator : public CodeGenerator {
   bool return_error_;
   string error_;
   bool expect_write_error_;
+};
+
+class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
+ public:
+  NullCodeGenerator() : called_(false) {}
+  ~NullCodeGenerator() {}
+
+  mutable bool called_;
+  mutable string parameter_;
+
+  // implements CodeGenerator ----------------------------------------
+  bool Generate(const FileDescriptor* file,
+                const string& parameter,
+                OutputDirectory* output_directory,
+                string* error) const {
+    called_ = true;
+    parameter_ = parameter;
+    return true;
+  }
 };
 
 // ===================================================================
@@ -236,6 +260,15 @@ CommandLineInterfaceTest::RegisterErrorGenerator(
   mock_generators_to_delete_.push_back(generator);
 
   cli_.RegisterGenerator(flag_name, generator, help_text);
+  return generator;
+}
+
+CommandLineInterfaceTest::NullCodeGenerator*
+CommandLineInterfaceTest::RegisterNullGenerator(
+    const string& flag_name) {
+  NullCodeGenerator* generator = new NullCodeGenerator;
+  mock_generators_to_delete_.push_back(generator);
+  cli_.RegisterGenerator(flag_name, generator, "");
   return generator;
 }
 
@@ -423,6 +456,42 @@ TEST_F(CommandLineInterfaceTest, GeneratorParameters) {
   ExpectGenerated("test_generator", "TestParameter",
                   "foo.proto", "Foo", "output.test");
 }
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+
+TEST_F(CommandLineInterfaceTest, WindowsOutputPath) {
+  // Test that the output path can be a Windows-style path.
+
+  NullCodeGenerator* generator = RegisterNullGenerator("--test_out");
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=C:\\ "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(generator->called_);
+  EXPECT_EQ("", generator->parameter_);
+}
+
+TEST_F(CommandLineInterfaceTest, WindowsOutputPathAndParameter) {
+  // Test that we can have a windows-style output path and a parameter.
+
+  NullCodeGenerator* generator = RegisterNullGenerator("--test_out");
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=bar:C:\\ "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(generator->called_);
+  EXPECT_EQ("bar", generator->parameter_);
+}
+
+#endif  // defined(_WIN32) || defined(__CYGWIN__)
 
 TEST_F(CommandLineInterfaceTest, PathLookup) {
   // Test that specifying multiple directories in the proto search path works.

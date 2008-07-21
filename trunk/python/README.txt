@@ -3,6 +3,18 @@ Copyright 2008 Google Inc.
 
 This directory contains the Python Protocol Buffers runtime library.
 
+Normally, this directory comes as part of the protobuf package, available
+from:
+
+  http://code.google.com/p/protobuf
+
+The complete package includes the C++ source code, which includes the
+Protocol Compiler (protoc).  If you downloaded this package from PyPI
+or some other Python-specific source, you may have received only the
+Python part of the code.  In this case, you will need to obtain the
+Protocol Compiler from some other source before you can use this
+package.
+
 Installation
 ============
 
