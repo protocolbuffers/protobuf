@@ -3,8 +3,11 @@ Copyright 2008 Google Inc.
 
 This directory contains the Java Protocol Buffers runtime library.
 
-Installation
-============
+Installation - With Maven
+=========================
+
+The Protocol Buffers build is managed using Maven.  If you would
+rather build without Maven, see the next section.
 
 1) Install Apache Maven if you don't have it:
 
@@ -36,6 +39,31 @@ Installation
      $ mvn package
 
    The .jar will be placed in the "target" directory.
+
+Installation - Without Maven
+============================
+
+If you would rather not install Maven to build the library, you may
+follow these instructions instead.  Note that these instructions skip
+running unit tests.
+
+1) Build the C++ code, or obtain a binary distribution of protoc.  If
+   you install a binary distribution, make sure that it is the same
+   version as this package.  If in doubt, run:
+
+     $ protoc --version
+
+   If you built the C++ code without installing, the compiler binary
+   should be located in ../src.
+
+2) Invoke protoc to build DescriptorProtos.java:
+
+     $ protoc --java_out=src/main/java -I../src \
+         ../src/google/protobuf/descriptor.proto
+
+3) Compile the code in src/main/java using whatever means you prefer.
+
+4) Install the classes wherever you prefer.
 
 Usage
 =====
