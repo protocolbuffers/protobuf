@@ -250,6 +250,36 @@ public class TextFormatTest extends TestCase {
     TestUtil.assertAllExtensionsSet(builder.build());
   }
 
+  public void testParseCompatibility() throws Exception {
+    String original = "repeated_float: inf\n" +
+                      "repeated_float: -inf\n" +
+                      "repeated_float: nan\n" +
+                      "repeated_float: inff\n" +
+                      "repeated_float: -inff\n" +
+                      "repeated_float: nanf\n" +
+                      "repeated_float: 1.0f\n" +
+                      "repeated_float: infinityf\n" +
+                      "repeated_float: -Infinityf\n" +
+                      "repeated_double: infinity\n" +
+                      "repeated_double: -infinity\n" +
+                      "repeated_double: nan\n";
+    String canonical =  "repeated_float: Infinity\n" +
+                        "repeated_float: -Infinity\n" +
+                        "repeated_float: NaN\n" +
+                        "repeated_float: Infinity\n" +
+                        "repeated_float: -Infinity\n" +
+                        "repeated_float: NaN\n" +
+                        "repeated_float: 1.0\n" +
+                        "repeated_float: Infinity\n" +
+                        "repeated_float: -Infinity\n" +
+                        "repeated_double: Infinity\n" +
+                        "repeated_double: -Infinity\n" +
+                        "repeated_double: NaN\n";                        
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TextFormat.merge(original, builder);
+    assertEquals(canonical, builder.build().toString());
+  }
+
   public void testParseExotic() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(exoticText, builder);
@@ -289,6 +319,17 @@ public class TextFormatTest extends TestCase {
     TextFormat.merge("OptionalGroup: < a: 1 >", builder);
     assertTrue(builder.hasOptionalGroup());
     assertEquals(1, builder.getOptionalGroup().getA());
+  }
+
+  public void testParseComment() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TextFormat.merge(
+      "# this is a comment\n" +
+      "optional_int32: 1  # another comment\n" +
+      "optional_int64: 2\n" +
+      "# EOF comment", builder);
+    assertEquals(1, builder.getOptionalInt32());
+    assertEquals(2, builder.getOptionalInt64());
   }
 
   private void assertParseError(String error, String text) {

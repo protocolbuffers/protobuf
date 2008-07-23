@@ -477,22 +477,22 @@ TEST_F(TokenizerTest, ParseInteger) {
   // Test invalid integers that may still be tokenized as integers.
   EXPECT_EQ(0, ParseInteger("0x"));
 
+  uint64 i;
 #ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
-  EXPECT_DEBUG_DEATH(ParseInteger("zxy"),
+  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("zxy", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(ParseInteger("1.2"),
+  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("1.2", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(ParseInteger("08"),
+  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("08", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(ParseInteger("0xg"),
+  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("0xg", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(ParseInteger("-1"),
+  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("-1", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
 #endif  // GTEST_HAS_DEATH_TEST
 
   // Test overflows.
-  uint64 i;
   EXPECT_TRUE (Tokenizer::ParseInteger("0", 0, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("1", 0, &i));
   EXPECT_TRUE (Tokenizer::ParseInteger("1", 1, &i));

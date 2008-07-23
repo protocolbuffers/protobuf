@@ -312,4 +312,19 @@ public class UnknownFieldSetTest extends TestCase {
                           .getVarintList());
     }
   }
+
+  public void testLargeVarint() throws Exception {
+    ByteString data =
+      UnknownFieldSet.newBuilder()
+        .addField(1,
+          UnknownFieldSet.Field.newBuilder()
+            .addVarint(0x7FFFFFFFFFFFFFFFL)
+            .build())
+        .build()
+        .toByteString();
+    UnknownFieldSet parsed = UnknownFieldSet.parseFrom(data);
+    UnknownFieldSet.Field field = parsed.getField(1);
+    assertEquals(1, field.getVarintList().size());
+    assertEquals(0x7FFFFFFFFFFFFFFFL, (long)field.getVarintList().get(0));
+  }
 }

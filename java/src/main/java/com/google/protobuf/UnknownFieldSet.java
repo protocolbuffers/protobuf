@@ -387,7 +387,7 @@ public final class UnknownFieldSet {
       int number = WireFormat.getTagFieldNumber(tag);
       switch (WireFormat.getTagWireType(tag)) {
         case WireFormat.WIRETYPE_VARINT:
-          getFieldBuilder(number).addVarint(input.readInt32());
+          getFieldBuilder(number).addVarint(input.readInt64());
           return true;
         case WireFormat.WIRETYPE_FIXED64:
           getFieldBuilder(number).addFixed64(input.readFixed64());

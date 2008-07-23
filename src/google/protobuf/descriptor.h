@@ -128,6 +128,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // The number of fields in this message type.
   int field_count() const;
   // Gets a field by index, where 0 <= index < field_count().
+  // These are returned in the order they were defined in the .proto file.
   const FieldDescriptor* field(int index) const;
 
   // Looks up a field by declared tag number.  Returns NULL if no such field
@@ -141,6 +142,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // The number of nested types in this message type.
   int nested_type_count() const;
   // Gets a nested type by index, where 0 <= index < nested_type_count().
+  // These are returned in the order they were defined in the .proto file.
   const Descriptor* nested_type(int index) const;
 
   // Looks up a nested type by name.  Returns NULL if no such nested type
@@ -152,6 +154,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // The number of enum types in this message type.
   int enum_type_count() const;
   // Gets an enum type by index, where 0 <= index < enum_type_count().
+  // These are returned in the order they were defined in the .proto file.
   const EnumDescriptor* enum_type(int index) const;
 
   // Looks up an enum type by name.  Returns NULL if no such enum type exists.
@@ -173,7 +176,8 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // The number of extension ranges in this message type.
   int extension_range_count() const;
   // Gets an extension range by index, where 0 <= index <
-  // extension_range_count().
+  // extension_range_count(). These are returned in the order they were defined
+  // in the .proto file.
   const ExtensionRange* extension_range(int index) const;
 
   // Returns true if the number is in one of the extension ranges.
@@ -183,6 +187,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // defined nested within this message type's scope.
   int extension_count() const;
   // Get an extension by index, where 0 <= index < extension_count().
+  // These are returned in the order they were defined in the .proto file.
   const FieldDescriptor* extension(int index) const;
 
   // Looks up a named extension (which extends some *other* message type)
@@ -463,6 +468,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   // than zero.
   int value_count() const;
   // Gets a value by index, where 0 <= index < value_count().
+  // These are returned in the order they were defined in the .proto file.
   const EnumValueDescriptor* value(int index) const;
 
   // Looks up a value by name.  Returns NULL if no such value exists.
@@ -583,6 +589,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
   // The number of methods this service defines.
   int method_count() const;
   // Gets a MethodDescriptor by index, where 0 <= index < method_count().
+  // These are returned in the order they were defined in the .proto file.
   const MethodDescriptor* method(int index) const;
 
   // Look up a MethodDescriptor by name.
@@ -683,29 +690,34 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   // The number of files imported by this one.
   int dependency_count() const;
   // Gets an imported file by index, where 0 <= index < dependency_count().
+  // These are returned in the order they were defined in the .proto file.
   const FileDescriptor* dependency(int index) const;
 
   // Number of top-level message types defined in this file.  (This does not
   // include nested types.)
   int message_type_count() const;
   // Gets a top-level message type, where 0 <= index < message_type_count().
+  // These are returned in the order they were defined in the .proto file.
   const Descriptor* message_type(int index) const;
 
   // Number of top-level enum types defined in this file.  (This does not
   // include nested types.)
   int enum_type_count() const;
   // Gets a top-level enum type, where 0 <= index < enum_type_count().
+  // These are returned in the order they were defined in the .proto file.
   const EnumDescriptor* enum_type(int index) const;
 
   // Number of services defined in this file.
   int service_count() const;
   // Gets a service, where 0 <= index < service_count().
+  // These are returned in the order they were defined in the .proto file.
   const ServiceDescriptor* service(int index) const;
 
   // Number of extensions defined at file scope.  (This does not include
   // extensions nested within message types.)
   int extension_count() const;
   // Gets an extension's descriptor, where 0 <= index < extension_count().
+  // These are returned in the order they were defined in the .proto file.
   const FieldDescriptor* extension(int index) const;
 
   // Get options for this file.  These are specified in the .proto
