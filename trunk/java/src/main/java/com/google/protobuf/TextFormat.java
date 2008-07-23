@@ -384,12 +384,24 @@ public final class TextFormat {
     private int previousLine = 0;
     private int previousColumn = 0;
 
-    private static Pattern WHITESPACE = Pattern.compile("(\\s|(#[^\n]*$))*");
+    private static Pattern WHITESPACE =
+      Pattern.compile("(\\s|(#.*$))+", Pattern.MULTILINE);
     private static Pattern TOKEN = Pattern.compile(
       "[a-zA-Z_][0-9a-zA-Z_+-]*|" +                 // an identifier
       "[0-9+-][0-9a-zA-Z_.+-]*|" +                  // a number
-      "\"([^\"\n\\\\]|\\\\[^\n])*(\"|\\\\?$)|" +    // a double-quoted string
-      "\'([^\"\n\\\\]|\\\\[^\n])*(\'|\\\\?$)");     // a single-quoted string
+      "\"([^\"\n\\\\]|\\\\.)*(\"|\\\\?$)|" +        // a double-quoted string
+      "\'([^\"\n\\\\]|\\\\.)*(\'|\\\\?$)",          // a single-quoted string
+      Pattern.MULTILINE);
+
+    private static Pattern DOUBLE_INFINITY = Pattern.compile(
+      "-?inf(inity)?",
+      Pattern.CASE_INSENSITIVE);
+    private static Pattern FLOAT_INFINITY = Pattern.compile(
+      "-?inf(inity)?f?",
+      Pattern.CASE_INSENSITIVE);
+    private static Pattern FLOAT_NAN = Pattern.compile(
+      "nanf?",
+      Pattern.CASE_INSENSITIVE);
 
     /** Construct a tokenizer that parses tokens from the given text. */
     public Tokenizer(CharSequence text) {
@@ -570,6 +582,17 @@ public final class TextFormat {
      * Otherwise, throw a {@link ParseException}.
      */
     public double consumeDouble() throws ParseException {
+      // We need to parse infinity and nan separately because
+      // Double.parseDouble() does not accept "inf", "infinity", or "nan".
+      if (DOUBLE_INFINITY.matcher(currentToken).matches()) {
+        boolean negative = currentToken.startsWith("-");
+        nextToken();
+        return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+      }
+      if (currentToken.equalsIgnoreCase("nan")) {
+        nextToken();
+        return Double.NaN;
+      }
       try {
         double result = Double.parseDouble(currentToken);
         nextToken();
@@ -584,6 +607,17 @@ public final class TextFormat {
      * Otherwise, throw a {@link ParseException}.
      */
     public float consumeFloat() throws ParseException {
+      // We need to parse infinity and nan separately because
+      // Float.parseFloat() does not accept "inf", "infinity", or "nan".
+      if (FLOAT_INFINITY.matcher(currentToken).matches()) {
+        boolean negative = currentToken.startsWith("-");
+        nextToken();
+        return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+      }
+      if (FLOAT_NAN.matcher(currentToken).matches()) {
+        nextToken();
+        return Float.NaN;
+      }
       try {
         float result = Float.parseFloat(currentToken);
         nextToken();

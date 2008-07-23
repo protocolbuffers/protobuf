@@ -1604,8 +1604,10 @@ class DescriptorBuilder {
   // FindSymbol("foo.bar").
   Symbol LookupSymbol(const string& name, const string& relative_to);
 
-  // Calls tables_->AddSymbol() and records an error if it fails.
-  void AddSymbol(const string& full_name,
+  // Calls tables_->AddSymbol() and records an error if it fails.  Returns
+  // true if successful or false if failed, though most callers can ignore
+  // the return value since an error has already been recorded.
+  bool AddSymbol(const string& full_name,
                  const void* parent, const string& name,
                  const Message& proto, Symbol symbol);
 
@@ -1918,14 +1920,16 @@ Symbol DescriptorBuilder::LookupSymbol(
   }
 }
 
-void DescriptorBuilder::AddSymbol(
+bool DescriptorBuilder::AddSymbol(
     const string& full_name, const void* parent, const string& name,
     const Message& proto, Symbol symbol) {
   // If the caller passed NULL for the parent, the symbol is at file scope.
   // Use its file as the parent instead.
   if (parent == NULL) parent = file_;
 
-  if (!tables_->AddSymbol(full_name, parent, name, symbol)) {
+  if (tables_->AddSymbol(full_name, parent, name, symbol)) {
+    return true;
+  } else {
     const FileDescriptor* other_file = tables_->FindSymbol(full_name).GetFile();
     if (other_file == file_) {
       string::size_type dot_pos = full_name.find_last_of('.');
@@ -1944,6 +1948,7 @@ void DescriptorBuilder::AddSymbol(
                "\"" + full_name + "\" is already defined in file \"" +
                other_file->name() + "\".");
     }
+    return false;
   }
 }
 
@@ -2480,14 +2485,41 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   // Again, enum values are weird because we makes them appear as siblings
   // of the enum type instead of children of it.  So, we use
   // parent->containing_type() as the value's parent.
-  AddSymbol(result->full_name(), parent->containing_type(), result->name(),
-            proto, Symbol(result));
+  bool added_to_outer_scope =
+    AddSymbol(result->full_name(), parent->containing_type(), result->name(),
+              proto, Symbol(result));
 
   // However, we also want to be able to search for values within a single
   // enum type, so we add it as a child of the enum type itself, too.
   // Note:  This could fail, but if it does, the error has already been
   //   reported by the above AddSymbol() call, so we ignore the return code.
-  tables_->AddAliasUnderParent(parent, result->name(), Symbol(result));
+  bool added_to_inner_scope =
+    tables_->AddAliasUnderParent(parent, result->name(), Symbol(result));
+
+  if (added_to_inner_scope && !added_to_outer_scope) {
+    // This value did not conflict with any values defined in the same enum,
+    // but it did conflict with some other symbol defined in the enum type's
+    // scope.  Let's print an additional error to explain this.
+    string outer_scope;
+    if (parent->containing_type() == NULL) {
+      outer_scope = file_->package();
+    } else {
+      outer_scope = parent->containing_type()->full_name();
+    }
+
+    if (outer_scope.empty()) {
+      outer_scope = "the global scope";
+    } else {
+      outer_scope = "\"" + outer_scope + "\"";
+    }
+
+    AddError(result->full_name(), proto,
+             DescriptorPool::ErrorCollector::NAME,
+             "Note that enum values use C++ scoping rules, meaning that "
+             "enum values are siblings of their type, not children of it.  "
+             "Therefore, \"" + result->name() + "\" must be unique within "
+             + outer_scope + ", not just within \"" + parent->name() + "\".");
+  }
 
   // An enum is allowed to define two numbers that refer to the same value.
   // FindValueByNumber() should return the first such value, so we simply

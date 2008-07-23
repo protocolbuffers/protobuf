@@ -96,13 +96,11 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 
   printer->Print(variables_,
     "inline const ::std::string& $name$() const;\n"
-    "inline void set_$name$(const ::std::string& value);\n");
+    "inline void set_$name$(const ::std::string& value);\n"
+    "inline void set_$name$(const char* value);\n");
   if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_,
-      "inline void set_$name$(const char* value, size_t size);\n");
-  } else {
-    printer->Print(variables_,
-      "inline void set_$name$(const char* value);\n");
+      "inline void set_$name$(const void* value, size_t size);\n");
   }
 
   printer->Print(variables_,
@@ -127,25 +125,23 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "    $name$_ = new ::std::string;\n"
     "  }\n"
     "  $name$_->assign(value);\n"
+    "}\n"
+    "inline void $classname$::set_$name$(const char* value) {\n"
+    "  _set_bit($index$);\n"
+    "  if ($name$_ == &_default_$name$_) {\n"
+    "    $name$_ = new ::std::string;\n"
+    "  }\n"
+    "  $name$_->assign(value);\n"
     "}\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_,
-      "inline void $classname$::set_$name$(const char* value, size_t size) {\n"
+      "inline void $classname$::set_$name$(const void* value, size_t size) {\n"
       "  _set_bit($index$);\n"
       "  if ($name$_ == &_default_$name$_) {\n"
       "    $name$_ = new ::std::string;\n"
       "  }\n"
-      "  $name$_->assign(value, size);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "inline void $classname$::set_$name$(const char* value) {\n"
-      "  _set_bit($index$);\n"
-      "  if ($name$_ == &_default_$name$_) {\n"
-      "    $name$_ = new ::std::string;\n"
-      "  }\n"
-      "  $name$_->assign(value);\n"
+      "  $name$_->assign(reinterpret_cast<const char*>(value), size);\n"
       "}\n");
   }
 
@@ -265,17 +261,15 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     "inline const ::std::string& $name$(int index) const;\n"
     "inline ::std::string* mutable_$name$(int index);\n"
     "inline void set_$name$(int index, const ::std::string& value);\n"
+    "inline void set_$name$(int index, const char* value);\n"
     "inline ::std::string* add_$name$();\n"
-    "inline void add_$name$(const ::std::string& value);\n");
+    "inline void add_$name$(const ::std::string& value);\n"
+    "inline void add_$name$(const char* value);\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_,
-      "inline void set_$name$(int index, const char* value, size_t size);\n"
-      "inline void add_$name$(const char* value, size_t size);\n");
-  } else {
-    printer->Print(variables_,
-      "inline void set_$name$(int index, const char* value);\n"
-      "inline void add_$name$(const char* value);\n");
+      "inline void set_$name$(int index, const void* value, size_t size);\n"
+      "inline void add_$name$(const void* value, size_t size);\n");
   }
 
   if (descriptor_->options().has_ctype()) {
@@ -305,29 +299,28 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "inline void $classname$::set_$name$(int index, const ::std::string& value) {\n"
     "  $name$_.Mutable(index)->assign(value);\n"
     "}\n"
+    "inline void $classname$::set_$name$(int index, const char* value) {\n"
+    "  $name$_.Mutable(index)->assign(value);\n"
+    "}\n"
     "inline ::std::string* $classname$::add_$name$() {\n"
     "  return $name$_.Add();\n"
     "}\n"
     "inline void $classname$::add_$name$(const ::std::string& value) {\n"
+    "  $name$_.Add()->assign(value);\n"
+    "}\n"
+    "inline void $classname$::add_$name$(const char* value) {\n"
     "  $name$_.Add()->assign(value);\n"
     "}\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
     printer->Print(variables_,
       "inline void "
-      "$classname$::set_$name$(int index, const char* value, size_t size) {\n"
-      "  $name$_.Mutable(index)->assign(value, size);\n"
+      "$classname$::set_$name$(int index, const void* value, size_t size) {\n"
+      "  $name$_.Mutable(index)->assign(\n"
+      "    reinterpret_cast<const char*>(value), size);\n"
       "}\n"
-      "inline void $classname$::add_$name$(const char* value, size_t size) {\n"
-      "  $name$_.Add()->assign(value, size);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "inline void $classname$::set_$name$(int index, const char* value) {\n"
-      "  $name$_.Mutable(index)->assign(value);\n"
-      "}\n"
-      "inline void $classname$::add_$name$(const char* value) {\n"
-      "  $name$_.Add()->assign(value);\n"
+      "inline void $classname$::add_$name$(const void* value, size_t size) {\n"
+      "  $name$_.Add()->assign(reinterpret_cast<const char*>(value), size);\n"
       "}\n");
   }
 }

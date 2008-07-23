@@ -1034,6 +1034,9 @@ bool Parser::ParseUserDefinedType(string* type_name) {
 bool Parser::ParsePackage(FileDescriptorProto* file) {
   if (file->has_package()) {
     AddError("Multiple package definitions.");
+    // Don't append the new package to the old one.  Just replace it.  Not
+    // that it really matters since this is an error anyway.
+    file->clear_package();
   }
 
   DO(Consume("package"));

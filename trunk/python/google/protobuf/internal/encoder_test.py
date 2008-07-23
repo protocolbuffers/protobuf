@@ -21,11 +21,11 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import struct
 import logging
 import unittest
-import mox
 from google.protobuf.internal import wire_format
 from google.protobuf.internal import encoder
 from google.protobuf.internal import output_stream
 from google.protobuf import message
+import mox
 
 
 class EncoderTest(unittest.TestCase):

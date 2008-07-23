@@ -1625,6 +1625,33 @@ TEST_F(ValidationErrorTest, PackageAlreadyDefined) {
       "than a package) in file \"foo.proto\".\n");
 }
 
+TEST_F(ValidationErrorTest, EnumValueAlreadyDefinedInParent) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type { name: \"Foo\" value { name: \"FOO\" number: 1 } } "
+    "enum_type { name: \"Bar\" value { name: \"FOO\" number: 1 } } ",
+
+    "foo.proto: FOO: NAME: \"FOO\" is already defined.\n"
+    "foo.proto: FOO: NAME: Note that enum values use C++ scoping rules, "
+      "meaning that enum values are siblings of their type, not children of "
+      "it.  Therefore, \"FOO\" must be unique within the global scope, not "
+      "just within \"Bar\".\n");
+}
+
+TEST_F(ValidationErrorTest, EnumValueAlreadyDefinedInParentNonGlobal) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "package: \"pkg\" "
+    "enum_type { name: \"Foo\" value { name: \"FOO\" number: 1 } } "
+    "enum_type { name: \"Bar\" value { name: \"FOO\" number: 1 } } ",
+
+    "foo.proto: pkg.FOO: NAME: \"FOO\" is already defined in \"pkg\".\n"
+    "foo.proto: pkg.FOO: NAME: Note that enum values use C++ scoping rules, "
+      "meaning that enum values are siblings of their type, not children of "
+      "it.  Therefore, \"FOO\" must be unique within \"pkg\", not just within "
+      "\"Bar\".\n");
+}
+
 TEST_F(ValidationErrorTest, MissingName) {
   BuildFileWithErrors(
     "name: \"foo.proto\" "

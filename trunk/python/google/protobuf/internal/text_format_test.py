@@ -45,14 +45,16 @@ class TextFormatTest(unittest.TestCase):
   def testPrintAllFields(self):
     message = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(message)
-    self.CompareToGoldenFile(text_format.MessageToString(message),
-                             'text_format_unittest_data.txt')
+    self.CompareToGoldenFile(
+      self.RemoveRedundantZeros(text_format.MessageToString(message)),
+      'text_format_unittest_data.txt')
 
   def testPrintAllExtensions(self):
     message = unittest_pb2.TestAllExtensions()
     test_util.SetAllExtensions(message)
-    self.CompareToGoldenFile(text_format.MessageToString(message),
-                             'text_format_unittest_extensions_data.txt')
+    self.CompareToGoldenFile(
+      self.RemoveRedundantZeros(text_format.MessageToString(message)),
+      'text_format_unittest_extensions_data.txt')
 
   def testPrintMessageSet(self):
     message = unittest_mset_pb2.TestMessageSetContainer()
@@ -78,7 +80,8 @@ class TextFormatTest(unittest.TestCase):
     message.repeated_double.append(1.23e22);
     message.repeated_double.append(1.23e-18);
     message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'\"');
-    self.CompareToGoldenText(text_format.MessageToString(message),
+    self.CompareToGoldenText(
+      self.RemoveRedundantZeros(text_format.MessageToString(message)),
       'repeated_int64: -9223372036854775808\n'
       'repeated_uint64: 18446744073709551615\n'
       'repeated_double: 123.456\n'
@@ -91,6 +94,12 @@ class TextFormatTest(unittest.TestCase):
     message = unittest_pb2.ForeignMessage()
     message.c = 123
     self.assertEqual('c: 123\n', str(message))
+
+  def RemoveRedundantZeros(self, text):
+    # Some platforms print 1e+5 as 1e+005.  This is fine, but we need to remove
+    # these zeros in order to match the golden file.
+    return text.replace('e+0','e+').replace('e+0','e+') \
+               .replace('e-0','e-').replace('e-0','e-')
 
 if __name__ == '__main__':
   unittest.main()

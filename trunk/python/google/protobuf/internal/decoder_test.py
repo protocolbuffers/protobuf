@@ -24,9 +24,9 @@ from google.protobuf.internal import wire_format
 from google.protobuf.internal import encoder
 from google.protobuf.internal import decoder
 import logging
-import mox
 from google.protobuf.internal import input_stream
 from google.protobuf import message
+import mox
 
 
 class DecoderTest(unittest.TestCase):
