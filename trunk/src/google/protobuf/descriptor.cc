@@ -2065,7 +2065,15 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   }
 
   result->name_ = tables_->AllocateString(proto.name());
-  result->package_ = tables_->AllocateString(proto.package());
+  if (proto.has_package()) {
+    result->package_ = tables_->AllocateString(proto.package());
+  } else {
+    // We cannot rely on proto.package() returning a valid string if
+    // proto.has_package() is false, because we might be running at static
+    // initialization time, in which case default values have not yet been
+    // initialized.
+    result->package_ = tables_->AllocateString("");
+  }
   result->pool_ = pool_;
 
   // Add to tables.
