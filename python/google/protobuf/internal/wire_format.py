@@ -87,7 +87,7 @@ def ZigZagEncode(value):
   """
   if value >= 0:
     return value << 1
-  return ((value << 1) ^ (~0)) | 0x1
+  return (value << 1) ^ (~0)
 
 
 def ZigZagDecode(value):
