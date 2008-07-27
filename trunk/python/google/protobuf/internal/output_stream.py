@@ -101,11 +101,10 @@ class OutputStream(object):
     while True:
       bits = unsigned_value & 0x7f
       unsigned_value >>= 7
-      if unsigned_value:
-        bits |= 0x80
-      self._buffer.append(bits)
       if not unsigned_value:
+        self._buffer.append(bits)
         break
+      self._buffer.append(0x80|bits)
 
   def ToString(self):
     """Returns a string containing the bytes in our internal buffer."""
