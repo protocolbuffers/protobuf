@@ -38,3 +38,4 @@ Non-Google patch contributors:
   Kevin Ko <kevin.s.ko@gmail.com>
   Johan Euphrosine <proppy@aminche.com>
   Ulrich Kunitz <kune@deine-taler.de>
+  Leandro Lucarella <llucax@gmail.com>

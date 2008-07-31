@@ -23,6 +23,9 @@
 " augroup filetype
 "   au! BufRead,BufNewFile *.proto setfiletype proto
 " augroup end
+"
+" Or just create a new file called ~/.vim/ftdetect/proto.vim with the
+" previous lines on it.
 
 if version < 600
   syntax clear
@@ -31,6 +34,9 @@ elseif exists("b:current_syntax")
 endif
 
 syn case match
+
+syn keyword pbTodo       contained TODO FIXME XXX
+syn cluster pbCommentGrp contains=pbTodo
 
 syn keyword pbSyntax     syntax import option
 syn keyword pbStructure  package message group
@@ -50,7 +56,7 @@ syn match   pbInt     /\<0[xX]\x+\>/
 syn match   pbFloat   /\<-\?\d*\(\.\d*\)\?/
 " TODO: .proto also supports C-style block comments;
 " see /usr/share/vim/vim70/syntax/c.vim for how it's done.
-syn match   pbComment /\/\/.*$/
+syn region  pbComment start="//" skip="\\$" end="$" keepend contains=@pbCommentGrp
 syn region  pbString  start=/"/ skip=/\\"/ end=/"/
 syn region  pbString  start=/'/ skip=/\\'/ end=/'/
 
@@ -61,6 +67,8 @@ if version >= 508 || !exists("did_proto_syn_inits")
   else
     command -nargs=+ HiLink hi def link <args>
   endif
+
+  HiLink pbTodo         Todo
 
   HiLink pbSyntax       Include
   HiLink pbStructure    Structure

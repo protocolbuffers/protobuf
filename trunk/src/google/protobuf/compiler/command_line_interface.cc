@@ -203,7 +203,7 @@ io::ZeroCopyOutputStream* CommandLineInterface::DiskOutputDirectory::Open(
   do {
     file_descriptor =
       open((root_ + filename).c_str(),
-           O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0777);
+           O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
   } while (file_descriptor < 0 && errno == EINTR);
 
   if (file_descriptor < 0) {
