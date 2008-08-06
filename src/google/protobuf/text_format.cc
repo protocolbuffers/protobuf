@@ -728,11 +728,32 @@ bool TextFormat::Parser::MergeFromString(const string& input,
   return result;
 }
 
+/* static */ bool TextFormat::PrintUnknownFieldsToString(
+    const UnknownFieldSet& unknown_fields,
+    string* output) {
+  GOOGLE_DCHECK(output) << "output specified is NULL";
+
+  output->clear();
+  io::StringOutputStream output_stream(output);
+  return PrintUnknownFields(unknown_fields, &output_stream);
+}
+
 /* static */ bool TextFormat::Print(const Message& message,
                                     io::ZeroCopyOutputStream* output) {
   TextGenerator generator(output);
 
   Print(message.GetDescriptor(), message.GetReflection(), generator);
+
+  // Output false if the generator failed internally.
+  return !generator.failed();
+}
+
+/* static */ bool TextFormat::PrintUnknownFields(
+    const UnknownFieldSet& unknown_fields,
+    io::ZeroCopyOutputStream* output) {
+  TextGenerator generator(output);
+
+  PrintUnknownFields(unknown_fields, generator);
 
   // Output false if the generator failed internally.
   return !generator.failed();
@@ -922,9 +943,23 @@ static string PaddedHex(IntType value) {
     }
     for (int j = 0; j < field.length_delimited_size(); j++) {
       generator.Print(field_number);
-      generator.Print(": \"");
-      generator.Print(CEscape(field.length_delimited(j)));
-      generator.Print("\"\n");
+      const string& value = field.length_delimited(j);
+      UnknownFieldSet embedded_unknown_fields;
+      if (!value.empty() && embedded_unknown_fields.ParseFromString(value)) {
+        // This field is parseable as a Message.
+        // So it is probably an embedded message.
+        generator.Print(" {\n");
+        generator.Indent();
+        PrintUnknownFields(embedded_unknown_fields, generator);
+        generator.Outdent();
+        generator.Print("}\n");
+      } else {
+        // This field is not parseable as a Message.
+        // So it is probably just a plain string.
+        generator.Print(": \"");
+        generator.Print(CEscape(value));
+        generator.Print("\"\n");
+      }
     }
     for (int j = 0; j < field.group_size(); j++) {
       generator.Print(field_number);

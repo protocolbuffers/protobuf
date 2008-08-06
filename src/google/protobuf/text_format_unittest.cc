@@ -158,6 +158,50 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
     message.DebugString());
 }
 
+TEST_F(TextFormatTest, PrintUnknownMessage) {
+  // Test heuristic printing of messages in an UnknownFieldSet.
+
+  protobuf_unittest::TestAllTypes message;
+
+  // Cases which should not be interpreted as sub-messages.
+
+  // 'a' is a valid FIXED64 tag, so for the string to be parseable as a message
+  // it should be followed by 8 bytes.  Since this string only has two
+  // subsequent bytes, it should be treated as a string.
+  message.add_repeated_string("abc");
+
+  // 'd' happens to be a valid ENDGROUP tag.  So,
+  // UnknownFieldSet::MergeFromCodedStream() will successfully parse "def", but
+  // the ConsumedEntireMessage() check should fail.
+  message.add_repeated_string("def");
+
+  // A zero-length string should never be interpreted as a message even though
+  // it is technically valid as one.
+  message.add_repeated_string("");
+
+  // Case which should be interpreted as a sub-message.
+
+  // An actual nested message with content should always be interpreted as a
+  // nested message.
+  message.add_repeated_nested_message()->set_bb(123);
+
+  string data;
+  message.SerializeToString(&data);
+
+  string text;
+  UnknownFieldSet unknown_fields;
+  EXPECT_TRUE(unknown_fields.ParseFromString(data));
+  EXPECT_TRUE(TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
+  EXPECT_EQ(
+    "44: \"abc\"\n"
+    "44: \"def\"\n"
+    "44: \"\"\n"
+    "48 {\n"
+    "  1: 123\n"
+    "}\n",
+    text);
+}
+
 TEST_F(TextFormatTest, ParseBasic) {
   io::ArrayInputStream input_stream(proto_debug_string_.data(),
                                     proto_debug_string_.size());

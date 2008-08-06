@@ -45,8 +45,19 @@ class LIBPROTOBUF_EXPORT TextFormat {
   // Outputs a textual representation of the given message to the given
   // output stream.
   static bool Print(const Message& message, io::ZeroCopyOutputStream* output);
+
+  // Print the fields in an UnknownFieldSet.  They are printed by tag number
+  // only.  Embedded messages are heuristically identified by attempting to
+  // parse them.
+  static bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
+                                 io::ZeroCopyOutputStream* output);
+
   // Like Print(), but outputs directly to a string.
   static bool PrintToString(const Message& message, string* output);
+
+  // Like PrintUnknownFields(), but outputs directly to a string.
+  static bool PrintUnknownFieldsToString(const UnknownFieldSet& unknown_fields,
+                                         string* output);
 
   // Outputs a textual representation of the value of the field supplied on
   // the message supplied. For non-repeated fields, an index of -1 must
@@ -130,7 +141,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
                               TextGenerator& generator);
 
   // Print the fields in an UnknownFieldSet.  They are printed by tag number
-  // only.
+  // only.  Embedded messages are heuristically identified by attempting to
+  // parse them.
   static void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                                  TextGenerator& generator);
 

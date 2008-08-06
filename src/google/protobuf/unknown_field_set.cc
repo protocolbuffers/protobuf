@@ -20,6 +20,10 @@
 
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/wire_format.h>
 
 namespace google {
 namespace protobuf {
@@ -55,6 +59,34 @@ void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   for (int i = 0; i < other.field_count(); i++) {
     AddField(other.field(i).number())->MergeFrom(other.field(i));
   }
+}
+
+bool UnknownFieldSet::MergeFromCodedStream(io::CodedInputStream* input) {
+
+  UnknownFieldSet other;
+  if (internal::WireFormat::SkipMessage(input, &other) &&
+                                  input->ConsumedEntireMessage()) {
+    MergeFrom(other);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool UnknownFieldSet::ParseFromCodedStream(io::CodedInputStream* input) {
+  Clear();
+  return MergeFromCodedStream(input);
+}
+
+bool UnknownFieldSet::ParseFromZeroCopyStream(io::ZeroCopyInputStream* input) {
+  io::CodedInputStream coded_input(input);
+  return ParseFromCodedStream(&coded_input) &&
+    coded_input.ConsumedEntireMessage();
+}
+
+bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
+  io::ArrayInputStream input(data, size);
+  return ParseFromZeroCopyStream(&input);
 }
 
 const UnknownField* UnknownFieldSet::FindFieldByNumber(int number) const {
