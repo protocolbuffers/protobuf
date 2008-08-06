@@ -36,6 +36,14 @@ Maven packaging:
 
 Non-Google patch contributors:
   Kevin Ko <kevin.s.ko@gmail.com>
+    * Small patch to handle trailing slashes in --proto_path flag.
   Johan Euphrosine <proppy@aminche.com>
+    * Small patch to fix Pyhton CallMethod().
   Ulrich Kunitz <kune@deine-taler.de>
+    * Small optimizations to Python serialization.
   Leandro Lucarella <llucax@gmail.com>
+    * VI syntax highlighting tweaks.
+    * Fix compiler to not make output executable.
+  Dilip Joseph <dilip.antony.joseph@gmail.com>
+    * Heuristic detection of sub-messages when printing unknown fields in
+      text format.

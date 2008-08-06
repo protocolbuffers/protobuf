@@ -77,6 +77,17 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   // the existing UnknownField.
   UnknownField* AddField(int number);
 
+  // Parsing helpers -------------------------------------------------
+  // These work exactly like the similarly-named methods of Message.
+
+  bool MergeFromCodedStream(io::CodedInputStream* input);
+  bool ParseFromCodedStream(io::CodedInputStream* input);
+  bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
+  bool ParseFromArray(const void* data, int size);
+  inline bool ParseFromString(const string& data) {
+    return ParseFromArray(data.data(), data.size());
+  }
+
  private:
   // "Active" fields are ones which have been added since the last time Clear()
   // was called.  Inactive fields are objects we are keeping around incase
