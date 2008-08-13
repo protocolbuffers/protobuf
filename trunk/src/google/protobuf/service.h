@@ -103,7 +103,7 @@ class Message;               // message.h
 // themselves are abstract interfaces (implemented either by servers or as
 // stubs), but they subclass this base interface.  The methods of this
 // interface can be used to call the methods of the Service without knowing
-// its exact type at compile time (analogous to Message::Reflection).
+// its exact type at compile time (analogous to Reflection).
 class LIBPROTOBUF_EXPORT Service {
  public:
   inline Service() {}

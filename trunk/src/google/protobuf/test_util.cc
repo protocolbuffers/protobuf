@@ -58,9 +58,11 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   // StringPiece and Cord fields are only accessible via reflection in the
   // open source release; see comments in compiler/cpp/string_field.cc.
   message->GetReflection()->SetString(
+    message,
     message->GetDescriptor()->FindFieldByName("optional_string_piece"),
     "124");
   message->GetReflection()->SetString(
+    message,
     message->GetDescriptor()->FindFieldByName("optional_cord"),
     "125");
 
@@ -92,9 +94,11 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   message->add_repeated_import_enum (unittest_import::IMPORT_BAR);
 
   message->GetReflection()->AddString(
+    message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
     "224");
   message->GetReflection()->AddString(
+    message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     "225");
 
@@ -125,9 +129,11 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   message->add_repeated_import_enum (unittest_import::IMPORT_BAZ);
 
   message->GetReflection()->AddString(
+    message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
     "324");
   message->GetReflection()->AddString(
+    message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     "325");
 
@@ -154,9 +160,11 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   message->set_default_import_enum (unittest_import::IMPORT_FOO);
 
   message->GetReflection()->SetString(
+    message,
     message->GetDescriptor()->FindFieldByName("default_string_piece"),
     "424");
   message->GetReflection()->SetString(
+    message,
     message->GetDescriptor()->FindFieldByName("default_cord"),
     "425");
 }
@@ -190,9 +198,11 @@ void TestUtil::ModifyRepeatedFields(unittest::TestAllTypes* message) {
   message->set_repeated_import_enum (1, unittest_import::IMPORT_FOO);
 
   message->GetReflection()->SetRepeatedString(
+    message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
     1, "424");
   message->GetReflection()->SetRepeatedString(
+    message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     1, "425");
 }
@@ -1322,590 +1332,588 @@ const FieldDescriptor* TestUtil::ReflectionTester::F(const string& name) {
 
 // -------------------------------------------------------------------
 
-void TestUtil::ReflectionTester::SetAllFieldsViaReflection(
-    Message::Reflection* message) {
-  message->SetInt32 (F("optional_int32"   ), 101);
-  message->SetInt64 (F("optional_int64"   ), 102);
-  message->SetUInt32(F("optional_uint32"  ), 103);
-  message->SetUInt64(F("optional_uint64"  ), 104);
-  message->SetInt32 (F("optional_sint32"  ), 105);
-  message->SetInt64 (F("optional_sint64"  ), 106);
-  message->SetUInt32(F("optional_fixed32" ), 107);
-  message->SetUInt64(F("optional_fixed64" ), 108);
-  message->SetInt32 (F("optional_sfixed32"), 109);
-  message->SetInt64 (F("optional_sfixed64"), 110);
-  message->SetFloat (F("optional_float"   ), 111);
-  message->SetDouble(F("optional_double"  ), 112);
-  message->SetBool  (F("optional_bool"    ), true);
-  message->SetString(F("optional_string"  ), "115");
-  message->SetString(F("optional_bytes"   ), "116");
+void TestUtil::ReflectionTester::SetAllFieldsViaReflection(Message* message) {
+  const Reflection* reflection = message->GetReflection();
+  Message* sub_message;
 
-  message->MutableMessage(F("optionalgroup"))
-         ->GetReflection()->SetInt32(group_a_, 117);
-  message->MutableMessage(F("optional_nested_message"))
-         ->GetReflection()->SetInt32(nested_b_, 118);
-  message->MutableMessage(F("optional_foreign_message"))
-         ->GetReflection()->SetInt32(foreign_c_, 119);
-  message->MutableMessage(F("optional_import_message"))
-         ->GetReflection()->SetInt32(import_d_, 120);
+  reflection->SetInt32 (message, F("optional_int32"   ), 101);
+  reflection->SetInt64 (message, F("optional_int64"   ), 102);
+  reflection->SetUInt32(message, F("optional_uint32"  ), 103);
+  reflection->SetUInt64(message, F("optional_uint64"  ), 104);
+  reflection->SetInt32 (message, F("optional_sint32"  ), 105);
+  reflection->SetInt64 (message, F("optional_sint64"  ), 106);
+  reflection->SetUInt32(message, F("optional_fixed32" ), 107);
+  reflection->SetUInt64(message, F("optional_fixed64" ), 108);
+  reflection->SetInt32 (message, F("optional_sfixed32"), 109);
+  reflection->SetInt64 (message, F("optional_sfixed64"), 110);
+  reflection->SetFloat (message, F("optional_float"   ), 111);
+  reflection->SetDouble(message, F("optional_double"  ), 112);
+  reflection->SetBool  (message, F("optional_bool"    ), true);
+  reflection->SetString(message, F("optional_string"  ), "115");
+  reflection->SetString(message, F("optional_bytes"   ), "116");
 
-  message->SetEnum(F("optional_nested_enum" ),  nested_baz_);
-  message->SetEnum(F("optional_foreign_enum"), foreign_baz_);
-  message->SetEnum(F("optional_import_enum" ),  import_baz_);
+  sub_message = reflection->MutableMessage(message, F("optionalgroup"));
+  sub_message->GetReflection()->SetInt32(sub_message, group_a_, 117);
+  sub_message = reflection->MutableMessage(message, F("optional_nested_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, nested_b_, 118);
+  sub_message = reflection->MutableMessage(message, F("optional_foreign_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, foreign_c_, 119);
+  sub_message = reflection->MutableMessage(message, F("optional_import_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, import_d_, 120);
 
-  message->SetString(F("optional_string_piece"), "124");
-  message->SetString(F("optional_cord"), "125");
+  reflection->SetEnum(message, F("optional_nested_enum" ),  nested_baz_);
+  reflection->SetEnum(message, F("optional_foreign_enum"), foreign_baz_);
+  reflection->SetEnum(message, F("optional_import_enum" ),  import_baz_);
+
+  reflection->SetString(message, F("optional_string_piece"), "124");
+  reflection->SetString(message, F("optional_cord"), "125");
 
   // -----------------------------------------------------------------
 
-  message->AddInt32 (F("repeated_int32"   ), 201);
-  message->AddInt64 (F("repeated_int64"   ), 202);
-  message->AddUInt32(F("repeated_uint32"  ), 203);
-  message->AddUInt64(F("repeated_uint64"  ), 204);
-  message->AddInt32 (F("repeated_sint32"  ), 205);
-  message->AddInt64 (F("repeated_sint64"  ), 206);
-  message->AddUInt32(F("repeated_fixed32" ), 207);
-  message->AddUInt64(F("repeated_fixed64" ), 208);
-  message->AddInt32 (F("repeated_sfixed32"), 209);
-  message->AddInt64 (F("repeated_sfixed64"), 210);
-  message->AddFloat (F("repeated_float"   ), 211);
-  message->AddDouble(F("repeated_double"  ), 212);
-  message->AddBool  (F("repeated_bool"    ), true);
-  message->AddString(F("repeated_string"  ), "215");
-  message->AddString(F("repeated_bytes"   ), "216");
+  reflection->AddInt32 (message, F("repeated_int32"   ), 201);
+  reflection->AddInt64 (message, F("repeated_int64"   ), 202);
+  reflection->AddUInt32(message, F("repeated_uint32"  ), 203);
+  reflection->AddUInt64(message, F("repeated_uint64"  ), 204);
+  reflection->AddInt32 (message, F("repeated_sint32"  ), 205);
+  reflection->AddInt64 (message, F("repeated_sint64"  ), 206);
+  reflection->AddUInt32(message, F("repeated_fixed32" ), 207);
+  reflection->AddUInt64(message, F("repeated_fixed64" ), 208);
+  reflection->AddInt32 (message, F("repeated_sfixed32"), 209);
+  reflection->AddInt64 (message, F("repeated_sfixed64"), 210);
+  reflection->AddFloat (message, F("repeated_float"   ), 211);
+  reflection->AddDouble(message, F("repeated_double"  ), 212);
+  reflection->AddBool  (message, F("repeated_bool"    ), true);
+  reflection->AddString(message, F("repeated_string"  ), "215");
+  reflection->AddString(message, F("repeated_bytes"   ), "216");
 
-  message->AddMessage(F("repeatedgroup"))
-         ->GetReflection()->SetInt32(repeated_group_a_, 217);
-  message->AddMessage(F("repeated_nested_message"))
-         ->GetReflection()->SetInt32(nested_b_, 218);
-  message->AddMessage(F("repeated_foreign_message"))
-         ->GetReflection()->SetInt32(foreign_c_, 219);
-  message->AddMessage(F("repeated_import_message"))
-         ->GetReflection()->SetInt32(import_d_, 220);
+  sub_message = reflection->AddMessage(message, F("repeatedgroup"));
+  sub_message->GetReflection()->SetInt32(sub_message, repeated_group_a_, 217);
+  sub_message = reflection->AddMessage(message, F("repeated_nested_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, nested_b_, 218);
+  sub_message = reflection->AddMessage(message, F("repeated_foreign_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, foreign_c_, 219);
+  sub_message = reflection->AddMessage(message, F("repeated_import_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, import_d_, 220);
 
-  message->AddEnum(F("repeated_nested_enum" ),  nested_bar_);
-  message->AddEnum(F("repeated_foreign_enum"), foreign_bar_);
-  message->AddEnum(F("repeated_import_enum" ),  import_bar_);
+  reflection->AddEnum(message, F("repeated_nested_enum" ),  nested_bar_);
+  reflection->AddEnum(message, F("repeated_foreign_enum"), foreign_bar_);
+  reflection->AddEnum(message, F("repeated_import_enum" ),  import_bar_);
 
-  message->AddString(F("repeated_string_piece"), "224");
-  message->AddString(F("repeated_cord"), "225");
+  reflection->AddString(message, F("repeated_string_piece"), "224");
+  reflection->AddString(message, F("repeated_cord"), "225");
 
   // Add a second one of each field.
-  message->AddInt32 (F("repeated_int32"   ), 301);
-  message->AddInt64 (F("repeated_int64"   ), 302);
-  message->AddUInt32(F("repeated_uint32"  ), 303);
-  message->AddUInt64(F("repeated_uint64"  ), 304);
-  message->AddInt32 (F("repeated_sint32"  ), 305);
-  message->AddInt64 (F("repeated_sint64"  ), 306);
-  message->AddUInt32(F("repeated_fixed32" ), 307);
-  message->AddUInt64(F("repeated_fixed64" ), 308);
-  message->AddInt32 (F("repeated_sfixed32"), 309);
-  message->AddInt64 (F("repeated_sfixed64"), 310);
-  message->AddFloat (F("repeated_float"   ), 311);
-  message->AddDouble(F("repeated_double"  ), 312);
-  message->AddBool  (F("repeated_bool"    ), false);
-  message->AddString(F("repeated_string"  ), "315");
-  message->AddString(F("repeated_bytes"   ), "316");
+  reflection->AddInt32 (message, F("repeated_int32"   ), 301);
+  reflection->AddInt64 (message, F("repeated_int64"   ), 302);
+  reflection->AddUInt32(message, F("repeated_uint32"  ), 303);
+  reflection->AddUInt64(message, F("repeated_uint64"  ), 304);
+  reflection->AddInt32 (message, F("repeated_sint32"  ), 305);
+  reflection->AddInt64 (message, F("repeated_sint64"  ), 306);
+  reflection->AddUInt32(message, F("repeated_fixed32" ), 307);
+  reflection->AddUInt64(message, F("repeated_fixed64" ), 308);
+  reflection->AddInt32 (message, F("repeated_sfixed32"), 309);
+  reflection->AddInt64 (message, F("repeated_sfixed64"), 310);
+  reflection->AddFloat (message, F("repeated_float"   ), 311);
+  reflection->AddDouble(message, F("repeated_double"  ), 312);
+  reflection->AddBool  (message, F("repeated_bool"    ), false);
+  reflection->AddString(message, F("repeated_string"  ), "315");
+  reflection->AddString(message, F("repeated_bytes"   ), "316");
 
-  message->AddMessage(F("repeatedgroup"))
-         ->GetReflection()->SetInt32(repeated_group_a_, 317);
-  message->AddMessage(F("repeated_nested_message"))
-         ->GetReflection()->SetInt32(nested_b_, 318);
-  message->AddMessage(F("repeated_foreign_message"))
-         ->GetReflection()->SetInt32(foreign_c_, 319);
-  message->AddMessage(F("repeated_import_message"))
-         ->GetReflection()->SetInt32(import_d_, 320);
+  sub_message = reflection->AddMessage(message, F("repeatedgroup"));
+  sub_message->GetReflection()->SetInt32(sub_message, repeated_group_a_, 317);
+  sub_message = reflection->AddMessage(message, F("repeated_nested_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, nested_b_, 318);
+  sub_message = reflection->AddMessage(message, F("repeated_foreign_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, foreign_c_, 319);
+  sub_message = reflection->AddMessage(message, F("repeated_import_message"));
+  sub_message->GetReflection()->SetInt32(sub_message, import_d_, 320);
 
-  message->AddEnum(F("repeated_nested_enum" ),  nested_baz_);
-  message->AddEnum(F("repeated_foreign_enum"), foreign_baz_);
-  message->AddEnum(F("repeated_import_enum" ),  import_baz_);
+  reflection->AddEnum(message, F("repeated_nested_enum" ),  nested_baz_);
+  reflection->AddEnum(message, F("repeated_foreign_enum"), foreign_baz_);
+  reflection->AddEnum(message, F("repeated_import_enum" ),  import_baz_);
 
-  message->AddString(F("repeated_string_piece"), "324");
-  message->AddString(F("repeated_cord"), "325");
+  reflection->AddString(message, F("repeated_string_piece"), "324");
+  reflection->AddString(message, F("repeated_cord"), "325");
 
   // -----------------------------------------------------------------
 
-  message->SetInt32 (F("default_int32"   ), 401);
-  message->SetInt64 (F("default_int64"   ), 402);
-  message->SetUInt32(F("default_uint32"  ), 403);
-  message->SetUInt64(F("default_uint64"  ), 404);
-  message->SetInt32 (F("default_sint32"  ), 405);
-  message->SetInt64 (F("default_sint64"  ), 406);
-  message->SetUInt32(F("default_fixed32" ), 407);
-  message->SetUInt64(F("default_fixed64" ), 408);
-  message->SetInt32 (F("default_sfixed32"), 409);
-  message->SetInt64 (F("default_sfixed64"), 410);
-  message->SetFloat (F("default_float"   ), 411);
-  message->SetDouble(F("default_double"  ), 412);
-  message->SetBool  (F("default_bool"    ), false);
-  message->SetString(F("default_string"  ), "415");
-  message->SetString(F("default_bytes"   ), "416");
+  reflection->SetInt32 (message, F("default_int32"   ), 401);
+  reflection->SetInt64 (message, F("default_int64"   ), 402);
+  reflection->SetUInt32(message, F("default_uint32"  ), 403);
+  reflection->SetUInt64(message, F("default_uint64"  ), 404);
+  reflection->SetInt32 (message, F("default_sint32"  ), 405);
+  reflection->SetInt64 (message, F("default_sint64"  ), 406);
+  reflection->SetUInt32(message, F("default_fixed32" ), 407);
+  reflection->SetUInt64(message, F("default_fixed64" ), 408);
+  reflection->SetInt32 (message, F("default_sfixed32"), 409);
+  reflection->SetInt64 (message, F("default_sfixed64"), 410);
+  reflection->SetFloat (message, F("default_float"   ), 411);
+  reflection->SetDouble(message, F("default_double"  ), 412);
+  reflection->SetBool  (message, F("default_bool"    ), false);
+  reflection->SetString(message, F("default_string"  ), "415");
+  reflection->SetString(message, F("default_bytes"   ), "416");
 
-  message->SetEnum(F("default_nested_enum" ),  nested_foo_);
-  message->SetEnum(F("default_foreign_enum"), foreign_foo_);
-  message->SetEnum(F("default_import_enum" ),  import_foo_);
+  reflection->SetEnum(message, F("default_nested_enum" ),  nested_foo_);
+  reflection->SetEnum(message, F("default_foreign_enum"), foreign_foo_);
+  reflection->SetEnum(message, F("default_import_enum" ),  import_foo_);
 
-  message->SetString(F("default_string_piece"), "424");
-  message->SetString(F("default_cord"), "425");
+  reflection->SetString(message, F("default_string_piece"), "424");
+  reflection->SetString(message, F("default_cord"), "425");
 }
 
 // -------------------------------------------------------------------
 
 void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
-    const Message::Reflection& message) {
+    const Message& message) {
+  const Reflection* reflection = message.GetReflection();
   string scratch;
+  const Message* sub_message;
 
-  EXPECT_TRUE(message.HasField(F("optional_int32"   )));
-  EXPECT_TRUE(message.HasField(F("optional_int64"   )));
-  EXPECT_TRUE(message.HasField(F("optional_uint32"  )));
-  EXPECT_TRUE(message.HasField(F("optional_uint64"  )));
-  EXPECT_TRUE(message.HasField(F("optional_sint32"  )));
-  EXPECT_TRUE(message.HasField(F("optional_sint64"  )));
-  EXPECT_TRUE(message.HasField(F("optional_fixed32" )));
-  EXPECT_TRUE(message.HasField(F("optional_fixed64" )));
-  EXPECT_TRUE(message.HasField(F("optional_sfixed32")));
-  EXPECT_TRUE(message.HasField(F("optional_sfixed64")));
-  EXPECT_TRUE(message.HasField(F("optional_float"   )));
-  EXPECT_TRUE(message.HasField(F("optional_double"  )));
-  EXPECT_TRUE(message.HasField(F("optional_bool"    )));
-  EXPECT_TRUE(message.HasField(F("optional_string"  )));
-  EXPECT_TRUE(message.HasField(F("optional_bytes"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_int32"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_int64"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_uint32"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_uint64"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_sint32"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_sint64"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_fixed32" )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_fixed64" )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_sfixed32")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_sfixed64")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_float"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_double"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_bool"    )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_string"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_bytes"   )));
 
-  EXPECT_TRUE(message.HasField(F("optionalgroup"           )));
-  EXPECT_TRUE(message.HasField(F("optional_nested_message" )));
-  EXPECT_TRUE(message.HasField(F("optional_foreign_message")));
-  EXPECT_TRUE(message.HasField(F("optional_import_message" )));
+  EXPECT_TRUE(reflection->HasField(message, F("optionalgroup"           )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_nested_message" )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_foreign_message")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_import_message" )));
 
-  EXPECT_TRUE(message.GetMessage(F("optionalgroup"))
-                     .GetReflection()->HasField(group_a_));
-  EXPECT_TRUE(message.GetMessage(F("optional_nested_message"))
-                     .GetReflection()->HasField(nested_b_));
-  EXPECT_TRUE(message.GetMessage(F("optional_foreign_message"))
-                     .GetReflection()->HasField(foreign_c_));
-  EXPECT_TRUE(message.GetMessage(F("optional_import_message"))
-                     .GetReflection()->HasField(import_d_));
+  sub_message = &reflection->GetMessage(message, F("optionalgroup"));
+  EXPECT_TRUE(sub_message->GetReflection()->HasField(*sub_message, group_a_));
+  sub_message = &reflection->GetMessage(message, F("optional_nested_message"));
+  EXPECT_TRUE(sub_message->GetReflection()->HasField(*sub_message, nested_b_));
+  sub_message = &reflection->GetMessage(message, F("optional_foreign_message"));
+  EXPECT_TRUE(sub_message->GetReflection()->HasField(*sub_message, foreign_c_));
+  sub_message = &reflection->GetMessage(message, F("optional_import_message"));
+  EXPECT_TRUE(sub_message->GetReflection()->HasField(*sub_message, import_d_));
 
-  EXPECT_TRUE(message.HasField(F("optional_nested_enum" )));
-  EXPECT_TRUE(message.HasField(F("optional_foreign_enum")));
-  EXPECT_TRUE(message.HasField(F("optional_import_enum" )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_nested_enum" )));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_foreign_enum")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_import_enum" )));
 
-  EXPECT_TRUE(message.HasField(F("optional_string_piece")));
-  EXPECT_TRUE(message.HasField(F("optional_cord")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_string_piece")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_cord")));
 
-  EXPECT_EQ(101  , message.GetInt32 (F("optional_int32"   )));
-  EXPECT_EQ(102  , message.GetInt64 (F("optional_int64"   )));
-  EXPECT_EQ(103  , message.GetUInt32(F("optional_uint32"  )));
-  EXPECT_EQ(104  , message.GetUInt64(F("optional_uint64"  )));
-  EXPECT_EQ(105  , message.GetInt32 (F("optional_sint32"  )));
-  EXPECT_EQ(106  , message.GetInt64 (F("optional_sint64"  )));
-  EXPECT_EQ(107  , message.GetUInt32(F("optional_fixed32" )));
-  EXPECT_EQ(108  , message.GetUInt64(F("optional_fixed64" )));
-  EXPECT_EQ(109  , message.GetInt32 (F("optional_sfixed32")));
-  EXPECT_EQ(110  , message.GetInt64 (F("optional_sfixed64")));
-  EXPECT_EQ(111  , message.GetFloat (F("optional_float"   )));
-  EXPECT_EQ(112  , message.GetDouble(F("optional_double"  )));
-  EXPECT_EQ(true , message.GetBool  (F("optional_bool"    )));
-  EXPECT_EQ("115", message.GetString(F("optional_string"  )));
-  EXPECT_EQ("116", message.GetString(F("optional_bytes"   )));
+  EXPECT_EQ(101  , reflection->GetInt32 (message, F("optional_int32"   )));
+  EXPECT_EQ(102  , reflection->GetInt64 (message, F("optional_int64"   )));
+  EXPECT_EQ(103  , reflection->GetUInt32(message, F("optional_uint32"  )));
+  EXPECT_EQ(104  , reflection->GetUInt64(message, F("optional_uint64"  )));
+  EXPECT_EQ(105  , reflection->GetInt32 (message, F("optional_sint32"  )));
+  EXPECT_EQ(106  , reflection->GetInt64 (message, F("optional_sint64"  )));
+  EXPECT_EQ(107  , reflection->GetUInt32(message, F("optional_fixed32" )));
+  EXPECT_EQ(108  , reflection->GetUInt64(message, F("optional_fixed64" )));
+  EXPECT_EQ(109  , reflection->GetInt32 (message, F("optional_sfixed32")));
+  EXPECT_EQ(110  , reflection->GetInt64 (message, F("optional_sfixed64")));
+  EXPECT_EQ(111  , reflection->GetFloat (message, F("optional_float"   )));
+  EXPECT_EQ(112  , reflection->GetDouble(message, F("optional_double"  )));
+  EXPECT_EQ(true , reflection->GetBool  (message, F("optional_bool"    )));
+  EXPECT_EQ("115", reflection->GetString(message, F("optional_string"  )));
+  EXPECT_EQ("116", reflection->GetString(message, F("optional_bytes"   )));
 
-  EXPECT_EQ("115", message.GetStringReference(F("optional_string"), &scratch));
-  EXPECT_EQ("116", message.GetStringReference(F("optional_bytes" ), &scratch));
+  EXPECT_EQ("115", reflection->GetStringReference(message, F("optional_string"), &scratch));
+  EXPECT_EQ("116", reflection->GetStringReference(message, F("optional_bytes" ), &scratch));
 
-  EXPECT_EQ(117, message.GetMessage(F("optionalgroup"))
-                        .GetReflection()->GetInt32(group_a_));
-  EXPECT_EQ(118, message.GetMessage(F("optional_nested_message"))
-                        .GetReflection()->GetInt32(nested_b_));
-  EXPECT_EQ(119, message.GetMessage(F("optional_foreign_message"))
-                        .GetReflection()->GetInt32(foreign_c_));
-  EXPECT_EQ(120, message.GetMessage(F("optional_import_message"))
-                        .GetReflection()->GetInt32(import_d_));
+  sub_message = &reflection->GetMessage(message, F("optionalgroup"));
+  EXPECT_EQ(117, sub_message->GetReflection()->GetInt32(*sub_message, group_a_));
+  sub_message = &reflection->GetMessage(message, F("optional_nested_message"));
+  EXPECT_EQ(118, sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
+  sub_message = &reflection->GetMessage(message, F("optional_foreign_message"));
+  EXPECT_EQ(119, sub_message->GetReflection()->GetInt32(*sub_message, foreign_c_));
+  sub_message = &reflection->GetMessage(message, F("optional_import_message"));
+  EXPECT_EQ(120, sub_message->GetReflection()->GetInt32(*sub_message, import_d_));
 
-  EXPECT_EQ( nested_baz_, message.GetEnum(F("optional_nested_enum" )));
-  EXPECT_EQ(foreign_baz_, message.GetEnum(F("optional_foreign_enum")));
-  EXPECT_EQ( import_baz_, message.GetEnum(F("optional_import_enum" )));
+  EXPECT_EQ( nested_baz_, reflection->GetEnum(message, F("optional_nested_enum" )));
+  EXPECT_EQ(foreign_baz_, reflection->GetEnum(message, F("optional_foreign_enum")));
+  EXPECT_EQ( import_baz_, reflection->GetEnum(message, F("optional_import_enum" )));
 
-  EXPECT_EQ("124", message.GetString(F("optional_string_piece")));
-  EXPECT_EQ("124", message.GetStringReference(F("optional_string_piece"),
-                                              &scratch));
+  EXPECT_EQ("124", reflection->GetString(message, F("optional_string_piece")));
+  EXPECT_EQ("124", reflection->GetStringReference(message, F("optional_string_piece"), &scratch));
 
-  EXPECT_EQ("125", message.GetString(F("optional_cord")));
-  EXPECT_EQ("125", message.GetStringReference(F("optional_cord"),
-                                              &scratch));
-
-  // -----------------------------------------------------------------
-
-  ASSERT_EQ(2, message.FieldSize(F("repeated_int32"   )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_int64"   )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_uint32"  )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_uint64"  )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_sint32"  )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_sint64"  )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_fixed32" )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_fixed64" )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_sfixed32")));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_sfixed64")));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_float"   )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_double"  )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_bool"    )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_string"  )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_bytes"   )));
-
-  ASSERT_EQ(2, message.FieldSize(F("repeatedgroup"           )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_nested_message" )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_foreign_message")));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_import_message" )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_nested_enum"    )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_foreign_enum"   )));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_import_enum"    )));
-
-  ASSERT_EQ(2, message.FieldSize(F("repeated_string_piece")));
-  ASSERT_EQ(2, message.FieldSize(F("repeated_cord")));
-
-  EXPECT_EQ(201  , message.GetRepeatedInt32 (F("repeated_int32"   ), 0));
-  EXPECT_EQ(202  , message.GetRepeatedInt64 (F("repeated_int64"   ), 0));
-  EXPECT_EQ(203  , message.GetRepeatedUInt32(F("repeated_uint32"  ), 0));
-  EXPECT_EQ(204  , message.GetRepeatedUInt64(F("repeated_uint64"  ), 0));
-  EXPECT_EQ(205  , message.GetRepeatedInt32 (F("repeated_sint32"  ), 0));
-  EXPECT_EQ(206  , message.GetRepeatedInt64 (F("repeated_sint64"  ), 0));
-  EXPECT_EQ(207  , message.GetRepeatedUInt32(F("repeated_fixed32" ), 0));
-  EXPECT_EQ(208  , message.GetRepeatedUInt64(F("repeated_fixed64" ), 0));
-  EXPECT_EQ(209  , message.GetRepeatedInt32 (F("repeated_sfixed32"), 0));
-  EXPECT_EQ(210  , message.GetRepeatedInt64 (F("repeated_sfixed64"), 0));
-  EXPECT_EQ(211  , message.GetRepeatedFloat (F("repeated_float"   ), 0));
-  EXPECT_EQ(212  , message.GetRepeatedDouble(F("repeated_double"  ), 0));
-  EXPECT_EQ(true , message.GetRepeatedBool  (F("repeated_bool"    ), 0));
-  EXPECT_EQ("215", message.GetRepeatedString(F("repeated_string"  ), 0));
-  EXPECT_EQ("216", message.GetRepeatedString(F("repeated_bytes"   ), 0));
-
-  EXPECT_EQ("215", message.GetRepeatedStringReference(F("repeated_string"),
-                                                      0, &scratch));
-  EXPECT_EQ("216", message.GetRepeatedStringReference(F("repeated_bytes"),
-                                                      0, &scratch));
-
-  EXPECT_EQ(217, message.GetRepeatedMessage(F("repeatedgroup"), 0)
-                        .GetReflection()->GetInt32(repeated_group_a_));
-  EXPECT_EQ(218, message.GetRepeatedMessage(F("repeated_nested_message"), 0)
-                        .GetReflection()->GetInt32(nested_b_));
-  EXPECT_EQ(219, message.GetRepeatedMessage(F("repeated_foreign_message"), 0)
-                        .GetReflection()->GetInt32(foreign_c_));
-  EXPECT_EQ(220, message.GetRepeatedMessage(F("repeated_import_message"), 0)
-                        .GetReflection()->GetInt32(import_d_));
-
-  EXPECT_EQ( nested_bar_, message.GetRepeatedEnum(F("repeated_nested_enum" ),0));
-  EXPECT_EQ(foreign_bar_, message.GetRepeatedEnum(F("repeated_foreign_enum"),0));
-  EXPECT_EQ( import_bar_, message.GetRepeatedEnum(F("repeated_import_enum" ),0));
-
-  EXPECT_EQ("224", message.GetRepeatedString(F("repeated_string_piece"), 0));
-  EXPECT_EQ("224", message.GetRepeatedStringReference(
-                        F("repeated_string_piece"), 0, &scratch));
-
-  EXPECT_EQ("225", message.GetRepeatedString(F("repeated_cord"), 0));
-  EXPECT_EQ("225", message.GetRepeatedStringReference(
-                        F("repeated_cord"), 0, &scratch));
-
-  EXPECT_EQ(301  , message.GetRepeatedInt32 (F("repeated_int32"   ), 1));
-  EXPECT_EQ(302  , message.GetRepeatedInt64 (F("repeated_int64"   ), 1));
-  EXPECT_EQ(303  , message.GetRepeatedUInt32(F("repeated_uint32"  ), 1));
-  EXPECT_EQ(304  , message.GetRepeatedUInt64(F("repeated_uint64"  ), 1));
-  EXPECT_EQ(305  , message.GetRepeatedInt32 (F("repeated_sint32"  ), 1));
-  EXPECT_EQ(306  , message.GetRepeatedInt64 (F("repeated_sint64"  ), 1));
-  EXPECT_EQ(307  , message.GetRepeatedUInt32(F("repeated_fixed32" ), 1));
-  EXPECT_EQ(308  , message.GetRepeatedUInt64(F("repeated_fixed64" ), 1));
-  EXPECT_EQ(309  , message.GetRepeatedInt32 (F("repeated_sfixed32"), 1));
-  EXPECT_EQ(310  , message.GetRepeatedInt64 (F("repeated_sfixed64"), 1));
-  EXPECT_EQ(311  , message.GetRepeatedFloat (F("repeated_float"   ), 1));
-  EXPECT_EQ(312  , message.GetRepeatedDouble(F("repeated_double"  ), 1));
-  EXPECT_EQ(false, message.GetRepeatedBool  (F("repeated_bool"    ), 1));
-  EXPECT_EQ("315", message.GetRepeatedString(F("repeated_string"  ), 1));
-  EXPECT_EQ("316", message.GetRepeatedString(F("repeated_bytes"   ), 1));
-
-  EXPECT_EQ("315", message.GetRepeatedStringReference(F("repeated_string"),
-                                                      1, &scratch));
-  EXPECT_EQ("316", message.GetRepeatedStringReference(F("repeated_bytes"),
-                                                      1, &scratch));
-
-  EXPECT_EQ(317, message.GetRepeatedMessage(F("repeatedgroup"), 1)
-                        .GetReflection()->GetInt32(repeated_group_a_));
-  EXPECT_EQ(318, message.GetRepeatedMessage(F("repeated_nested_message"), 1)
-                        .GetReflection()->GetInt32(nested_b_));
-  EXPECT_EQ(319, message.GetRepeatedMessage(F("repeated_foreign_message"), 1)
-                        .GetReflection()->GetInt32(foreign_c_));
-  EXPECT_EQ(320, message.GetRepeatedMessage(F("repeated_import_message"), 1)
-                        .GetReflection()->GetInt32(import_d_));
-
-  EXPECT_EQ( nested_baz_, message.GetRepeatedEnum(F("repeated_nested_enum" ),1));
-  EXPECT_EQ(foreign_baz_, message.GetRepeatedEnum(F("repeated_foreign_enum"),1));
-  EXPECT_EQ( import_baz_, message.GetRepeatedEnum(F("repeated_import_enum" ),1));
-
-  EXPECT_EQ("324", message.GetRepeatedString(F("repeated_string_piece"), 1));
-  EXPECT_EQ("324", message.GetRepeatedStringReference(
-                        F("repeated_string_piece"), 1, &scratch));
-
-  EXPECT_EQ("325", message.GetRepeatedString(F("repeated_cord"), 1));
-  EXPECT_EQ("325", message.GetRepeatedStringReference(
-                        F("repeated_cord"), 1, &scratch));
+  EXPECT_EQ("125", reflection->GetString(message, F("optional_cord")));
+  EXPECT_EQ("125", reflection->GetStringReference(message, F("optional_cord"), &scratch));
 
   // -----------------------------------------------------------------
 
-  EXPECT_TRUE(message.HasField(F("default_int32"   )));
-  EXPECT_TRUE(message.HasField(F("default_int64"   )));
-  EXPECT_TRUE(message.HasField(F("default_uint32"  )));
-  EXPECT_TRUE(message.HasField(F("default_uint64"  )));
-  EXPECT_TRUE(message.HasField(F("default_sint32"  )));
-  EXPECT_TRUE(message.HasField(F("default_sint64"  )));
-  EXPECT_TRUE(message.HasField(F("default_fixed32" )));
-  EXPECT_TRUE(message.HasField(F("default_fixed64" )));
-  EXPECT_TRUE(message.HasField(F("default_sfixed32")));
-  EXPECT_TRUE(message.HasField(F("default_sfixed64")));
-  EXPECT_TRUE(message.HasField(F("default_float"   )));
-  EXPECT_TRUE(message.HasField(F("default_double"  )));
-  EXPECT_TRUE(message.HasField(F("default_bool"    )));
-  EXPECT_TRUE(message.HasField(F("default_string"  )));
-  EXPECT_TRUE(message.HasField(F("default_bytes"   )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_int32"   )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_int64"   )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_uint32"  )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_uint64"  )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_sint32"  )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_sint64"  )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_fixed32" )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_fixed64" )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_sfixed32")));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_sfixed64")));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_float"   )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_double"  )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_bool"    )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_string"  )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_bytes"   )));
 
-  EXPECT_TRUE(message.HasField(F("default_nested_enum" )));
-  EXPECT_TRUE(message.HasField(F("default_foreign_enum")));
-  EXPECT_TRUE(message.HasField(F("default_import_enum" )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeatedgroup"           )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_nested_message" )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_foreign_message")));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_import_message" )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_nested_enum"    )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_foreign_enum"   )));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_import_enum"    )));
 
-  EXPECT_TRUE(message.HasField(F("default_string_piece")));
-  EXPECT_TRUE(message.HasField(F("default_cord")));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_string_piece")));
+  ASSERT_EQ(2, reflection->FieldSize(message, F("repeated_cord")));
 
-  EXPECT_EQ(401  , message.GetInt32 (F("default_int32"   )));
-  EXPECT_EQ(402  , message.GetInt64 (F("default_int64"   )));
-  EXPECT_EQ(403  , message.GetUInt32(F("default_uint32"  )));
-  EXPECT_EQ(404  , message.GetUInt64(F("default_uint64"  )));
-  EXPECT_EQ(405  , message.GetInt32 (F("default_sint32"  )));
-  EXPECT_EQ(406  , message.GetInt64 (F("default_sint64"  )));
-  EXPECT_EQ(407  , message.GetUInt32(F("default_fixed32" )));
-  EXPECT_EQ(408  , message.GetUInt64(F("default_fixed64" )));
-  EXPECT_EQ(409  , message.GetInt32 (F("default_sfixed32")));
-  EXPECT_EQ(410  , message.GetInt64 (F("default_sfixed64")));
-  EXPECT_EQ(411  , message.GetFloat (F("default_float"   )));
-  EXPECT_EQ(412  , message.GetDouble(F("default_double"  )));
-  EXPECT_EQ(false, message.GetBool  (F("default_bool"    )));
-  EXPECT_EQ("415", message.GetString(F("default_string"  )));
-  EXPECT_EQ("416", message.GetString(F("default_bytes"   )));
+  EXPECT_EQ(201  , reflection->GetRepeatedInt32 (message, F("repeated_int32"   ), 0));
+  EXPECT_EQ(202  , reflection->GetRepeatedInt64 (message, F("repeated_int64"   ), 0));
+  EXPECT_EQ(203  , reflection->GetRepeatedUInt32(message, F("repeated_uint32"  ), 0));
+  EXPECT_EQ(204  , reflection->GetRepeatedUInt64(message, F("repeated_uint64"  ), 0));
+  EXPECT_EQ(205  , reflection->GetRepeatedInt32 (message, F("repeated_sint32"  ), 0));
+  EXPECT_EQ(206  , reflection->GetRepeatedInt64 (message, F("repeated_sint64"  ), 0));
+  EXPECT_EQ(207  , reflection->GetRepeatedUInt32(message, F("repeated_fixed32" ), 0));
+  EXPECT_EQ(208  , reflection->GetRepeatedUInt64(message, F("repeated_fixed64" ), 0));
+  EXPECT_EQ(209  , reflection->GetRepeatedInt32 (message, F("repeated_sfixed32"), 0));
+  EXPECT_EQ(210  , reflection->GetRepeatedInt64 (message, F("repeated_sfixed64"), 0));
+  EXPECT_EQ(211  , reflection->GetRepeatedFloat (message, F("repeated_float"   ), 0));
+  EXPECT_EQ(212  , reflection->GetRepeatedDouble(message, F("repeated_double"  ), 0));
+  EXPECT_EQ(true , reflection->GetRepeatedBool  (message, F("repeated_bool"    ), 0));
+  EXPECT_EQ("215", reflection->GetRepeatedString(message, F("repeated_string"  ), 0));
+  EXPECT_EQ("216", reflection->GetRepeatedString(message, F("repeated_bytes"   ), 0));
 
-  EXPECT_EQ("415", message.GetStringReference(F("default_string"), &scratch));
-  EXPECT_EQ("416", message.GetStringReference(F("default_bytes" ), &scratch));
+  EXPECT_EQ("215", reflection->GetRepeatedStringReference(message, F("repeated_string"), 0, &scratch));
+  EXPECT_EQ("216", reflection->GetRepeatedStringReference(message, F("repeated_bytes"), 0, &scratch));
 
-  EXPECT_EQ( nested_foo_, message.GetEnum(F("default_nested_enum" )));
-  EXPECT_EQ(foreign_foo_, message.GetEnum(F("default_foreign_enum")));
-  EXPECT_EQ( import_foo_, message.GetEnum(F("default_import_enum" )));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeatedgroup"), 0);
+  EXPECT_EQ(217, sub_message->GetReflection()->GetInt32(*sub_message, repeated_group_a_));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeated_nested_message"), 0);
+  EXPECT_EQ(218, sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeated_foreign_message"), 0);
+  EXPECT_EQ(219, sub_message->GetReflection()->GetInt32(*sub_message, foreign_c_));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeated_import_message"), 0);
+  EXPECT_EQ(220, sub_message->GetReflection()->GetInt32(*sub_message, import_d_));
 
-  EXPECT_EQ("424", message.GetString(F("default_string_piece")));
-  EXPECT_EQ("424", message.GetStringReference(F("default_string_piece"),
-                                              &scratch));
+  EXPECT_EQ( nested_bar_, reflection->GetRepeatedEnum(message, F("repeated_nested_enum" ),0));
+  EXPECT_EQ(foreign_bar_, reflection->GetRepeatedEnum(message, F("repeated_foreign_enum"),0));
+  EXPECT_EQ( import_bar_, reflection->GetRepeatedEnum(message, F("repeated_import_enum" ),0));
 
-  EXPECT_EQ("425", message.GetString(F("default_cord")));
-  EXPECT_EQ("425", message.GetStringReference(F("default_cord"), &scratch));
+  EXPECT_EQ("224", reflection->GetRepeatedString(message, F("repeated_string_piece"), 0));
+  EXPECT_EQ("224", reflection->GetRepeatedStringReference(
+                        message, F("repeated_string_piece"), 0, &scratch));
+
+  EXPECT_EQ("225", reflection->GetRepeatedString(message, F("repeated_cord"), 0));
+  EXPECT_EQ("225", reflection->GetRepeatedStringReference(
+                        message, F("repeated_cord"), 0, &scratch));
+
+  EXPECT_EQ(301  , reflection->GetRepeatedInt32 (message, F("repeated_int32"   ), 1));
+  EXPECT_EQ(302  , reflection->GetRepeatedInt64 (message, F("repeated_int64"   ), 1));
+  EXPECT_EQ(303  , reflection->GetRepeatedUInt32(message, F("repeated_uint32"  ), 1));
+  EXPECT_EQ(304  , reflection->GetRepeatedUInt64(message, F("repeated_uint64"  ), 1));
+  EXPECT_EQ(305  , reflection->GetRepeatedInt32 (message, F("repeated_sint32"  ), 1));
+  EXPECT_EQ(306  , reflection->GetRepeatedInt64 (message, F("repeated_sint64"  ), 1));
+  EXPECT_EQ(307  , reflection->GetRepeatedUInt32(message, F("repeated_fixed32" ), 1));
+  EXPECT_EQ(308  , reflection->GetRepeatedUInt64(message, F("repeated_fixed64" ), 1));
+  EXPECT_EQ(309  , reflection->GetRepeatedInt32 (message, F("repeated_sfixed32"), 1));
+  EXPECT_EQ(310  , reflection->GetRepeatedInt64 (message, F("repeated_sfixed64"), 1));
+  EXPECT_EQ(311  , reflection->GetRepeatedFloat (message, F("repeated_float"   ), 1));
+  EXPECT_EQ(312  , reflection->GetRepeatedDouble(message, F("repeated_double"  ), 1));
+  EXPECT_EQ(false, reflection->GetRepeatedBool  (message, F("repeated_bool"    ), 1));
+  EXPECT_EQ("315", reflection->GetRepeatedString(message, F("repeated_string"  ), 1));
+  EXPECT_EQ("316", reflection->GetRepeatedString(message, F("repeated_bytes"   ), 1));
+
+  EXPECT_EQ("315", reflection->GetRepeatedStringReference(message, F("repeated_string"),
+                                                          1, &scratch));
+  EXPECT_EQ("316", reflection->GetRepeatedStringReference(message, F("repeated_bytes"),
+                                                          1, &scratch));
+
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeatedgroup"), 1);
+  EXPECT_EQ(317, sub_message->GetReflection()->GetInt32(*sub_message, repeated_group_a_));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeated_nested_message"), 1);
+  EXPECT_EQ(318, sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeated_foreign_message"), 1);
+  EXPECT_EQ(319, sub_message->GetReflection()->GetInt32(*sub_message, foreign_c_));
+  sub_message = &reflection->GetRepeatedMessage(message, F("repeated_import_message"), 1);
+  EXPECT_EQ(320, sub_message->GetReflection()->GetInt32(*sub_message, import_d_));
+
+  EXPECT_EQ( nested_baz_, reflection->GetRepeatedEnum(message, F("repeated_nested_enum" ),1));
+  EXPECT_EQ(foreign_baz_, reflection->GetRepeatedEnum(message, F("repeated_foreign_enum"),1));
+  EXPECT_EQ( import_baz_, reflection->GetRepeatedEnum(message, F("repeated_import_enum" ),1));
+
+  EXPECT_EQ("324", reflection->GetRepeatedString(message, F("repeated_string_piece"), 1));
+  EXPECT_EQ("324", reflection->GetRepeatedStringReference(
+                        message, F("repeated_string_piece"), 1, &scratch));
+
+  EXPECT_EQ("325", reflection->GetRepeatedString(message, F("repeated_cord"), 1));
+  EXPECT_EQ("325", reflection->GetRepeatedStringReference(
+                        message, F("repeated_cord"), 1, &scratch));
+
+  // -----------------------------------------------------------------
+
+  EXPECT_TRUE(reflection->HasField(message, F("default_int32"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_int64"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_uint32"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_uint64"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_sint32"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_sint64"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_fixed32" )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_fixed64" )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_sfixed32")));
+  EXPECT_TRUE(reflection->HasField(message, F("default_sfixed64")));
+  EXPECT_TRUE(reflection->HasField(message, F("default_float"   )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_double"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_bool"    )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_string"  )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_bytes"   )));
+
+  EXPECT_TRUE(reflection->HasField(message, F("default_nested_enum" )));
+  EXPECT_TRUE(reflection->HasField(message, F("default_foreign_enum")));
+  EXPECT_TRUE(reflection->HasField(message, F("default_import_enum" )));
+
+  EXPECT_TRUE(reflection->HasField(message, F("default_string_piece")));
+  EXPECT_TRUE(reflection->HasField(message, F("default_cord")));
+
+  EXPECT_EQ(401  , reflection->GetInt32 (message, F("default_int32"   )));
+  EXPECT_EQ(402  , reflection->GetInt64 (message, F("default_int64"   )));
+  EXPECT_EQ(403  , reflection->GetUInt32(message, F("default_uint32"  )));
+  EXPECT_EQ(404  , reflection->GetUInt64(message, F("default_uint64"  )));
+  EXPECT_EQ(405  , reflection->GetInt32 (message, F("default_sint32"  )));
+  EXPECT_EQ(406  , reflection->GetInt64 (message, F("default_sint64"  )));
+  EXPECT_EQ(407  , reflection->GetUInt32(message, F("default_fixed32" )));
+  EXPECT_EQ(408  , reflection->GetUInt64(message, F("default_fixed64" )));
+  EXPECT_EQ(409  , reflection->GetInt32 (message, F("default_sfixed32")));
+  EXPECT_EQ(410  , reflection->GetInt64 (message, F("default_sfixed64")));
+  EXPECT_EQ(411  , reflection->GetFloat (message, F("default_float"   )));
+  EXPECT_EQ(412  , reflection->GetDouble(message, F("default_double"  )));
+  EXPECT_EQ(false, reflection->GetBool  (message, F("default_bool"    )));
+  EXPECT_EQ("415", reflection->GetString(message, F("default_string"  )));
+  EXPECT_EQ("416", reflection->GetString(message, F("default_bytes"   )));
+
+  EXPECT_EQ("415", reflection->GetStringReference(message, F("default_string"), &scratch));
+  EXPECT_EQ("416", reflection->GetStringReference(message, F("default_bytes" ), &scratch));
+
+  EXPECT_EQ( nested_foo_, reflection->GetEnum(message, F("default_nested_enum" )));
+  EXPECT_EQ(foreign_foo_, reflection->GetEnum(message, F("default_foreign_enum")));
+  EXPECT_EQ( import_foo_, reflection->GetEnum(message, F("default_import_enum" )));
+
+  EXPECT_EQ("424", reflection->GetString(message, F("default_string_piece")));
+  EXPECT_EQ("424", reflection->GetStringReference(message, F("default_string_piece"),
+                                                  &scratch));
+
+  EXPECT_EQ("425", reflection->GetString(message, F("default_cord")));
+  EXPECT_EQ("425", reflection->GetStringReference(message, F("default_cord"), &scratch));
 }
 
 // -------------------------------------------------------------------
 
 void TestUtil::ReflectionTester::ExpectClearViaReflection(
-    const Message::Reflection& message) {
+    const Message& message) {
+  const Reflection* reflection = message.GetReflection();
   string scratch;
+  const Message* sub_message;
 
   // has_blah() should initially be false for all optional fields.
-  EXPECT_FALSE(message.HasField(F("optional_int32"   )));
-  EXPECT_FALSE(message.HasField(F("optional_int64"   )));
-  EXPECT_FALSE(message.HasField(F("optional_uint32"  )));
-  EXPECT_FALSE(message.HasField(F("optional_uint64"  )));
-  EXPECT_FALSE(message.HasField(F("optional_sint32"  )));
-  EXPECT_FALSE(message.HasField(F("optional_sint64"  )));
-  EXPECT_FALSE(message.HasField(F("optional_fixed32" )));
-  EXPECT_FALSE(message.HasField(F("optional_fixed64" )));
-  EXPECT_FALSE(message.HasField(F("optional_sfixed32")));
-  EXPECT_FALSE(message.HasField(F("optional_sfixed64")));
-  EXPECT_FALSE(message.HasField(F("optional_float"   )));
-  EXPECT_FALSE(message.HasField(F("optional_double"  )));
-  EXPECT_FALSE(message.HasField(F("optional_bool"    )));
-  EXPECT_FALSE(message.HasField(F("optional_string"  )));
-  EXPECT_FALSE(message.HasField(F("optional_bytes"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_int32"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_int64"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_uint32"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_uint64"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_sint32"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_sint64"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_fixed32" )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_fixed64" )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_sfixed32")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_sfixed64")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_float"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_double"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_bool"    )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_string"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_bytes"   )));
 
-  EXPECT_FALSE(message.HasField(F("optionalgroup"           )));
-  EXPECT_FALSE(message.HasField(F("optional_nested_message" )));
-  EXPECT_FALSE(message.HasField(F("optional_foreign_message")));
-  EXPECT_FALSE(message.HasField(F("optional_import_message" )));
+  EXPECT_FALSE(reflection->HasField(message, F("optionalgroup"           )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_nested_message" )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_foreign_message")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_import_message" )));
 
-  EXPECT_FALSE(message.HasField(F("optional_nested_enum" )));
-  EXPECT_FALSE(message.HasField(F("optional_foreign_enum")));
-  EXPECT_FALSE(message.HasField(F("optional_import_enum" )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_nested_enum" )));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_foreign_enum")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_import_enum" )));
 
-  EXPECT_FALSE(message.HasField(F("optional_string_piece")));
-  EXPECT_FALSE(message.HasField(F("optional_cord")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_string_piece")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_cord")));
 
   // Optional fields without defaults are set to zero or something like it.
-  EXPECT_EQ(0    , message.GetInt32 (F("optional_int32"   )));
-  EXPECT_EQ(0    , message.GetInt64 (F("optional_int64"   )));
-  EXPECT_EQ(0    , message.GetUInt32(F("optional_uint32"  )));
-  EXPECT_EQ(0    , message.GetUInt64(F("optional_uint64"  )));
-  EXPECT_EQ(0    , message.GetInt32 (F("optional_sint32"  )));
-  EXPECT_EQ(0    , message.GetInt64 (F("optional_sint64"  )));
-  EXPECT_EQ(0    , message.GetUInt32(F("optional_fixed32" )));
-  EXPECT_EQ(0    , message.GetUInt64(F("optional_fixed64" )));
-  EXPECT_EQ(0    , message.GetInt32 (F("optional_sfixed32")));
-  EXPECT_EQ(0    , message.GetInt64 (F("optional_sfixed64")));
-  EXPECT_EQ(0    , message.GetFloat (F("optional_float"   )));
-  EXPECT_EQ(0    , message.GetDouble(F("optional_double"  )));
-  EXPECT_EQ(false, message.GetBool  (F("optional_bool"    )));
-  EXPECT_EQ(""   , message.GetString(F("optional_string"  )));
-  EXPECT_EQ(""   , message.GetString(F("optional_bytes"   )));
+  EXPECT_EQ(0    , reflection->GetInt32 (message, F("optional_int32"   )));
+  EXPECT_EQ(0    , reflection->GetInt64 (message, F("optional_int64"   )));
+  EXPECT_EQ(0    , reflection->GetUInt32(message, F("optional_uint32"  )));
+  EXPECT_EQ(0    , reflection->GetUInt64(message, F("optional_uint64"  )));
+  EXPECT_EQ(0    , reflection->GetInt32 (message, F("optional_sint32"  )));
+  EXPECT_EQ(0    , reflection->GetInt64 (message, F("optional_sint64"  )));
+  EXPECT_EQ(0    , reflection->GetUInt32(message, F("optional_fixed32" )));
+  EXPECT_EQ(0    , reflection->GetUInt64(message, F("optional_fixed64" )));
+  EXPECT_EQ(0    , reflection->GetInt32 (message, F("optional_sfixed32")));
+  EXPECT_EQ(0    , reflection->GetInt64 (message, F("optional_sfixed64")));
+  EXPECT_EQ(0    , reflection->GetFloat (message, F("optional_float"   )));
+  EXPECT_EQ(0    , reflection->GetDouble(message, F("optional_double"  )));
+  EXPECT_EQ(false, reflection->GetBool  (message, F("optional_bool"    )));
+  EXPECT_EQ(""   , reflection->GetString(message, F("optional_string"  )));
+  EXPECT_EQ(""   , reflection->GetString(message, F("optional_bytes"   )));
 
-  EXPECT_EQ("", message.GetStringReference(F("optional_string"), &scratch));
-  EXPECT_EQ("", message.GetStringReference(F("optional_bytes" ), &scratch));
+  EXPECT_EQ("", reflection->GetStringReference(message, F("optional_string"), &scratch));
+  EXPECT_EQ("", reflection->GetStringReference(message, F("optional_bytes" ), &scratch));
 
   // Embedded messages should also be clear.
-  EXPECT_FALSE(message.GetMessage(F("optionalgroup"))
-                      .GetReflection()->HasField(group_a_));
-  EXPECT_FALSE(message.GetMessage(F("optional_nested_message"))
-                      .GetReflection()->HasField(nested_b_));
-  EXPECT_FALSE(message.GetMessage(F("optional_foreign_message"))
-                      .GetReflection()->HasField(foreign_c_));
-  EXPECT_FALSE(message.GetMessage(F("optional_import_message"))
-                      .GetReflection()->HasField(import_d_));
-
-  EXPECT_EQ(0, message.GetMessage(F("optionalgroup"))
-                      .GetReflection()->GetInt32(group_a_));
-  EXPECT_EQ(0, message.GetMessage(F("optional_nested_message"))
-                      .GetReflection()->GetInt32(nested_b_));
-  EXPECT_EQ(0, message.GetMessage(F("optional_foreign_message"))
-                      .GetReflection()->GetInt32(foreign_c_));
-  EXPECT_EQ(0, message.GetMessage(F("optional_import_message"))
-                      .GetReflection()->GetInt32(import_d_));
+  sub_message = &reflection->GetMessage(message, F("optionalgroup"));
+  EXPECT_FALSE(sub_message->GetReflection()->HasField(*sub_message, group_a_));
+  EXPECT_EQ(0, sub_message->GetReflection()->GetInt32(*sub_message, group_a_));
+  sub_message = &reflection->GetMessage(message, F("optional_nested_message"));
+  EXPECT_FALSE(sub_message->GetReflection()->HasField(*sub_message, nested_b_));
+  EXPECT_EQ(0, sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
+  sub_message = &reflection->GetMessage(message, F("optional_foreign_message"));
+  EXPECT_FALSE(sub_message->GetReflection()->HasField(*sub_message, foreign_c_));
+  EXPECT_EQ(0, sub_message->GetReflection()->GetInt32(*sub_message, foreign_c_));
+  sub_message = &reflection->GetMessage(message, F("optional_import_message"));
+  EXPECT_FALSE(sub_message->GetReflection()->HasField(*sub_message, import_d_));
+  EXPECT_EQ(0, sub_message->GetReflection()->GetInt32(*sub_message, import_d_));
 
   // Enums without defaults are set to the first value in the enum.
-  EXPECT_EQ( nested_foo_, message.GetEnum(F("optional_nested_enum" )));
-  EXPECT_EQ(foreign_foo_, message.GetEnum(F("optional_foreign_enum")));
-  EXPECT_EQ( import_foo_, message.GetEnum(F("optional_import_enum" )));
+  EXPECT_EQ( nested_foo_, reflection->GetEnum(message, F("optional_nested_enum" )));
+  EXPECT_EQ(foreign_foo_, reflection->GetEnum(message, F("optional_foreign_enum")));
+  EXPECT_EQ( import_foo_, reflection->GetEnum(message, F("optional_import_enum" )));
 
-  EXPECT_EQ("", message.GetString(F("optional_string_piece")));
-  EXPECT_EQ("", message.GetStringReference(F("optional_string_piece"),
-                                           &scratch));
+  EXPECT_EQ("", reflection->GetString(message, F("optional_string_piece")));
+  EXPECT_EQ("", reflection->GetStringReference(message, F("optional_string_piece"), &scratch));
 
-  EXPECT_EQ("", message.GetString(F("optional_cord")));
-  EXPECT_EQ("", message.GetStringReference(F("optional_cord"), &scratch));
+  EXPECT_EQ("", reflection->GetString(message, F("optional_cord")));
+  EXPECT_EQ("", reflection->GetStringReference(message, F("optional_cord"), &scratch));
 
   // Repeated fields are empty.
-  EXPECT_EQ(0, message.FieldSize(F("repeated_int32"   )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_int64"   )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_uint32"  )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_uint64"  )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_sint32"  )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_sint64"  )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_fixed32" )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_fixed64" )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_sfixed32")));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_sfixed64")));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_float"   )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_double"  )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_bool"    )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_string"  )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_bytes"   )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_int32"   )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_int64"   )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_uint32"  )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_uint64"  )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_sint32"  )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_sint64"  )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_fixed32" )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_fixed64" )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_sfixed32")));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_sfixed64")));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_float"   )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_double"  )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_bool"    )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_string"  )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_bytes"   )));
 
-  EXPECT_EQ(0, message.FieldSize(F("repeatedgroup"           )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_nested_message" )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_foreign_message")));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_import_message" )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_nested_enum"    )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_foreign_enum"   )));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_import_enum"    )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeatedgroup"           )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_nested_message" )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_foreign_message")));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_import_message" )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_nested_enum"    )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_foreign_enum"   )));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_import_enum"    )));
 
-  EXPECT_EQ(0, message.FieldSize(F("repeated_string_piece")));
-  EXPECT_EQ(0, message.FieldSize(F("repeated_cord")));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_string_piece")));
+  EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_cord")));
 
   // has_blah() should also be false for all default fields.
-  EXPECT_FALSE(message.HasField(F("default_int32"   )));
-  EXPECT_FALSE(message.HasField(F("default_int64"   )));
-  EXPECT_FALSE(message.HasField(F("default_uint32"  )));
-  EXPECT_FALSE(message.HasField(F("default_uint64"  )));
-  EXPECT_FALSE(message.HasField(F("default_sint32"  )));
-  EXPECT_FALSE(message.HasField(F("default_sint64"  )));
-  EXPECT_FALSE(message.HasField(F("default_fixed32" )));
-  EXPECT_FALSE(message.HasField(F("default_fixed64" )));
-  EXPECT_FALSE(message.HasField(F("default_sfixed32")));
-  EXPECT_FALSE(message.HasField(F("default_sfixed64")));
-  EXPECT_FALSE(message.HasField(F("default_float"   )));
-  EXPECT_FALSE(message.HasField(F("default_double"  )));
-  EXPECT_FALSE(message.HasField(F("default_bool"    )));
-  EXPECT_FALSE(message.HasField(F("default_string"  )));
-  EXPECT_FALSE(message.HasField(F("default_bytes"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_int32"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_int64"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_uint32"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_uint64"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_sint32"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_sint64"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_fixed32" )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_fixed64" )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_sfixed32")));
+  EXPECT_FALSE(reflection->HasField(message, F("default_sfixed64")));
+  EXPECT_FALSE(reflection->HasField(message, F("default_float"   )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_double"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_bool"    )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_string"  )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_bytes"   )));
 
-  EXPECT_FALSE(message.HasField(F("default_nested_enum" )));
-  EXPECT_FALSE(message.HasField(F("default_foreign_enum")));
-  EXPECT_FALSE(message.HasField(F("default_import_enum" )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_nested_enum" )));
+  EXPECT_FALSE(reflection->HasField(message, F("default_foreign_enum")));
+  EXPECT_FALSE(reflection->HasField(message, F("default_import_enum" )));
 
-  EXPECT_FALSE(message.HasField(F("default_string_piece")));
-  EXPECT_FALSE(message.HasField(F("default_cord")));
+  EXPECT_FALSE(reflection->HasField(message, F("default_string_piece")));
+  EXPECT_FALSE(reflection->HasField(message, F("default_cord")));
 
   // Fields with defaults have their default values (duh).
-  EXPECT_EQ( 41    , message.GetInt32 (F("default_int32"   )));
-  EXPECT_EQ( 42    , message.GetInt64 (F("default_int64"   )));
-  EXPECT_EQ( 43    , message.GetUInt32(F("default_uint32"  )));
-  EXPECT_EQ( 44    , message.GetUInt64(F("default_uint64"  )));
-  EXPECT_EQ(-45    , message.GetInt32 (F("default_sint32"  )));
-  EXPECT_EQ( 46    , message.GetInt64 (F("default_sint64"  )));
-  EXPECT_EQ( 47    , message.GetUInt32(F("default_fixed32" )));
-  EXPECT_EQ( 48    , message.GetUInt64(F("default_fixed64" )));
-  EXPECT_EQ( 49    , message.GetInt32 (F("default_sfixed32")));
-  EXPECT_EQ(-50    , message.GetInt64 (F("default_sfixed64")));
-  EXPECT_EQ( 51.5  , message.GetFloat (F("default_float"   )));
-  EXPECT_EQ( 52e3  , message.GetDouble(F("default_double"  )));
-  EXPECT_EQ(true   , message.GetBool  (F("default_bool"    )));
-  EXPECT_EQ("hello", message.GetString(F("default_string"  )));
-  EXPECT_EQ("world", message.GetString(F("default_bytes"   )));
+  EXPECT_EQ( 41    , reflection->GetInt32 (message, F("default_int32"   )));
+  EXPECT_EQ( 42    , reflection->GetInt64 (message, F("default_int64"   )));
+  EXPECT_EQ( 43    , reflection->GetUInt32(message, F("default_uint32"  )));
+  EXPECT_EQ( 44    , reflection->GetUInt64(message, F("default_uint64"  )));
+  EXPECT_EQ(-45    , reflection->GetInt32 (message, F("default_sint32"  )));
+  EXPECT_EQ( 46    , reflection->GetInt64 (message, F("default_sint64"  )));
+  EXPECT_EQ( 47    , reflection->GetUInt32(message, F("default_fixed32" )));
+  EXPECT_EQ( 48    , reflection->GetUInt64(message, F("default_fixed64" )));
+  EXPECT_EQ( 49    , reflection->GetInt32 (message, F("default_sfixed32")));
+  EXPECT_EQ(-50    , reflection->GetInt64 (message, F("default_sfixed64")));
+  EXPECT_EQ( 51.5  , reflection->GetFloat (message, F("default_float"   )));
+  EXPECT_EQ( 52e3  , reflection->GetDouble(message, F("default_double"  )));
+  EXPECT_EQ(true   , reflection->GetBool  (message, F("default_bool"    )));
+  EXPECT_EQ("hello", reflection->GetString(message, F("default_string"  )));
+  EXPECT_EQ("world", reflection->GetString(message, F("default_bytes"   )));
 
-  EXPECT_EQ("hello", message.GetStringReference(F("default_string"), &scratch));
-  EXPECT_EQ("world", message.GetStringReference(F("default_bytes" ), &scratch));
+  EXPECT_EQ("hello", reflection->GetStringReference(message, F("default_string"), &scratch));
+  EXPECT_EQ("world", reflection->GetStringReference(message, F("default_bytes" ), &scratch));
 
-  EXPECT_EQ( nested_bar_, message.GetEnum(F("default_nested_enum" )));
-  EXPECT_EQ(foreign_bar_, message.GetEnum(F("default_foreign_enum")));
-  EXPECT_EQ( import_bar_, message.GetEnum(F("default_import_enum" )));
+  EXPECT_EQ( nested_bar_, reflection->GetEnum(message, F("default_nested_enum" )));
+  EXPECT_EQ(foreign_bar_, reflection->GetEnum(message, F("default_foreign_enum")));
+  EXPECT_EQ( import_bar_, reflection->GetEnum(message, F("default_import_enum" )));
 
-  EXPECT_EQ("abc", message.GetString(F("default_string_piece")));
-  EXPECT_EQ("abc", message.GetStringReference(F("default_string_piece"),
-                                              &scratch));
+  EXPECT_EQ("abc", reflection->GetString(message, F("default_string_piece")));
+  EXPECT_EQ("abc", reflection->GetStringReference(message, F("default_string_piece"), &scratch));
 
-  EXPECT_EQ("123", message.GetString(F("default_cord")));
-  EXPECT_EQ("123", message.GetStringReference(F("default_cord"), &scratch));
+  EXPECT_EQ("123", reflection->GetString(message, F("default_cord")));
+  EXPECT_EQ("123", reflection->GetStringReference(message, F("default_cord"), &scratch));
 }
 
 // -------------------------------------------------------------------
 
 void TestUtil::ReflectionTester::ModifyRepeatedFieldsViaReflection(
-    Message::Reflection* message) {
-  message->SetRepeatedInt32 (F("repeated_int32"   ), 1, 501);
-  message->SetRepeatedInt64 (F("repeated_int64"   ), 1, 502);
-  message->SetRepeatedUInt32(F("repeated_uint32"  ), 1, 503);
-  message->SetRepeatedUInt64(F("repeated_uint64"  ), 1, 504);
-  message->SetRepeatedInt32 (F("repeated_sint32"  ), 1, 505);
-  message->SetRepeatedInt64 (F("repeated_sint64"  ), 1, 506);
-  message->SetRepeatedUInt32(F("repeated_fixed32" ), 1, 507);
-  message->SetRepeatedUInt64(F("repeated_fixed64" ), 1, 508);
-  message->SetRepeatedInt32 (F("repeated_sfixed32"), 1, 509);
-  message->SetRepeatedInt64 (F("repeated_sfixed64"), 1, 510);
-  message->SetRepeatedFloat (F("repeated_float"   ), 1, 511);
-  message->SetRepeatedDouble(F("repeated_double"  ), 1, 512);
-  message->SetRepeatedBool  (F("repeated_bool"    ), 1, true);
-  message->SetRepeatedString(F("repeated_string"  ), 1, "515");
-  message->SetRepeatedString(F("repeated_bytes"   ), 1, "516");
+    Message* message) {
+  const Reflection* reflection = message->GetReflection();
+  Message* sub_message;
 
-  message->MutableRepeatedMessage(F("repeatedgroup"), 1)
-         ->GetReflection()->SetInt32(repeated_group_a_, 517);
-  message->MutableRepeatedMessage(F("repeated_nested_message"), 1)
-         ->GetReflection()->SetInt32(nested_b_, 518);
-  message->MutableRepeatedMessage(F("repeated_foreign_message"), 1)
-         ->GetReflection()->SetInt32(foreign_c_, 519);
-  message->MutableRepeatedMessage(F("repeated_import_message"), 1)
-         ->GetReflection()->SetInt32(import_d_, 520);
+  reflection->SetRepeatedInt32 (message, F("repeated_int32"   ), 1, 501);
+  reflection->SetRepeatedInt64 (message, F("repeated_int64"   ), 1, 502);
+  reflection->SetRepeatedUInt32(message, F("repeated_uint32"  ), 1, 503);
+  reflection->SetRepeatedUInt64(message, F("repeated_uint64"  ), 1, 504);
+  reflection->SetRepeatedInt32 (message, F("repeated_sint32"  ), 1, 505);
+  reflection->SetRepeatedInt64 (message, F("repeated_sint64"  ), 1, 506);
+  reflection->SetRepeatedUInt32(message, F("repeated_fixed32" ), 1, 507);
+  reflection->SetRepeatedUInt64(message, F("repeated_fixed64" ), 1, 508);
+  reflection->SetRepeatedInt32 (message, F("repeated_sfixed32"), 1, 509);
+  reflection->SetRepeatedInt64 (message, F("repeated_sfixed64"), 1, 510);
+  reflection->SetRepeatedFloat (message, F("repeated_float"   ), 1, 511);
+  reflection->SetRepeatedDouble(message, F("repeated_double"  ), 1, 512);
+  reflection->SetRepeatedBool  (message, F("repeated_bool"    ), 1, true);
+  reflection->SetRepeatedString(message, F("repeated_string"  ), 1, "515");
+  reflection->SetRepeatedString(message, F("repeated_bytes"   ), 1, "516");
 
-  message->SetRepeatedEnum(F("repeated_nested_enum" ), 1,  nested_foo_);
-  message->SetRepeatedEnum(F("repeated_foreign_enum"), 1, foreign_foo_);
-  message->SetRepeatedEnum(F("repeated_import_enum" ), 1,  import_foo_);
+  sub_message = reflection->MutableRepeatedMessage(message, F("repeatedgroup"), 1);
+  sub_message->GetReflection()->SetInt32(sub_message, repeated_group_a_, 517);
+  sub_message = reflection->MutableRepeatedMessage(message, F("repeated_nested_message"), 1);
+  sub_message->GetReflection()->SetInt32(sub_message, nested_b_, 518);
+  sub_message = reflection->MutableRepeatedMessage(message, F("repeated_foreign_message"), 1);
+  sub_message->GetReflection()->SetInt32(sub_message, foreign_c_, 519);
+  sub_message = reflection->MutableRepeatedMessage(message, F("repeated_import_message"), 1);
+  sub_message->GetReflection()->SetInt32(sub_message, import_d_, 520);
 
-  message->SetRepeatedString(F("repeated_string_piece"), 1, "524");
-  message->SetRepeatedString(F("repeated_cord"), 1, "525");
+  reflection->SetRepeatedEnum(message, F("repeated_nested_enum" ), 1,  nested_foo_);
+  reflection->SetRepeatedEnum(message, F("repeated_foreign_enum"), 1, foreign_foo_);
+  reflection->SetRepeatedEnum(message, F("repeated_import_enum" ), 1,  import_foo_);
+
+  reflection->SetRepeatedString(message, F("repeated_string_piece"), 1, "524");
+  reflection->SetRepeatedString(message, F("repeated_cord"), 1, "525");
 }
 
 }  // namespace protobuf

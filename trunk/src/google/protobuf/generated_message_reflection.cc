@@ -43,7 +43,7 @@ void ReportReflectionUsageError(
     const char* method, const char* description) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : google::protobuf::Message::Reflection::" << method << "\n"
+       "  Method      : google::protobuf::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : " << description;
@@ -69,7 +69,7 @@ static void ReportReflectionUsageTypeError(
     FieldDescriptor::CppType expected_type) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : google::protobuf::Message::Reflection::" << method << "\n"
+       "  Method      : google::protobuf::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : Field is not the right type for this message:\n"
@@ -82,7 +82,7 @@ static void ReportReflectionUsageEnumTypeError(
     const char* method, const EnumValueDescriptor* value) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : google::protobuf::Message::Reflection::" << method << "\n"
+       "  Method      : google::protobuf::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : Enum value did not match field type:\n"
@@ -128,64 +128,79 @@ static void ReportReflectionUsageEnumTypeError(
 
 GeneratedMessageReflection::GeneratedMessageReflection(
     const Descriptor* descriptor,
-    void* base, const void* default_base,
-    const int offsets[], uint32 has_bits[],
-    ExtensionSet* extensions)
-  : descriptor_  (descriptor),
-    base_        (base),
-    default_base_(default_base),
-    offsets_     (offsets),
-    has_bits_    (has_bits),
-    extensions_  (extensions) {
+    const Message* default_instance,
+    const int offsets[],
+    int has_bits_offset,
+    int unknown_fields_offset,
+    int extensions_offset,
+    const DescriptorPool* descriptor_pool)
+  : descriptor_       (descriptor),
+    default_instance_ (default_instance),
+    offsets_          (offsets),
+    has_bits_offset_  (has_bits_offset),
+    unknown_fields_offset_(unknown_fields_offset),
+    extensions_offset_(extensions_offset),
+    descriptor_pool_  ((descriptor_pool == NULL) ?
+                         DescriptorPool::generated_pool() :
+                         descriptor_pool) {
 }
 
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
 
-const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields() const {
-  return unknown_fields_;
+const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields(
+    const Message& message) const {
+  const void* ptr = reinterpret_cast<const uint8*>(&message) +
+                    unknown_fields_offset_;
+  return *reinterpret_cast<const UnknownFieldSet*>(ptr);
 }
-UnknownFieldSet* GeneratedMessageReflection::MutableUnknownFields() {
-  return &unknown_fields_;
+UnknownFieldSet* GeneratedMessageReflection::MutableUnknownFields(
+    Message* message) const {
+  void* ptr = reinterpret_cast<uint8*>(message) + unknown_fields_offset_;
+  return reinterpret_cast<UnknownFieldSet*>(ptr);
 }
 
 // -------------------------------------------------------------------
 
-bool GeneratedMessageReflection::HasField(const FieldDescriptor* field) const {
+bool GeneratedMessageReflection::HasField(const Message& message,
+                                          const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(HasField);
   USAGE_CHECK_SINGULAR(HasField);
 
   if (field->is_extension()) {
-    return extensions_->Has(field->number());
+    return GetExtensionSet(message).Has(field->number());
   } else {
-    return HasBit(field);
+    return HasBit(message, field);
   }
 }
 
-int GeneratedMessageReflection::FieldSize(const FieldDescriptor* field) const {
+int GeneratedMessageReflection::FieldSize(const Message& message,
+                                          const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(HasField);
   USAGE_CHECK_REPEATED(HasField);
 
   if (field->is_extension()) {
-    return extensions_->ExtensionSize(field->number());
+    return GetExtensionSet(message).ExtensionSize(field->number());
   } else {
-    return GetRaw<GenericRepeatedField>(field).GenericSize();
+    return GetRaw<GenericRepeatedField>(message, field).GenericSize();
   }
 }
 
-void GeneratedMessageReflection::ClearField(const FieldDescriptor* field) {
+void GeneratedMessageReflection::ClearField(
+    Message* message, const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE_TYPE(ClearField);
 
   if (field->is_extension()) {
-    extensions_->ClearExtension(field->number());
+    MutableExtensionSet(message)->ClearExtension(field->number());
   } else if (!field->is_repeated()) {
-    if (HasBit(field)) {
-      ClearBit(field);
+    if (HasBit(*message, field)) {
+      ClearBit(message, field);
 
       // We need to set the field back to its default value.
       switch (field->cpp_type()) {
 #define CLEAR_TYPE(CPPTYPE, TYPE)                                            \
         case FieldDescriptor::CPPTYPE_##CPPTYPE:                             \
-          *MutableRaw<TYPE>(field) = field->default_value_##TYPE();          \
+          *MutableRaw<TYPE>(message, field) =                                \
+            field->default_value_##TYPE();                                   \
           break;
 
         CLEAR_TYPE(INT32 , int32 );
@@ -198,12 +213,13 @@ void GeneratedMessageReflection::ClearField(const FieldDescriptor* field) {
 #undef CLEAR_TYPE
 
         case FieldDescriptor::CPPTYPE_ENUM:
-          *MutableRaw<int>(field) = field->default_value_enum()->number();
+          *MutableRaw<int>(message, field) =
+            field->default_value_enum()->number();
           break;
 
         case FieldDescriptor::CPPTYPE_STRING: {
             const string* default_ptr = DefaultRaw<const string*>(field);
-            string** value = MutableRaw<string*>(field);
+            string** value = MutableRaw<string*>(message, field);
             if (*value != default_ptr) {
               if (field->has_default_value()) {
                 (*value)->assign(field->default_value_string());
@@ -215,12 +231,12 @@ void GeneratedMessageReflection::ClearField(const FieldDescriptor* field) {
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          (*MutableRaw<Message*>(field))->Clear();
+          (*MutableRaw<Message*>(message, field))->Clear();
           break;
       }
     }
   } else {
-    MutableRaw<GenericRepeatedField>(field)->GenericClear();
+    MutableRaw<GenericRepeatedField>(message, field)->GenericClear();
   }
 }
 
@@ -235,27 +251,28 @@ struct FieldNumberSorter {
 }  // namespace
 
 void GeneratedMessageReflection::ListFields(
+    const Message& message,
     vector<const FieldDescriptor*>* output) const {
   output->clear();
 
   // Optimization:  The default instance never has any fields set.
-  if (base_ == default_base_) return;
+  if (&message == default_instance_) return;
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
-      if (GetRaw<GenericRepeatedField>(field).GenericSize() > 0) {
+      if (GetRaw<GenericRepeatedField>(message, field).GenericSize() > 0) {
         output->push_back(field);
       }
     } else {
-      if (HasBit(field)) {
+      if (HasBit(message, field)) {
         output->push_back(field);
       }
     }
   }
 
-  if (extensions_ != NULL) {
-    extensions_->AppendToList(output);
+  if (extensions_offset_ != -1) {
+    GetExtensionSet(message).AppendToList(output);
   }
 
   // ListFields() must sort output by field number.
@@ -267,52 +284,59 @@ void GeneratedMessageReflection::ListFields(
 #undef DEFINE_PRIMITIVE_ACCESSORS
 #define DEFINE_PRIMITIVE_ACCESSORS(TYPENAME, TYPE, PASSTYPE, CPPTYPE)        \
   PASSTYPE GeneratedMessageReflection::Get##TYPENAME(                        \
-                                       const FieldDescriptor* field) const { \
+      const Message& message, const FieldDescriptor* field) const {          \
     USAGE_CHECK_ALL(Get##TYPENAME, SINGULAR, CPPTYPE);                       \
     if (field->is_extension()) {                                             \
-      return extensions_->Get##TYPENAME(field->number());                    \
+      return GetExtensionSet(message).Get##TYPENAME(field->number());        \
     } else {                                                                 \
-      return GetField<TYPE>(field);                                          \
+      return GetField<TYPE>(message, field);                                 \
     }                                                                        \
   }                                                                          \
                                                                              \
   void GeneratedMessageReflection::Set##TYPENAME(                            \
-      const FieldDescriptor* field, PASSTYPE value) {                        \
+      Message* message, const FieldDescriptor* field,                        \
+      PASSTYPE value) const {                                                \
     USAGE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                       \
     if (field->is_extension()) {                                             \
-      return extensions_->Set##TYPENAME(field->number(), value);             \
+      return MutableExtensionSet(message)->Set##TYPENAME(                    \
+        field->number(), value);                                             \
     } else {                                                                 \
-      SetField<TYPE>(field, value);                                          \
+      SetField<TYPE>(message, field, value);                                 \
     }                                                                        \
   }                                                                          \
                                                                              \
   PASSTYPE GeneratedMessageReflection::GetRepeated##TYPENAME(                \
+      const Message& message,                                                \
       const FieldDescriptor* field, int index) const {                       \
     USAGE_CHECK_ALL(GetRepeated##TYPENAME, REPEATED, CPPTYPE);               \
     if (field->is_extension()) {                                             \
-      return extensions_->GetRepeated##TYPENAME(field->number(), index);     \
+      return GetExtensionSet(message).GetRepeated##TYPENAME(                 \
+        field->number(), index);                                             \
     } else {                                                                 \
-      return GetRepeatedField<TYPE>(field, index);                           \
+      return GetRepeatedField<TYPE>(message, field, index);                  \
     }                                                                        \
   }                                                                          \
                                                                              \
   void GeneratedMessageReflection::SetRepeated##TYPENAME(                    \
-      const FieldDescriptor* field, int index, PASSTYPE value) {             \
+      Message* message, const FieldDescriptor* field,                        \
+      int index, PASSTYPE value) const {                                     \
     USAGE_CHECK_ALL(SetRepeated##TYPENAME, REPEATED, CPPTYPE);               \
     if (field->is_extension()) {                                             \
-      extensions_->SetRepeated##TYPENAME(field->number(), index, value);     \
+      MutableExtensionSet(message)->SetRepeated##TYPENAME(                   \
+        field->number(), index, value);                                      \
     } else {                                                                 \
-      SetRepeatedField<TYPE>(field, index, value);                           \
+      SetRepeatedField<TYPE>(message, field, index, value);                  \
     }                                                                        \
   }                                                                          \
                                                                              \
   void GeneratedMessageReflection::Add##TYPENAME(                            \
-      const FieldDescriptor* field, PASSTYPE value) {                        \
+      Message* message, const FieldDescriptor* field,                        \
+      PASSTYPE value) const {                                                \
     USAGE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                       \
     if (field->is_extension()) {                                             \
-      extensions_->Add##TYPENAME(field->number(), value);                    \
+      MutableExtensionSet(message)->Add##TYPENAME(field->number(), value);   \
     } else {                                                                 \
-      AddField<TYPE>(field, value);                                          \
+      AddField<TYPE>(message, field, value);                                 \
     }                                                                        \
   }
 
@@ -328,33 +352,35 @@ DEFINE_PRIMITIVE_ACCESSORS(Bool  , bool  , bool  , BOOL  )
 // -------------------------------------------------------------------
 
 string GeneratedMessageReflection::GetString(
-    const FieldDescriptor* field) const {
+    const Message& message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return extensions_->GetString(field->number());
+    return GetExtensionSet(message).GetString(field->number());
   } else {
-    return *GetField<const string*>(field);
+    return *GetField<const string*>(message, field);
   }
 }
 
 const string& GeneratedMessageReflection::GetStringReference(
+    const Message& message,
     const FieldDescriptor* field, string* scratch) const {
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
-    return extensions_->GetString(field->number());
+    return GetExtensionSet(message).GetString(field->number());
   } else {
-    return *GetField<const string*>(field);
+    return *GetField<const string*>(message, field);
   }
 }
 
 
 void GeneratedMessageReflection::SetString(
-    const FieldDescriptor* field, const string& value) {
+    Message* message, const FieldDescriptor* field,
+    const string& value) const {
   USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return extensions_->SetString(field->number(), value);
+    return MutableExtensionSet(message)->SetString(field->number(), value);
   } else {
-    string** ptr = MutableField<string*>(field);
+    string** ptr = MutableField<string*>(message, field);
     if (*ptr == DefaultRaw<const string*>(field)) {
       *ptr = new string(value);
     } else {
@@ -365,44 +391,48 @@ void GeneratedMessageReflection::SetString(
 
 
 string GeneratedMessageReflection::GetRepeatedString(
-    const FieldDescriptor* field, int index) const {
+    const Message& message, const FieldDescriptor* field, int index) const {
   USAGE_CHECK_ALL(GetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
-    return extensions_->GetRepeatedString(field->number(), index);
+    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
-    return GetRepeatedField<string>(field, index);
+    return GetRepeatedField<string>(message, field, index);
   }
 }
 
 const string& GeneratedMessageReflection::GetRepeatedStringReference(
-    const FieldDescriptor* field, int index, string* scratch) const {
+    const Message& message, const FieldDescriptor* field,
+    int index, string* scratch) const {
   USAGE_CHECK_ALL(GetRepeatedStringReference, REPEATED, STRING);
   if (field->is_extension()) {
-    return extensions_->GetRepeatedString(field->number(), index);
+    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
-    return GetRepeatedField<string>(field, index);
+    return GetRepeatedField<string>(message, field, index);
   }
 }
 
 
 void GeneratedMessageReflection::SetRepeatedString(
-    const FieldDescriptor* field, int index, const string& value) {
+    Message* message, const FieldDescriptor* field,
+    int index, const string& value) const {
   USAGE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
-    extensions_->SetRepeatedString(field->number(), index, value);
+    MutableExtensionSet(message)->SetRepeatedString(
+      field->number(), index, value);
   } else {
-    SetRepeatedField<string>(field, index, value);
+    SetRepeatedField<string>(message, field, index, value);
   }
 }
 
 
 void GeneratedMessageReflection::AddString(
-    const FieldDescriptor* field, const string& value) {
+    Message* message, const FieldDescriptor* field,
+    const string& value) const {
   USAGE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
-    extensions_->AddString(field->number(), value);
+    MutableExtensionSet(message)->AddString(field->number(), value);
   } else {
-    AddField<string>(field, value);
+    AddField<string>(message, field, value);
   }
 }
 
@@ -410,14 +440,14 @@ void GeneratedMessageReflection::AddString(
 // -------------------------------------------------------------------
 
 const EnumValueDescriptor* GeneratedMessageReflection::GetEnum(
-    const FieldDescriptor* field) const {
+    const Message& message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetEnum, SINGULAR, ENUM);
 
   int value;
   if (field->is_extension()) {
-    value = extensions_->GetEnum(field->number());
+    value = GetExtensionSet(message).GetEnum(field->number());
   } else {
-    value = GetField<int>(field);
+    value = GetField<int>(message, field);
   }
   const EnumValueDescriptor* result =
     field->enum_type()->FindValueByNumber(value);
@@ -425,27 +455,28 @@ const EnumValueDescriptor* GeneratedMessageReflection::GetEnum(
   return result;
 }
 
-void GeneratedMessageReflection::SetEnum(const FieldDescriptor* field,
-                                         const EnumValueDescriptor* value) {
+void GeneratedMessageReflection::SetEnum(
+    Message* message, const FieldDescriptor* field,
+    const EnumValueDescriptor* value) const {
   USAGE_CHECK_ALL(SetEnum, SINGULAR, ENUM);
   USAGE_CHECK_ENUM_VALUE(SetEnum);
 
   if (field->is_extension()) {
-    extensions_->SetEnum(field->number(), value->number());
+    MutableExtensionSet(message)->SetEnum(field->number(), value->number());
   } else {
-    SetField<int>(field, value->number());
+    SetField<int>(message, field, value->number());
   }
 }
 
 const EnumValueDescriptor* GeneratedMessageReflection::GetRepeatedEnum(
-    const FieldDescriptor* field, int index) const {
+    const Message& message, const FieldDescriptor* field, int index) const {
   USAGE_CHECK_ALL(GetRepeatedEnum, REPEATED, ENUM);
 
   int value;
   if (field->is_extension()) {
-    value = extensions_->GetRepeatedEnum(field->number(), index);
+    value = GetExtensionSet(message).GetRepeatedEnum(field->number(), index);
   } else {
-    value = GetRepeatedField<int>(field, index);
+    value = GetRepeatedField<int>(message, field, index);
   }
   const EnumValueDescriptor* result =
     field->enum_type()->FindValueByNumber(value);
@@ -454,40 +485,43 @@ const EnumValueDescriptor* GeneratedMessageReflection::GetRepeatedEnum(
 }
 
 void GeneratedMessageReflection::SetRepeatedEnum(
+    Message* message,
     const FieldDescriptor* field, int index,
-    const EnumValueDescriptor* value) {
+    const EnumValueDescriptor* value) const {
   USAGE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
   USAGE_CHECK_ENUM_VALUE(SetRepeatedEnum);
 
   if (field->is_extension()) {
-    extensions_->SetRepeatedEnum(field->number(), index, value->number());
+    MutableExtensionSet(message)->SetRepeatedEnum(
+      field->number(), index, value->number());
   } else {
-    SetRepeatedField<int>(field, index, value->number());
+    SetRepeatedField<int>(message, field, index, value->number());
   }
 }
 
-void GeneratedMessageReflection::AddEnum(const FieldDescriptor* field,
-                                         const EnumValueDescriptor* value) {
+void GeneratedMessageReflection::AddEnum(
+    Message* message, const FieldDescriptor* field,
+    const EnumValueDescriptor* value) const {
   USAGE_CHECK_ALL(AddEnum, REPEATED, ENUM);
   USAGE_CHECK_ENUM_VALUE(AddEnum);
 
   if (field->is_extension()) {
-    extensions_->AddEnum(field->number(), value->number());
+    MutableExtensionSet(message)->AddEnum(field->number(), value->number());
   } else {
-    AddField<int>(field, value->number());
+    AddField<int>(message, field, value->number());
   }
 }
 
 // -------------------------------------------------------------------
 
 const Message& GeneratedMessageReflection::GetMessage(
-    const FieldDescriptor* field) const {
+    const Message& message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetMessage, SINGULAR, MESSAGE);
 
   if (field->is_extension()) {
-    return extensions_->GetMessage(field->number());
+    return GetExtensionSet(message).GetMessage(field->number());
   } else {
-    const Message* result = GetRaw<const Message*>(field);
+    const Message* result = GetRaw<const Message*>(message, field);
     if (result == NULL) {
       result = DefaultRaw<const Message*>(field);
     }
@@ -496,13 +530,13 @@ const Message& GeneratedMessageReflection::GetMessage(
 }
 
 Message* GeneratedMessageReflection::MutableMessage(
-    const FieldDescriptor* field) {
+    Message* message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
 
   if (field->is_extension()) {
-    return extensions_->MutableMessage(field->number());
+    return MutableExtensionSet(message)->MutableMessage(field->number());
   } else {
-    Message** result = MutableField<Message*>(field);
+    Message** result = MutableField<Message*>(message, field);
     if (*result == NULL) {
       const Message* default_message = DefaultRaw<const Message*>(field);
       *result = default_message->New();
@@ -513,34 +547,36 @@ Message* GeneratedMessageReflection::MutableMessage(
 }
 
 const Message& GeneratedMessageReflection::GetRepeatedMessage(
-    const FieldDescriptor* field, int index) const {
+    const Message& message, const FieldDescriptor* field, int index) const {
   USAGE_CHECK_ALL(GetRepeatedMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
-    return extensions_->GetRepeatedMessage(field->number(), index);
+    return GetExtensionSet(message).GetRepeatedMessage(field->number(), index);
   } else {
-    return GetRepeatedField<Message>(field, index);
+    return GetRepeatedField<Message>(message, field, index);
   }
 }
 
 Message* GeneratedMessageReflection::MutableRepeatedMessage(
-    const FieldDescriptor* field, int index) {
+    Message* message, const FieldDescriptor* field, int index) const {
   USAGE_CHECK_ALL(MutableRepeatedMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
-    return extensions_->MutableRepeatedMessage(field->number(), index);
+    return MutableExtensionSet(message)->MutableRepeatedMessage(
+      field->number(), index);
   } else {
-    return MutableRepeatedField<Message>(field, index);
+    return MutableRepeatedField<Message>(message, field, index);
   }
 }
 
-Message* GeneratedMessageReflection::AddMessage(const FieldDescriptor* field) {
+Message* GeneratedMessageReflection::AddMessage(
+    Message* message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
-    return extensions_->AddMessage(field->number());
+    return MutableExtensionSet(message)->AddMessage(field->number());
   } else {
-    return AddField<Message>(field);
+    return AddField<Message>(message, field);
   }
 }
 
@@ -548,14 +584,38 @@ Message* GeneratedMessageReflection::AddMessage(const FieldDescriptor* field) {
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
     const string& name) const {
-  if (extensions_ == NULL) return NULL;
-  return extensions_->FindKnownExtensionByName(name);
+  if (extensions_offset_ == -1) return NULL;
+
+  const FieldDescriptor* result = descriptor_pool_->FindExtensionByName(name);
+  if (result != NULL && result->containing_type() == descriptor_) {
+    return result;
+  }
+
+  if (descriptor_->options().message_set_wire_format()) {
+    // MessageSet extensions may be identified by type name.
+    const Descriptor* type = descriptor_pool_->FindMessageTypeByName(name);
+    if (type != NULL) {
+      // Look for a matching extension in the foreign type's scope.
+      for (int i = 0; i < type->extension_count(); i++) {
+        const FieldDescriptor* extension = type->extension(i);
+        if (extension->containing_type() == descriptor_ &&
+            extension->type() == FieldDescriptor::TYPE_MESSAGE &&
+            extension->is_optional() &&
+            extension->message_type() == type) {
+          // Found it.
+          return extension;
+        }
+      }
+    }
+  }
+
+  return NULL;
 }
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByNumber(
     int number) const {
-  if (extensions_ == NULL) return NULL;
-  return extensions_->FindKnownExtensionByNumber(number);
+  if (extensions_offset_ == -1) return NULL;
+  return descriptor_pool_->FindExtensionByNumber(descriptor_, number);
 }
 
 // ===================================================================
@@ -565,41 +625,67 @@ const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByNumber(
 // the given field.
 template <typename Type>
 inline const Type& GeneratedMessageReflection::GetRaw(
-    const FieldDescriptor* field) const {
-  const void* ptr = reinterpret_cast<const uint8*>(base_) +
+    const Message& message, const FieldDescriptor* field) const {
+  const void* ptr = reinterpret_cast<const uint8*>(&message) +
                     offsets_[field->index()];
   return *reinterpret_cast<const Type*>(ptr);
 }
 
 template <typename Type>
 inline Type* GeneratedMessageReflection::MutableRaw(
-    const FieldDescriptor* field) {
-  void* ptr = reinterpret_cast<uint8*>(base_) + offsets_[field->index()];
+    Message* message, const FieldDescriptor* field) const {
+  void* ptr = reinterpret_cast<uint8*>(message) + offsets_[field->index()];
   return reinterpret_cast<Type*>(ptr);
 }
 
 template <typename Type>
 inline const Type& GeneratedMessageReflection::DefaultRaw(
     const FieldDescriptor* field) const {
-  const void* ptr = reinterpret_cast<const uint8*>(default_base_) +
+  const void* ptr = reinterpret_cast<const uint8*>(default_instance_) +
                     offsets_[field->index()];
   return *reinterpret_cast<const Type*>(ptr);
 }
 
+inline const uint32* GeneratedMessageReflection::GetHasBits(
+    const Message& message) const {
+  const void* ptr = reinterpret_cast<const uint8*>(&message) + has_bits_offset_;
+  return reinterpret_cast<const uint32*>(ptr);
+}
+inline uint32* GeneratedMessageReflection::MutableHasBits(
+    Message* message) const {
+  void* ptr = reinterpret_cast<uint8*>(message) + has_bits_offset_;
+  return reinterpret_cast<uint32*>(ptr);
+}
+
+inline const ExtensionSet& GeneratedMessageReflection::GetExtensionSet(
+    const Message& message) const {
+  GOOGLE_DCHECK_NE(extensions_offset_, -1);
+  const void* ptr = reinterpret_cast<const uint8*>(&message) +
+                    extensions_offset_;
+  return *reinterpret_cast<const ExtensionSet*>(ptr);
+}
+inline ExtensionSet* GeneratedMessageReflection::MutableExtensionSet(
+    Message* message) const {
+  GOOGLE_DCHECK_NE(extensions_offset_, -1);
+  void* ptr = reinterpret_cast<uint8*>(message) + extensions_offset_;
+  return reinterpret_cast<ExtensionSet*>(ptr);
+}
+
 // Simple accessors for manipulating has_bits_.
 inline bool GeneratedMessageReflection::HasBit(
-    const FieldDescriptor* field) const {
-  return has_bits_[field->index() / 32] & (1 << (field->index() % 32));
+    const Message& message, const FieldDescriptor* field) const {
+  return GetHasBits(message)[field->index() / 32] &
+    (1 << (field->index() % 32));
 }
 
 inline void GeneratedMessageReflection::SetBit(
-    const FieldDescriptor* field) {
-  has_bits_[field->index() / 32] |= (1 << (field->index() % 32));
+    Message* message, const FieldDescriptor* field) const {
+  MutableHasBits(message)[field->index() / 32] |= (1 << (field->index() % 32));
 }
 
 inline void GeneratedMessageReflection::ClearBit(
-    const FieldDescriptor* field) {
-  has_bits_[field->index() / 32] &= ~(1 << (field->index() % 32));
+    Message* message, const FieldDescriptor* field) const {
+  MutableHasBits(message)[field->index() / 32] &= ~(1 << (field->index() % 32));
 }
 
 // Template implementations of basic accessors.  Inline because each
@@ -607,56 +693,61 @@ inline void GeneratedMessageReflection::ClearBit(
 // used for all types except messages.
 template <typename Type>
 inline const Type& GeneratedMessageReflection::GetField(
-    const FieldDescriptor* field) const {
-  return GetRaw<Type>(field);
+    const Message& message, const FieldDescriptor* field) const {
+  return GetRaw<Type>(message, field);
 }
 
 template <typename Type>
 inline void GeneratedMessageReflection::SetField(
-    const FieldDescriptor* field, const Type& value) {
-  *MutableRaw<Type>(field) = value;
-  SetBit(field);
+    Message* message, const FieldDescriptor* field, const Type& value) const {
+  *MutableRaw<Type>(message, field) = value;
+  SetBit(message, field);
 }
 
 template <typename Type>
 inline Type* GeneratedMessageReflection::MutableField(
-    const FieldDescriptor* field) {
-  SetBit(field);
-  return MutableRaw<Type>(field);
+    Message* message, const FieldDescriptor* field) const {
+  SetBit(message, field);
+  return MutableRaw<Type>(message, field);
 }
 
 template <typename Type>
 inline const Type& GeneratedMessageReflection::GetRepeatedField(
-    const FieldDescriptor* field, int index) const {
+    const Message& message, const FieldDescriptor* field, int index) const {
   return *reinterpret_cast<const Type*>(
-    GetRaw<GenericRepeatedField>(field).GenericGet(index));
+    GetRaw<GenericRepeatedField>(message, field).GenericGet(index));
 }
 
 template <typename Type>
 inline void GeneratedMessageReflection::SetRepeatedField(
-    const FieldDescriptor* field, int index, const Type& value) {
-  GenericRepeatedField* repeated = MutableRaw<GenericRepeatedField>(field);
+    Message* message, const FieldDescriptor* field,
+    int index, const Type& value) const {
+  GenericRepeatedField* repeated =
+    MutableRaw<GenericRepeatedField>(message, field);
   *reinterpret_cast<Type*>(repeated->GenericMutable(index)) = value;
 }
 
 template <typename Type>
 inline Type* GeneratedMessageReflection::MutableRepeatedField(
-    const FieldDescriptor* field, int index) {
-  GenericRepeatedField* repeated = MutableRaw<GenericRepeatedField>(field);
+    Message* message, const FieldDescriptor* field, int index) const {
+  GenericRepeatedField* repeated =
+    MutableRaw<GenericRepeatedField>(message, field);
   return reinterpret_cast<Type*>(repeated->GenericMutable(index));
 }
 
 template <typename Type>
 inline void GeneratedMessageReflection::AddField(
-    const FieldDescriptor* field, const Type& value) {
-  GenericRepeatedField* repeated = MutableRaw<GenericRepeatedField>(field);
+    Message* message, const FieldDescriptor* field, const Type& value) const {
+  GenericRepeatedField* repeated =
+    MutableRaw<GenericRepeatedField>(message, field);
   *reinterpret_cast<Type*>(repeated->GenericAdd()) = value;
 }
 
 template <typename Type>
 inline Type* GeneratedMessageReflection::AddField(
-    const FieldDescriptor* field) {
-  GenericRepeatedField* repeated = MutableRaw<GenericRepeatedField>(field);
+    Message* message, const FieldDescriptor* field) const {
+  GenericRepeatedField* repeated =
+    MutableRaw<GenericRepeatedField>(message, field);
   return reinterpret_cast<Type*>(repeated->GenericAdd());
 }
 

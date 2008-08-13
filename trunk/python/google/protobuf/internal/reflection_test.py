@@ -656,9 +656,172 @@ class RefectionTest(unittest.TestCase):
     self.assertRaises(KeyError, extendee_proto.HasExtension,
                       unittest_pb2.repeated_string_extension)
 
-  def testCopyFrom(self):
-    # TODO(robinson): Implement.
-    pass
+  def testMergeFromSingularField(self):
+    # Test merge with just a singular field.
+    proto1 = unittest_pb2.TestAllTypes()
+    proto1.optional_int32 = 1
+
+    proto2 = unittest_pb2.TestAllTypes()
+    # This shouldn't get overwritten.
+    proto2.optional_string = 'value'
+
+    proto2.MergeFrom(proto1)
+    self.assertEqual(1, proto2.optional_int32)
+    self.assertEqual('value', proto2.optional_string)
+
+  def testMergeFromRepeatedField(self):
+    # Test merge with just a repeated field.
+    proto1 = unittest_pb2.TestAllTypes()
+    proto1.repeated_int32.append(1)
+    proto1.repeated_int32.append(2)
+
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.repeated_int32.append(0)
+    proto2.MergeFrom(proto1)
+
+    self.assertEqual(0, proto2.repeated_int32[0])
+    self.assertEqual(1, proto2.repeated_int32[1])
+    self.assertEqual(2, proto2.repeated_int32[2])
+
+  def testMergeFromOptionalGroup(self):
+    # Test merge with an optional group.
+    proto1 = unittest_pb2.TestAllTypes()
+    proto1.optionalgroup.a = 12
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.MergeFrom(proto1)
+    self.assertEqual(12, proto2.optionalgroup.a)
+
+  def testMergeFromRepeatedNestedMessage(self):
+    # Test merge with a repeated nested message.
+    proto1 = unittest_pb2.TestAllTypes()
+    m = proto1.repeated_nested_message.add()
+    m.bb = 123
+    m = proto1.repeated_nested_message.add()
+    m.bb = 321
+
+    proto2 = unittest_pb2.TestAllTypes()
+    m = proto2.repeated_nested_message.add()
+    m.bb = 999
+    proto2.MergeFrom(proto1)
+    self.assertEqual(999, proto2.repeated_nested_message[0].bb)
+    self.assertEqual(123, proto2.repeated_nested_message[1].bb)
+    self.assertEqual(321, proto2.repeated_nested_message[2].bb)
+
+  def testMergeFromAllFields(self):
+    # With all fields set.
+    proto1 = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(proto1)
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.MergeFrom(proto1)
+
+    # Messages should be equal.
+    self.assertEqual(proto2, proto1)
+
+    # Serialized string should be equal too.
+    string1 = proto1.SerializeToString()
+    string2 = proto2.SerializeToString()
+    self.assertEqual(string1, string2)
+
+  def testMergeFromExtensionsSingular(self):
+    proto1 = unittest_pb2.TestAllExtensions()
+    proto1.Extensions[unittest_pb2.optional_int32_extension] = 1
+
+    proto2 = unittest_pb2.TestAllExtensions()
+    proto2.MergeFrom(proto1)
+    self.assertEqual(
+        1, proto2.Extensions[unittest_pb2.optional_int32_extension])
+
+  def testMergeFromExtensionsRepeated(self):
+    proto1 = unittest_pb2.TestAllExtensions()
+    proto1.Extensions[unittest_pb2.repeated_int32_extension].append(1)
+    proto1.Extensions[unittest_pb2.repeated_int32_extension].append(2)
+
+    proto2 = unittest_pb2.TestAllExtensions()
+    proto2.Extensions[unittest_pb2.repeated_int32_extension].append(0)
+    proto2.MergeFrom(proto1)
+    self.assertEqual(
+        3, len(proto2.Extensions[unittest_pb2.repeated_int32_extension]))
+    self.assertEqual(
+        0, proto2.Extensions[unittest_pb2.repeated_int32_extension][0])
+    self.assertEqual(
+        1, proto2.Extensions[unittest_pb2.repeated_int32_extension][1])
+    self.assertEqual(
+        2, proto2.Extensions[unittest_pb2.repeated_int32_extension][2])
+
+  def testMergeFromExtensionsNestedMessage(self):
+    proto1 = unittest_pb2.TestAllExtensions()
+    ext1 = proto1.Extensions[
+        unittest_pb2.repeated_nested_message_extension]
+    m = ext1.add()
+    m.bb = 222
+    m = ext1.add()
+    m.bb = 333
+
+    proto2 = unittest_pb2.TestAllExtensions()
+    ext2 = proto2.Extensions[
+        unittest_pb2.repeated_nested_message_extension]
+    m = ext2.add()
+    m.bb = 111
+
+    proto2.MergeFrom(proto1)
+    ext2 = proto2.Extensions[
+        unittest_pb2.repeated_nested_message_extension]
+    self.assertEqual(3, len(ext2))
+    self.assertEqual(111, ext2[0].bb)
+    self.assertEqual(222, ext2[1].bb)
+    self.assertEqual(333, ext2[2].bb)
+
+  def testCopyFromSingularField(self):
+    # Test copy with just a singular field.
+    proto1 = unittest_pb2.TestAllTypes()
+    proto1.optional_int32 = 1
+    proto1.optional_string = 'important-text'
+
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.optional_string = 'value'
+
+    proto2.CopyFrom(proto1)
+    self.assertEqual(1, proto2.optional_int32)
+    self.assertEqual('important-text', proto2.optional_string)
+
+  def testCopyFromRepeatedField(self):
+    # Test copy with a repeated field.
+    proto1 = unittest_pb2.TestAllTypes()
+    proto1.repeated_int32.append(1)
+    proto1.repeated_int32.append(2)
+
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.repeated_int32.append(0)
+    proto2.CopyFrom(proto1)
+
+    self.assertEqual(1, proto2.repeated_int32[0])
+    self.assertEqual(2, proto2.repeated_int32[1])
+
+  def testCopyFromAllFields(self):
+    # With all fields set.
+    proto1 = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(proto1)
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.CopyFrom(proto1)
+
+    # Messages should be equal.
+    self.assertEqual(proto2, proto1)
+
+    # Serialized string should be equal too.
+    string1 = proto1.SerializeToString()
+    string2 = proto2.SerializeToString()
+    self.assertEqual(string1, string2)
+
+  def testCopyFromSelf(self):
+    proto1 = unittest_pb2.TestAllTypes()
+    proto1.repeated_int32.append(1)
+    proto1.optional_int32 = 2
+    proto1.optional_string = 'important-text'
+
+    proto1.CopyFrom(proto1)
+    self.assertEqual(1, proto1.repeated_int32[0])
+    self.assertEqual(2, proto1.optional_int32)
+    self.assertEqual('important-text', proto1.optional_string)
 
   def testClear(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1255,6 +1418,57 @@ class SerializationTest(unittest.TestCase):
 
     # Parsing this message should succeed.
     proto2.MergeFromString(serialized)
+
+  def _CheckRaises(self, exc_class, callable_obj, exception):
+    """This method checks if the excpetion type and message are as expected."""
+    try:
+      callable_obj()
+    except exc_class, ex:
+      # Check if the exception message is the right one.
+      self.assertEqual(exception, str(ex))
+      return
+    else:
+      raise self.failureException('%s not raised' % str(exc_class))
+
+  def testSerializeUninitialized(self):
+    proto = unittest_pb2.TestRequired()
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Required field protobuf_unittest.TestRequired.a is not set.')
+    # Shouldn't raise exceptions.
+    partial = proto.SerializePartialToString()
+
+    proto.a = 1
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Required field protobuf_unittest.TestRequired.b is not set.')
+    # Shouldn't raise exceptions.
+    partial = proto.SerializePartialToString()
+
+    proto.b = 2
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Required field protobuf_unittest.TestRequired.c is not set.')
+    # Shouldn't raise exceptions.
+    partial = proto.SerializePartialToString()
+
+    proto.c = 3
+    serialized = proto.SerializeToString()
+    # Shouldn't raise exceptions.
+    partial = proto.SerializePartialToString()
+
+    proto2 = unittest_pb2.TestRequired()
+    proto2.MergeFromString(serialized)
+    self.assertEqual(1, proto2.a)
+    self.assertEqual(2, proto2.b)
+    self.assertEqual(3, proto2.c)
+    proto2.ParseFromString(partial)
+    self.assertEqual(1, proto2.a)
+    self.assertEqual(2, proto2.b)
+    self.assertEqual(3, proto2.c)
 
 
 class OptionsTest(unittest.TestCase):

@@ -6,14 +6,6 @@
 # will fail if these files do not match what the protocol compiler would
 # generate.
 
-# Note that this will always need to be run once after running
-# extract_from_google3.sh.  That script initially copies descriptor.pb.{h,cc}
-# over from the google3 code and fixes it up to compile outside of google3, but
-# it cannot fix the encoded descriptor embedded in descriptor.pb.cc.  So, once
-# the protocol compiler has been built with the slightly-broken
-# descriptor.pb.cc, the files must be regenerated and the compiler must be
-# built again.
-
 if test ! -e src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
 Could not find source code.  Make sure you are running this script from the

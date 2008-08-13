@@ -731,7 +731,8 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
 
   // Ensure that these are the only entries present.
   vector<const FieldDescriptor*> descriptors;
-  proto.message_set().GetReflection()->ListFields(&descriptors);
+  proto.message_set().GetReflection()->ListFields(
+    proto.message_set(), &descriptors);
   EXPECT_EQ(2, descriptors.size());
 }
 

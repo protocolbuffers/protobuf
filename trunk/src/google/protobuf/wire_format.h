@@ -26,7 +26,7 @@
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
 #include <string>
-#include <google/protobuf/message.h>  // Message::Reflection
+#include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -55,7 +55,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
  public:
   // These procedures can be used to implement the methods of Message which
   // handle parsing and serialization of the protocol buffer wire format
-  // using only the Message::Reflection interface.  When you ask the protocol
+  // using only the Reflection interface.  When you ask the protocol
   // compiler to optimize for code size rather than speed, it will implement
   // those methods in terms of these procedures.  Of course, these are much
   // slower than the specialized implementations which the protocol compiler
@@ -69,9 +69,8 @@ class LIBPROTOBUF_EXPORT WireFormat {
   //
   // Required fields are NOT checked by this method.  You must call
   // IsInitialized() on the resulting message yourself.
-  static bool ParseAndMergePartial(const Descriptor* descriptor,
-                                   io::CodedInputStream* input,
-                                   Message::Reflection* message_reflection);
+  static bool ParseAndMergePartial(io::CodedInputStream* input,
+                                   Message* message);
 
   // Serialize a message in protocol buffer wire format.
   //
@@ -81,8 +80,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   //
   // These return false iff the underlying stream returns a write error.
   static bool SerializeWithCachedSizes(
-      const Descriptor* descriptor,
-      const Message::Reflection* message_reflection,
+      const Message& message,
       int size, io::CodedOutputStream* output);
 
   // Implements Message::ByteSize() via reflection.  WARNING:  The result
@@ -90,8 +88,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // will have their ByteSize() methods called, so their sizes will be cached.
   // Therefore, calling this method is sufficient to allow you to call
   // WireFormat::SerializeWithCachedSizes() on the same object.
-  static int ByteSize(const Descriptor* descriptor,
-                      const Message::Reflection* message_reflection);
+  static int ByteSize(const Message& message);
 
   // -----------------------------------------------------------------
   // Helpers for dealing with unknown fields
@@ -188,13 +185,13 @@ class LIBPROTOBUF_EXPORT WireFormat {
   static bool ParseAndMergeField(
       uint32 tag,
       const FieldDescriptor* field,        // May be NULL for unknown
-      Message::Reflection* message_reflection,
+      Message* message,
       io::CodedInputStream* input);
 
   // Serialize a single field.
   static bool SerializeFieldWithCachedSizes(
       const FieldDescriptor* field,        // Cannot be NULL
-      const Message::Reflection* message_reflection,
+      const Message& message,
       io::CodedOutputStream* output);
 
   // Compute size of a single field.  If the field is a message type, this
@@ -202,7 +199,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // its size.
   static int FieldByteSize(
       const FieldDescriptor* field,        // Cannot be NULL
-      const Message::Reflection* message_reflection);
+      const Message& message);
 
   // =================================================================
   // Methods for reading/writing individual field.  The implementations
@@ -335,14 +332,14 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // opion message_set_wire_format = true.
   static bool ParseAndMergeMessageSetItem(
       io::CodedInputStream* input,
-      Message::Reflection* message_reflection);
+      Message* message);
   static bool SerializeMessageSetItemWithCachedSizes(
       const FieldDescriptor* field,
-      const Message::Reflection* message_reflection,
+      const Message& message,
       io::CodedOutputStream* output);
   static int MessageSetItemByteSize(
       const FieldDescriptor* field,
-      const Message::Reflection* message_reflection);
+      const Message& message);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };

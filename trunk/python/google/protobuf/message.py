@@ -65,15 +65,43 @@ class Message(object):
     return text_format.MessageToString(self)
 
   def MergeFrom(self, other_msg):
+    """Merges the contents of the specified message into current message.
+
+    This method merges the contents of the specified message into the current
+    message. Singular fields that are set in the specified message overwrite
+    the corresponding fields in the current message. Repeated fields are
+    appended. Singular sub-messages and groups are recursively merged.
+
+    Args:
+      other_msg: Message to merge into the current message.
+    """
     raise NotImplementedError
 
   def CopyFrom(self, other_msg):
-    raise NotImplementedError
+    """Copies the content of the specified message into the current message.
+
+    The method clears the current message and then merges the specified
+    message using MergeFrom.
+
+    Args:
+      other_msg: Message to copy into the current one.
+    """
+    if self == other_msg:
+      return
+    self.Clear()
+    self.MergeFrom(other_msg)
 
   def Clear(self):
+    """Clears all data that was set in the message."""
     raise NotImplementedError
 
   def IsInitialized(self):
+    """Checks if the message is initialized.
+
+    Returns:
+      The method returns True if the message is initialized (i.e. all of its
+      required fields are set).
+    """
     raise NotImplementedError
 
   # TODO(robinson): MergeFromString() should probably return None and be
@@ -118,6 +146,26 @@ class Message(object):
     self.MergeFromString(serialized)
 
   def SerializeToString(self):
+    """Serializes the protocol message to a binary string.
+
+    Returns:
+      A binary string representation of the message if all of the required
+      fields in the message are set (i.e. the message is initialized).
+
+    Raises:
+      message.EncodeError if the message isn't initialized.
+    """
+    raise NotImplementedError
+
+  def SerializePartialToString(self):
+    """Serializes the protocol message to a binary string.
+
+    This method is similar to SerializeToString but doesn't check if the
+    message is initialized.
+
+    Returns:
+      A string representation of the partial message.
+    """
     raise NotImplementedError
 
   # TODO(robinson): Decide whether we like these better

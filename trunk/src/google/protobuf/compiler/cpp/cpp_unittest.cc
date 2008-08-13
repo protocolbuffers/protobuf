@@ -268,7 +268,7 @@ TEST(GeneratedMessageTest, DynamicMessageCopyFrom) {
 
   TestUtil::ReflectionTester reflection_tester(
     unittest::TestAllTypes::descriptor());
-  reflection_tester.SetAllFieldsViaReflection(message1->GetReflection());
+  reflection_tester.SetAllFieldsViaReflection(message1.get());
 
   message2.CopyFrom(*message1);
 

@@ -232,9 +232,9 @@ class LIBPROTOBUF_EXPORT Descriptor {
 //   call Descriptor::FindExtensionByName() or
 //   FileDescriptor::FindExtensionByName().
 // - Given a DescriptorPool, call DescriptorPool::FindExtensionByNumber().
-// - Given a Message::Reflection for a message object, call
-//   Message::Reflection::FindKnownExtensionByName() or
-//   Message::Reflection::FindKnownExtensionByNumber().
+// - Given a Reflection for a message object, call
+//   Reflection::FindKnownExtensionByName() or
+//   Reflection::FindKnownExtensionByNumber().
 // Use DescriptorPool to construct your own descriptors.
 class LIBPROTOBUF_EXPORT FieldDescriptor {
  public:

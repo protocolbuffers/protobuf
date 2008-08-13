@@ -45,14 +45,12 @@ TEST(ReflectionOpsTest, Copy) {
 
   TestUtil::SetAllFields(&message);
 
-  ReflectionOps::Copy(message.descriptor(), *message.GetReflection(),
-                      message2.GetReflection());
+  ReflectionOps::Copy(message, &message2);
 
   TestUtil::ExpectAllFieldsSet(message2);
 
   // Copying from self should be a no-op.
-  ReflectionOps::Copy(message2.descriptor(), *message2.GetReflection(),
-                      message2.GetReflection());
+  ReflectionOps::Copy(message2, &message2);
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
@@ -61,8 +59,7 @@ TEST(ReflectionOpsTest, CopyExtensions) {
 
   TestUtil::SetAllExtensions(&message);
 
-  ReflectionOps::Copy(message.descriptor(), *message.GetReflection(),
-                      message2.GetReflection());
+  ReflectionOps::Copy(message, &message2);
 
   TestUtil::ExpectAllExtensionsSet(message2);
 }
@@ -89,8 +86,7 @@ TEST(ReflectionOpsTest, Merge) {
   message.clear_repeated_int32();
   message.add_repeated_int32(i);
 
-  ReflectionOps::Merge(message2.descriptor(), *message2.GetReflection(),
-                       message.GetReflection());
+  ReflectionOps::Merge(message2, &message);
 
   TestUtil::ExpectAllFieldsSet(message);
 }
@@ -120,8 +116,7 @@ TEST(ReflectionOpsTest, MergeExtensions) {
   message.ClearExtension(unittest::repeated_int32_extension);
   message.AddExtension(unittest::repeated_int32_extension, i);
 
-  ReflectionOps::Merge(message2.descriptor(), *message2.GetReflection(),
-                       message.GetReflection());
+  ReflectionOps::Merge(message2, &message);
 
   TestUtil::ExpectAllExtensionsSet(message);
 }
@@ -132,9 +127,7 @@ TEST(ReflectionOpsTest, MergeUnknown) {
   message1.mutable_unknown_fields()->AddField(1234)->add_varint(1);
   message2.mutable_unknown_fields()->AddField(1234)->add_varint(2);
 
-  ReflectionOps::Merge(unittest::TestEmptyMessage::descriptor(),
-                       *message2.GetReflection(),
-                       message1.GetReflection());
+  ReflectionOps::Merge(message2, &message1);
 
   ASSERT_EQ(1, message1.unknown_fields().field_count());
   const UnknownField& field = message1.unknown_fields().field(0);
@@ -152,8 +145,7 @@ TEST(ReflectionOpsTest, MergeFromSelf) {
   unittest::TestAllTypes message;
 
   EXPECT_DEATH(
-    ReflectionOps::Merge(message.descriptor(), *message.GetReflection(),
-                         message.GetReflection()),
+    ReflectionOps::Merge(message, &message),
     "&from");
 }
 
@@ -164,7 +156,7 @@ TEST(ReflectionOpsTest, Clear) {
 
   TestUtil::SetAllFields(&message);
 
-  ReflectionOps::Clear(message.descriptor(), message.GetReflection());
+  ReflectionOps::Clear(&message);
 
   TestUtil::ExpectClear(message);
 
@@ -185,7 +177,7 @@ TEST(ReflectionOpsTest, ClearExtensions) {
 
   TestUtil::SetAllExtensions(&message);
 
-  ReflectionOps::Clear(message.descriptor(), message.GetReflection());
+  ReflectionOps::Clear(&message);
 
   TestUtil::ExpectExtensionsClear(message);
 
@@ -207,7 +199,7 @@ TEST(ReflectionOpsTest, ClearUnknown) {
   unittest::TestEmptyMessage message;
   message.mutable_unknown_fields()->AddField(1234)->add_varint(1);
 
-  ReflectionOps::Clear(message.descriptor(), message.GetReflection());
+  ReflectionOps::Clear(&message);
 
   EXPECT_EQ(0, message.unknown_fields().field_count());
 }
@@ -236,8 +228,7 @@ TEST(ReflectionOpsTest, DiscardUnknownFields) {
                       .unknown_fields().field_count());
 
   // Discard them.
-  ReflectionOps::DiscardUnknownFields(message.GetDescriptor(),
-                                      message.GetReflection());
+  ReflectionOps::DiscardUnknownFields(&message);
   TestUtil::ExpectAllFieldsSet(message);
 
   EXPECT_EQ(0, message.unknown_fields().field_count());
@@ -273,8 +264,7 @@ TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
            .unknown_fields().field_count());
 
   // Discard them.
-  ReflectionOps::DiscardUnknownFields(message.GetDescriptor(),
-                                      message.GetReflection());
+  ReflectionOps::DiscardUnknownFields(&message);
   TestUtil::ExpectAllExtensionsSet(message);
 
   EXPECT_EQ(0, message.unknown_fields().field_count());
@@ -289,17 +279,13 @@ TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
 TEST(ReflectionOpsTest, IsInitialized) {
   unittest::TestRequired message;
 
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
   message.set_a(1);
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
   message.set_b(2);
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
   message.set_c(3);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 }
 
 TEST(ReflectionOpsTest, ForeignIsInitialized) {
@@ -307,32 +293,27 @@ TEST(ReflectionOpsTest, ForeignIsInitialized) {
 
   // Starts out initialized because the foreign message is itself an optional
   // field.
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 
   // Once we create that field, the message is no longer initialized.
   message.mutable_optional_message();
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
 
   // Initialize it.  Now we're initialized.
   message.mutable_optional_message()->set_a(1);
   message.mutable_optional_message()->set_b(2);
   message.mutable_optional_message()->set_c(3);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 
   // Add a repeated version of the message.  No longer initialized.
   unittest::TestRequired* sub_message = message.add_repeated_message();
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
 
   // Initialize that repeated version.
   sub_message->set_a(1);
   sub_message->set_b(2);
   sub_message->set_c(3);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 }
 
 TEST(ReflectionOpsTest, ExtensionIsInitialized) {
@@ -340,39 +321,32 @@ TEST(ReflectionOpsTest, ExtensionIsInitialized) {
 
   // Starts out initialized because the foreign message is itself an optional
   // field.
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 
   // Once we create that field, the message is no longer initialized.
   message.MutableExtension(unittest::TestRequired::single);
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
 
   // Initialize it.  Now we're initialized.
   message.MutableExtension(unittest::TestRequired::single)->set_a(1);
   message.MutableExtension(unittest::TestRequired::single)->set_b(2);
   message.MutableExtension(unittest::TestRequired::single)->set_c(3);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 
   // Add a repeated version of the message.  No longer initialized.
   message.AddExtension(unittest::TestRequired::multi);
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message.descriptor(),
-                                            *message.GetReflection()));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
 
   // Initialize that repeated version.
   message.MutableExtension(unittest::TestRequired::multi, 0)->set_a(1);
   message.MutableExtension(unittest::TestRequired::multi, 0)->set_b(2);
   message.MutableExtension(unittest::TestRequired::multi, 0)->set_c(3);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message.descriptor(),
-                                           *message.GetReflection()));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 }
 
 static string FindInitializationErrors(const Message& message) {
   vector<string> errors;
-  ReflectionOps::FindInitializationErrors(message.GetDescriptor(),
-                                          *message.GetReflection(),
-                                          "", &errors);
+  ReflectionOps::FindInitializationErrors(message, "", &errors);
   return JoinStrings(errors, ",");
 }
 

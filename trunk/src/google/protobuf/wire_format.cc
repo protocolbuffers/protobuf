@@ -117,7 +117,9 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
       if (field == NULL) {
         if (!input->Skip(length)) return false;
       } else {
-        input->ReadString(field->add_length_delimited(), length);
+        if (!input->ReadString(field->add_length_delimited(), length)) {
+          return false;
+        }
       }
       return true;
     }
@@ -299,9 +301,11 @@ int WireFormat::ComputeUnknownMessageSetItemsSize(
 
 // ===================================================================
 
-bool WireFormat::ParseAndMergePartial(const Descriptor* descriptor,
-                                      io::CodedInputStream* input,
-                                      Message::Reflection* message_reflection) {
+bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
+                                      Message* message) {
+  const Descriptor* descriptor = message->GetDescriptor();
+  const Reflection* message_reflection = message->GetReflection();
+
   while(true) {
     uint32 tag = input->ReadTag();
     if (tag == 0) {
@@ -330,14 +334,14 @@ bool WireFormat::ParseAndMergePartial(const Descriptor* descriptor,
       if (field == NULL &&
           descriptor->options().message_set_wire_format() &&
           tag == kMessageSetItemStartTag) {
-        if (!ParseAndMergeMessageSetItem(input, message_reflection)) {
+        if (!ParseAndMergeMessageSetItem(input, message)) {
           return false;
         }
         continue;  // Skip ParseAndMergeField(); already taken care of.
       }
     }
 
-    if (!ParseAndMergeField(tag, field, message_reflection, input)) {
+    if (!ParseAndMergeField(tag, field, message, input)) {
       return false;
     }
   }
@@ -346,13 +350,16 @@ bool WireFormat::ParseAndMergePartial(const Descriptor* descriptor,
 bool WireFormat::ParseAndMergeField(
     uint32 tag,
     const FieldDescriptor* field,        // May be NULL for unknown
-    Message::Reflection* message_reflection,
+    Message* message,
     io::CodedInputStream* input) {
+  const Reflection* message_reflection = message->GetReflection();
+
   if (field == NULL ||
       GetTagWireType(tag) != WireTypeForFieldType(field->type())) {
     // We don't recognize this field.  Either the field number is unknown
     // or the wire type doesn't match.  Put it in our unknown field set.
-    return SkipField(input, tag, message_reflection->MutableUnknownFields());
+    return SkipField(input, tag,
+                     message_reflection->MutableUnknownFields(message));
   }
 
   switch (field->type()) {
@@ -361,9 +368,9 @@ bool WireFormat::ParseAndMergeField(
       CPPTYPE value;                                                    \
       if (!Read##TYPE_METHOD(input, &value)) return false;              \
       if (field->is_repeated()) {                                       \
-        message_reflection->Add##CPPTYPE_METHOD(field, value);          \
+        message_reflection->Add##CPPTYPE_METHOD(message, field, value); \
       } else {                                                          \
-        message_reflection->Set##CPPTYPE_METHOD(field, value);          \
+        message_reflection->Set##CPPTYPE_METHOD(message, field, value); \
       }                                                                 \
       break;                                                            \
     }
@@ -397,15 +404,15 @@ bool WireFormat::ParseAndMergeField(
         field->enum_type()->FindValueByNumber(value);
       if (enum_value != NULL) {
         if (field->is_repeated()) {
-          message_reflection->AddEnum(field, enum_value);
+          message_reflection->AddEnum(message, field, enum_value);
         } else {
-          message_reflection->SetEnum(field, enum_value);
+          message_reflection->SetEnum(message, field, enum_value);
         }
       } else {
         // The enum value is not one of the known values.  Add it to the
         // UnknownFieldSet.
         int64 sign_extended_value = static_cast<int64>(value);
-        message_reflection->MutableUnknownFields()
+        message_reflection->MutableUnknownFields(message)
                           ->AddField(GetTagFieldNumber(tag))
                           ->add_varint(sign_extended_value);
       }
@@ -416,9 +423,9 @@ bool WireFormat::ParseAndMergeField(
     case FieldDescriptor::TYPE_GROUP: {
       Message* sub_message;
       if (field->is_repeated()) {
-        sub_message = message_reflection->AddMessage(field);
+        sub_message = message_reflection->AddMessage(message, field);
       } else {
-        sub_message = message_reflection->MutableMessage(field);
+        sub_message = message_reflection->MutableMessage(message, field);
       }
 
       if (!ReadGroup(GetTagFieldNumber(tag), input, sub_message)) return false;
@@ -428,9 +435,9 @@ bool WireFormat::ParseAndMergeField(
     case FieldDescriptor::TYPE_MESSAGE: {
       Message* sub_message;
       if (field->is_repeated()) {
-        sub_message = message_reflection->AddMessage(field);
+        sub_message = message_reflection->AddMessage(message, field);
       } else {
-        sub_message = message_reflection->MutableMessage(field);
+        sub_message = message_reflection->MutableMessage(message, field);
       }
 
       if (!ReadMessage(input, sub_message)) return false;
@@ -443,7 +450,9 @@ bool WireFormat::ParseAndMergeField(
 
 bool WireFormat::ParseAndMergeMessageSetItem(
     io::CodedInputStream* input,
-    Message::Reflection* message_reflection) {
+    Message* message) {
+  const Reflection* message_reflection = message->GetReflection();
+
   // This method parses a group which should contain two fields:
   //   required int32 type_id = 2;
   //   required data message = 3;
@@ -481,7 +490,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
           io::ArrayInputStream raw_input(message_data.data(),
                                          message_data.size());
           io::CodedInputStream sub_input(&raw_input);
-          if (!ParseAndMergeField(fake_tag, field, message_reflection,
+          if (!ParseAndMergeField(fake_tag, field, message,
                                   &sub_input)) {
             return false;
           }
@@ -501,7 +510,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
           message_data.append(temp);
         } else {
           // Already saw type_id, so we can parse this directly.
-          if (!ParseAndMergeField(fake_tag, field, message_reflection, input)) {
+          if (!ParseAndMergeField(fake_tag, field, message, input)) {
             return false;
           }
         }
@@ -523,27 +532,28 @@ bool WireFormat::ParseAndMergeMessageSetItem(
 // ===================================================================
 
 bool WireFormat::SerializeWithCachedSizes(
-    const Descriptor* descriptor,
-    const Message::Reflection* message_reflection,
+    const Message& message,
     int size, io::CodedOutputStream* output) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* message_reflection = message.GetReflection();
   int expected_endpoint = output->ByteCount() + size;
 
   vector<const FieldDescriptor*> fields;
-  message_reflection->ListFields(&fields);
+  message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    if (!SerializeFieldWithCachedSizes(fields[i], message_reflection, output)) {
+    if (!SerializeFieldWithCachedSizes(fields[i], message, output)) {
       return false;
     }
   }
 
   if (descriptor->options().message_set_wire_format()) {
     if (!SerializeUnknownMessageSetItems(
-           message_reflection->GetUnknownFields(), output)) {
+           message_reflection->GetUnknownFields(message), output)) {
       return false;
     }
   } else {
     if (!SerializeUnknownFields(
-           message_reflection->GetUnknownFields(), output)) {
+           message_reflection->GetUnknownFields(message), output)) {
       return false;
     }
   }
@@ -558,21 +568,23 @@ bool WireFormat::SerializeWithCachedSizes(
 
 bool WireFormat::SerializeFieldWithCachedSizes(
     const FieldDescriptor* field,
-    const Message::Reflection* message_reflection,
+    const Message& message,
     io::CodedOutputStream* output) {
+  const Reflection* message_reflection = message.GetReflection();
+
   if (field->is_extension() &&
       field->containing_type()->options().message_set_wire_format() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       !field->is_repeated()) {
     return SerializeMessageSetItemWithCachedSizes(
-      field, message_reflection, output);
+      field, message, output);
   }
 
   int count = 0;
 
   if (field->is_repeated()) {
-    count = message_reflection->FieldSize(field);
-  } else if (message_reflection->HasField(field)) {
+    count = message_reflection->FieldSize(message, field);
+  } else if (message_reflection->HasField(message, field)) {
     count = 1;
   }
 
@@ -583,8 +595,9 @@ bool WireFormat::SerializeFieldWithCachedSizes(
         if (!Write##TYPE_METHOD(                                             \
               field->number(),                                               \
               field->is_repeated() ?                                         \
-                message_reflection->GetRepeated##CPPTYPE_METHOD(field, j) :  \
-                message_reflection->Get##CPPTYPE_METHOD(field),              \
+                message_reflection->GetRepeated##CPPTYPE_METHOD(             \
+                  message, field, j) :                                       \
+                message_reflection->Get##CPPTYPE_METHOD(message, field),     \
               output)) {                                                     \
           return false;                                                      \
         }                                                                    \
@@ -613,8 +626,8 @@ bool WireFormat::SerializeFieldWithCachedSizes(
 
       case FieldDescriptor::TYPE_ENUM: {
         const EnumValueDescriptor* value = field->is_repeated() ?
-          message_reflection->GetRepeatedEnum(field, j) :
-          message_reflection->GetEnum(field);
+          message_reflection->GetRepeatedEnum(message, field, j) :
+          message_reflection->GetEnum(message, field);
         if (!WriteEnum(field->number(), value->number(), output)) return false;
         break;
       }
@@ -625,8 +638,9 @@ bool WireFormat::SerializeFieldWithCachedSizes(
       case FieldDescriptor::TYPE_BYTES: {
           string scratch;
           const string& value = field->is_repeated() ?
-            message_reflection->GetRepeatedStringReference(field, j, &scratch) :
-            message_reflection->GetStringReference(field, &scratch);
+            message_reflection->GetRepeatedStringReference(
+              message, field, j, &scratch) :
+            message_reflection->GetStringReference(message, field, &scratch);
           if (!WriteString(field->number(), value, output)) return false;
         break;
       }
@@ -638,8 +652,10 @@ bool WireFormat::SerializeFieldWithCachedSizes(
 
 bool WireFormat::SerializeMessageSetItemWithCachedSizes(
     const FieldDescriptor* field,
-    const Message::Reflection* message_reflection,
+    const Message& message,
     io::CodedOutputStream* output) {
+  const Reflection* message_reflection = message.GetReflection();
+
   // Start group.
   if (!output->WriteVarint32(kMessageSetItemStartTag)) return false;
 
@@ -650,7 +666,7 @@ bool WireFormat::SerializeMessageSetItemWithCachedSizes(
   // Write message.
   if (!output->WriteVarint32(kMessageSetMessageTag)) return false;
 
-  const Message& sub_message = message_reflection->GetMessage(field);
+  const Message& sub_message = message_reflection->GetMessage(message, field);
   if (!output->WriteVarint32(sub_message.GetCachedSize())) return false;
   if (!sub_message.SerializeWithCachedSizes(output)) return false;
 
@@ -662,23 +678,24 @@ bool WireFormat::SerializeMessageSetItemWithCachedSizes(
 
 // ===================================================================
 
-int WireFormat::ByteSize(
-    const Descriptor* descriptor,
-    const Message::Reflection* message_reflection) {
+int WireFormat::ByteSize(const Message& message) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* message_reflection = message.GetReflection();
+
   int our_size = 0;
 
   vector<const FieldDescriptor*> fields;
-  message_reflection->ListFields(&fields);
+  message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    our_size += FieldByteSize(fields[i], message_reflection);
+    our_size += FieldByteSize(fields[i], message);
   }
 
   if (descriptor->options().message_set_wire_format()) {
     our_size += ComputeUnknownMessageSetItemsSize(
-      message_reflection->GetUnknownFields());
+      message_reflection->GetUnknownFields(message));
   } else {
     our_size += ComputeUnknownFieldsSize(
-      message_reflection->GetUnknownFields());
+      message_reflection->GetUnknownFields(message));
   }
 
   return our_size;
@@ -686,12 +703,14 @@ int WireFormat::ByteSize(
 
 int WireFormat::FieldByteSize(
     const FieldDescriptor* field,
-    const Message::Reflection* message_reflection) {
+    const Message& message) {
+  const Reflection* message_reflection = message.GetReflection();
+
   if (field->is_extension() &&
       field->containing_type()->options().message_set_wire_format() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       !field->is_repeated()) {
-    return MessageSetItemByteSize(field, message_reflection);
+    return MessageSetItemByteSize(field, message);
   }
 
   int our_size = 0;
@@ -699,8 +718,8 @@ int WireFormat::FieldByteSize(
   int count = 0;
 
   if (field->is_repeated()) {
-    count = message_reflection->FieldSize(field);
-  } else if (message_reflection->HasField(field)) {
+    count = message_reflection->FieldSize(message, field);
+  } else if (message_reflection->HasField(message, field)) {
     count = 1;
   }
 
@@ -712,11 +731,12 @@ int WireFormat::FieldByteSize(
       if (field->is_repeated()) {                                          \
         for (int j = 0; j < count; j++) {                                  \
           our_size += TYPE_METHOD##Size(                                   \
-            message_reflection->GetRepeated##CPPTYPE_METHOD(field, j));    \
+            message_reflection->GetRepeated##CPPTYPE_METHOD(               \
+              message, field, j));                                         \
         }                                                                  \
       } else {                                                             \
         our_size += TYPE_METHOD##Size(                                     \
-          message_reflection->Get##CPPTYPE_METHOD(field));                 \
+          message_reflection->Get##CPPTYPE_METHOD(message, field));        \
       }                                                                    \
       break;
 
@@ -751,11 +771,11 @@ int WireFormat::FieldByteSize(
       if (field->is_repeated()) {
         for (int j = 0; j < count; j++) {
           our_size += EnumSize(
-            message_reflection->GetRepeatedEnum(field, j)->number());
+            message_reflection->GetRepeatedEnum(message, field, j)->number());
         }
       } else {
         our_size += EnumSize(
-          message_reflection->GetEnum(field)->number());
+          message_reflection->GetEnum(message, field)->number());
       }
       break;
     }
@@ -767,8 +787,9 @@ int WireFormat::FieldByteSize(
         for (int j = 0; j < count; j++) {
           string scratch;
           const string& value = field->is_repeated() ?
-            message_reflection->GetRepeatedStringReference(field, j, &scratch) :
-            message_reflection->GetStringReference(field, &scratch);
+            message_reflection->GetRepeatedStringReference(
+              message, field, j, &scratch) :
+            message_reflection->GetStringReference(message, field, &scratch);
           our_size += StringSize(value);
         }
       break;
@@ -780,14 +801,16 @@ int WireFormat::FieldByteSize(
 
 int WireFormat::MessageSetItemByteSize(
     const FieldDescriptor* field,
-    const Message::Reflection* message_reflection) {
+    const Message& message) {
+  const Reflection* message_reflection = message.GetReflection();
+
   int our_size = kMessageSetItemTagsSize;
 
   // type_id
   our_size += io::CodedOutputStream::VarintSize32(field->number());
 
   // message
-  const Message& sub_message = message_reflection->GetMessage(field);
+  const Message& sub_message = message_reflection->GetMessage(message, field);
   int message_size = sub_message.ByteSize();
 
   our_size += io::CodedOutputStream::VarintSize32(message_size);

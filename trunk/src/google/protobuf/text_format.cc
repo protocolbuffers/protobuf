@@ -103,9 +103,7 @@ class TextFormat::ParserImpl {
   // false if an error occurs (an error will also be logged to
   // GOOGLE_LOG(ERROR)).
   bool Parse(Message* output) {
-    Message::Reflection* reflection = output->GetReflection();
-    const Descriptor* descriptor = output->GetDescriptor();
-    root_message_type_ = descriptor;
+    root_message_type_ = output->GetDescriptor();
 
     // Consume fields until we cannot do so anymore.
     while(true) {
@@ -113,7 +111,7 @@ class TextFormat::ParserImpl {
         return true;
       }
 
-      DO(ConsumeField(reflection, descriptor));
+      DO(ConsumeField(output));
     }
   }
 
@@ -148,11 +146,8 @@ class TextFormat::ParserImpl {
   // This method checks to see that the end delimeter at the conclusion of
   // the consumption matches the starting delimeter passed in here.
   bool ConsumeMessage(Message* message, const string delimeter) {
-    Message::Reflection* reflection = message->GetReflection();
-    const Descriptor* descriptor = message->GetDescriptor();
-
     while (!LookingAt(">") &&  !LookingAt("}")) {
-      DO(ConsumeField(reflection, descriptor));
+      DO(ConsumeField(message));
     }
 
     // Confirm that we have a valid ending delimeter.
@@ -163,8 +158,10 @@ class TextFormat::ParserImpl {
 
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
-  bool ConsumeField(Message::Reflection* reflection,
-                    const Descriptor* descriptor) {
+  bool ConsumeField(Message* message) {
+    const Reflection* reflection = message->GetReflection();
+    const Descriptor* descriptor = message->GetDescriptor();
+
     string field_name;
 
     const FieldDescriptor* field = NULL;
@@ -232,19 +229,21 @@ class TextFormat::ParserImpl {
       }
 
       if (field->is_repeated()) {
-        DO(ConsumeMessage(reflection->AddMessage(field), delimeter));
+        DO(ConsumeMessage(reflection->AddMessage(message, field), delimeter));
       } else {
-        DO(ConsumeMessage(reflection->MutableMessage(field), delimeter));
+        DO(ConsumeMessage(reflection->MutableMessage(message, field),
+                          delimeter));
       }
     } else {
       DO(Consume(":"));
-      DO(ConsumeFieldValue(reflection, field));
+      DO(ConsumeFieldValue(message, reflection, field));
     }
 
     return true;
   }
 
-  bool ConsumeFieldValue(Message::Reflection* reflection,
+  bool ConsumeFieldValue(Message* message,
+                         const Reflection* reflection,
                          const FieldDescriptor* field) {
 
 // Define an easy to use macro for setting fields. This macro checks
@@ -252,9 +251,9 @@ class TextFormat::ParserImpl {
 // methods or not (in which case we need to use the Set methods).
 #define SET_FIELD(CPPTYPE, VALUE)                                  \
         if (field->is_repeated()) {                                \
-          reflection->Add##CPPTYPE(field, VALUE);                  \
+          reflection->Add##CPPTYPE(message, field, VALUE);         \
         } else {                                                   \
-          reflection->Set##CPPTYPE(field, VALUE);                  \
+          reflection->Set##CPPTYPE(message, field, VALUE);         \
         }                                                          \
 
     switch(field->cpp_type()) {
@@ -742,7 +741,7 @@ bool TextFormat::Parser::MergeFromString(const string& input,
                                     io::ZeroCopyOutputStream* output) {
   TextGenerator generator(output);
 
-  Print(message.GetDescriptor(), message.GetReflection(), generator);
+  Print(message, generator);
 
   // Output false if the generator failed internally.
   return !generator.failed();
@@ -759,15 +758,15 @@ bool TextFormat::Parser::MergeFromString(const string& input,
   return !generator.failed();
 }
 
-/* static */ void TextFormat::Print(const Descriptor* descriptor,
-                                    const Message::Reflection* message,
+/* static */ void TextFormat::Print(const Message& message,
                                     TextGenerator& generator) {
+  const Reflection* reflection = message.GetReflection();
   vector<const FieldDescriptor*> fields;
-  message->ListFields(&fields);
+  reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    PrintField(fields[i], message, generator);
+    PrintField(message, reflection, fields[i], generator);
   }
-  PrintUnknownFields(message->GetUnknownFields(), generator);
+  PrintUnknownFields(reflection->GetUnknownFields(message), generator);
 }
 
 /* static */ void TextFormat::PrintFieldValueToString(
@@ -782,17 +781,18 @@ bool TextFormat::Parser::MergeFromString(const string& input,
   io::StringOutputStream output_stream(output);
   TextGenerator generator(&output_stream);
 
-  PrintFieldValue(message.GetReflection(), field, index, generator);
+  PrintFieldValue(message, message.GetReflection(), field, index, generator);
 }
 
-/* static */ void TextFormat::PrintField(const FieldDescriptor* field,
-                                         const Message::Reflection* message,
+/* static */ void TextFormat::PrintField(const Message& message,
+                                         const Reflection* reflection,
+                                         const FieldDescriptor* field,
                                          TextGenerator& generator) {
   int count = 0;
 
   if (field->is_repeated()) {
-    count = message->FieldSize(field);
-  } else if (message->HasField(field)) {
+    count = reflection->FieldSize(message, field);
+  } else if (reflection->HasField(message, field)) {
     count = 1;
   }
 
@@ -831,7 +831,7 @@ bool TextFormat::Parser::MergeFromString(const string& input,
       field_index = -1;
     }
 
-    PrintFieldValue(message, field, field_index, generator);
+    PrintFieldValue(message, reflection, field, field_index, generator);
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         generator.Outdent();
@@ -843,7 +843,8 @@ bool TextFormat::Parser::MergeFromString(const string& input,
 }
 
 /* static */ void TextFormat::PrintFieldValue(
-    const Message::Reflection* reflection,
+    const Message& message,
+    const Reflection* reflection,
     const FieldDescriptor* field,
     int index,
     TextGenerator& generator) {
@@ -854,8 +855,8 @@ bool TextFormat::Parser::MergeFromString(const string& input,
 #define OUTPUT_FIELD(CPPTYPE, METHOD, TO_STRING)                             \
       case FieldDescriptor::CPPTYPE_##CPPTYPE:                               \
         generator.Print(TO_STRING(field->is_repeated() ?                     \
-                         reflection->GetRepeated##METHOD(field, index) :     \
-                         reflection->Get##METHOD(field)));                   \
+          reflection->GetRepeated##METHOD(message, field, index) :           \
+          reflection->Get##METHOD(message, field)));                         \
         break;                                                               \
 
       OUTPUT_FIELD( INT32,  Int32, SimpleItoa);
@@ -869,8 +870,9 @@ bool TextFormat::Parser::MergeFromString(const string& input,
       case FieldDescriptor::CPPTYPE_STRING: {
         string scratch;
         const string& value = field->is_repeated() ?
-            reflection->GetRepeatedStringReference(field, index, &scratch) :
-            reflection->GetStringReference(field, &scratch);
+            reflection->GetRepeatedStringReference(
+              message, field, index, &scratch) :
+            reflection->GetStringReference(message, field, &scratch);
 
         generator.Print("\"");
         generator.Print(CEscape(value));
@@ -881,24 +883,25 @@ bool TextFormat::Parser::MergeFromString(const string& input,
 
       case FieldDescriptor::CPPTYPE_BOOL:
         if (field->is_repeated()) {
-          generator.Print(reflection->GetRepeatedBool(field, index)
+          generator.Print(reflection->GetRepeatedBool(message, field, index)
                           ? "true" : "false");
         } else {
-          generator.Print(reflection->GetBool(field) ? "true" : "false");
+          generator.Print(reflection->GetBool(message, field)
+                          ? "true" : "false");
         }
         break;
 
       case FieldDescriptor::CPPTYPE_ENUM:
         generator.Print(field->is_repeated() ?
-                        reflection->GetRepeatedEnum(field, index)->name()
-                        : reflection->GetEnum(field)->name());
+          reflection->GetRepeatedEnum(message, field, index)->name() :
+          reflection->GetEnum(message, field)->name());
         break;
 
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        Print(field->message_type(),
-              field->is_repeated() ?
-              reflection->GetRepeatedMessage(field, index).GetReflection()
-              : reflection->GetMessage(field).GetReflection(), generator);
+        Print(field->is_repeated() ?
+                reflection->GetRepeatedMessage(message, field, index) :
+                reflection->GetMessage(message, field),
+              generator);
         break;
   }
 }

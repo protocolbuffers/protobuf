@@ -374,6 +374,8 @@ GenerateClassDefinition(io::Printer* printer) {
   } else {
     vars["dllexport"] = dllexport_decl_ + " ";
   }
+  vars["builddescriptorsname"] =
+    GlobalBuildDescriptorsName(descriptor_->file()->name());
 
   printer->Print(vars,
     "class $dllexport$$classname$ : public ::google::protobuf::Message {\n"
@@ -396,11 +398,11 @@ GenerateClassDefinition(io::Printer* printer) {
     "}\n"
     "\n"
     "inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {\n"
-    "  return _reflection_.unknown_fields();\n"
+    "  return _unknown_fields_;\n"
     "}\n"
     "\n"
     "inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {\n"
-    "  return _reflection_.mutable_unknown_fields();\n"
+    "  return &_unknown_fields_;\n"
     "}\n"
     "\n"
     "static const ::google::protobuf::Descriptor* descriptor();\n"
@@ -432,8 +434,7 @@ GenerateClassDefinition(io::Printer* printer) {
     "public:\n"
     "\n"
     "const ::google::protobuf::Descriptor* GetDescriptor() const;\n"
-    "const ::google::protobuf::Message::Reflection* GetReflection() const;\n"
-    "::google::protobuf::Message::Reflection* GetReflection();\n"
+    "const ::google::protobuf::Reflection* GetReflection() const;\n"
     "\n"
     "// nested types ----------------------------------------------------\n"
     "\n");
@@ -481,7 +482,7 @@ GenerateClassDefinition(io::Printer* printer) {
 
   // TODO(kenton):  Make _cached_size_ an atomic<int> when C++ supports it.
   printer->Print(
-    "::google::protobuf::internal::GeneratedMessageReflection _reflection_;\n"
+    "::google::protobuf::UnknownFieldSet _unknown_fields_;\n"
     "mutable int _cached_size_;\n"
     "\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -491,7 +492,7 @@ GenerateClassDefinition(io::Printer* printer) {
 
   // Generate offsets and _has_bits_ boilerplate.
   printer->Print(vars,
-    "\n"
+    "friend void $builddescriptorsname$();\n"
     "static const $classname$ default_instance_;\n");
 
   if (descriptor_->field_count() > 0) {
@@ -540,8 +541,11 @@ GenerateInlineMethods(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateDescriptorDeclarations(io::Printer* printer) {
-  printer->Print("const ::google::protobuf::Descriptor* $name$_descriptor_ = NULL;\n",
-                 "name", classname_);
+  printer->Print(
+    "const ::google::protobuf::Descriptor* $name$_descriptor_ = NULL;\n"
+    "const ::google::protobuf::internal::GeneratedMessageReflection*\n"
+    "  $name$_reflection_ = NULL;\n",
+    "name", classname_);
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     nested_generators_[i]->GenerateDescriptorDeclarations(printer);
@@ -562,6 +566,7 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
   vars["classname"] = classname_;
   vars["index"] = SimpleItoa(index);
 
+  // Obtain the descriptor from the parent's descriptor.
   if (descriptor_->containing_type() == NULL) {
     printer->Print(vars,
       "$classname$_descriptor_ = file->message_type($index$);\n");
@@ -572,6 +577,29 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
         "$parent$_descriptor_->nested_type($index$);\n");
   }
 
+  // Construct the reflection object.
+  printer->Print(vars,
+    "$classname$_reflection_ =\n"
+    "  new ::google::protobuf::internal::GeneratedMessageReflection(\n"
+    "    $classname$_descriptor_,\n"
+    "    &$classname$::default_instance(),\n"
+    "    $classname$::_offsets_,\n"
+    "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, _has_bits_[0]),\n"
+    "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
+      "$classname$, _unknown_fields_),\n");
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print(vars,
+      "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
+        "$classname$, _extensions_),\n");
+  } else {
+    // No extensions.
+    printer->Print(vars,
+      "    -1,\n");
+  }
+  printer->Print(vars,
+    "    ::google::protobuf::DescriptorPool::generated_pool());\n");
+
+  // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     nested_generators_[i]->GenerateDescriptorInitializer(printer, i);
   }
@@ -650,15 +678,13 @@ GenerateClassMethods(io::Printer* printer) {
     "  return descriptor();\n"
     "}\n"
     "\n"
-    "const ::google::protobuf::Message::Reflection*\n"
-    "$classname$::GetReflection() const {\n"
-    "  return &_reflection_;\n"
-    "}\n"
-    "\n"
-    "::google::protobuf::Message::Reflection* $classname$::GetReflection() {\n"
-    "  return &_reflection_;\n"
+    "const ::google::protobuf::Reflection* $classname$::GetReflection() const {\n"
+    "  if ($classname$_reflection_ == NULL) $builddescriptorsname$();\n"
+    "  return $classname$_reflection_;\n"
     "}\n",
-    "classname", classname_);
+    "classname", classname_,
+    "builddescriptorsname",
+      GlobalBuildDescriptorsName(descriptor_->file()->name()));
 }
 
 void MessageGenerator::
@@ -686,20 +712,16 @@ GenerateInitializerList(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
 
-  bool has_extensions = descriptor_->extension_range_count() > 0;
-  if (has_extensions) {
+  if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "_extensions_(descriptor(),\n"
+      "_extensions_(&$classname$_descriptor_,\n"
       "             ::google::protobuf::DescriptorPool::generated_pool(),\n"
-      "             ::google::protobuf::MessageFactory::generated_factory()),\n");
+      "             ::google::protobuf::MessageFactory::generated_factory()),\n",
+      "classname", classname_);
   }
 
   printer->Print(
-    "_reflection_(descriptor(),\n"
-    "             this, &default_instance_,\n"
-    "             _offsets_, _has_bits_, $extensions$),\n"
-    "_cached_size_(0)",
-    "extensions", has_extensions ? "&_extensions_" : "NULL");
+    "_cached_size_(0)");
 
   // Write the initializers for each field.
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -904,8 +926,7 @@ GenerateMergeFrom(io::Printer* printer) {
       "  ::google::protobuf::internal::dynamic_cast_if_available<const $classname$*>(\n"
       "    &from);\n"
       "if (source == NULL) {\n"
-      "  ::google::protobuf::internal::ReflectionOps::Merge(\n"
-      "    descriptor(), *from.GetReflection(), &_reflection_);\n"
+      "  ::google::protobuf::internal::ReflectionOps::Merge(from, this);\n"
       "} else {\n"
       "  MergeFrom(*source);\n"
       "}\n",
@@ -1028,7 +1049,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       "bool $classname$::MergePartialFromCodedStream(\n"
       "    ::google::protobuf::io::CodedInputStream* input) {\n"
       "  return ::google::protobuf::internal::WireFormat::ParseAndMergePartial(\n"
-      "    descriptor(), input, &_reflection_);\n"
+      "    input, this);\n"
       "}\n",
       "classname", classname_);
     return;
@@ -1157,7 +1178,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       }
     }
     printer->Print(") {\n"
-      "  DO_(_extensions_.ParseField(tag, input, &_reflection_));\n"
+      "  DO_(_extensions_.ParseField(tag, input, this));\n"
       "  continue;\n"
       "}\n");
   }
@@ -1214,7 +1235,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
   printer->Print(vars,
     "// Extension range [$start$, $end$)\n"
     "DO_(_extensions_.SerializeWithCachedSizes(\n"
-    "    $start$, $end$, &_reflection_, output));\n\n");
+    "    $start$, $end$, *this, output));\n\n");
 }
 
 void MessageGenerator::
@@ -1341,7 +1362,7 @@ GenerateByteSize(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "total_size += _extensions_.ByteSize(&_reflection_);\n"
+      "total_size += _extensions_.ByteSize(*this);\n"
       "\n");
   }
 

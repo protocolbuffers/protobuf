@@ -188,7 +188,7 @@ string FilenameIdentifier(const string& filename) {
 
 // Return the name of the BuildDescriptors() function for a given file.
 string GlobalBuildDescriptorsName(const string& filename) {
-  return "proto_BuildDescriptors_" + FilenameIdentifier(filename);
+  return "protobuf_BuildDesc_" + FilenameIdentifier(filename);
 }
 
 }  // namespace cpp

@@ -53,8 +53,7 @@ TEST(WireFormatTest, Parse) {
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
   io::CodedInputStream input(&raw_input);
-  WireFormat::ParseAndMergePartial(unittest::TestAllTypes::descriptor(),
-                                   &input, dest.GetReflection());
+  WireFormat::ParseAndMergePartial(&input, &dest);
 
   // Check.
   TestUtil::ExpectAllFieldsSet(dest);
@@ -71,8 +70,7 @@ TEST(WireFormatTest, ParseExtensions) {
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
   io::CodedInputStream input(&raw_input);
-  WireFormat::ParseAndMergePartial(unittest::TestAllExtensions::descriptor(),
-                                   &input, dest.GetReflection());
+  WireFormat::ParseAndMergePartial(&input, &dest);
 
   // Check.
   TestUtil::ExpectAllExtensionsSet(dest);
@@ -82,13 +80,10 @@ TEST(WireFormatTest, ByteSize) {
   unittest::TestAllTypes message;
   TestUtil::SetAllFields(&message);
 
-  EXPECT_EQ(message.ByteSize(),
-            WireFormat::ByteSize(unittest::TestAllTypes::descriptor(),
-                                 message.GetReflection()));
+  EXPECT_EQ(message.ByteSize(), WireFormat::ByteSize(message));
   message.Clear();
   EXPECT_EQ(0, message.ByteSize());
-  EXPECT_EQ(0, WireFormat::ByteSize(unittest::TestAllTypes::descriptor(),
-                                    message.GetReflection()));
+  EXPECT_EQ(0, WireFormat::ByteSize(message));
 }
 
 TEST(WireFormatTest, ByteSizeExtensions) {
@@ -96,12 +91,10 @@ TEST(WireFormatTest, ByteSizeExtensions) {
   TestUtil::SetAllExtensions(&message);
 
   EXPECT_EQ(message.ByteSize(),
-            WireFormat::ByteSize(unittest::TestAllExtensions::descriptor(),
-                                 message.GetReflection()));
+            WireFormat::ByteSize(message));
   message.Clear();
   EXPECT_EQ(0, message.ByteSize());
-  EXPECT_EQ(0, WireFormat::ByteSize(unittest::TestAllExtensions::descriptor(),
-                                    message.GetReflection()));
+  EXPECT_EQ(0, WireFormat::ByteSize(message));
 }
 
 TEST(WireFormatTest, Serialize) {
@@ -123,9 +116,7 @@ TEST(WireFormatTest, Serialize) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(
-      unittest::TestAllTypes::descriptor(),
-      message.GetReflection(), size, &output);
+    WireFormat::SerializeWithCachedSizes(message, size, &output);
   }
 
   // Should be the same.
@@ -153,9 +144,7 @@ TEST(WireFormatTest, SerializeExtensions) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(
-      unittest::TestAllExtensions::descriptor(),
-      message.GetReflection(), size, &output);
+    WireFormat::SerializeWithCachedSizes(message, size, &output);
   }
 
   // Should be the same.
@@ -183,9 +172,7 @@ TEST(WireFormatTest, SerializeFieldsAndExtensions) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(
-      unittest::TestFieldOrderings::descriptor(),
-      message.GetReflection(), size, &output);
+    WireFormat::SerializeWithCachedSizes(message, size, &output);
   }
 
   // Should be the same.
@@ -497,9 +484,9 @@ TEST_F(WireFormatInvalidInputTest, InvalidGroup) {
 }
 
 TEST_F(WireFormatInvalidInputTest, InvalidUnknownGroup) {
-  // Use ForeignMessage so that the group made by MakeInvalidGroup will not
+  // Use TestEmptyMessage so that the group made by MakeInvalidGroup will not
   // be a known tag number.
-  unittest::ForeignMessage message;
+  unittest::TestEmptyMessage message;
 
   // Control case.
   EXPECT_TRUE(message.ParseFromString(MakeInvalidGroup("", 0, true)));
@@ -518,6 +505,26 @@ TEST_F(WireFormatInvalidInputTest, InvalidUnknownGroup) {
 
   // The byte is a valid varint but not a valid tag (bad wire type).
   EXPECT_FALSE(message.ParseFromString(MakeInvalidGroup("\017", 1, true)));
+}
+
+TEST_F(WireFormatInvalidInputTest, InvalidStringInUnknownGroup) {
+  // Test a bug fix:  SkipMessage should fail if the message contains a string
+  // whose length would extend beyond the message end.
+
+  unittest::TestAllTypes message;
+  message.set_optional_string("foo foo foo foo");
+  string data;
+  message.SerializeToString(&data);
+
+  // Chop some bytes off the end.
+  data.resize(data.size() - 4);
+
+  // Try to skip it.  Note that the bug was only present when parsing to an
+  // UnknownFieldSet.
+  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::CodedInputStream coded_input(&raw_input);
+  UnknownFieldSet unknown_fields;
+  EXPECT_FALSE(WireFormat::SkipMessage(&coded_input, &unknown_fields));
 }
 
 }  // namespace

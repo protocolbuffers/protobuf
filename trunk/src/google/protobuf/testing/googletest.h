@@ -33,10 +33,12 @@ string TestSourceDir();
 // placed.
 string TestTempDir();
 
-// Capture all text written to stderr.
+// Capture all text written to stdout or stderr.
+void CaptureTestStdout();
 void CaptureTestStderr();
 
-// Stop capturing stderr and return the text captured.
+// Stop capturing stdout or stderr and return the text captured.
+string GetCapturedTestStdout();
 string GetCapturedTestStderr();
 
 // For use with ScopedMemoryLog::GetMessages().  Inside Google the LogLevel

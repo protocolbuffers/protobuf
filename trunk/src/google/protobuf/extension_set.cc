@@ -35,41 +35,9 @@ namespace internal {
 // Lookup functions
 
 const FieldDescriptor*
-ExtensionSet::FindKnownExtensionByName(const string& name) const {
-  const FieldDescriptor* result = descriptor_pool_->FindExtensionByName(name);
-  if (result != NULL && result->containing_type() == extendee_) {
-    return result;
-  }
-
-  if (extendee_->options().message_set_wire_format()) {
-    // MessageSet extensions may be identified by type name.
-    const Descriptor* type = descriptor_pool_->FindMessageTypeByName(name);
-    if (type != NULL) {
-      // Look for a matching extension in the foreign type's scope.
-      for (int i = 0; i < type->extension_count(); i++) {
-        const FieldDescriptor* extension = type->extension(i);
-        if (extension->containing_type() == extendee_ &&
-            extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-            extension->is_optional() &&
-            extension->message_type() == type) {
-          // Found it.
-          return extension;
-        }
-      }
-    }
-  }
-
-  return NULL;
-}
-
-const FieldDescriptor*
-ExtensionSet::FindKnownExtensionByNumber(int number) const {
-  return descriptor_pool_->FindExtensionByNumber(extendee_, number);
-}
-
-const FieldDescriptor*
 ExtensionSet::FindKnownExtensionOrDie(int number) const {
-  const FieldDescriptor* descriptor = FindKnownExtensionByNumber(number);
+  const FieldDescriptor* descriptor =
+    descriptor_pool_->FindExtensionByNumber(*extendee_, number);
   if (descriptor == NULL) {
     // This extension doesn't exist, so we have to crash.  However, let's
     // try to provide an informative error message.
@@ -77,7 +45,7 @@ ExtensionSet::FindKnownExtensionOrDie(int number) const {
         message_factory_ == MessageFactory::generated_factory()) {
       // This is probably the ExtensionSet for a generated class.
       GOOGLE_LOG(FATAL) << ": No extension is registered for \""
-                 << extendee_->full_name() << "\" with number "
+                 << (*extendee_)->full_name() << "\" with number "
                  << number << ".  Perhaps you were trying to access it via "
                     "the Reflection interface, but you provided a "
                     "FieldDescriptor which did not come from a linked-in "
@@ -87,7 +55,7 @@ ExtensionSet::FindKnownExtensionOrDie(int number) const {
     } else {
       // This is probably a DynamicMessage.
       GOOGLE_LOG(FATAL) << ": No extension is registered for \""
-                 << extendee_->full_name() << "\" with number "
+                 << (*extendee_)->full_name() << "\" with number "
                  << number << ".  If you were using a DynamicMessage, "
                     "remember that you are only allowed to access extensions "
                     "which are defined in the DescriptorPool which you passed "
@@ -105,7 +73,7 @@ ExtensionSet::GetPrototype(const Descriptor* message_type) const {
 // ===================================================================
 // Constructors and basic methods.
 
-ExtensionSet::ExtensionSet(const Descriptor* extendee,
+ExtensionSet::ExtensionSet(const Descriptor* const* extendee,
                            const DescriptorPool* pool,
                            MessageFactory* factory)
   : extendee_(extendee),
@@ -461,7 +429,7 @@ void MergeRepeatedFields(const RepeatedPtrField<Message>& source,
 }  // namespace
 
 void ExtensionSet::MergeFrom(const ExtensionSet& other) {
-  GOOGLE_DCHECK_EQ(extendee_, other.extendee_);
+  GOOGLE_DCHECK_EQ(*extendee_, *other.extendee_);
 
   for (map<int, Extension>::const_iterator iter = other.extensions_.begin();
        iter != other.extensions_.end(); ++iter) {
@@ -558,22 +526,23 @@ bool ExtensionSet::IsInitialized() const {
 }
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
-                              Message::Reflection* reflection) {
+                              Message* message) {
   const FieldDescriptor* field =
-    FindKnownExtensionByNumber(WireFormat::GetTagFieldNumber(tag));
+    message->GetReflection()
+           ->FindKnownExtensionByNumber(WireFormat::GetTagFieldNumber(tag));
 
-  return WireFormat::ParseAndMergeField(tag, field, reflection, input);
+  return WireFormat::ParseAndMergeField(tag, field, message, input);
 }
 
 bool ExtensionSet::SerializeWithCachedSizes(
     int start_field_number, int end_field_number,
-    const Message::Reflection* reflection,
+    const Message& message,
     io::CodedOutputStream* output) const {
   map<int, Extension>::const_iterator iter;
   for (iter = extensions_.lower_bound(start_field_number);
        iter != extensions_.end() && iter->first < end_field_number;
        ++iter) {
-    if (!iter->second.SerializeFieldWithCachedSizes(reflection, output)) {
+    if (!iter->second.SerializeFieldWithCachedSizes(message, output)) {
       return false;
     }
   }
@@ -581,12 +550,12 @@ bool ExtensionSet::SerializeWithCachedSizes(
   return true;
 }
 
-int ExtensionSet::ByteSize(const Message::Reflection* reflection) const {
+int ExtensionSet::ByteSize(const Message& message) const {
   int total_size = 0;
 
   for (map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    total_size += iter->second.ByteSize(reflection);
+    total_size += iter->second.ByteSize(message);
   }
 
   return total_size;
@@ -652,20 +621,19 @@ void ExtensionSet::Extension::Clear() {
 }
 
 bool ExtensionSet::Extension::SerializeFieldWithCachedSizes(
-    const Message::Reflection* reflection,
+    const Message& message,
     io::CodedOutputStream* output) const {
   if (descriptor->is_repeated() || !is_cleared) {
     return WireFormat::SerializeFieldWithCachedSizes(
-        descriptor, reflection, output);
+      descriptor, message, output);
   } else {
     return true;
   }
 }
 
-int64 ExtensionSet::Extension::ByteSize(
-    const Message::Reflection* reflection) const {
+int64 ExtensionSet::Extension::ByteSize(const Message& message) const {
   if (descriptor->is_repeated() || !is_cleared) {
-    return WireFormat::FieldByteSize(descriptor, reflection);
+    return WireFormat::FieldByteSize(descriptor, message);
   } else {
     // Cleared, non-repeated field.
     return 0;

@@ -35,6 +35,7 @@ namespace google {
 namespace protobuf {
 
 class FileDescriptor;        // descriptor.h
+class DescriptorPool;        // descriptor.h
 
 namespace compiler {
 
@@ -164,6 +165,12 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   bool GenerateOutput(const FileDescriptor* proto_file,
                       const OutputDirective& output_directive);
 
+  // Implements --encode and --decode.
+  bool EncodeOrDecode(const DescriptorPool* pool);
+
+  // Implements the --descriptor_set_out option.
+  bool WriteDescriptorSet(const vector<const FileDescriptor*> parsed_files);
+
   // -----------------------------------------------------------------
 
   // The name of the executable as invoked (i.e. argv[0]).
@@ -181,6 +188,14 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   GeneratorMap generators_;
 
   // Stuff parsed from command line.
+  enum Mode {
+    MODE_COMPILE,  // Normal mode:  parse .proto files and compile them.
+    MODE_ENCODE,   // --encode:  read text from stdin, write binary to stdout.
+    MODE_DECODE    // --decode:  read binary from stdin, write text to stdout.
+  };
+
+  Mode mode_;
+
   vector<pair<string, string> > proto_path_;  // Search path for proto files.
   vector<string> input_files_;                // Names of the input proto files.
 
@@ -193,6 +208,19 @@ class LIBPROTOC_EXPORT CommandLineInterface {
     string output_location;
   };
   vector<OutputDirective> output_directives_;
+
+  // When using --encode or --decode, this names the type we are encoding or
+  // decoding.  (Empty string indicates --decode_raw.)
+  string codec_type_;
+
+  // If --descriptor_set_out was given, this is the filename to which the
+  // FileDescriptorSet should be written.  Otherwise, empty.
+  string descriptor_set_name_;
+
+  // True if --include_imports was given, meaning that we should
+  // write all transitive dependencies to the DescriptorSet.  Otherwise, only
+  // the .proto files listed on the command-line are added.
+  bool imports_in_descriptor_set_;
 
   // Was the --disallow_services flag used?
   bool disallow_services_;
