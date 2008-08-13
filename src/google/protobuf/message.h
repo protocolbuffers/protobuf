@@ -81,12 +81,12 @@
 //     foo->ParseFromString(data);
 //
 //     // Use the reflection interface to examine the contents.
-//     Message::Reflection* reflection = foo->GetReflection();
-//     assert(reflection->GetString(text_field) == "Hello World!");
-//     assert(reflection->CountField(numbers_field) == 3);
-//     assert(reflection->GetInt32(numbers_field, 0) == 1);
-//     assert(reflection->GetInt32(numbers_field, 1) == 5);
-//     assert(reflection->GetInt32(numbers_field, 2) == 42);
+//     Reflection* reflection = foo->GetReflection();
+//     assert(reflection->GetString(foo, text_field) == "Hello World!");
+//     assert(reflection->CountField(foo, numbers_field) == 3);
+//     assert(reflection->GetInt32(foo, numbers_field, 0) == 1);
+//     assert(reflection->GetInt32(foo, numbers_field, 1) == 5);
+//     assert(reflection->GetInt32(foo, numbers_field, 2) == 42);
 //
 //     delete foo;
 //   }
@@ -105,6 +105,7 @@ namespace protobuf {
 
 // Defined in this file.
 class Message;
+class Reflection;
 
 // Defined in other files.
 class Descriptor;            // descriptor.h
@@ -336,7 +337,8 @@ class LIBPROTOBUF_EXPORT Message {
 
   // Introspection ---------------------------------------------------
 
-  class Reflection;  // Defined below.
+  // Typedef for backwards-compatibility.
+  typedef google::protobuf::Reflection Reflection;
 
   // Get a Descriptor for this message's type.  This describes what
   // fields the message contains, the types of those fields, etc.
@@ -347,12 +349,6 @@ class LIBPROTOBUF_EXPORT Message {
   // without knowing the message type at compile time).  This object remains
   // property of the Message.
   virtual const Reflection* GetReflection() const = 0;
-
-  // Get the Reflection interface for this Message, which can be used to
-  // read and modify the fields of the Message dynamically (in other words,
-  // without knowing the message type at compile time).  This object remains
-  // property of the Message.
-  virtual Reflection* GetReflection() = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Message);
@@ -367,7 +363,9 @@ class LIBPROTOBUF_EXPORT Message {
 // This interface is separate from Message only for efficiency reasons;
 // the vast majority of implementations of Message will share the same
 // implementation of Reflection (GeneratedMessageReflection,
-// defined in generated_message.h).
+// defined in generated_message.h), and all Messages of a particular class
+// should share the same Reflection object (though you should not rely on
+// the latter fact).
 //
 // There are several ways that these methods can be used incorrectly.  For
 // example, any of the following conditions will lead to undefined
@@ -382,6 +380,8 @@ class LIBPROTOBUF_EXPORT Message {
 //   field.
 // - GetRepeated*(), SetRepeated*(), or Add*() is called on a non-repeated
 //   field.
+// - The Message object passed to any method is not of the right type for
+//   this Reflection object (i.e. message.GetReflection() != reflection).
 //
 // You might wonder why there is not any abstract representation for a field
 // of arbitrary type.  E.g., why isn't there just a "GetField()" method that
@@ -393,54 +393,75 @@ class LIBPROTOBUF_EXPORT Message {
 // objects on-demand, on the other hand, would be expensive and prone to
 // memory leaks.  So, instead we ended up with this flat interface.
 //
+// WARNING:  This class is currently in the process of being converted from
+//   a per-instance object to a per-class object.  You'll notice that there
+//   are two sets of methods below:  ones that take a Message pointer or
+//   reference as a parameter, and ones that don't.  The former ones are the
+//   new interface; the latter ones will go away soon.
+//
 // TODO(kenton):  Create a utility class which callers can use to read and
 //   write fields from a Reflection without paying attention to the type.
-class LIBPROTOBUF_EXPORT Message::Reflection {
+class LIBPROTOBUF_EXPORT Reflection {
  public:
+  // TODO(kenton):  Remove parameter.
   inline Reflection() {}
   virtual ~Reflection();
 
   // Get the UnknownFieldSet for the message.  This contains fields which
   // were seen when the Message was parsed but were not recognized according
   // to the Message's definition.
-  virtual const UnknownFieldSet& GetUnknownFields() const = 0;
+  virtual const UnknownFieldSet& GetUnknownFields(
+      const Message& message) const = 0;
   // Get a mutable pointer to the UnknownFieldSet for the message.  This
   // contains fields which were seen when the Message was parsed but were not
   // recognized according to the Message's definition.
-  virtual UnknownFieldSet* MutableUnknownFields() = 0;
+  virtual UnknownFieldSet* MutableUnknownFields(Message* message) const = 0;
 
   // Check if the given non-repeated field is set.
-  virtual bool HasField(const FieldDescriptor* field) const = 0;
+  virtual bool HasField(const Message& message,
+                        const FieldDescriptor* field) const = 0;
 
   // Get the number of elements of a repeated field.
-  virtual int FieldSize(const FieldDescriptor* field) const = 0;
+  virtual int FieldSize(const Message& message,
+                        const FieldDescriptor* field) const = 0;
 
   // Clear the value of a field, so that HasField() returns false or
   // FieldSize() returns zero.
-  virtual void ClearField(const FieldDescriptor* field) = 0;
+  virtual void ClearField(Message* message,
+                          const FieldDescriptor* field) const = 0;
 
   // List all fields of the message which are currently set.  This includes
   // extensions.  Singular fields will only be listed if HasField(field) would
   // return true and repeated fields will only be listed if FieldSize(field)
   // would return non-zero.  Fields (both normal fields and extension fields)
   // will be listed ordered by field number.
-  virtual void ListFields(vector<const FieldDescriptor*>* output) const = 0;
+  virtual void ListFields(const Message& message,
+                          vector<const FieldDescriptor*>* output) const = 0;
 
   // Singular field getters ------------------------------------------
   // These get the value of a non-repeated field.  They return the default
   // value for fields that aren't set.
 
-  virtual int32  GetInt32 (const FieldDescriptor* field) const = 0;
-  virtual int64  GetInt64 (const FieldDescriptor* field) const = 0;
-  virtual uint32 GetUInt32(const FieldDescriptor* field) const = 0;
-  virtual uint64 GetUInt64(const FieldDescriptor* field) const = 0;
-  virtual float  GetFloat (const FieldDescriptor* field) const = 0;
-  virtual double GetDouble(const FieldDescriptor* field) const = 0;
-  virtual bool   GetBool  (const FieldDescriptor* field) const = 0;
-  virtual string GetString(const FieldDescriptor* field) const = 0;
+  virtual int32  GetInt32 (const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual int64  GetInt64 (const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual uint32 GetUInt32(const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual uint64 GetUInt64(const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual float  GetFloat (const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual double GetDouble(const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual bool   GetBool  (const Message& message,
+                           const FieldDescriptor* field) const = 0;
+  virtual string GetString(const Message& message,
+                           const FieldDescriptor* field) const = 0;
   virtual const EnumValueDescriptor* GetEnum(
-      const FieldDescriptor* field) const = 0;
-  virtual const Message& GetMessage(const FieldDescriptor* field) const = 0;
+      const Message& message, const FieldDescriptor* field) const = 0;
+  virtual const Message& GetMessage(const Message& message,
+                                    const FieldDescriptor* field) const = 0;
 
   // Get a string value without copying, if possible.
   //
@@ -457,98 +478,140 @@ class LIBPROTOBUF_EXPORT Message::Reflection {
   //   a newly-constructed string, though, it's just as fast and more readable
   //   to use code like:
   //     string str = reflection->GetString(field);
-  virtual const string& GetStringReference(const FieldDescriptor* field,
+  virtual const string& GetStringReference(const Message& message,
+                                           const FieldDescriptor* field,
                                            string* scratch) const = 0;
 
 
   // Singular field mutators -----------------------------------------
   // These mutate the value of a non-repeated field.
 
-  virtual void SetInt32 (const FieldDescriptor* field, int32  value) = 0;
-  virtual void SetInt64 (const FieldDescriptor* field, int64  value) = 0;
-  virtual void SetUInt32(const FieldDescriptor* field, uint32 value) = 0;
-  virtual void SetUInt64(const FieldDescriptor* field, uint64 value) = 0;
-  virtual void SetFloat (const FieldDescriptor* field, float  value) = 0;
-  virtual void SetDouble(const FieldDescriptor* field, double value) = 0;
-  virtual void SetBool  (const FieldDescriptor* field, bool   value) = 0;
-  virtual void SetString(const FieldDescriptor* field, const string& value) = 0;
-  virtual void SetEnum  (const FieldDescriptor* field,
-                         const EnumValueDescriptor* value) = 0;
+  virtual void SetInt32 (Message* message,
+                         const FieldDescriptor* field, int32  value) const = 0;
+  virtual void SetInt64 (Message* message,
+                         const FieldDescriptor* field, int64  value) const = 0;
+  virtual void SetUInt32(Message* message,
+                         const FieldDescriptor* field, uint32 value) const = 0;
+  virtual void SetUInt64(Message* message,
+                         const FieldDescriptor* field, uint64 value) const = 0;
+  virtual void SetFloat (Message* message,
+                         const FieldDescriptor* field, float  value) const = 0;
+  virtual void SetDouble(Message* message,
+                         const FieldDescriptor* field, double value) const = 0;
+  virtual void SetBool  (Message* message,
+                         const FieldDescriptor* field, bool   value) const = 0;
+  virtual void SetString(Message* message,
+                         const FieldDescriptor* field,
+                         const string& value) const = 0;
+  virtual void SetEnum  (Message* message,
+                         const FieldDescriptor* field,
+                         const EnumValueDescriptor* value) const = 0;
   // Get a mutable pointer to a field with a message type.
-  virtual Message* MutableMessage(const FieldDescriptor* field) = 0;
+  virtual Message* MutableMessage(Message* message,
+                                  const FieldDescriptor* field) const = 0;
 
 
   // Repeated field getters ------------------------------------------
   // These get the value of one element of a repeated field.
 
-  virtual int32  GetRepeatedInt32 (const FieldDescriptor* field,
+  virtual int32  GetRepeatedInt32 (const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual int64  GetRepeatedInt64 (const FieldDescriptor* field,
+  virtual int64  GetRepeatedInt64 (const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual uint32 GetRepeatedUInt32(const FieldDescriptor* field,
+  virtual uint32 GetRepeatedUInt32(const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual uint64 GetRepeatedUInt64(const FieldDescriptor* field,
+  virtual uint64 GetRepeatedUInt64(const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual float  GetRepeatedFloat (const FieldDescriptor* field,
+  virtual float  GetRepeatedFloat (const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual double GetRepeatedDouble(const FieldDescriptor* field,
+  virtual double GetRepeatedDouble(const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual bool   GetRepeatedBool  (const FieldDescriptor* field,
+  virtual bool   GetRepeatedBool  (const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual string GetRepeatedString(const FieldDescriptor* field,
+  virtual string GetRepeatedString(const Message& message,
+                                   const FieldDescriptor* field,
                                    int index) const = 0;
   virtual const EnumValueDescriptor* GetRepeatedEnum(
+      const Message& message,
       const FieldDescriptor* field, int index) const = 0;
   virtual const Message& GetRepeatedMessage(
+      const Message& message,
       const FieldDescriptor* field, int index) const = 0;
 
   // See GetStringReference(), above.
   virtual const string& GetRepeatedStringReference(
-      const FieldDescriptor* field, int index,
-      string* scratch) const = 0;
+      const Message& message, const FieldDescriptor* field,
+      int index, string* scratch) const = 0;
 
 
   // Repeated field mutators -----------------------------------------
   // These mutate the value of one element of a repeated field.
 
-  virtual void SetRepeatedInt32 (const FieldDescriptor* field,
-                                 int index, int32  value) = 0;
-  virtual void SetRepeatedInt64 (const FieldDescriptor* field,
-                                 int index, int64  value) = 0;
-  virtual void SetRepeatedUInt32(const FieldDescriptor* field,
-                                 int index, uint32 value) = 0;
-  virtual void SetRepeatedUInt64(const FieldDescriptor* field,
-                                 int index, uint64 value) = 0;
-  virtual void SetRepeatedFloat (const FieldDescriptor* field,
-                                 int index, float  value) = 0;
-  virtual void SetRepeatedDouble(const FieldDescriptor* field,
-                                 int index, double value) = 0;
-  virtual void SetRepeatedBool  (const FieldDescriptor* field,
-                                 int index, bool   value) = 0;
-  virtual void SetRepeatedString(const FieldDescriptor* field,
-                                 int index, const string& value) = 0;
-  virtual void SetRepeatedEnum(const FieldDescriptor* field,
-                               int index, const EnumValueDescriptor* value) = 0;
+  virtual void SetRepeatedInt32 (Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, int32  value) const = 0;
+  virtual void SetRepeatedInt64 (Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, int64  value) const = 0;
+  virtual void SetRepeatedUInt32(Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, uint32 value) const = 0;
+  virtual void SetRepeatedUInt64(Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, uint64 value) const = 0;
+  virtual void SetRepeatedFloat (Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, float  value) const = 0;
+  virtual void SetRepeatedDouble(Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, double value) const = 0;
+  virtual void SetRepeatedBool  (Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, bool   value) const = 0;
+  virtual void SetRepeatedString(Message* message,
+                                 const FieldDescriptor* field,
+                                 int index, const string& value) const = 0;
+  virtual void SetRepeatedEnum(Message* message,
+                               const FieldDescriptor* field, int index,
+                               const EnumValueDescriptor* value) const = 0;
   // Get a mutable pointer to an element of a repeated field with a message
   // type.
   virtual Message* MutableRepeatedMessage(
-      const FieldDescriptor* field, int index) = 0;
+      Message* message, const FieldDescriptor* field, int index) const = 0;
 
 
   // Repeated field adders -------------------------------------------
   // These add an element to a repeated field.
 
-  virtual void AddInt32 (const FieldDescriptor* field, int32  value) = 0;
-  virtual void AddInt64 (const FieldDescriptor* field, int64  value) = 0;
-  virtual void AddUInt32(const FieldDescriptor* field, uint32 value) = 0;
-  virtual void AddUInt64(const FieldDescriptor* field, uint64 value) = 0;
-  virtual void AddFloat (const FieldDescriptor* field, float  value) = 0;
-  virtual void AddDouble(const FieldDescriptor* field, double value) = 0;
-  virtual void AddBool  (const FieldDescriptor* field, bool   value) = 0;
-  virtual void AddString(const FieldDescriptor* field, const string& value) = 0;
-  virtual void AddEnum  (const FieldDescriptor* field,
-                         const EnumValueDescriptor* value) = 0;
-  virtual Message* AddMessage(const FieldDescriptor* field) = 0;
+  virtual void AddInt32 (Message* message,
+                         const FieldDescriptor* field, int32  value) const = 0;
+  virtual void AddInt64 (Message* message,
+                         const FieldDescriptor* field, int64  value) const = 0;
+  virtual void AddUInt32(Message* message,
+                         const FieldDescriptor* field, uint32 value) const = 0;
+  virtual void AddUInt64(Message* message,
+                         const FieldDescriptor* field, uint64 value) const = 0;
+  virtual void AddFloat (Message* message,
+                         const FieldDescriptor* field, float  value) const = 0;
+  virtual void AddDouble(Message* message,
+                         const FieldDescriptor* field, double value) const = 0;
+  virtual void AddBool  (Message* message,
+                         const FieldDescriptor* field, bool   value) const = 0;
+  virtual void AddString(Message* message,
+                         const FieldDescriptor* field,
+                         const string& value) const = 0;
+  virtual void AddEnum  (Message* message,
+                         const FieldDescriptor* field,
+                         const EnumValueDescriptor* value) const = 0;
+  virtual Message* AddMessage(Message* message,
+                              const FieldDescriptor* field) const = 0;
 
 
   // Extensions ------------------------------------------------------

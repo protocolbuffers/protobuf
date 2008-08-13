@@ -176,8 +176,7 @@ TEST_F(UnknownFieldSetTest, ParseViaReflection) {
   io::ArrayInputStream raw_input(all_fields_data_.data(),
                                  all_fields_data_.size());
   io::CodedInputStream input(&raw_input);
-  ASSERT_TRUE(WireFormat::ParseAndMergePartial(message.GetDescriptor(), &input,
-                                               message.GetReflection()));
+  ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &message));
 
   EXPECT_EQ(message.DebugString(), empty_message_.DebugString());
 }
@@ -191,12 +190,9 @@ TEST_F(UnknownFieldSetTest, SerializeViaReflection) {
   {
     io::StringOutputStream raw_output(&data);
     io::CodedOutputStream output(&raw_output);
-    int size = WireFormat::ByteSize(empty_message_.GetDescriptor(),
-                                    empty_message_.GetReflection());
+    int size = WireFormat::ByteSize(empty_message_);
     ASSERT_TRUE(
-      WireFormat::SerializeWithCachedSizes(empty_message_.GetDescriptor(),
-                                           empty_message_.GetReflection(),
-                                           size, &output));
+      WireFormat::SerializeWithCachedSizes(empty_message_, size, &output));
   }
 
   // Don't use EXPECT_EQ because we don't want to dump raw binary data to
@@ -290,9 +286,7 @@ TEST_F(UnknownFieldSetTest, WrongTypeTreatedAsUnknownViaReflection) {
   string bizarro_data = GetBizarroData();
   io::ArrayInputStream raw_input(bizarro_data.data(), bizarro_data.size());
   io::CodedInputStream input(&raw_input);
-  ASSERT_TRUE(WireFormat::ParseAndMergePartial(
-    all_types_message.GetDescriptor(), &input,
-    all_types_message.GetReflection()));
+  ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &all_types_message));
   ASSERT_TRUE(empty_message.ParseFromString(bizarro_data));
 
   EXPECT_EQ(empty_message.DebugString(), all_types_message.DebugString());
@@ -315,8 +309,7 @@ TEST_F(UnknownFieldSetTest, UnknownExtensionsReflection) {
   io::ArrayInputStream raw_input(all_fields_data_.data(),
                                  all_fields_data_.size());
   io::CodedInputStream input(&raw_input);
-  ASSERT_TRUE(WireFormat::ParseAndMergePartial(message.GetDescriptor(), &input,
-                                               message.GetReflection()));
+  ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &message));
 
   EXPECT_EQ(message.DebugString(), empty_message_.DebugString());
 }

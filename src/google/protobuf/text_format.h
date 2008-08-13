@@ -25,7 +25,7 @@
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
 #include <string>
-#include <google/protobuf/message.h>  // Message, Message::Reflection
+#include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -124,18 +124,19 @@ class LIBPROTOBUF_EXPORT TextFormat {
 
   // Internal Print method, used for writing to the OutputStream via
   // the TextGenerator class.
-  static void Print(const Descriptor* descriptor,
-                    const Message::Reflection* message,
+  static void Print(const Message& message,
                     TextGenerator& generator);
 
   // Print a single field.
-  static void PrintField(const FieldDescriptor* field,
-                         const Message::Reflection* message,
+  static void PrintField(const Message& message,
+                         const Reflection* reflection,
+                         const FieldDescriptor* field,
                          TextGenerator& generator);
 
   // Outputs a textual representation of the value of the field supplied on
   // the message supplied or the default value if not set.
-  static void PrintFieldValue(const Message::Reflection* reflection,
+  static void PrintFieldValue(const Message& message,
+                              const Reflection* reflection,
                               const FieldDescriptor* field,
                               int index,
                               TextGenerator& generator);

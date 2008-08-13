@@ -90,7 +90,7 @@ TEST_F(DynamicMessageTest, OnePrototype) {
 TEST_F(DynamicMessageTest, Defaults) {
   // Check that all default values are set correctly in the initial message.
   TestUtil::ReflectionTester reflection_tester(descriptor_);
-  reflection_tester.ExpectClearViaReflection(*prototype_->GetReflection());
+  reflection_tester.ExpectClearViaReflection(*prototype_);
 }
 
 TEST_F(DynamicMessageTest, IndependentOffsets) {
@@ -100,8 +100,8 @@ TEST_F(DynamicMessageTest, IndependentOffsets) {
   scoped_ptr<Message> message(prototype_->New());
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message->GetReflection());
-  reflection_tester.ExpectAllFieldsSetViaReflection(*message->GetReflection());
+  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.ExpectAllFieldsSetViaReflection(*message);
 }
 
 TEST_F(DynamicMessageTest, Extensions) {
@@ -109,8 +109,8 @@ TEST_F(DynamicMessageTest, Extensions) {
   scoped_ptr<Message> message(extensions_prototype_->New());
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message->GetReflection());
-  reflection_tester.ExpectAllFieldsSetViaReflection(*message->GetReflection());
+  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.ExpectAllFieldsSetViaReflection(*message);
 }
 
 }  // namespace protobuf

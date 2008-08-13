@@ -27,31 +27,35 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-void ReflectionOps::Copy(const Descriptor* descriptor,
-                         const Message::Reflection& from,
-                         Message::Reflection* to) {
+void ReflectionOps::Copy(const Message& from, Message* to) {
   if (&from == to) return;
-  Clear(descriptor, to);
-  Merge(descriptor, from, to);
+  Clear(to);
+  Merge(from, to);
 }
 
-void ReflectionOps::Merge(const Descriptor* descriptor,
-                          const Message::Reflection& from,
-                          Message::Reflection* to) {
+void ReflectionOps::Merge(const Message& from, Message* to) {
   GOOGLE_CHECK_NE(&from, to);
+
+  const Descriptor* descriptor = from.GetDescriptor();
+  GOOGLE_CHECK_EQ(to->GetDescriptor(), descriptor)
+    << "Tried to merge messages of different types.";
+
+  const Reflection* from_reflection = from.GetReflection();
+  const Reflection* to_reflection = to->GetReflection();
+
   vector<const FieldDescriptor*> fields;
-  from.ListFields(&fields);
+  from_reflection->ListFields(from, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
 
     if (field->is_repeated()) {
-      int count = from.FieldSize(field);
+      int count = from_reflection->FieldSize(from, field);
       for (int j = 0; j < count; j++) {
         switch (field->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, METHOD)                                     \
           case FieldDescriptor::CPPTYPE_##CPPTYPE:                       \
-            to->Add##METHOD(field,                                       \
-              from.GetRepeated##METHOD(field, j));                       \
+            to_reflection->Add##METHOD(to, field,                        \
+              from_reflection->GetRepeated##METHOD(from, field, j));     \
             break;
 
           HANDLE_TYPE(INT32 , Int32 );
@@ -66,16 +70,17 @@ void ReflectionOps::Merge(const Descriptor* descriptor,
 #undef HANDLE_TYPE
 
           case FieldDescriptor::CPPTYPE_MESSAGE:
-            to->AddMessage(field)->MergeFrom(
-              from.GetRepeatedMessage(field, j));
+            to_reflection->AddMessage(to, field)->MergeFrom(
+              from_reflection->GetRepeatedMessage(from, field, j));
             break;
         }
       }
-    } else if (from.HasField(field)) {
+    } else {
       switch (field->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, METHOD)                                        \
         case FieldDescriptor::CPPTYPE_##CPPTYPE:                            \
-          to->Set##METHOD(field, from.Get##METHOD(field));                  \
+          to_reflection->Set##METHOD(to, field,                             \
+            from_reflection->Get##METHOD(from, field));                     \
           break;
 
         HANDLE_TYPE(INT32 , Int32 );
@@ -90,33 +95,37 @@ void ReflectionOps::Merge(const Descriptor* descriptor,
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          to->MutableMessage(field)->MergeFrom(
-            from.GetMessage(field));
+          to_reflection->MutableMessage(to, field)->MergeFrom(
+            from_reflection->GetMessage(from, field));
           break;
       }
     }
   }
 
-  to->MutableUnknownFields()->MergeFrom(from.GetUnknownFields());
+  to_reflection->MutableUnknownFields(to)->MergeFrom(
+    from_reflection->GetUnknownFields(from));
 }
 
-void ReflectionOps::Clear(const Descriptor* descriptor,
-                          Message::Reflection* reflection) {
+void ReflectionOps::Clear(Message* message) {
+  const Reflection* reflection = message->GetReflection();
+
   vector<const FieldDescriptor*> fields;
-  reflection->ListFields(&fields);
+  reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    reflection->ClearField(fields[i]);
+    reflection->ClearField(message, fields[i]);
   }
 
-  reflection->MutableUnknownFields()->Clear();
+  reflection->MutableUnknownFields(message)->Clear();
 }
 
-bool ReflectionOps::IsInitialized(const Descriptor* descriptor,
-                                  const Message::Reflection& reflection) {
+bool ReflectionOps::IsInitialized(const Message& message) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* reflection = message.GetReflection();
+
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
     if (descriptor->field(i)->is_required()) {
-      if (!reflection.HasField(descriptor->field(i))) {
+      if (!reflection->HasField(message, descriptor->field(i))) {
         return false;
       }
     }
@@ -124,21 +133,21 @@ bool ReflectionOps::IsInitialized(const Descriptor* descriptor,
 
   // Check that sub-messages are initialized.
   vector<const FieldDescriptor*> fields;
-  reflection.ListFields(&fields);
+  reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (field->is_repeated()) {
-        int size = reflection.FieldSize(field);
+        int size = reflection->FieldSize(message, field);
 
         for (int i = 0; i < size; i++) {
-          if (!reflection.GetRepeatedMessage(field, i).IsInitialized()) {
+          if (!reflection->GetRepeatedMessage(message, field, i)
+                          .IsInitialized()) {
             return false;
           }
         }
       } else {
-        if (reflection.HasField(field) &&
-            !reflection.GetMessage(field).IsInitialized()) {
+        if (!reflection->GetMessage(message, field).IsInitialized()) {
           return false;
         }
       }
@@ -148,25 +157,24 @@ bool ReflectionOps::IsInitialized(const Descriptor* descriptor,
   return true;
 }
 
-void ReflectionOps::DiscardUnknownFields(
-    const Descriptor* descriptor,
-    Message::Reflection* reflection) {
-  reflection->MutableUnknownFields()->Clear();
+void ReflectionOps::DiscardUnknownFields(Message* message) {
+  const Reflection* reflection = message->GetReflection();
+
+  reflection->MutableUnknownFields(message)->Clear();
 
   vector<const FieldDescriptor*> fields;
-  reflection->ListFields(&fields);
+  reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (field->is_repeated()) {
-        int size = reflection->FieldSize(field);
+        int size = reflection->FieldSize(*message, field);
         for (int i = 0; i < size; i++) {
-          reflection->MutableRepeatedMessage(field, i)->DiscardUnknownFields();
+          reflection->MutableRepeatedMessage(message, field, i)
+                    ->DiscardUnknownFields();
         }
       } else {
-        if (reflection->HasField(field)) {
-          reflection->MutableMessage(field)->DiscardUnknownFields();
-        }
+        reflection->MutableMessage(message, field)->DiscardUnknownFields();
       }
     }
   }
@@ -193,14 +201,16 @@ static string SubMessagePrefix(const string& prefix,
 }
 
 void ReflectionOps::FindInitializationErrors(
-    const Descriptor* descriptor,
-    const Message::Reflection& reflection,
+    const Message& message,
     const string& prefix,
     vector<string>* errors) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* reflection = message.GetReflection();
+
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
     if (descriptor->field(i)->is_required()) {
-      if (!reflection.HasField(descriptor->field(i))) {
+      if (!reflection->HasField(message, descriptor->field(i))) {
         errors->push_back(prefix + descriptor->field(i)->name());
       }
     }
@@ -208,29 +218,26 @@ void ReflectionOps::FindInitializationErrors(
 
   // Check sub-messages.
   vector<const FieldDescriptor*> fields;
-  reflection.ListFields(&fields);
+  reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_repeated()) {
-        int size = reflection.FieldSize(field);
+        int size = reflection->FieldSize(message, field);
 
         for (int i = 0; i < size; i++) {
-          const Message& sub_message = reflection.GetRepeatedMessage(field, i);
-          FindInitializationErrors(field->message_type(),
-                                   *sub_message.GetReflection(),
+          const Message& sub_message =
+            reflection->GetRepeatedMessage(message, field, i);
+          FindInitializationErrors(sub_message,
                                    SubMessagePrefix(prefix, field, i),
                                    errors);
         }
       } else {
-        if (reflection.HasField(field)) {
-          const Message& sub_message = reflection.GetMessage(field);
-          FindInitializationErrors(field->message_type(),
-                                   *sub_message.GetReflection(),
-                                   SubMessagePrefix(prefix, field, -1),
-                                   errors);
-        }
+        const Message& sub_message = reflection->GetMessage(message, field);
+        FindInitializationErrors(sub_message,
+                                 SubMessagePrefix(prefix, field, -1),
+                                 errors);
       }
     }
   }

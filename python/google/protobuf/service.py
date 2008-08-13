@@ -85,18 +85,14 @@ class Service(object):
 
 class RpcController(object):
 
-  """Abstract interface for an RPC channel.
+  """An RpcController mediates a single method call.
 
-  An RpcChannel represents a communication line to a service which can be used
-  to call that service's methods.  The service may be running on another
-  machine. Normally, you should not use an RpcChannel directly, but instead
-  construct a stub {@link Service} wrapping it.  Example:
-
-  Example:
-    RpcChannel channel = rpcImpl.Channel("remotehost.example.com:1234")
-    RpcController controller = rpcImpl.Controller()
-    MyService service = MyService_Stub(channel)
-    service.MyMethod(controller, request, callback)
+  The primary purpose of the controller is to provide a way to manipulate
+  settings specific to the RPC implementation and to find out about RPC-level
+  errors. The methods provided by the RpcController interface are intended
+  to be a "least common denominator" set of features which we expect all
+  implementations to support.  Specific implementations may provide more
+  advanced features (e.g. deadline propagation).
   """
 
   # Client-side methods below
@@ -172,14 +168,18 @@ class RpcController(object):
 
 class RpcChannel(object):
 
-  """An RpcController mediates a single method call.
+  """Abstract interface for an RPC channel.
 
-  The primary purpose of the controller is to provide a way to manipulate
-  settings specific to the RPC implementation and to find out about RPC-level
-  errors. The methods provided by the RpcController interface are intended
-  to be a "least common denominator" set of features which we expect all
-  implementations to support.  Specific implementations may provide more
-  advanced features (e.g. deadline propagation).
+  An RpcChannel represents a communication line to a service which can be used
+  to call that service's methods.  The service may be running on another
+  machine. Normally, you should not use an RpcChannel directly, but instead
+  construct a stub {@link Service} wrapping it.  Example:
+
+  Example:
+    RpcChannel channel = rpcImpl.Channel("remotehost.example.com:1234")
+    RpcController controller = rpcImpl.Controller()
+    MyService service = MyService_Stub(channel)
+    service.MyMethod(controller, request, callback)
   """
 
   def CallMethod(self, method_descriptor, rpc_controller,

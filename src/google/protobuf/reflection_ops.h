@@ -30,7 +30,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Basic operations that can be performed using Message::Reflection.
+// Basic operations that can be performed using reflection.
 // These can be used as a cheap way to implement the corresponding
 // methods of the Message interface, though they are likely to be
 // slower than implementations tailored for the specific message type.
@@ -41,24 +41,16 @@ namespace internal {
 // This class is really a namespace that contains only static methods.
 class LIBPROTOBUF_EXPORT ReflectionOps {
  public:
-  static void Copy(const Descriptor* descriptor,
-                   const Message::Reflection& from,
-                   Message::Reflection* to);
-  static void Merge(const Descriptor* descriptor,
-                    const Message::Reflection& from,
-                    Message::Reflection* to);
-  static void Clear(const Descriptor* descriptor,
-                    Message::Reflection* reflection);
-  static bool IsInitialized(const Descriptor* descriptor,
-                            const Message::Reflection& reflection);
-  static void DiscardUnknownFields(const Descriptor* descriptor,
-                                   Message::Reflection* reflection);
+  static void Copy(const Message& from, Message* to);
+  static void Merge(const Message& from, Message* to);
+  static void Clear(Message* message);
+  static bool IsInitialized(const Message& message);
+  static void DiscardUnknownFields(Message* message);
 
   // Finds all unset required fields in the message and adds their full
   // paths (e.g. "foo.bar[5].baz") to *names.  "prefix" will be attached to
   // the front of each name.
-  static void FindInitializationErrors(const Descriptor* descriptor,
-                                       const Message::Reflection& reflection,
+  static void FindInitializationErrors(const Message& message,
                                        const string& prefix,
                                        vector<string>* errors);
 

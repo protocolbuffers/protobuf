@@ -64,26 +64,28 @@ namespace internal {
 class LIBPROTOBUF_EXPORT ExtensionSet {
  public:
   // Construct an ExtensionSet.
-  //   extendee:  Descriptor for the type being extended.
+  //   extendee:  Descriptor for the type being extended. We pass in a pointer
+  //              to a pointer to the extendee to get around an initialization
+  //              problem: when we create the ExtensionSet for a message type,
+  //              its descriptor may not exist yet. But we know where that
+  //              descriptor pointer will be placed, and by the time it's used
+  //              by this ExtensionSet it will be fully initialized, so passing
+  //              a pointer to that location works. Note that this problem
+  //              will only occur for messages defined in descriptor.proto.
   //   pool:      DescriptorPool to search for extension definitions.
   //   factory:   MessageFactory used to construct implementations of messages
   //              for extensions with message type.  This factory must be able
   //              to construct any message type found in "pool".
   // All three objects remain property of the caller and must outlive the
   // ExtensionSet.
-  ExtensionSet(const Descriptor* extendee,
+  ExtensionSet(const Descriptor* const* extendee,
                const DescriptorPool* pool,
                MessageFactory* factory);
 
   ~ExtensionSet();
 
-  // Search for a known (compiled-in) extension of this type by name or number.
-  // Returns NULL if no extension is known.
-  const FieldDescriptor* FindKnownExtensionByName(const string& name) const;
-  const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
-
   // Add all fields which are currently present to the given vector.  This
-  // is useful to implement Message::Reflection::ListFields().
+  // is useful to implement Reflection::ListFields().
   void AppendToList(vector<const FieldDescriptor*>* output) const;
 
   // =================================================================
@@ -110,7 +112,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // die on an assert failure.  The message objects returned by the message
   // accessors are guaranteed to be of the correct linked-in type.
   //
-  // These methods pretty much match Message::Reflection except that:
+  // These methods pretty much match Reflection except that:
   // - They're not virtual.
   // - They identify fields by number rather than FieldDescriptors.
   // - They identify enum values using integers rather than descriptors.
@@ -196,7 +198,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   bool IsInitialized() const;
 
   // These parsing and serialization functions all want a pointer to the
-  // reflection interface because they hand off the actual work to WireFormat,
+  // message object because they hand off the actual work to WireFormat,
   // which works in terms of a reflection interface.  Yes, this means there
   // are some redundant virtual function calls that end up being made, but
   // it probably doesn't matter much in practice, and the alternative would
@@ -204,8 +206,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   // Parses a single extension from the input.  The input should start out
   // positioned immediately after the tag.
-  bool ParseField(uint32 tag, io::CodedInputStream* input,
-                  Message::Reflection* reflection);
+  bool ParseField(uint32 tag, io::CodedInputStream* input, Message* message);
 
   // Write all extension fields with field numbers in the range
   //   [start_field_number, end_field_number)
@@ -213,11 +214,11 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // last called.  Note that the range bounds are inclusive-exclusive.
   bool SerializeWithCachedSizes(int start_field_number,
                                 int end_field_number,
-                                const Message::Reflection* reflection,
+                                const Message& message,
                                 io::CodedOutputStream* output) const;
 
   // Returns the total serialized size of all the extensions.
-  int ByteSize(const Message::Reflection* reflection) const;
+  int ByteSize(const Message& message) const;
 
  private:
   // Like FindKnownExtension(), but GOOGLE_CHECK-fail if not found.
@@ -265,9 +266,9 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
     // Some helper methods for operations on a single Extension.
     bool SerializeFieldWithCachedSizes(
-        const Message::Reflection* reflection,
+        const Message& message,
         io::CodedOutputStream* output) const;
-    int64 ByteSize(const Message::Reflection* reflection) const;
+    int64 ByteSize(const Message& message) const;
     void Clear();
     int GetSize() const;
     void Free();
@@ -280,7 +281,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // for 100 elements or more.  Also, we want AppendToList() to order fields
   // by field number.
   map<int, Extension> extensions_;
-  const Descriptor* extendee_;
+  const Descriptor* const* extendee_;
   const DescriptorPool* descriptor_pool_;
   MessageFactory* message_factory_;
 

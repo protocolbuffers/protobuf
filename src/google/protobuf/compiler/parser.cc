@@ -604,7 +604,7 @@ bool Parser::ParseDefaultAssignment(FieldDescriptorProto* field) {
 }
 
 bool Parser::ParseOptionAssignment(Message* options) {
-  Message::Reflection* reflection = options->GetReflection();
+  const Reflection* reflection = options->GetReflection();
   const Descriptor* descriptor = options->GetDescriptor();
 
   // Parse name.
@@ -623,7 +623,7 @@ bool Parser::ParseOptionAssignment(Message* options) {
     AddError(line, column, "Not implemented: repeated options.");
     return false;
   }
-  if (reflection->HasField(field)) {
+  if (reflection->HasField(*options, field)) {
     AddError(line, column, "Option \"" + name + "\" was already set.");
     return false;
   }
@@ -638,7 +638,7 @@ bool Parser::ParseOptionAssignment(Message* options) {
 
     // This field is a message/group.  The user must identify a field within
     // it to set.
-    return ParseOptionAssignment(reflection->MutableMessage(field));
+    return ParseOptionAssignment(reflection->MutableMessage(options, field));
   }
 
   DO(Consume("="));
@@ -651,7 +651,7 @@ bool Parser::ParseOptionAssignment(Message* options) {
       uint64 max_value = kint32max;
       if (is_negative) ++max_value;
       DO(ConsumeInteger64(max_value, &value, "Expected integer."));
-      reflection->SetInt32(field, is_negative ? -value : value);
+      reflection->SetInt32(options, field, is_negative ? -value : value);
       break;
     }
 
@@ -661,21 +661,21 @@ bool Parser::ParseOptionAssignment(Message* options) {
       uint64 max_value = kint64max;
       if (is_negative) ++max_value;
       DO(ConsumeInteger64(max_value, &value, "Expected integer."));
-      reflection->SetInt64(field, is_negative ? -value : value);
+      reflection->SetInt64(options, field, is_negative ? -value : value);
       break;
     }
 
     case FieldDescriptor::CPPTYPE_UINT32: {
       uint64 value;
       DO(ConsumeInteger64(kuint32max, &value, "Expected integer."));
-      reflection->SetUInt32(field, value);
+      reflection->SetUInt32(options, field, value);
       break;
     }
 
     case FieldDescriptor::CPPTYPE_UINT64: {
       uint64 value;
       DO(ConsumeInteger64(kuint64max, &value, "Expected integer."));
-      reflection->SetUInt64(field, value);
+      reflection->SetUInt64(options, field, value);
       break;
     }
 
@@ -683,7 +683,7 @@ bool Parser::ParseOptionAssignment(Message* options) {
       double value;
       bool is_negative = TryConsume("-");
       DO(ConsumeNumber(&value, "Expected number."));
-      reflection->SetDouble(field, is_negative ? -value : value);
+      reflection->SetDouble(options, field, is_negative ? -value : value);
       break;
     }
 
@@ -691,15 +691,15 @@ bool Parser::ParseOptionAssignment(Message* options) {
       double value;
       bool is_negative = TryConsume("-");
       DO(ConsumeNumber(&value, "Expected number."));
-      reflection->SetFloat(field, is_negative ? -value : value);
+      reflection->SetFloat(options, field, is_negative ? -value : value);
       break;
     }
 
     case FieldDescriptor::CPPTYPE_BOOL:
       if (TryConsume("true")) {
-        reflection->SetBool(field, true);
+        reflection->SetBool(options, field, true);
       } else if (TryConsume("false")) {
-        reflection->SetBool(field, false);
+        reflection->SetBool(options, field, false);
       } else {
         AddError("Expected \"true\" or \"false\".");
         return false;
@@ -719,14 +719,14 @@ bool Parser::ParseOptionAssignment(Message* options) {
           "named \"" + value_name + "\".");
         return false;
       }
-      reflection->SetEnum(field, value);
+      reflection->SetEnum(options, field, value);
       break;
     }
 
     case FieldDescriptor::CPPTYPE_STRING: {
       string value;
       DO(ConsumeString(&value, "Expected string."));
-      reflection->SetString(field, value);
+      reflection->SetString(options, field, value);
       break;
     }
 

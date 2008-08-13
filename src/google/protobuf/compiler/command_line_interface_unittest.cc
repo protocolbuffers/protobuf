@@ -18,13 +18,23 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <vector>
 
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -34,6 +44,15 @@
 namespace google {
 namespace protobuf {
 namespace compiler {
+
+#if defined(_WIN32)
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+#endif
 
 namespace {
 
@@ -109,6 +128,9 @@ class CommandLineInterfaceTest : public testing::Test {
                        const string& proto_name,
                        const string& message_name,
                        const string& output_file);
+
+  void ReadDescriptorSet(const string& filename,
+                         FileDescriptorSet* descriptor_set);
 
  private:
   // The object we are testing.
@@ -331,6 +353,18 @@ void CommandLineInterfaceTest::ExpectGenerated(
     message_name + "\n";
   EXPECT_EQ(expected_contents, file_contents)
     << "Output file did not have expected contents: " + output_file;
+}
+
+void CommandLineInterfaceTest::ReadDescriptorSet(
+    const string& filename, FileDescriptorSet* descriptor_set) {
+  string path = temp_directory_ + "/" + filename;
+  string file_contents;
+  if (!File::ReadFileToString(path, &file_contents)) {
+    FAIL() << "File not found: " << path;
+  }
+  if (!descriptor_set->ParseFromString(file_contents)) {
+    FAIL() << "Could not parse file contents: " << path;
+  }
 }
 
 // ===================================================================
@@ -665,6 +699,57 @@ TEST_F(CommandLineInterfaceTest, CwdRelativeInputs) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo", "output.test");
 }
 
+TEST_F(CommandLineInterfaceTest, WriteDescriptorSet) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "import \"foo.proto\";\n"
+    "message Bar {\n"
+    "  optional Foo foo = 1;\n"
+    "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
+}
+
+TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSet) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "import \"foo.proto\";\n"
+    "message Bar {\n"
+    "  optional Foo foo = 1;\n"
+    "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_imports --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(2, descriptor_set.file_size());
+  if (descriptor_set.file(0).name() == "bar.proto") {
+    swap(descriptor_set.mutable_file()->mutable_data()[0],
+         descriptor_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
+}
+
 // -------------------------------------------------------------------
 
 TEST_F(CommandLineInterfaceTest, ParseErrors) {
@@ -954,14 +1039,14 @@ TEST_F(CommandLineInterfaceTest, HelpText) {
 TEST_F(CommandLineInterfaceTest, ParseSingleCharacterFlag) {
   // Test that a single-character flag works.
 
-  RegisterGenerator("test_generator", "-o",
+  RegisterGenerator("test_generator", "-t",
                     "output.test", "Test output.");
 
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"
     "message Foo {}\n");
 
-  Run("protocol_compiler -o$tmpdir "
+  Run("protocol_compiler -t$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
   ExpectNoErrors();
@@ -989,14 +1074,14 @@ TEST_F(CommandLineInterfaceTest, ParseSingleCharacterSpaceDelimitedValue) {
   // Test that separating the flag value with a space works for
   // single-character flags.
 
-  RegisterGenerator("test_generator", "-o",
+  RegisterGenerator("test_generator", "-t",
                     "output.test", "Test output.");
 
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"
     "message Foo {}\n");
 
-  Run("protocol_compiler -o $tmpdir "
+  Run("protocol_compiler -t $tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
   ExpectNoErrors();
@@ -1024,6 +1109,166 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
   Run("protocol_compiler --test_out");
 
   ExpectErrorText("Missing value for flag: --test_out\n");
+}
+
+// ===================================================================
+
+// Test for --encode and --decode.  Note that it would be easier to do this
+// test as a shell script, but we'd like to be able to run the test on
+// platforms that don't have a Bourne-compatible shell available (especially
+// Windows/MSVC).
+class EncodeDecodeTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    duped_stdin_ = dup(STDIN_FILENO);
+  }
+
+  virtual void TearDown() {
+    dup2(duped_stdin_, STDIN_FILENO);
+    close(duped_stdin_);
+  }
+
+  void RedirectStdinFromText(const string& input) {
+    string filename = TestTempDir() + "/test_stdin";
+    File::WriteStringToFileOrDie(input, filename);
+    GOOGLE_CHECK(RedirectStdinFromFile(filename));
+  }
+
+  bool RedirectStdinFromFile(const string& filename) {
+    int fd = open(filename.c_str(), O_RDONLY);
+    if (fd < 0) return false;
+    dup2(fd, STDIN_FILENO);
+    close(fd);
+    return true;
+  }
+
+  // Remove '\r' characters from text.
+  string StripCR(const string& text) {
+    string result;
+
+    for (int i = 0; i < text.size(); i++) {
+      if (text[i] != '\r') {
+        result.push_back(text[i]);
+      }
+    }
+
+    return result;
+  }
+
+  enum Type { TEXT, BINARY };
+  enum ReturnCode { SUCCESS, ERROR };
+
+  bool Run(const string& command) {
+    vector<string> args;
+    args.push_back("protoc");
+    SplitStringUsing(command, " ", &args);
+    args.push_back("--proto_path=" + TestSourceDir());
+
+    scoped_array<const char*> argv(new const char*[args.size()]);
+    for (int i = 0; i < args.size(); i++) {
+      argv[i] = args[i].c_str();
+    }
+
+    CommandLineInterface cli;
+    cli.SetInputsAreProtoPathRelative(true);
+
+    CaptureTestStdout();
+    CaptureTestStderr();
+
+    int result = cli.Run(args.size(), argv.get());
+
+    captured_stdout_ = GetCapturedTestStdout();
+    captured_stderr_ = GetCapturedTestStderr();
+
+    return result == 0;
+  }
+
+  void ExpectStdoutMatchesBinaryFile(const string& filename) {
+    string expected_output;
+    ASSERT_TRUE(File::ReadFileToString(filename, &expected_output));
+
+    // Don't use EXPECT_EQ because we don't want to print raw binary data to
+    // stdout on failure.
+    EXPECT_TRUE(captured_stdout_ == expected_output);
+  }
+
+  void ExpectStdoutMatchesTextFile(const string& filename) {
+    string expected_output;
+    ASSERT_TRUE(File::ReadFileToString(filename, &expected_output));
+
+    ExpectStdoutMatchesText(expected_output);
+  }
+
+  void ExpectStdoutMatchesText(const string& expected_text) {
+    EXPECT_EQ(StripCR(expected_text), StripCR(captured_stdout_));
+  }
+
+  void ExpectStderrMatchesText(const string& expected_text) {
+    EXPECT_EQ(StripCR(expected_text), StripCR(captured_stderr_));
+  }
+
+ private:
+  int duped_stdin_;
+  string captured_stdout_;
+  string captured_stderr_;
+};
+
+TEST_F(EncodeDecodeTest, Encode) {
+  RedirectStdinFromFile(TestSourceDir() +
+    "/google/protobuf/testdata/text_format_unittest_data.txt");
+  EXPECT_TRUE(Run("google/protobuf/unittest.proto "
+                  "--encode=protobuf_unittest.TestAllTypes"));
+  ExpectStdoutMatchesBinaryFile(TestSourceDir() +
+    "/google/protobuf/testdata/golden_message");
+  ExpectStderrMatchesText("");
+}
+
+TEST_F(EncodeDecodeTest, Decode) {
+  RedirectStdinFromFile(TestSourceDir() +
+    "/google/protobuf/testdata/golden_message");
+  EXPECT_TRUE(Run("google/protobuf/unittest.proto "
+                  "--decode=protobuf_unittest.TestAllTypes"));
+  ExpectStdoutMatchesTextFile(TestSourceDir() +
+    "/google/protobuf/testdata/text_format_unittest_data.txt");
+  ExpectStderrMatchesText("");
+}
+
+TEST_F(EncodeDecodeTest, Partial) {
+  RedirectStdinFromText("");
+  EXPECT_TRUE(Run("google/protobuf/unittest.proto "
+                  "--encode=protobuf_unittest.TestRequired"));
+  ExpectStdoutMatchesText("");
+  ExpectStderrMatchesText(
+    "warning:  Input message is missing required fields:  a, b, c\n");
+}
+
+TEST_F(EncodeDecodeTest, DecodeRaw) {
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_int32(123);
+  message.set_optional_string("foo");
+  string data;
+  message.SerializeToString(&data);
+
+  RedirectStdinFromText(data);
+  EXPECT_TRUE(Run("--decode_raw"));
+  ExpectStdoutMatchesText("1: 123\n"
+                          "14: \"foo\"\n");
+  ExpectStderrMatchesText("");
+}
+
+TEST_F(EncodeDecodeTest, UnknownType) {
+  EXPECT_FALSE(Run("google/protobuf/unittest.proto "
+                   "--encode=NoSuchType"));
+  ExpectStdoutMatchesText("");
+  ExpectStderrMatchesText("Type not defined: NoSuchType\n");
+}
+
+TEST_F(EncodeDecodeTest, ProtoParseError) {
+  EXPECT_FALSE(Run("google/protobuf/no_such_file.proto "
+                   "--encode=NoSuchType"));
+  ExpectStdoutMatchesText("");
+  ExpectStderrMatchesText(
+    "google/protobuf/no_such_file.proto: File not found.\n");
 }
 
 }  // anonymous namespace

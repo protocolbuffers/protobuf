@@ -78,11 +78,10 @@ class TestUtil {
     // its file.
     explicit ReflectionTester(const Descriptor* base_descriptor);
 
-    void SetAllFieldsViaReflection(Message::Reflection* message);
-    void ModifyRepeatedFieldsViaReflection(Message::Reflection* message);
-    void ExpectAllFieldsSetViaReflection(
-        const Message::Reflection& message);
-    void ExpectClearViaReflection(const Message::Reflection& message);
+    void SetAllFieldsViaReflection(Message* message);
+    void ModifyRepeatedFieldsViaReflection(Message* message);
+    void ExpectAllFieldsSetViaReflection(const Message& message);
+    void ExpectClearViaReflection(const Message& message);
 
    private:
     const FieldDescriptor* F(const string& name);

@@ -23,7 +23,7 @@
 // Then, we use GeneratedMessageReflection to implement our reflection
 // interface.  All the other operations we need to implement (e.g.
 // parsing, copying, etc.) are already implemented in terms of
-// Message::Reflection, so the rest is easy.
+// Reflection, so the rest is easy.
 //
 // The up side of this strategy is that it's very efficient.  We don't
 // need to use hash_maps or generic representations of fields.  The
@@ -141,6 +141,14 @@ inline int DivideRoundingUp(int i, int j) {
   return (i + (j - 1)) / j;
 }
 
+static const int kSafeAlignment = sizeof(uint64);
+
+// Rounds the given byte offset up to the next offset aligned such that any
+// type may be stored at it.
+inline int AlignOffset(int offset) {
+  return DivideRoundingUp(offset, kSafeAlignment) * kSafeAlignment;
+}
+
 #define bitsizeof(T) (sizeof(T) * 8)
 
 }  // namespace
@@ -149,14 +157,29 @@ inline int DivideRoundingUp(int i, int j) {
 
 class DynamicMessage : public Message {
  public:
-  DynamicMessage(const Descriptor* descriptor,
-                 uint8* base, const uint8* prototype_base,
-                 int size, const int offsets[],
-                 const DescriptorPool* pool, DynamicMessageFactory* factory);
+  struct TypeInfo {
+    int size;
+    int has_bits_offset;
+    int unknown_fields_offset;
+    int extensions_offset;
+
+    // Not owned by the TypeInfo.
+    DynamicMessageFactory* factory;  // The factory that created this object.
+    const DescriptorPool* pool;      // The factory's DescriptorPool.
+    const Descriptor* type;          // Type of this DynamicMessage.
+
+    // Warning:  The order in which the following pointers are defined is
+    //   important (the prototype must be deleted *before* the offsets).
+    scoped_array<int> offsets;
+    scoped_ptr<const GeneratedMessageReflection> reflection;
+    scoped_ptr<const DynamicMessage> prototype;
+  };
+
+  DynamicMessage(const TypeInfo* type_info);
   ~DynamicMessage();
 
   // Called on the prototype after construction to initialize message fields.
-  void CrossLinkPrototypes(DynamicMessageFactory* factory);
+  void CrossLinkPrototypes();
 
   // implements Message ----------------------------------------------
 
@@ -167,47 +190,32 @@ class DynamicMessage : public Message {
 
   const Descriptor* GetDescriptor() const;
   const Reflection* GetReflection() const;
-  Reflection* GetReflection();
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
 
-  inline bool is_prototype() { return base_ == prototype_base_; }
+  inline bool is_prototype() const {
+    return type_info_->prototype == this ||
+           // If type_info_->prototype is NULL, then we must be constructing
+           // the prototype now, which means we must be the prototype.
+           type_info_->prototype == NULL;
+  }
 
-  const Descriptor* descriptor_;
-  const DescriptorPool* descriptor_pool_;
-  DynamicMessageFactory* factory_;
-  scoped_ptr<ExtensionSet> extensions_;
-  GeneratedMessageReflection reflection_;
-  uint8* base_;
-  const uint8* prototype_base_;
-  const int* offsets_;
-  int size_;
+  inline void* OffsetToPointer(int offset) {
+    return reinterpret_cast<uint8*>(this) + offset;
+  }
+  inline const void* OffsetToPointer(int offset) const {
+    return reinterpret_cast<const uint8*>(this) + offset;
+  }
+
+  const TypeInfo* type_info_;
 
   // TODO(kenton):  Make this an atomic<int> when C++ supports it.
   mutable int cached_byte_size_;
 };
 
-DynamicMessage::DynamicMessage(const Descriptor* descriptor,
-                               uint8* base, const uint8* prototype_base,
-                               int size, const int offsets[],
-                               const DescriptorPool* pool,
-                               DynamicMessageFactory* factory)
-  : descriptor_(descriptor),
-    descriptor_pool_((pool == NULL) ? descriptor->file()->pool() : pool),
-    factory_(factory),
-    extensions_(descriptor->extension_range_count() > 0 ?
-                new ExtensionSet(descriptor, descriptor_pool_, factory_) :
-                NULL),
-    reflection_(descriptor, base, prototype_base, offsets,
-                // has_bits
-                reinterpret_cast<uint32*>(base + size) -
-                DivideRoundingUp(descriptor->field_count(), bitsizeof(uint32)),
-                extensions_.get()),
-    base_(base),
-    prototype_base_(prototype_base),
-    offsets_(offsets),
-    size_(size),
+DynamicMessage::DynamicMessage(const TypeInfo* type_info)
+  : type_info_(type_info),
     cached_byte_size_(0) {
   // We need to call constructors for various fields manually and set
   // default values where appropriate.  We use placement new to call
@@ -217,9 +225,19 @@ DynamicMessage::DynamicMessage(const Descriptor* descriptor,
   // any time you are trying to convert untyped memory to typed memory, though
   // in practice that's not strictly necessary for types that don't have a
   // constructor.)
+
+  const Descriptor* descriptor = type_info_->type;
+
+  new(OffsetToPointer(type_info_->unknown_fields_offset)) UnknownFieldSet;
+
+  if (type_info_->extensions_offset != -1) {
+    new(OffsetToPointer(type_info_->extensions_offset))
+      ExtensionSet(&type_info_->type, type_info_->pool, type_info_->factory);
+  }
+
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    void* field_ptr = base + offsets[i];
+    void* field_ptr = OffsetToPointer(type_info_->offsets[i]);
     switch (field->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, TYPE)                                           \
       case FieldDescriptor::CPPTYPE_##CPPTYPE:                               \
@@ -254,7 +272,8 @@ DynamicMessage::DynamicMessage(const Descriptor* descriptor,
             } else {
               string* default_value =
                 *reinterpret_cast<string* const*>(
-                  prototype_base + offsets[i]);
+                  type_info_->prototype->OffsetToPointer(
+                    type_info_->offsets[i]));
               new(field_ptr) string*(default_value);
             }
           } else {
@@ -272,7 +291,8 @@ DynamicMessage::DynamicMessage(const Descriptor* descriptor,
           } else {
             const RepeatedPtrField<Message>* prototype_field =
               reinterpret_cast<const RepeatedPtrField<Message>*>(
-                prototype_base + offsets[i]);
+                type_info_->prototype->OffsetToPointer(
+                  type_info_->offsets[i]));
             new(field_ptr) RepeatedPtrField<Message>(
               prototype_field->prototype());
           }
@@ -284,16 +304,25 @@ DynamicMessage::DynamicMessage(const Descriptor* descriptor,
 }
 
 DynamicMessage::~DynamicMessage() {
+  const Descriptor* descriptor = type_info_->type;
+
+  reinterpret_cast<UnknownFieldSet*>(
+    OffsetToPointer(type_info_->unknown_fields_offset))->~UnknownFieldSet();
+
+  if (type_info_->extensions_offset != -1) {
+    reinterpret_cast<ExtensionSet*>(
+      OffsetToPointer(type_info_->extensions_offset))->~ExtensionSet();
+  }
+
   // We need to manually run the destructors for repeated fields and strings,
   // just as we ran their constructors in the the DynamicMessage constructor.
   // Additionally, if any singular embedded messages have been allocated, we
   // need to delete them, UNLESS we are the prototype message of this type,
   // in which case any embedded messages are other prototypes and shouldn't
   // be touched.
-  const Descriptor* descriptor = GetDescriptor();
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    void* field_ptr = base_ + offsets_[i];
+    void* field_ptr = OffsetToPointer(type_info_->offsets[i]);
 
     if (field->is_repeated()) {
       GenericRepeatedField* field =
@@ -313,26 +342,19 @@ DynamicMessage::~DynamicMessage() {
       }
     }
   }
-
-  // OK, now we can delete our base pointer.
-  operator delete(base_);
-
-  // When the prototype is deleted, we also want to free the offsets table.
-  // (The prototype is only deleted when the factory that created it is
-  // deleted.)
-  if (is_prototype()) {
-    delete [] offsets_;
-  }
 }
 
-void DynamicMessage::CrossLinkPrototypes(DynamicMessageFactory* factory) {
+void DynamicMessage::CrossLinkPrototypes() {
   // This should only be called on the prototype message.
   GOOGLE_CHECK(is_prototype());
 
+  DynamicMessageFactory* factory = type_info_->factory;
+  const Descriptor* descriptor = type_info_->type;
+
   // Cross-link default messages.
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    void* field_ptr = base_ + offsets_[i];
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const FieldDescriptor* field = descriptor->field(i);
+    void* field_ptr = OffsetToPointer(type_info_->offsets[i]);
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // For fields with message types, we need to cross-link with the
@@ -357,11 +379,9 @@ void DynamicMessage::CrossLinkPrototypes(DynamicMessageFactory* factory) {
 }
 
 Message* DynamicMessage::New() const {
-  uint8* new_base = reinterpret_cast<uint8*>(operator new(size_));
-  memset(new_base, 0, size_);
-
-  return new DynamicMessage(GetDescriptor(), new_base, prototype_base_,
-                            size_, offsets_, descriptor_pool_, factory_);
+  void* new_base = reinterpret_cast<uint8*>(operator new(type_info_->size));
+  memset(new_base, 0, type_info_->size);
+  return new(new_base) DynamicMessage(type_info_);
 }
 
 int DynamicMessage::GetCachedSize() const {
@@ -376,21 +396,17 @@ void DynamicMessage::SetCachedSize(int size) const {
 }
 
 const Descriptor* DynamicMessage::GetDescriptor() const {
-  return descriptor_;
+  return type_info_->type;
 }
 
-const Message::Reflection* DynamicMessage::GetReflection() const {
-  return &reflection_;
-}
-
-Message::Reflection* DynamicMessage::GetReflection() {
-  return &reflection_;
+const Reflection* DynamicMessage::GetReflection() const {
+  return type_info_->reflection.get();
 }
 
 // ===================================================================
 
 struct DynamicMessageFactory::PrototypeMap {
-  typedef hash_map<const Descriptor*, const Message*> Map;
+  typedef hash_map<const Descriptor*, const DynamicMessage::TypeInfo*> Map;
   Map map_;
 };
 
@@ -411,11 +427,18 @@ DynamicMessageFactory::~DynamicMessageFactory() {
 
 
 const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
-  const Message** target = &prototypes_->map_[type];
+  const DynamicMessage::TypeInfo** target = &prototypes_->map_[type];
   if (*target != NULL) {
     // Already exists.
-    return *target;
+    return (*target)->prototype.get();
   }
+
+  DynamicMessage::TypeInfo* type_info = new DynamicMessage::TypeInfo;
+  *target = type_info;
+
+  type_info->type = type;
+  type_info->pool = (pool_ == NULL) ? type->file()->pool() : pool_;
+  type_info->factory = this;
 
   // We need to construct all the structures passed to
   // GeneratedMessageReflection's constructor.  This includes:
@@ -427,6 +450,7 @@ const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
 
   // Compute size and offsets.
   int* offsets = new int[type->field_count()];
+  type_info->offsets.reset(offsets);
 
   // Sort the fields of this message in descending order by size.  We
   // assume that if we then pack the fields tightly in this order, all fields
@@ -441,35 +465,68 @@ const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
               DescendingFieldSizeOrder());
 
   // Decide all field offsets by packing in order.
-  int current_offset = 0;
+  // We place the DynamicMessage object itself at the beginning of the allocated
+  // space.
+  int size = sizeof(DynamicMessage);
+  size = AlignOffset(size);
 
-  for (int i = 0; i < type->field_count(); i++) {
-    offsets[ordered_fields[i]->index()] = current_offset;
-    current_offset += FieldSpaceUsed(ordered_fields[i]);
+  // Next the has_bits, which is an array of uint32s.
+  type_info->has_bits_offset = size;
+  int has_bits_array_size =
+    DivideRoundingUp(type->field_count(), bitsizeof(uint32));
+  size += has_bits_array_size * sizeof(uint32);
+  size = AlignOffset(size);
+
+  // The ExtensionSet, if any.
+  if (type->extension_range_count() > 0) {
+    type_info->extensions_offset = size;
+    size += sizeof(ExtensionSet);
+    size = AlignOffset(size);
+  } else {
+    // No extensions.
+    type_info->extensions_offset = -1;
   }
 
-  // Allocate space for all fields plus has_bits.  We'll stick has_bits on
-  // the end.
-  int size = current_offset +
-    DivideRoundingUp(type->field_count(), bitsizeof(uint32)) * sizeof(uint32);
+  // All the fields.  We don't need to align after each field because they are
+  // sorted in descending size order, and the size of a type is always a
+  // multiple of its alignment.
+  for (int i = 0; i < type->field_count(); i++) {
+    offsets[ordered_fields[i]->index()] = size;
+    size += FieldSpaceUsed(ordered_fields[i]);
+  }
 
-  // Round size up to the nearest 64-bit boundary just to make sure no
-  // clever allocators think that alignment is not necessary.  This also
-  // insures that has_bits is properly-aligned, since we'll always align
-  // has_bits with the end of the structure.
-  size = DivideRoundingUp(size, sizeof(uint64)) * sizeof(uint64);
-  uint8* base = reinterpret_cast<uint8*>(operator new(size));
+  // Add the UnknownFieldSet to the end.
+  size = AlignOffset(size);
+  type_info->unknown_fields_offset = size;
+  size += sizeof(UnknownFieldSet);
+
+  // Align the final size to make sure no clever allocators think that
+  // alignment is not necessary.
+  size = AlignOffset(size);
+  type_info->size = size;
+
+  // Allocate the prototype.
+  void* base = operator new(size);
   memset(base, 0, size);
+  DynamicMessage* prototype = new(base) DynamicMessage(type_info);
+  type_info->prototype.reset(prototype);
 
-  // Construct message.
-  DynamicMessage* result =
-    new DynamicMessage(type, base, base, size, offsets, pool_, this);
-  *target = result;
-  result->CrossLinkPrototypes(this);
+  // Construct the reflection object.
+  type_info->reflection.reset(
+    new GeneratedMessageReflection(
+      type_info->type,
+      type_info->prototype.get(),
+      type_info->offsets.get(),
+      type_info->has_bits_offset,
+      type_info->unknown_fields_offset,
+      type_info->extensions_offset,
+      type_info->pool));
 
-  return result;
+  // Cross link prototypes.
+  prototype->CrossLinkPrototypes();
+
+  return prototype;
 }
 
 }  // namespace protobuf
-
 }  // namespace google

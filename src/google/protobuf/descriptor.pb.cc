@@ -11,30 +11,63 @@ namespace protobuf {
 
 namespace {
 
+const ::google::protobuf::Descriptor* FileDescriptorSet_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FileDescriptorSet_reflection_ = NULL;
 const ::google::protobuf::Descriptor* FileDescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FileDescriptorProto_reflection_ = NULL;
 const ::google::protobuf::Descriptor* DescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  DescriptorProto_reflection_ = NULL;
 const ::google::protobuf::Descriptor* DescriptorProto_ExtensionRange_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  DescriptorProto_ExtensionRange_reflection_ = NULL;
 const ::google::protobuf::Descriptor* FieldDescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FieldDescriptorProto_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Label_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* EnumDescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  EnumDescriptorProto_reflection_ = NULL;
 const ::google::protobuf::Descriptor* EnumValueDescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  EnumValueDescriptorProto_reflection_ = NULL;
 const ::google::protobuf::Descriptor* ServiceDescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ServiceDescriptorProto_reflection_ = NULL;
 const ::google::protobuf::Descriptor* MethodDescriptorProto_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  MethodDescriptorProto_reflection_ = NULL;
 const ::google::protobuf::Descriptor* FileOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FileOptions_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* FileOptions_OptimizeMode_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* MessageOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  MessageOptions_reflection_ = NULL;
 const ::google::protobuf::Descriptor* FieldOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FieldOptions_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* FieldOptions_CType_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* EnumOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  EnumOptions_reflection_ = NULL;
 const ::google::protobuf::Descriptor* EnumValueOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  EnumValueOptions_reflection_ = NULL;
 const ::google::protobuf::Descriptor* ServiceOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ServiceOptions_reflection_ = NULL;
 const ::google::protobuf::Descriptor* MethodOptions_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  MethodOptions_reflection_ = NULL;
 
 }  // namespace
 
 
-void proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto() {
+void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto() {
   static bool already_here = false;
   if (already_here) return;
   already_here = true;
@@ -44,116 +77,265 @@ void proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto() {
 
   const ::google::protobuf::FileDescriptor* file = pool->InternalBuildGeneratedFile(
     "\n google/protobuf/descriptor.proto\022\017goog"
-    "le.protobuf\"\334\002\n\023FileDescriptorProto\022\014\n\004n"
-    "ame\030\001 \001(\t\022\017\n\007package\030\002 \001(\t\022\022\n\ndependency"
-    "\030\003 \003(\t\0226\n\014message_type\030\004 \003(\0132 .google.pr"
-    "otobuf.DescriptorProto\0227\n\tenum_type\030\005 \003("
-    "\0132$.google.protobuf.EnumDescriptorProto\022"
-    "8\n\007service\030\006 \003(\0132\'.google.protobuf.Servi"
-    "ceDescriptorProto\0228\n\textension\030\007 \003(\0132%.g"
-    "oogle.protobuf.FieldDescriptorProto\022-\n\007o"
-    "ptions\030\010 \001(\0132\034.google.protobuf.FileOptio"
-    "ns\"\251\003\n\017DescriptorProto\022\014\n\004name\030\001 \001(\t\0224\n\005"
-    "field\030\002 \003(\0132%.google.protobuf.FieldDescr"
-    "iptorProto\0228\n\textension\030\006 \003(\0132%.google.p"
-    "rotobuf.FieldDescriptorProto\0225\n\013nested_t"
-    "ype\030\003 \003(\0132 .google.protobuf.DescriptorPr"
-    "oto\0227\n\tenum_type\030\004 \003(\0132$.google.protobuf"
-    ".EnumDescriptorProto\022H\n\017extension_range\030"
-    "\005 \003(\0132/.google.protobuf.DescriptorProto."
-    "ExtensionRange\0220\n\007options\030\007 \001(\0132\037.google"
-    ".protobuf.MessageOptions\032,\n\016ExtensionRan"
-    "ge\022\r\n\005start\030\001 \001(\005\022\013\n\003end\030\002 \001(\005\"\224\005\n\024Field"
-    "DescriptorProto\022\014\n\004name\030\001 \001(\t\022\016\n\006number\030"
-    "\003 \001(\005\022:\n\005label\030\004 \001(\0162+.google.protobuf.F"
-    "ieldDescriptorProto.Label\0228\n\004type\030\005 \001(\0162"
-    "*.google.protobuf.FieldDescriptorProto.T"
-    "ype\022\021\n\ttype_name\030\006 \001(\t\022\020\n\010extendee\030\002 \001(\t"
-    "\022\025\n\rdefault_value\030\007 \001(\t\022.\n\007options\030\010 \001(\013"
-    "2\035.google.protobuf.FieldOptions\"\266\002\n\004Type"
-    "\022\017\n\013TYPE_DOUBLE\020\001\022\016\n\nTYPE_FLOAT\020\002\022\016\n\nTYP"
-    "E_INT64\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n\nTYPE_INT32"
-    "\020\005\022\020\n\014TYPE_FIXED64\020\006\022\020\n\014TYPE_FIXED32\020\007\022\r"
-    "\n\tTYPE_BOOL\020\010\022\017\n\013TYPE_STRING\020\t\022\016\n\nTYPE_G"
-    "ROUP\020\n\022\020\n\014TYPE_MESSAGE\020\013\022\016\n\nTYPE_BYTES\020\014"
-    "\022\017\n\013TYPE_UINT32\020\r\022\r\n\tTYPE_ENUM\020\016\022\021\n\rTYPE"
-    "_SFIXED32\020\017\022\021\n\rTYPE_SFIXED64\020\020\022\017\n\013TYPE_S"
-    "INT32\020\021\022\017\n\013TYPE_SINT64\020\022\"C\n\005Label\022\022\n\016LAB"
-    "EL_OPTIONAL\020\001\022\022\n\016LABEL_REQUIRED\020\002\022\022\n\016LAB"
-    "EL_REPEATED\020\003\"\214\001\n\023EnumDescriptorProto\022\014\n"
-    "\004name\030\001 \001(\t\0228\n\005value\030\002 \003(\0132).google.prot"
-    "obuf.EnumValueDescriptorProto\022-\n\007options"
-    "\030\003 \001(\0132\034.google.protobuf.EnumOptions\"l\n\030"
-    "EnumValueDescriptorProto\022\014\n\004name\030\001 \001(\t\022\016"
-    "\n\006number\030\002 \001(\005\0222\n\007options\030\003 \001(\0132!.google"
-    ".protobuf.EnumValueOptions\"\220\001\n\026ServiceDe"
-    "scriptorProto\022\014\n\004name\030\001 \001(\t\0226\n\006method\030\002 "
-    "\003(\0132&.google.protobuf.MethodDescriptorPr"
-    "oto\0220\n\007options\030\003 \001(\0132\037.google.protobuf.S"
-    "erviceOptions\"\177\n\025MethodDescriptorProto\022\014"
-    "\n\004name\030\001 \001(\t\022\022\n\ninput_type\030\002 \001(\t\022\023\n\013outp"
-    "ut_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google."
-    "protobuf.MethodOptions\"\333\001\n\013FileOptions\022\024"
-    "\n\014java_package\030\001 \001(\t\022\034\n\024java_outer_class"
-    "name\030\010 \001(\t\022\"\n\023java_multiple_files\030\n \001(\010:"
-    "\005false\022J\n\014optimize_for\030\t \001(\0162).google.pr"
-    "otobuf.FileOptions.OptimizeMode:\tCODE_SI"
-    "ZE\"(\n\014OptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tCODE_SI"
-    "ZE\020\002\"8\n\016MessageOptions\022&\n\027message_set_wi"
-    "re_format\030\001 \001(\010:\005false\"\205\001\n\014FieldOptions\022"
-    "2\n\005ctype\030\001 \001(\0162#.google.protobuf.FieldOp"
-    "tions.CType\022\034\n\024experimental_map_key\030\t \001("
-    "\t\"#\n\005CType\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"\r"
-    "\n\013EnumOptions\"\022\n\020EnumValueOptions\"\020\n\016Ser"
-    "viceOptions\"\017\n\rMethodOptionsB)\n\023com.goog"
-    "le.protobufB\020DescriptorProtosH\001", 2551);
-  FileDescriptorProto_descriptor_ = file->message_type(0);
+    "le.protobuf\"G\n\021FileDescriptorSet\0222\n\004file"
+    "\030\001 \003(\0132$.google.protobuf.FileDescriptorP"
+    "roto\"\334\002\n\023FileDescriptorProto\022\014\n\004name\030\001 \001"
+    "(\t\022\017\n\007package\030\002 \001(\t\022\022\n\ndependency\030\003 \003(\t\022"
+    "6\n\014message_type\030\004 \003(\0132 .google.protobuf."
+    "DescriptorProto\0227\n\tenum_type\030\005 \003(\0132$.goo"
+    "gle.protobuf.EnumDescriptorProto\0228\n\007serv"
+    "ice\030\006 \003(\0132\'.google.protobuf.ServiceDescr"
+    "iptorProto\0228\n\textension\030\007 \003(\0132%.google.p"
+    "rotobuf.FieldDescriptorProto\022-\n\007options\030"
+    "\010 \001(\0132\034.google.protobuf.FileOptions\"\251\003\n\017"
+    "DescriptorProto\022\014\n\004name\030\001 \001(\t\0224\n\005field\030\002"
+    " \003(\0132%.google.protobuf.FieldDescriptorPr"
+    "oto\0228\n\textension\030\006 \003(\0132%.google.protobuf"
+    ".FieldDescriptorProto\0225\n\013nested_type\030\003 \003"
+    "(\0132 .google.protobuf.DescriptorProto\0227\n\t"
+    "enum_type\030\004 \003(\0132$.google.protobuf.EnumDe"
+    "scriptorProto\022H\n\017extension_range\030\005 \003(\0132/"
+    ".google.protobuf.DescriptorProto.Extensi"
+    "onRange\0220\n\007options\030\007 \001(\0132\037.google.protob"
+    "uf.MessageOptions\032,\n\016ExtensionRange\022\r\n\005s"
+    "tart\030\001 \001(\005\022\013\n\003end\030\002 \001(\005\"\224\005\n\024FieldDescrip"
+    "torProto\022\014\n\004name\030\001 \001(\t\022\016\n\006number\030\003 \001(\005\022:"
+    "\n\005label\030\004 \001(\0162+.google.protobuf.FieldDes"
+    "criptorProto.Label\0228\n\004type\030\005 \001(\0162*.googl"
+    "e.protobuf.FieldDescriptorProto.Type\022\021\n\t"
+    "type_name\030\006 \001(\t\022\020\n\010extendee\030\002 \001(\t\022\025\n\rdef"
+    "ault_value\030\007 \001(\t\022.\n\007options\030\010 \001(\0132\035.goog"
+    "le.protobuf.FieldOptions\"\266\002\n\004Type\022\017\n\013TYP"
+    "E_DOUBLE\020\001\022\016\n\nTYPE_FLOAT\020\002\022\016\n\nTYPE_INT64"
+    "\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n\nTYPE_INT32\020\005\022\020\n\014T"
+    "YPE_FIXED64\020\006\022\020\n\014TYPE_FIXED32\020\007\022\r\n\tTYPE_"
+    "BOOL\020\010\022\017\n\013TYPE_STRING\020\t\022\016\n\nTYPE_GROUP\020\n\022"
+    "\020\n\014TYPE_MESSAGE\020\013\022\016\n\nTYPE_BYTES\020\014\022\017\n\013TYP"
+    "E_UINT32\020\r\022\r\n\tTYPE_ENUM\020\016\022\021\n\rTYPE_SFIXED"
+    "32\020\017\022\021\n\rTYPE_SFIXED64\020\020\022\017\n\013TYPE_SINT32\020\021"
+    "\022\017\n\013TYPE_SINT64\020\022\"C\n\005Label\022\022\n\016LABEL_OPTI"
+    "ONAL\020\001\022\022\n\016LABEL_REQUIRED\020\002\022\022\n\016LABEL_REPE"
+    "ATED\020\003\"\214\001\n\023EnumDescriptorProto\022\014\n\004name\030\001"
+    " \001(\t\0228\n\005value\030\002 \003(\0132).google.protobuf.En"
+    "umValueDescriptorProto\022-\n\007options\030\003 \001(\0132"
+    "\034.google.protobuf.EnumOptions\"l\n\030EnumVal"
+    "ueDescriptorProto\022\014\n\004name\030\001 \001(\t\022\016\n\006numbe"
+    "r\030\002 \001(\005\0222\n\007options\030\003 \001(\0132!.google.protob"
+    "uf.EnumValueOptions\"\220\001\n\026ServiceDescripto"
+    "rProto\022\014\n\004name\030\001 \001(\t\0226\n\006method\030\002 \003(\0132&.g"
+    "oogle.protobuf.MethodDescriptorProto\0220\n\007"
+    "options\030\003 \001(\0132\037.google.protobuf.ServiceO"
+    "ptions\"\177\n\025MethodDescriptorProto\022\014\n\004name\030"
+    "\001 \001(\t\022\022\n\ninput_type\030\002 \001(\t\022\023\n\013output_type"
+    "\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google.protobu"
+    "f.MethodOptions\"\333\001\n\013FileOptions\022\024\n\014java_"
+    "package\030\001 \001(\t\022\034\n\024java_outer_classname\030\010 "
+    "\001(\t\022\"\n\023java_multiple_files\030\n \001(\010:\005false\022"
+    "J\n\014optimize_for\030\t \001(\0162).google.protobuf."
+    "FileOptions.OptimizeMode:\tCODE_SIZE\"(\n\014O"
+    "ptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\"8\n"
+    "\016MessageOptions\022&\n\027message_set_wire_form"
+    "at\030\001 \001(\010:\005false\"\205\001\n\014FieldOptions\0222\n\005ctyp"
+    "e\030\001 \001(\0162#.google.protobuf.FieldOptions.C"
+    "Type\022\034\n\024experimental_map_key\030\t \001(\t\"#\n\005CT"
+    "ype\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"\r\n\013EnumO"
+    "ptions\"\022\n\020EnumValueOptions\"\020\n\016ServiceOpt"
+    "ions\"\017\n\rMethodOptionsB)\n\023com.google.prot"
+    "obufB\020DescriptorProtosH\001", 2624);
+  FileDescriptorSet_descriptor_ = file->message_type(0);
+  FileDescriptorSet_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FileDescriptorSet_descriptor_,
+      &FileDescriptorSet::default_instance(),
+      FileDescriptorSet::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    FileDescriptorSet_descriptor_, &FileDescriptorSet::default_instance());
+  FileDescriptorProto_descriptor_ = file->message_type(1);
+  FileDescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FileDescriptorProto_descriptor_,
+      &FileDescriptorProto::default_instance(),
+      FileDescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FileDescriptorProto_descriptor_, &FileDescriptorProto::default_instance());
-  DescriptorProto_descriptor_ = file->message_type(1);
+  DescriptorProto_descriptor_ = file->message_type(2);
+  DescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      DescriptorProto_descriptor_,
+      &DescriptorProto::default_instance(),
+      DescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   DescriptorProto_ExtensionRange_descriptor_ = DescriptorProto_descriptor_->nested_type(0);
+  DescriptorProto_ExtensionRange_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      DescriptorProto_ExtensionRange_descriptor_,
+      &DescriptorProto_ExtensionRange::default_instance(),
+      DescriptorProto_ExtensionRange::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     DescriptorProto_ExtensionRange_descriptor_, &DescriptorProto_ExtensionRange::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     DescriptorProto_descriptor_, &DescriptorProto::default_instance());
-  FieldDescriptorProto_descriptor_ = file->message_type(2);
+  FieldDescriptorProto_descriptor_ = file->message_type(3);
+  FieldDescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FieldDescriptorProto_descriptor_,
+      &FieldDescriptorProto::default_instance(),
+      FieldDescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   FieldDescriptorProto_Type_descriptor_ = FieldDescriptorProto_descriptor_->enum_type(0);
   FieldDescriptorProto_Label_descriptor_ = FieldDescriptorProto_descriptor_->enum_type(1);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FieldDescriptorProto_descriptor_, &FieldDescriptorProto::default_instance());
-  EnumDescriptorProto_descriptor_ = file->message_type(3);
+  EnumDescriptorProto_descriptor_ = file->message_type(4);
+  EnumDescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      EnumDescriptorProto_descriptor_,
+      &EnumDescriptorProto::default_instance(),
+      EnumDescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     EnumDescriptorProto_descriptor_, &EnumDescriptorProto::default_instance());
-  EnumValueDescriptorProto_descriptor_ = file->message_type(4);
+  EnumValueDescriptorProto_descriptor_ = file->message_type(5);
+  EnumValueDescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      EnumValueDescriptorProto_descriptor_,
+      &EnumValueDescriptorProto::default_instance(),
+      EnumValueDescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     EnumValueDescriptorProto_descriptor_, &EnumValueDescriptorProto::default_instance());
-  ServiceDescriptorProto_descriptor_ = file->message_type(5);
+  ServiceDescriptorProto_descriptor_ = file->message_type(6);
+  ServiceDescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ServiceDescriptorProto_descriptor_,
+      &ServiceDescriptorProto::default_instance(),
+      ServiceDescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ServiceDescriptorProto_descriptor_, &ServiceDescriptorProto::default_instance());
-  MethodDescriptorProto_descriptor_ = file->message_type(6);
+  MethodDescriptorProto_descriptor_ = file->message_type(7);
+  MethodDescriptorProto_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      MethodDescriptorProto_descriptor_,
+      &MethodDescriptorProto::default_instance(),
+      MethodDescriptorProto::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MethodDescriptorProto_descriptor_, &MethodDescriptorProto::default_instance());
-  FileOptions_descriptor_ = file->message_type(7);
+  FileOptions_descriptor_ = file->message_type(8);
+  FileOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FileOptions_descriptor_,
+      &FileOptions::default_instance(),
+      FileOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   FileOptions_OptimizeMode_descriptor_ = FileOptions_descriptor_->enum_type(0);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FileOptions_descriptor_, &FileOptions::default_instance());
-  MessageOptions_descriptor_ = file->message_type(8);
+  MessageOptions_descriptor_ = file->message_type(9);
+  MessageOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      MessageOptions_descriptor_,
+      &MessageOptions::default_instance(),
+      MessageOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MessageOptions_descriptor_, &MessageOptions::default_instance());
-  FieldOptions_descriptor_ = file->message_type(9);
+  FieldOptions_descriptor_ = file->message_type(10);
+  FieldOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FieldOptions_descriptor_,
+      &FieldOptions::default_instance(),
+      FieldOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   FieldOptions_CType_descriptor_ = FieldOptions_descriptor_->enum_type(0);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FieldOptions_descriptor_, &FieldOptions::default_instance());
-  EnumOptions_descriptor_ = file->message_type(10);
+  EnumOptions_descriptor_ = file->message_type(11);
+  EnumOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      EnumOptions_descriptor_,
+      &EnumOptions::default_instance(),
+      EnumOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     EnumOptions_descriptor_, &EnumOptions::default_instance());
-  EnumValueOptions_descriptor_ = file->message_type(11);
+  EnumValueOptions_descriptor_ = file->message_type(12);
+  EnumValueOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      EnumValueOptions_descriptor_,
+      &EnumValueOptions::default_instance(),
+      EnumValueOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     EnumValueOptions_descriptor_, &EnumValueOptions::default_instance());
-  ServiceOptions_descriptor_ = file->message_type(12);
+  ServiceOptions_descriptor_ = file->message_type(13);
+  ServiceOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ServiceOptions_descriptor_,
+      &ServiceOptions::default_instance(),
+      ServiceOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ServiceOptions_descriptor_, &ServiceOptions::default_instance());
-  MethodOptions_descriptor_ = file->message_type(13);
+  MethodOptions_descriptor_ = file->message_type(14);
+  MethodOptions_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      MethodOptions_descriptor_,
+      &MethodOptions::default_instance(),
+      MethodOptions::_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MethodOptions_descriptor_, &MethodOptions::default_instance());
 }
@@ -161,10 +343,168 @@ void proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto() {
 // Force BuildDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_google_2fprotobuf_2fdescriptor_2eproto {
   StaticDescriptorInitializer_google_2fprotobuf_2fdescriptor_2eproto() {
-    proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+    protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   }
 } static_descriptor_initializer_google_2fprotobuf_2fdescriptor_2eproto_;
 
+
+// ===================================================================
+
+const FileDescriptorSet FileDescriptorSet::default_instance_;
+
+
+const int FileDescriptorSet::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, file_),
+};
+
+FileDescriptorSet::FileDescriptorSet()
+  : _cached_size_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
+  : _cached_size_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+FileDescriptorSet::~FileDescriptorSet() {
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* FileDescriptorSet::descriptor() {
+  if (FileDescriptorSet_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return FileDescriptorSet_descriptor_;
+}
+
+FileDescriptorSet* FileDescriptorSet::New() const {
+  return new FileDescriptorSet;
+}
+
+void FileDescriptorSet::Clear() {
+  file_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool FileDescriptorSet::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // repeated .google.protobuf.FileDescriptorProto file = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_file:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_file()));
+        if (input->ExpectTag(10)) goto parse_file;
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool FileDescriptorSet::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // repeated .google.protobuf.FileDescriptorProto file = 1;
+  for (int i = 0; i < file_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(1, this->file(i), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int FileDescriptorSet::ByteSize() const {
+  int total_size = 0;
+  
+  // repeated .google.protobuf.FileDescriptorProto file = 1;
+  total_size += 1 * file_size();
+  for (int i = 0; i < file_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->file(i));
+  }
+  
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void FileDescriptorSet::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const FileDescriptorSet* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const FileDescriptorSet*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void FileDescriptorSet::MergeFrom(const FileDescriptorSet& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  file_.MergeFrom(from.file_);
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void FileDescriptorSet::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FileDescriptorSet::IsInitialized() const {
+  
+  return true;
+}
+
+const ::google::protobuf::Descriptor* FileDescriptorSet::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Reflection* FileDescriptorSet::GetReflection() const {
+  if (FileDescriptorSet_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return FileDescriptorSet_reflection_;
+}
 
 // ===================================================================
 
@@ -190,10 +530,7 @@ const int FileDescriptorProto::_offsets_[8] = {
 };
 
 FileDescriptorProto::FileDescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     package_(const_cast< ::std::string*>(&_default_package_)),
     options_(NULL) {
@@ -204,10 +541,7 @@ FileDescriptorProto::FileDescriptorProto()
 }
 
 FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     package_(const_cast< ::std::string*>(&_default_package_)),
     options_(NULL) {
@@ -228,7 +562,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* FileDescriptorProto::descriptor() {
-  if (FileDescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FileDescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FileDescriptorProto_descriptor_;
 }
 
@@ -518,8 +852,7 @@ void FileDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const FileDescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -567,13 +900,9 @@ const ::google::protobuf::Descriptor* FileDescriptorProto::GetDescriptor() const
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-FileDescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* FileDescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* FileDescriptorProto::GetReflection() const {
+  if (FileDescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return FileDescriptorProto_reflection_;
 }
 
 // ===================================================================
@@ -588,10 +917,7 @@ const int DescriptorProto_ExtensionRange::_offsets_[2] = {
 };
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     start_(0),
     end_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -600,10 +926,7 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange()
 }
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     start_(0),
     end_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -616,7 +939,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 
 const ::google::protobuf::Descriptor* DescriptorProto_ExtensionRange::descriptor() {
-  if (DescriptorProto_ExtensionRange_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (DescriptorProto_ExtensionRange_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return DescriptorProto_ExtensionRange_descriptor_;
 }
 
@@ -737,8 +1060,7 @@ void DescriptorProto_ExtensionRange::MergeFrom(const ::google::protobuf::Message
     ::google::protobuf::internal::dynamic_cast_if_available<const DescriptorProto_ExtensionRange*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -778,13 +1100,9 @@ const ::google::protobuf::Descriptor* DescriptorProto_ExtensionRange::GetDescrip
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-DescriptorProto_ExtensionRange::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* DescriptorProto_ExtensionRange::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* DescriptorProto_ExtensionRange::GetReflection() const {
+  if (DescriptorProto_ExtensionRange_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return DescriptorProto_ExtensionRange_reflection_;
 }
 
 // -------------------------------------------------------------------
@@ -809,10 +1127,7 @@ const int DescriptorProto::_offsets_[7] = {
 };
 
 DescriptorProto::DescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -822,10 +1137,7 @@ DescriptorProto::DescriptorProto()
 }
 
 DescriptorProto::DescriptorProto(const DescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -842,7 +1154,7 @@ DescriptorProto::~DescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* DescriptorProto::descriptor() {
-  if (DescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (DescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return DescriptorProto_descriptor_;
 }
 
@@ -1105,8 +1417,7 @@ void DescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const DescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -1151,19 +1462,15 @@ const ::google::protobuf::Descriptor* DescriptorProto::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-DescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* DescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* DescriptorProto::GetReflection() const {
+  if (DescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return DescriptorProto_reflection_;
 }
 
 // ===================================================================
 
 const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor() {
-  if (FieldDescriptorProto_Type_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FieldDescriptorProto_Type_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FieldDescriptorProto_Type_descriptor_;
 }
 bool FieldDescriptorProto_Type_IsValid(int value) {
@@ -1215,7 +1522,7 @@ const FieldDescriptorProto_Type FieldDescriptorProto::Type_MIN;
 const FieldDescriptorProto_Type FieldDescriptorProto::Type_MAX;
 #endif  // _MSC_VER
 const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Label_descriptor() {
-  if (FieldDescriptorProto_Label_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FieldDescriptorProto_Label_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FieldDescriptorProto_Label_descriptor_;
 }
 bool FieldDescriptorProto_Label_IsValid(int value) {
@@ -1258,10 +1565,7 @@ const int FieldDescriptorProto::_offsets_[8] = {
 };
 
 FieldDescriptorProto::FieldDescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
     label_(1),
@@ -1277,10 +1581,7 @@ FieldDescriptorProto::FieldDescriptorProto()
 }
 
 FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
     label_(1),
@@ -1312,7 +1613,7 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* FieldDescriptorProto::descriptor() {
-  if (FieldDescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FieldDescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FieldDescriptorProto_descriptor_;
 }
 
@@ -1606,8 +1907,7 @@ void FieldDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const FieldDescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -1665,13 +1965,9 @@ const ::google::protobuf::Descriptor* FieldDescriptorProto::GetDescriptor() cons
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-FieldDescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* FieldDescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* FieldDescriptorProto::GetReflection() const {
+  if (FieldDescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return FieldDescriptorProto_reflection_;
 }
 
 // ===================================================================
@@ -1688,10 +1984,7 @@ const int EnumDescriptorProto::_offsets_[3] = {
 };
 
 EnumDescriptorProto::EnumDescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1701,10 +1994,7 @@ EnumDescriptorProto::EnumDescriptorProto()
 }
 
 EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1721,7 +2011,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* EnumDescriptorProto::descriptor() {
-  if (EnumDescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (EnumDescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return EnumDescriptorProto_descriptor_;
 }
 
@@ -1872,8 +2162,7 @@ void EnumDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const EnumDescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -1914,13 +2203,9 @@ const ::google::protobuf::Descriptor* EnumDescriptorProto::GetDescriptor() const
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-EnumDescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* EnumDescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* EnumDescriptorProto::GetReflection() const {
+  if (EnumDescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return EnumDescriptorProto_reflection_;
 }
 
 // ===================================================================
@@ -1937,10 +2222,7 @@ const int EnumValueDescriptorProto::_offsets_[3] = {
 };
 
 EnumValueDescriptorProto::EnumValueDescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
     options_(NULL) {
@@ -1951,10 +2233,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto()
 }
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
     options_(NULL) {
@@ -1972,7 +2251,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* EnumValueDescriptorProto::descriptor() {
-  if (EnumValueDescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (EnumValueDescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return EnumValueDescriptorProto_descriptor_;
 }
 
@@ -2122,8 +2401,7 @@ void EnumValueDescriptorProto::MergeFrom(const ::google::protobuf::Message& from
     ::google::protobuf::internal::dynamic_cast_if_available<const EnumValueDescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -2166,13 +2444,9 @@ const ::google::protobuf::Descriptor* EnumValueDescriptorProto::GetDescriptor() 
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-EnumValueDescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* EnumValueDescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* EnumValueDescriptorProto::GetReflection() const {
+  if (EnumValueDescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return EnumValueDescriptorProto_reflection_;
 }
 
 // ===================================================================
@@ -2189,10 +2463,7 @@ const int ServiceDescriptorProto::_offsets_[3] = {
 };
 
 ServiceDescriptorProto::ServiceDescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2202,10 +2473,7 @@ ServiceDescriptorProto::ServiceDescriptorProto()
 }
 
 ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2222,7 +2490,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* ServiceDescriptorProto::descriptor() {
-  if (ServiceDescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (ServiceDescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return ServiceDescriptorProto_descriptor_;
 }
 
@@ -2373,8 +2641,7 @@ void ServiceDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) 
     ::google::protobuf::internal::dynamic_cast_if_available<const ServiceDescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -2415,13 +2682,9 @@ const ::google::protobuf::Descriptor* ServiceDescriptorProto::GetDescriptor() co
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-ServiceDescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* ServiceDescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* ServiceDescriptorProto::GetReflection() const {
+  if (ServiceDescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return ServiceDescriptorProto_reflection_;
 }
 
 // ===================================================================
@@ -2440,10 +2703,7 @@ const int MethodDescriptorProto::_offsets_[4] = {
 };
 
 MethodDescriptorProto::MethodDescriptorProto()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     input_type_(const_cast< ::std::string*>(&_default_input_type_)),
     output_type_(const_cast< ::std::string*>(&_default_output_type_)),
@@ -2455,10 +2715,7 @@ MethodDescriptorProto::MethodDescriptorProto()
 }
 
 MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     input_type_(const_cast< ::std::string*>(&_default_input_type_)),
     output_type_(const_cast< ::std::string*>(&_default_output_type_)),
@@ -2483,7 +2740,7 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 
 const ::google::protobuf::Descriptor* MethodDescriptorProto::descriptor() {
-  if (MethodDescriptorProto_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (MethodDescriptorProto_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return MethodDescriptorProto_descriptor_;
 }
 
@@ -2662,8 +2919,7 @@ void MethodDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const MethodDescriptorProto*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -2709,19 +2965,15 @@ const ::google::protobuf::Descriptor* MethodDescriptorProto::GetDescriptor() con
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-MethodDescriptorProto::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* MethodDescriptorProto::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* MethodDescriptorProto::GetReflection() const {
+  if (MethodDescriptorProto_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return MethodDescriptorProto_reflection_;
 }
 
 // ===================================================================
 
 const ::google::protobuf::EnumDescriptor* FileOptions_OptimizeMode_descriptor() {
-  if (FileOptions_OptimizeMode_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FileOptions_OptimizeMode_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FileOptions_OptimizeMode_descriptor_;
 }
 bool FileOptions_OptimizeMode_IsValid(int value) {
@@ -2754,10 +3006,7 @@ const int FileOptions::_offsets_[4] = {
 };
 
 FileOptions::FileOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     java_package_(const_cast< ::std::string*>(&_default_java_package_)),
     java_outer_classname_(const_cast< ::std::string*>(&_default_java_outer_classname_)),
     java_multiple_files_(false),
@@ -2768,10 +3017,7 @@ FileOptions::FileOptions()
 }
 
 FileOptions::FileOptions(const FileOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     java_package_(const_cast< ::std::string*>(&_default_java_package_)),
     java_outer_classname_(const_cast< ::std::string*>(&_default_java_outer_classname_)),
     java_multiple_files_(false),
@@ -2792,7 +3038,7 @@ FileOptions::~FileOptions() {
 }
 
 const ::google::protobuf::Descriptor* FileOptions::descriptor() {
-  if (FileOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FileOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FileOptions_descriptor_;
 }
 
@@ -2970,8 +3216,7 @@ void FileOptions::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const FileOptions*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -3017,13 +3262,9 @@ const ::google::protobuf::Descriptor* FileOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-FileOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* FileOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* FileOptions::GetReflection() const {
+  if (FileOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return FileOptions_reflection_;
 }
 
 // ===================================================================
@@ -3036,10 +3277,7 @@ const int MessageOptions::_offsets_[1] = {
 };
 
 MessageOptions::MessageOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     message_set_wire_format_(false) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
@@ -3047,10 +3285,7 @@ MessageOptions::MessageOptions()
 }
 
 MessageOptions::MessageOptions(const MessageOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     message_set_wire_format_(false) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
@@ -3062,7 +3297,7 @@ MessageOptions::~MessageOptions() {
 }
 
 const ::google::protobuf::Descriptor* MessageOptions::descriptor() {
-  if (MessageOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (MessageOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return MessageOptions_descriptor_;
 }
 
@@ -3154,8 +3389,7 @@ void MessageOptions::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const MessageOptions*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -3192,19 +3426,15 @@ const ::google::protobuf::Descriptor* MessageOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-MessageOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* MessageOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* MessageOptions::GetReflection() const {
+  if (MessageOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return MessageOptions_reflection_;
 }
 
 // ===================================================================
 
 const ::google::protobuf::EnumDescriptor* FieldOptions_CType_descriptor() {
-  if (FieldOptions_CType_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FieldOptions_CType_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FieldOptions_CType_descriptor_;
 }
 bool FieldOptions_CType_IsValid(int value) {
@@ -3233,10 +3463,7 @@ const int FieldOptions::_offsets_[2] = {
 };
 
 FieldOptions::FieldOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     ctype_(1),
     experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3245,10 +3472,7 @@ FieldOptions::FieldOptions()
 }
 
 FieldOptions::FieldOptions(const FieldOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0),
+  : _cached_size_(0),
     ctype_(1),
     experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3264,7 +3488,7 @@ FieldOptions::~FieldOptions() {
 }
 
 const ::google::protobuf::Descriptor* FieldOptions::descriptor() {
-  if (FieldOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (FieldOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return FieldOptions_descriptor_;
 }
 
@@ -3389,8 +3613,7 @@ void FieldOptions::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const FieldOptions*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(
-      descriptor(), *from.GetReflection(), &_reflection_);
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
     MergeFrom(*source);
   }
@@ -3430,13 +3653,9 @@ const ::google::protobuf::Descriptor* FieldOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-FieldOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* FieldOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* FieldOptions::GetReflection() const {
+  if (FieldOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return FieldOptions_reflection_;
 }
 
 // ===================================================================
@@ -3447,20 +3666,14 @@ const int EnumOptions::_offsets_[1] = {
 };
 
 EnumOptions::EnumOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
 }
 
 EnumOptions::EnumOptions(const EnumOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3471,7 +3684,7 @@ EnumOptions::~EnumOptions() {
 }
 
 const ::google::protobuf::Descriptor* EnumOptions::descriptor() {
-  if (EnumOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (EnumOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return EnumOptions_descriptor_;
 }
 
@@ -3553,13 +3766,9 @@ const ::google::protobuf::Descriptor* EnumOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-EnumOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* EnumOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* EnumOptions::GetReflection() const {
+  if (EnumOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return EnumOptions_reflection_;
 }
 
 // ===================================================================
@@ -3570,20 +3779,14 @@ const int EnumValueOptions::_offsets_[1] = {
 };
 
 EnumValueOptions::EnumValueOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
 }
 
 EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3594,7 +3797,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 
 const ::google::protobuf::Descriptor* EnumValueOptions::descriptor() {
-  if (EnumValueOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (EnumValueOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return EnumValueOptions_descriptor_;
 }
 
@@ -3676,13 +3879,9 @@ const ::google::protobuf::Descriptor* EnumValueOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-EnumValueOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* EnumValueOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* EnumValueOptions::GetReflection() const {
+  if (EnumValueOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return EnumValueOptions_reflection_;
 }
 
 // ===================================================================
@@ -3693,20 +3892,14 @@ const int ServiceOptions::_offsets_[1] = {
 };
 
 ServiceOptions::ServiceOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
 }
 
 ServiceOptions::ServiceOptions(const ServiceOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3717,7 +3910,7 @@ ServiceOptions::~ServiceOptions() {
 }
 
 const ::google::protobuf::Descriptor* ServiceOptions::descriptor() {
-  if (ServiceOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (ServiceOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return ServiceOptions_descriptor_;
 }
 
@@ -3799,13 +3992,9 @@ const ::google::protobuf::Descriptor* ServiceOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-ServiceOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* ServiceOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* ServiceOptions::GetReflection() const {
+  if (ServiceOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return ServiceOptions_reflection_;
 }
 
 // ===================================================================
@@ -3816,20 +4005,14 @@ const int MethodOptions::_offsets_[1] = {
 };
 
 MethodOptions::MethodOptions()
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
 }
 
 MethodOptions::MethodOptions(const MethodOptions& from)
-  : _reflection_(descriptor(),
-                 this, &default_instance_,
-                 _offsets_, _has_bits_, NULL),
-    _cached_size_(0) {
+  : _cached_size_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3840,7 +4023,7 @@ MethodOptions::~MethodOptions() {
 }
 
 const ::google::protobuf::Descriptor* MethodOptions::descriptor() {
-  if (MethodOptions_descriptor_ == NULL) proto_BuildDescriptors_google_2fprotobuf_2fdescriptor_2eproto();
+  if (MethodOptions_descriptor_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   return MethodOptions_descriptor_;
 }
 
@@ -3922,13 +4105,9 @@ const ::google::protobuf::Descriptor* MethodOptions::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Message::Reflection*
-MethodOptions::GetReflection() const {
-  return &_reflection_;
-}
-
-::google::protobuf::Message::Reflection* MethodOptions::GetReflection() {
-  return &_reflection_;
+const ::google::protobuf::Reflection* MethodOptions::GetReflection() const {
+  if (MethodOptions_reflection_ == NULL) protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return MethodOptions_reflection_;
 }
 
 }  // namespace protobuf

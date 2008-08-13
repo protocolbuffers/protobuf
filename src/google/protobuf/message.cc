@@ -50,7 +50,6 @@ static string InitializationErrorMessage(const char* action,
 }
 
 Message::~Message() {}
-Message::Reflection::~Reflection() {}
 
 void Message::MergeFrom(const Message& from) {
   const Descriptor* descriptor = GetDescriptor();
@@ -58,7 +57,7 @@ void Message::MergeFrom(const Message& from) {
     << ": Tried to merge from a message with a different type.  "
        "to: " << descriptor->full_name() << ", "
        "from:" << from.GetDescriptor()->full_name();
-  ReflectionOps::Merge(descriptor, *from.GetReflection(), GetReflection());
+  ReflectionOps::Merge(from, this);
 }
 
 void Message::CopyFrom(const Message& from) {
@@ -67,20 +66,19 @@ void Message::CopyFrom(const Message& from) {
     << ": Tried to copy from a message with a different type."
        "to: " << descriptor->full_name() << ", "
        "from:" << from.GetDescriptor()->full_name();
-  ReflectionOps::Copy(descriptor, *from.GetReflection(), GetReflection());
+  ReflectionOps::Copy(from, this);
 }
 
 void Message::Clear() {
-  ReflectionOps::Clear(GetDescriptor(), GetReflection());
+  ReflectionOps::Clear(this);
 }
 
 bool Message::IsInitialized() const {
-  return ReflectionOps::IsInitialized(GetDescriptor(), *GetReflection());
+  return ReflectionOps::IsInitialized(*this);
 }
 
 void Message::FindInitializationErrors(vector<string>* errors) const {
-  return ReflectionOps::FindInitializationErrors(
-    GetDescriptor(), *GetReflection(), "", errors);
+  return ReflectionOps::FindInitializationErrors(*this, "", errors);
 }
 
 string Message::InitializationErrorString() const {
@@ -96,12 +94,11 @@ void Message::CheckInitialized() const {
 }
 
 void Message::DiscardUnknownFields() {
-  return ReflectionOps::DiscardUnknownFields(GetDescriptor(), GetReflection());
+  return ReflectionOps::DiscardUnknownFields(this);
 }
 
 bool Message::MergePartialFromCodedStream(io::CodedInputStream* input) {
-  return WireFormat::ParseAndMergePartial(
-    GetDescriptor(), input, GetReflection());
+  return WireFormat::ParseAndMergePartial(input, this);
 }
 
 bool Message::MergeFromCodedStream(io::CodedInputStream* input) {
@@ -178,12 +175,11 @@ bool Message::ParsePartialFromIstream(istream* input) {
 
 bool Message::SerializeWithCachedSizes(
     io::CodedOutputStream* output) const {
-  return WireFormat::SerializeWithCachedSizes(
-    GetDescriptor(), GetReflection(), GetCachedSize(), output);
+  return WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
 }
 
 int Message::ByteSize() const {
-  int size = WireFormat::ByteSize(GetDescriptor(), GetReflection());
+  int size = WireFormat::ByteSize(*this);
   SetCachedSize(size);
   return size;
 }
@@ -280,6 +276,8 @@ bool Message::SerializePartialToOstream(ostream* output) const {
   return SerializePartialToZeroCopyStream(&zero_copy_output);
 }
 
+
+Reflection::~Reflection() {}
 
 // ===================================================================
 // MessageFactory

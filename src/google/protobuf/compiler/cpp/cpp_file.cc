@@ -128,7 +128,14 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   // Open namespace.
   GenerateNamespaceOpeners(printer);
 
-  printer->Print("\n");
+  // Forward-declare the BuildDescriptors function, so that we can declare it
+  // to be a friend of each class.
+  printer->Print(
+    "\n"
+    "// Internal implementation detail -- do not call this.\n"
+    "void $builddescriptorsname$();\n"
+    "\n",
+    "builddescriptorsname", GlobalBuildDescriptorsName(file_->name()));
 
   // Generate forward declarations of classes.
   for (int i = 0; i < file_->message_type_count(); i++) {
@@ -302,6 +309,9 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // time, because every message has a statically-initialized default instance,
   // and the constructor for a message class accesses its descriptor.  See the
   // constructor and the descriptor() method of message classes.
+  //
+  // We also construct the reflection object for each class inside
+  // BuildDescriptors().
   printer->Print(
     "\n"
     "void $builddescriptorsname$() {\n"

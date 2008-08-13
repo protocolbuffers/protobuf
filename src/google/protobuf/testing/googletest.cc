@@ -126,8 +126,27 @@ string TestTempDir() {
   return temp_dir_deleter_.GetTempDir();
 }
 
+// TODO(kenton):  Share duplicated code below.  Too busy/lazy for now.
+
+static string stdout_capture_filename_;
 static string stderr_capture_filename_;
+static int original_stdout_ = -1;
 static int original_stderr_ = -1;
+
+void CaptureTestStdout() {
+  GOOGLE_CHECK_EQ(original_stdout_, -1) << "Already capturing.";
+
+  stdout_capture_filename_ = TestTempDir() + "/captured_stdout";
+
+  int fd = open(stdout_capture_filename_.c_str(),
+                O_WRONLY | O_CREAT | O_EXCL | O_BINARY, 0777);
+  GOOGLE_CHECK(fd >= 0) << "open: " << strerror(errno);
+
+  original_stdout_ = dup(1);
+  close(1);
+  dup2(fd, 1);
+  close(fd);
+}
 
 void CaptureTestStderr() {
   GOOGLE_CHECK_EQ(original_stderr_, -1) << "Already capturing.";
@@ -142,6 +161,21 @@ void CaptureTestStderr() {
   close(2);
   dup2(fd, 2);
   close(fd);
+}
+
+string GetCapturedTestStdout() {
+  GOOGLE_CHECK_NE(original_stdout_, -1) << "Not capturing.";
+
+  close(1);
+  dup2(original_stdout_, 1);
+  original_stdout_ = -1;
+
+  string result;
+  File::ReadFileToStringOrDie(stdout_capture_filename_, &result);
+
+  remove(stdout_capture_filename_.c_str());
+
+  return result;
 }
 
 string GetCapturedTestStderr() {

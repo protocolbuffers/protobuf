@@ -1232,9 +1232,9 @@ namespace {
 // Used by each of the option formatters.
 bool RetrieveOptions(const Message &options, vector<string> *option_entries) {
   option_entries->clear();
-  const Message::Reflection *reflection = options.GetReflection();
+  const Reflection* reflection = options.GetReflection();
   vector<const FieldDescriptor*> fields;
-  reflection->ListFields(&fields);
+  reflection->ListFields(options, &fields);
   for (int i = 0; i < fields.size(); i++) {
     // Doesn't make sense to have message type fields here
     if (fields[i]->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -1243,7 +1243,7 @@ bool RetrieveOptions(const Message &options, vector<string> *option_entries) {
     int count = 1;
     bool repeated = false;
     if (fields[i]->is_repeated()) {
-      count = reflection->FieldSize(fields[i]);
+      count = reflection->FieldSize(options, fields[i]);
       repeated = true;
     }
     for (int j = 0; j < count; j++) {

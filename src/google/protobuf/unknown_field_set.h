@@ -43,7 +43,7 @@ class UnknownField;                 // below
 // to be updated every time a new field is added to the message definition.
 //
 // To get the UnknownFieldSet attached to any message, call
-// Message::Reflection::GetUnknownFields().
+// Reflection::GetUnknownFields().
 //
 // This class is necessarily tied to the protocol buffer wire format, unlike
 // the Reflection interface which is independent of any serialization scheme.

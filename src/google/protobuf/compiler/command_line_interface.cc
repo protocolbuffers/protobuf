@@ -35,6 +35,8 @@
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -51,6 +53,12 @@ namespace compiler {
 #endif
 #ifndef F_OK
 #define F_OK 00  // not defined by MSVC for whatever reason
+#endif
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
 #endif
 #endif
 
@@ -82,10 +90,31 @@ static bool IsWindowsAbsolutePath(const string& text) {
 #endif
 }
 
+void SetFdToTextMode(int fd) {
+#ifdef _WIN32
+  if (_setmode(fd, _O_TEXT) == -1) {
+    // This should never happen, I think.
+    GOOGLE_LOG(WARNING) << "_setmode(" << fd << ", _O_TEXT): " << strerror(errno);
+  }
+#endif
+  // (Text and binary are the same on non-Windows platforms.)
+}
+
+void SetFdToBinaryMode(int fd) {
+#ifdef _WIN32
+  if (_setmode(fd, _O_BINARY) == -1) {
+    // This should never happen, I think.
+    GOOGLE_LOG(WARNING) << "_setmode(" << fd << ", _O_BINARY): " << strerror(errno);
+  }
+#endif
+  // (Text and binary are the same on non-Windows platforms.)
+}
+
 }  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
-class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector {
+class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
+                                           public io::ErrorCollector {
  public:
   ErrorPrinter() {}
   ~ErrorPrinter() {}
@@ -100,6 +129,11 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector {
       cerr << ":" << (line + 1) << ":" << (column + 1);
     }
     cerr << ": " << message << endl;
+  }
+
+  // implements io::ErrorCollector -----------------------------------
+  void AddError(int line, int column, const string& message) {
+    AddError("input", line, column, message);
   }
 };
 
@@ -243,7 +277,9 @@ CommandLineInterface::ErrorReportingFileOutput::~ErrorReportingFileOutput() {
 // ===================================================================
 
 CommandLineInterface::CommandLineInterface()
-  : disallow_services_(false),
+  : mode_(MODE_COMPILE),
+    imports_in_descriptor_set_(false),
+    disallow_services_(false),
     inputs_are_proto_path_relative_(false) {}
 CommandLineInterface::~CommandLineInterface() {}
 
@@ -258,7 +294,7 @@ void CommandLineInterface::RegisterGenerator(const string& flag_name,
 
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
   Clear();
-  if (!ParseArguments(argc, argv)) return -1;
+  if (!ParseArguments(argc, argv)) return 1;
 
   // Set up the source tree.
   DiskSourceTree source_tree;
@@ -269,32 +305,61 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // Map input files to virtual paths if necessary.
   if (!inputs_are_proto_path_relative_) {
     if (!MakeInputsBeProtoPathRelative(&source_tree)) {
-      return -1;
+      return 1;
     }
   }
 
   // Allocate the Importer.
   ErrorPrinter error_collector;
-  DescriptorPool pool;
   Importer importer(&source_tree, &error_collector);
+
+  vector<const FileDescriptor*> parsed_files;
 
   // Parse each file and generate output.
   for (int i = 0; i < input_files_.size(); i++) {
     // Import the file.
     const FileDescriptor* parsed_file = importer.Import(input_files_[i]);
-    if (parsed_file == NULL) return -1;
+    if (parsed_file == NULL) return 1;
+    parsed_files.push_back(parsed_file);
 
     // Enforce --disallow_services.
     if (disallow_services_ && parsed_file->service_count() > 0) {
       cerr << parsed_file->name() << ": This file contains services, but "
               "--disallow_services was used." << endl;
-      return -1;
+      return 1;
     }
 
-    // Generate output files.
-    for (int i = 0; i < output_directives_.size(); i++) {
-      if (!GenerateOutput(parsed_file, output_directives_[i])) {
-        return -1;
+    if (mode_ == MODE_COMPILE) {
+      // Generate output files.
+      for (int i = 0; i < output_directives_.size(); i++) {
+        if (!GenerateOutput(parsed_file, output_directives_[i])) {
+          return 1;
+        }
+      }
+    }
+  }
+
+  if (!descriptor_set_name_.empty()) {
+    if (!WriteDescriptorSet(parsed_files)) {
+      return 1;
+    }
+  }
+
+  if (mode_ == MODE_ENCODE || mode_ == MODE_DECODE) {
+    if (codec_type_.empty()) {
+      // HACK:  Define an EmptyMessage type to use for decoding.
+      DescriptorPool pool;
+      FileDescriptorProto file;
+      file.set_name("empty_message.proto");
+      file.add_message_type()->set_name("EmptyMessage");
+      GOOGLE_CHECK(pool.BuildFile(file) != NULL);
+      codec_type_ = "EmptyMessage";
+      if (!EncodeOrDecode(&pool)) {
+        return 1;
+      }
+    } else {
+      if (!EncodeOrDecode(importer.pool())) {
+        return 1;
       }
     }
   }
@@ -303,9 +368,18 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 }
 
 void CommandLineInterface::Clear() {
+  // Clear all members that are set by Run().  Note that we must not clear
+  // members which are set by other methods before Run() is called.
+  executable_name_.clear();
   proto_path_.clear();
   input_files_.clear();
   output_directives_.clear();
+  codec_type_.clear();
+  descriptor_set_name_.clear();
+
+  mode_ = MODE_COMPILE;
+  imports_in_descriptor_set_ = false;
+  disallow_services_ = false;
 }
 
 bool CommandLineInterface::MakeInputsBeProtoPathRelative(
@@ -351,9 +425,12 @@ bool CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
     string name, value;
 
     if (ParseArgument(argv[i], &name, &value)) {
-      // Retured true => Use the next argument as the flag value.
+      // Returned true => Use the next argument as the flag value.
       if (i + 1 == argc || argv[i+1][0] == '-') {
         cerr << "Missing value for flag: " << name << endl;
+        if (name == "--decode") {
+          cerr << "To decode an unknown message, use --decode_raw." << endl;
+        }
         return false;
       } else {
         ++i;
@@ -370,13 +447,22 @@ bool CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
   }
 
   // Check some errror cases.
-  if (input_files_.empty()) {
+  bool decoding_raw = (mode_ == MODE_DECODE) && codec_type_.empty();
+  if (decoding_raw && !input_files_.empty()) {
+    cerr << "When using --decode_raw, no input files should be given." << endl;
+    return false;
+  } else if (!decoding_raw && input_files_.empty()) {
     cerr << "Missing input file." << endl;
     return false;
   }
-  if (output_directives_.empty()) {
+  if (mode_ == MODE_COMPILE && output_directives_.empty() &&
+      descriptor_set_name_.empty()) {
     cerr << "Missing output directives." << endl;
     return false;
+  }
+  if (imports_in_descriptor_set_ && descriptor_set_name_.empty()) {
+    cerr << "--include_imports only makes sense when combined with "
+            "--descriptor_set_name." << endl;
   }
 
   return true;
@@ -428,7 +514,9 @@ bool CommandLineInterface::ParseArgument(const char* arg,
 
   if (*name == "-h" || *name == "--help" ||
       *name == "--disallow_services" ||
-      *name == "--version") {
+      *name == "--include_imports" ||
+      *name == "--version" ||
+      *name == "--decode_raw") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -487,6 +575,29 @@ bool CommandLineInterface::InterpretArgument(const string& name,
       proto_path_.push_back(make_pair(virtual_path, disk_path));
     }
 
+  } else if (name == "-o" || name == "--descriptor_set_out") {
+    if (!descriptor_set_name_.empty()) {
+      cerr << name << " may only be passed once." << endl;
+      return false;
+    }
+    if (value.empty()) {
+      cerr << name << " requires a non-empty value." << endl;
+      return false;
+    }
+    if (mode_ != MODE_COMPILE) {
+      cerr << "Cannot use --encode or --decode and generate descriptors at the "
+              "same time." << endl;
+      return false;
+    }
+    descriptor_set_name_ = value;
+
+  } else if (name == "--include_imports") {
+    if (imports_in_descriptor_set_) {
+      cerr << name << " may only be passed once." << endl;
+      return false;
+    }
+    imports_in_descriptor_set_ = true;
+
   } else if (name == "-h" || name == "--help") {
     PrintHelpText();
     return false;  // Exit without running compiler.
@@ -503,6 +614,33 @@ bool CommandLineInterface::InterpretArgument(const string& name,
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
 
+  } else if (name == "--encode" || name == "--decode" ||
+             name == "--decode_raw") {
+    if (mode_ != MODE_COMPILE) {
+      cerr << "Only one of --encode and --decode can be specified." << endl;
+      return false;
+    }
+    if (!output_directives_.empty() || !descriptor_set_name_.empty()) {
+      cerr << "Cannot use " << name
+           << " and generate code or descriptors at the same time." << endl;
+      return false;
+    }
+
+    mode_ = (name == "--encode") ? MODE_ENCODE : MODE_DECODE;
+
+    if (value.empty() && name != "--decode_raw") {
+      cerr << "Type name for " << name << " cannot be blank." << endl;
+      if (name == "--decode") {
+        cerr << "To decode an unknown message, use --decode_raw." << endl;
+      }
+      return false;
+    } else if (!value.empty() && name == "--decode_raw") {
+      cerr << "--decode_raw does not take a parameter." << endl;
+      return false;
+    }
+
+    codec_type_ = value;
+
   } else {
     // Some other flag.  Look it up in the generators list.
     GeneratorMap::const_iterator iter = generators_.find(name);
@@ -512,6 +650,12 @@ bool CommandLineInterface::InterpretArgument(const string& name,
     }
 
     // It's an output flag.  Add it to the output directives.
+    if (mode_ != MODE_COMPILE) {
+      cerr << "Cannot use --encode or --decode and generate code at the "
+              "same time." << endl;
+      return false;
+    }
+
     OutputDirective directive;
     directive.name = name;
     directive.generator = iter->second.generator;
@@ -536,14 +680,33 @@ bool CommandLineInterface::InterpretArgument(const string& name,
 void CommandLineInterface::PrintHelpText() {
   // Sorry for indentation here; line wrapping would be uglier.
   cerr <<
-"Usage: " << executable_name_ << " [OPTION] PROTO_FILE\n"
-"Parse PROTO_FILE and generate output based on the options given:\n"
+"Usage: " << executable_name_ << " [OPTION] PROTO_FILES\n"
+"Parse PROTO_FILES and generate output based on the options given:\n"
 "  -IPATH, --proto_path=PATH   Specify the directory in which to search for\n"
 "                              imports.  May be specified multiple times;\n"
 "                              directories will be searched in order.  If not\n"
 "                              given, the current working directory is used.\n"
 "  --version                   Show version info and exit.\n"
-"  -h, --help                  Show this text and exit." << endl;
+"  -h, --help                  Show this text and exit.\n"
+"  --encode=MESSAGE_TYPE       Read a text-format message of the given type\n"
+"                              from standard input and write it in binary\n"
+"                              to standard output.  The message type must\n"
+"                              be defined in PROTO_FILES or their imports.\n"
+"  --decode=MESSAGE_TYPE       Read a binary message of the given type from\n"
+"                              standard input and write it in text format\n"
+"                              to standard output.  The message type must\n"
+"                              be defined in PROTO_FILES or their imports.\n"
+"  --decode_raw                Read an arbitrary protocol message from\n"
+"                              standard input and write the raw tag/value\n"
+"                              pairs in text format to standard output.  No\n"
+"                              PROTO_FILES should be given when using this\n"
+"                              flag.\n"
+"  -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,\n"
+"    --descriptor_set_out=FILE defined in descriptor.proto) containing all of\n"
+"                              the input files to FILE.\n"
+"  --include_imports           When using --descriptor_set_out, also include\n"
+"                              all dependencies of the input files in the\n"
+"                              set, so that the set is self-contained." << endl;
 
   for (GeneratorMap::iterator iter = generators_.begin();
        iter != generators_.end(); ++iter) {
@@ -578,6 +741,116 @@ bool CommandLineInterface::GenerateOutput(
 
   // Check for write errors.
   if (output_directory.had_error()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
+  // Look up the type.
+  const Descriptor* type = pool->FindMessageTypeByName(codec_type_);
+  if (type == NULL) {
+    cerr << "Type not defined: " << codec_type_ << endl;
+    return false;
+  }
+
+  DynamicMessageFactory dynamic_factory(pool);
+  scoped_ptr<Message> message(dynamic_factory.GetPrototype(type)->New());
+
+  if (mode_ == MODE_ENCODE) {
+    SetFdToTextMode(STDIN_FILENO);
+    SetFdToBinaryMode(STDOUT_FILENO);
+  } else {
+    SetFdToBinaryMode(STDIN_FILENO);
+    SetFdToTextMode(STDOUT_FILENO);
+  }
+
+  io::FileInputStream in(STDIN_FILENO);
+  io::FileOutputStream out(STDOUT_FILENO);
+
+  if (mode_ == MODE_ENCODE) {
+    // Input is text.
+    ErrorPrinter error_collector;
+    TextFormat::Parser parser;
+    parser.RecordErrorsTo(&error_collector);
+    parser.AllowPartialMessage(true);
+
+    if (!parser.Parse(&in, message.get())) {
+      cerr << "Failed to parse input." << endl;
+      return false;
+    }
+  } else {
+    // Input is binary.
+    if (!message->ParsePartialFromZeroCopyStream(&in)) {
+      cerr << "Failed to parse input." << endl;
+      return false;
+    }
+  }
+
+  if (!message->IsInitialized()) {
+    cerr << "warning:  Input message is missing required fields:  "
+         << message->InitializationErrorString() << endl;
+  }
+
+  if (mode_ == MODE_ENCODE) {
+    // Output is binary.
+    if (!message->SerializePartialToZeroCopyStream(&out)) {
+      cerr << "output: I/O error." << endl;
+      return false;
+    }
+  } else {
+    // Output is text.
+    if (!TextFormat::Print(*message, &out)) {
+      cerr << "output: I/O error." << endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::WriteDescriptorSet(
+    const vector<const FileDescriptor*> parsed_files) {
+  FileDescriptorSet file_set;
+  set<const FileDescriptor*> already_added;
+  vector<const FileDescriptor*> to_add(parsed_files);
+
+  while (!to_add.empty()) {
+    const FileDescriptor* file = to_add.back();
+    to_add.pop_back();
+    if (already_added.insert(file).second) {
+      // This file was not already in the set.
+      file->CopyTo(file_set.add_file());
+
+      if (imports_in_descriptor_set_) {
+        // Add all of this file's dependencies.
+        for (int i = 0; i < file->dependency_count(); i++) {
+          to_add.push_back(file->dependency(i));
+        }
+      }
+    }
+  }
+
+  int fd;
+  do {
+    fd = open(descriptor_set_name_.c_str(),
+              O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (fd < 0 && errno == EINTR);
+
+  if (fd < 0) {
+    perror(descriptor_set_name_.c_str());
+    return false;
+  }
+
+  io::FileOutputStream out(fd);
+  if (!file_set.SerializeToZeroCopyStream(&out)) {
+    cerr << descriptor_set_name_ << ": " << strerror(out.GetErrno()) << endl;
+    out.Close();
+    return false;
+  }
+  if (!out.Close()) {
+    cerr << descriptor_set_name_ << ": " << strerror(out.GetErrno()) << endl;
     return false;
   }
 
