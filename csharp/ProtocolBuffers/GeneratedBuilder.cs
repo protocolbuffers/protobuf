@@ -73,8 +73,8 @@ namespace Google.ProtocolBuffers {
       get { return DefaultInstanceForType; }
     }
 
-    protected override IBuilder NewBuilderForFieldImpl(FieldDescriptor field) {
-      return NewBuilderForField(field);
+    protected override IBuilder CreateBuilderForFieldImpl(FieldDescriptor field) {
+      return CreateBuilderForField(field);
     }
 
     protected override IBuilder ClearFieldImpl(FieldDescriptor field) {
@@ -91,9 +91,9 @@ namespace Google.ProtocolBuffers {
       throw new NotImplementedException();
     }
 
-    public abstract IMessage<TMessage> Build();
+    public abstract TMessage Build();
 
-    public abstract IMessage<TMessage> BuildPartial();
+    public abstract TMessage BuildPartial();
 
     public abstract IBuilder<TMessage> Clone();
 
@@ -105,11 +105,11 @@ namespace Google.ProtocolBuffers {
       throw new NotImplementedException();
     }
 
-    public IMessage<TMessage> DefaultInstanceForType {
+    public TMessage DefaultInstanceForType {
       get { throw new NotImplementedException(); }
     }
 
-    public IBuilder NewBuilderForField(FieldDescriptor field) {
+    public IBuilder CreateBuilderForField(FieldDescriptor field) {
       throw new NotImplementedException();
     }
 

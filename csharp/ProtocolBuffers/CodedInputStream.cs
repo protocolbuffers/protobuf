@@ -142,7 +142,7 @@ namespace Google.ProtocolBuffers {
     /// Read a double field from the stream.
     /// </summary>
     public double ReadDouble() {
-      return BitConverter.Int64BitsToDouble(ReadRawLittleEndian64());
+      return BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
     }
 
     /// <summary>
@@ -178,14 +178,14 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a fixed64 field from the stream.
     /// </summary>
-    public long ReadFixed64() {
+    public ulong ReadFixed64() {
       return ReadRawLittleEndian64();
     }
 
     /// <summary>
     /// Read a fixed32 field from the stream.
     /// </summary>
-    public int ReadFixed32() {
+    public uint ReadFixed32() {
       return ReadRawLittleEndian32();
     }
 
@@ -293,14 +293,14 @@ namespace Google.ProtocolBuffers {
     /// Reads an sfixed32 field value from the stream.
     /// </summary>   
     public int ReadSFixed32() {
-      return ReadRawLittleEndian32();
+      return (int) ReadRawLittleEndian32();
     }
 
     /// <summary>
     /// Reads an sfixed64 field value from the stream.
     /// </summary>   
     public long ReadSFixed64() {
-      return ReadRawLittleEndian64();
+      return (long) ReadRawLittleEndian64();
     }
 
     /// <summary>
@@ -410,26 +410,26 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a 32-bit little-endian integer from the stream.
     /// </summary>
-    public int ReadRawLittleEndian32() {
-      byte b1 = ReadRawByte();
-      byte b2 = ReadRawByte();
-      byte b3 = ReadRawByte();
-      byte b4 = ReadRawByte();
+    public uint ReadRawLittleEndian32() {
+      uint b1 = ReadRawByte();
+      uint b2 = ReadRawByte();
+      uint b3 = ReadRawByte();
+      uint b4 = ReadRawByte();
       return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24);
     }
 
     /// <summary>
     /// Read a 64-bit little-endian integer from the stream.
     /// </summary>
-    public long ReadRawLittleEndian64() {
-      long b1 = ReadRawByte();
-      long b2 = ReadRawByte();
-      long b3 = ReadRawByte();
-      long b4 = ReadRawByte();
-      long b5 = ReadRawByte();
-      long b6 = ReadRawByte();
-      long b7 = ReadRawByte();
-      long b8 = ReadRawByte();
+    public ulong ReadRawLittleEndian64() {
+      ulong b1 = ReadRawByte();
+      ulong b2 = ReadRawByte();
+      ulong b3 = ReadRawByte();
+      ulong b4 = ReadRawByte();
+      ulong b5 = ReadRawByte();
+      ulong b6 = ReadRawByte();
+      ulong b7 = ReadRawByte();
+      ulong b8 = ReadRawByte();
       return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24)
           | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
     }
@@ -702,6 +702,51 @@ namespace Google.ProtocolBuffers {
 
         // Done.
         return bytes;
+      }
+    }
+
+    /// <summary>
+    /// Reads and discards a single field, given its tag value.
+    /// </summary>
+    /// <returns>false if the tag is an end-group tag, in which case
+    /// nothing is skipped. Otherwise, returns true.</returns>
+    public bool SkipField(uint tag) {
+      switch (WireFormat.GetTagWireType(tag)) {
+        case WireFormat.WireType.Varint:
+          ReadInt32();
+          return true;
+        case WireFormat.WireType.Fixed64:
+          ReadRawLittleEndian64();
+          return true;
+        case WireFormat.WireType.LengthDelimited:
+          SkipRawBytes((int) ReadRawVarint32());
+          return true;
+        case WireFormat.WireType.StartGroup:
+          SkipMessage();
+          CheckLastTagWas(
+            WireFormat.MakeTag(WireFormat.GetTagFieldNumber(tag),
+                               WireFormat.WireType.EndGroup));
+          return true;
+        case WireFormat.WireType.EndGroup:
+          return false;
+        case WireFormat.WireType.Fixed32:
+          ReadRawLittleEndian32();
+          return true;
+        default:
+          throw InvalidProtocolBufferException.InvalidWireType();
+      }
+    }
+
+    /// <summary>
+    /// Reads and discards an entire message.  This will read either until EOF
+    /// or until an endgroup tag, whichever comes first.
+    /// </summary>
+    public void SkipMessage() {
+      while (true) {
+        uint tag = ReadTag();
+        if (tag == 0 || !SkipField(tag)) {
+          return;
+        }
       }
     }
 

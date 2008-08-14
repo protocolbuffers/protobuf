@@ -6,5 +6,13 @@ namespace Google.ProtocolBuffers.Descriptors {
     public IList<FieldDescriptor> Fields;
     public DescriptorProtos.MessageOptions Options;
     public string FullName;
+
+    internal bool IsExtensionNumber(int fieldNumber) {
+      throw new System.NotImplementedException();
+    }
+
+    internal FieldDescriptor FindFieldByNumber(int fieldNumber) {
+      throw new System.NotImplementedException();
+    }
   }
 }

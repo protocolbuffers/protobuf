@@ -25,7 +25,7 @@ namespace Google.ProtocolBuffers {
     protected abstract IMessage BuildPartialImpl();
     protected abstract IBuilder CloneImpl();
     protected abstract IMessage DefaultInstanceForTypeImpl { get; }
-    protected abstract IBuilder NewBuilderForFieldImpl(FieldDescriptor field);
+    protected abstract IBuilder CreateBuilderForFieldImpl(FieldDescriptor field);
     protected abstract IBuilder ClearFieldImpl(FieldDescriptor field);
     protected abstract IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value);
     #endregion
@@ -47,8 +47,8 @@ namespace Google.ProtocolBuffers {
       get { return DefaultInstanceForTypeImpl; }
     }
 
-    IBuilder IBuilder.NewBuilderForField(FieldDescriptor field) {
-      return NewBuilderForFieldImpl(field);
+    IBuilder IBuilder.CreateBuilderForField(FieldDescriptor field) {
+      return CreateBuilderForFieldImpl(field);
     }
 
     IBuilder IBuilder.ClearField(FieldDescriptor field) {

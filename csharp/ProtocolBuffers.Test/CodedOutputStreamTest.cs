@@ -106,7 +106,7 @@ namespace Google.ProtocolBuffers {
       AssertWriteVarint(
         Bytes(0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49),
         (0x00 << 0) | (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
-        (0x43L << 28) | (0x49L << 35) | (0x24L << 42) | (0x49L << 49));
+        (0x43UL << 28) | (0x49L << 35) | (0x24UL << 42) | (0x49UL << 49));
       // 11964378330978735131
       AssertWriteVarint(
         Bytes(0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01),
@@ -120,7 +120,7 @@ namespace Google.ProtocolBuffers {
     /// Parses the given bytes using WriteRawLittleEndian32() and checks
     /// that the result matches the given value.
     /// </summary>
-    private static void AssertWriteLittleEndian32(byte[] data, int value) {
+    private static void AssertWriteLittleEndian32(byte[] data, uint value) {
       MemoryStream rawOutput = new MemoryStream();
       CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
       output.WriteRawLittleEndian32(value);
@@ -141,7 +141,7 @@ namespace Google.ProtocolBuffers {
     /// Parses the given bytes using WriteRawLittleEndian64() and checks
     /// that the result matches the given value.
     /// </summary>
-    private static void AssertWriteLittleEndian64(byte[] data, long value) {
+    private static void AssertWriteLittleEndian64(byte[] data, ulong value) {
       MemoryStream rawOutput = new MemoryStream();
       CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
       output.WriteRawLittleEndian64(value);
@@ -164,14 +164,14 @@ namespace Google.ProtocolBuffers {
     [Test]
     public void WriteLittleEndian() {
       AssertWriteLittleEndian32(Bytes(0x78, 0x56, 0x34, 0x12), 0x12345678);
-      AssertWriteLittleEndian32(Bytes(0xf0, 0xde, 0xbc, 0x9a), unchecked((int)0x9abcdef0));
+      AssertWriteLittleEndian32(Bytes(0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef0);
 
       AssertWriteLittleEndian64(
         Bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12),
         0x123456789abcdef0L);
       AssertWriteLittleEndian64(
         Bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a),
-        unchecked((long)0x9abcdef012345678L));
+        0x9abcdef012345678UL);
     }
 
     /* TODO(jonskeet): Put this back when we've got the rest working!

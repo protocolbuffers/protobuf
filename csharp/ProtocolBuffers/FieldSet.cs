@@ -104,13 +104,194 @@ namespace Google.ProtocolBuffers {
     }
 
     // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really?
+    /// <summary>
+    /// Like <see cref="MergeFrom(CodedInputStream, UnknownFieldSet.Builder, ExtensionRegistry, IBuilder)" />
+    /// but parses a single field.
+    /// </summary>
+    /// <param name="input">The input to read the field from</param>
+    /// <param name="unknownFields">The set of unknown fields to add the newly-read field to</param>
+    /// <param name="extensionRegistry">Registry to use when an extension field is encountered</param>
+    /// <param name="builder">A builder (???)</param>
+    /// <param name="tag">The tag, which should already have been read from the input</param>
+    /// <returns>true unless the tag is an end-group tag</returns>
     internal static bool MergeFieldFrom(CodedInputStream input,
         UnknownFieldSet.Builder unknownFields,
         ExtensionRegistry extensionRegistry,
         IBuilder builder,
         uint tag) {
-      throw new NotImplementedException();
+      MessageDescriptor type = builder.DescriptorForType;
+
+      if (type.Options.IsMessageSetWireFormat
+          && tag == WireFormat.MessageSetTag.ItemStart) {
+        MergeMessageSetExtensionFromCodedStream(input, unknownFields, extensionRegistry, builder);
+        return true;
+      }
+
+      WireFormat.WireType wireType = WireFormat.GetTagWireType(tag);
+      int fieldNumber = WireFormat.GetTagFieldNumber(tag);
+
+      FieldDescriptor field;
+      IMessage defaultInstance = null;
+
+      if (type.IsExtensionNumber(fieldNumber)) {
+        ExtensionInfo extension = extensionRegistry[type, fieldNumber];
+        if (extension == null) {
+          field = null;
+        } else {
+          field = extension.Descriptor;
+          defaultInstance = extension.DefaultInstance;
+        }
+      } else {
+        field = type.FindFieldByNumber(fieldNumber);
+      }
+
+      // Unknown field or wrong wire type. Skip.
+      if (field == null || wireType != WireFormat.FieldTypeToWireFormatMap[field.FieldType]) {
+        return unknownFields.MergeFieldFrom(tag, input);
+      }
+
+      object value;
+      switch (field.FieldType) {
+        case FieldType.Group:
+        case FieldType.Message: {
+            IBuilder subBuilder;
+            if (defaultInstance != null) {
+              subBuilder = defaultInstance.CreateBuilderForType();
+            } else {
+              subBuilder = builder.CreateBuilderForField(field);
+            }
+            if (!field.IsRepeated) {
+              subBuilder.MergeFrom((IMessage) builder[field]);
+            }
+            if (field.FieldType == FieldType.Group) {
+              input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
+            } else {
+              input.ReadMessage(subBuilder, extensionRegistry);
+            }
+            value = subBuilder.Build();
+            break;
+          }
+        case FieldType.Enum: {
+            int rawValue = input.ReadEnum();
+            value = field.EnumType.FindValueByNumber(rawValue);
+            // If the number isn't recognized as a valid value for this enum,
+            // drop it.
+            if (value == null) {
+              unknownFields.MergeVarintField(fieldNumber, (ulong) rawValue);
+              return true;
+            }
+            break;
+          }
+        default:
+          value = input.ReadPrimitiveField(field.FieldType);
+          break;
+      }
+      if (field.IsRepeated) {
+        builder.AddRepeatedField(field, value);
+      } else {
+        builder[field] = value;
+      } 
+      return true;
     }
+
+    // TODO(jonskeet): Move to UnknownFieldSet.Builder?
+    /// <summary>
+    /// Called by MergeFieldFrom to parse a MessageSet extension.
+    /// </summary>
+    private static void MergeMessageSetExtensionFromCodedStream(CodedInputStream input, 
+        UnknownFieldSet.Builder unknownFields, 
+        ExtensionRegistry extensionRegistry, 
+        IBuilder builder) {
+      MessageDescriptor type = builder.DescriptorForType;
+
+      // The wire format for MessageSet is:
+      //   message MessageSet {
+      //     repeated group Item = 1 {
+      //       required int32 typeId = 2;
+      //       required bytes message = 3;
+      //     }
+      //   }
+      // "typeId" is the extension's field number.  The extension can only be
+      // a message type, where "message" contains the encoded bytes of that
+      // message.
+      //
+      // In practice, we will probably never see a MessageSet item in which
+      // the message appears before the type ID, or where either field does not
+      // appear exactly once.  However, in theory such cases are valid, so we
+      // should be prepared to accept them.
+
+      int typeId = 0;
+      ByteString rawBytes = null;  // If we encounter "message" before "typeId"
+      IBuilder subBuilder = null;
+      FieldDescriptor field = null;
+
+      while (true) {
+        uint tag = input.ReadTag();
+        if (tag == 0) {
+          break;
+        }
+
+        if (tag == WireFormat.MessageSetTag.TypeID) {
+          typeId = input.ReadInt32();
+          // Zero is not a valid type ID.
+          if (typeId != 0) {
+            ExtensionInfo extension = extensionRegistry[type, typeId];
+            if (extension != null) {
+              field = extension.Descriptor;
+              subBuilder = extension.DefaultInstance.CreateBuilderForType();
+              IMessage originalMessage = (IMessage) builder[field];
+              if (originalMessage != null) {
+                subBuilder.MergeFrom(originalMessage);
+              }
+              if (rawBytes != null) {
+                // We already encountered the message.  Parse it now.
+                // TODO(jonskeet): Check this is okay. It's subtly different from the Java, as it doesn't create an input stream from rawBytes.
+                // In fact, why don't we just call MergeFrom(rawBytes)? And what about the extension registry?
+                subBuilder.MergeFrom(rawBytes.CreateCodedInput());
+                rawBytes = null;
+              }
+            } else {
+              // Unknown extension number.  If we already saw data, put it
+              // in rawBytes.
+              if (rawBytes != null) {
+                unknownFields.MergeField(typeId, 
+                    UnknownField.CreateBuilder()
+                        .AddLengthDelimited(rawBytes)
+                        .Build());
+                rawBytes = null;
+              }
+            }
+          }
+        } else if (tag == WireFormat.MessageSetTag.Message) {
+          if (typeId == 0) {
+            // We haven't seen a type ID yet, so we have to store the raw bytes for now.
+            rawBytes = input.ReadBytes();
+          } else if (subBuilder == null) {
+            // We don't know how to parse this.  Ignore it.
+            unknownFields.MergeField(typeId,
+              UnknownField.CreateBuilder()
+                .AddLengthDelimited(input.ReadBytes())
+                .Build());
+          } else {
+            // We already know the type, so we can parse directly from the input
+            // with no copying.  Hooray!
+            input.ReadMessage(subBuilder, extensionRegistry);
+          }
+        } else {
+          // Unknown tag.  Skip it.
+          if (!input.SkipField(tag)) {
+            break;  // end of group
+          }
+        }
+      }
+
+      input.CheckLastTagWas(WireFormat.MessageSetTag.ItemEnd);
+
+      if (subBuilder != null) {
+        builder[field] = subBuilder.Build();
+      }
+    }
+
 
     /// <summary>
     /// Clears all fields.
@@ -120,7 +301,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// <see cref="IMessage.Item(FieldDescriptor)"/>
+    /// See <see cref="IMessage.Item(FieldDescriptor)"/>
     /// </summary>
     /// <remarks>
     /// If the field is not set, the behaviour when fetching this property varies by field type:
@@ -172,7 +353,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// <see cref="IMessage.Item(FieldDescriptor,int)" />
+    /// See <see cref="IMessage.Item(FieldDescriptor,int)" />
     /// </summary>
     internal object this[FieldDescriptor field, int index] {
       get {
@@ -196,7 +377,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// <see cref="IBuilder.AddRepeatedField" />
+    /// See <see cref="IBuilder.AddRepeatedField" />
     /// </summary>
     /// <param name="field"></param>
     /// <param name="value"></param>
@@ -214,7 +395,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// <see cref="IMessage.IsInitialized" />
+    /// See <see cref="IMessage.IsInitialized" />
     /// </summary>
     /// <remarks>
     /// Since FieldSet itself does not have any way of knowing about
@@ -259,14 +440,14 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// <see cref="IBuilder.ClearField" />
+    /// See <see cref="IBuilder.ClearField" />
     /// </summary>
     public void ClearField(FieldDescriptor field) {
       fields.Remove(field);
     }
 
     /// <summary>
-    /// <see cref="IMessage.GetRepeatedFieldCount" />
+    /// See <see cref="IMessage.GetRepeatedFieldCount" />
     /// </summary>
     public int GetRepeatedFieldCount(FieldDescriptor field) {
       if (!field.IsRepeated) {
@@ -274,6 +455,60 @@ namespace Google.ProtocolBuffers {
       }
 
       return ((List<object>) this[field]).Count;
+    }
+
+    /// <summary>
+    /// Implementation of both <c>MergeFrom</c> methods.
+    /// </summary>
+    /// <param name="otherFields"></param>
+    private void MergeFields(IEnumerable<KeyValuePair<FieldDescriptor, object>> otherFields) {
+      // Note:  We don't attempt to verify that other's fields have valid
+      //   types.  Doing so would be a losing battle.  We'd have to verify
+      //   all sub-messages as well, and we'd have to make copies of all of
+      //   them to insure that they don't change after verification (since
+      //   the IMessage interface itself cannot enforce immutability of
+      //   implementations).
+      // TODO(jonskeet):  Provide a function somewhere called MakeDeepCopy()
+      //   which allows people to make secure deep copies of messages.
+
+      foreach (KeyValuePair<FieldDescriptor, object> entry in otherFields) {
+        FieldDescriptor field = entry.Key;
+        object existingValue;
+        fields.TryGetValue(field, out existingValue);
+        if (field.IsRepeated) {
+          if (existingValue == null) {
+            existingValue = new List<object>();
+            fields[field] = existingValue;
+          }
+          List<object> list = (List<object>)existingValue;
+          foreach (object otherValue in (IEnumerable)entry.Value) {
+            list.Add(otherValue);
+          }
+        } else if (field.MappedType == MappedType.Message && existingValue != null) {
+          IMessage existingMessage = (IMessage)existingValue;
+          IMessage merged = existingMessage.CreateBuilderForType()
+              .MergeFrom(existingMessage)
+              .MergeFrom((IMessage)entry.Value)
+              .Build();
+          this[field] = merged;
+        } else {
+          this[field] = entry.Value;
+        }
+      }
+    }
+
+    /// <summary>
+    /// See <see cref="IBuilder.MergeFrom(IMessage)" />
+    /// </summary>
+    public void MergeFrom(IMessage other) {
+      MergeFields(other.AllFields);
+    }
+
+    /// <summary>
+    /// Like <see cref="MergeFrom(IMessage)"/>, but merges from another <c>FieldSet</c>.
+    /// </summary>
+    public void MergeFrom(FieldSet other) {
+      MergeFields(other.fields);
     }
 
     /// <summary>

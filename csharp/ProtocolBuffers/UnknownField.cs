@@ -24,14 +24,14 @@ namespace Google.ProtocolBuffers {
 
     private static readonly UnknownField defaultInstance = CreateBuilder().Build();
     private readonly ReadOnlyCollection<ulong> varintList;
-    private readonly ReadOnlyCollection<int> fixed32List;
-    private readonly ReadOnlyCollection<long> fixed64List;
+    private readonly ReadOnlyCollection<uint> fixed32List;
+    private readonly ReadOnlyCollection<ulong> fixed64List;
     private readonly ReadOnlyCollection<ByteString> lengthDelimitedList;
     private readonly ReadOnlyCollection<UnknownFieldSet> groupList;
 
     private UnknownField(ReadOnlyCollection<ulong> varintList,
-        ReadOnlyCollection<int> fixed32List, 
-        ReadOnlyCollection<long> fixed64List, 
+        ReadOnlyCollection<uint> fixed32List, 
+        ReadOnlyCollection<ulong> fixed64List, 
         ReadOnlyCollection<ByteString> lengthDelimitedList, 
         ReadOnlyCollection<UnknownFieldSet> groupList) {
       this.varintList = varintList;
@@ -55,14 +55,14 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// The list of fixed32 values for this field.
     /// </summary>
-    public IList<int> Fixed32List {
+    public IList<uint> Fixed32List {
       get { return fixed32List; }
     }
 
     /// <summary>
     /// The list of fixed64 values for this field.
     /// </summary>
-    public IList<long> Fixed64List {
+    public IList<ulong> Fixed64List {
       get { return fixed64List; }
     }
 
@@ -104,10 +104,10 @@ namespace Google.ProtocolBuffers {
       foreach (ulong value in varintList) {
         output.WriteUInt64(fieldNumber, value);
       }
-      foreach (int value in fixed32List) {
+      foreach (uint value in fixed32List) {
         output.WriteFixed32(fieldNumber, value);
       }
-      foreach (long value in fixed64List) {
+      foreach (ulong value in fixed64List) {
         output.WriteFixed64(fieldNumber, value);
       }
       foreach (ByteString value in lengthDelimitedList) {
@@ -172,8 +172,8 @@ namespace Google.ProtocolBuffers {
     public class Builder {
 
       private List<ulong> varintList;
-      private List<int> fixed32List;
-      private List<long> fixed64List;
+      private List<uint> fixed32List;
+      private List<ulong> fixed64List;
       private List<ByteString> lengthDelimitedList;
       private List<UnknownFieldSet> groupList;
 
@@ -246,7 +246,7 @@ namespace Google.ProtocolBuffers {
       /// <summary>
       /// Adds a fixed32 value.
       /// </summary>
-      public Builder AddFixed32(int value) {
+      public Builder AddFixed32(uint value) {
         fixed32List = Add(fixed32List, value);
         return this;
       }
@@ -254,7 +254,7 @@ namespace Google.ProtocolBuffers {
       /// <summary>
       /// Adds a fixed64 value.
       /// </summary>
-      public Builder AddFixed64(long value) {
+      public Builder AddFixed64(ulong value) {
         fixed64List = Add(fixed64List, value);
         return this;
       }

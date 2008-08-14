@@ -48,6 +48,7 @@
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WireFormatTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">

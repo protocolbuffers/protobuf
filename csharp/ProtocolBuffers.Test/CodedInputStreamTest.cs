@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers {
     /// Parses the given bytes using ReadRawLittleEndian32() and checks
     /// that the result matches the given value.
     /// </summary>
-    private static void AssertReadLittleEndian32(byte[] data, int value) {
+    private static void AssertReadLittleEndian32(byte[] data, uint value) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       Assert.AreEqual(value, input.ReadRawLittleEndian32());
 
@@ -134,7 +134,7 @@ namespace Google.ProtocolBuffers {
     /// Parses the given bytes using ReadRawLittleEndian64() and checks
     /// that the result matches the given value.
     /// </summary>
-    private static void AssertReadLittleEndian64(byte[] data, long value) {
+    private static void AssertReadLittleEndian64(byte[] data, ulong value) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       Assert.AreEqual(value, input.ReadRawLittleEndian64());
 
@@ -149,12 +149,12 @@ namespace Google.ProtocolBuffers {
     [Test]
     public void ReadLittleEndian() {
       AssertReadLittleEndian32(Bytes(0x78, 0x56, 0x34, 0x12), 0x12345678);
-      AssertReadLittleEndian32(Bytes(0xf0, 0xde, 0xbc, 0x9a), unchecked((int)0x9abcdef0));
+      AssertReadLittleEndian32(Bytes(0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef0);
 
       AssertReadLittleEndian64(Bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12),
         0x123456789abcdef0L);
       AssertReadLittleEndian64(
-        Bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a), unchecked((long)0x9abcdef012345678L));
+        Bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef012345678UL);
     }
 
     [Test]

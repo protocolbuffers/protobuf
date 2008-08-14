@@ -2,6 +2,14 @@
 
 namespace Google.ProtocolBuffers.Descriptors {
   public class EnumValueDescriptor {
+
+    internal EnumValueDescriptor(DescriptorProtos.EnumValueDescriptorProto proto,
+                                 FileDescriptor file,
+                                 EnumDescriptor parent,
+                                 int index) {
+      enumDescriptor = parent;
+    }
+
     private EnumDescriptor enumDescriptor;
 
     public int Number {

@@ -13,7 +13,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System.Reflection;
+using Google.ProtocolBuffers.Descriptors;
+using System.Collections.Generic;
+using Google.ProtocolBuffers.Collections;
 namespace Google.ProtocolBuffers {
+  
+  /// <summary>
+  /// This class is used internally by the Protocol Buffer Library and generated
+  /// message implementations. It is public only for the sake of those generated
+  /// messages. Others should not use this class directly.
+  /// <para>
+  /// This class contains constants and helper functions useful for dealing with
+  /// the Protocol Buffer wire format.
+  /// </para>
+  /// </summary>
   public class WireFormat {
     public enum WireType : uint {
       Varint = 0,
@@ -30,6 +44,13 @@ namespace Google.ProtocolBuffers {
       internal const int Message = 3;
     }
 
+    internal class MessageSetTag {
+      internal static readonly uint ItemStart = MakeTag(MessageSetField.Item, WireType.StartGroup);
+      internal static readonly uint ItemEnd = MakeTag(MessageSetField.Item, WireType.EndGroup);
+      internal static readonly uint TypeID = MakeTag(MessageSetField.TypeID, WireType.Varint);
+      internal static readonly uint Message = MakeTag(MessageSetField.Message, WireType.LengthDelimited);
+    }
+  
     private const int TagTypeBits = 3;
     private const uint TagTypeMask = (1 << TagTypeBits) - 1;
 
@@ -49,9 +70,26 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Makes a tag value given a field number and wire type.
+    /// TODO(jonskeet): Should we just have a Tag structure?
     /// </summary>
     public static uint MakeTag(int fieldNumber, WireType wireType) {
       return (uint) (fieldNumber << TagTypeBits) | (uint) wireType;
+    }
+
+    /// <summary>
+    /// Immutable mapping from field type to wire type. Built using the attributes on
+    /// FieldType values.
+    /// </summary>
+    public static readonly IDictionary<FieldType, WireType> FieldTypeToWireFormatMap = MapFieldTypes();
+
+    private static IDictionary<FieldType, WireType> MapFieldTypes() {
+      var map = new Dictionary<FieldType, WireType>();
+      foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public)) {
+        FieldType fieldType = (FieldType) field.GetValue(null);
+        FieldMappingAttribute mapping = (FieldMappingAttribute)field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
+        map[fieldType] = mapping.WireType;
+      }
+      return Dictionaries.AsReadOnly(map);
     }
   }
 }

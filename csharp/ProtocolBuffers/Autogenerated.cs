@@ -5,5 +5,11 @@ namespace Google.ProtocolBuffers {
     public class MessageOptions {
       public bool IsMessageSetWireFormat;
     }
+
+    public class EnumValueDescriptorProto {
+    }
+
+    public class FieldDescriptorProto {
+    }
   }
 }

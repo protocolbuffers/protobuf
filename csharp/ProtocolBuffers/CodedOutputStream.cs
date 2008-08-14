@@ -99,7 +99,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public void WriteDouble(int fieldNumber, double value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-      WriteRawLittleEndian64(BitConverter.DoubleToInt64Bits(value));
+      WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Writes a fixed64 field value, including tag, to the stream.
     /// </summary>
-    public void WriteFixed64(int fieldNumber, long value) {
+    public void WriteFixed64(int fieldNumber, ulong value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
       WriteRawLittleEndian64(value);
     }
@@ -151,7 +151,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Writes a fixed32 field value, including tag, to the stream.
     /// </summary>
-    public void WriteFixed32(int fieldNumber, int value) {
+    public void WriteFixed32(int fieldNumber, uint value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
       WriteRawLittleEndian32(value);
     }
@@ -259,8 +259,8 @@ namespace Google.ProtocolBuffers {
         case FieldType.Int64: WriteInt64(fieldNumber, (long)value); break;
         case FieldType.UInt64: WriteUInt64(fieldNumber, (ulong)value); break;
         case FieldType.Int32: WriteInt32(fieldNumber, (int)value); break;
-        case FieldType.Fixed64: WriteFixed64(fieldNumber, (long)value); break;
-        case FieldType.Fixed32: WriteFixed32(fieldNumber, (int)value); break;
+        case FieldType.Fixed64: WriteFixed64(fieldNumber, (ulong)value); break;
+        case FieldType.Fixed32: WriteFixed32(fieldNumber, (uint)value); break;
         case FieldType.Bool: WriteBool(fieldNumber, (bool)value); break;
         case FieldType.String: WriteString(fieldNumber, (string)value); break;
         case FieldType.Group: WriteGroup(fieldNumber, (IMessage)value); break;
@@ -310,14 +310,14 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    public void WriteRawLittleEndian32(int value) {
+    public void WriteRawLittleEndian32(uint value) {
       WriteRawByte((byte)value);
       WriteRawByte((byte)(value >> 8));
       WriteRawByte((byte)(value >> 16));
       WriteRawByte((byte)(value >> 24));
     }
 
-    public void WriteRawLittleEndian64(long value) {
+    public void WriteRawLittleEndian64(ulong value) {
       WriteRawByte((byte)value);
       WriteRawByte((byte)(value >> 8));
       WriteRawByte((byte)(value >> 16));

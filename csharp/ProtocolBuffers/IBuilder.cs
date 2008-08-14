@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers {
     IBuilder MergeFrom(CodedInputStream input);
     IBuilder MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
     IMessage DefaultInstanceForType { get; }
-    IBuilder NewBuilderForField(FieldDescriptor field);
+    IBuilder CreateBuilderForField(FieldDescriptor field);
     IBuilder ClearField(FieldDescriptor field);
     IBuilder AddRepeatedField(FieldDescriptor field, object value);
     IBuilder MergeUnknownFields(UnknownFieldSet unknownFields);
@@ -136,14 +136,14 @@ namespace Google.ProtocolBuffers {
     /// <exception cref="UninitializedMessageException">the message
     /// is missing one or more required fields; use BuildPartial to bypass
     /// this check</exception>
-    new IMessage<T> Build();
+    new T Build();
 
     /// <summary>
     /// Like Build(), but does not throw an exception if the message is missing
     /// required fields. Instead, a partial message is returned.
     /// </summary>
     /// <returns></returns>
-    new IMessage<T> BuildPartial();
+    new T BuildPartial();
 
     /// <summary>
     /// Clones this builder.
@@ -184,7 +184,7 @@ namespace Google.ProtocolBuffers {
     /// Get's the message's type's default instance.
     /// <see cref="IMessage{T}.DefaultInstanceForType" />
     /// </summary>
-    new IMessage<T> DefaultInstanceForType { get; }
+    new T DefaultInstanceForType { get; }
 
     /// <summary>
     /// Create a builder for messages of the appropriate type for the given field.

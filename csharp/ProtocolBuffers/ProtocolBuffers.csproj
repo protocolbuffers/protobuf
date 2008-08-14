@@ -48,7 +48,9 @@
     <Compile Include="Descriptors\EnumDescriptor.cs" />
     <Compile Include="Descriptors\EnumValueDescriptor.cs" />
     <Compile Include="Descriptors\FieldDescriptor.cs" />
+    <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
+    <Compile Include="Descriptors\FileDescriptor.cs" />
     <Compile Include="Descriptors\MappedType.cs" />
     <Compile Include="Descriptors\MessageDescriptor.cs" />
     <Compile Include="ExtensionInfo.cs" />
