@@ -221,6 +221,10 @@ namespace Google.ProtocolBuffers.Descriptors {
       foreach (FieldDescriptor extension in extensions) {
         extension.CrossLink();
       }
+
+      foreach (MessageDescriptor message in messageTypes) {
+        message.CheckRequiredFields();
+      }
     }
     
     /// <summary>

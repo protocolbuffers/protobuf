@@ -68,6 +68,9 @@ namespace Google.ProtocolBuffers {
 
     public override bool IsInitialized {
       get {
+       /* if (!DescriptorForType.HasRequiredFields) {
+          return true;
+        }*/
         // Check that all required fields are present.
         foreach (FieldDescriptor field in DescriptorForType.Fields) {
           if (field.IsRequired && !HasField(field)) {

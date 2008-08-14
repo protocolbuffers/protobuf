@@ -28,6 +28,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     private readonly IList<EnumDescriptor> enumTypes;
     private readonly IList<FieldDescriptor> fields;
     private readonly IList<FieldDescriptor> extensions;
+    private bool hasRequiredFields;
 
     internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex)
         : base(proto, file, ComputeFullName(file, parent, proto.Name), typeIndex) {
@@ -84,6 +85,16 @@ namespace Google.ProtocolBuffers.Descriptors {
     }
 
     /// <summary>
+    /// Returns a pre-computed result as to whether this message
+    /// has required fields. This includes optional fields which are
+    /// message types which in turn have required fields, and any 
+    /// extension fields.
+    /// </summary>
+    internal bool HasRequiredFields {
+      get { return hasRequiredFields; }
+    }
+
+    /// <summary>
     /// Determines if the given field number is an extension.
     /// </summary>
     public bool IsExtensionNumber(int number) {
@@ -130,6 +141,46 @@ namespace Google.ProtocolBuffers.Descriptors {
       foreach (FieldDescriptor extension in extensions) {
         extension.CrossLink();
       }
+    }
+
+    internal void CheckRequiredFields() {
+      IDictionary<MessageDescriptor, byte> alreadySeen = new Dictionary<MessageDescriptor, byte>();
+      hasRequiredFields = CheckRequiredFields(alreadySeen);
+    }
+
+    private bool CheckRequiredFields(IDictionary<MessageDescriptor,byte> alreadySeen) {
+
+      if (alreadySeen.ContainsKey(this)) {
+        // The type is already in the cache. This means that either:
+        // a. The type has no required fields.
+        // b. We are in the midst of checking if the type has required fields,
+        //    somewhere up the stack.  In this case, we know that if the type
+        //    has any required fields, they'll be found when we return to it,
+        //    and the whole call to HasRequiredFields() will return true.
+        //    Therefore, we don't have to check if this type has required fields
+        //    here.
+        return false;
+      }
+      alreadySeen[this] = 0; // Value is irrelevant; we want set semantics
+
+      // If the type allows extensions, an extension with message type could contain
+      // required fields, so we have to be conservative and assume such an
+      // extension exists.
+      if (Proto.ExtensionRangeCount != 0) {
+        return true;
+      }
+
+      foreach (FieldDescriptor field in Fields) {
+        if (field.IsRequired) {
+          return true;
+        }
+        if (field.MappedType == MappedType.Message) {
+          if (field.MessageType.CheckRequiredFields(alreadySeen)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
   }
 }
