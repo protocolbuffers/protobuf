@@ -45,7 +45,7 @@ void PrintFieldComment(io::Printer* printer, const FieldDescriptor* field) {
   // print group bodies so we cut off after the first line.
   string def = field->DebugString();
   printer->Print("// $def$\r\n",
-    "def", def.substr(0, def.find_first_of('\r\n')));
+    "def", def.substr(0, def.find_first_of('\n')));
 }
 
 struct FieldOrderingByNumber {
