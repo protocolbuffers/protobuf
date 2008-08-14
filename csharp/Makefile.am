@@ -55,7 +55,7 @@ Google.ProtocolBuffers.dll_sources = \
 Google.ProtocolBuffers.dll: $(Google.ProtocolBuffers.dll_sources)
 	cp $(srcdir)/ProtocolBuffers/Properties/Google.ProtocolBuffers.snk .
 	gmcs -codepage:utf8 -debug -target:library -out:Google.ProtocolBuffers.dll \
-        $(Google.ProtocolBuffers.dll_sources) -keyfile Google.ProtocolBuffers.snk
+        $(Google.ProtocolBuffers.dll_sources) -keyfile:Google.ProtocolBuffers.snk
 
 install-data-local: Google.ProtocolBuffers.dll
 	gacutil -i Google.ProtocolBuffers.dll -package google
@@ -64,4 +64,3 @@ EXTRA_DIST = $(Google.ProtocolBuffers.dll_sources) google-pb.pc.in
 
 google-pb.pc: Makefile.am google-pb.pc.in
 	sed "s,@PREFIX@,${prefix}," < $(srcdir)/google-pb.pc.in > google-pb.pc
-
