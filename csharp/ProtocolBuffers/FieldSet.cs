@@ -84,7 +84,7 @@ namespace Google.ProtocolBuffers {
       return fields.ContainsKey(field);
     }
 
-    // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really?
+    // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really? Or CodedInputStream?
     internal static void MergeFrom(CodedInputStream input,
          UnknownFieldSet.Builder unknownFields,
          ExtensionRegistry extensionRegistry,
@@ -103,15 +103,15 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really?
+    // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really? Or CodedInputStream?
     /// <summary>
     /// Like <see cref="MergeFrom(CodedInputStream, UnknownFieldSet.Builder, ExtensionRegistry, IBuilder)" />
     /// but parses a single field.
     /// </summary>
     /// <param name="input">The input to read the field from</param>
-    /// <param name="unknownFields">The set of unknown fields to add the newly-read field to</param>
+    /// <param name="unknownFields">The set of unknown fields to add the newly-read field to, if it's not a known field</param>
     /// <param name="extensionRegistry">Registry to use when an extension field is encountered</param>
-    /// <param name="builder">A builder (???)</param>
+    /// <param name="builder">Builder to merge field into, if it's a known field</param>
     /// <param name="tag">The tag, which should already have been read from the input</param>
     /// <returns>true unless the tag is an end-group tag</returns>
     internal static bool MergeFieldFrom(CodedInputStream input,
@@ -194,7 +194,7 @@ namespace Google.ProtocolBuffers {
       return true;
     }
 
-    // TODO(jonskeet): Move to UnknownFieldSet.Builder?
+    // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really? Or CodedInputStream?
     /// <summary>
     /// Called by MergeFieldFrom to parse a MessageSet extension.
     /// </summary>
@@ -509,6 +509,59 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public void MergeFrom(FieldSet other) {
       MergeFields(other.fields);
+    }
+
+    /// <summary>
+    /// See <see cref="IMessage.WriteTo(CodedOutputStream)" />.
+    /// </summary>
+    public void WriteTo(CodedOutputStream output) {
+      foreach (KeyValuePair<FieldDescriptor, object> entry in fields) {
+        WriteField(entry.Key, entry.Value, output);
+      }
+    }
+
+    /// <summary>
+    /// Writes a single field to a CodedOutputStream.
+    /// </summary>
+    public void WriteField(FieldDescriptor field, Object value, CodedOutputStream output) {
+      if (field.IsExtension && field.ContainingType.Options.IsMessageSetWireFormat) {
+        output.WriteMessageSetExtension(field.FieldNumber, (IMessage) value);
+      } else {
+        if (field.IsRepeated) {
+          foreach (object element in (IEnumerable) value) {
+            output.WriteField(field.FieldType, field.FieldNumber, element);
+          }
+        } else {
+          output.WriteField(field.FieldType, field.FieldNumber, value);
+        }
+      }
+    }
+
+    /// <summary>
+    /// See <see cref="IMessage.SerializedSize" />. It's up to the caller to
+    /// cache the resulting size if desired.
+    /// </summary>
+    public int SerializedSize {
+      get {
+        int size = 0;
+        foreach (KeyValuePair<FieldDescriptor, object> entry in fields) {
+          FieldDescriptor field = entry.Key;
+          object value = entry.Value;
+
+          if (field.IsExtension && field.ContainingType.Options.IsMessageSetWireFormat) {
+            size += CodedOutputStream.ComputeMessageSetExtensionSize(field.FieldNumber, (IMessage) value);
+          } else {
+            if (field.IsRepeated) {
+              foreach (object element in (IEnumerable) value) {
+                size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, element);
+              }
+            } else {
+              size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, value);
+            }
+          }
+        }
+        return size;
+      }
     }
 
     /// <summary>

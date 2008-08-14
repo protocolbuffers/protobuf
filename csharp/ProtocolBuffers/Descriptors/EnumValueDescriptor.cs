@@ -1,16 +1,17 @@
 ﻿using System;
+using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers.Descriptors {
-  public class EnumValueDescriptor {
+  public class EnumValueDescriptor : IndexedDescriptorBase<EnumValueDescriptorProto, EnumValueOptions> {
 
-    internal EnumValueDescriptor(DescriptorProtos.EnumValueDescriptorProto proto,
+    private readonly EnumDescriptor enumDescriptor;
+
+    internal EnumValueDescriptor(EnumValueDescriptorProto proto,
                                  FileDescriptor file,
                                  EnumDescriptor parent,
-                                 int index) {
+                                 int index) : base (proto, file, index) {
       enumDescriptor = parent;
     }
-
-    private EnumDescriptor enumDescriptor;
 
     public int Number {
       get { throw new NotImplementedException(); }

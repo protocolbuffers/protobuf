@@ -1,11 +1,13 @@
 ﻿
 using System.Collections.Generic;
+using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers.Descriptors {
-  public class MessageDescriptor {
+  public class MessageDescriptor : DescriptorBase<DescriptorProto, MessageOptions> {
     public IList<FieldDescriptor> Fields;
-    public DescriptorProtos.MessageOptions Options;
-    public string FullName;
+
+    internal MessageDescriptor(DescriptorProto proto, FileDescriptor file) : base(proto, file) {
+    }
 
     internal bool IsExtensionNumber(int fieldNumber) {
       throw new System.NotImplementedException();

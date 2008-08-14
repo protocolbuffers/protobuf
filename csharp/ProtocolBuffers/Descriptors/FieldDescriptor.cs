@@ -2,19 +2,22 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Google.ProtocolBuffers.Collections;
+using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers.Descriptors {
-  public class FieldDescriptor {
+  public class FieldDescriptor : IndexedDescriptorBase<FieldDescriptorProto, FieldOptions> {
 
-    private FieldDescriptor(DescriptorProtos.FieldDescriptorProto proto,
-                            FileDescriptor file,
-                            MessageDescriptor parent,
-                            int index,
-                            bool isExtension) {
+    private readonly EnumDescriptor enumType;
+    private readonly MessageDescriptor parent;
+
+    internal FieldDescriptor(FieldDescriptorProto proto,
+        FileDescriptor file,
+        MessageDescriptor parent,
+        int index,
+        bool isExtension) : base(proto, file, index) {
       enumType = null;
+      this.parent = parent;
     }
-
-    private EnumDescriptor enumType;
 
     public bool IsRequired {
       get;
@@ -30,9 +33,9 @@ namespace Google.ProtocolBuffers.Descriptors {
 
     public bool IsExtension { get; set; }
 
-    public MessageDescriptor ContainingType { get; set; }
-
-    public string FullName { get; set; }
+    public MessageDescriptor ContainingType {
+      get { return parent; }
+    }
 
     public bool IsOptional { get; set; }
 
@@ -58,10 +61,6 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// always be null. For singular values, it will depend on the descriptor.
     /// </summary>
     public object DefaultValue {
-      get { throw new NotImplementedException(); }
-    }
-
-    public string Name {
       get { throw new NotImplementedException(); }
     }
 
