@@ -75,10 +75,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return self::UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable; }
     }
     
+    public static readonly pb::GeneratedExtensionBase<int> TestExtension =
+          pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<int> TestExtension =
-            pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     

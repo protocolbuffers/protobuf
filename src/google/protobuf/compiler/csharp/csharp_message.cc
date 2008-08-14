@@ -237,9 +237,14 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "fileclass", ClassName(descriptor_->file()),
     "identifier", UniqueFileScopeIdentifier(descriptor_));
 
+  // Extensions don't need to go in an extra nested type
+  for (int i = 0; i < descriptor_->extension_count(); i++) {
+    ExtensionGenerator(descriptor_->extension(i)).Generate(printer);
+  }
+
   if (descriptor_->enum_type_count()
-      + descriptor_->nested_type_count()
-      + descriptor_->extension_count() > 0) {
+    + descriptor_->nested_type_count()
+    + descriptor_->extension_count() > 0) {
     printer->Print("#region Nested types\r\n");
     printer->Print("public static class Types {\r\n");
     printer->Indent();
@@ -252,9 +257,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
       MessageGenerator(descriptor_->nested_type(i)).Generate(printer);
     }
 
-    for (int i = 0; i < descriptor_->extension_count(); i++) {
-      ExtensionGenerator(descriptor_->extension(i)).Generate(printer);
-    }
     printer->Outdent();
     printer->Print("}\r\n");
     printer->Print("#endregion\r\n\r\n");

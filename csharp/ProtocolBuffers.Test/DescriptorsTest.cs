@@ -114,7 +114,7 @@ namespace Google.ProtocolBuffers {
       FieldDescriptor messageField = messageType.FindDescriptor<FieldDescriptor>("optional_foreign_message");
       FieldDescriptor cordField = messageType.FindDescriptor<FieldDescriptor>("optional_cord");
       FieldDescriptor extension = UnitTestProtoFile.OptionalInt32Extension.Descriptor;
-      FieldDescriptor nestedExtension = TestRequired.Types.Single.Descriptor;
+      FieldDescriptor nestedExtension = TestRequired.Single.Descriptor;
 
       Assert.AreEqual("optional_int32", primitiveField.Name);
       Assert.AreEqual("protobuf_unittest.TestAllTypes.optional_int32",

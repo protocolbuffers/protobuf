@@ -121,10 +121,10 @@ namespace Google.ProtocolBuffers {
       TestMessageSet messageSet =
         TestMessageSet.CreateBuilder()
           .SetExtension(
-            TestMessageSetExtension1.Types.MessageSetExtension,
+            TestMessageSetExtension1.MessageSetExtension,
             TestMessageSetExtension1.CreateBuilder().SetI(123).Build())
           .SetExtension(
-            TestMessageSetExtension2.Types.MessageSetExtension,
+            TestMessageSetExtension2.MessageSetExtension,
             TestMessageSetExtension2.CreateBuilder().SetStr("foo").Build())
           .SetUnknownFields(
             UnknownFieldSet.CreateBuilder()
@@ -159,8 +159,8 @@ namespace Google.ProtocolBuffers {
     [Test]
     public void ParseMessageSet() {
       ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
-      extensionRegistry.Add(TestMessageSetExtension1.Types.MessageSetExtension);
-      extensionRegistry.Add(TestMessageSetExtension2.Types.MessageSetExtension);
+      extensionRegistry.Add(TestMessageSetExtension1.MessageSetExtension);
+      extensionRegistry.Add(TestMessageSetExtension2.MessageSetExtension);
 
       // Set up a RawMessageSet with two known messages and an unknown one.
       RawMessageSet raw =
@@ -194,8 +194,8 @@ namespace Google.ProtocolBuffers {
       TestMessageSet messageSet =
         TestMessageSet.ParseFrom(data, extensionRegistry);
 
-      Assert.AreEqual(123, messageSet.GetExtension(TestMessageSetExtension1.Types.MessageSetExtension).I);
-      Assert.AreEqual("foo", messageSet.GetExtension(TestMessageSetExtension2.Types.MessageSetExtension).Str);
+      Assert.AreEqual(123, messageSet.GetExtension(TestMessageSetExtension1.MessageSetExtension).I);
+      Assert.AreEqual("foo", messageSet.GetExtension(TestMessageSetExtension2.MessageSetExtension).Str);
 
       // Check for unknown field with type LENGTH_DELIMITED,
       //   number UNKNOWN_TYPE_ID, and contents "bar".

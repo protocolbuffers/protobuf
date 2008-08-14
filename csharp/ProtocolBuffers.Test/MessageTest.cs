@@ -116,16 +116,16 @@ namespace Google.ProtocolBuffers {
 
       Assert.IsTrue(builder.IsInitialized);
 
-      builder.SetExtension(TestRequired.Types.Single, TestRequiredUninitialized);
+      builder.SetExtension(TestRequired.Single, TestRequiredUninitialized);
       Assert.IsFalse(builder.IsInitialized);
 
-      builder.SetExtension(TestRequired.Types.Single, TestRequiredInitialized);
+      builder.SetExtension(TestRequired.Single, TestRequiredInitialized);
       Assert.IsTrue(builder.IsInitialized);
 
-      builder.AddExtension(TestRequired.Types.Multi, TestRequiredUninitialized);
+      builder.AddExtension(TestRequired.Multi, TestRequiredUninitialized);
       Assert.IsFalse(builder.IsInitialized);
 
-      builder.SetExtension(TestRequired.Types.Multi, 0, TestRequiredInitialized);
+      builder.SetExtension(TestRequired.Multi, 0, TestRequiredInitialized);
       Assert.IsTrue(builder.IsInitialized);
     }
 

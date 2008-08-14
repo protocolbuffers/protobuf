@@ -518,10 +518,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable; }
     }
     
+    public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension1> MessageSetExtension =
+          pb::GeneratedSingleExtension<self::TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension1> MessageSetExtension =
-            pb::GeneratedSingleExtension<self::TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     
@@ -728,10 +728,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable; }
     }
     
+    public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension2> MessageSetExtension =
+          pb::GeneratedSingleExtension<self::TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension2> MessageSetExtension =
-            pb::GeneratedSingleExtension<self::TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     

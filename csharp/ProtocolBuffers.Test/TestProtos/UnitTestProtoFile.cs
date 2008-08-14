@@ -6147,13 +6147,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return self::UnitTestProtoFile.internal__static_protobuf_unittest_TestRequired__FieldAccessorTable; }
     }
     
+    public static readonly pb::GeneratedExtensionBase<self::TestRequired> Single =
+          pb::GeneratedSingleExtension<self::TestRequired>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly
+      pb::GeneratedExtensionBase<scg::IList<self::TestRequired>> Multi =
+          pb::GeneratedRepeatExtension<self::TestRequired>.CreateInstance(Descriptor.Extensions[1]);
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<self::TestRequired> Single =
-            pb::GeneratedSingleExtension<self::TestRequired>.CreateInstance(Descriptor.Extensions[0]);
-      public static readonly
-        pb::GeneratedExtensionBase<scg::IList<self::TestRequired>> Multi =
-            pb::GeneratedRepeatExtension<self::TestRequired>.CreateInstance(Descriptor.Extensions[1]);
     }
     #endregion
     
