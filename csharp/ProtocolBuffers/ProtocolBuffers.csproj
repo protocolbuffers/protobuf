@@ -42,7 +42,10 @@
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
+    <Compile Include="Collections\Dictionaries.cs" />
     <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="Descriptors\EnumDescriptor.cs" />
     <Compile Include="Descriptors\EnumValueDescriptor.cs" />
     <Compile Include="Descriptors\FieldDescriptor.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
@@ -53,8 +56,8 @@
     <Compile Include="FieldAccess\Delegates.cs" />
     <Compile Include="FieldAccess\IFieldAccessor.cs" />
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
-    <Compile Include="FieldAccess\SingularFieldAccessor.cs" />
     <Compile Include="FieldSet.cs" />
+    <Compile Include="GeneratedBuilder.cs" />
     <Compile Include="GeneratedExtension.cs" />
     <Compile Include="GeneratedMessage.cs" />
     <Compile Include="IBuilder.cs" />

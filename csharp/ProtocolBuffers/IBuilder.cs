@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers {
     IBuilder MergeFrom(CodedInputStream input);
     IBuilder MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
     IMessage DefaultInstanceForType { get; }
-    IBuilder NewBuilderForField<TField>(FieldDescriptor field);
+    IBuilder NewBuilderForField(FieldDescriptor field);
     IBuilder ClearField(FieldDescriptor field);
     IBuilder AddRepeatedField(FieldDescriptor field, object value);
     IBuilder MergeUnknownFields(UnknownFieldSet unknownFields);
@@ -191,7 +191,7 @@ namespace Google.ProtocolBuffers {
     /// Messages built with this can then be passed to the various mutation properties
     /// and methods.
     /// </summary>
-    new IBuilder<TField> NewBuilderForField<TField>(FieldDescriptor field) where TField : IMessage<TField>;
+    //new IBuilder<TField> NewBuilderForField<TField>(FieldDescriptor field) where TField : IMessage<TField>;
 
     /// <summary>
     /// Clears the field. This is exactly equivalent to calling the generated

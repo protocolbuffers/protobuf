@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers {
   public class UnknownFieldSet {
@@ -48,10 +49,10 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// Creates and returns a copy of the mapping from field numbers to values.
+    /// Returns a read-only view of the mapping from field numbers to values.
     /// </summary>
     public IDictionary<int, UnknownField> FieldDictionary {
-      get { return new Dictionary<int, UnknownField>(fields); }
+      get { return Dictionaries.AsReadOnly(fields); }
     }
 
     /// <summary>
@@ -195,7 +196,11 @@ namespace Google.ProtocolBuffers {
 
     public class Builder
     {
-      private Dictionary<int, UnknownField> fields = new Dictionary<int, UnknownField>();
+      /// <summary>
+      /// Mapping from number to field. Note that by using a SortedList we ensure
+      /// that the fields will be serialized in ascending order.
+      /// </summary>
+      private IDictionary<int, UnknownField> fields = new SortedList<int, UnknownField>();
 
       // Optimization:  We keep around a builder for the last field that was
       // modified so that we can efficiently add to it multiple times in a

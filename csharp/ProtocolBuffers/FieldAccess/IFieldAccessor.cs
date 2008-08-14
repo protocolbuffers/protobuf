@@ -1,34 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Google.ProtocolBuffers.FieldAccess {
 
-namespace Google.ProtocolBuffers.FieldAccess {
+  /// <summary>
+  /// Allows fields to be reflectively accessed in a smart manner.
+  /// The property descriptors for each field are created once and then cached.
+  /// In addition, this interface holds knowledge of repeated fields, builders etc.
+  /// </summary>
   internal interface IFieldAccessor<TMessage, TBuilder> 
       where TMessage : IMessage<TMessage> 
       where TBuilder : IBuilder<TMessage> {
 
-    void AddRepeated(IBuilder<TMessage> builder, object value);
+    /// <summary>
+    /// Indicates whether the specified message contains the field.
+    /// </summary>
     bool Has(IMessage<TMessage> message);
+
+    /// <summary>
+    /// Gets the count of the repeated field in the specified message.
+    /// </summary>
     int GetRepeatedCount(IMessage<TMessage> message);
-    void Clear(TBuilder builder);
-    TBuilder CreateBuilder();
+
+    /// <summary>
+    /// Clears the field in the specified builder.
+    /// </summary>
+    /// <param name="builder"></param>
+    void Clear(IBuilder<TMessage> builder);
+
+    /// <summary>
+    /// Creates a builder for the type of this field (which must be a message field).
+    /// </summary>
+    IBuilder CreateBuilder();
 
     /// <summary>
     /// Accessor for single fields
     /// </summary>
-    object this[IMessage<TMessage> message] { get; }
+    object GetValue(IMessage<TMessage> message);
     /// <summary>
     /// Mutator for single fields
     /// </summary>
-    object this[IBuilder<TMessage> builder] { set; }
+    void SetValue(IBuilder<TMessage> builder, object value);
 
     /// <summary>
     /// Accessor for repeated fields
     /// </summary>
-    object this[IMessage<TMessage> message, int index] { get; }
+    object GetRepeatedValue(IMessage<TMessage> message, int index);
     /// <summary>
     /// Mutator for repeated fields
     /// </summary>
-    object this[IBuilder<TMessage> builder, int index] { set; }
+    void SetRepeated(IBuilder<TMessage> builder, int index, object value);
+    /// <summary>
+    /// Adds the specified value to the field in the given builder.
+    /// </summary>
+    void AddRepeated(IBuilder<TMessage> builder, object value);
+    /// <summary>
+    /// Returns a read-only wrapper around the value of a repeated field.
+    /// </summary>
+    object GetRepeatedWrapper(IBuilder<TMessage> builder);
   }
 }

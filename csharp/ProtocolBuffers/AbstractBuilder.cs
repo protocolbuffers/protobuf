@@ -25,8 +25,8 @@ namespace Google.ProtocolBuffers {
     protected abstract IMessage BuildPartialImpl();
     protected abstract IBuilder CloneImpl();
     protected abstract IMessage DefaultInstanceForTypeImpl { get; }
-    protected abstract IBuilder NewBuilderForFieldImpl<TField>(FieldDescriptor field);
-    protected abstract IBuilder ClearFieldImpl();
+    protected abstract IBuilder NewBuilderForFieldImpl(FieldDescriptor field);
+    protected abstract IBuilder ClearFieldImpl(FieldDescriptor field);
     protected abstract IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value);
     #endregion
 
@@ -39,30 +39,30 @@ namespace Google.ProtocolBuffers {
       return BuildPartialImpl();
     }
 
-    public IBuilder Clone() {
+    IBuilder IBuilder.Clone() {
       return CloneImpl();
     }
     
-    public IMessage DefaultInstanceForType {
+    IMessage IBuilder.DefaultInstanceForType {
       get { return DefaultInstanceForTypeImpl; }
     }
 
-    public IBuilder NewBuilderForField<TField>(FieldDescriptor field) {
-      return NewBuilderForFieldImpl<TField>(field);
+    IBuilder IBuilder.NewBuilderForField(FieldDescriptor field) {
+      return NewBuilderForFieldImpl(field);
     }
 
-    public IBuilder ClearField(FieldDescriptor field) {
-      return ClearFieldImpl();
+    IBuilder IBuilder.ClearField(FieldDescriptor field) {
+      return ClearFieldImpl(field);
     }
 
-    public IBuilder AddRepeatedField(FieldDescriptor field, object value) {
+    IBuilder IBuilder.AddRepeatedField(FieldDescriptor field, object value) {
       return AddRepeatedFieldImpl(field, value);
     }
     #endregion
 
     public IBuilder Clear() {
       foreach(FieldDescriptor field in AllFields.Keys) {
-        ClearField(field);
+        ClearFieldImpl(field);
       }
       return this;
     }
@@ -85,7 +85,7 @@ namespace Google.ProtocolBuffers {
         if (field.IsRepeated) {
           // Concatenate repeated fields
           foreach (object element in (IEnumerable) entry.Value) {
-            AddRepeatedField(field, element);
+            AddRepeatedFieldImpl(field, element);
           }
         } else if (field.MappedType == MappedType.Message) {
           // Merge singular messages
