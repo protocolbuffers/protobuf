@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.Descriptors;
@@ -116,9 +117,9 @@ namespace Google.ProtocolBuffers {
         case FieldType.UInt64:
         case FieldType.Fixed32:
         case FieldType.Fixed64:
-          // Good old ToString() does what we want for these types. (Including the
-          // unsigned ones, unlike with Java.)
-          generator.Print(value.ToString());
+          // The simple Object.ToString converts using the current culture.
+          // We want to always use the invariant culture so it's predictable.
+          generator.Print(((IConvertible) value).ToString(CultureInfo.InvariantCulture));
           break;
         case FieldType.Bool:
           // Explicitly use the Java true/false
@@ -237,13 +238,15 @@ namespace Google.ProtocolBuffers {
         result = radix == 10 ? ulong.Parse(text) : Convert.ToUInt64(text, radix);
       } catch (OverflowException) {
         // Convert OverflowException to FormatException so there's a single exception type this method can throw.
-        throw new FormatException("Number of out range: " + original);
+        string numberDescription = string.Format("{0}-bit {1}signed integer", isLong ? 64 : 32, isSigned ? "" : "un");
+        throw new FormatException("Number out of range for " + numberDescription + ": " + original);
       }
 
       if (negative) {
         ulong max = isLong ? 0x8000000000000000UL : 0x80000000L;
         if (result > max) {
-          throw new FormatException("Number of out range: " + original);
+          string numberDescription = string.Format("{0}-bit signed integer", isLong ? 64 : 32);
+          throw new FormatException("Number out of range for " + numberDescription + ": " + original);
         }
         return -((long) result);
       } else {
@@ -251,7 +254,8 @@ namespace Google.ProtocolBuffers {
             ? (isLong ? (ulong) long.MaxValue : int.MaxValue)
             : (isLong ? ulong.MaxValue : uint.MaxValue);
         if (result > max) {
-          throw new FormatException("Number of out range: " + original);
+          string numberDescription = string.Format("{0}-bit {1}signed integer", isLong ? 64 : 32, isSigned ? "" : "un");
+          throw new FormatException("Number out of range for " + numberDescription + ": " + original);
         }
         return (long) result;
       }
@@ -418,19 +422,195 @@ namespace Google.ProtocolBuffers {
     }
 
     public static void Merge(string text, IBuilder builder) {
-      throw new NotImplementedException();
+      Merge(text, ExtensionRegistry.Empty, builder);
     }
 
     public static void Merge(TextReader reader, IBuilder builder) {
-      throw new NotImplementedException();
-    }
-
-    public static void Merge(string text, ExtensionRegistry registry, IBuilder builder) {
-      throw new NotImplementedException();
+      Merge(reader, ExtensionRegistry.Empty, builder);
     }
 
     public static void Merge(TextReader reader, ExtensionRegistry registry, IBuilder builder) {
-      throw new NotImplementedException();
+      Merge(reader.ReadToEnd(), registry, builder);
+    }
+
+    public static void Merge(string text, ExtensionRegistry registry, IBuilder builder) {
+      TextTokenizer tokenizer = new TextTokenizer(text);
+
+      while (!tokenizer.AtEnd) {
+        MergeField(tokenizer, registry, builder);
+      }
+    }
+
+    /// <summary>
+    /// Parses a single field from the specified tokenizer and merges it into
+    /// the builder.
+    /// </summary>
+    private static void MergeField(TextTokenizer tokenizer, ExtensionRegistry extensionRegistry,
+        IBuilder builder) {
+
+      FieldDescriptor field;
+      MessageDescriptor type = builder.DescriptorForType;
+      ExtensionInfo extension = null;
+
+      if (tokenizer.TryConsume("[")) {
+        // An extension.
+        StringBuilder name = new StringBuilder(tokenizer.ConsumeIdentifier());
+        while (tokenizer.TryConsume(".")) {
+          name.Append(".");
+          name.Append(tokenizer.ConsumeIdentifier());
+        }
+
+        extension = extensionRegistry[name.ToString()];
+
+        if (extension == null) {
+          throw tokenizer.CreateFormatExceptionPreviousToken("Extension \"" + name + "\" not found in the ExtensionRegistry.");
+        } else if (extension.Descriptor.ContainingType != type) {
+          throw tokenizer.CreateFormatExceptionPreviousToken("Extension \"" + name + "\" does not extend message type \"" +
+            type.FullName + "\".");
+        }
+
+        tokenizer.Consume("]");
+
+        field = extension.Descriptor;
+      } else {
+        String name = tokenizer.ConsumeIdentifier();
+        field = type.FindDescriptor<FieldDescriptor>(name);
+
+        // Group names are expected to be capitalized as they appear in the
+        // .proto file, which actually matches their type names, not their field
+        // names.
+        if (field == null) {
+          // Explicitly specify the invariant culture so that this code does not break when
+          // executing in Turkey.
+          String lowerName = name.ToLowerInvariant();
+          field = type.FindDescriptor<FieldDescriptor>(lowerName);
+          // If the case-insensitive match worked but the field is NOT a group,
+          // TODO(jonskeet): What? Java comment ends here!
+          if (field != null && field.FieldType != FieldType.Group) {
+            field = null;
+          }
+        }
+        // Again, special-case group names as described above.
+        if (field != null && field.FieldType == FieldType.Group && field.MessageType.Name != name) {
+          field = null;
+        }
+
+        if (field == null) {
+          throw tokenizer.CreateFormatExceptionPreviousToken(
+              "Message type \"" + type.FullName + "\" has no field named \"" + name + "\".");
+        }
+      }
+
+      object value = null;
+
+      if (field.MappedType == MappedType.Message) {
+        tokenizer.TryConsume(":");  // optional
+
+        String endToken;
+        if (tokenizer.TryConsume("<")) {
+          endToken = ">";
+        } else {
+          tokenizer.Consume("{");
+          endToken = "}";
+        }
+
+        IBuilder subBuilder;
+        if (extension == null) {
+          subBuilder = builder.CreateBuilderForField(field);
+        } else {
+          subBuilder = extension.DefaultInstance.WeakCreateBuilderForType();
+        }
+
+        while (!tokenizer.TryConsume(endToken)) {
+          if (tokenizer.AtEnd) {
+            throw tokenizer.CreateFormatException("Expected \"" + endToken + "\".");
+          }
+          MergeField(tokenizer, extensionRegistry, subBuilder);
+        }
+
+        value = subBuilder.WeakBuild();
+
+      } else {
+        tokenizer.Consume(":");
+
+        switch (field.FieldType) {
+          case FieldType.Int32:
+          case FieldType.SInt32:
+          case FieldType.SFixed32:
+            value = tokenizer.ConsumeInt32();
+            break;
+
+          case FieldType.Int64:
+          case FieldType.SInt64:
+          case FieldType.SFixed64:
+            value = tokenizer.ConsumeInt64();
+            break;
+
+          case FieldType.UInt32:
+          case FieldType.Fixed32:
+            value = tokenizer.ConsumeUInt32();
+            break;
+
+          case FieldType.UInt64:
+          case FieldType.Fixed64:
+            value = tokenizer.ConsumeUInt64();
+            break;
+
+          case FieldType.Float:
+            value = tokenizer.consumeFloat();
+            break;
+
+          case FieldType.Double:
+            value = tokenizer.ConsumeDouble();
+            break;
+
+          case FieldType.Bool:
+            value = tokenizer.ConsumeBoolean();
+            break;
+
+          case FieldType.String:
+            value = tokenizer.ConsumeString();
+            break;
+
+          case FieldType.Bytes:
+            value = tokenizer.ConsumeByteString();
+            break;
+
+          case FieldType.Enum: {
+            EnumDescriptor enumType = field.EnumType;
+
+            if (tokenizer.LookingAtInteger()) {
+              int number = tokenizer.ConsumeInt32();
+              value = enumType.FindValueByNumber(number);
+              if (value == null) {
+                throw tokenizer.CreateFormatExceptionPreviousToken(
+                  "Enum type \"" + enumType.FullName +
+                  "\" has no value with number " + number + ".");
+              }
+            } else {
+              String id = tokenizer.ConsumeIdentifier();
+              value = enumType.FindValueByName(id);
+              if (value == null) {
+                throw tokenizer.CreateFormatExceptionPreviousToken(
+                  "Enum type \"" + enumType.FullName +
+                  "\" has no value named \"" + id + "\".");
+              }
+            }
+
+            break;
+          }
+
+          case FieldType.Message:
+          case FieldType.Group:
+            throw new InvalidOperationException("Can't get here.");
+        }
+      }
+
+      if (field.IsRepeated) {
+        builder.WeakAddRepeatedField(field, value);
+      } else {
+        builder.SetField(field, value);
+      }
     }
   }
 }

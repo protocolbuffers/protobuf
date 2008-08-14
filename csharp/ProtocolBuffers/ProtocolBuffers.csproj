@@ -97,6 +97,7 @@
     <Compile Include="RpcUtil.cs" />
     <Compile Include="TextFormat.cs" />
     <Compile Include="TextGenerator.cs" />
+    <Compile Include="TextTokenizer.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="UnknownField.cs" />
     <Compile Include="UnknownFieldSet.cs" />

@@ -8,18 +8,6 @@ namespace Google.ProtocolBuffers {
   [TestFixture]
   public class TextFormatTest {
 
-    /// <summary>
-    /// A basic string with different escapable characters for testing.
-    /// </summary>
-    private const string EscapeTestString = "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
-            + "slashes \\";
-
-    /// <summary>
-    /// A representation of the above string with all the characters escaped.
-    /// </summary>
-    private const string EscapeTestStringEscaped = "\"\\\"A string with \\' characters \\n and \\r newlines "
-            + "and \\t tabs and \\001 slashes \\\\\"";
-
     private static readonly string AllFieldsSetText = TestUtil.ReadTextFromFile("text_format_unittest_data.txt");
     private static readonly string AllExtensionsSetText = TestUtil.ReadTextFromFile("text_format_unittest_extensions_data.txt");
 
@@ -193,7 +181,6 @@ namespace Google.ProtocolBuffers {
     // =================================================================
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void Parse() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       TextFormat.Merge(AllFieldsSetText, builder);
@@ -201,7 +188,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseReader() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       TextFormat.Merge(new StringReader(AllFieldsSetText), builder);
@@ -209,7 +195,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseExtensions() {
       TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
       TextFormat.Merge(AllExtensionsSetText,
@@ -219,7 +204,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseExotic() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       TextFormat.Merge(ExoticText, builder);
@@ -230,7 +214,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseMessageSet() {
       ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
       extensionRegistry.Add(TestMessageSetExtension1.MessageSetExtension);
@@ -247,7 +230,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseNumericEnum() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       TextFormat.Merge("optional_nested_enum: 2", builder);
@@ -255,7 +237,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseAngleBrackets() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       TextFormat.Merge("OptionalGroup: < a: 1 >", builder);
@@ -274,7 +255,6 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    [Ignore("Parsing not implemented")]
     public void ParseErrors() {
       AssertParseError(
         "1:16: Expected \":\".",
@@ -296,17 +276,17 @@ namespace Google.ProtocolBuffers {
         "1:18: Expected string.",
         "optional_string: 123");
       AssertParseError(
-        "1:18: string missing ending quote.",
+        "1:18: String missing ending quote.",
         "optional_string: \"ueoauaoe");
       AssertParseError(
-        "1:18: string missing ending quote.",
+        "1:18: String missing ending quote.",
         "optional_string: \"ueoauaoe\n" +
         "optional_int32: 123");
       AssertParseError(
         "1:18: Invalid escape sequence: '\\z'",
         "optional_string: \"\\z\"");
       AssertParseError(
-        "1:18: string missing ending quote.",
+        "1:18: String missing ending quote.",
         "optional_string: \"ueoauaoe\n" +
         "optional_int32: 123");
       AssertParseError(
