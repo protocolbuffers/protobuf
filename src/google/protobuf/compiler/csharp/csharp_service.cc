@@ -211,7 +211,7 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
       "    $output$.getDefaultInstance(),\r\n"
       "    pb::RpcUtil.generalizeCallback(\r\n"
       "      done,\r\n"
-      "      $output$.class,\r\n"
+      "      typeof ($output$),\r\n"
       "      $output$.getDefaultInstance()));\r\n"
       "}\r\n");
   }

@@ -70,25 +70,25 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private boolean has$capitalized_name$;\r\n"
     "private $type$ $name$_ = $default$;\r\n"
-    "public boolean has$capitalized_name$() { return has$capitalized_name$; }\r\n"
-    "public $type$ get$capitalized_name$() { return $name$_; }\r\n");
+    "public boolean Has$capitalized_name$() { return has$capitalized_name$; }\r\n"
+    "public $type$ Get$capitalized_name$() { return $name$_; }\r\n");
 }
 
 void EnumFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public boolean has$capitalized_name$() {\r\n"
-    "  return result.has$capitalized_name$();\r\n"
+    "public boolean Has$capitalized_name$() {\r\n"
+    "  return result.Has$capitalized_name$();\r\n"
     "}\r\n"
-    "public $type$ get$capitalized_name$() {\r\n"
-    "  return result.get$capitalized_name$();\r\n"
+    "public $type$ Get$capitalized_name$() {\r\n"
+    "  return result.Get$capitalized_name$();\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$($type$ value) {\r\n"
+    "public Builder Set$capitalized_name$($type$ value) {\r\n"
     "  result.has$capitalized_name$ = true;\r\n"
     "  result.$name$_ = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder clear$capitalized_name$() {\r\n"
+    "public Builder Clear$capitalized_name$() {\r\n"
     "  result.has$capitalized_name$ = false;\r\n"
     "  result.$name$_ = $default$;\r\n"
     "  return this;\r\n"
@@ -154,15 +154,18 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 void RepeatedEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private java.util.List<$type$> $name$_ =\r\n"
-    "  java.util.Collections.emptyList();\r\n"
-    "public java.util.List<$type$> get$capitalized_name$List() {\r\n"
-    "  return $name$_;\r\n"   // note:  unmodifiable list
+    "private System.Collections.Generic.List<$type$> $name$_ =\r\n"
+    "  new System.Collections.Generic.List<$type$> ();\r\n"
+    "public System.Collections.Generic.List<$type$> $capitalized_name$List() {\r\n"
+    "  return $name$_.AsReadOnly ();\r\n"   // note:  unmodifiable list
     "}\r\n"
-    "public int get$capitalized_name$Count() { return $name$_.size(); }\r\n"
-    "public $type$ get$capitalized_name$(int index) {\r\n"
-    "  return $name$_.get(index);\r\n"
-    "}\r\n");
+
+    // Redundant API calls?
+    //"public int $capitalized_name$Count() { get { return $name$_.Count; } }\r\n"
+    //"public $type$ get$capitalized_name$(int index) {\r\n"
+    //"  return $name$_.get(index);\r\n"
+    //"}\r\n"
+    );
 }
 
 void RepeatedEnumFieldGenerator::

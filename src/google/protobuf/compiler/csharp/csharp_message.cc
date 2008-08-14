@@ -165,12 +165,12 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // The descriptor for this type.
   if (descriptor_->containing_type() == NULL) {
     printer->Print(vars,
-      "$private$static readonly pb::Descriptors.Descriptor {\r\n"
+      "$private$static readonly pb::Descriptors.Descriptor \r\n"
       "  internal_$identifier$_descriptor =\r\n"
       "    getDescriptor().getMessageTypes().get($index$);\r\n");
   } else {
     printer->Print(vars,
-      "$private$static readonly pb::Descriptors.Descriptor {\r\n"
+      "$private$static readonly pb::Descriptors.Descriptor \r\n"
       "  internal_$identifier$_descriptor =\r\n"
       "    internal_$parent$_descriptor.getNestedTypes().get($index$);\r\n");
   }
@@ -190,8 +190,8 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
         UnderscoresToCapitalizedCamelCase(descriptor_->field(i)));
   }
   printer->Print("},\r\n"
-    "        $classname$.class,\r\n"
-    "        $classname$.Builder.class);\r\n",
+    "        typeof ($classname$),\r\n"
+    "        typeof ($classname$.Builder));\r\n",
     "classname", ClassName(descriptor_));
 
   // Generate static members for all nested types.

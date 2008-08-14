@@ -17,10 +17,10 @@ set -ex
 
 rm -rf autom4te.cache
 
-aclocal-1.9 --force -I m4
+aclocal-1.10 --force -I m4
 libtoolize -c -f
 autoheader -f -W all
-automake-1.9 --foreign -a -c -f -W all
+automake-1.10 --foreign -a -c -f -W all
 autoconf -f -W all,no-obsolete
 
 rm -rf autom4te.cache config.h.in~

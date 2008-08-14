@@ -63,7 +63,7 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
       "      pb::GeneratedMessage\r\n"
       "        .newRepeatedGeneratedExtension(\r\n"
       "          getDescriptor().getExtensions().get($index$),\r\n"
-      "          $type$.class);\r\n");
+      "          typeof ($type$));\r\n");
   } else {
     printer->Print(vars,
       "public static final\r\n"
@@ -72,7 +72,7 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
       "    $type$> $name$ =\r\n"
       "      pb::GeneratedMessage.newGeneratedExtension(\r\n"
       "        getDescriptor().getExtensions().get($index$),\r\n"
-      "        $type$.class);\r\n");
+      "        typeof ($type$));\r\n");
   }
 }
 

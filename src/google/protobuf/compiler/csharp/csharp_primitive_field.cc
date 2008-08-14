@@ -102,12 +102,11 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_INT32:
       return SimpleItoa(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      // Need to print as a signed int since Java has no unsigned.
-      return SimpleItoa(static_cast<int32>(field->default_value_uint32()));
+      return SimpleItoa(field->default_value_uint32());
     case FieldDescriptor::CPPTYPE_INT64:
       return SimpleItoa(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(static_cast<int64>(field->default_value_uint64())) +
+      return SimpleItoa(field->default_value_uint64()) +
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return SimpleDtoa(field->default_value_double()) + "D";

@@ -175,14 +175,15 @@ RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private java.util.List<$type$> $name$_ =\r\n"
-    "  java.util.Collections.emptyList();\r\n"
-    "public java.util.List<$type$> get$capitalized_name$List() {\r\n"
-    "  return $name$_;\r\n"   // note:  unmodifiable list
+    "internal System.Collections.Generic.IList<$type$> Empty$capitalized_name$ =\r\n"
+    "  new System.Collections.ReadOnlyCollection<$type$> ();\r\n"
+    "internal System.Collections.Generic.IList<$type$> $name$_ = Empty$capitalized_name$;\r\n"
+    "public System.Collections.Generic.IList<$type$> $capitalized_name$List {\r\n"
+    "  get { return $name$_; } \r\n"   // note:  unmodifiable list
     "}\r\n"
-    "public int get$capitalized_name$Count() { return $name$_.size(); }\r\n"
-    "public $type$ get$capitalized_name$(int index) {\r\n"
-    "  return $name$_.get(index);\r\n"
+    "public int $capitalized_name$Count { get { return $name$_.Count; }  }\r\n"
+    "public $type$ $capitalized_name$(int index) {\r\n"
+    "  return $name$_ [index];\r\n"
     "}\r\n");
 }
 
@@ -193,48 +194,47 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
-    "public java.util.List<$type$> get$capitalized_name$List() {\r\n"
-    "  return java.util.Collections.unmodifiableList(result.$name$_);\r\n"
+    "public System.Collections.Generic.IList<$type$> Get$capitalized_name$List() {\r\n"
+    "  if (result.$name$_ == $type$.Empty$capitalized_name$)\r\n"
+    "    return result.$name$;\r\n"
+    "  return result.$name$_.AsReadOnly ();\r\n"
     "}\r\n"
-    "public int get$capitalized_name$Count() {\r\n"
-    "  return result.get$capitalized_name$Count();\r\n"
+    "public int Get$capitalized_name$Count() {\r\n"
+    "  return result.Get$capitalized_name$Count();\r\n"
     "}\r\n"
-    "public $type$ get$capitalized_name$(int index) {\r\n"
-    "  return result.get$capitalized_name$(index);\r\n"
+    "public $type$ Get$capitalized_name$(int index) {\r\n"
+    "  return result.Get$capitalized_name$(index);\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$(int index, $type$ value) {\r\n"
-    "  result.$name$_.set(index, value);\r\n"
+    "public Builder Set$capitalized_name$(int index, $type$ value) {\r\n"
+    "  result.$name$_ [index] = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$(int index, "
+    "public Builder Set$capitalized_name$(int index, "
       "$type$.Builder builderForValue) {\r\n"
-    "  result.$name$_.set(index, builderForValue.build());\r\n"
+    "  result.$name$_ [index] = builderForValue.build();\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder add$capitalized_name$($type$ value) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
-    "  }\r\n"
-    "  result.$name$_.add(value);\r\n"
+    "public Builder Add$capitalized_name$($type$ value) {\r\n"
+    "  if (result.$name$ == $type$.Empty$capitalized_name$)\r\n"
+    "    result.$name$ = new System.Collections.Generic.List<$type$>();\r\n"
+    "  result.$name$_.Add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder add$capitalized_name$($type$.Builder builderForValue) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
-    "  }\r\n"
-    "  result.$name$_.add(builderForValue.build());\r\n"
+    "public Builder Add$capitalized_name$($type$.Builder builderForValue) {\r\n"
+    "  if (result.$name$ == $type$.Empty$capitalized_name$)\r\n"
+    "    result.$name$ = new System.Collections.Generic.List<$type$>();\r\n"
+    "  result.$name$_.Add(builderForValue.build());\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder addAll$capitalized_name$<T>(\r\n"
+    "public Builder AddAll$capitalized_name$<T>(\r\n"
     "    global::System.Collections.Generic.IEnumerable<T> values) where T : $type$ {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
-    "  }\r\n"
-    "  super.addAll(values, result.$name$_);\r\n"
+    "  if (result.$name$ == $type$.Empty$capitalized_name$)\r\n"
+    "    result.$name$ = new System.Collections.Generic.List<$type$>();\r\n"
+    "  result.$name$_.AddEnumerable (values);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder clear$capitalized_name$() {\r\n"
-    "  result.$name$_ = java.util.Collections.emptyList();\r\n"
+    "public Builder Clear$capitalized_name$() {\r\n"
+    "  result.$name$_ = $type$.Empty$capitalized_name$;\r\n"
     "  return this;\r\n"
     "}\r\n");
 }
@@ -242,20 +242,20 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
+    "if (!other.$name$_ != $type$.Empty$capitalized_name$) {\r\n"
+    "  if (result.$name$_ == $type$.Empty$capitalized_name$) {\r\n"
+    "    result.$name$_ = new System.Collections.Generic.List<$type$>();\r\n"
     "  }\r\n"
-    "  result.$name$_.addAll(other.$name$_);\r\n"
+    "  result.$name$_.AddCollection(other.$name$_);\r\n"
     "}\r\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (result.$name$_ != java.util.Collections.EMPTY_LIST) {\r\n"
+    "if (result.$name$_ != $type$.Empty$capitalized_name$) {\r\n"
     "  result.$name$_ =\r\n"
-    "    java.util.Collections.unmodifiableList(result.$name$_);\r\n"
+    "    result.$name$_.AsReadOnly ();\r\n"
     "}\r\n");
 }
 
@@ -273,13 +273,13 @@ GenerateParsingCode(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "add$capitalized_name$(subBuilder.buildPartial());\r\n");
+    "Add$capitalized_name$(subBuilder.buildPartial());\r\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\r\n"
+    "foreach ($type$ element in Get$capitalized_name$List()) {\r\n"
     "  output.write$group_or_message$($number$, element);\r\n"
     "}\r\n");
 }
@@ -287,7 +287,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\r\n"
+    "foreach ($type$ element in Get$capitalized_name$List()) {\r\n"
     "  size += pb::CodedOutputStream\r\n"
     "    .compute$group_or_message$Size($number$, element);\r\n"
     "}\r\n");
