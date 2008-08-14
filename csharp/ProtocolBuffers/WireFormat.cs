@@ -13,6 +13,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System;
 using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 using System.Collections.Generic;
@@ -77,19 +78,45 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// Immutable mapping from field type to wire type. Built using the attributes on
-    /// FieldType values.
+    /// Converts a field type to its wire type. Done with a switch for the sake
+    /// of speed - this is significantly faster than a dictionary lookup.
     /// </summary>
-    public static readonly IDictionary<FieldType, WireType> FieldTypeToWireFormatMap = MapFieldTypes();
-
-    private static IDictionary<FieldType, WireType> MapFieldTypes() {
-      var map = new Dictionary<FieldType, WireType>();
-      foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public)) {
-        FieldType fieldType = (FieldType) field.GetValue(null);
-        FieldMappingAttribute mapping = (FieldMappingAttribute)field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
-        map[fieldType] = mapping.WireType;
+    public static WireType GetWireType(FieldType fieldType) {
+      switch (fieldType) {
+        case FieldType.Double:
+          return WireType.Fixed64;
+        case FieldType.Float:
+          return WireType.Fixed32;
+        case FieldType.Int64:
+        case FieldType.UInt64:
+        case FieldType.Int32:
+          return WireType.Varint;
+        case FieldType.Fixed64:
+          return WireType.Fixed64;
+        case FieldType.Fixed32:
+          return WireType.Fixed32;
+        case FieldType.Bool:
+          return WireType.Varint;
+        case FieldType.String:
+          return WireType.LengthDelimited;
+        case FieldType.Group:
+          return WireType.StartGroup;
+        case FieldType.Message:
+        case FieldType.Bytes:
+          return WireType.LengthDelimited;
+        case FieldType.UInt32:
+          return WireType.Varint;
+        case FieldType.SFixed32:
+          return WireType.Fixed32;
+        case FieldType.SFixed64:
+          return WireType.Fixed64;
+        case FieldType.SInt32:
+        case FieldType.SInt64:
+        case FieldType.Enum:
+          return WireType.Varint;
+        default:
+          throw new ArgumentOutOfRangeException("No such field type");
       }
-      return Dictionaries.AsReadOnly(map);
     }
   }
 }

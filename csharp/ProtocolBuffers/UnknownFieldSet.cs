@@ -480,7 +480,7 @@ namespace Google.ProtocolBuffers {
         }
 
         // Unknown field or wrong wire type. Skip.
-        if (field == null || wireType != WireFormat.FieldTypeToWireFormatMap[field.FieldType]) {
+        if (field == null || wireType != WireFormat.GetWireType(field.FieldType)) {
           return MergeFieldFrom(tag, input);
         }
 

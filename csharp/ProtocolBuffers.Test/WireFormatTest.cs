@@ -13,6 +13,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
@@ -21,13 +22,16 @@ namespace Google.ProtocolBuffers {
   [TestFixture]
   public class WireFormatTest {
 
+    /// <summary>
+    /// Keeps the attributes on FieldType and the switch statement in WireFormat in sync.
+    /// </summary>
     [Test]
     public void FieldTypeToWireTypeMapping() {
-
-      // Just test a few values
-      Assert.AreEqual(WireFormat.WireType.Fixed64, WireFormat.FieldTypeToWireFormatMap[FieldType.SFixed64]);
-      Assert.AreEqual(WireFormat.WireType.LengthDelimited, WireFormat.FieldTypeToWireFormatMap[FieldType.String]);
-      Assert.AreEqual(WireFormat.WireType.LengthDelimited, WireFormat.FieldTypeToWireFormatMap[FieldType.Message]);
+      foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public)) {
+        FieldType fieldType = (FieldType)field.GetValue(null);
+        FieldMappingAttribute mapping = (FieldMappingAttribute)field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
+        Assert.AreEqual(mapping.WireType, WireFormat.GetWireType(fieldType));
+      }
     }
 
     [Test]
