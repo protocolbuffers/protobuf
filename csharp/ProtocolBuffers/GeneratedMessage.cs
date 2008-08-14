@@ -14,11 +14,16 @@ namespace Google.ProtocolBuffers {
   /// can ignore this class as an implementation detail.
   /// </summary>
   public abstract class GeneratedMessage<TMessage, TBuilder> : AbstractMessage, IMessage<TMessage>
-      where TMessage : GeneratedMessage<TMessage, TBuilder> where TBuilder : IBuilder<TMessage> {
+      where TMessage : GeneratedMessage<TMessage, TBuilder> 
+      where TBuilder : IBuilder<TMessage> {
 
     private UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
 
-    protected internal abstract FieldAccessorTable InternalFieldAccessors { get; }
+    internal FieldAccessorTable FieldAccesseorsFromBuilder {
+      get { return InternalFieldAccessors; }
+    }
+
+    protected abstract FieldAccessorTable InternalFieldAccessors { get; }
 
     public override MessageDescriptor DescriptorForType {
       get { return InternalFieldAccessors.Descriptor; }
@@ -36,7 +41,7 @@ namespace Google.ProtocolBuffers {
 
     public abstract IBuilder<TMessage> CreateBuilderForType();
 
-    private IDictionary<FieldDescriptor, Object> GetMutableFieldMap() {
+    internal IDictionary<FieldDescriptor, Object> GetMutableFieldMap() {
 
       // Use a SortedList so we'll end up serializing fields in order
       var ret = new SortedList<FieldDescriptor, object>();
@@ -83,6 +88,6 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     internal void SetUnknownFields(UnknownFieldSet fieldSet) {
       unknownFields = fieldSet;
-    }
+    }    
   }
 }

@@ -43,6 +43,7 @@ string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 // Similar, but for method names.  (Typically, this merely has the effect
 // of lower-casing the first letter of the name.)
 string UnderscoresToCamelCase(const MethodDescriptor* method);
+string UnderscoresToCapitalizedCamelCase(const MethodDescriptor* method);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);

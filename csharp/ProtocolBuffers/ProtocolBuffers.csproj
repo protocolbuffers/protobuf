@@ -67,6 +67,8 @@
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PackageDescriptor.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
+    <Compile Include="DynamicMessage.cs" />
+    <Compile Include="ExtendableMessage.cs" />
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
     <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
@@ -85,7 +87,11 @@
     <Compile Include="IBuilder.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="IRpcChannel.cs" />
+    <Compile Include="IRpcController.cs" />
+    <Compile Include="IService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RpcUtil.cs" />
     <Compile Include="TextFormat.cs" />
     <Compile Include="TextGenerator.cs" />
     <Compile Include="UninitializedMessageException.cs" />

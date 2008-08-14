@@ -127,10 +127,10 @@ namespace Google.ProtocolBuffers {
       foreach (ulong value in varintList) {
         result += CodedOutputStream.ComputeUInt64Size(fieldNumber, value);
       }
-      foreach (int value in fixed32List) {
+      foreach (uint value in fixed32List) {
         result += CodedOutputStream.ComputeFixed32Size(fieldNumber, value);
       }
-      foreach (long value in fixed64List) {
+      foreach (ulong value in fixed64List) {
         result += CodedOutputStream.ComputeFixed64Size(fieldNumber, value);
       }
       foreach (ByteString value in lengthDelimitedList) {

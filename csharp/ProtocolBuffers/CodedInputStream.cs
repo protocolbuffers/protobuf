@@ -142,6 +142,7 @@ namespace Google.ProtocolBuffers {
     /// Read a double field from the stream.
     /// </summary>
     public double ReadDouble() {
+      // TODO(jonskeet): Test this on different endiannesses
       return BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
     }
 
@@ -149,9 +150,10 @@ namespace Google.ProtocolBuffers {
     /// Read a float field from the stream.
     /// </summary>
     public float ReadFloat() {
-      //return Float.intBitsToFloat(readRawLittleEndian32());
-      // FIXME implement!
-      throw new NotImplementedException();
+      // TODO(jonskeet): Test this on different endiannesses
+      uint raw = ReadRawLittleEndian32();
+      byte[] rawBytes = BitConverter.GetBytes(raw);
+      return BitConverter.ToSingle(rawBytes, 0);
     }
 
     /// <summary>

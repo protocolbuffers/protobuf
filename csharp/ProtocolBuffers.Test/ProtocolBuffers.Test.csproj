@@ -48,6 +48,12 @@
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
+    <Compile Include="TestUtil.cs" />
     <Compile Include="WireFormatTest.cs" />
   </ItemGroup>
   <ItemGroup>

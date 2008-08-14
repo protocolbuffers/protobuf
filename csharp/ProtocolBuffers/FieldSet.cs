@@ -30,6 +30,10 @@ namespace Google.ProtocolBuffers {
       this.fields = fields;
     }
 
+    public static FieldSet CreateFieldSet() {
+      return new FieldSet(new Dictionary<FieldDescriptor, object>());
+    }
+
     /// <summary>
     /// Makes this FieldSet immutable, and returns it for convenience. Any
     /// mutable repeated fields are made immutable, as well as the map itself.
@@ -393,6 +397,13 @@ namespace Google.ProtocolBuffers {
         fields[field] = list;
       }
       ((IList<object>) list).Add(value);
+    }
+
+    /// <summary>
+    /// Returns an enumerator for the field map. Used to write the fields out.
+    /// </summary>
+    internal IEnumerator<KeyValuePair<FieldDescriptor, object>> GetEnumerator() {
+      return fields.GetEnumerator();
     }
 
     /// <summary>

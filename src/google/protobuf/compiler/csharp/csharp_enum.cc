@@ -69,8 +69,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["number"] = SimpleItoa(canonical_values_[i]->number());
 
     // TODO(jonskeet): Change CONSTANT_CASE into PascalCase
+    // TODO(jonskeet): I don't think we need EnumDescriptorIndex after all
     printer->Print(vars,
-      "[pbd::EnumDescriptorIndex($index$)]\r\n"
+      //"[pbd::EnumDescriptorIndex($index$)]\r\n"
       "$name$ = $number$,\r\n");
   }
   printer->Outdent();

@@ -36,11 +36,8 @@ ServiceGenerator::ServiceGenerator(const ServiceDescriptor* descriptor)
 ServiceGenerator::~ServiceGenerator() {}
 
 void ServiceGenerator::Generate(io::Printer* printer) {
-  bool is_own_file = descriptor_->file()->options().csharp_multiple_files();
   printer->Print(
-    "public $static$ abstract class $classname$\r\n"
-    "    implements pb::Service {\r\n",
-    "static", is_own_file ? "" : "static",
+    "public abstract class $classname$ : pb::IService {\r\n",
     "classname", descriptor_->name());
   printer->Indent();
 
@@ -48,27 +45,24 @@ void ServiceGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
     map<string, string> vars;
-    vars["name"] = UnderscoresToCamelCase(method);
+    vars["name"] = UnderscoresToCapitalizedCamelCase(method);
     vars["input"] = ClassName(method->input_type());
     vars["output"] = ClassName(method->output_type());
     printer->Print(vars,
       "public abstract void $name$(\r\n"
-      "    pb::RpcController controller,\r\n"
+      "    pb::IRpcController controller,\r\n"
       "    $input$ request,\r\n"
-      "    pb::RpcCallback<$output$> done);\r\n");
+      "    global::System.Action<$output$> done);\r\n");
   }
 
-  // Generate getDescriptor() and getDescriptorForType().
+  // Generate Descriptor and DescriptorForType.
   printer->Print(
     "\r\n"
-    "public static final\r\n"
-    "    pbd::ServiceDescriptor\r\n"
-    "    getDescriptor() {\r\n"
-    "  return $file$.getDescriptor().getServices().get($index$);\r\n"
+    "public static pbd::ServiceDescriptor Descriptor {\r\n"
+    "  get { return $file$.Descriptor.Services[$index$]; }\r\n"
     "}\r\n"
-    "public final pbd::ServiceDescriptor\r\n"
-    "    DescriptorForType {\r\n"
-    "  return getDescriptor();\r\n"
+    "public pbd::ServiceDescriptor DescriptorForType {\r\n"
+    "  get { return Descriptor; }\r\n"
     "}\r\n",
     "file", ClassName(descriptor_->file()),
     "index", SimpleItoa(descriptor_->index()));
@@ -86,18 +80,17 @@ void ServiceGenerator::Generate(io::Printer* printer) {
 void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
   printer->Print(
     "\r\n"
-    "public final void callMethod(\r\n"
+    "public void CallMethod(\r\n"
     "    pbd::MethodDescriptor method,\r\n"
-    "    pb::RpcController controller,\r\n"
+    "    pb::IRpcController controller,\r\n"
     "    pb::IMessage request,\r\n"
-    "    pb::RpcCallback<\r\n"
-    "      pb::Message> done) {\r\n"
-    "  if (method.getService() != getDescriptor()) {\r\n"
+    "    global::System.Action<pb::IMessage> done) {\r\n"
+    "  if (method.Service != Descriptor) {\r\n"
     "    throw new global::System.ArgumentException(\r\n"
     "      \"Service.CallMethod() given method descriptor for wrong \" +\r\n"
     "      \"service type.\");\r\n"
     "  }\r\n"
-    "  switch(method.getIndex()) {\r\n");
+    "  switch(method.Index) {\r\n");
   printer->Indent();
   printer->Indent();
 
@@ -105,13 +98,13 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
     const MethodDescriptor* method = descriptor_->method(i);
     map<string, string> vars;
     vars["index"] = SimpleItoa(i);
-    vars["method"] = UnderscoresToCamelCase(method);
+    vars["method"] = UnderscoresToCapitalizedCamelCase(method);
     vars["input"] = ClassName(method->input_type());
     vars["output"] = ClassName(method->output_type());
     printer->Print(vars,
       "case $index$:\r\n"
       "  this.$method$(controller, ($input$)request,\r\n"
-      "    pb::RpcUtil.<$output$>specializeCallback(\r\n"
+      "    pb::RpcUtil.SpecializeCallback<$output$>(\r\n"
       "      done));\r\n"
       "  return;\r\n");
   }
@@ -132,10 +125,8 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
                                             io::Printer* printer) {
   printer->Print(
-    "public final pb::Message\r\n"
-    "    Get$request_or_response$Prototype(\r\n"
-    "    pbd::MethodDescriptor method) {\r\n"
-    "  if (method.getService() != getDescriptor()) {\r\n"
+    "public pb::IMessage Get$request_or_response$Prototype(pbd::MethodDescriptor method) {\r\n"
+    "  if (method.Service != Descriptor) {\r\n"
     "    throw new global::System.ArgumentException(\r\n"
     "      \"Service.Get$request_or_response$Prototype() given method \" +\r\n"
     "      \"descriptor for wrong service type.\");\r\n"
@@ -162,7 +153,6 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   printer->Outdent();
   printer->Outdent();
-
   printer->Print(
     "  }\r\n"
     "}\r\n"
@@ -171,48 +161,45 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
 void ServiceGenerator::GenerateStub(io::Printer* printer) {
   printer->Print(
-    "public static Stub newStub(\r\n"
-    "    pb::RpcChannel channel) {\r\n"
+    "public static Stub CreateStub(\r\n"
+    "    pb::IRpcChannel channel) {\r\n"
     "  return new Stub(channel);\r\n"
     "}\r\n"
     "\r\n"
-    "public static final class Stub extends $classname$ {\r\n",
+    "public class Stub : $classname$ {\r\n",
     "classname", ClassName(descriptor_));
   printer->Indent();
 
   printer->Print(
-    "private Stub(pb::RpcChannel channel) {\r\n"
+    "internal Stub(pb::IRpcChannel channel) {\r\n"
     "  this.channel = channel;\r\n"
     "}\r\n"
     "\r\n"
-    "private final pb::RpcChannel channel;\r\n"
+    "private readonly pb::IRpcChannel channel;\r\n"
     "\r\n"
-    "public pb::RpcChannel getChannel() {\r\n"
-    "  return channel;\r\n"
+    "public pb::IRpcChannel Channel {\r\n"
+    "  get { return channel; }\r\n"
     "}\r\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
     map<string, string> vars;
     vars["index"] = SimpleItoa(i);
-    vars["method"] = UnderscoresToCamelCase(method);
+    vars["method"] = UnderscoresToCapitalizedCamelCase(method);
     vars["input"] = ClassName(method->input_type());
     vars["output"] = ClassName(method->output_type());
     printer->Print(vars,
       "\r\n"
-      "public void $method$(\r\n"
-      "    pb::RpcController controller,\r\n"
+      "public override void $method$(\r\n"
+      "    pb::IRpcController controller,\r\n"
       "    $input$ request,\r\n"
-      "    pb::RpcCallback<$output$> done) {\r\n"
-      "  channel.callMethod(\r\n"
+      "    global::System.Action<$output$> done) {\r\n"
+      "  channel.CallMethod(\r\n"
       "    Descriptor.Methods[$index$],\r\n"
       "    controller,\r\n"
       "    request,\r\n"
       "    $output$.DefaultInstance,\r\n"
-      "    pb::RpcUtil.generalizeCallback(\r\n"
-      "      done,\r\n"
-      "      typeof ($output$),\r\n"
-      "      $output$.DefaultInstance));\r\n"
+      "    pb::RpcUtil.GeneralizeCallback(done, $output$.DefaultInstance));\r\n"
       "}\r\n");
   }
 

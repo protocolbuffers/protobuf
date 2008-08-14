@@ -155,25 +155,18 @@ namespace Google.ProtocolBuffers {
         UnknownField field = entry.Value;
 
         foreach (ulong value in field.VarintList) {
-          generator.Print(entry.Key.ToString());
-          generator.Print(": ");
+          generator.Print(prefix);
           generator.Print(value.ToString());
           generator.Print("\n");
         }
         foreach (uint value in field.Fixed32List) {
-          generator.Print(entry.Key.ToString());
-          generator.Print(": ");
-          // FIXME(jonskeet): Get format of this right; in Java it's %08x. Find out what this means
-          // Also check we're okay in terms of signed/unsigned.
-          generator.Print(string.Format("0x{0:x}", value));
+          generator.Print(prefix);
+          generator.Print(string.Format("0x{0:x8}", value));
           generator.Print("\n");
         }
         foreach (ulong value in field.Fixed64List) {
-          generator.Print(entry.Key.ToString());
-          generator.Print(": ");
-          // FIXME(jonskeet): Get format of this right; in Java it's %016x. Find out what this means
-          // Also check we're okay in terms of signed/unsigned.
-          generator.Print(string.Format("0x{0:x}", value));
+          generator.Print(prefix);
+          generator.Print(string.Format("0x{0:x16}", value));
           generator.Print("\n");
         }
         foreach (ByteString value in field.LengthDelimitedList) {
@@ -192,7 +185,6 @@ namespace Google.ProtocolBuffers {
         }
       }
     }
-
 
     internal static ulong ParseUInt64(string text) {
       return (ulong) ParseInteger(text, true, false);

@@ -204,7 +204,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "$access$ sealed partial class $classname$ : pb::GeneratedMessage.ExtendableMessage<$classname$> {\r\n",
+      "$access$ sealed partial class $classname$ : pb::ExtendableMessage<$classname$, $classname$.Builder> {\r\n",
       "classname", descriptor_->name(),
       "access", ClassAccessLevel(descriptor_->file()));
   } else {
@@ -233,7 +233,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return $fileclass$.internal__$identifier$__Descriptor; }\r\n"
     "}\r\n"
     "\r\n"
-    "protected internal override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {\r\n"
+    "protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {\r\n"
     "  get { return $fileclass$.internal__$identifier$__FieldAccessorTable; }\r\n"
     "}\r\n"
     "\r\n",
@@ -298,7 +298,8 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "pb::GeneratedMessage.ExtendableMessage.ExtensionWriter extensionWriter = CreateExtensionWriter();\r\n");
+      "pb::ExtendableMessage<$classname$, $classname$.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);\r\n",
+      "classname", descriptor_->name());
   }
 
   // Merge the fields and the extension ranges, both sorted by field number.
@@ -434,8 +435,7 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "$access$ sealed partial class Builder : pb::GeneratedMessage.ExtendableBuilder<\r\n"
-      "      $classname$, Builder> {\r\n",
+      "$access$ sealed partial class Builder : pb::GeneratedBuilder<$classname$, $classname$.Builder>.ExtendableBuilder {\r\n",
       "classname", ClassName(descriptor_),
       "access", ClassAccessLevel(descriptor_->file()));
   } else {
@@ -673,7 +673,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "if (!extensionsAreInitialized()) return false;\r\n");
+      "if (!ExtensionsAreInitialized) return false;\r\n");
   }
 
   printer->Outdent();

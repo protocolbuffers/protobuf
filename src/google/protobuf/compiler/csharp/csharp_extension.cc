@@ -36,7 +36,7 @@ ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::Generate(io::Printer* printer) {
   map<string, string> vars;
-  vars["name"] = UnderscoresToCamelCase(descriptor_);
+  vars["name"] = UnderscoresToCapitalizedCamelCase(descriptor_);
   vars["containing_type"] = ClassName(descriptor_->containing_type());
   vars["index"] = SimpleItoa(descriptor_->index());
 
@@ -56,23 +56,13 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
 
   if (descriptor_->is_repeated()) {
     printer->Print(vars,
-      "public static final\r\n"
-      "  pb::GeneratedMessage.GeneratedExtension<\r\n"
-      "    $containing_type$,\r\n"
-      "    java.util.List<$type$>> $name$ =\r\n"
-      "      pb::GeneratedMessage\r\n"
-      "        .newRepeatedGeneratedExtension(\r\n"
-      "          getDescriptor().getExtensions().get($index$),\r\n"
-      "          typeof ($type$));\r\n");
+      "public static readonly\r\n"
+      "  pb::GeneratedExtension<$containing_type$, scg::IList<$type$>> name =\r\n"
+      "      pb::GeneratedExtension.CreateRepeatedExtension<$containing_type$, $type$>(Descriptor.Extensions[$index$]);\r\n");
   } else {
     printer->Print(vars,
-      "public static final\r\n"
-      "  pb::GeneratedMessage.GeneratedExtension<\r\n"
-      "    $containing_type$,\r\n"
-      "    $type$> $name$ =\r\n"
-      "      pb::GeneratedMessage.newGeneratedExtension(\r\n"
-      "        getDescriptor().getExtensions().get($index$),\r\n"
-      "        typeof ($type$));\r\n");
+      "public static readonly pb::GeneratedExtension<$containing_type$, $type$> $name$ =\r\n"
+      "      pb::GeneratedExtension.CreateExtension<$containing_type$, $type$>(Descriptor.Extensions[$index$]);\r\n");
   }
 }
 

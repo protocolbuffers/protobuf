@@ -23,7 +23,7 @@ namespace Google.ProtocolBuffers {
     protected abstract TMessage MessageBeingBuilt { get; }
 
     protected internal FieldAccessorTable InternalFieldAccessors {
-      get { return MessageBeingBuilt.InternalFieldAccessors; }
+      get { return MessageBeingBuilt.FieldAccesseorsFromBuilder; }
     }
 
     public override bool Initialized {
@@ -190,6 +190,16 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
+    public virtual IBuilder<TMessage> MergeFrom(CodedInputStream input) {
+      ((IBuilder)this).MergeFrom(input);
+      return this;
+    }
+
+    public virtual IBuilder<TMessage> MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+      ((IBuilder)this).MergeFrom(input, extensionRegistry);
+      return this;
+    }
+    
     /// <summary>
     /// Like Build(), but will wrap UninitializedMessageException in
     /// InvalidProtocolBufferException.
@@ -217,7 +227,8 @@ namespace Google.ProtocolBuffers {
     public abstract IBuilder<TMessage> Clone();
     public abstract new IBuilder<TMessage> Clear();
     public abstract TMessage DefaultInstanceForType { get; }
-    public abstract IBuilder<TMessage> MergeFrom(CodedInputStream input);
-    public abstract IBuilder<TMessage> MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
+    
+    public abstract class ExtendableBuilder : GeneratedBuilder<TMessage, TBuilder> {
+    }
   }
 }

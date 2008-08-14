@@ -148,7 +148,7 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Print("\r\n}, new pbd::FileDescriptor[] {\r\n");
   for (int i = 0; i < file_->dependency_count(); i++) {
     printer->Print(
-      "        $dependency$.getDescriptor(),\r\n",
+      "        $dependency$.Descriptor,\r\n",
       "dependency", ClassName(file_->dependency(i)));
   }
 
@@ -165,9 +165,11 @@ void FileGenerator::Generate(io::Printer* printer) {
   // Extensions must be generated in the outer class since they are values,
   // not classes.
   printer->Print("#region Extensions\r\n");
+  printer->Print("/*");
   for (int i = 0; i < file_->extension_count(); i++) {
     ExtensionGenerator(file_->extension(i)).Generate(printer);
   }
+  printer->Print("*/\r\n");
   printer->Print("#endregion\r\n\r\n");
 
   printer->Print("#region Static variables\r\n");

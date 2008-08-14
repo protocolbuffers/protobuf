@@ -98,6 +98,7 @@ namespace Google.ProtocolBuffers {
     /// Writes a double field value, including tag, to the stream.
     /// </summary>
     public void WriteDouble(int fieldNumber, double value) {
+      // TODO(jonskeet): Test this on different endiannesses
       WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
       WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
     }
@@ -107,8 +108,10 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public void WriteFloat(int fieldNumber, float value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-      // FIXME: How do we convert a single to 32 bits? (Without unsafe code)
-      //WriteRawLittleEndian32(BitConverter.SingleT(value));
+      // TODO(jonskeet): Test this on different endiannesses
+      byte[] rawBytes = BitConverter.GetBytes(value);
+      uint asInteger = BitConverter.ToUInt32(rawBytes, 0);
+      WriteRawLittleEndian32(asInteger);
     }
 
     /// <summary>
@@ -434,7 +437,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// fixed64 field, including the tag.
     /// </summary>
-    public static int ComputeFixed64Size(int fieldNumber, long value) {
+    public static int ComputeFixed64Size(int fieldNumber, ulong value) {
       return ComputeTagSize(fieldNumber) + LittleEndian64Size;
     }
 
@@ -442,7 +445,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// fixed32 field, including the tag.
     /// </summary>
-    public static int ComputeFixed32Size(int fieldNumber, int value) {
+    public static int ComputeFixed32Size(int fieldNumber, uint value) {
       return ComputeTagSize(fieldNumber) + LittleEndian32Size;
     }
 
@@ -625,8 +628,8 @@ namespace Google.ProtocolBuffers {
         case FieldType.Int64: return ComputeInt64Size(fieldNumber, (long)value);
         case FieldType.UInt64: return ComputeUInt64Size(fieldNumber, (ulong)value);
         case FieldType.Int32: return ComputeInt32Size(fieldNumber, (int)value);
-        case FieldType.Fixed64: return ComputeFixed64Size(fieldNumber, (long)value);
-        case FieldType.Fixed32: return ComputeFixed32Size(fieldNumber, (int)value);
+        case FieldType.Fixed64: return ComputeFixed64Size(fieldNumber, (ulong)value);
+        case FieldType.Fixed32: return ComputeFixed32Size(fieldNumber, (uint)value);
         case FieldType.Bool: return ComputeBoolSize(fieldNumber, (bool)value);
         case FieldType.String: return ComputeStringSize(fieldNumber, (string)value);
         case FieldType.Group: return ComputeGroupSize(fieldNumber, (IMessage)value);

@@ -178,11 +178,11 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
-    "public global::System.Collections.Generic::IList<$type$> $capitalized_name$List {\r\n"
+    "public scg::IList<$type$> $capitalized_name$List {\r\n"
     "  get { return pbc::Lists.AsReadOnly(result.$name$_); }\r\n"
     "}\r\n"
     "public int $capitalized_name$Count {\r\n"
-    "  get { return result.get$capitalized_name$Count; } \r\n"
+    "  get { return result.$capitalized_name$Count; } \r\n"
     "}\r\n"
     "public $type$ Get$capitalized_name$(int index) {\r\n"
     "  return result.Get$capitalized_name$(index);\r\n"
@@ -191,7 +191,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  result.$name$_[index] = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder add$capitalized_name$($type$ value) {\r\n"
+    "public Builder Add$capitalized_name$($type$ value) {\r\n"
     "  if (result.$name$_.Count == 0) {\r\n"
     "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
@@ -232,9 +232,9 @@ void RepeatedEnumFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "int rawValue = input.ReadEnum();\r\n"
-    "$type$ value = $type$.valueOf(rawValue);\r\n"
-    "if (value == null) {\r\n"
-    "  unknownFields.MergeVarintField($number$, rawValue);\r\n"
+    "$type$ value = ($type$) rawValue;\r\n"
+    "if (!global::System.Enum.IsDefined(typeof($type$), value)) {\r\n"
+    "  unknownFields.MergeVarintField($number$, (ulong) rawValue);\r\n"
     "} else {\r\n"
     "  Add$capitalized_name$(value);\r\n"
     "}\r\n");
@@ -244,7 +244,7 @@ void RepeatedEnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "foreach ($type$ element in $capitalized_name$List) {\r\n"
-    "  output.WriteEnum($number$, element.Number);\r\n"
+    "  output.WriteEnum($number$, (int) element);\r\n"
     "}\r\n");
 }
 
@@ -253,7 +253,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "foreach ($type$ element in $capitalized_name$List) {\r\n"
     "  size += pb::CodedOutputStream\r\n"
-    "    .ComputeEnumSize($number$, element.Number);\r\n"
+    "    .ComputeEnumSize($number$, (int) element);\r\n"
     "}\r\n");
 }
 

@@ -91,6 +91,10 @@ string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field) {
   return UnderscoresToCamelCaseImpl(FieldName(field), true);
 }
 
+string UnderscoresToCapitalizedCamelCase(const MethodDescriptor* method) {
+  return UnderscoresToCamelCaseImpl(method->name(), true);
+}
+
 string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCaseImpl(method->name(), false);
 }
@@ -162,18 +166,22 @@ string ClassName(const FileDescriptor* descriptor) {
 MappedType GetMappedType(FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED32:
       return MAPPEDTYPE_INT;
 
     case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
       return MAPPEDTYPE_LONG;
+
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+      return MAPPEDTYPE_UINT;
+
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+      return MAPPEDTYPE_ULONG;
 
     case FieldDescriptor::TYPE_FLOAT:
       return MAPPEDTYPE_FLOAT;

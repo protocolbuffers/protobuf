@@ -20,6 +20,8 @@
 //
 // A proto file we will use for unit testing.
 
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+option csharp_file_classname = "UnitTestProtoFile";
 
 import "google/protobuf/unittest_import.proto";
 

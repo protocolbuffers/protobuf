@@ -3,9 +3,10 @@
 namespace Google.ProtocolBuffers.Descriptors {
   /// <summary>
   /// Allows enum values to express the index within their descriptor.
+  /// TODO(jonskeet): Consider removing this. I don't think we need it after all.
   /// </summary>
   [AttributeUsage(AttributeTargets.Field)]
-  internal class EnumDescriptorIndexAttribute : Attribute {
+  public class EnumDescriptorIndexAttribute : Attribute {
     readonly int index;
 
     internal int Index {
