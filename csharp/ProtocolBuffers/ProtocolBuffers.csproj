@@ -36,6 +36,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractMessage.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
