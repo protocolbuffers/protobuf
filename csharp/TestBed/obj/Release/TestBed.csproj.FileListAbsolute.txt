@@ -1,7 +1,0 @@
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\bin\Release\TestBed.exe
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\bin\Release\TestBed.pdb
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\bin\Release\Google.ProtocolBuffers.dll
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\bin\Release\Google.ProtocolBuffers.pdb
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\obj\Release\ResolveAssemblyReference.cache
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\obj\Release\TestBed.exe
-C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\obj\Release\TestBed.pdb
