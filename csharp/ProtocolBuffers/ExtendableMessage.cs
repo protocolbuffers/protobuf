@@ -67,10 +67,16 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// Called by subclasses to check if all extensions are initialized.
+    /// Called to check if all extensions are initialized.
     /// </summary>
     protected bool ExtensionsAreInitialized {
       get { return extensions.IsInitialized; }      
+    }
+
+    public override bool IsInitialized {
+      get {
+        return base.IsInitialized && ExtensionsAreInitialized;
+      }
     }
 
     #region Reflection

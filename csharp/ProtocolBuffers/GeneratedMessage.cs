@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.FieldAccess;
+using System.Collections;
 
 namespace Google.ProtocolBuffers {
   
@@ -58,6 +59,39 @@ namespace Google.ProtocolBuffers {
         }
       }
       return ret;
+    }
+
+    public override bool IsInitialized {
+      get {
+        // Check that all required fields are present.
+        foreach (FieldDescriptor field in DescriptorForType.Fields) {
+          if (field.IsRequired && !HasField(field)) {
+            return false;
+          }
+        }
+
+        // Check that embedded messages are initialized.
+        // This code is similar to that in AbstractMessage, but we don't
+        // fetch all the field values - just the ones we need to.
+        foreach (FieldDescriptor field in DescriptorForType.Fields) {
+          if (field.MappedType == MappedType.Message) {
+            if (field.IsRepeated) {
+              // We know it's an IList<T>, but not the exact type - so
+              // IEnumerable is the best we can do. (C# generics aren't covariant yet.)
+              foreach (IMessage element in (IEnumerable) this[field]) {
+                if (!element.IsInitialized) {
+                  return false;
+                }
+              }
+            } else {
+              if (!((IMessage) this[field]).IsInitialized) {
+                return false;
+              }
+            }
+          }
+        }
+        return true;
+      }
     }
 
     public override IDictionary<FieldDescriptor, object> AllFields {
