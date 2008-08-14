@@ -203,23 +203,19 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    // TODO(jonskeet): InternalsVisibleTo
-    public static ulong ParseUInt64(string text) {
+    internal static ulong ParseUInt64(string text) {
       return (ulong) ParseInteger(text, false, true);
     }
 
-    // TODO(jonskeet): InternalsVisibleTo
-    public static long ParseInt64(string text) {
+    internal static long ParseInt64(string text) {
       return ParseInteger(text, true, true);
     }
 
-    // TODO(jonskeet): InternalsVisibleTo
-    public static uint ParseUInt32(string text) {
+    internal static uint ParseUInt32(string text) {
       return (uint) ParseInteger(text, false, false);
     }
 
-    // TODO(jonskeet): InternalsVisibleTo
-    public static int ParseInt32(string text) {
+    internal static int ParseInt32(string text) {
       return (int) ParseInteger(text, true, false);
     }
 
@@ -309,9 +305,8 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Unescapes a text string as escaped using <see cref="EscapeText(string)" />.
     /// Two-digit hex escapes (starting with "\x" are also recognised.
-    /// TODO(jonskeet): InternalsVisibleTo
     /// </summary>
-    public static string UnescapeText(string input) {
+    internal static string UnescapeText(string input) {
       return UnescapeBytes(input).ToStringUtf8();
     }
 
@@ -319,9 +314,8 @@ namespace Google.ProtocolBuffers {
     /// Like <see cref="EscapeBytes" /> but escapes a text string.
     /// The string is first encoded as UTF-8, then each byte escaped individually.
     /// The returned value is guaranteed to be entirely ASCII.
-    /// TODO(jonskeet): InternalsVisibleTo
     /// </summary>
-    public static string EscapeText(string input) {
+    internal static string EscapeText(string input) {
       return EscapeBytes(ByteString.CopyFromUtf8(input));
     }
     /// <summary>
@@ -332,9 +326,8 @@ namespace Google.ProtocolBuffers {
     /// which no defined short-hand escape sequence is defined will be escaped
     /// using 3-digit octal sequences.
     /// The returned value is guaranteed to be entirely ASCII.
-    /// TODO(jonskeet): InternalsVisibleTo
     /// </summary>
-    public static String EscapeBytes(ByteString input) {
+    internal static String EscapeBytes(ByteString input) {
       StringBuilder builder = new StringBuilder(input.Length);
       foreach (byte b in input) {
         switch (b) {
@@ -366,9 +359,8 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Performs string unescaping from C style (octal, hex, form feeds, tab etc) into a byte string.
-    /// TODO(jonskeet): Make this internal again, and use InternalsVisibleTo.
     /// </summary>
-    public static ByteString UnescapeBytes(string input) {
+    internal static ByteString UnescapeBytes(string input) {
       byte[] result = new byte[input.Length];
       int pos = 0;
       for (int i = 0; i < input.Length; i++) {

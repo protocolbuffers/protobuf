@@ -60,8 +60,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// Finds an enum value by number. If multiple enum values have the
     /// same number, this returns the first defined value with that number.
     /// </summary>
-    // TODO(jonskeet): Make internal and use InternalsVisibleTo?
-    public EnumValueDescriptor FindValueByNumber(int number) {
+    internal EnumValueDescriptor FindValueByNumber(int number) {
       return File.DescriptorPool.FindEnumValueByNumber(this, number);
     }
 
@@ -70,8 +69,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// </summary>
     /// <param name="name">The unqualified name of the value (e.g. "FOO").</param>
     /// <returns>The value's descriptor, or null if not found.</returns>
-    // TODO(jonskeet): Make internal and use InternalsVisibleTo?
-    public EnumValueDescriptor FindValueByName(string name) {
+    internal EnumValueDescriptor FindValueByName(string name) {
       return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
     }
   }

@@ -15,6 +15,7 @@
 // limitations under the License.
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -47,3 +48,10 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+[assembly:InternalsVisibleTo("Google.ProtocolBuffers.Test,PublicKey="+
+"00240000048000009400000006020000002400005253413100040000010001008179f2dd31a648"+
+"2a2359dbe33e53701167a888e7c369a9ae3210b64f93861d8a7d286447e58bc167e3d99483beda"+
+"72f738140072bb69990bc4f98a21365de2c105e848974a3d210e938b0a56103c0662901efd6b78"+
+"0ee6dbe977923d46a8fda18fb25c65dd73b149a5cd9f3100668b56649932dadd8cf5be52eb1dce"+
+"ad5cedbf")]
