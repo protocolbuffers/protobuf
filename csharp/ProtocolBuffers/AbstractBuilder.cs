@@ -10,44 +10,55 @@ namespace Google.ProtocolBuffers {
   /// Implementation of the non-generic IMessage interface as far as possible.
   /// </summary>
   public abstract class AbstractBuilder : IBuilder {
+    #region Unimplemented members of IBuilder
+    public abstract bool Initialized { get; }
+    public abstract IDictionary<FieldDescriptor, object> AllFields { get; }
+    public abstract object this[FieldDescriptor field] { get; set; }
+    public abstract MessageDescriptor DescriptorForType { get; }
+    public abstract int GetRepeatedFieldCount(FieldDescriptor field);
+    public abstract object this[FieldDescriptor field, int index] { get; set; }
+    public abstract bool HasField(FieldDescriptor field);
+    #endregion
 
-    public bool Initialized {
-      get { throw new NotImplementedException(); }
+    #region New abstract methods to be overridden by implementations, allow explicit interface implementation
+    protected abstract IMessage BuildImpl();
+    protected abstract IMessage BuildPartialImpl();
+    protected abstract IBuilder CloneImpl();
+    protected abstract IMessage DefaultInstanceForTypeImpl { get; }
+    protected abstract IBuilder NewBuilderForFieldImpl<TField>(FieldDescriptor field);
+    protected abstract IBuilder ClearFieldImpl();
+    protected abstract IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value);
+    #endregion
+
+    #region Methods simply proxying to the "Impl" methods, explicitly implementing IBuilder
+    IMessage IBuilder.Build() {
+      return BuildImpl();
     }
 
-    public IDictionary<FieldDescriptor, object> AllFields {
-      get { throw new NotImplementedException(); }
+    IMessage IBuilder.BuildPartial() {
+      return BuildPartialImpl();
     }
 
-    public object this[FieldDescriptor field] {
-      get {
-        throw new NotImplementedException();
-      }
-      set {
-        throw new NotImplementedException();
-      }
+    public IBuilder Clone() {
+      return CloneImpl();
+    }
+    
+    public IMessage DefaultInstanceForType {
+      get { return DefaultInstanceForTypeImpl; }
     }
 
-    public MessageDescriptor DescriptorForType {
-      get { throw new NotImplementedException(); }
+    public IBuilder NewBuilderForField<TField>(FieldDescriptor field) {
+      return NewBuilderForFieldImpl<TField>(field);
     }
 
-    public int GetRepeatedFieldCount(FieldDescriptor field) {
-      throw new NotImplementedException();
+    public IBuilder ClearField(FieldDescriptor field) {
+      return ClearFieldImpl();
     }
 
-    public object this[FieldDescriptor field, int index] {
-      get {
-        throw new NotImplementedException();
-      }
-      set {
-        throw new NotImplementedException();
-      }
+    public IBuilder AddRepeatedField(FieldDescriptor field, object value) {
+      return AddRepeatedFieldImpl(field, value);
     }
-
-    public bool HasField(FieldDescriptor field) {
-      throw new NotImplementedException();
-    }
+    #endregion
 
     public IBuilder Clear() {
       foreach(FieldDescriptor field in AllFields.Keys) {
@@ -95,18 +106,6 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
-    public IMessage Build() {
-      throw new NotImplementedException();
-    }
-
-    public IMessage BuildPartial() {
-      throw new NotImplementedException();
-    }
-
-    public IBuilder Clone() {
-      throw new NotImplementedException();
-    }
-
     public IBuilder MergeFrom(CodedInputStream input) {
       return MergeFrom(input, ExtensionRegistry.Empty);
     }
@@ -118,22 +117,6 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
-    public IMessage DefaultInstanceForType {
-      get { throw new NotImplementedException(); }
-    }
-
-    public IBuilder NewBuilderForField<TField>(FieldDescriptor field) {
-      throw new NotImplementedException();
-    }
-
-    public IBuilder ClearField(FieldDescriptor field) {
-      throw new NotImplementedException();
-    }
-
-    public IBuilder AddRepeatedField(FieldDescriptor field, object value) {
-      throw new NotImplementedException();
-    }
-
     public IBuilder MergeUnknownFields(UnknownFieldSet unknownFields) {
       UnknownFields = UnknownFieldSet.CreateBuilder(UnknownFields)
           .MergeFrom(unknownFields)
@@ -141,14 +124,7 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
-    public UnknownFieldSet UnknownFields {
-      get {
-        throw new NotImplementedException();
-      }
-      set {
-        throw new NotImplementedException();
-      }
-    }
+    public UnknownFieldSet UnknownFields { get; set; }
 
     public IBuilder MergeFrom(ByteString data) {
       CodedInputStream input = data.CreateCodedInput();

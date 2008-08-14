@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.FieldAccess;
 
@@ -22,12 +21,20 @@ namespace Google.ProtocolBuffers {
       get { return InternalFieldAccessors.Descriptor; }
     }
 
+    protected override IMessage DefaultInstanceForTypeImpl {
+      get { return DefaultInstanceForType; }
+    }
+
+    protected override IBuilder CreateBuilderForTypeImpl() {
+      return CreateBuilderForType();
+    }
+
     public IMessage<TMessage> DefaultInstanceForType {
-      get { throw new System.NotImplementedException(); }
+      get { throw new NotImplementedException(); }
     }
 
     public IBuilder<TMessage> CreateBuilderForType() {
-      throw new System.NotImplementedException();
+      throw new NotImplementedException();
     }
 
     private IDictionary<FieldDescriptor, Object> GetMutableFieldMap() {

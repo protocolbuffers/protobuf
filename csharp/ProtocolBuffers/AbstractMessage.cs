@@ -40,9 +40,20 @@ namespace Google.ProtocolBuffers {
     public abstract int GetRepeatedFieldCount(FieldDescriptor field);
     public abstract object this[FieldDescriptor field, int index] { get; }
     public abstract UnknownFieldSet UnknownFields { get; }
-    // FIXME
-    IMessage IMessage.DefaultInstanceForType { get { return null; } }
-    IBuilder IMessage.CreateBuilderForType() { return null; }
+    #endregion
+
+    #region New abstract methods to be overridden by implementations, allow explicit interface implementation
+    protected abstract IMessage DefaultInstanceForTypeImpl { get; }
+    protected abstract IBuilder CreateBuilderForTypeImpl();
+    #endregion
+
+    #region Methods simply proxying to the "Impl" methods, explicitly implementing IMessage
+    IMessage IMessage.DefaultInstanceForType { 
+      get { return DefaultInstanceForTypeImpl; }
+    }
+    IBuilder IMessage.CreateBuilderForType() { 
+      return CreateBuilderForTypeImpl(); 
+    }
     #endregion
 
     public bool IsInitialized {
