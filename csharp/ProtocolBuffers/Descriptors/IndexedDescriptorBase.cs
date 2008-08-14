@@ -22,7 +22,9 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// The index of this descriptor within its parent descriptor. 
     /// </value>
     /// <remarks>
-    /// TODO(jonskeet): Transcribe appropriately.
+    /// This returns the index of this descriptor within its parent, for
+    /// this descriptor's type. (There can be duplicate values for different
+    /// types, e.g. one enum type with index 0 and one message type with index 0.)
     /// </remarks>
     public int Index {
       get { return index; }

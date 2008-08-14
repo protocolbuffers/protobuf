@@ -321,7 +321,6 @@ namespace Google.ProtocolBuffers.Descriptors {
         }
 
         try {
-          // TODO(jonskeet): Check signage for Int32 and Int64.
           switch (FieldType) {
             case FieldType.Int32:
             case FieldType.SInt32:
@@ -348,7 +347,13 @@ namespace Google.ProtocolBuffers.Descriptors {
               defaultValue = double.Parse(Proto.DefaultValue);
               break;
             case FieldType.Bool:
-              defaultValue = bool.Parse(Proto.DefaultValue); // TODO(jonskeet): Check this will work
+              if (Proto.DefaultValue == "true") {
+                defaultValue = true;
+              } else if (Proto.DefaultValue == "false") {
+                defaultValue = false;
+              } else {
+                throw new FormatException("Boolean values must be \"true\" or \"false\"");
+              }
               break;
             case FieldType.String:
               defaultValue = Proto.DefaultValue;
