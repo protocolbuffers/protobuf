@@ -34,5 +34,7 @@ o There's a mixture of generic and non-generic code. This
   IEnumerable. As an aside, this becomes a pain when trying to
   create "the read-only version of this list, whose type I don't
   know but I know it's a List<something>". Oh for mumble types.
-  
-
+o Nested types always end up under a "Types" static class which
+  is merely present to avoid name clashes.
+o FileDescriptor.FindByName has been made generic to allow simple
+  type-safe searching for any nested type.

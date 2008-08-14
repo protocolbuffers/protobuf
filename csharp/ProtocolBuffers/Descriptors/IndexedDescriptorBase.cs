@@ -13,8 +13,8 @@ namespace Google.ProtocolBuffers.Descriptors {
 
     private readonly int index;
 
-    protected IndexedDescriptorBase(TProto proto, FileDescriptor file, int index)
-        : base(proto, file) {
+    protected IndexedDescriptorBase(TProto proto, FileDescriptor file, string fullName, int index)
+        : base(proto, file, fullName) {
       this.index = index;
     }
 

@@ -6,15 +6,16 @@ namespace Google.ProtocolBuffers.Descriptors {
 
     private readonly EnumDescriptor enumDescriptor;
 
-    internal EnumValueDescriptor(EnumValueDescriptorProto proto,
-                                 FileDescriptor file,
-                                 EnumDescriptor parent,
-                                 int index) : base (proto, file, index) {
+    internal EnumValueDescriptor(EnumValueDescriptorProto proto, FileDescriptor file,
+        EnumDescriptor parent, int index) 
+        : base (proto, file, parent.FullName + "." + proto.Name, index) {
       enumDescriptor = parent;
+      file.DescriptorPool.AddSymbol(this);
+      file.DescriptorPool.AddEnumValueByNumber(this);
     }
 
     public int Number {
-      get { throw new NotImplementedException(); }
+      get { return Proto.Number; }
     }
 
     public EnumDescriptor EnumDescriptor {

@@ -52,6 +52,8 @@
     <Compile Include="DescriptorProtos\PartialClasses.cs" />
     <Compile Include="Descriptors\DescriptorBase.cs" />
     <Compile Include="Descriptors\DescriptorPool.cs" />
+    <Compile Include="Descriptors\DescriptorUtil.cs" />
+    <Compile Include="Descriptors\DescriptorValidationException.cs" />
     <Compile Include="Descriptors\EnumDescriptor.cs" />
     <Compile Include="Descriptors\EnumDescriptorIndexAttribute.cs" />
     <Compile Include="Descriptors\EnumValueDescriptor.cs" />
@@ -59,9 +61,12 @@
     <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
     <Compile Include="Descriptors\FileDescriptor.cs" />
+    <Compile Include="Descriptors\IDescriptor.cs" />
     <Compile Include="Descriptors\IndexedDescriptorBase.cs" />
     <Compile Include="Descriptors\MappedType.cs" />
     <Compile Include="Descriptors\MessageDescriptor.cs" />
+    <Compile Include="Descriptors\MethodDescriptor.cs" />
+    <Compile Include="Descriptors\PackageDescriptor.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
