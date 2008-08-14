@@ -50,6 +50,7 @@ nobase_include_HEADERS =                                       \
   google/protobuf/compiler/parser.h                            \
   google/protobuf/compiler/cpp/cpp_generator.h                 \
   google/protobuf/compiler/java/java_generator.h               \
+  google/protobuf/compiler/csharp/csharp_generator.h           \
   google/protobuf/compiler/python/python_generator.h
 
 lib_LTLIBRARIES = libprotobuf.la libprotoc.la
@@ -138,6 +139,27 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_primitive_field.h         \
   google/protobuf/compiler/java/java_service.cc                \
   google/protobuf/compiler/java/java_service.h                 \
+  google/protobuf/compiler/csharp/csharp_enum.cc               \
+  google/protobuf/compiler/csharp/csharp_enum.h                \
+  google/protobuf/compiler/csharp/csharp_enum_field.cc         \
+  google/protobuf/compiler/csharp/csharp_enum_field.h          \
+  google/protobuf/compiler/csharp/csharp_extension.cc          \
+  google/protobuf/compiler/csharp/csharp_extension.h           \
+  google/protobuf/compiler/csharp/csharp_field.cc              \
+  google/protobuf/compiler/csharp/csharp_field.h               \
+  google/protobuf/compiler/csharp/csharp_file.cc               \
+  google/protobuf/compiler/csharp/csharp_file.h                \
+  google/protobuf/compiler/csharp/csharp_generator.cc          \
+  google/protobuf/compiler/csharp/csharp_helpers.cc            \
+  google/protobuf/compiler/csharp/csharp_helpers.h             \
+  google/protobuf/compiler/csharp/csharp_message.cc            \
+  google/protobuf/compiler/csharp/csharp_message.h             \
+  google/protobuf/compiler/csharp/csharp_message_field.cc      \
+  google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
+  google/protobuf/compiler/csharp/csharp_primitive_field.h     \
+  google/protobuf/compiler/csharp/csharp_service.cc            \
+  google/protobuf/compiler/csharp/csharp_service.h             \
   google/protobuf/compiler/python/python_generator.cc
 
 bin_PROGRAMS = protoc
