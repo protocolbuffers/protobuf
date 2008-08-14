@@ -8,7 +8,6 @@ namespace Google.ProtocolBuffers {
 
   /// <summary>
   /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
-  /// TODO: Implement appropriate generics.
   /// </summary>
   public class DynamicMessage : AbstractMessage<DynamicMessage, DynamicMessage.Builder> {
 

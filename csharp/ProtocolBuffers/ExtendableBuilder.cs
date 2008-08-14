@@ -95,8 +95,7 @@ namespace Google.ProtocolBuffers {
       set {
         if (field.IsExtension) {
           ExtendableMessage<TMessage, TBuilder> message = MessageBeingBuilt;
-          // TODO(jonskeet): Figure out how to call this!
-          // message.VerifyExtensionContainingType(field);
+          message.VerifyContainingType(field);
           message.Extensions[field, index] = value;
         } else {
           base[field, index] = value;
@@ -109,8 +108,7 @@ namespace Google.ProtocolBuffers {
       set {
         if (field.IsExtension) {
           ExtendableMessage<TMessage, TBuilder> message = MessageBeingBuilt;
-          // TODO(jonskeet): Figure out how to call this!
-          // message.VerifyExtensionContainingType(field);
+          message.VerifyContainingType(field);
           message.Extensions[field] = value;
         } else {
           base[field] = value;

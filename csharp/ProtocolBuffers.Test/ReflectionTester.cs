@@ -51,7 +51,6 @@ namespace Google.ProtocolBuffers {
     /// then baseDescriptor should be for TestAllExtensions instead, and instead of
     /// reading and writing normal fields, the tester will read and write extensions.
     /// All of the TestAllExtensions extensions must be registered in the registry.
-    /// TODO(jonskeet): Enforce all of these with two factory methods.
     /// </summary>
     private ReflectionTester(MessageDescriptor baseDescriptor,
                             ExtensionRegistry extensionRegistry) {

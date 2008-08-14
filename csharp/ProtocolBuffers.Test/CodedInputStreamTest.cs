@@ -201,56 +201,54 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    /* TODO(jonskeet): Reinstate this when protoc is ready
-    public void testSkipWholeMessage() throws Exception {
-      TestAllTypes message = TestUtil.getAllSet();
-      byte[] rawBytes = message.toByteArray();
+    [Test]
+    public void SkipWholeMessage() {
+      TestAllTypes message = TestUtil.GetAllSet();
+      byte[] rawBytes = message.ToByteArray();
 
       // Create two parallel inputs.  Parse one as unknown fields while using
       // skipField() to skip each field on the other.  Expect the same tags.
-      CodedInputStream input1 = CodedInputStream.newInstance(rawBytes);
-      CodedInputStream input2 = CodedInputStream.newInstance(rawBytes);
-      UnknownFieldSet.Builder unknownFields = UnknownFieldSet.newBuilder();
+      CodedInputStream input1 = CodedInputStream.CreateInstance(rawBytes);
+      CodedInputStream input2 = CodedInputStream.CreateInstance(rawBytes);
+      UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder();
 
       while (true) {
-        int tag = input1.readTag();
-        assertEquals(tag, input2.readTag());
+        uint tag = input1.ReadTag();
+        Assert.AreEqual(tag, input2.ReadTag());
         if (tag == 0) {
           break;
         }
-        unknownFields.mergeFieldFrom(tag, input1);
-        input2.skipField(tag);
+        unknownFields.MergeFieldFrom(tag, input1);
+        input2.SkipField(tag);
       }
-    }*/
+    }
 
-    /* TODO(jonskeet): Reinstate this when protoc is ready
-    public void testReadHugeBlob() throws Exception {
+    public void ReadHugeBlob() {
       // Allocate and initialize a 1MB blob.
       byte[] blob = new byte[1 << 20];
-      for (int i = 0; i < blob.length; i++) {
+      for (int i = 0; i < blob.Length; i++) {
         blob[i] = (byte)i;
       }
 
       // Make a message containing it.
-      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      TestUtil.setAllFields(builder);
-      builder.setOptionalBytes(ByteString.copyFrom(blob));
-      TestAllTypes message = builder.build();
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      TestUtil.SetAllFields(builder);
+      builder.SetOptionalBytes(ByteString.CopyFrom(blob));
+      TestAllTypes message = builder.Build();
 
       // Serialize and parse it.  Make sure to parse from an InputStream, not
       // directly from a ByteString, so that CodedInputStream uses buffered
       // reading.
-      TestAllTypes message2 =
-        TestAllTypes.parseFrom(message.toByteString().newInput());
+      TestAllTypes message2 = TestAllTypes.ParseFrom(message.ToByteString().CreateCodedInput());
 
-      assertEquals(message.getOptionalBytes(), message2.getOptionalBytes());
+      Assert.AreEqual(message.OptionalBytes, message2.OptionalBytes);
 
       // Make sure all the other fields were parsed correctly.
-      TestAllTypes message3 = TestAllTypes.newBuilder(message2)
-        .setOptionalBytes(TestUtil.getAllSet().getOptionalBytes())
-        .build();
-      TestUtil.assertAllFieldsSet(message3);
-    }*/
+      TestAllTypes message3 = TestAllTypes.CreateBuilder(message2)
+        .SetOptionalBytes(TestUtil.GetAllSet().OptionalBytes)
+        .Build();
+      TestUtil.AssertAllFieldsSet(message3);
+    }
 
     [Test]
     public void ReadMaliciouslyLargeBlob() {

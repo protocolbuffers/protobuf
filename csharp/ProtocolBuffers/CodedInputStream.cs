@@ -102,7 +102,7 @@ namespace Google.ProtocolBuffers {
     }
     #endregion
 
-    #region Uncategorised (TODO: Fix this!)
+    #region Validation
     /// <summary>
     /// Verifies that the last call to ReadTag() returned the given tag value.
     /// This is used to verify that a nested group ended with the correct
