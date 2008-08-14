@@ -16,6 +16,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
 
@@ -251,26 +252,26 @@ namespace Google.ProtocolBuffers {
       WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
     }
 
-    public void WriteField(Descriptors.FieldDescriptor.Type fieldType, int fieldNumber, object value) {
+    public void WriteField(FieldType fieldType, int fieldNumber, object value) {
       switch (fieldType) {
-        case Descriptors.FieldDescriptor.Type.Double: WriteDouble(fieldNumber, (double)value); break;
-        case Descriptors.FieldDescriptor.Type.Float: WriteFloat(fieldNumber, (float)value); break;
-        case Descriptors.FieldDescriptor.Type.Int64: WriteInt64(fieldNumber, (long)value); break;
-        case Descriptors.FieldDescriptor.Type.UInt64: WriteUInt64(fieldNumber, (ulong)value); break;
-        case Descriptors.FieldDescriptor.Type.Int32: WriteInt32(fieldNumber, (int)value); break;
-        case Descriptors.FieldDescriptor.Type.Fixed64: WriteFixed64(fieldNumber, (long)value); break;
-        case Descriptors.FieldDescriptor.Type.Fixed32: WriteFixed32(fieldNumber, (int)value); break;
-        case Descriptors.FieldDescriptor.Type.Bool: WriteBool(fieldNumber, (bool)value); break;
-        case Descriptors.FieldDescriptor.Type.String: WriteString(fieldNumber, (string)value); break;
-        case Descriptors.FieldDescriptor.Type.Group: WriteGroup(fieldNumber, (IMessage)value); break;
-        case Descriptors.FieldDescriptor.Type.Message: WriteMessage(fieldNumber, (IMessage)value); break;
-        case Descriptors.FieldDescriptor.Type.Bytes: WriteBytes(fieldNumber, (ByteString)value); break;
-        case Descriptors.FieldDescriptor.Type.UInt32: WriteUInt32(fieldNumber, (uint)value); break;
-        case Descriptors.FieldDescriptor.Type.SFixed32: WriteSFixed32(fieldNumber, (int)value); break;
-        case Descriptors.FieldDescriptor.Type.SFixed64: WriteSFixed64(fieldNumber, (long)value); break;
-        case Descriptors.FieldDescriptor.Type.SInt32: WriteSInt32(fieldNumber, (int)value); break;
-        case Descriptors.FieldDescriptor.Type.SInt64: WriteSInt64(fieldNumber, (long)value); break;
-        case Descriptors.FieldDescriptor.Type.Enum: WriteEnum(fieldNumber, ((Descriptors.EnumValueDescriptor)value).Number);
+        case FieldType.Double: WriteDouble(fieldNumber, (double)value); break;
+        case FieldType.Float: WriteFloat(fieldNumber, (float)value); break;
+        case FieldType.Int64: WriteInt64(fieldNumber, (long)value); break;
+        case FieldType.UInt64: WriteUInt64(fieldNumber, (ulong)value); break;
+        case FieldType.Int32: WriteInt32(fieldNumber, (int)value); break;
+        case FieldType.Fixed64: WriteFixed64(fieldNumber, (long)value); break;
+        case FieldType.Fixed32: WriteFixed32(fieldNumber, (int)value); break;
+        case FieldType.Bool: WriteBool(fieldNumber, (bool)value); break;
+        case FieldType.String: WriteString(fieldNumber, (string)value); break;
+        case FieldType.Group: WriteGroup(fieldNumber, (IMessage)value); break;
+        case FieldType.Message: WriteMessage(fieldNumber, (IMessage)value); break;
+        case FieldType.Bytes: WriteBytes(fieldNumber, (ByteString)value); break;
+        case FieldType.UInt32: WriteUInt32(fieldNumber, (uint)value); break;
+        case FieldType.SFixed32: WriteSFixed32(fieldNumber, (int)value); break;
+        case FieldType.SFixed64: WriteSFixed64(fieldNumber, (long)value); break;
+        case FieldType.SInt32: WriteSInt32(fieldNumber, (int)value); break;
+        case FieldType.SInt64: WriteSInt64(fieldNumber, (long)value); break;
+        case FieldType.Enum: WriteEnum(fieldNumber, ((Descriptors.EnumValueDescriptor)value).Number);
           break;
       }
     }
@@ -617,26 +618,26 @@ namespace Google.ProtocolBuffers {
      *               {@link Message#getField(Descriptors.FieldDescriptor)} for
      *               this field.
      */
-    public static int ComputeFieldSize(Descriptors.FieldDescriptor.Type fieldType, int fieldNumber, Object value) {
+    public static int ComputeFieldSize(FieldType fieldType, int fieldNumber, Object value) {
       switch (fieldType) {
-        case Descriptors.FieldDescriptor.Type.Double: return ComputeDoubleSize(fieldNumber, (double)value);
-        case Descriptors.FieldDescriptor.Type.Float: return ComputeFloatSize(fieldNumber, (float)value);
-        case Descriptors.FieldDescriptor.Type.Int64: return ComputeInt64Size(fieldNumber, (long)value);
-        case Descriptors.FieldDescriptor.Type.UInt64: return ComputeUInt64Size(fieldNumber, (ulong)value);
-        case Descriptors.FieldDescriptor.Type.Int32: return ComputeInt32Size(fieldNumber, (int)value);
-        case Descriptors.FieldDescriptor.Type.Fixed64: return ComputeFixed64Size(fieldNumber, (long)value);
-        case Descriptors.FieldDescriptor.Type.Fixed32: return ComputeFixed32Size(fieldNumber, (int)value);
-        case Descriptors.FieldDescriptor.Type.Bool: return ComputeBoolSize(fieldNumber, (bool)value);
-        case Descriptors.FieldDescriptor.Type.String: return ComputeStringSize(fieldNumber, (string)value);
-        case Descriptors.FieldDescriptor.Type.Group: return ComputeGroupSize(fieldNumber, (IMessage)value);
-        case Descriptors.FieldDescriptor.Type.Message: return ComputeMessageSize(fieldNumber, (IMessage)value);
-        case Descriptors.FieldDescriptor.Type.Bytes: return ComputeBytesSize(fieldNumber, (ByteString)value);
-        case Descriptors.FieldDescriptor.Type.UInt32: return ComputeUInt32Size(fieldNumber, (uint)value);
-        case Descriptors.FieldDescriptor.Type.SFixed32: return ComputeSFixed32Size(fieldNumber, (int)value);
-        case Descriptors.FieldDescriptor.Type.SFixed64: return ComputeSFixed64Size(fieldNumber, (long)value);
-        case Descriptors.FieldDescriptor.Type.SInt32: return ComputeSInt32Size(fieldNumber, (int)value);
-        case Descriptors.FieldDescriptor.Type.SInt64: return ComputeSInt64Size(fieldNumber, (long)value);
-        case Descriptors.FieldDescriptor.Type.Enum: return ComputeEnumSize(fieldNumber, ((Descriptors.EnumValueDescriptor)value).Number);
+        case FieldType.Double: return ComputeDoubleSize(fieldNumber, (double)value);
+        case FieldType.Float: return ComputeFloatSize(fieldNumber, (float)value);
+        case FieldType.Int64: return ComputeInt64Size(fieldNumber, (long)value);
+        case FieldType.UInt64: return ComputeUInt64Size(fieldNumber, (ulong)value);
+        case FieldType.Int32: return ComputeInt32Size(fieldNumber, (int)value);
+        case FieldType.Fixed64: return ComputeFixed64Size(fieldNumber, (long)value);
+        case FieldType.Fixed32: return ComputeFixed32Size(fieldNumber, (int)value);
+        case FieldType.Bool: return ComputeBoolSize(fieldNumber, (bool)value);
+        case FieldType.String: return ComputeStringSize(fieldNumber, (string)value);
+        case FieldType.Group: return ComputeGroupSize(fieldNumber, (IMessage)value);
+        case FieldType.Message: return ComputeMessageSize(fieldNumber, (IMessage)value);
+        case FieldType.Bytes: return ComputeBytesSize(fieldNumber, (ByteString)value);
+        case FieldType.UInt32: return ComputeUInt32Size(fieldNumber, (uint)value);
+        case FieldType.SFixed32: return ComputeSFixed32Size(fieldNumber, (int)value);
+        case FieldType.SFixed64: return ComputeSFixed64Size(fieldNumber, (long)value);
+        case FieldType.SInt32: return ComputeSInt32Size(fieldNumber, (int)value);
+        case FieldType.SInt64: return ComputeSInt64Size(fieldNumber, (long)value);
+        case FieldType.Enum: return ComputeEnumSize(fieldNumber, ((Descriptors.EnumValueDescriptor)value).Number);
         default:
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }
@@ -702,6 +703,34 @@ namespace Google.ProtocolBuffers {
     public void Flush() {
       if (output != null) {
         RefreshBuffer();
+      }
+    }
+
+    /// <summary>
+    /// Verifies that SpaceLeft returns zero. It's common to create a byte array
+    /// that is exactly big enough to hold a message, then write to it with
+    /// a CodedOutputStream. Calling CheckNoSpaceLeft after writing verifies that
+    /// the message was actually as big as expected, which can help bugs.
+    /// </summary>
+    public void CheckNoSpaceLeft() {
+      if (SpaceLeft != 0) {
+        throw new InvalidOperationException("Did not write as much data as expected.");
+      }
+    }
+
+    /// <summary>
+    /// If writing to a flat array, returns the space left in the array. Otherwise,
+    /// throws an InvalidOperationException.
+    /// </summary>
+    public int SpaceLeft {
+      get {
+        if (output == null) {
+          return limit - position;
+        } else {
+          throw new InvalidOperationException(
+            "SpaceLeft can only be called on CodedOutputStreams that are " +
+            "writing to a flat array.");
+        }
       }
     }
   }

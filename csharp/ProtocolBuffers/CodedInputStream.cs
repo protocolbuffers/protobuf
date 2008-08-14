@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
 
@@ -320,30 +321,30 @@ namespace Google.ProtocolBuffers {
     /// Reads a field of any primitive type. Enums, groups and embedded
     /// messages are not handled by this method.
     /// </summary>
-    public object readPrimitiveField(Descriptors.FieldDescriptor.Type fieldType) {
+    public object readPrimitiveField(FieldType fieldType) {
       switch (fieldType) {
-        case Descriptors.FieldDescriptor.Type.Double:   return ReadDouble();
-        case Descriptors.FieldDescriptor.Type.Float:    return ReadFloat();
-        case Descriptors.FieldDescriptor.Type.Int64:    return ReadInt64();
-        case Descriptors.FieldDescriptor.Type.UInt64:   return ReadUInt64();
-        case Descriptors.FieldDescriptor.Type.Int32:    return ReadInt32();
-        case Descriptors.FieldDescriptor.Type.Fixed64:  return ReadFixed64();
-        case Descriptors.FieldDescriptor.Type.Fixed32:  return ReadFixed32();
-        case Descriptors.FieldDescriptor.Type.Bool:     return ReadBool();
-        case Descriptors.FieldDescriptor.Type.String:   return ReadString();
-        case Descriptors.FieldDescriptor.Type.Bytes:    return ReadBytes();
-        case Descriptors.FieldDescriptor.Type.UInt32:   return ReadUInt32();
-        case Descriptors.FieldDescriptor.Type.SFixed32: return ReadSFixed32();
-        case Descriptors.FieldDescriptor.Type.SFixed64: return ReadSFixed64();
-        case Descriptors.FieldDescriptor.Type.SInt32:   return ReadSInt32();
-        case Descriptors.FieldDescriptor.Type.SInt64:   return ReadSInt64();
-        case Descriptors.FieldDescriptor.Type.Group:
+        case FieldType.Double:   return ReadDouble();
+        case FieldType.Float:    return ReadFloat();
+        case FieldType.Int64:    return ReadInt64();
+        case FieldType.UInt64:   return ReadUInt64();
+        case FieldType.Int32:    return ReadInt32();
+        case FieldType.Fixed64:  return ReadFixed64();
+        case FieldType.Fixed32:  return ReadFixed32();
+        case FieldType.Bool:     return ReadBool();
+        case FieldType.String:   return ReadString();
+        case FieldType.Bytes:    return ReadBytes();
+        case FieldType.UInt32:   return ReadUInt32();
+        case FieldType.SFixed32: return ReadSFixed32();
+        case FieldType.SFixed64: return ReadSFixed64();
+        case FieldType.SInt32:   return ReadSInt32();
+        case FieldType.SInt64:   return ReadSInt64();
+        case FieldType.Group:
             throw new ArgumentException("ReadPrimitiveField() cannot handle nested groups.");
-        case Descriptors.FieldDescriptor.Type.Message:
+        case FieldType.Message:
             throw new ArgumentException("ReadPrimitiveField() cannot handle embedded messages.");
         // We don't handle enums because we don't know what to do if the
         // value is not recognized.
-        case Descriptors.FieldDescriptor.Type.Enum:
+        case FieldType.Enum:
             throw new ArgumentException("ReadPrimitiveField() cannot handle enums.");
         default:
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);

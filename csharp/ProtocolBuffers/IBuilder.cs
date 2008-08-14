@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
 
@@ -54,7 +55,7 @@ namespace Google.ProtocolBuffers {
     /// Get the message's type's descriptor.
     /// <see cref="IMessage{T}.DescriptorForType"/>
     /// </summary>
-    Descriptors.Descriptor DescriptorForType { get; }
+    MessageDescriptor DescriptorForType { get; }
 
     /// <summary>
     /// <see cref="IMessage{T}.GetRepeatedFieldCount"/>

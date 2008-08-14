@@ -106,6 +106,35 @@ namespace Google.ProtocolBuffers {
     }
 
     // TODO(jonskeet): CopyTo, Equals, GetHashCode if they turn out to be required
-    // TODO(jonskeet): Input/Output stuff
+
+    /// <summary>
+    /// Builder for ByteStrings which allows them to be created without extra
+    /// copying being involved. This has to be a nested type in order to have access
+    /// to the private ByteString constructor.
+    /// </summary>
+    internal class CodedBuilder {
+      private readonly CodedOutputStream output;
+      private readonly byte[] buffer;
+
+      internal CodedBuilder(int size) {
+        buffer = new byte[size];
+        output = CodedOutputStream.CreateInstance(buffer);
+      }
+
+      public ByteString Build() {
+        output.CheckNoSpaceLeft();
+
+        // We can be confident that the CodedOutputStream will not modify the
+        // underlying bytes anymore because it already wrote all of them.  So,
+        // no need to make a copy.
+        return new ByteString(buffer);
+      }
+
+      public CodedOutputStream CodedOutput {
+        get {
+          return output;
+        }
+      }
+    }
   }
 }

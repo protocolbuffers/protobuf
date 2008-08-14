@@ -17,6 +17,8 @@ using System;
 
 namespace Google.ProtocolBuffers {
   public class UnknownFieldSet {
+    public int SerializedSizeAsMessageSet;
+
     public void WriteTo(CodedOutputStream output) {
       throw new NotImplementedException();
     }
@@ -28,6 +30,10 @@ namespace Google.ProtocolBuffers {
       internal void MergeFrom(CodedInputStream codedInputStream) {
         throw new NotImplementedException();
       }
+    }
+
+    internal void WriteAsMessageSetTo(CodedOutputStream output) {
+      throw new NotImplementedException();
     }
   }
 }

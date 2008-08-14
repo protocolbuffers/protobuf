@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
 
@@ -33,7 +34,7 @@ namespace Google.ProtocolBuffers {
     /// method is an abstract method of IMessage whereas Descriptor is
     /// a static property of a specific class. They return the same thing.
     /// </summary>
-    Descriptors.Descriptor DescriptorForType { get; }
+    MessageDescriptor DescriptorForType { get; }
     /// <summary>
     /// Returns a collection of all the fields in this message which are set
     /// and their corresponding values.  A singular ("required" or "optional")
@@ -91,7 +92,7 @@ namespace Google.ProtocolBuffers {
     /// Returns true iff all required fields in the message and all embedded
     /// messages are set.
     /// </summary>
-    bool Initialized { get; }
+    bool IsInitialized { get; }
 
     /// <summary>
     /// Serializes the message and writes it to the given output stream.
@@ -119,7 +120,6 @@ namespace Google.ProtocolBuffers {
     /// Returns the hash code value for this message.
     /// TODO(jonskeet): Specify the hash algorithm, but better than the Java one!
     /// </summary>
-    /// <returns></returns>
     int GetHashCode();
     #endregion
 
@@ -164,7 +164,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Constructs a new builder for a message of the same type as this message.
     /// </summary>
-    IBuilder NewBuilderForType();
+    IBuilder CreateBuilderForType();
     #endregion
   }
 
@@ -186,7 +186,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Constructs a new builder for a message of the same type as this message.
     /// </summary>
-    new IBuilder<T> NewBuilderForType();
+    new IBuilder<T> CreateBuilderForType();
     #endregion
   }
 }
