@@ -97,7 +97,7 @@ namespace Google.ProtocolBuffers {
     /// <returns>true unless the tag is an end-group tag</returns>
     protected override bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
         ExtensionRegistry extensionRegistry, uint tag) {
-      return FieldSet.MergeFieldFrom(input, unknownFields, extensionRegistry, this, tag);
+      return unknownFields.MergeFieldFrom(input, extensionRegistry, this, tag);
     }
 
     // ---------------------------------------------------------------

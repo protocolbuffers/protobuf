@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Collections;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -430,6 +431,191 @@ namespace Google.ProtocolBuffers {
         return this;
       }
 
+      internal void MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry, IBuilder builder) {
+        while (true) {
+          uint tag = input.ReadTag();
+          if (tag == 0) {
+            break;
+          }
+          if (!MergeFieldFrom(input, extensionRegistry, builder, tag)) {
+            // end group tag
+            break;
+          }
+        }
+      }
+
+      /// <summary>
+      /// Like <see cref="MergeFrom(CodedInputStream, ExtensionRegistry, IBuilder)" />
+      /// but parses a single field.
+      /// </summary>
+      /// <param name="input">The input to read the field from</param>
+      /// <param name="extensionRegistry">Registry to use when an extension field is encountered</param>
+      /// <param name="builder">Builder to merge field into, if it's a known field</param>
+      /// <param name="tag">The tag, which should already have been read from the input</param>
+      /// <returns>true unless the tag is an end-group tag</returns>
+      internal bool MergeFieldFrom(CodedInputStream input, 
+          ExtensionRegistry extensionRegistry, IBuilder builder, uint tag) {
+        MessageDescriptor type = builder.DescriptorForType;
+        if (type.Options.MessageSetWireFormat && tag == WireFormat.MessageSetTag.ItemStart) {
+          MergeMessageSetExtensionFromCodedStream(input, extensionRegistry, builder);
+          return true;
+        }
+
+        WireFormat.WireType wireType = WireFormat.GetTagWireType(tag);
+        int fieldNumber = WireFormat.GetTagFieldNumber(tag);
+
+        FieldDescriptor field;
+        IMessage defaultFieldInstance = null;
+
+        if (type.IsExtensionNumber(fieldNumber)) {
+          ExtensionInfo extension = extensionRegistry[type, fieldNumber];
+          if (extension == null) {
+            field = null;
+          } else {
+            field = extension.Descriptor;
+            defaultFieldInstance = extension.DefaultInstance;
+          }
+        } else {
+          field = type.FindFieldByNumber(fieldNumber);
+        }
+
+        // Unknown field or wrong wire type. Skip.
+        if (field == null || wireType != WireFormat.FieldTypeToWireFormatMap[field.FieldType]) {
+          return MergeFieldFrom(tag, input);
+        }
+
+        object value;
+        switch (field.FieldType) {
+          case FieldType.Group:
+          case FieldType.Message: {
+              IBuilder subBuilder;
+              if (defaultFieldInstance != null) {
+                subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
+              } else {
+                subBuilder = builder.CreateBuilderForField(field);
+              }
+              if (!field.IsRepeated) {
+                subBuilder.WeakMergeFrom((IMessage)builder[field]);
+              }
+              if (field.FieldType == FieldType.Group) {
+                input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
+              } else {
+                input.ReadMessage(subBuilder, extensionRegistry);
+              }
+              value = subBuilder.WeakBuild();
+              break;
+            }
+          case FieldType.Enum: {
+              int rawValue = input.ReadEnum();
+              value = field.EnumType.FindValueByNumber(rawValue);
+              // If the number isn't recognized as a valid value for this enum,
+              // drop it.
+              if (value == null) {
+                MergeVarintField(fieldNumber, (ulong)rawValue);
+                return true;
+              }
+              break;
+            }
+          default:
+            value = input.ReadPrimitiveField(field.FieldType);
+            break;
+        }
+        if (field.IsRepeated) {
+          builder.WeakAddRepeatedField(field, value);
+        } else {
+          builder[field] = value;
+        }
+        return true;
+      }
+
+      /// <summary>
+      /// Called by MergeFieldFrom to parse a MessageSet extension.
+      /// </summary>
+      private void MergeMessageSetExtensionFromCodedStream(CodedInputStream input,
+          ExtensionRegistry extensionRegistry, IBuilder builder) {
+        MessageDescriptor type = builder.DescriptorForType;
+
+        // The wire format for MessageSet is:
+        //   message MessageSet {
+        //     repeated group Item = 1 {
+        //       required int32 typeId = 2;
+        //       required bytes message = 3;
+        //     }
+        //   }
+        // "typeId" is the extension's field number.  The extension can only be
+        // a message type, where "message" contains the encoded bytes of that
+        // message.
+        //
+        // In practice, we will probably never see a MessageSet item in which
+        // the message appears before the type ID, or where either field does not
+        // appear exactly once.  However, in theory such cases are valid, so we
+        // should be prepared to accept them.
+
+        int typeId = 0;
+        ByteString rawBytes = null;  // If we encounter "message" before "typeId"
+        IBuilder subBuilder = null;
+        FieldDescriptor field = null;
+
+        while (true) {
+          uint tag = input.ReadTag();
+          if (tag == 0) {
+            break;
+          }
+
+          if (tag == WireFormat.MessageSetTag.TypeID) {
+            typeId = input.ReadInt32();
+            // Zero is not a valid type ID.
+            if (typeId != 0) {
+              ExtensionInfo extension = extensionRegistry[type, typeId];
+              if (extension != null) {
+                field = extension.Descriptor;
+                subBuilder = extension.DefaultInstance.WeakCreateBuilderForType();
+                IMessage originalMessage = (IMessage)builder[field];
+                if (originalMessage != null) {
+                  subBuilder.WeakMergeFrom(originalMessage);
+                }
+                if (rawBytes != null) {
+                  // We already encountered the message.  Parse it now.
+                  // TODO(jonskeet): Check this is okay. It's subtly different from the Java, as it doesn't create an input stream from rawBytes.
+                  // In fact, why don't we just call MergeFrom(rawBytes)? And what about the extension registry?
+                  subBuilder.WeakMergeFrom(rawBytes.CreateCodedInput());
+                  rawBytes = null;
+                }
+              } else {
+                // Unknown extension number.  If we already saw data, put it
+                // in rawBytes.
+                if (rawBytes != null) {
+                  MergeField(typeId, UnknownField.CreateBuilder().AddLengthDelimited(rawBytes).Build());
+                  rawBytes = null;
+                }
+              }
+            }
+          } else if (tag == WireFormat.MessageSetTag.Message) {
+            if (typeId == 0) {
+              // We haven't seen a type ID yet, so we have to store the raw bytes for now.
+              rawBytes = input.ReadBytes();
+            } else if (subBuilder == null) {
+              // We don't know how to parse this.  Ignore it.
+              MergeField(typeId, UnknownField.CreateBuilder().AddLengthDelimited(input.ReadBytes()).Build());
+            } else {
+              // We already know the type, so we can parse directly from the input
+              // with no copying.  Hooray!
+              input.ReadMessage(subBuilder, extensionRegistry);
+            }
+          } else {
+            // Unknown tag.  Skip it.
+            if (!input.SkipField(tag)) {
+              break;  // end of group
+            }
+          }
+        }
+
+        input.CheckLastTagWas(WireFormat.MessageSetTag.ItemEnd);
+
+        if (subBuilder != null) {
+          builder[field] = subBuilder.WeakBuild();
+        }
+      }
     }
   }
 }

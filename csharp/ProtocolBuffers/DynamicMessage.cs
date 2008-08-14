@@ -318,7 +318,7 @@ namespace Google.ProtocolBuffers {
 
       public override Builder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
         UnknownFieldSet.Builder unknownFieldsBuilder = UnknownFieldSet.CreateBuilder(unknownFields);
-        FieldSet.MergeFrom(input, unknownFieldsBuilder, extensionRegistry, this);
+        unknownFieldsBuilder.MergeFrom(input, extensionRegistry, this);
         unknownFields = unknownFieldsBuilder.Build();
         return this;
       }

@@ -155,7 +155,7 @@ namespace Google.ProtocolBuffers {
 
     public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
-      FieldSet.MergeFrom(input, unknownFields, extensionRegistry, this);
+      unknownFields.MergeFrom(input, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
       return ThisBuilder;
     }

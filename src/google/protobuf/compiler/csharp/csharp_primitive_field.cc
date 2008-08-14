@@ -113,7 +113,6 @@ string DefaultValue(const FieldDescriptor* field) {
       // Escaping strings correctly for Java and generating efficient
       // initializers for ByteStrings are both tricky.  We can sidestep the
       // whole problem by just grabbing the default value from the descriptor.
-      // TODO(jonskeet): FIXME!
       return strings::Substitute(
         "(($0) $1.Descriptor.Fields[$2].DefaultValue)",
         isBytes ? "pb::ByteString" : "string",
