@@ -21,19 +21,6 @@ namespace Google.ProtocolBuffers {
   [TestFixture]
   public class CodedOutputStreamTest {
 
-    /// <summary>
-    /// Helper to construct a byte array from a bunch of bytes.  The inputs are
-    /// actually ints so that I can use hex notation and not get stupid errors
-    /// about precision.
-    /// </summary>
-    private static byte[] Bytes(params int[] bytesAsInts) {
-      byte[] bytes = new byte[bytesAsInts.Length];
-      for (int i = 0; i < bytesAsInts.Length; i++) {
-        bytes[i] = (byte) bytesAsInts[i];
-      }
-      return bytes;
-    }
-
     private static void AssertEqualBytes(byte[] a, byte[] b) {
       Assert.AreEqual(ByteString.CopyFrom(a), ByteString.CopyFrom(b));
     }
@@ -92,29 +79,29 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     [Test]
     public void WriteVarint() {
-      AssertWriteVarint(Bytes(0x00), 0);
-      AssertWriteVarint(Bytes(0x01), 1);
-      AssertWriteVarint(Bytes(0x7f), 127);
+      AssertWriteVarint(new byte[] {0x00}, 0);
+      AssertWriteVarint(new byte[] {0x01}, 1);
+      AssertWriteVarint(new byte[] {0x7f}, 127);
       // 14882
-      AssertWriteVarint(Bytes(0xa2, 0x74), (0x22 << 0) | (0x74 << 7));
+      AssertWriteVarint(new byte[] {0xa2, 0x74}, (0x22 << 0) | (0x74 << 7));
       // 2961488830
-      AssertWriteVarint(Bytes(0xbe, 0xf7, 0x92, 0x84, 0x0b),
+      AssertWriteVarint(new byte[] {0xbe, 0xf7, 0x92, 0x84, 0x0b},
         (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
         (0x0bL << 28));
 
       // 64-bit
       // 7256456126
-      AssertWriteVarint(Bytes(0xbe, 0xf7, 0x92, 0x84, 0x1b),
+      AssertWriteVarint(new byte[] {0xbe, 0xf7, 0x92, 0x84, 0x1b},
         (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
         (0x1bL << 28));
       // 41256202580718336
       AssertWriteVarint(
-        Bytes(0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49),
+        new byte[] {0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49},
         (0x00 << 0) | (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
         (0x43UL << 28) | (0x49L << 35) | (0x24UL << 42) | (0x49UL << 49));
       // 11964378330978735131
       AssertWriteVarint(
-        Bytes(0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01),
+        new byte[] {0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01},
         unchecked((ulong)
         ((0x1b << 0) | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
         (0x3bL << 28) | (0x56L << 35) | (0x00L << 42) |
@@ -168,14 +155,14 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     [Test]
     public void WriteLittleEndian() {
-      AssertWriteLittleEndian32(Bytes(0x78, 0x56, 0x34, 0x12), 0x12345678);
-      AssertWriteLittleEndian32(Bytes(0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef0);
+      AssertWriteLittleEndian32(new byte[] {0x78, 0x56, 0x34, 0x12}, 0x12345678);
+      AssertWriteLittleEndian32(new byte[] {0xf0, 0xde, 0xbc, 0x9a}, 0x9abcdef0);
 
       AssertWriteLittleEndian64(
-        Bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12),
+        new byte[]{0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12},
         0x123456789abcdef0L);
       AssertWriteLittleEndian64(
-        Bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a),
+        new byte[]{0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a},
         0x9abcdef012345678UL);
     }
 

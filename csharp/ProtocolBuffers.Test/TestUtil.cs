@@ -129,6 +129,9 @@ namespace Google.ProtocolBuffers {
       registry.Add(UnitTestProtoFile.DefaultCordExtension);
     }
 
+    internal static string ReadTextFromFile(string filePath) {
+      return ReadBytesFromFile(filePath).ToStringUtf8();
+    }
 
     internal static ByteString ReadBytesFromFile(String filename) {
       byte[] data = File.ReadAllBytes(Path.Combine(TestDataDirectory, filename));
@@ -1333,6 +1336,17 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual("abc", message.GetExtension(UnitTestProtoFile.DefaultStringPieceExtension));
       Assert.AreEqual("123", message.GetExtension(UnitTestProtoFile.DefaultCordExtension));
+    }
+
+    /// <summary>
+    /// Helper to construct a byte array from a bunch of bytes.
+    /// </summary>
+    internal static byte[] Bytes(params byte[] bytesAsInts) {
+      byte[] bytes = new byte[bytesAsInts.Length];
+      for (int i = 0; i < bytesAsInts.Length; i++) {
+        bytes[i] = (byte)bytesAsInts[i];
+      }
+      return bytes;
     }
   }
 }

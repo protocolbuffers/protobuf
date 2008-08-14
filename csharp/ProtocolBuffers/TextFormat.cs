@@ -187,19 +187,23 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    internal static ulong ParseUInt64(string text) {
+    // TODO(jonskeet): InternalsVisibleTo
+    public static ulong ParseUInt64(string text) {
       return (ulong) ParseInteger(text, false, true);
     }
 
-    internal static long ParseInt64(string text) {
+    // TODO(jonskeet): InternalsVisibleTo
+    public static long ParseInt64(string text) {
       return ParseInteger(text, true, true);
     }
 
-    internal static uint ParseUInt32(string text) {
+    // TODO(jonskeet): InternalsVisibleTo
+    public static uint ParseUInt32(string text) {
       return (uint) ParseInteger(text, false, false);
     }
 
-    internal static int ParseInt32(string text) {
+    // TODO(jonskeet): InternalsVisibleTo
+    public static int ParseInt32(string text) {
       return (int) ParseInteger(text, true, false);
     }
 
@@ -224,10 +228,17 @@ namespace Google.ProtocolBuffers {
         text = text.Substring(2);
       } else if (text.StartsWith("0")) {
         radix = 8;
-        text = text.Substring(1);
       }
 
-      ulong result = Convert.ToUInt64(text, radix);
+      ulong result;
+      try {
+        // Workaround for https://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=278448
+        // We should be able to use Convert.ToUInt64 for all cases.
+        result = radix == 10 ? ulong.Parse(text) : Convert.ToUInt64(text, radix);
+      } catch (OverflowException) {
+        // Convert OverflowException to FormatException so there's a single exception type this method can throw.
+        throw new FormatException("Number of out range: " + original);
+      }
 
       if (negative) {
         ulong max = isLong ? 0x8000000000000000UL : 0x80000000L;
@@ -277,11 +288,21 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
+    /// Unescapes a text string as escaped using <see cref="EscapeText(string)" />.
+    /// Two-digit hex escapes (starting with "\x" are also recognised.
+    /// TODO(jonskeet): InternalsVisibleTo
+    /// </summary>
+    public static string UnescapeText(string input) {
+      return UnescapeBytes(input).ToStringUtf8();
+    }
+
+    /// <summary>
     /// Like <see cref="EscapeBytes" /> but escapes a text string.
     /// The string is first encoded as UTF-8, then each byte escaped individually.
     /// The returned value is guaranteed to be entirely ASCII.
+    /// TODO(jonskeet): InternalsVisibleTo
     /// </summary>
-    static String EscapeText(string input) {
+    public static string EscapeText(string input) {
       return EscapeBytes(ByteString.CopyFromUtf8(input));
     }
     /// <summary>
@@ -292,8 +313,9 @@ namespace Google.ProtocolBuffers {
     /// which no defined short-hand escape sequence is defined will be escaped
     /// using 3-digit octal sequences.
     /// The returned value is guaranteed to be entirely ASCII.
+    /// TODO(jonskeet): InternalsVisibleTo
     /// </summary>
-    private static String EscapeBytes(ByteString input) {
+    public static String EscapeBytes(ByteString input) {
       StringBuilder builder = new StringBuilder(input.Length);
       foreach (byte b in input) {
         switch (b) {
@@ -309,7 +331,7 @@ namespace Google.ProtocolBuffers {
           case (byte)'\'': builder.Append("\\\'"); break;
           case (byte)'"' : builder.Append("\\\""); break;
           default:
-            if (b >= 0x20) {
+            if (b >= 0x20 && b < 128) {
               builder.Append((char) b);
             } else {
               builder.Append('\\');
@@ -325,8 +347,9 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Performs string unescaping from C style (octal, hex, form feeds, tab etc) into a byte string.
+    /// TODO(jonskeet): Make this internal again, and use InternalsVisibleTo.
     /// </summary>
-    internal static ByteString UnescapeBytes(string input) {
+    public static ByteString UnescapeBytes(string input) {
       byte[] result = new byte[input.Length];
       int pos = 0;
       for (int i = 0; i < input.Length; i++) {
@@ -392,6 +415,22 @@ namespace Google.ProtocolBuffers {
       }
 
       return ByteString.CopyFrom(result, 0, pos);
+    }
+
+    public static void Merge(string text, IBuilder builder) {
+      throw new NotImplementedException();
+    }
+
+    public static void Merge(TextReader reader, IBuilder builder) {
+      throw new NotImplementedException();
+    }
+
+    public static void Merge(string text, ExtensionRegistry registry, IBuilder builder) {
+      throw new NotImplementedException();
+    }
+
+    public static void Merge(TextReader reader, ExtensionRegistry registry, IBuilder builder) {
+      throw new NotImplementedException();
     }
   }
 }
