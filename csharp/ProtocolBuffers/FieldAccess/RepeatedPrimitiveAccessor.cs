@@ -25,13 +25,15 @@ namespace Google.ProtocolBuffers.FieldAccess {
       where TMessage : IMessage<TMessage, TBuilder>
       where TBuilder : IBuilder<TMessage, TBuilder> {
 
-    private readonly PropertyInfo messageProperty;
-    private readonly PropertyInfo builderProperty;
-    private readonly RepeatedCountDelegate<TMessage> countDelegate;
+    private readonly Type clrType;
+    private readonly GetValueDelegate<TMessage> getValueDelegate;
     private readonly ClearDelegate<TBuilder> clearDelegate;
-    private readonly MethodInfo addMethod;
+    private readonly SingleValueDelegate<TBuilder> addValueDelegate;
+    private readonly GetValueDelegate<TBuilder> getRepeatedWrapperDelegate;
+    private readonly RepeatedCountDelegate<TMessage> countDelegate;
     private readonly MethodInfo getElementMethod;
     private readonly MethodInfo setElementMethod;
+    
 
     /// <summary>
     /// The CLR type of the field (int, the enum type, ByteString, the message etc).
@@ -39,16 +41,17 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// value.
     /// </summary>
     protected Type ClrType {
-      get { return getElementMethod.ReturnType; }
+      get { return clrType; }
     }
 
     internal RepeatedPrimitiveAccessor(string name) {      
-      messageProperty = typeof(TMessage).GetProperty(name + "List");
-      builderProperty = typeof(TBuilder).GetProperty(name + "List");
+      PropertyInfo messageProperty = typeof(TMessage).GetProperty(name + "List");
+      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name + "List");
       PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count");
       MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
       getElementMethod = typeof(TMessage).GetMethod("Get" + name, new Type[] { typeof(int) });
-      addMethod = typeof(TBuilder).GetMethod("Add" + name, new Type[] { ClrType });
+      clrType = getElementMethod.ReturnType;
+      MethodInfo addMethod = typeof(TBuilder).GetMethod("Add" + name, new Type[] { ClrType });
       setElementMethod = typeof(TBuilder).GetMethod("Set" + name, new Type[] { typeof(int), ClrType });
       if (messageProperty == null 
           || builderProperty == null 
@@ -62,6 +65,9 @@ namespace Google.ProtocolBuffers.FieldAccess {
       clearDelegate = (ClearDelegate<TBuilder>)Delegate.CreateDelegate(typeof(ClearDelegate<TBuilder>), clearMethod);
       countDelegate = (RepeatedCountDelegate<TMessage>)Delegate.CreateDelegate
           (typeof(RepeatedCountDelegate<TMessage>), countProperty.GetGetMethod());
+      getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
+      addValueDelegate = ReflectionUtil.CreateDowncastDelegateIgnoringReturn<TBuilder>(addMethod);
+      getRepeatedWrapperDelegate = ReflectionUtil.CreateUpcastDelegate<TBuilder>(builderProperty.GetGetMethod());
     }
 
     public bool Has(TMessage message) {
@@ -73,7 +79,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public virtual object GetValue(TMessage message) {
-      return messageProperty.GetValue(message, null);
+      return getValueDelegate(message);
     }
 
     public void SetValue(TBuilder builder, object value) {
@@ -95,24 +101,24 @@ namespace Google.ProtocolBuffers.FieldAccess {
       return countDelegate(message);
     }
 
-    public virtual object GetRepeatedValue(IMessage message, int index) {
+    public virtual object GetRepeatedValue(TMessage message, int index) {
       return getElementMethod.Invoke(message, new object[] {index } );
     }
 
-    public virtual void SetRepeated(IBuilder builder, int index, object value) {
+    public virtual void SetRepeated(TBuilder builder, int index, object value) {
       setElementMethod.Invoke(builder, new object[] {index, value} );
     }
 
-    public virtual void AddRepeated(IBuilder builder, object value) {
-      addMethod.Invoke(builder, new object[] { value });
+    public virtual void AddRepeated(TBuilder builder, object value) {
+      addValueDelegate(builder, value);
     }
 
     /// <summary>
     /// The builder class's accessor already builds a read-only wrapper for
     /// us, which is exactly what we want.
     /// </summary>
-    public object GetRepeatedWrapper(IBuilder builder) {
-      return builderProperty.GetValue(builder, null);
+    public object GetRepeatedWrapper(TBuilder builder) {
+      return getRepeatedWrapperDelegate(builder);
     }
   }
 }

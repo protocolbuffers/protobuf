@@ -24,8 +24,9 @@ namespace Google.ProtocolBuffers.FieldAccess {
       where TMessage : IMessage<TMessage, TBuilder>
       where TBuilder : IBuilder<TMessage, TBuilder> {
 
-    private readonly PropertyInfo messageProperty;
-    private readonly PropertyInfo builderProperty;
+    private readonly Type clrType;
+    private readonly GetValueDelegate<TMessage> getValueDelegate;
+    private readonly SingleValueDelegate<TBuilder> setValueDelegate;
     private readonly HasDelegate<TMessage> hasDelegate;
     private readonly ClearDelegate<TBuilder> clearDelegate;
 
@@ -34,19 +35,22 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// As declared by the property.
     /// </summary>
     protected Type ClrType {
-      get { return messageProperty.PropertyType; }
+      get { return clrType; }
     }
 
     internal SinglePrimitiveAccessor(string name) {
-      messageProperty = typeof(TMessage).GetProperty(name);
-      builderProperty = typeof(TBuilder).GetProperty(name);
+      PropertyInfo messageProperty = typeof(TMessage).GetProperty(name);
+      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name);
       PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
       MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
       if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null) {
         throw new ArgumentException("Not all required properties/methods available");
       }
+      clrType = messageProperty.PropertyType;
       hasDelegate = (HasDelegate<TMessage>)Delegate.CreateDelegate(typeof(HasDelegate<TMessage>), hasProperty.GetGetMethod());
       clearDelegate = (ClearDelegate<TBuilder>)Delegate.CreateDelegate(typeof(ClearDelegate<TBuilder>), clearMethod);
+      getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
+      setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
     }
 
     public bool Has(TMessage message) {
@@ -65,11 +69,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public virtual object GetValue(TMessage message) {
-      return messageProperty.GetValue(message, null);
+      return getValueDelegate(message);
     }
 
     public virtual void SetValue(TBuilder builder, object value) {
-      builderProperty.SetValue(builder, value, null);
+      setValueDelegate(builder, value);
     }
 
     #region Methods only related to repeated values
@@ -77,19 +81,19 @@ namespace Google.ProtocolBuffers.FieldAccess {
       throw new InvalidOperationException();
     }
 
-    public object GetRepeatedValue(IMessage message, int index) {
+    public object GetRepeatedValue(TMessage message, int index) {
       throw new InvalidOperationException();
     }
 
-    public void SetRepeated(IBuilder builder, int index, object value) {
+    public void SetRepeated(TBuilder builder, int index, object value) {
       throw new InvalidOperationException();
     }
 
-    public void AddRepeated(IBuilder builder, object value) {
+    public void AddRepeated(TBuilder builder, object value) {
       throw new InvalidOperationException();
     }
 
-    public object GetRepeatedWrapper(IBuilder builder) {
+    public object GetRepeatedWrapper(TBuilder builder) {
       throw new InvalidOperationException();
     }
     #endregion

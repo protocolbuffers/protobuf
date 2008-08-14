@@ -112,7 +112,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public override object this[FieldDescriptor field, int index] {
-      get { return InternalFieldAccessors[field].GetRepeatedValue(this, index); }
+      get { return InternalFieldAccessors[field].GetRepeatedValue(ThisMessage, index); }
     }
 
     public override object this[FieldDescriptor field] {

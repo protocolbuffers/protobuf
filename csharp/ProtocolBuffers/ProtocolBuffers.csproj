@@ -72,6 +72,7 @@
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
     <Compile Include="FieldAccess\Delegates.cs" />
+    <Compile Include="FieldAccess\ReflectionUtil.cs" />
     <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
     <Compile Include="FieldAccess\SingleMessageAccessor.cs" />
     <Compile Include="FieldAccess\SinglePrimitiveAccessor.cs" />

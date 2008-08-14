@@ -42,18 +42,18 @@ namespace Google.ProtocolBuffers.FieldAccess {
       return Lists.AsReadOnly(ret);
     }
 
-    public override object GetRepeatedValue(IMessage message, int index) {
+    public override object GetRepeatedValue(TMessage message, int index) {
       // Note: This relies on the fact that the CLR allows unboxing from an enum to
       // its underlying value
       int rawValue = (int) base.GetRepeatedValue(message, index);
       return enumDescriptor.FindValueByNumber(rawValue);
     }
 
-    public override void AddRepeated(IBuilder builder, object value) {
+    public override void AddRepeated(TBuilder builder, object value) {
       base.AddRepeated(builder, ((EnumValueDescriptor) value).Number);
     }
 
-    public override void SetRepeated(IBuilder builder, int index, object value) {
+    public override void SetRepeated(TBuilder builder, int index, object value) {
       base.SetRepeated(builder, index, ((EnumValueDescriptor) value).Number);
     }
   }

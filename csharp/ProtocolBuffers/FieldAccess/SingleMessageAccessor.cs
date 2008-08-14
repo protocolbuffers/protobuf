@@ -29,15 +29,14 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// in a message type "Foo", a field called "bar" might be of type "Baz". This
     /// method is Baz.CreateBuilder.
     /// </summary>
-    private readonly MethodInfo createBuilderMethod;
+    private readonly CreateBuilderDelegate createBuilderDelegate;
 
-
-    internal SingleMessageAccessor(string name) : base(name) {
-      
-      createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);//BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+    internal SingleMessageAccessor(string name) : base(name) {      
+      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);
       if (createBuilderMethod == null) {
         throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);
       }
+      createBuilderDelegate = ReflectionUtil.CreateStaticUpcastDelegate(createBuilderMethod);
     }
 
     /// <summary>
@@ -61,7 +60,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public override IBuilder CreateBuilder() {
-      return (IBuilder) createBuilderMethod.Invoke(null, null);
+      return createBuilderDelegate();
     }
   }
 }

@@ -33,13 +33,14 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// in a message type "Foo", a field called "bar" might be of type "Baz". This
     /// method is Baz.CreateBuilder.
     /// </summary>
-    private readonly MethodInfo createBuilderMethod;
+    private readonly CreateBuilderDelegate createBuilderDelegate;
 
     internal RepeatedMessageAccessor(string name) : base(name) {
-      createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);
+      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);
       if (createBuilderMethod == null) {
         throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);
       }
+      createBuilderDelegate = ReflectionUtil.CreateStaticUpcastDelegate(createBuilderMethod);
     }
 
     /// <summary>
@@ -58,15 +59,15 @@ namespace Google.ProtocolBuffers.FieldAccess {
       return CreateBuilder().WeakMergeFrom(message).WeakBuild();
     }
 
-    public override void SetRepeated(IBuilder builder, int index, object value) {
+    public override void SetRepeated(TBuilder builder, int index, object value) {
       base.SetRepeated(builder, index, CoerceType(value));
     }
 
     public override IBuilder CreateBuilder() {
-      return (IBuilder) createBuilderMethod.Invoke(null, null);
+      return createBuilderDelegate();
     }
 
-    public override void AddRepeated(IBuilder builder, object value) {
+    public override void AddRepeated(TBuilder builder, object value) {
       base.AddRepeated(builder, CoerceType(value));
     }
   }

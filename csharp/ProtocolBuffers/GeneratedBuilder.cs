@@ -51,7 +51,7 @@ namespace Google.ProtocolBuffers {
         // For repeated fields, the underlying list object is still modifiable at this point.
         // Make sure not to expose the modifiable list to the caller.
         return field.IsRepeated
-          ? InternalFieldAccessors[field].GetRepeatedWrapper(this)
+          ? InternalFieldAccessors[field].GetRepeatedWrapper(ThisBuilder)
           : MessageBeingBuilt[field];
       }
       set {
@@ -92,7 +92,7 @@ namespace Google.ProtocolBuffers {
 
     public override object this[FieldDescriptor field, int index] {
       get { return MessageBeingBuilt[field, index]; }
-      set { InternalFieldAccessors[field].SetRepeated(this, index, value); }
+      set { InternalFieldAccessors[field].SetRepeated(ThisBuilder, index, value); }
     }
 
     public override bool HasField(FieldDescriptor field) {
@@ -144,7 +144,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public override TBuilder AddRepeatedField(FieldDescriptor field, object value) {
-      InternalFieldAccessors[field].AddRepeated(this, value);
+      InternalFieldAccessors[field].AddRepeated(ThisBuilder, value);
       return ThisBuilder;
     }
 

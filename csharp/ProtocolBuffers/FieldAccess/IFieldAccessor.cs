@@ -58,18 +58,18 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// <summary>
     /// Accessor for repeated fields
     /// </summary>
-    object GetRepeatedValue(IMessage message, int index);
+    object GetRepeatedValue(TMessage message, int index);
     /// <summary>
     /// Mutator for repeated fields
     /// </summary>
-    void SetRepeated(IBuilder builder, int index, object value);
+    void SetRepeated(TBuilder builder, int index, object value);
     /// <summary>
     /// Adds the specified value to the field in the given builder.
     /// </summary>
-    void AddRepeated(IBuilder builder, object value);
+    void AddRepeated(TBuilder builder, object value);
     /// <summary>
     /// Returns a read-only wrapper around the value of a repeated field.
     /// </summary>
-    object GetRepeatedWrapper(IBuilder builder);
+    object GetRepeatedWrapper(TBuilder builder);
   }
 }
