@@ -48,52 +48,56 @@ string UnderscoresToCamelCase(const MethodDescriptor* method);
 string StripProto(const string& filename);
 
 // Gets the unqualified class name for the file.  Each .proto file becomes a
-// single Java class, with all its contents nested in that class.
+// single C# class, with extra (possibly nested) classes for messages, enums and services.
 string FileClassName(const FileDescriptor* file);
 
-// Returns the file's Java package name.
-string FileJavaPackage(const FileDescriptor* file);
+// Returns the file's C# namespace.
+string FileCSharpNamespace(const FileDescriptor* file);
 
 // Converts the given fully-qualified name in the proto namespace to its
-// fully-qualified name in the Java namespace, given that it is in the given
+// fully-qualified name in the C# namespace, given that it is in the given
 // file.
-string ToJavaName(const string& full_name, const FileDescriptor* file);
+string ToCSharpName(const string& full_name, const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 inline string ClassName(const Descriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+  return ToCSharpName(descriptor->full_name(), descriptor->file());
 }
 inline string ClassName(const EnumDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+  return ToCSharpName(descriptor->full_name(), descriptor->file());
 }
 inline string ClassName(const ServiceDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+  return ToCSharpName(descriptor->full_name(), descriptor->file());
 }
 string ClassName(const FileDescriptor* descriptor);
 
-enum JavaType {
-  JAVATYPE_INT,
-  JAVATYPE_LONG,
-  JAVATYPE_FLOAT,
-  JAVATYPE_DOUBLE,
-  JAVATYPE_BOOLEAN,
-  JAVATYPE_STRING,
-  JAVATYPE_BYTES,
-  JAVATYPE_ENUM,
-  JAVATYPE_MESSAGE
+enum MappedType {
+  MAPPEDTYPE_INT,
+  MAPPEDTYPE_LONG,
+  MAPPEDTYPE_UINT,
+  MAPPEDTYPE_ULONG,
+  MAPPEDTYPE_FLOAT,
+  MAPPEDTYPE_DOUBLE,
+  MAPPEDTYPE_BOOLEAN,
+  MAPPEDTYPE_STRING,
+  MAPPEDTYPE_BYTES,
+  MAPPEDTYPE_ENUM,
+  MAPPEDTYPE_MESSAGE
 };
 
-JavaType GetJavaType(FieldDescriptor::Type field_type);
+MappedType GetMappedType(FieldDescriptor::Type field_type);
 
-inline JavaType GetJavaType(const FieldDescriptor* field) {
-  return GetJavaType(field->type());
+inline MappedType GetMappedType(const FieldDescriptor* field) {
+  return GetMappedType(field->type());
 }
 
-// Get the fully-qualified class name for a boxed primitive type, e.g.
-// "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
-// types.
-const char* BoxedPrimitiveTypeName(JavaType type);
+// Get the access level for generated classes: public or internal
+const char* ClassAccessLevel(const FileDescriptor* file);
+
+// Get the class name for a built-in type (including ByteString).
+// Returns NULL for enum and message types.
+const char* MappedTypeName(MappedType type);
 
 }  // namespace csharp
 }  // namespace compiler

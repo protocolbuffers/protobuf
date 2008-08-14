@@ -50,8 +50,6 @@ class FieldGenerator {
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
 
-  virtual string GetBoxedType() const = 0;
-
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGenerator);
 };

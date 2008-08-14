@@ -32,9 +32,10 @@ namespace Google.ProtocolBuffers.Descriptors {
 
     /// <summary>
     /// The fully qualified name of the descriptor's target.
+    /// TODO(jonskeet): Implement!
     /// </summary>
     public string FullName {
-      get { return proto.FullName; }
+      get { return null; }
     }
 
     /// <summary>

@@ -62,9 +62,9 @@ CSharpGenerator::CSharpGenerator() {}
 CSharpGenerator::~CSharpGenerator() {}
 
 bool CSharpGenerator::Generate(const FileDescriptor* file,
-                             const string& parameter,
-                             OutputDirectory* output_directory,
-                             string* error) const {
+                               const string& parameter,
+                               OutputDirectory* output_directory,
+                               string* error) const {
   vector<pair<string, string> > options;
   ParseOptions(parameter, &options);
 
@@ -93,25 +93,20 @@ bool CSharpGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
-  string package_dir =
-    StringReplace(file_generator.csharp_namespace(), ".", "/", true);
-  if (!package_dir.empty()) package_dir += "/";
-
   vector<string> all_files;
 
-  string csharp_filename = package_dir;
-  csharp_filename += file_generator.classname();
+  string csharp_filename = file_generator.classname();
   csharp_filename += ".cs";
   all_files.push_back(csharp_filename);
 
-  // Generate main csharp file.
+  // Generate main C# file.
   scoped_ptr<io::ZeroCopyOutputStream> output(
     output_directory->Open(csharp_filename));
   io::Printer printer(output.get(), '$');
   file_generator.Generate(&printer);
 
   // Generate sibling files.
-  file_generator.GenerateSiblings(package_dir, output_directory, &all_files);
+  file_generator.GenerateSiblings(output_directory, &all_files);
 
   // Generate output list if requested.
   if (!output_list_file.empty()) {

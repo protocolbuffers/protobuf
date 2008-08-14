@@ -7,10 +7,6 @@
   /// </summary>
   /// <typeparam name="TOptions">The associated options protocol buffer type</typeparam>
   public interface IDescriptorProto<TOptions> {
-    /// <summary>
-    /// The fully qualified name of the descriptor's target.
-    /// </summary>
-    string FullName { get; }
 
     /// <summary>
     /// The brief name of the descriptor's target.

@@ -144,7 +144,7 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // used in the construction of descriptors, we have a tricky bootstrapping
   // problem.  To help control static initialization order, we make sure all
   // descriptors and other static data that depends on them are members of
-  // the outermost class in the file.  This way, they will be initialized in
+  // the proto-descriptor class.  This way, they will be initialized in
   // a deterministic order.
 
   map<string, string> vars;
@@ -154,9 +154,9 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   if (descriptor_->containing_type() != NULL) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
-  if (descriptor_->file()->options().csharp_multiple_files()) {
+  if (!descriptor_->file()->options().csharp_nest_classes()) {
     // We can only make these assembly-private since the classes that use them
-    // are in separate files.
+    // aren't nested.
     vars["private"] = "internal ";
   } else {
     vars["private"] = "private ";
@@ -165,23 +165,18 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // The descriptor for this type.
   if (descriptor_->containing_type() == NULL) {
     printer->Print(vars,
-      "$private$static readonly pb::Descriptors.Descriptor \r\n"
-      "  internal_$identifier$_descriptor =\r\n"
-      "    getDescriptor().getMessageTypes().get($index$);\r\n");
+      "$private$static readonly pbd::MessageDescriptor internal__$identifier$__Descriptor \r\n"
+      "    = Descriptor.MessageTypes[$index$];\r\n");
   } else {
     printer->Print(vars,
-      "$private$static readonly pb::Descriptors.Descriptor \r\n"
-      "  internal_$identifier$_descriptor =\r\n"
-      "    internal_$parent$_descriptor.getNestedTypes().get($index$);\r\n");
+      "$private$static readonly pbd::MessageDescriptor  internal__$identifier$__Descriptor \r\n"
+      "    = internal__$parent$__Descriptor.NestedTypes[$index$];\r\n");
   }
 
   // And the FieldAccessorTable.
   printer->Print(vars,
-    "$private$static\r\n"
-    "  pb::GeneratedMessage.FieldAccessorTable\r\n"
-    "    internal_$identifier$_fieldAccessorTable = new\r\n"
-    "      pb::GeneratedMessage.FieldAccessorTable(\r\n"
-    "        internal_$identifier$_descriptor,\r\n"
+    "$private$static pb::FieldAccess.FieldAccessorTable internal__$identifier$__FieldAccessorTable\r\n"
+    "    = new pb::FieldAccess.FieldAccessorTable(internal__$identifier$__Descriptor,\r\n"
     "        new string[] { ");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print(
@@ -209,16 +204,18 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "public sealed class $classname$ : pb::GeneratedMessage.ExtendableMessage<$classname$> {\r\n",
-      "classname", descriptor_->name());
+      "$access$ sealed partial class $classname$ : pb::GeneratedMessage.ExtendableMessage<$classname$> {\r\n",
+      "classname", descriptor_->name(),
+      "access", ClassAccessLevel(descriptor_->file()));
   } else {
     printer->Print(
-      "public sealed class $classname$ : pb::GeneratedMessage {\r\n",
-      "classname", descriptor_->name());
+      "$access$ sealed partial class $classname$ : pb::GeneratedMessage<$classname$, $classname$.Builder> {\r\n",
+      "classname", descriptor_->name(),
+      "access", ClassAccessLevel(descriptor_->file()));
   }
   printer->Indent();
   printer->Print(
-    "// Use $classname$.newBuilder() to construct.\r\n"
+    "// Use $classname$.CreateBuilder() to construct.\r\n"
     "private $classname$() {}\r\n"
     "\r\n"
     "private static readonly $classname$ defaultInstance = new $classname$();\r\n"
@@ -226,34 +223,44 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return defaultInstance; }\r\n"
     "}\r\n"
     "\r\n"
-    "public $classname$ DefaultInstanceForType {\r\n"
+    "public override $classname$ DefaultInstanceForType {\r\n"
     "  get { return defaultInstance; }\r\n"
     "}\r\n"
     "\r\n",
     "classname", descriptor_->name());
   printer->Print(
-    "public static pb::Descriptors.Descriptor Descriptor {\r\n"
-    "  get { return $fileclass$.internal_$identifier$_descriptor; }\r\n"
+    "public static pbd::MessageDescriptor Descriptor {\r\n"
+    "  get { return $fileclass$.internal__$identifier$__Descriptor; }\r\n"
     "}\r\n"
     "\r\n"
-    "protected pb::GeneratedMessage.FieldAccessorTable InternalGetFieldAccessorTable {\r\n"
-    "  get { return $fileclass$.internal_$identifier$_fieldAccessorTable; }\r\n"
+    "protected internal override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {\r\n"
+    "  get { return $fileclass$.internal__$identifier$__FieldAccessorTable; }\r\n"
     "}\r\n"
     "\r\n",
     "fileclass", ClassName(descriptor_->file()),
     "identifier", UniqueFileScopeIdentifier(descriptor_));
 
-  // Nested types and extensions
-  for (int i = 0; i < descriptor_->enum_type_count(); i++) {
-    EnumGenerator(descriptor_->enum_type(i)).Generate(printer);
-  }
+  if (descriptor_->enum_type_count()
+      + descriptor_->nested_type_count()
+      + descriptor_->extension_count() > 0) {
+    printer->Print("#region Nested types\r\n");
+    printer->Print("public static class Types {\r\n");
+    printer->Indent();
+    // Nested types and extensions
+    for (int i = 0; i < descriptor_->enum_type_count(); i++) {
+      EnumGenerator(descriptor_->enum_type(i)).Generate(printer);
+    }
 
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    MessageGenerator(descriptor_->nested_type(i)).Generate(printer);
-  }
+    for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+      MessageGenerator(descriptor_->nested_type(i)).Generate(printer);
+    }
 
-  for (int i = 0; i < descriptor_->extension_count(); i++) {
-    ExtensionGenerator(descriptor_->extension(i)).Generate(printer);
+    for (int i = 0; i < descriptor_->extension_count(); i++) {
+      ExtensionGenerator(descriptor_->extension(i)).Generate(printer);
+    }
+    printer->Outdent();
+    printer->Print("}\r\n");
+    printer->Print("#endregion\r\n\r\n");
   }
 
   // Fields
@@ -286,12 +293,12 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   sort(sorted_extensions.begin(), sorted_extensions.end(),
        ExtensionRangeOrdering());
 
-  printer->Print("public void writeTo(pb::CodedOutputStream output) {\r\n");
+  printer->Print("public override void WriteTo(pb::CodedOutputStream output) {\r\n");
   printer->Indent();
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "pb::GeneratedMessage.ExtendableMessage.ExtensionWriter extensionWriter = NewExtensionWriter();\r\n");
+      "pb::GeneratedMessage.ExtendableMessage.ExtensionWriter extensionWriter = CreateExtensionWriter();\r\n");
   }
 
   // Merge the fields and the extension ranges, both sorted by field number.
@@ -322,7 +329,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     "}\r\n"
     "\r\n"
     "private int memoizedSerializedSize = -1;\r\n"
-    "public int SerializedSize {\r\n");
+    "public override int SerializedSize {\r\n");
   printer->Indent();
   printer->Print("get {\r\n");
   printer->Indent();
@@ -345,7 +352,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
       "size += UnknownFields.SerializedSizeAsMessageSet;\r\n");
   } else {
     printer->Print(
-      "size += UnknownFieldsSerializedSize;\r\n");
+      "size += UnknownFields.SerializedSize;\r\n");
   }
 
   printer->Outdent();
@@ -364,38 +371,38 @@ GenerateParseFromMethods(io::Printer* printer) {
   //   because they need to be generated even for messages that are optimized
   //   for code size.
   printer->Print(
-    "public static $classname$ parseFrom(pb::ByteString data) {\r\n"
-    "  return newBuilder().mergeFrom(data).buildParsed();\r\n"
+    "public static $classname$ ParseFrom(pb::ByteString data) {\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(pb::ByteString data,\r\n"
+    "public static $classname$ ParseFrom(pb::ByteString data,\r\n"
     "    pb::ExtensionRegistry extensionRegistry) {\r\n"
-    "  return newBuilder().mergeFrom(data, extensionRegistry)\r\n"
-    "           .buildParsed();\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))\r\n"
+    "           .BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(byte[] data) {\r\n"
-    "  return newBuilder().mergeFrom(data).buildParsed();\r\n"
+    "public static $classname$ ParseFrom(byte[] data) {\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();\r\n"
     "}\r\n"
     "public static $classname$ parseFrom(byte[] data,\r\n"
     "    pb::ExtensionRegistry extensionRegistry) {\r\n"
-    "  return newBuilder().mergeFrom(data, extensionRegistry)\r\n"
-    "           .buildParsed();\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))\r\n"
+    "           .BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(global::System.IO.Stream input) {\r\n"
-    "  return newBuilder().mergeFrom(input).buildParsed();\r\n"
+    "public static $classname$ ParseFrom(global::System.IO.Stream input) {\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(\r\n"
+    "public static $classname$ ParseFrom(\r\n"
     "    global::System.IO.Stream input,\r\n"
     "    pb::ExtensionRegistry extensionRegistry) {\r\n"
-    "  return newBuilder().mergeFrom(input, extensionRegistry)\r\n"
-    "           .buildParsed();\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))\r\n"
+    "           .BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(pb::CodedInputStream input) {\r\n"
-    "  return newBuilder().mergeFrom(input).buildParsed();\r\n"
+    "public static $classname$ ParseFrom(pb::CodedInputStream input) {\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(pb::CodedInputStream input,\r\n"
+    "public static $classname$ ParseFrom(pb::CodedInputStream input,\r\n"
     "    pb::ExtensionRegistry extensionRegistry) {\r\n"
-    "  return newBuilder().mergeFrom(input, extensionRegistry)\r\n"
-    "           .buildParsed();\r\n"
+    "  return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))\r\n"
+    "           .BuildParsed();\r\n"
     "}\r\n"
     "\r\n",
     "classname", ClassName(descriptor_));
@@ -409,7 +416,7 @@ void MessageGenerator::GenerateSerializeOneField(
 void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
   printer->Print(
-    "extensionWriter.writeUntil($end$, output);\r\n",
+    "extensionWriter.WriteUntil($end$, output);\r\n",
     "end", SimpleItoa(range->end));
 }
 
@@ -417,23 +424,25 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
 
 void MessageGenerator::GenerateBuilder(io::Printer* printer) {
   printer->Print(
-    "public static Builder newBuilder() { return new Builder(); }\r\n"
-    "public Builder newBuilderForType() { return new Builder(); }\r\n"
-    "public static Builder newBuilder($classname$ prototype) {\r\n"
-    "  return new Builder().mergeFrom(prototype);\r\n"
+    "public static Builder CreateBuilder() { return new Builder(); }\r\n"
+    "public override IBuilder<$classname$> CreateBuilderForType() { return new Builder(); }\r\n"
+    "public static Builder CreateBuilder($classname$ prototype) {\r\n"
+    "  return (Builder) new Builder().MergeFrom(prototype);\r\n"
     "}\r\n"
     "\r\n",
     "classname", ClassName(descriptor_));
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "public sealed class Builder : pb::GeneratedMessage.ExtendableBuilder<\r\n"
+      "$access$ sealed partial class Builder : pb::GeneratedMessage.ExtendableBuilder<\r\n"
       "      $classname$, Builder> {\r\n",
-      "classname", ClassName(descriptor_));
+      "classname", ClassName(descriptor_),
+      "access", ClassAccessLevel(descriptor_->file()));
   } else {
     printer->Print(
-      "public sealed class Builder : pb::GeneratedMessage.Builder<Builder> {\r\n",
-      "classname", ClassName(descriptor_));
+      "$access$ sealed partial class Builder : pb::GeneratedBuilder<$classname$, Builder> {\r\n",
+      "classname", ClassName(descriptor_),
+      "access", ClassAccessLevel(descriptor_->file()));
   }
   printer->Indent();
 
@@ -460,31 +469,30 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
 
 void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
   printer->Print(
-    "// Construct using $classname$.newBuilder()\r\n"
-    "private Builder() {}\r\n"
+    "// Construct using $classname$.CreateBuilder()\r\n"
+    "internal Builder() {}\r\n"
     "\r\n"
     "$classname$ result = new $classname$();\r\n"
     "\r\n"
-    "protected $classname$ internalGetResult() {\r\n"
-    "  return result;\r\n"
+    "protected override $classname$ MessageBeingBuilt {\r\n"
+    "  get { return result; }\r\n"
     "}\r\n"
     "\r\n"
-    "public Builder clear() {\r\n"
+    "public override IBuilder<$classname$> Clear() {\r\n"
     "  result = new $classname$();\r\n"
     "  return this;\r\n"
     "}\r\n"
     "\r\n"
-    "public Builder clone() {\r\n"
-    "  return new Builder().mergeFrom(result);\r\n"
+    "public override IBuilder<$classname$> Clone() {\r\n"
+    "  return new Builder().MergeFrom(result);\r\n"
     "}\r\n"
     "\r\n"
-    "public pb::Descriptors.Descriptor\r\n"
-    "    getDescriptorForType() {\r\n"
-    "  return $classname$.getDescriptor();\r\n"
+    "public override pbd::MessageDescriptor DescriptorForType {\r\n"
+    "  get { return $classname$.Descriptor; }\r\n"
     "}\r\n"
     "\r\n"
-    "public $classname$ getDefaultInstanceForType() {\r\n"
-    "  return $classname$.getDefaultInstance();\r\n"
+    "public override $classname$ DefaultInstanceForType {\r\n"
+    "  get { return $classname$.DefaultInstance; }\r\n"
     "}\r\n"
     "\r\n",
     "classname", ClassName(descriptor_));
@@ -492,23 +500,7 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   printer->Print(
-    "public $classname$ build() {\r\n"
-    "  if (!isInitialized()) {\r\n"
-    "    throw new pb::UninitializedMessageException(\r\n"
-    "      result);\r\n"
-    "  }\r\n"
-    "  return buildPartial();\r\n"
-    "}\r\n"
-    "\r\n"
-    "private $classname$ buildParsed() {\r\n"
-    "  if (!isInitialized()) {\r\n"
-    "    throw new pb::UninitializedMessageException(\r\n"
-    "      result).asInvalidProtocolBufferException();\r\n"
-    "  }\r\n"
-    "  return buildPartial();\r\n"
-    "}\r\n"
-    "\r\n"
-    "public $classname$ buildPartial() {\r\n",
+    "public override $classname$ BuildPartial() {\r\n",
     "classname", ClassName(descriptor_));
   printer->Indent();
 
@@ -527,21 +519,22 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
+  //TODO(jonskeet): Work out what this is really for...
   if (descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
     printer->Print(
-      "public Builder mergeFrom(pb::Message other) {\r\n"
-      "  if (other instanceof $classname$) {\r\n"
-      "    return mergeFrom(($classname$)other);\r\n"
+      "public override IBuilder MergeFrom(pb::IMessage other) {\r\n"
+      "  if (other is $classname$) {\r\n"
+      "    return MergeFrom(($classname$) other);\r\n"
       "  } else {\r\n"
-      "    super.mergeFrom(other);\r\n"
+      "    base.MergeFrom(other);\r\n"
       "    return this;\r\n"
       "  }\r\n"
       "}\r\n"
       "\r\n"
-      "public Builder mergeFrom($classname$ other) {\r\n"
+      "public override IBuilder<$classname$> MergeFrom($classname$ other) {\r\n"
       // Optimization:  If other is the default instance, we know none of its
       //   fields are set so we can skip the merge.
-      "  if (other == $classname$.getDefaultInstance()) return this;\r\n",
+      "  if (other == $classname$.DefaultInstance) return this;\r\n",
       "classname", ClassName(descriptor_));
     printer->Indent();
 
@@ -551,7 +544,7 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
 
     printer->Outdent();
     printer->Print(
-      "  this.mergeUnknownFields(other.getUnknownFields());\r\n"
+      "  this.MergeUnknownFields(other.UnknownFields);\r\n"
       "  return this;\r\n"
       "}\r\n"
       "\r\n");
@@ -565,37 +558,33 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
     SortFieldsByNumber(descriptor_));
 
   printer->Print(
-    "public Builder mergeFrom(\r\n"
-    "    pb::CodedInputStream input) {\r\n"
-    "  return mergeFrom(input,\r\n"
-    "    pb::ExtensionRegistry.getEmptyRegistry());\r\n"
+    "public override IBuilder<$classname$> MergeFrom(pb::CodedInputStream input) {\r\n"
+    "  return MergeFrom(input, pb::ExtensionRegistry.Empty);\r\n"
     "}\r\n"
     "\r\n"
-    "public Builder mergeFrom(\r\n"
-    "    pb::CodedInputStream input,\r\n"
-    "    pb::ExtensionRegistry extensionRegistry) {\r\n");
+    "public override IBuilder<$classname$> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {\r\n",
+    "classname", ClassName(descriptor_));
   printer->Indent();
 
   printer->Print(
     "pb::UnknownFieldSet.Builder unknownFields =\r\n"
-    "  pb::UnknownFieldSet.newBuilder(\r\n"
-    "    this.getUnknownFields());\r\n"
+    "  pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);\r\n"
     "while (true) {\r\n");
   printer->Indent();
 
   printer->Print(
-    "int tag = input.readTag();\r\n"
+    "uint tag = input.ReadTag();\r\n"
     "switch (tag) {\r\n");
   printer->Indent();
 
   printer->Print(
     "case 0:\r\n"          // zero signals EOF / limit reached
-    "  this.setUnknownFields(unknownFields.build());\r\n"
+    "  this.UnknownFields = unknownFields.Build();\r\n"
     "  return this;\r\n"
     "default: {\r\n"
-    "  if (!parseUnknownField(input, unknownFields,\r\n"
+    "  if (!ParseUnknownField(input, unknownFields,\r\n"
     "                         extensionRegistry, tag)) {\r\n"
-    "    this.setUnknownFields(unknownFields.build());\r\n"
+    "    this.UnknownFields = unknownFields.Build();\r\n"
     "    return this;\r\n"   // it's an endgroup tag
     "  }\r\n"
     "  break;\r\n"
@@ -632,8 +621,9 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
 // ===================================================================
 
 void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
-  printer->Print(
-    "public final boolean isInitialized() {\r\n");
+  printer->Print("public override bool IsInitialized {\r\n");
+  printer->Indent();
+  printer->Print("get {\r\n");
   printer->Indent();
 
   // Check that all required fields in this message are set.
@@ -657,22 +647,22 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       switch (field->label()) {
         case FieldDescriptor::LABEL_REQUIRED:
           printer->Print(
-            "if (!get$name$().isInitialized()) return false;\r\n",
+            "if (!$name$.IsInitialized) return false;\r\n",
             "type", ClassName(field->message_type()),
             "name", UnderscoresToCapitalizedCamelCase(field));
           break;
         case FieldDescriptor::LABEL_OPTIONAL:
           printer->Print(
-            "if (has$name$()) {\r\n"
-            "  if (!get$name$().isInitialized()) return false;\r\n"
+            "if (Has$name$) {\r\n"
+            "  if (!$name$.IsInitialized) return false;\r\n"
             "}\r\n",
             "type", ClassName(field->message_type()),
             "name", UnderscoresToCapitalizedCamelCase(field));
           break;
         case FieldDescriptor::LABEL_REPEATED:
           printer->Print(
-            "for ($type$ element : get$name$List()) {\r\n"
-            "  if (!element.isInitialized()) return false;\r\n"
+            "foreach ($type$ element in $name$List) {\r\n"
+            "  if (!element.IsInitialized) return false;\r\n"
             "}\r\n",
             "type", ClassName(field->message_type()),
             "name", UnderscoresToCapitalizedCamelCase(field));
@@ -689,6 +679,9 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
   printer->Outdent();
   printer->Print(
     "  return true;\r\n"
+    "}\r\n");
+  printer->Outdent();
+  printer->Print(
     "}\r\n"
     "\r\n");
 }

@@ -16,7 +16,7 @@ namespace Google.ProtocolBuffers {
 
     private readonly UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
 
-    protected internal abstract FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors { get; }
+    protected internal abstract FieldAccessorTable InternalFieldAccessors { get; }
 
     public override MessageDescriptor DescriptorForType {
       get { return InternalFieldAccessors.Descriptor; }
@@ -30,13 +30,9 @@ namespace Google.ProtocolBuffers {
       return CreateBuilderForType();
     }
 
-    public IMessage<TMessage> DefaultInstanceForType {
-      get { throw new NotImplementedException(); }
-    }
+    public abstract TMessage DefaultInstanceForType { get; }
 
-    public IBuilder<TMessage> CreateBuilderForType() {
-      throw new NotImplementedException();
-    }
+    public abstract IBuilder<TMessage> CreateBuilderForType();
 
     private IDictionary<FieldDescriptor, Object> GetMutableFieldMap() {
 
@@ -44,7 +40,7 @@ namespace Google.ProtocolBuffers {
       var ret = new SortedList<FieldDescriptor, object>();
       MessageDescriptor descriptor = DescriptorForType;
       foreach (FieldDescriptor field in descriptor.Fields) {
-        IFieldAccessor<TMessage, TBuilder> accessor = InternalFieldAccessors[field];
+        IFieldAccessor accessor = InternalFieldAccessors[field];
         if ((field.IsRepeated && accessor.GetRepeatedCount(this) != 0)
             || accessor.Has(this)) {
           ret[field] = accessor.GetValue(this);

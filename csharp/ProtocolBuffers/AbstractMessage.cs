@@ -13,11 +13,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
@@ -56,7 +54,7 @@ namespace Google.ProtocolBuffers {
     }
     #endregion
 
-    public bool IsInitialized {
+    public virtual bool IsInitialized {
       get {
         // Check that all required fields are present.
         foreach (FieldDescriptor field in DescriptorForType.Fields) {
@@ -92,7 +90,7 @@ namespace Google.ProtocolBuffers {
       return TextFormat.PrintToString(this);
     }
 
-    public void WriteTo(CodedOutputStream output) {
+    public virtual void WriteTo(CodedOutputStream output) {
       foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
         FieldDescriptor field = entry.Key;
         if (field.IsRepeated) {
@@ -107,14 +105,14 @@ namespace Google.ProtocolBuffers {
       }
 
       UnknownFieldSet unknownFields = UnknownFields;
-      if (DescriptorForType.Options.IsMessageSetWireFormat) {
+      if (DescriptorForType.Options.MessageSetWireFormat) {
         unknownFields.WriteAsMessageSetTo(output);
       } else {
         unknownFields.WriteTo(output);
       }
     }
 
-    public int SerializedSize {
+    public virtual int SerializedSize {
       get {
         int size = memoizedSize;
         if (size != -1) {
@@ -134,7 +132,7 @@ namespace Google.ProtocolBuffers {
         }
 
         UnknownFieldSet unknownFields = UnknownFields;
-        if (DescriptorForType.Options.IsMessageSetWireFormat) {
+        if (DescriptorForType.Options.MessageSetWireFormat) {
           size += unknownFields.SerializedSizeAsMessageSet;
         } else {
           size += unknownFields.SerializedSize;
@@ -184,73 +182,5 @@ namespace Google.ProtocolBuffers {
       hash = (53 * hash) + AllFields.GetHashCode();
       return hash;
     }
-
-    #region IMessage Members
-
-    MessageDescriptor IMessage.DescriptorForType {
-      get { throw new NotImplementedException(); }
-    }
-
-    IDictionary<FieldDescriptor, object> IMessage.AllFields {
-      get { throw new NotImplementedException(); }
-    }
-
-    bool IMessage.HasField(FieldDescriptor field) {
-      throw new NotImplementedException();
-    }
-
-    object IMessage.this[FieldDescriptor field] {
-      get { throw new NotImplementedException(); }
-    }
-
-    int IMessage.GetRepeatedFieldCount(FieldDescriptor field) {
-      throw new NotImplementedException();
-    }
-
-    object IMessage.this[FieldDescriptor field, int index] {
-      get { throw new NotImplementedException(); }
-    }
-
-    UnknownFieldSet IMessage.UnknownFields {
-      get { throw new NotImplementedException(); }
-    }
-
-    bool IMessage.IsInitialized {
-      get { throw new NotImplementedException(); }
-    }
-
-    void IMessage.WriteTo(CodedOutputStream output) {
-      throw new NotImplementedException();
-    }
-
-    int IMessage.SerializedSize {
-      get { throw new NotImplementedException(); }
-    }
-
-    bool IMessage.Equals(object other) {
-      throw new NotImplementedException();
-    }
-
-    int IMessage.GetHashCode() {
-      throw new NotImplementedException();
-    }
-
-    string IMessage.ToString() {
-      throw new NotImplementedException();
-    }
-
-    ByteString IMessage.ToByteString() {
-      throw new NotImplementedException();
-    }
-
-    byte[] IMessage.ToByteArray() {
-      throw new NotImplementedException();
-    }
-
-    void IMessage.WriteTo(Stream output) {
-      throw new NotImplementedException();
-    }
-
-    #endregion
   }
 }

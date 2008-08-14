@@ -121,7 +121,7 @@ namespace Google.ProtocolBuffers {
         uint tag) {
       MessageDescriptor type = builder.DescriptorForType;
 
-      if (type.Options.IsMessageSetWireFormat
+      if (type.Options.MessageSetWireFormat
           && tag == WireFormat.MessageSetTag.ItemStart) {
         MergeMessageSetExtensionFromCodedStream(input, unknownFields, extensionRegistry, builder);
         return true;
@@ -524,7 +524,7 @@ namespace Google.ProtocolBuffers {
     /// Writes a single field to a CodedOutputStream.
     /// </summary>
     public void WriteField(FieldDescriptor field, Object value, CodedOutputStream output) {
-      if (field.IsExtension && field.ContainingType.Options.IsMessageSetWireFormat) {
+      if (field.IsExtension && field.ContainingType.Options.MessageSetWireFormat) {
         output.WriteMessageSetExtension(field.FieldNumber, (IMessage) value);
       } else {
         if (field.IsRepeated) {
@@ -548,7 +548,7 @@ namespace Google.ProtocolBuffers {
           FieldDescriptor field = entry.Key;
           object value = entry.Value;
 
-          if (field.IsExtension && field.ContainingType.Options.IsMessageSetWireFormat) {
+          if (field.IsExtension && field.ContainingType.Options.MessageSetWireFormat) {
             size += CodedOutputStream.ComputeMessageSetExtensionSize(field.FieldNumber, (IMessage) value);
           } else {
             if (field.IsRepeated) {

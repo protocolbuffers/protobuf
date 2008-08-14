@@ -104,8 +104,8 @@ string StripProto(const string& filename) {
 }
 
 string FileClassName(const FileDescriptor* file) {
-  if (file->options().has_csharp_outer_classname()) {
-    return file->options().csharp_outer_classname();
+  if (file->options().has_csharp_file_classname()) {
+    return file->options().csharp_file_classname();
   } else {
     string basename;
     string::size_type last_slash = file->name().find_last_of('/');
@@ -118,7 +118,7 @@ string FileClassName(const FileDescriptor* file) {
   }
 }
 
-string FileJavaPackage(const FileDescriptor* file) {
+string FileCSharpNamespace(const FileDescriptor* file) {
   if (file->options().has_csharp_namespace()) {
     return file->options().csharp_namespace();
   } else {
@@ -131,97 +131,104 @@ string FileJavaPackage(const FileDescriptor* file) {
   }
 }
 
-string ToJavaName(const string& full_name, const FileDescriptor* file) {
+string ToCSharpName(const string& full_name, const FileDescriptor* file) {
   string result;
-  if (file->options().csharp_multiple_files()) {
-    result = FileJavaPackage(file);
+  if (!file->options().csharp_nest_classes()) {
+    result = "";
   } else {
     result = ClassName(file);
   }
   if (!result.empty()) {
     result += '.';
   }
+  string classname;
   if (file->package().empty()) {
-    result += full_name;
+    classname = full_name;
   } else {
     // Strip the proto package from full_name since we've replaced it with
-    // the Java package.
-    result += full_name.substr(file->package().size() + 1);
+    // the C# package.
+    classname = full_name.substr(file->package().size() + 1);
   }
-  return result;
+  result += StringReplace(classname, ".", ".Types.", true);
+  const char *prefix = FileCSharpNamespace(file).empty() ? "global::" : "self::";
+  return prefix + result;
 }
 
 string ClassName(const FileDescriptor* descriptor) {
-  string result = FileJavaPackage(descriptor);
-  if (!result.empty()) result += '.';
-  result += FileClassName(descriptor);
-  return result;
+  string alias = FileCSharpNamespace(descriptor).empty() ? "global::" : "self::";
+  return alias + FileClassName(descriptor);
 }
 
-JavaType GetJavaType(FieldDescriptor::Type field_type) {
+MappedType GetMappedType(FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_SINT32:
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED32:
-      return JAVATYPE_INT;
+      return MAPPEDTYPE_INT;
 
     case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      return JAVATYPE_LONG;
+      return MAPPEDTYPE_LONG;
 
     case FieldDescriptor::TYPE_FLOAT:
-      return JAVATYPE_FLOAT;
+      return MAPPEDTYPE_FLOAT;
 
     case FieldDescriptor::TYPE_DOUBLE:
-      return JAVATYPE_DOUBLE;
+      return MAPPEDTYPE_DOUBLE;
 
     case FieldDescriptor::TYPE_BOOL:
-      return JAVATYPE_BOOLEAN;
+      return MAPPEDTYPE_BOOLEAN;
 
     case FieldDescriptor::TYPE_STRING:
-      return JAVATYPE_STRING;
+      return MAPPEDTYPE_STRING;
 
     case FieldDescriptor::TYPE_BYTES:
-      return JAVATYPE_BYTES;
+      return MAPPEDTYPE_BYTES;
 
     case FieldDescriptor::TYPE_ENUM:
-      return JAVATYPE_ENUM;
+      return MAPPEDTYPE_ENUM;
 
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
-      return JAVATYPE_MESSAGE;
+      return MAPPEDTYPE_MESSAGE;
 
     // No default because we want the compiler to complain if any new
     // types are added.
   }
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return JAVATYPE_INT;
+  return MAPPEDTYPE_INT;
 }
 
-const char* BoxedPrimitiveTypeName(JavaType type) {
+const char* MappedTypeName(MappedType type) {
   switch (type) {
-    case JAVATYPE_INT    : return "int";
-    case JAVATYPE_LONG   : return "long";
-    case JAVATYPE_FLOAT  : return "float";
-    case JAVATYPE_DOUBLE : return "double";
-    case JAVATYPE_BOOLEAN: return "bool";
-    case JAVATYPE_STRING : return "string";
-    case JAVATYPE_BYTES  : return "pb::ByteString";
-    case JAVATYPE_ENUM   : return NULL;
-    case JAVATYPE_MESSAGE: return NULL;
+    case MAPPEDTYPE_INT    : return "int";
+    case MAPPEDTYPE_LONG   : return "long";
+    case MAPPEDTYPE_UINT    : return "uint";
+    case MAPPEDTYPE_ULONG   : return "ulong";
+    case MAPPEDTYPE_FLOAT  : return "float";
+    case MAPPEDTYPE_DOUBLE : return "double";
+    case MAPPEDTYPE_BOOLEAN: return "bool";
+    case MAPPEDTYPE_STRING : return "string";
+    case MAPPEDTYPE_BYTES  : return "pb::ByteString";
+    case MAPPEDTYPE_ENUM   : return NULL;
+    case MAPPEDTYPE_MESSAGE: return NULL;
 
     // No default because we want the compiler to complain if any new
-    // JavaTypes are added.
+    // MappedTypes are added.
   }
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
+}
+
+const char* ClassAccessLevel(const FileDescriptor* file) {
+  return file->options().csharp_public_classes() ? "public" : "internal";
 }
 
 }  // namespace csharp

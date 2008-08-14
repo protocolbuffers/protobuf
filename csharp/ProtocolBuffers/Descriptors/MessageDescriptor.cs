@@ -16,5 +16,12 @@ namespace Google.ProtocolBuffers.Descriptors {
     internal FieldDescriptor FindFieldByNumber(int fieldNumber) {
       throw new System.NotImplementedException();
     }
+
+    /// <value>
+    /// List of message types nested within this one.
+    /// </value>
+    public IList<MessageDescriptor> NestedTypes {
+      get { throw new System.NotImplementedException(); }
+    }
   }
 }

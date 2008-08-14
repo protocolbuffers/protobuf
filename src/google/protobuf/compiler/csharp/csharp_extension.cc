@@ -40,17 +40,17 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
   vars["containing_type"] = ClassName(descriptor_->containing_type());
   vars["index"] = SimpleItoa(descriptor_->index());
 
-  JavaType csharp_type = GetJavaType(descriptor_);
+  MappedType mapped_type = GetMappedType(descriptor_);
   string singular_type;
-  switch (csharp_type) {
-    case JAVATYPE_MESSAGE:
+  switch (mapped_type) {
+    case MAPPEDTYPE_MESSAGE:
       vars["type"] = ClassName(descriptor_->message_type());
       break;
-    case JAVATYPE_ENUM:
+    case MAPPEDTYPE_ENUM:
       vars["type"] = ClassName(descriptor_->enum_type());
       break;
     default:
-      vars["type"] = BoxedPrimitiveTypeName(csharp_type);
+      vars["type"] = MappedTypeName(mapped_type);
       break;
   }
 

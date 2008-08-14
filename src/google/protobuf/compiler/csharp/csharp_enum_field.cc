@@ -68,20 +68,25 @@ EnumFieldGenerator::~EnumFieldGenerator() {}
 void EnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private boolean has$capitalized_name$;\r\n"
+    "private bool has$capitalized_name$;\r\n"
     "private $type$ $name$_ = $default$;\r\n"
-    "public boolean Has$capitalized_name$() { return has$capitalized_name$; }\r\n"
-    "public $type$ Get$capitalized_name$() { return $name$_; }\r\n");
+    "public bool Has$capitalized_name$ {\r\n"
+    "  get { return has$capitalized_name$; }\r\n"
+    "}\r\n"
+    "public $type$ $capitalized_name$ {"
+    "  get { return $name$_; }"
+    "}\r\n");
 }
 
 void EnumFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public boolean Has$capitalized_name$() {\r\n"
-    "  return result.Has$capitalized_name$();\r\n"
+    "public bool Has$capitalized_name$ {\r\n"
+    "  get { return result.Has$capitalized_name$; }\r\n"
     "}\r\n"
-    "public $type$ Get$capitalized_name$() {\r\n"
-    "  return result.Get$capitalized_name$();\r\n"
+    "public $type$ $capitalized_name$ {\r\n"
+    "  get { return result.$capitalized_name$; }\r\n"
+    "  set { Set$capitalized_name$(value); }\r\n"
     "}\r\n"
     "public Builder Set$capitalized_name$($type$ value) {\r\n"
     "  result.has$capitalized_name$ = true;\r\n"
@@ -98,8 +103,8 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (other.has$capitalized_name$()) {\r\n"
-    "  set$capitalized_name$(other.get$capitalized_name$());\r\n"
+    "if (other.Has$capitalized_name$) {\r\n"
+    "  $capitalized_name$ = other.$capitalized_name$;\r\n"
     "}\r\n");
 }
 
@@ -111,34 +116,30 @@ GenerateBuildingCode(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "int rawValue = input.readEnum();\r\n"
-    "$type$ value = $type$.valueOf(rawValue);\r\n"
-    "if (value == null) {\r\n"
-    "  unknownFields.mergeVarintField($number$, rawValue);\r\n"
+    // TODO(jonskeet): Make a more efficient way of doing this
+    "int rawValue = input.ReadEnum();\r\n"
+    "if (!global::System.Enum.IsDefined(typeof($type$), rawValue)) {\r\n"
+    "  unknownFields.MergeVarintField($number$, (ulong) rawValue);\r\n"
     "} else {\r\n"
-    "  set$capitalized_name$(value);\r\n"
+    "  $capitalized_name$ = ($type$) rawValue;\r\n"
     "}\r\n");
 }
 
 void EnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\r\n"
-    "  output.writeEnum($number$, get$capitalized_name$().getNumber());\r\n"
+    "if (Has$capitalized_name$) {\r\n"
+    "  output.WriteEnum($number$, (int) $capitalized_name$);\r\n"
     "}\r\n");
 }
 
 void EnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\r\n"
+    "if (Has$capitalized_name$) {\r\n"
     "  size += pb::CodedOutputStream\r\n"
-    "    .computeEnumSize($number$, get$capitalized_name$().getNumber());\r\n"
+    "    .ComputeEnumSize($number$, (int) $capitalized_name$);\r\n"
     "}\r\n");
-}
-
-string EnumFieldGenerator::GetBoxedType() const {
-  return ClassName(descriptor_->enum_type());
 }
 
 // ===================================================================
@@ -154,17 +155,19 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 void RepeatedEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private System.Collections.Generic.List<$type$> $name$_ =\r\n"
-    "  new System.Collections.Generic.List<$type$> ();\r\n"
-    "public System.Collections.Generic.List<$type$> $capitalized_name$List() {\r\n"
-    "  return $name$_.AsReadOnly ();\r\n"   // note:  unmodifiable list
+    "private scg::IList<$type$> $name$_ = new scg::List<$type$> ();\r\n"
+    "public scg.IList<$type$> $capitalized_name$List {\r\n"
+    "  get { return pbc::Lists.AsReadOnly($name$_); }\r\n"   // note:  unmodifiable list
     "}\r\n"
 
     // Redundant API calls?
-    //"public int $capitalized_name$Count() { get { return $name$_.Count; } }\r\n"
-    //"public $type$ get$capitalized_name$(int index) {\r\n"
-    //"  return $name$_.get(index);\r\n"
-    //"}\r\n"
+    // TODO(jonskeet): Possibly. Include for portability to start with though.
+    "public int $capitalized_name$Count {\r\n"
+    "  get { return $name$_.Count; }\r\n"
+    "}\r\n"
+    "public $type$ Get$capitalized_name$(int index) {\r\n"
+    "  return $name$_[index];\r\n"
+    "}\r\n"
     );
 }
 
@@ -175,36 +178,35 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
-    "public global::System.Collections.Generic::IList<$type$> get$capitalized_name$List() {\r\n"
-    "  return java.util.Collections.unmodifiableList(result.$name$_);\r\n"
+    "public global::System.Collections.Generic::IList<$type$> $capitalized_name$List {\r\n"
+    "  get { return pbc::Lists.AsReadOnly(result.$name$_); }\r\n"
     "}\r\n"
-    "public int get$capitalized_name$Count() {\r\n"
-    "  return result.get$capitalized_name$Count();\r\n"
+    "public int $capitalized_name$Count {\r\n"
+    "  get { return result.get$capitalized_name$Count; } \r\n"
     "}\r\n"
-    "public $type$ get$capitalized_name$(int index) {\r\n"
-    "  return result.get$capitalized_name$(index);\r\n"
+    "public $type$ Get$capitalized_name$(int index) {\r\n"
+    "  return result.Get$capitalized_name$(index);\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$(int index, $type$ value) {\r\n"
-    "  result.$name$_.set(index, value);\r\n"
+    "public Builder Set$capitalized_name$(int index, $type$ value) {\r\n"
+    "  result.$name$_[index] = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder add$capitalized_name$($type$ value) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  result.$name$_.add(value);\r\n"
+    "  result.$name$_.Add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder addAll$capitalized_name$<T>(\r\n"
-    "    global::System.Collections.Generic.IEnumerable<T> values) where T : $type$ {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
+    "public Builder AddAll$capitalized_name$(scg::IEnumerable<$type$> values) {\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  super.addAll(values, result.$name$_);\r\n"
+    "  base.AddRange(values, result.$name$_);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder clear$capitalized_name$() {\r\n"
-    "  result.$name$_ = java.util.Collections.emptyList();\r\n"
+    "public Builder Clear$capitalized_name$() {\r\n"
+    "  result.$name$_ = pbc::Lists<$type$>.Empty;\r\n"
     "  return this;\r\n"
     "}\r\n");
 }
@@ -212,54 +214,47 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
+    "if (other.$name$_.Count != 0) {\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  result.$name$_.addAll(other.$name$_);\r\n"
+    "  base.AddRange(other.$name$_, result.$name$_);\r\n"
     "}\r\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (result.$name$_ != java.util.Collections.EMPTY_LIST) {\r\n"
-    "  result.$name$_ =\r\n"
-    "    java.util.Collections.unmodifiableList(result.$name$_);\r\n"
-    "}\r\n");
+    "result.$name$_ = pbc::Lists.AsReadOnly(result.$name$_);\r\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "int rawValue = input.readEnum();\r\n"
+    "int rawValue = input.ReadEnum();\r\n"
     "$type$ value = $type$.valueOf(rawValue);\r\n"
     "if (value == null) {\r\n"
-    "  unknownFields.mergeVarintField($number$, rawValue);\r\n"
+    "  unknownFields.MergeVarintField($number$, rawValue);\r\n"
     "} else {\r\n"
-    "  add$capitalized_name$(value);\r\n"
+    "  Add$capitalized_name$(value);\r\n"
     "}\r\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\r\n"
-    "  output.writeEnum($number$, element.getNumber());\r\n"
+    "foreach ($type$ element in $capitalized_name$List) {\r\n"
+    "  output.WriteEnum($number$, element.Number);\r\n"
     "}\r\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\r\n"
+    "foreach ($type$ element in $capitalized_name$List) {\r\n"
     "  size += pb::CodedOutputStream\r\n"
-    "    .computeEnumSize($number$, element.getNumber());\r\n"
+    "    .ComputeEnumSize($number$, element.Number);\r\n"
     "}\r\n");
-}
-
-string RepeatedEnumFieldGenerator::GetBoxedType() const {
-  return ClassName(descriptor_->enum_type());
 }
 
 }  // namespace csharp

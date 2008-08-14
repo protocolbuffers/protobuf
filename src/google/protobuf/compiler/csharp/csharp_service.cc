@@ -62,12 +62,12 @@ void ServiceGenerator::Generate(io::Printer* printer) {
   printer->Print(
     "\r\n"
     "public static final\r\n"
-    "    pb::Descriptors.ServiceDescriptor\r\n"
+    "    pbd::ServiceDescriptor\r\n"
     "    getDescriptor() {\r\n"
     "  return $file$.getDescriptor().getServices().get($index$);\r\n"
     "}\r\n"
-    "public final pb::Descriptors.ServiceDescriptor\r\n"
-    "    getDescriptorForType() {\r\n"
+    "public final pbd::ServiceDescriptor\r\n"
+    "    DescriptorForType {\r\n"
     "  return getDescriptor();\r\n"
     "}\r\n",
     "file", ClassName(descriptor_->file()),
@@ -87,14 +87,14 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
   printer->Print(
     "\r\n"
     "public final void callMethod(\r\n"
-    "    pb::Descriptors.MethodDescriptor method,\r\n"
+    "    pbd::MethodDescriptor method,\r\n"
     "    pb::RpcController controller,\r\n"
-    "    pb::Message request,\r\n"
+    "    pb::IMessage request,\r\n"
     "    pb::RpcCallback<\r\n"
     "      pb::Message> done) {\r\n"
     "  if (method.getService() != getDescriptor()) {\r\n"
-    "    throw new java.lang.IllegalArgumentException(\r\n"
-    "      \"Service.callMethod() given method descriptor for wrong \" +\r\n"
+    "    throw new global::System.ArgumentException(\r\n"
+    "      \"Service.CallMethod() given method descriptor for wrong \" +\r\n"
     "      \"service type.\");\r\n"
     "  }\r\n"
     "  switch(method.getIndex()) {\r\n");
@@ -118,7 +118,7 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
   printer->Print(
     "default:\r\n"
-    "  throw new java.lang.RuntimeException(\"Can't get here.\");\r\n");
+    "  throw new global::System.InvalidOperationException(\"Can't get here.\");\r\n");
 
   printer->Outdent();
   printer->Outdent();
@@ -133,14 +133,14 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
                                             io::Printer* printer) {
   printer->Print(
     "public final pb::Message\r\n"
-    "    get$request_or_response$Prototype(\r\n"
-    "    pb::Descriptors.MethodDescriptor method) {\r\n"
+    "    Get$request_or_response$Prototype(\r\n"
+    "    pbd::MethodDescriptor method) {\r\n"
     "  if (method.getService() != getDescriptor()) {\r\n"
-    "    throw new java.lang.IllegalArgumentException(\r\n"
-    "      \"Service.get$request_or_response$Prototype() given method \" +\r\n"
+    "    throw new global::System.ArgumentException(\r\n"
+    "      \"Service.Get$request_or_response$Prototype() given method \" +\r\n"
     "      \"descriptor for wrong service type.\");\r\n"
     "  }\r\n"
-    "  switch(method.getIndex()) {\r\n",
+    "  switch(method.Index) {\r\n",
     "request_or_response", (which == REQUEST) ? "Request" : "Response");
   printer->Indent();
   printer->Indent();
@@ -153,12 +153,12 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
       (which == REQUEST) ? method->input_type() : method->output_type());
     printer->Print(vars,
       "case $index$:\r\n"
-      "  return $type$.getDefaultInstance();\r\n");
+      "  return $type$.DefaultInstance;\r\n");
   }
 
   printer->Print(
     "default:\r\n"
-    "  throw new java.lang.RuntimeException(\"Can't get here.\");\r\n");
+    "  throw new global::System.ArgumentException(\"Can't get here.\");\r\n");
 
   printer->Outdent();
   printer->Outdent();
@@ -205,14 +205,14 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
       "    $input$ request,\r\n"
       "    pb::RpcCallback<$output$> done) {\r\n"
       "  channel.callMethod(\r\n"
-      "    getDescriptor().getMethods().get($index$),\r\n"
+      "    Descriptor.Methods[$index$],\r\n"
       "    controller,\r\n"
       "    request,\r\n"
-      "    $output$.getDefaultInstance(),\r\n"
+      "    $output$.DefaultInstance,\r\n"
       "    pb::RpcUtil.generalizeCallback(\r\n"
       "      done,\r\n"
       "      typeof ($output$),\r\n"
-      "      $output$.getDefaultInstance()));\r\n"
+      "      $output$.DefaultInstance));\r\n"
       "}\r\n");
   }
 

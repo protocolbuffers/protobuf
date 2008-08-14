@@ -24,7 +24,7 @@ namespace Google.ProtocolBuffers {
   /// </summary>
   public class InvalidProtocolBufferException : IOException {
 
-    private InvalidProtocolBufferException(string message)
+    internal InvalidProtocolBufferException(string message)
       : base(message) {
     }
 

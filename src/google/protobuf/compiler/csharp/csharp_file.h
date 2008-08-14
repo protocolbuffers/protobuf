@@ -56,8 +56,7 @@ class FileGenerator {
   // If we aren't putting everything into one file, this will write all the
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).
-  void GenerateSiblings(const string& package_dir,
-                        OutputDirectory* output_directory,
+  void GenerateSiblings(OutputDirectory* output_directory,
                         vector<string>* file_list);
 
   const string& csharp_namespace() { return csharp_namespace_; }

@@ -51,19 +51,19 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
 
 FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field) {
   if (field->is_repeated()) {
-    switch (GetJavaType(field)) {
-      case JAVATYPE_MESSAGE:
+    switch (GetMappedType(field)) {
+      case MAPPEDTYPE_MESSAGE:
         return new RepeatedMessageFieldGenerator(field);
-      case JAVATYPE_ENUM:
+      case MAPPEDTYPE_ENUM:
         return new RepeatedEnumFieldGenerator(field);
       default:
         return new RepeatedPrimitiveFieldGenerator(field);
     }
   } else {
-    switch (GetJavaType(field)) {
-      case JAVATYPE_MESSAGE:
+    switch (GetMappedType(field)) {
+      case MAPPEDTYPE_MESSAGE:
         return new MessageFieldGenerator(field);
-      case JAVATYPE_ENUM:
+      case MAPPEDTYPE_ENUM:
         return new EnumFieldGenerator(field);
       default:
         return new PrimitiveFieldGenerator(field);

@@ -70,7 +70,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
     // TODO(jonskeet): Change CONSTANT_CASE into PascalCase
     printer->Print(vars,
-      "[pb::DescriptorIndex($index$)]\r\n"
+      "[pbd::EnumDescriptorIndex($index$)]\r\n"
       "$name$ = $number$,\r\n");
   }
   printer->Outdent();

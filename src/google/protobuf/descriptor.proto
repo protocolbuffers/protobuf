@@ -28,8 +28,11 @@ package google.protobuf;
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
 
-option csharp_namespace = "Google.ProtocolBuffers";
-option csharp_outer_classname = "DescriptorProtos";
+option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
+option csharp_file_classname = "DescriptorProtoFile";
+option csharp_multiple_files = false;
+option csharp_nest_classes = false;
+option csharp_public_classes = true;
 
 // descriptor.proto must be optimized for speed because reflection-based
 // algorithms don't work during bootstrapping.
@@ -223,10 +226,35 @@ message FileOptions {
   optional OptimizeMode optimize_for = 9 [default=CODE_SIZE];
   
   
-  // C# stuff... remove eventually?
+  // C# stuff... generalise to .NET?
+  // Sets the namespace where classes generated from this .proto will be
+  // placed. By default, the proto package is used. Unlike the Java
+  // generator, the C# generator does *not* create a directory structure
+  // based on the namespace.
   optional string csharp_namespace = 1000;
-  optional string csharp_outer_classname = 1001;
-  optional bool csharp_multiple_files = 1002;
+  
+  // One class is generated to represent the .proto file as a whole.
+  // It contains the file's descriptor as well as any top-level
+  // extensions.
+  optional string csharp_file_classname = 1001;
+  
+  // If set true, the C# generator will generate a separate .cs file
+  // for each top-level message, enum and service defined in the .proto
+  // file. Otherwise, a single .cs file will be generated.
+  optional bool csharp_multiple_files = 1002 [default=false];
+  
+  // If set true, the C# generator will use the "whole .proto file" class
+  // as a container for all the other classes. This value is independent
+  // of csharp_multiple_files - using partial types, the C# generator
+  // can still nest classes even when generating multiple files,
+  // and C# allows multiple public top-level classes in the same
+  // file.
+  optional bool csharp_nest_classes = 1003 [default=false];
+  
+  // If set true, the C# generator will make all its generated classes
+  // public. If set false, classes will be internal (i.e. only
+  // visible within the same assembly).
+  optional bool csharp_public_classes = 1004 [default=true];
 }
 
 message MessageOptions {

@@ -25,7 +25,6 @@ namespace Google.ProtocolBuffers {
     protected abstract IMessage BuildPartialImpl();
     protected abstract IBuilder CloneImpl();
     protected abstract IMessage DefaultInstanceForTypeImpl { get; }
-    protected abstract IBuilder CreateBuilderForFieldImpl(FieldDescriptor field);
     protected abstract IBuilder ClearFieldImpl(FieldDescriptor field);
     protected abstract IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value);
     #endregion
@@ -47,9 +46,7 @@ namespace Google.ProtocolBuffers {
       get { return DefaultInstanceForTypeImpl; }
     }
 
-    IBuilder IBuilder.CreateBuilderForField(FieldDescriptor field) {
-      return CreateBuilderForFieldImpl(field);
-    }
+    public abstract IBuilder CreateBuilderForField(FieldDescriptor field);
 
     IBuilder IBuilder.ClearField(FieldDescriptor field) {
       return ClearFieldImpl(field);
@@ -67,7 +64,7 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
-    public IBuilder MergeFrom(IMessage other) {
+    public virtual IBuilder MergeFrom(IMessage other) {
       if (other.DescriptorForType != DescriptorForType) {
         throw new ArgumentException("MergeFrom(Message) can only merge messages of the same type.");
       }
@@ -106,18 +103,18 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
-    public IBuilder MergeFrom(CodedInputStream input) {
-      return MergeFrom(input, ExtensionRegistry.Empty);
+    IBuilder IBuilder.MergeFrom(CodedInputStream input) {
+      return ((IBuilder)this).MergeFrom(input, ExtensionRegistry.Empty);
     }
 
-    public IBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+    IBuilder IBuilder.MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
       FieldSet.MergeFrom(input, unknownFields, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
       return this;
     }
 
-    public IBuilder MergeUnknownFields(UnknownFieldSet unknownFields) {
+    IBuilder IBuilder.MergeUnknownFields(UnknownFieldSet unknownFields) {
       UnknownFields = UnknownFieldSet.CreateBuilder(UnknownFields)
           .MergeFrom(unknownFields)
           .Build();
@@ -126,44 +123,44 @@ namespace Google.ProtocolBuffers {
 
     public UnknownFieldSet UnknownFields { get; set; }
 
-    public IBuilder MergeFrom(ByteString data) {
+    IBuilder IBuilder.MergeFrom(ByteString data) {
       CodedInputStream input = data.CreateCodedInput();
-      MergeFrom(input);
+      ((IBuilder)this).MergeFrom(input);
       input.CheckLastTagWas(0);
       return this;
     }
 
-    public IBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
+    IBuilder IBuilder.MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
       CodedInputStream input = data.CreateCodedInput();
-      MergeFrom(input, extensionRegistry);
+      ((IBuilder)this).MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
       return this;
     }
 
-    public IBuilder MergeFrom(byte[] data) {
+    IBuilder IBuilder.MergeFrom(byte[] data) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
-      MergeFrom(input);
+      ((IBuilder)this).MergeFrom(input);
       input.CheckLastTagWas(0);
       return this;
     }
 
-    public IBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
+    IBuilder IBuilder.MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
-      MergeFrom(input, extensionRegistry);
+      ((IBuilder)this).MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
       return this;
     }
 
-    public IBuilder MergeFrom(Stream input) {
+    IBuilder IBuilder.MergeFrom(Stream input) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      MergeFrom(codedInput);
+      ((IBuilder)this).MergeFrom(codedInput);
       codedInput.CheckLastTagWas(0);
       return this;
     }
 
-    public IBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
+    IBuilder IBuilder.MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      MergeFrom(codedInput, extensionRegistry);
+      ((IBuilder) this).MergeFrom(codedInput, extensionRegistry);
       codedInput.CheckLastTagWas(0);
       return this;
     }

@@ -65,45 +65,50 @@ MessageFieldGenerator::~MessageFieldGenerator() {}
 void MessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private boolean has$capitalized_name$;\r\n"
-    "private $type$ $name$_ = $type$.getDefaultInstance();\r\n"
-    "public boolean has$capitalized_name$() { return has$capitalized_name$; }\r\n"
-    "public $type$ get$capitalized_name$() { return $name$_; }\r\n");
+    "private bool has$capitalized_name$;\r\n"
+    "private $type$ $name$_ = $type$.DefaultInstance;\r\n"
+    "public bool Has$capitalized_name$ {\r\n"
+    "  get { return has$capitalized_name$; }\r\n"
+    "}\r\n"
+    "public $type$ $capitalized_name$ {\r\n"
+    "  get { return $name$_; }\r\n"
+    "}\r\n");
 }
 
 void MessageFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public boolean has$capitalized_name$() {\r\n"
-    "  return result.has$capitalized_name$();\r\n"
+    "public bool Has$capitalized_name$ {\r\n"
+    "  get { return result.Has$capitalized_name$; }\r\n"
     "}\r\n"
-    "public $type$ get$capitalized_name$() {\r\n"
-    "  return result.get$capitalized_name$();\r\n"
+    "public $type$ $capitalized_name$ {\r\n"
+    "  get { return result.$capitalized_name$; }\r\n"
+    "  set { Set$capitalized_name$(value); }\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$($type$ value) {\r\n"
+    "public Builder Set$capitalized_name$($type$ value) {\r\n"
     "  result.has$capitalized_name$ = true;\r\n"
     "  result.$name$_ = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$($type$.Builder builderForValue) {\r\n"
+    "public Builder Set$capitalized_name$($type$.Builder builderForValue) {\r\n"
     "  result.has$capitalized_name$ = true;\r\n"
-    "  result.$name$_ = builderForValue.build();\r\n"
+    "  result.$name$_ = builderForValue.Build();\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder merge$capitalized_name$($type$ value) {\r\n"
-    "  if (result.has$capitalized_name$() &&\r\n"
-    "      result.$name$_ != $type$.getDefaultInstance()) {\r\n"
+    "public Builder Merge$capitalized_name$($type$ value) {\r\n"
+    "  if (result.Has$capitalized_name$ &&\r\n"
+    "      result.$name$_ != $type$.DefaultInstance) {\r\n"
     "    result.$name$_ =\r\n"
-    "      $type$.newBuilder(result.$name$_).mergeFrom(value).buildPartial();\r\n"
+    "      $type$.CreateBuilder(result.$name$_).MergeFrom(value).BuildPartial();\r\n"
     "  } else {\r\n"
     "    result.$name$_ = value;\r\n"
     "  }\r\n"
     "  result.has$capitalized_name$ = true;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder clear$capitalized_name$() {\r\n"
+    "public Builder Clear$capitalized_name$() {\r\n"
     "  result.has$capitalized_name$ = false;\r\n"
-    "  result.$name$_ = $type$.getDefaultInstance();\r\n"
+    "  result.$name$_ = $type$.DefaultInstance;\r\n"
     "  return this;\r\n"
     "}\r\n");
 }
@@ -111,8 +116,8 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (other.has$capitalized_name$()) {\r\n"
-    "  merge$capitalized_name$(other.get$capitalized_name$());\r\n"
+    "if (other.Has$capitalized_name$) {\r\n"
+    "  Merge$capitalized_name$(other.$capitalized_name$);\r\n"
     "}\r\n");
 }
 
@@ -124,42 +129,37 @@ GenerateBuildingCode(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$.Builder subBuilder = $type$.newBuilder();\r\n"
-    "if (has$capitalized_name$()) {\r\n"
-    "  subBuilder.mergeFrom(get$capitalized_name$());\r\n"
+    "$type$.Builder subBuilder = $type$.CreateBuilder();\r\n"
+    "if (Has$capitalized_name$) {\r\n"
+    "  subBuilder.MergeFrom($capitalized_name$);\r\n"
     "}\r\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "input.readGroup($number$, subBuilder, extensionRegistry);\r\n");
+      "input.ReadGroup($number$, subBuilder, extensionRegistry);\r\n");
   } else {
     printer->Print(variables_,
-      "input.readMessage(subBuilder, extensionRegistry);\r\n");
+      "input.ReadMessage(subBuilder, extensionRegistry);\r\n");
   }
 
   printer->Print(variables_,
-    "set$capitalized_name$(subBuilder.buildPartial());\r\n");
+    "$capitalized_name$ = subBuilder.BuildPartial();\r\n");
 }
 
 void MessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\r\n"
-    "  output.write$group_or_message$($number$, get$capitalized_name$());\r\n"
+    "if (Has$capitalized_name$) {\r\n"
+    "  output.Write$group_or_message$($number$, $capitalized_name$);\r\n"
     "}\r\n");
 }
 
 void MessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\r\n"
-    "  size += pb::CodedOutputStream\r\n"
-    "    .compute$group_or_message$Size($number$, get$capitalized_name$());\r\n"
+    "if (Has$capitalized_name$) {\r\n"
+    "  size += pb::CodedOutputStream.Compute$group_or_message$Size($number$, $capitalized_name$);\r\n"
     "}\r\n");
-}
-
-string MessageFieldGenerator::GetBoxedType() const {
-  return ClassName(descriptor_->message_type());
 }
 
 // ===================================================================
@@ -175,14 +175,14 @@ RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "internal System.Collections.Generic.IList<$type$> Empty$capitalized_name$ =\r\n"
-    "  new System.Collections.ReadOnlyCollection<$type$> ();\r\n"
-    "internal System.Collections.Generic.IList<$type$> $name$_ = Empty$capitalized_name$;\r\n"
-    "public System.Collections.Generic.IList<$type$> $capitalized_name$List {\r\n"
+    "private scg::IList<$type$> $name$_ = pbc::Lists<$type$>.Empty;\r\n"
+    "public scg::IList<$type$> $capitalized_name$List {\r\n"
     "  get { return $name$_; } \r\n"   // note:  unmodifiable list
     "}\r\n"
-    "public int $capitalized_name$Count { get { return $name$_.Count; }  }\r\n"
-    "public $type$ $capitalized_name$(int index) {\r\n"
+    "public int $capitalized_name$Count\r\n"
+    "  { get { return $name$_.Count; }\r\n"
+    "}\r\n"
+    "public $type$ Get$capitalized_name$(int index) {\r\n"
     "  return $name$_ [index];\r\n"
     "}\r\n");
 }
@@ -194,47 +194,46 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
-    "public System.Collections.Generic.IList<$type$> Get$capitalized_name$List() {\r\n"
-    "  if (result.$name$_ == $type$.Empty$capitalized_name$)\r\n"
-    "    return result.$name$;\r\n"
-    "  return result.$name$_.AsReadOnly ();\r\n"
+    "public scg::IList<$type$> $capitalized_name$List {\r\n"
+    "  get { return pbc::Lists.AsReadOnly(result.$name$_); }\r\n"
     "}\r\n"
-    "public int Get$capitalized_name$Count() {\r\n"
-    "  return result.Get$capitalized_name$Count();\r\n"
+    "public int $capitalized_name$Count {\r\n"
+    "  get { return result.$capitalized_name$Count; }\r\n"
     "}\r\n"
     "public $type$ Get$capitalized_name$(int index) {\r\n"
     "  return result.Get$capitalized_name$(index);\r\n"
     "}\r\n"
     "public Builder Set$capitalized_name$(int index, $type$ value) {\r\n"
-    "  result.$name$_ [index] = value;\r\n"
+    "  result.$name$_[index] = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder Set$capitalized_name$(int index, "
-      "$type$.Builder builderForValue) {\r\n"
-    "  result.$name$_ [index] = builderForValue.build();\r\n"
+    "public Builder Set$capitalized_name$(int index, $type$.Builder builderForValue) {\r\n"
+    "  result.$name$_[index] = builderForValue.Build();\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder Add$capitalized_name$($type$ value) {\r\n"
-    "  if (result.$name$ == $type$.Empty$capitalized_name$)\r\n"
-    "    result.$name$ = new System.Collections.Generic.List<$type$>();\r\n"
+    "  if (result.$name$_ == pbc::Lists<$type$>.Empty) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
+    "  }\r\n"
     "  result.$name$_.Add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder Add$capitalized_name$($type$.Builder builderForValue) {\r\n"
-    "  if (result.$name$ == $type$.Empty$capitalized_name$)\r\n"
-    "    result.$name$ = new System.Collections.Generic.List<$type$>();\r\n"
-    "  result.$name$_.Add(builderForValue.build());\r\n"
+    "  if (result.$name$_ == pbc::Lists<$type$>.Empty) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
+    "  }\r\n"
+    "  result.$name$_.Add(builderForValue.Build());\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder AddAll$capitalized_name$<T>(\r\n"
-    "    global::System.Collections.Generic.IEnumerable<T> values) where T : $type$ {\r\n"
-    "  if (result.$name$ == $type$.Empty$capitalized_name$)\r\n"
-    "    result.$name$ = new System.Collections.Generic.List<$type$>();\r\n"
-    "  result.$name$_.AddEnumerable (values);\r\n"
+    "public Builder AddRange$capitalized_name$(scg::IEnumerable<$type$> values) {\r\n"
+    "  if (result.$name$_ == pbc::Lists<$type$>.Empty) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
+    "  }\r\n"
+    "  base.AddRange(values, result.$name$_);\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder Clear$capitalized_name$() {\r\n"
-    "  result.$name$_ = $type$.Empty$capitalized_name$;\r\n"
+    "  result.$name$_ = pbc::Lists<$type$>.Empty;\r\n"
     "  return this;\r\n"
     "}\r\n");
 }
@@ -242,59 +241,53 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_ != $type$.Empty$capitalized_name$) {\r\n"
-    "  if (result.$name$_ == $type$.Empty$capitalized_name$) {\r\n"
-    "    result.$name$_ = new System.Collections.Generic.List<$type$>();\r\n"
+    "if (other.$name$_.Count != 0) {\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  result.$name$_.AddCollection(other.$name$_);\r\n"
+    "  base.AddRange(other.$name$_, result.$name$_);\r\n"
     "}\r\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (result.$name$_ != $type$.Empty$capitalized_name$) {\r\n"
-    "  result.$name$_ =\r\n"
-    "    result.$name$_.AsReadOnly ();\r\n"
+    "if (result.$name$_ != pbc::Lists<$type$>.Empty) {\r\n"
+    "  result.$name$_ = pbc::Lists<$type$>.AsReadOnly(result.$name$_);\r\n"
     "}\r\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$.Builder subBuilder = $type$.newBuilder();\r\n");
+    "$type$.Builder subBuilder = $type$.CreateBuilder();\r\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "input.readGroup($number$, subBuilder, extensionRegistry);\r\n");
+      "input.ReadGroup($number$, subBuilder, extensionRegistry);\r\n");
   } else {
     printer->Print(variables_,
-      "input.readMessage(subBuilder, extensionRegistry);\r\n");
+      "input.ReadMessage(subBuilder, extensionRegistry);\r\n");
   }
 
   printer->Print(variables_,
-    "Add$capitalized_name$(subBuilder.buildPartial());\r\n");
+    "Add$capitalized_name$(subBuilder.BuildPartial());\r\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "foreach ($type$ element in Get$capitalized_name$List()) {\r\n"
-    "  output.write$group_or_message$($number$, element);\r\n"
+    "foreach ($type$ element in $capitalized_name$List) {\r\n"
+    "  output.Write$group_or_message$($number$, element);\r\n"
     "}\r\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "foreach ($type$ element in Get$capitalized_name$List()) {\r\n"
-    "  size += pb::CodedOutputStream\r\n"
-    "    .compute$group_or_message$Size($number$, element);\r\n"
+    "foreach ($type$ element in $capitalized_name$List) {\r\n"
+    "  size += pb::CodedOutputStream.Compute$group_or_message$Size($number$, element);\r\n"
     "}\r\n");
-}
-
-string RepeatedMessageFieldGenerator::GetBoxedType() const {
-  return ClassName(descriptor_->message_type());
 }
 
 }  // namespace csharp

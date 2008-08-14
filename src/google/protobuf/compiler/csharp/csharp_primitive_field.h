@@ -45,8 +45,6 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
-
  private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
@@ -67,8 +65,6 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
-
-  string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;

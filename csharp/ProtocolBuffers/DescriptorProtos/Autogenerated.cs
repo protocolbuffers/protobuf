@@ -5,6 +5,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   /// <summary>
   /// This only exists until we've got the real code...
   /// </summary>
+  /*
   public abstract class TemporaryMessage<T> : IMessage<T> where T : IMessage<T> {
     #region IMessage<T> Members
 
@@ -84,7 +85,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
 
   public partial class MessageOptions : TemporaryMessage<MessageOptions> {
-    public bool IsMessageSetWireFormat;
+    public bool MessageSetWireFormat;
   }
 
   public partial class DescriptorProto : TemporaryMessage<DescriptorProto> {
@@ -123,6 +124,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public string FullName { get; set; }
     public FileOptions Options { get; set; }
 
+    public string Package { get; set; }
   }
 
   public partial class FileOptions : TemporaryMessage<FileOptions> { }
@@ -143,5 +145,5 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
 
   }
 
-  public partial class ServiceOptions : TemporaryMessage<ServiceOptions> { }
+  public partial class ServiceOptions : TemporaryMessage<ServiceOptions> { } */
 }

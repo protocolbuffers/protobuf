@@ -2,9 +2,7 @@
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.FieldAccess {
-  public class FieldAccessorTable<TMessage, TBuilder> 
-      where TMessage : IMessage<TMessage> 
-      where TBuilder : IBuilder<TMessage> {
+  public class FieldAccessorTable {
 
     readonly MessageDescriptor descriptor;
 
@@ -12,11 +10,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
       get { return descriptor; }
     }
 
-    public FieldAccessorTable(MessageDescriptor descriptor, String[] pascalCaseNames) {
+    public FieldAccessorTable(MessageDescriptor descriptor, String[] pascalCaseFieldNames, Type messageType, Type builderType) {
       this.descriptor = descriptor;
     }
 
-    internal IFieldAccessor<TMessage, TBuilder> this[FieldDescriptor field] {
+    internal IFieldAccessor this[FieldDescriptor field] {
       get { return null; }
     }
   }

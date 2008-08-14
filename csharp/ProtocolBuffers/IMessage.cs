@@ -179,8 +179,7 @@ namespace Google.ProtocolBuffers {
     /// method is an abstract method of IMessage whereas DefaultInstance is
     /// a static property of a specific class. They return the same thing.
     /// </summary>
-    new IMessage<T> DefaultInstanceForType { get; }
-
+    new T DefaultInstanceForType { get; }
 
     #region Builders
     /// <summary>

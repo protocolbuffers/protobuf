@@ -45,8 +45,6 @@ class MessageFieldGenerator : public FieldGenerator {
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
-
  private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;

@@ -136,7 +136,7 @@ namespace Google.ProtocolBuffers {
           extension.Descriptor.FieldNumber)] = extension;
 
       FieldDescriptor field = extension.Descriptor;
-      if (field.ContainingType.Options.IsMessageSetWireFormat
+      if (field.ContainingType.Options.MessageSetWireFormat
           && field.FieldType == FieldType.Message
           && field.IsOptional
           && field.ExtensionScope == field.MessageType) {

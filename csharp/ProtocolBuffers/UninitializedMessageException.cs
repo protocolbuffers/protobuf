@@ -17,5 +17,12 @@ using System;
 
 namespace Google.ProtocolBuffers {
   public class UninitializedMessageException : Exception {
+
+    public UninitializedMessageException(IMessage message) {
+    }
+
+    public InvalidProtocolBufferException AsInvalidProtocolBufferException() {
+      return new InvalidProtocolBufferException(Message);
+    }
   }
 }

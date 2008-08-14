@@ -36,26 +36,6 @@ namespace csharp {
 
 namespace {
 
-const char* PrimitiveTypeName(JavaType type) {
-  switch (type) {
-    case JAVATYPE_INT    : return "int";
-    case JAVATYPE_LONG   : return "long";
-    case JAVATYPE_FLOAT  : return "float";
-    case JAVATYPE_DOUBLE : return "double";
-    case JAVATYPE_BOOLEAN: return "boolean";
-    case JAVATYPE_STRING : return "string";
-    case JAVATYPE_BYTES  : return "pb::ByteString";
-    case JAVATYPE_ENUM   : return NULL;
-    case JAVATYPE_MESSAGE: return NULL;
-
-    // No default because we want the compiler to complain if any new
-    // JavaTypes are added.
-  }
-
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
-}
-
 const char* GetCapitalizedType(const FieldDescriptor* field) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32   : return "Int32"   ;
@@ -107,7 +87,7 @@ string DefaultValue(const FieldDescriptor* field) {
       return SimpleItoa(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
       return SimpleItoa(field->default_value_uint64()) +
-             "L";
+             "UL";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return SimpleDtoa(field->default_value_double()) + "D";
     case FieldDescriptor::CPPTYPE_FLOAT:
@@ -133,8 +113,9 @@ string DefaultValue(const FieldDescriptor* field) {
       // Escaping strings correctly for Java and generating efficient
       // initializers for ByteStrings are both tricky.  We can sidestep the
       // whole problem by just grabbing the default value from the descriptor.
+      // TODO(jonskeet): FIXME!
       return strings::Substitute(
-        "(($0) $1.getDescriptor().getFields().get($2).getDefaultValue())",
+        "(($0) $1.Descriptor.Fields[$2].DefaultValue)",
         isBytes ? "pb::ByteString" : "string",
         ClassName(field->containing_type()), field->index());
     }
@@ -159,8 +140,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_name"] =
     UnderscoresToCapitalizedCamelCase(descriptor);
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
-  (*variables)["boxed_type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
+  (*variables)["type"] = MappedTypeName(GetMappedType(descriptor));
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["capitalized_type"] = GetCapitalizedType(descriptor);
 }
@@ -182,7 +162,7 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private bool has$capitalized_name$;\r\n"
     "private $type$ $name$_ = $default$;\r\n"
-    "public boolean Has$capitalized_name$ {\r\n"
+    "public bool Has$capitalized_name$ {\r\n"
     "  get { return has$capitalized_name$; }\r\n"
     "}\r\n"
     "public $type$ $capitalized_name$ {\r\n"
@@ -193,18 +173,17 @@ GenerateMembers(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public boolean Has$capitalized_name$ {\r\n"
+    "public bool Has$capitalized_name$ {\r\n"
     "  get { return result.Has$capitalized_name$; }\r\n"
     "}\r\n"
-    // TODO(jonskeet): Consider whether this is really the right pattern,
-    // or whether we want a method returning a Builder. This allows for
-    // object initializers.
     "public $type$ $capitalized_name$ {\r\n"
     "  get { return result.$capitalized_name$; }\r\n"
-    "  set {\r\n"
-    "    result.has$capitalized_name$ = true;\r\n"
-    "    result.$name$_ = value;\r\n"
-    "  }\r\n"
+    "  set { Set$capitalized_name$(value); }\r\n"
+    "}\r\n"
+    "public Builder Set$capitalized_name$($type$ value) {\r\n"
+    "  result.has$capitalized_name$ = true;\r\n"
+    "  result.$name$_ = value;\r\n"
+    "  return this;\r\n"
     "}\r\n"
     "public Builder Clear$capitalized_name$() {\r\n"
     "  result.has$capitalized_name$ = false;\r\n"
@@ -216,8 +195,8 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (other.has$capitalized_name$()) {\r\n"
-    "  set$capitalized_name$(other.get$capitalized_name$());\r\n"
+    "if (other.Has$capitalized_name$) {\r\n"
+    "  $capitalized_name$ = other.$capitalized_name$;\r\n"
     "}\r\n");
 }
 
@@ -229,28 +208,23 @@ GenerateBuildingCode(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "set$capitalized_name$(input.read$capitalized_type$());\r\n");
+    "$capitalized_name$ = input.Read$capitalized_type$();\r\n");
 }
 
 void PrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\r\n"
-    "  output.write$capitalized_type$($number$, get$capitalized_name$());\r\n"
+    "if (Has$capitalized_name$) {\r\n"
+    "  output.Write$capitalized_type$($number$, $capitalized_name$);\r\n"
     "}\r\n");
 }
 
 void PrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\r\n"
-    "  size += pb::CodedOutputStream\r\n"
-    "    .compute$capitalized_type$Size($number$, get$capitalized_name$());\r\n"
+    "if (Has$capitalized_name$) {\r\n"
+    "  size += pb::CodedOutputStream.Compute$capitalized_type$Size($number$, $capitalized_name$);\r\n"
     "}\r\n");
-}
-
-string PrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
 }
 
 // ===================================================================
@@ -266,14 +240,15 @@ RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
 void RepeatedPrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private java.util.List<$boxed_type$> $name$_ =\r\n"
-    "  java.util.Collections.emptyList();\r\n"
-    "public java.util.List<$boxed_type$> get$capitalized_name$List() {\r\n"
-    "  return $name$_;\r\n"   // note:  unmodifiable list
+    "private scg::IList<$type$> $name$_ = pbc::Lists<$type$>.Empty;\r\n"
+    "public scg::IList<$type$> $capitalized_name$List {\r\n"
+    "  get { return $name$_; }\r\n"   // note:  unmodifiable list
     "}\r\n"
-    "public int get$capitalized_name$Count() { return $name$_.size(); }\r\n"
-    "public $type$ get$capitalized_name$(int index) {\r\n"
-    "  return $name$_.get(index);\r\n"
+    "public int $capitalized_name$Count {\r\n" // TODO(jonskeet): Remove?
+    "  get { return $name$_.Count; }\r\n"
+    "}\r\n"
+    "public $type$ Get$capitalized_name$(int index) {\r\n" // TODO(jonskeet): Remove?
+    "  return $name$_[index];\r\n"
     "}\r\n");
 }
 
@@ -284,36 +259,35 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
-    "public java.util.List<$boxed_type$> get$capitalized_name$List() {\r\n"
-    "  return java.util.Collections.unmodifiableList(result.$name$_);\r\n"
+    "public scg::IList<$type$> $capitalized_name$List {\r\n"
+    "  get { return pbc::Lists<$type$>.AsReadOnly(result.$name$_); }\r\n"
     "}\r\n"
-    "public int get$capitalized_name$Count() {\r\n"
-    "  return result.get$capitalized_name$Count();\r\n"
+    "public int $capitalized_name$Count {\r\n"
+    "  get { return result.$capitalized_name$Count; }\r\n"
     "}\r\n"
-    "public $type$ get$capitalized_name$(int index) {\r\n"
-    "  return result.get$capitalized_name$(index);\r\n"
+    "public $type$ Get$capitalized_name$(int index) {\r\n"
+    "  return result.Get$capitalized_name$(index);\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$(int index, $type$ value) {\r\n"
-    "  result.$name$_.set(index, value);\r\n"
+    "public Builder Set$capitalized_name$(int index, $type$ value) {\r\n"
+    "  result.$name$_[index] = value;\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder add$capitalized_name$($type$ value) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\r\n"
+    "public Builder Add$capitalized_name$($type$ value) {\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  result.$name$_.add(value);\r\n"
+    "  result.$name$_.Add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder addAll$capitalized_name$(\r\n"
-    "    java.lang.Iterable<? extends $boxed_type$> values) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\r\n"
+    "public Builder AddRange$capitalized_name$(scg::IEnumerable<$type$> values) {\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  super.addAll(values, result.$name$_);\r\n"
+    "  base.AddRange(values, result.$name$_);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder clear$capitalized_name$() {\r\n"
-    "  result.$name$_ = java.util.Collections.emptyList();\r\n"
+    "public Builder Clear$capitalized_name$() {\r\n"
+    "  result.$name$_ = pbc::Lists<$type$>.Empty;\r\n"
     "  return this;\r\n"
     "}\r\n");
 }
@@ -321,49 +295,43 @@ GenerateBuilderMembers(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\r\n"
-    "  if (result.$name$_.isEmpty()) {\r\n"
-    "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\r\n"
+    "if (other.$name$_.Count != 0) {\r\n"
+    "  if (result.$name$_.Count == 0) {\r\n"
+    "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
-    "  result.$name$_.addAll(other.$name$_);\r\n"
+    "  base.AddRange(other.$name$_, result.$name$_);\r\n"
     "}\r\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (result.$name$_ != java.util.Collections.EMPTY_LIST) {\r\n"
-    "  result.$name$_ =\r\n"
-    "    java.util.Collections.unmodifiableList(result.$name$_);\r\n"
-    "}\r\n");
+    "result.$name$_ = pbc::Lists<$type$>.AsReadOnly(result.$name$_);\r\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "add$capitalized_name$(input.read$capitalized_type$());\r\n");
+    "Add$capitalized_name$(input.Read$capitalized_type$());\r\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\r\n"
-    "  output.write$capitalized_type$($number$, element);\r\n"
+    "foreach ($type$ element in $capitalized_name$List) {\r\n"
+    "  output.Write$capitalized_type$($number$, element);\r\n"
     "}\r\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\r\n"
+    "foreach ($type$ element in $capitalized_name$List) {\r\n"
     "  size += pb::CodedOutputStream\r\n"
-    "    .compute$capitalized_type$Size($number$, element);\r\n"
+    "    .Compute$capitalized_type$Size($number$, element);\r\n"
     "}\r\n");
 }
 
-string RepeatedPrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
-}
 
 }  // namespace csharp
 }  // namespace compiler

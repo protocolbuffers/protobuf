@@ -125,7 +125,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    IBuilder<T> MergeFrom(IMessage<T> other);
+    IBuilder<T> MergeFrom(T other);
 
     /// <summary>
     /// Constructs the final message. Once this is called, this Builder instance
@@ -142,7 +142,6 @@ namespace Google.ProtocolBuffers {
     /// Like Build(), but does not throw an exception if the message is missing
     /// required fields. Instead, a partial message is returned.
     /// </summary>
-    /// <returns></returns>
     new T BuildPartial();
 
     /// <summary>
