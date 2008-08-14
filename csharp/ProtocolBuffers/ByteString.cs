@@ -15,13 +15,15 @@
 // limitations under the License.
 using System.Text;
 using System;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
   /// Immutable array of bytes.
   /// TODO(jonskeet): Implement the common collection interfaces?
   /// </summary>
-  public sealed class ByteString {
+  public sealed class ByteString : IEnumerable<byte> {
 
     private static readonly ByteString empty = new ByteString(new byte[0]);
 
@@ -103,6 +105,14 @@ namespace Google.ProtocolBuffers {
 
     public string ToStringUtf8() {
       return ToString(Encoding.UTF8);
+    }
+
+    public IEnumerator<byte> GetEnumerator() {
+      return ((IEnumerable<byte>) bytes).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+      return GetEnumerator();
     }
 
     /// <summary>

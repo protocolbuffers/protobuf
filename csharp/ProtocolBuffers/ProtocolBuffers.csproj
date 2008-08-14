@@ -87,6 +87,7 @@
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextFormat.cs" />
+    <Compile Include="TextGenerator.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="UnknownField.cs" />
     <Compile Include="UnknownFieldSet.cs" />
