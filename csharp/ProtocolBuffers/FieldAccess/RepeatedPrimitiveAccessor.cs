@@ -26,11 +26,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
       where TBuilder : IBuilder<TMessage, TBuilder> {
 
     private readonly Type clrType;
-    private readonly GetValueDelegate<TMessage> getValueDelegate;
-    private readonly ClearDelegate<TBuilder> clearDelegate;
-    private readonly SingleValueDelegate<TBuilder> addValueDelegate;
-    private readonly GetValueDelegate<TBuilder> getRepeatedWrapperDelegate;
-    private readonly RepeatedCountDelegate<TMessage> countDelegate;
+    private readonly Func<TMessage, object> getValueDelegate;
+    private readonly Func<TBuilder, IBuilder> clearDelegate;
+    private readonly Action<TBuilder, object> addValueDelegate;
+    private readonly Func<TBuilder, object> getRepeatedWrapperDelegate;
+    private readonly Func<TMessage, int> countDelegate;
     private readonly MethodInfo getElementMethod;
     private readonly MethodInfo setElementMethod;
     
@@ -62,9 +62,9 @@ namespace Google.ProtocolBuffers.FieldAccess {
           || setElementMethod == null) {
         throw new ArgumentException("Not all required properties/methods available");
       }
-      clearDelegate = (ClearDelegate<TBuilder>)Delegate.CreateDelegate(typeof(ClearDelegate<TBuilder>), clearMethod);
-      countDelegate = (RepeatedCountDelegate<TMessage>)Delegate.CreateDelegate
-          (typeof(RepeatedCountDelegate<TMessage>), countProperty.GetGetMethod());
+      clearDelegate = (Func<TBuilder, IBuilder>)Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), clearMethod);
+      countDelegate = (Func<TMessage, int>)Delegate.CreateDelegate
+          (typeof(Func<TMessage, int>), countProperty.GetGetMethod());
       getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
       addValueDelegate = ReflectionUtil.CreateDowncastDelegateIgnoringReturn<TBuilder>(addMethod);
       getRepeatedWrapperDelegate = ReflectionUtil.CreateUpcastDelegate<TBuilder>(builderProperty.GetGetMethod());

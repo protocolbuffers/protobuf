@@ -33,7 +33,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// in a message type "Foo", a field called "bar" might be of type "Baz". This
     /// method is Baz.CreateBuilder.
     /// </summary>
-    private readonly CreateBuilderDelegate createBuilderDelegate;
+    private readonly Func<IBuilder> createBuilderDelegate;
 
     internal RepeatedMessageAccessor(string name) : base(name) {
       MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);

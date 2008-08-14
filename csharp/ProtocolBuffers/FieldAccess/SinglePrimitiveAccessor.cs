@@ -25,10 +25,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
       where TBuilder : IBuilder<TMessage, TBuilder> {
 
     private readonly Type clrType;
-    private readonly GetValueDelegate<TMessage> getValueDelegate;
-    private readonly SingleValueDelegate<TBuilder> setValueDelegate;
-    private readonly HasDelegate<TMessage> hasDelegate;
-    private readonly ClearDelegate<TBuilder> clearDelegate;
+    private readonly Func<TMessage, object> getValueDelegate;
+    private readonly Action<TBuilder, object> setValueDelegate;
+    private readonly Func<TMessage, bool> hasDelegate;
+    private readonly Func<TBuilder, IBuilder> clearDelegate;
+    delegate void SingleValueDelegate<TSource>(TSource source, object value);
 
     /// <summary>
     /// The CLR type of the field (int, the enum type, ByteString, the message etc).
@@ -47,8 +48,8 @@ namespace Google.ProtocolBuffers.FieldAccess {
         throw new ArgumentException("Not all required properties/methods available");
       }
       clrType = messageProperty.PropertyType;
-      hasDelegate = (HasDelegate<TMessage>)Delegate.CreateDelegate(typeof(HasDelegate<TMessage>), hasProperty.GetGetMethod());
-      clearDelegate = (ClearDelegate<TBuilder>)Delegate.CreateDelegate(typeof(ClearDelegate<TBuilder>), clearMethod);
+      hasDelegate = (Func<TMessage, bool>)Delegate.CreateDelegate(typeof(Func<TMessage, bool>), hasProperty.GetGetMethod());
+      clearDelegate = (Func<TBuilder, IBuilder>)Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), clearMethod);
       getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
       setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
     }
