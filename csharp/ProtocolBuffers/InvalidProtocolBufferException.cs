@@ -14,7 +14,8 @@ namespace Google.ProtocolBuffers {
       : base(message) {
     }
 
-    internal static InvalidProtocolBufferException TruncatedMessage() {
+    /// TODO(jonskeet): Make this internal again and use InternalVisibleTo?
+    public static InvalidProtocolBufferException TruncatedMessage() {
       return new InvalidProtocolBufferException(
         "While parsing a protocol message, the input ended unexpectedly " +
         "in the middle of a field.  This could mean either than the " +
@@ -22,13 +23,14 @@ namespace Google.ProtocolBuffers {
         "misreported its own length.");
     }
 
+    /// TODO(jonskeet): Make this internal again and use InternalVisibleTo?
     internal static InvalidProtocolBufferException NegativeSize() {
       return new InvalidProtocolBufferException(
         "CodedInputStream encountered an embedded string or message " +
         "which claimed to have negative size.");
     }
 
-    internal static InvalidProtocolBufferException MalformedVarint() {
+    public static InvalidProtocolBufferException MalformedVarint() {
       return new InvalidProtocolBufferException(
         "CodedInputStream encountered a malformed varint.");
     }

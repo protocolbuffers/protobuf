@@ -5,18 +5,13 @@ using System.IO;
 namespace Google.ProtocolBuffers {
 
   /// <summary>
-  /// Non-generic interface.
-  /// TODO(jonskeet): Do we want or need this?
+  /// Non-generic interface implemented by all Protocol Buffers messages.
+  /// Some members are repeated in the generic interface but with a
+  /// type-specific signature. Type-safe implementations
+  /// are encouraged to implement these non-generic members explicitly,
+  /// and the generic members implicitly.
   /// </summary>
   public interface IMessage {
-    void WriteTo(CodedOutputStream output);
-    int SerializedSize { get; }
-  }
-
-  /// <summary>
-  /// Interface implemented by all Protocol Buffers messages.
-  /// </summary>
-  public interface IMessage<T> where T : IMessage<T> {
     /// <summary>
     /// Returns the message's type's descriptor. This differs from the
     /// Descriptor property of each generated message class in that this
@@ -24,16 +19,6 @@ namespace Google.ProtocolBuffers {
     /// a static property of a specific class. They return the same thing.
     /// </summary>
     Descriptors.Descriptor DescriptorForType { get; }
-
-    /// <summary>
-    /// Returns an instance of this message type with all fields set to
-    /// their default values. This may or may not be a singleton. This differs
-    /// from the DefaultInstance property of each generated message class in that this
-    /// method is an abstract method of IMessage whereas DefaultInstance is
-    /// a static property of a specific class. They return the same thing.
-    /// </summary>
-    IMessage<T> DefaultInstanceForType { get; }
-
     /// <summary>
     /// Returns a collection of all the fields in this message which are set
     /// and their corresponding values.  A singular ("required" or "optional")
@@ -151,12 +136,42 @@ namespace Google.ProtocolBuffers {
     void WriteTo(Stream output);
     #endregion
 
+    #region Weakly typed members
+    /// <summary>
+    /// Returns an instance of this message type with all fields set to
+    /// their default values. This may or may not be a singleton. This differs
+    /// from the DefaultInstance property of each generated message class in that this
+    /// method is an abstract method of IMessage whereas DefaultInstance is
+    /// a static property of a specific class. They return the same thing.
+    /// </summary>
+    IMessage DefaultInstanceForType { get; }
+
+    /// <summary>
+    /// Constructs a new builder for a message of the same type as this message.
+    /// </summary>
+    IBuilder NewBuilderForType();
+    #endregion
+  }
+
+  /// <summary>
+  /// Type-safe interface for all generated messages to implement.
+  /// </summary>
+  public interface IMessage<T> : IMessage where T : IMessage<T> {
+    /// <summary>
+    /// Returns an instance of this message type with all fields set to
+    /// their default values. This may or may not be a singleton. This differs
+    /// from the DefaultInstance property of each generated message class in that this
+    /// method is an abstract method of IMessage whereas DefaultInstance is
+    /// a static property of a specific class. They return the same thing.
+    /// </summary>
+    new IMessage<T> DefaultInstanceForType { get; }
+
+
     #region Builders
     /// <summary>
     /// Constructs a new builder for a message of the same type as this message.
     /// </summary>
-    IBuilder<T> NewBuilderForType();
+    new IBuilder<T> NewBuilderForType();
     #endregion
-
   }
 }

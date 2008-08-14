@@ -1,12 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 
 namespace Google.ProtocolBuffers {
 
+  /// <summary>
+  /// Non-generic interface for all members whose signatures don't require knowledge of
+  /// the type being built. The generic interface extends this one. Some methods return
+  /// either an IBuilder or an IMessage; in these cases the generic interface redeclares
+  /// the same method with a type-specific signature. Implementations are encouraged to
+  /// use explicit interface implemenation for the non-generic form. This mirrors
+  /// how IEnumerable and IEnumerable&lt;T&gt; work.
+  /// </summary>
   public interface IBuilder {
-    void MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
+    IBuilder MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
+    /// <summary>
+    /// Returns true iff all required fields in the message and all
+    /// embedded messages are set.
+    /// </summary>
+    bool Initialized { get; }
+
+    /// <summary>
+    /// Behaves like the equivalent property in IMessage&lt;T&gt;.
+    /// The returned map may or may not reflect future changes to the builder.
+    /// Either way, the returned map is unmodifiable.
+    /// </summary>
+    IDictionary<ProtocolBuffers.Descriptors.FieldDescriptor, object> AllFields { get; }
+
+    /// <summary>
+    /// Allows getting and setting of a field.
+    /// <see cref="IMessage{T}.Item(Descriptors.FieldDescriptor)"/>
+    /// </summary>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    object this[Descriptors.FieldDescriptor field] { get; set; }
+
+    /// <summary>
+    /// Get the message's type's descriptor.
+    /// <see cref="IMessage{T}.DescriptorForType"/>
+    /// </summary>
+    Descriptors.Descriptor DescriptorForType { get; }
+
+    /// <summary>
+    /// <see cref="IMessage{T}.GetRepeatedFieldCount"/>
+    /// </summary>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    int GetRepeatedFieldCount(Descriptors.FieldDescriptor field);
+
+    /// <summary>
+    /// Allows getting and setting of a repeated field value.
+    /// <see cref="IMessage{T}.Item(Descriptors.FieldDescriptor, int)"/>
+    /// </summary>
+    object this[Descriptors.FieldDescriptor field, int index] { get; set; }
+
+    /// <summary>
+    /// <see cref="IMessage{T}.HasField"/>
+    /// </summary>
+    bool HasField(Descriptors.FieldDescriptor field);
   }
 
   /// <summary>
@@ -14,7 +65,7 @@ namespace Google.ProtocolBuffers {
   /// TODO(jonskeet): Consider "SetXXX" methods returning the builder, as well as the properties.
   /// </summary>
   /// <typeparam name="T">Type of message</typeparam>
-  public interface IBuilder<T> where T : IMessage<T> {
+  public interface IBuilder<T> : IBuilder where T : IMessage<T> {
     /// <summary>
     /// Resets all fields to their default values.
     /// </summary>
@@ -60,12 +111,6 @@ namespace Google.ProtocolBuffers {
     IBuilder<T> Clone();
 
     /// <summary>
-    /// Returns true iff all required fields in the message and all
-    /// embedded messages are set.
-    /// </summary>
-    bool Initialized { get; }
-
-    /// <summary>
     /// Parses a message of this type from the input and merges it with this
     /// message, as if using MergeFrom(IMessage&lt;T&gt;).
     /// </summary>
@@ -92,26 +137,13 @@ namespace Google.ProtocolBuffers {
     /// in <paramref name="extensionRegistry"/>. Extensions not in the registry
     /// will be treated as unknown fields.
     /// </summary>
-    IBuilder<T> MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
-
-    /// <summary>
-    /// Get the message's type's descriptor.
-    /// <see cref="IMessage{T}.DescriptorForType"/>
-    /// </summary>
-    Descriptors.Descriptor DescriptorForType { get; }
+    new IBuilder<T> MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
 
     /// <summary>
     /// Get's the message's type's default instance.
     /// <see cref="IMessage{T}.DefaultInstanceForType" />
     /// </summary>
     IMessage<T> DefaultInstanceForType { get; }
-
-    /// <summary>
-    /// Behaves like the equivalent property in IMessage&lt;T&gt;.
-    /// The returned map may or may not reflect future changes to the builder.
-    /// Either way, the returned map is unmodifiable.
-    /// </summary>
-    IDictionary<ProtocolBuffers.Descriptors.FieldDescriptor, object> AllFields { get; }
 
     /// <summary>
     /// Create a builder for messages of the appropriate type for the given field.
@@ -121,21 +153,7 @@ namespace Google.ProtocolBuffers {
     /// <typeparam name="TField"></typeparam>
     /// <param name="field"></param>
     /// <returns></returns>
-    IBuilder<TField> NewBuilderForField<TField>(Descriptors.FieldDescriptor field)
-        where TField : IMessage<TField>;
-
-    /// <summary>
-    /// <see cref="IMessage{T}.HasField"/>
-    /// </summary>
-    bool HasField(Descriptors.FieldDescriptor field);
-
-    /// <summary>
-    /// Allows getting and setting of a field.
-    /// <see cref="IMessage{T}.Item(Descriptors.FieldDescriptor)"/>
-    /// </summary>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    object this[Descriptors.FieldDescriptor field] { get; set; }
+    IBuilder<TField> NewBuilderForField<TField>(Descriptors.FieldDescriptor field) where TField : IMessage<TField>;
 
     /// <summary>
     /// Clears the field. This is exactly equivalent to calling the generated
@@ -144,20 +162,6 @@ namespace Google.ProtocolBuffers {
     /// <param name="field"></param>
     /// <returns></returns>
     IBuilder<T> ClearField(Descriptors.FieldDescriptor field);
-
-    /// <summary>
-    /// <see cref="IMessage{T}.GetRepeatedFieldCount"/>
-    /// </summary>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    int GetRepeatedFieldCount(Descriptors.FieldDescriptor field);
-
-
-    /// <summary>
-    /// Allows getting and setting of a repeated field value.
-    /// <see cref="IMessage{T}.Item(Descriptors.FieldDescriptor, int)"/>
-    /// </summary>
-    object this[Descriptors.FieldDescriptor field, int index] { get; set; }
 
     /// <summary>
     /// Appends the given value as a new element for the specified repeated field.

@@ -37,11 +37,11 @@ namespace Google.ProtocolBuffers {
   /// set at construction time.
   /// </remarks>
   public sealed class CodedInputStream {
-    private byte[] buffer;
+    private readonly byte[] buffer;
     private int bufferSize;
     private int bufferSizeAfterLimit = 0;
     private int bufferPos = 0;
-    private Stream input;
+    private readonly Stream input;
     private uint lastTag = 0;
 
     const int DefaultRecursionLimit = 64;
@@ -102,14 +102,6 @@ namespace Google.ProtocolBuffers {
     #endregion
 
     #region Uncategorised (TODO: Fix this!)
-      /*
-   * Verifies that the last call to readTag() returned the given tag value.
-   * This is used to verify that a nested group ended with the correct
-   * end tag.
-   *
-   * @throws InvalidProtocolBufferException {@code value} does not match the
-   *                                        last tag.
-   */
     /// <summary>
     /// Verifies that the last call to ReadTag() returned the given tag value.
     /// This is used to verify that a nested group ended with the correct
@@ -131,7 +123,7 @@ namespace Google.ProtocolBuffers {
     /// since a protocol message may legally end wherever a tag occurs, and
     /// zero is not a valid tag number.
     /// </summary>
-    public int ReadTag() {
+    public uint ReadTag() {
       if (bufferPos == bufferSize && !RefillBuffer(false)) {
         lastTag = 0;
         return 0;
@@ -142,7 +134,7 @@ namespace Google.ProtocolBuffers {
         // If we actually read zero, that's not a valid tag.
         throw InvalidProtocolBufferException.InvalidTag();
       }
-      return (int) lastTag;
+      return lastTag;
     }
 
     /// <summary>
@@ -324,16 +316,10 @@ namespace Google.ProtocolBuffers {
       return DecodeZigZag64(ReadRawVarint64());
     }
 
-    /**
-     * Read a field of any primitive type.  Enums, groups, and embedded
-     * messages are not handled by this method.
-     *
-     * @param type Declared type of the field.
-     * @return An object representing the field's value, of the exact
-     *         type which would be returned by
-     *         {@link Message#getField(Descriptors.FieldDescriptor)} for
-     *         this field.
-     */
+    /// <summary>
+    /// Reads a field of any primitive type. Enums, groups and embedded
+    /// messages are not handled by this method.
+    /// </summary>
     public object readPrimitiveField(Descriptors.FieldDescriptor.Type fieldType) {
       switch (fieldType) {
         case Descriptors.FieldDescriptor.Type.Double:   return ReadDouble();
@@ -372,35 +358,35 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <returns></returns>
     public uint ReadRawVarint32() {
-      uint tmp = ReadRawByte();
-      if (tmp >= 0) {
-        return tmp;
+      int tmp = ReadRawByte();
+      if (tmp < 128) {
+        return (uint) tmp;
       }
-      uint result = tmp & 0x7f;
-      if ((tmp =ReadRawByte()) >= 0) {
+      int result = tmp & 0x7f;
+      if ((tmp = ReadRawByte()) < 128) {
         result |= tmp << 7;
       } else {
         result |= (tmp & 0x7f) << 7;
-        if ((tmp = ReadRawByte()) >= 0) {
+        if ((tmp = ReadRawByte()) < 128) {
           result |= tmp << 14;
         } else {
           result |= (tmp & 0x7f) << 14;
-          if ((tmp = ReadRawByte()) >= 0) {
+          if ((tmp = ReadRawByte()) < 128) {
             result |= tmp << 21;
           } else {
             result |= (tmp & 0x7f) << 21;
             result |= (tmp = ReadRawByte()) << 28;
-            if (tmp < 0) {
+            if (tmp >= 128) {
               // Discard upper 32 bits.
               for (int i = 0; i < 5; i++) {
-                if (ReadRawByte() >= 0) return result;
+                if (ReadRawByte() < 128) return (uint) result;
               }
               throw InvalidProtocolBufferException.MalformedVarint();
             }
           }
         }
       }
-      return result;
+      return (uint) result;
     }
 
     /// <summary>
@@ -443,7 +429,7 @@ namespace Google.ProtocolBuffers {
       long b6 = ReadRawByte();
       long b7 = ReadRawByte();
       long b8 = ReadRawByte();
-      return b1 | (b2 << 8) | (b3 << 8) | (b4 << 8)
+      return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24)
           | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
     }
     #endregion
@@ -689,9 +675,8 @@ namespace Google.ProtocolBuffers {
           byte[] chunk = new byte[Math.Min(sizeLeft, BufferSize)];
           int pos = 0;
           while (pos < chunk.Length) {
-            int n = (input == null) ? -1 :
-              input.Read(chunk, pos, chunk.Length - pos);
-            if (n == -1) {
+            int n = (input == null) ? -1 : input.Read(chunk, pos, chunk.Length - pos);
+            if (n <= 0) {
               throw InvalidProtocolBufferException.TruncatedMessage();
             }
             totalBytesRetired += n;
