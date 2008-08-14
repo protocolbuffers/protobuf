@@ -91,7 +91,7 @@ public class TextFormatTest extends TestCase {
     // C++ and Java TextFormat classes, so we need to conform.
     javaText = javaText.replace(".0\n", "\n");
 
-    assertEquals(allFieldsSetText, javaText);
+    assertEquals(allFieldsSetText.replace("\r\n", "\n"), javaText.replace("\r\n", "\n"));
   }
 
   /** Print TestAllExtensions and compare with golden file. */
@@ -103,7 +103,7 @@ public class TextFormatTest extends TestCase {
     // C++ and Java TextFormat classes, so we need to conform.
     javaText = javaText.replace(".0\n", "\n");
 
-    assertEquals(allExtensionsSetText, javaText);
+    assertEquals(allExtensionsSetText.replace("\r\n", "\n"), javaText.replace("\r\n", "\n"));
   }
 
   public void testPrintUnknownFields() throws Exception {
