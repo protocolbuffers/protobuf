@@ -172,15 +172,17 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public void WriteString(int fieldNumber, string value) {
       WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-      // TODO(jonskeet): Optimise this if possible
-      // Unfortunately there does not appear to be any way to tell Java to encode
-      // UTF-8 directly into our buffer, so we have to let it create its own byte
-      // array and then copy. In .NET we can do the same thing very easily,
-      // so we don't need to worry about only writing one buffer at a time.
-      // We can optimise later.
-      byte[] bytes = Encoding.UTF8.GetBytes(value);
-      WriteRawVarint32((uint)bytes.Length);
-      WriteRawBytes(bytes);
+      // Optimise the case where we have enough space to write
+      // the string directly to the buffer, which should be common.
+      int length = Encoding.UTF8.GetByteCount(value);
+      WriteRawVarint32((uint) length);
+      if (limit - position >= length) {
+        Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, position);
+        position += length;
+      } else {
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
+        WriteRawBytes(bytes);
+      }
     }
 
     /// <summary>
@@ -290,13 +292,35 @@ namespace Google.ProtocolBuffers {
       WriteRawVarint32(WireFormat.MakeTag(fieldNumber, type));
     }
 
-    public void WriteRawVarint32(uint value) {
+    private void SlowWriteRawVarint32(uint value) {
       while (true) {
         if ((value & ~0x7F) == 0) {
           WriteRawByte(value);
           return;
         } else {
           WriteRawByte((value & 0x7F) | 0x80);
+          value >>= 7;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Writes a 32 bit value as a varint. The fast route is taken when
+    /// there's enough buffer space left to whizz through without checking
+    /// for each byte; otherwise, we resort to calling WriteRawByte each time.
+    /// </summary>
+    public void WriteRawVarint32(uint value) {
+      if (position + 5 > limit) {
+        SlowWriteRawVarint32(value);
+        return;
+      }
+
+      while (true) {
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          return;
+        } else {
+          buffer[position++] = (byte)((value & 0x7F) | 0x80);
           value >>= 7;
         }
       }

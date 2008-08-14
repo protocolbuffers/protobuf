@@ -356,14 +356,15 @@ namespace Google.ProtocolBuffers {
     #endregion
 
     #region Underlying reading primitives
+
     /// <summary>
-    /// Read a raw Varint from the stream.  If larger than 32 bits, discard the upper bits.
+    /// Same code as ReadRawVarint32, but read each byte individually, checking for
+    /// buffer overflow.
     /// </summary>
-    /// <returns></returns>
-    public uint ReadRawVarint32() {
+    private uint SlowReadRawVarint32() {
       int tmp = ReadRawByte();
       if (tmp < 128) {
-        return (uint) tmp;
+        return (uint)tmp;
       }
       int result = tmp & 0x7f;
       if ((tmp = ReadRawByte()) < 128) {
@@ -382,14 +383,59 @@ namespace Google.ProtocolBuffers {
             if (tmp >= 128) {
               // Discard upper 32 bits.
               for (int i = 0; i < 5; i++) {
-                if (ReadRawByte() < 128) return (uint) result;
+                if (ReadRawByte() < 128) return (uint)result;
               }
               throw InvalidProtocolBufferException.MalformedVarint();
             }
           }
         }
       }
-      return (uint) result;
+      return (uint)result;
+    }
+
+    /// <summary>
+    /// Read a raw Varint from the stream.  If larger than 32 bits, discard the upper bits.
+    /// This method is optimised for the case where we've got lots of data in the buffer.
+    /// That means we can check the size just once, then just read directly from the buffer
+    /// without constant rechecking of the buffer length.
+    /// </summary>
+    public uint ReadRawVarint32() {
+      if (bufferPos + 5 > bufferSize) {
+        return SlowReadRawVarint32();
+      }
+
+      int tmp = buffer[bufferPos++];
+      if (tmp < 128) {
+        return (uint)tmp;
+      }
+      int result = tmp & 0x7f;
+      if ((tmp = buffer[bufferPos++]) < 128) {
+        result |= tmp << 7;
+      } else {
+        result |= (tmp & 0x7f) << 7;
+        if ((tmp = buffer[bufferPos++]) < 128) {
+          result |= tmp << 14;
+        } else {
+          result |= (tmp & 0x7f) << 14;
+          if ((tmp = buffer[bufferPos++]) < 128) {
+            result |= tmp << 21;
+          } else {
+            result |= (tmp & 0x7f) << 21;
+            result |= (tmp = buffer[bufferPos++]) << 28;
+            if (tmp >= 128) {
+              // Discard upper 32 bits.
+              // Note that this has to use ReadRawByte() as we only ensure we've
+              // got at least 5 bytes at the start of the method. This lets us
+              // use the fast path in more cases, and we rarely hit this section of code.
+              for (int i = 0; i < 5; i++) {
+                if (ReadRawByte() < 128) return (uint)result;
+              }
+              throw InvalidProtocolBufferException.MalformedVarint();
+            }
+          }
+        }
+      }
+      return (uint)result;
     }
 
     /// <summary>
@@ -571,7 +617,6 @@ namespace Google.ProtocolBuffers {
       bufferPos = 0;
       bufferSize = (input == null) ? 0 : input.Read(buffer, 0, buffer.Length);
       if (bufferSize == 0) {
-        bufferSize = 0;
         if (mustSucceed) {
           throw InvalidProtocolBufferException.TruncatedMessage();
         } else {
