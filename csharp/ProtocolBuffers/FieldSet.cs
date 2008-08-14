@@ -17,6 +17,8 @@ namespace Google.ProtocolBuffers {
   /// FieldSet class, FieldSet just has a MakeImmutable() method. This is safe so long as
   /// all callers are careful not to let a mutable FieldSet escape into the open. This would
   /// be impossible to guarantee if this were a public class, of course.
+  /// 
+  /// All repeated fields are stored as IList[object] even 
   /// </summary>
   internal class FieldSet {
 
@@ -131,7 +133,7 @@ namespace Google.ProtocolBuffers {
       int fieldNumber = WireFormat.GetTagFieldNumber(tag);
 
       FieldDescriptor field;
-      IMessage defaultInstance = null;
+      IMessage defaultFieldInstance = null;
 
       if (type.IsExtensionNumber(fieldNumber)) {
         ExtensionInfo extension = extensionRegistry[type, fieldNumber];
@@ -139,7 +141,7 @@ namespace Google.ProtocolBuffers {
           field = null;
         } else {
           field = extension.Descriptor;
-          defaultInstance = extension.DefaultInstance;
+          defaultFieldInstance = extension.DefaultInstance;
         }
       } else {
         field = type.FindFieldByNumber(fieldNumber);
@@ -155,8 +157,8 @@ namespace Google.ProtocolBuffers {
         case FieldType.Group:
         case FieldType.Message: {
             IBuilder subBuilder;
-            if (defaultInstance != null) {
-              subBuilder = defaultInstance.CreateBuilderForType();
+            if (defaultFieldInstance != null) {
+              subBuilder = defaultFieldInstance.CreateBuilderForType();
             } else {
               subBuilder = builder.CreateBuilderForField(field);
             }
@@ -308,7 +310,8 @@ namespace Google.ProtocolBuffers {
     /// <list>
     /// <item>For singular message values, null is returned.</item>
     /// <item>For singular non-message values, the default value of the field is returned.</item>
-    /// <item>For repeated values, an empty immutable list is returned.</item>
+    /// <item>For repeated values, an empty immutable list is returned. This will be compatible
+    /// with IList[object], regardless of the type of the repeated item.</item>
     /// </list>
     /// This method returns null if the field is a singular message type
     /// and is not set; in this case it is up to the caller to fetch the 
@@ -361,7 +364,7 @@ namespace Google.ProtocolBuffers {
           throw new ArgumentException("Indexer specifying field and index can only be called on repeated fields.");
         }
 
-        return ((List<object>)this[field])[index];
+        return ((IList<object>) this[field])[index];
       }
       set {
         if (!field.IsRepeated) {
@@ -372,15 +375,13 @@ namespace Google.ProtocolBuffers {
         if (!fields.TryGetValue(field, out list)) {
           throw new ArgumentOutOfRangeException();
         }
-        ((List<object>) list)[index] = value;
+        ((IList<object>) list)[index] = value;
       }
     }
 
     /// <summary>
     /// See <see cref="IBuilder.AddRepeatedField" />
     /// </summary>
-    /// <param name="field"></param>
-    /// <param name="value"></param>
     internal void AddRepeatedField(FieldDescriptor field, object value) {
       if (!field.IsRepeated) {
         throw new ArgumentException("AddRepeatedField can only be called on repeated fields.");
@@ -391,7 +392,7 @@ namespace Google.ProtocolBuffers {
         list = new List<object>();
         fields[field] = list;
       }
-      ((List<object>) list).Add(value);
+      ((IList<object>) list).Add(value);
     }
 
     /// <summary>
@@ -454,7 +455,7 @@ namespace Google.ProtocolBuffers {
         throw new ArgumentException("GetRepeatedFieldCount() can only be called on repeated fields.");
       }
 
-      return ((List<object>) this[field]).Count;
+      return ((IList<object>) this[field]).Count;
     }
 
     /// <summary>
@@ -480,8 +481,8 @@ namespace Google.ProtocolBuffers {
             existingValue = new List<object>();
             fields[field] = existingValue;
           }
-          List<object> list = (List<object>)existingValue;
-          foreach (object otherValue in (IEnumerable)entry.Value) {
+          IList<object> list = (IList<object>) existingValue;
+          foreach (object otherValue in (IEnumerable) entry.Value) {
             list.Add(otherValue);
           }
         } else if (field.MappedType == MappedType.Message && existingValue != null) {

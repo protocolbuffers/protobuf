@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.DescriptorProtos;
+using System.Collections.ObjectModel;
 
 namespace Google.ProtocolBuffers.Descriptors {
   public class FieldDescriptor : IndexedDescriptorBase<FieldDescriptorProto, FieldOptions>, IComparable<FieldDescriptor> {
@@ -124,8 +125,8 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// The field's default value. Valid for all types except messages
     /// and groups. For all other types, the object returned is of the
     /// same class that would be returned by IMessage[this].
-    /// For repeated fields this will always be an empty list. For message fields it will
-    /// always be null. For singular values, it will depend on the descriptor.
+    /// For repeated fields this will always be an empty immutable list compatible with IList[object].
+    /// For message fields it will always be null. For singular values, it will depend on the descriptor.
     /// </value>
     public object DefaultValue {
       get {
@@ -383,8 +384,7 @@ namespace Google.ProtocolBuffers.Descriptors {
       } else {
         // Determine the default default for this field.
         if (IsRepeated) {
-          // FIXME(jonskeet): Find out the correct list type and use that instead.
-          defaultValue = new List<object>();
+          defaultValue = Lists<object>.Empty;
         } else {
           switch (MappedType) {
             case MappedType.Enum:
