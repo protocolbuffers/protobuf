@@ -132,7 +132,7 @@ void EnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (has$capitalized_name$()) {\r\n"
-    "  size += com.google.protobuf.CodedOutputStream\r\n"
+    "  size += pb::CodedOutputStream\r\n"
     "    .computeEnumSize($number$, get$capitalized_name$().getNumber());\r\n"
     "}\r\n");
 }
@@ -172,7 +172,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
-    "public java.util.List<$type$> get$capitalized_name$List() {\r\n"
+    "public global::System.Collections.Generic::IList<$type$> get$capitalized_name$List() {\r\n"
     "  return java.util.Collections.unmodifiableList(result.$name$_);\r\n"
     "}\r\n"
     "public int get$capitalized_name$Count() {\r\n"
@@ -192,8 +192,8 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  result.$name$_.add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder addAll$capitalized_name$(\r\n"
-    "    java.lang.Iterable<? extends $type$> values) {\r\n"
+    "public Builder addAll$capitalized_name$<T>(\r\n"
+    "    global::System.Collections.Generic.IEnumerable<T> values) where T : $type$ {\r\n"
     "  if (result.$name$_.isEmpty()) {\r\n"
     "    result.$name$_ = new java.util.ArrayList<$type$>();\r\n"
     "  }\r\n"
@@ -250,7 +250,7 @@ void RepeatedEnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "for ($type$ element : get$capitalized_name$List()) {\r\n"
-    "  size += com.google.protobuf.CodedOutputStream\r\n"
+    "  size += pb::CodedOutputStream\r\n"
     "    .computeEnumSize($number$, element.getNumber());\r\n"
     "}\r\n");
 }

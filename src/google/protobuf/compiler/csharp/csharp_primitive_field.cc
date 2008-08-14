@@ -44,7 +44,7 @@ const char* PrimitiveTypeName(JavaType type) {
     case JAVATYPE_DOUBLE : return "double";
     case JAVATYPE_BOOLEAN: return "boolean";
     case JAVATYPE_STRING : return "string";
-    case JAVATYPE_BYTES  : return "com.google.protobuf.ByteString";
+    case JAVATYPE_BYTES  : return "pb::ByteString";
     case JAVATYPE_ENUM   : return NULL;
     case JAVATYPE_MESSAGE: return NULL;
 
@@ -128,7 +128,7 @@ string DefaultValue(const FieldDescriptor* field) {
       }
 
       if (isBytes && !field->has_default_value()) {
-        return "com.google.protobuf.ByteString.EMPTY";
+        return "pb::ByteString.Empty";
       }
 
       // Escaping strings correctly for Java and generating efficient
@@ -136,7 +136,7 @@ string DefaultValue(const FieldDescriptor* field) {
       // whole problem by just grabbing the default value from the descriptor.
       return strings::Substitute(
         "(($0) $1.getDescriptor().getFields().get($2).getDefaultValue())",
-        isBytes ? "com.google.protobuf.ByteString" : "string",
+        isBytes ? "pb::ByteString" : "string",
         ClassName(field->containing_type()), field->index());
     }
 
@@ -181,27 +181,33 @@ PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
 void PrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private boolean has$capitalized_name$;\r\n"
+    "private bool has$capitalized_name$;\r\n"
     "private $type$ $name$_ = $default$;\r\n"
-    "public boolean has$capitalized_name$() { return has$capitalized_name$; }\r\n"
-    "public $type$ get$capitalized_name$() { return $name$_; }\r\n");
+    "public boolean Has$capitalized_name$ {\r\n"
+    "  get { return has$capitalized_name$; }\r\n"
+    "}\r\n"
+    "public $type$ $capitalized_name$ {\r\n"
+    "  get { return $name$_; }\r\n"
+    "}\r\n");
 }
 
 void PrimitiveFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public boolean has$capitalized_name$() {\r\n"
-    "  return result.has$capitalized_name$();\r\n"
+    "public boolean Has$capitalized_name$ {\r\n"
+    "  get { return result.Has$capitalized_name$; }\r\n"
     "}\r\n"
-    "public $type$ get$capitalized_name$() {\r\n"
-    "  return result.get$capitalized_name$();\r\n"
+    // TODO(jonskeet): Consider whether this is really the right pattern,
+    // or whether we want a method returning a Builder. This allows for
+    // object initializers.
+    "public $type$ $capitalized_name$ {\r\n"
+    "  get { return result.$capitalized_name$; }\r\n"
+    "  set {\r\n"
+    "    result.has$capitalized_name$ = true;\r\n"
+    "    result.$name$_ = value;\r\n"
+    "  }\r\n"
     "}\r\n"
-    "public Builder set$capitalized_name$($type$ value) {\r\n"
-    "  result.has$capitalized_name$ = true;\r\n"
-    "  result.$name$_ = value;\r\n"
-    "  return this;\r\n"
-    "}\r\n"
-    "public Builder clear$capitalized_name$() {\r\n"
+    "public Builder Clear$capitalized_name$() {\r\n"
     "  result.has$capitalized_name$ = false;\r\n"
     "  result.$name$_ = $default$;\r\n"
     "  return this;\r\n"
@@ -239,7 +245,7 @@ void PrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (has$capitalized_name$()) {\r\n"
-    "  size += com.google.protobuf.CodedOutputStream\r\n"
+    "  size += pb::CodedOutputStream\r\n"
     "    .compute$capitalized_type$Size($number$, get$capitalized_name$());\r\n"
     "}\r\n");
 }
@@ -351,7 +357,7 @@ void RepeatedPrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "for ($type$ element : get$capitalized_name$List()) {\r\n"
-    "  size += com.google.protobuf.CodedOutputStream\r\n"
+    "  size += pb::CodedOutputStream\r\n"
     "    .compute$capitalized_type$Size($number$, element);\r\n"
     "}\r\n");
 }

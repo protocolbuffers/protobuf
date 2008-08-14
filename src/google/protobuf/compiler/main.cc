@@ -36,7 +36,6 @@ int main(int argc, char* argv[]) {
   cli.RegisterGenerator("--java_out", &java_generator,
                         "Generate Java source file.");
 
-
   // Proto2 Python
   google::protobuf::compiler::python::Generator py_generator;
   cli.RegisterGenerator("--python_out", &py_generator,

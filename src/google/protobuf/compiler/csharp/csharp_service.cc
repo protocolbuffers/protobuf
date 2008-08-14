@@ -39,7 +39,7 @@ void ServiceGenerator::Generate(io::Printer* printer) {
   bool is_own_file = descriptor_->file()->options().csharp_multiple_files();
   printer->Print(
     "public $static$ abstract class $classname$\r\n"
-    "    implements com.google.protobuf.Service {\r\n",
+    "    implements pb::Service {\r\n",
     "static", is_own_file ? "" : "static",
     "classname", descriptor_->name());
   printer->Indent();
@@ -53,20 +53,20 @@ void ServiceGenerator::Generate(io::Printer* printer) {
     vars["output"] = ClassName(method->output_type());
     printer->Print(vars,
       "public abstract void $name$(\r\n"
-      "    com.google.protobuf.RpcController controller,\r\n"
+      "    pb::RpcController controller,\r\n"
       "    $input$ request,\r\n"
-      "    com.google.protobuf.RpcCallback<$output$> done);\r\n");
+      "    pb::RpcCallback<$output$> done);\r\n");
   }
 
   // Generate getDescriptor() and getDescriptorForType().
   printer->Print(
     "\r\n"
     "public static final\r\n"
-    "    com.google.protobuf.Descriptors.ServiceDescriptor\r\n"
+    "    pb::Descriptors.ServiceDescriptor\r\n"
     "    getDescriptor() {\r\n"
     "  return $file$.getDescriptor().getServices().get($index$);\r\n"
     "}\r\n"
-    "public final com.google.protobuf.Descriptors.ServiceDescriptor\r\n"
+    "public final pb::Descriptors.ServiceDescriptor\r\n"
     "    getDescriptorForType() {\r\n"
     "  return getDescriptor();\r\n"
     "}\r\n",
@@ -87,11 +87,11 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
   printer->Print(
     "\r\n"
     "public final void callMethod(\r\n"
-    "    com.google.protobuf.Descriptors.MethodDescriptor method,\r\n"
-    "    com.google.protobuf.RpcController controller,\r\n"
-    "    com.google.protobuf.Message request,\r\n"
-    "    com.google.protobuf.RpcCallback<\r\n"
-    "      com.google.protobuf.Message> done) {\r\n"
+    "    pb::Descriptors.MethodDescriptor method,\r\n"
+    "    pb::RpcController controller,\r\n"
+    "    pb::Message request,\r\n"
+    "    pb::RpcCallback<\r\n"
+    "      pb::Message> done) {\r\n"
     "  if (method.getService() != getDescriptor()) {\r\n"
     "    throw new java.lang.IllegalArgumentException(\r\n"
     "      \"Service.callMethod() given method descriptor for wrong \" +\r\n"
@@ -111,7 +111,7 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
     printer->Print(vars,
       "case $index$:\r\n"
       "  this.$method$(controller, ($input$)request,\r\n"
-      "    com.google.protobuf.RpcUtil.<$output$>specializeCallback(\r\n"
+      "    pb::RpcUtil.<$output$>specializeCallback(\r\n"
       "      done));\r\n"
       "  return;\r\n");
   }
@@ -132,9 +132,9 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
                                             io::Printer* printer) {
   printer->Print(
-    "public final com.google.protobuf.Message\r\n"
+    "public final pb::Message\r\n"
     "    get$request_or_response$Prototype(\r\n"
-    "    com.google.protobuf.Descriptors.MethodDescriptor method) {\r\n"
+    "    pb::Descriptors.MethodDescriptor method) {\r\n"
     "  if (method.getService() != getDescriptor()) {\r\n"
     "    throw new java.lang.IllegalArgumentException(\r\n"
     "      \"Service.get$request_or_response$Prototype() given method \" +\r\n"
@@ -172,7 +172,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 void ServiceGenerator::GenerateStub(io::Printer* printer) {
   printer->Print(
     "public static Stub newStub(\r\n"
-    "    com.google.protobuf.RpcChannel channel) {\r\n"
+    "    pb::RpcChannel channel) {\r\n"
     "  return new Stub(channel);\r\n"
     "}\r\n"
     "\r\n"
@@ -181,13 +181,13 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
   printer->Indent();
 
   printer->Print(
-    "private Stub(com.google.protobuf.RpcChannel channel) {\r\n"
+    "private Stub(pb::RpcChannel channel) {\r\n"
     "  this.channel = channel;\r\n"
     "}\r\n"
     "\r\n"
-    "private final com.google.protobuf.RpcChannel channel;\r\n"
+    "private final pb::RpcChannel channel;\r\n"
     "\r\n"
-    "public com.google.protobuf.RpcChannel getChannel() {\r\n"
+    "public pb::RpcChannel getChannel() {\r\n"
     "  return channel;\r\n"
     "}\r\n");
 
@@ -201,15 +201,15 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
     printer->Print(vars,
       "\r\n"
       "public void $method$(\r\n"
-      "    com.google.protobuf.RpcController controller,\r\n"
+      "    pb::RpcController controller,\r\n"
       "    $input$ request,\r\n"
-      "    com.google.protobuf.RpcCallback<$output$> done) {\r\n"
+      "    pb::RpcCallback<$output$> done) {\r\n"
       "  channel.callMethod(\r\n"
       "    getDescriptor().getMethods().get($index$),\r\n"
       "    controller,\r\n"
       "    request,\r\n"
       "    $output$.getDefaultInstance(),\r\n"
-      "    com.google.protobuf.RpcUtil.generalizeCallback(\r\n"
+      "    pb::RpcUtil.generalizeCallback(\r\n"
       "      done,\r\n"
       "      $output$.class,\r\n"
       "      $output$.getDefaultInstance()));\r\n"

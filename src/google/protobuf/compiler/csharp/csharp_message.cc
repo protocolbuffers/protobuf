@@ -140,7 +140,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor)
 MessageGenerator::~MessageGenerator() {}
 
 void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
-  // Because descriptor.proto (com.google.protobuf.DescriptorProtos) is
+  // Because descriptor.proto (Google.ProtocolBuffers.DescriptorProtos) is
   // used in the construction of descriptors, we have a tricky bootstrapping
   // problem.  To help control static initialization order, we make sure all
   // descriptors and other static data that depends on them are members of
@@ -155,9 +155,9 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
   if (descriptor_->file()->options().csharp_multiple_files()) {
-    // We can only make these package-private since the classes that use them
+    // We can only make these assembly-private since the classes that use them
     // are in separate files.
-    vars["private"] = "";
+    vars["private"] = "internal ";
   } else {
     vars["private"] = "private ";
   }
@@ -165,12 +165,12 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // The descriptor for this type.
   if (descriptor_->containing_type() == NULL) {
     printer->Print(vars,
-      "$private$static final com.google.protobuf.Descriptors.Descriptor\r\n"
+      "$private$static readonly pb::Descriptors.Descriptor {\r\n"
       "  internal_$identifier$_descriptor =\r\n"
       "    getDescriptor().getMessageTypes().get($index$);\r\n");
   } else {
     printer->Print(vars,
-      "$private$static final com.google.protobuf.Descriptors.Descriptor\r\n"
+      "$private$static readonly pb::Descriptors.Descriptor {\r\n"
       "  internal_$identifier$_descriptor =\r\n"
       "    internal_$parent$_descriptor.getNestedTypes().get($index$);\r\n");
   }
@@ -178,9 +178,9 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // And the FieldAccessorTable.
   printer->Print(vars,
     "$private$static\r\n"
-    "  com.google.protobuf.GeneratedMessage.FieldAccessorTable\r\n"
+    "  pb::GeneratedMessage.FieldAccessorTable\r\n"
     "    internal_$identifier$_fieldAccessorTable = new\r\n"
-    "      com.google.protobuf.GeneratedMessage.FieldAccessorTable(\r\n"
+    "      pb::GeneratedMessage.FieldAccessorTable(\r\n"
     "        internal_$identifier$_descriptor,\r\n"
     "        new string[] { ");
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -209,16 +209,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "public $static$ final class $classname$ extends\r\n"
-      "    com.google.protobuf.GeneratedMessage.ExtendableMessage<\r\n"
-      "      $classname$> {\r\n",
-      "static", is_own_file ? "" : "static",
+      "public sealed class $classname$ : pb::GeneratedMessage.ExtendableMessage<$classname$> {\r\n",
       "classname", descriptor_->name());
   } else {
     printer->Print(
-      "public $static$ final class $classname$ extends\r\n"
-      "    com.google.protobuf.GeneratedMessage {\r\n",
-      "static", is_own_file ? "" : "static",
+      "public sealed class $classname$ : pb::GeneratedMessage {\r\n",
       "classname", descriptor_->name());
   }
   printer->Indent();
@@ -226,25 +221,23 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "// Use $classname$.newBuilder() to construct.\r\n"
     "private $classname$() {}\r\n"
     "\r\n"
-    "private static final $classname$ defaultInstance = new $classname$();\r\n"
-    "public static $classname$ getDefaultInstance() {\r\n"
-    "  return defaultInstance;\r\n"
+    "private static readonly $classname$ defaultInstance = new $classname$();\r\n"
+    "public static $classname$ DefaultInstance {\r\n"
+    "  get { return defaultInstance; }\r\n"
     "}\r\n"
     "\r\n"
-    "public $classname$ getDefaultInstanceForType() {\r\n"
-    "  return defaultInstance;\r\n"
+    "public $classname$ DefaultInstanceForType {\r\n"
+    "  get { return defaultInstance; }\r\n"
     "}\r\n"
     "\r\n",
     "classname", descriptor_->name());
   printer->Print(
-    "public static final com.google.protobuf.Descriptors.Descriptor\r\n"
-    "    getDescriptor() {\r\n"
-    "  return $fileclass$.internal_$identifier$_descriptor;\r\n"
+    "public static pb::Descriptors.Descriptor Descriptor {\r\n"
+    "  get { return $fileclass$.internal_$identifier$_descriptor; }\r\n"
     "}\r\n"
     "\r\n"
-    "protected com.google.protobuf.GeneratedMessage.FieldAccessorTable\r\n"
-    "    internalGetFieldAccessorTable() {\r\n"
-    "  return $fileclass$.internal_$identifier$_fieldAccessorTable;\r\n"
+    "protected pb::GeneratedMessage.FieldAccessorTable InternalGetFieldAccessorTable {\r\n"
+    "  get { return $fileclass$.internal_$identifier$_fieldAccessorTable; }\r\n"
     "}\r\n"
     "\r\n",
     "fileclass", ClassName(descriptor_->file()),
@@ -293,15 +286,12 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   sort(sorted_extensions.begin(), sorted_extensions.end(),
        ExtensionRangeOrdering());
 
-  printer->Print(
-    "public void writeTo(com.google.protobuf.CodedOutputStream output)\r\n"
-    "                    throws java.io.IOException {\r\n");
+  printer->Print("public void writeTo(pb::CodedOutputStream output) {\r\n");
   printer->Indent();
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "com.google.protobuf.GeneratedMessage.ExtendableMessage\r\n"
-      "  .ExtensionWriter extensionWriter = newExtensionWriter();\r\n");
+      "pb::GeneratedMessage.ExtendableMessage.ExtensionWriter extensionWriter = NewExtensionWriter();\r\n");
   }
 
   // Merge the fields and the extension ranges, both sorted by field number.
@@ -321,10 +311,10 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print(
-      "getUnknownFields().writeAsMessageSetTo(output);\r\n");
+      "UnknownFields.WriteAsMessageSetTo(output);\r\n");
   } else {
     printer->Print(
-      "getUnknownFields().writeTo(output);\r\n");
+      "UnknownFields.WriteTo(output);\r\n");
   }
 
   printer->Outdent();
@@ -332,34 +322,38 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     "}\r\n"
     "\r\n"
     "private int memoizedSerializedSize = -1;\r\n"
-    "public int getSerializedSize() {\r\n"
-    "  int size = memoizedSerializedSize;\r\n"
-    "  if (size != -1) return size;\r\n"
-    "\r\n"
-    "  size = 0;\r\n");
+    "public int SerializedSize {\r\n");
   printer->Indent();
-
+  printer->Print("get {\r\n");
+  printer->Indent();
+  printer->Print(
+    "int size = memoizedSerializedSize;\r\n"
+    "if (size != -1) return size;\r\n"
+    "\r\n"
+    "size = 0;\r\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
   }
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "size += extensionsSerializedSize();\r\n");
+      "size += ExtensionsSerializedSize;\r\n");
   }
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print(
-      "size += getUnknownFields().getSerializedSizeAsMessageSet();\r\n");
+      "size += UnknownFields.SerializedSizeAsMessageSet;\r\n");
   } else {
     printer->Print(
-      "size += getUnknownFields().getSerializedSize();\r\n");
+      "size += UnknownFieldsSerializedSize;\r\n");
   }
 
   printer->Outdent();
+  printer->Outdent();
   printer->Print(
-    "  memoizedSerializedSize = size;\r\n"
-    "  return size;\r\n"
+    "    memoizedSerializedSize = size;\r\n"
+    "    return size;\r\n"
+    "  }\r\n"
     "}\r\n"
     "\r\n");
 }
@@ -370,49 +364,36 @@ GenerateParseFromMethods(io::Printer* printer) {
   //   because they need to be generated even for messages that are optimized
   //   for code size.
   printer->Print(
-    "public static $classname$ parseFrom(\r\n"
-    "    com.google.protobuf.ByteString data)\r\n"
-    "    throws com.google.protobuf.InvalidProtocolBufferException {\r\n"
+    "public static $classname$ parseFrom(pb::ByteString data) {\r\n"
     "  return newBuilder().mergeFrom(data).buildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(\r\n"
-    "    com.google.protobuf.ByteString data,\r\n"
-    "    com.google.protobuf.ExtensionRegistry extensionRegistry)\r\n"
-    "    throws com.google.protobuf.InvalidProtocolBufferException {\r\n"
+    "public static $classname$ parseFrom(pb::ByteString data,\r\n"
+    "    pb::ExtensionRegistry extensionRegistry) {\r\n"
     "  return newBuilder().mergeFrom(data, extensionRegistry)\r\n"
     "           .buildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(byte[] data)\r\n"
-    "    throws com.google.protobuf.InvalidProtocolBufferException {\r\n"
+    "public static $classname$ parseFrom(byte[] data) {\r\n"
     "  return newBuilder().mergeFrom(data).buildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(\r\n"
-    "    byte[] data,\r\n"
-    "    com.google.protobuf.ExtensionRegistry extensionRegistry)\r\n"
-    "    throws com.google.protobuf.InvalidProtocolBufferException {\r\n"
+    "public static $classname$ parseFrom(byte[] data,\r\n"
+    "    pb::ExtensionRegistry extensionRegistry) {\r\n"
     "  return newBuilder().mergeFrom(data, extensionRegistry)\r\n"
     "           .buildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(java.io.InputStream input)\r\n"
-    "    throws java.io.IOException {\r\n"
+    "public static $classname$ parseFrom(global::System.IO.Stream input) {\r\n"
     "  return newBuilder().mergeFrom(input).buildParsed();\r\n"
     "}\r\n"
     "public static $classname$ parseFrom(\r\n"
-    "    java.io.InputStream input,\r\n"
-    "    com.google.protobuf.ExtensionRegistry extensionRegistry)\r\n"
-    "    throws java.io.IOException {\r\n"
+    "    global::System.IO.Stream input,\r\n"
+    "    pb::ExtensionRegistry extensionRegistry) {\r\n"
     "  return newBuilder().mergeFrom(input, extensionRegistry)\r\n"
     "           .buildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(\r\n"
-    "    com.google.protobuf.CodedInputStream input)\r\n"
-    "    throws java.io.IOException {\r\n"
+    "public static $classname$ parseFrom(pb::CodedInputStream input) {\r\n"
     "  return newBuilder().mergeFrom(input).buildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(\r\n"
-    "    com.google.protobuf.CodedInputStream input,\r\n"
-    "    com.google.protobuf.ExtensionRegistry extensionRegistry)\r\n"
-    "    throws java.io.IOException {\r\n"
+    "public static $classname$ parseFrom(pb::CodedInputStream input,\r\n"
+    "    pb::ExtensionRegistry extensionRegistry) {\r\n"
     "  return newBuilder().mergeFrom(input, extensionRegistry)\r\n"
     "           .buildParsed();\r\n"
     "}\r\n"
@@ -446,14 +427,12 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "public static final class Builder extends\r\n"
-      "    com.google.protobuf.GeneratedMessage.ExtendableBuilder<\r\n"
+      "public sealed class Builder : pb::GeneratedMessage.ExtendableBuilder<\r\n"
       "      $classname$, Builder> {\r\n",
       "classname", ClassName(descriptor_));
   } else {
     printer->Print(
-      "public static final class Builder extends\r\n"
-      "    com.google.protobuf.GeneratedMessage.Builder<Builder> {\r\n",
+      "public sealed class Builder : pb::GeneratedMessage.Builder<Builder> {\r\n",
       "classname", ClassName(descriptor_));
   }
   printer->Indent();
@@ -499,7 +478,7 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "  return new Builder().mergeFrom(result);\r\n"
     "}\r\n"
     "\r\n"
-    "public com.google.protobuf.Descriptors.Descriptor\r\n"
+    "public pb::Descriptors.Descriptor\r\n"
     "    getDescriptorForType() {\r\n"
     "  return $classname$.getDescriptor();\r\n"
     "}\r\n"
@@ -515,16 +494,15 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
   printer->Print(
     "public $classname$ build() {\r\n"
     "  if (!isInitialized()) {\r\n"
-    "    throw new com.google.protobuf.UninitializedMessageException(\r\n"
+    "    throw new pb::UninitializedMessageException(\r\n"
     "      result);\r\n"
     "  }\r\n"
     "  return buildPartial();\r\n"
     "}\r\n"
     "\r\n"
-    "private $classname$ buildParsed()\r\n"
-    "    throws com.google.protobuf.InvalidProtocolBufferException {\r\n"
+    "private $classname$ buildParsed() {\r\n"
     "  if (!isInitialized()) {\r\n"
-    "    throw new com.google.protobuf.UninitializedMessageException(\r\n"
+    "    throw new pb::UninitializedMessageException(\r\n"
     "      result).asInvalidProtocolBufferException();\r\n"
     "  }\r\n"
     "  return buildPartial();\r\n"
@@ -551,7 +529,7 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
 
   if (descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
     printer->Print(
-      "public Builder mergeFrom(com.google.protobuf.Message other) {\r\n"
+      "public Builder mergeFrom(pb::Message other) {\r\n"
       "  if (other instanceof $classname$) {\r\n"
       "    return mergeFrom(($classname$)other);\r\n"
       "  } else {\r\n"
@@ -588,21 +566,19 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
 
   printer->Print(
     "public Builder mergeFrom(\r\n"
-    "    com.google.protobuf.CodedInputStream input)\r\n"
-    "    throws java.io.IOException {\r\n"
+    "    pb::CodedInputStream input) {\r\n"
     "  return mergeFrom(input,\r\n"
-    "    com.google.protobuf.ExtensionRegistry.getEmptyRegistry());\r\n"
+    "    pb::ExtensionRegistry.getEmptyRegistry());\r\n"
     "}\r\n"
     "\r\n"
     "public Builder mergeFrom(\r\n"
-    "    com.google.protobuf.CodedInputStream input,\r\n"
-    "    com.google.protobuf.ExtensionRegistry extensionRegistry)\r\n"
-    "    throws java.io.IOException {\r\n");
+    "    pb::CodedInputStream input,\r\n"
+    "    pb::ExtensionRegistry extensionRegistry) {\r\n");
   printer->Indent();
 
   printer->Print(
-    "com.google.protobuf.UnknownFieldSet.Builder unknownFields =\r\n"
-    "  com.google.protobuf.UnknownFieldSet.newBuilder(\r\n"
+    "pb::UnknownFieldSet.Builder unknownFields =\r\n"
+    "  pb::UnknownFieldSet.newBuilder(\r\n"
     "    this.getUnknownFields());\r\n"
     "while (true) {\r\n");
   printer->Indent();

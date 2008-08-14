@@ -57,20 +57,20 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
   if (descriptor_->is_repeated()) {
     printer->Print(vars,
       "public static final\r\n"
-      "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\r\n"
+      "  pb::GeneratedMessage.GeneratedExtension<\r\n"
       "    $containing_type$,\r\n"
       "    java.util.List<$type$>> $name$ =\r\n"
-      "      com.google.protobuf.GeneratedMessage\r\n"
+      "      pb::GeneratedMessage\r\n"
       "        .newRepeatedGeneratedExtension(\r\n"
       "          getDescriptor().getExtensions().get($index$),\r\n"
       "          $type$.class);\r\n");
   } else {
     printer->Print(vars,
       "public static final\r\n"
-      "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\r\n"
+      "  pb::GeneratedMessage.GeneratedExtension<\r\n"
       "    $containing_type$,\r\n"
       "    $type$> $name$ =\r\n"
-      "      com.google.protobuf.GeneratedMessage.newGeneratedExtension(\r\n"
+      "      pb::GeneratedMessage.newGeneratedExtension(\r\n"
       "        getDescriptor().getExtensions().get($index$),\r\n"
       "        $type$.class);\r\n");
   }
