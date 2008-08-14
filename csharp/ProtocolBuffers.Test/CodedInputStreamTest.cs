@@ -274,65 +274,65 @@ namespace Google.ProtocolBuffers {
         // success.
       }
     }
-
     
-    /* TODO(jonskeet): Reinstate this when protoc is ready
-    private TestRecursiveMessage makeRecursiveMessage(int depth) {
+    private static TestRecursiveMessage MakeRecursiveMessage(int depth) {
       if (depth == 0) {
-        return TestRecursiveMessage.newBuilder().setI(5).build();
+        return TestRecursiveMessage.CreateBuilder().SetI(5).Build();
       } else {
-        return TestRecursiveMessage.newBuilder()
-          .setA(makeRecursiveMessage(depth - 1)).build();
+        return TestRecursiveMessage.CreateBuilder()
+          .SetA(MakeRecursiveMessage(depth - 1)).Build();
       }
     }
 
-    private void assertMessageDepth(TestRecursiveMessage message, int depth) {
+    private static void AssertMessageDepth(TestRecursiveMessage message, int depth) {
       if (depth == 0) {
-        assertFalse(message.hasA());
-        assertEquals(5, message.getI());
+        Assert.IsFalse(message.HasA);
+        Assert.AreEqual(5, message.I);
       } else {
-        assertTrue(message.hasA());
-        assertMessageDepth(message.getA(), depth - 1);
+        Assert.IsTrue(message.HasA);
+        AssertMessageDepth(message.A, depth - 1);
       }
     }
 
-    public void testMaliciousRecursion() {
-      ByteString data64 = makeRecursiveMessage(64).toByteString();
-      ByteString data65 = makeRecursiveMessage(65).toByteString();
+    [Test]
+    public void MaliciousRecursion() {
+      ByteString data64 = MakeRecursiveMessage(64).ToByteString();
+      ByteString data65 = MakeRecursiveMessage(65).ToByteString();
 
-      assertMessageDepth(TestRecursiveMessage.parseFrom(data64), 64);
+      AssertMessageDepth(TestRecursiveMessage.ParseFrom(data64), 64);
 
       try {
-        TestRecursiveMessage.parseFrom(data65);
-        fail("Should have thrown an exception!");
-      } catch (InvalidProtocolBufferException e) {
+        TestRecursiveMessage.ParseFrom(data65);
+        Assert.Fail("Should have thrown an exception!");
+      } catch (InvalidProtocolBufferException) {
         // success.
       }
 
-      CodedInputStream input = data64.newCodedInput();
-      input.setRecursionLimit(8);
+      CodedInputStream input = data64.CreateCodedInput();
+      input.SetRecursionLimit(8);
       try {
-        TestRecursiveMessage.parseFrom(input);
-        fail("Should have thrown an exception!");
-      } catch (InvalidProtocolBufferException e) {
+        TestRecursiveMessage.ParseFrom(input);
+        Assert.Fail("Should have thrown an exception!");
+      } catch (InvalidProtocolBufferException) {
         // success.
       }
     }
-     */
 
-     /* TODO(jonskeet): Reinstate this when protoc is ready
-    public void testSizeLimit() throws Exception {
-      CodedInputStream input = CodedInputStream.newInstance(
-        TestUtil.getAllSet().toByteString().newInput());
-      input.setSizeLimit(16);
+    [Test]
+    public void SizeLimit() {
+      // Have to use a Stream rather than ByteString.CreateCodedInput as SizeLimit doesn't
+      // apply to the latter case.
+      MemoryStream ms = new MemoryStream(TestUtil.GetAllSet().ToByteString().ToByteArray());
+      CodedInputStream input = CodedInputStream.CreateInstance(ms);
+      input.SetSizeLimit(16);
 
       try {
-        TestAllTypes.parseFrom(input);
-        fail("Should have thrown an exception!");
-      } catch (InvalidProtocolBufferException e) {
+        TestAllTypes.ParseFrom(input);
+        Assert.Fail("Should have thrown an exception!");
+      } catch (InvalidProtocolBufferException) {
         // success.
       }
-    }*/
+    }
 
     /// <summary>
     /// Tests that if we read an string that contains invalid UTF-8, no exception

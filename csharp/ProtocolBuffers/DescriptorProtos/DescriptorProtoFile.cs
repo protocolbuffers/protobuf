@@ -161,7 +161,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     #endregion
     
     #region Extensions
-    /**/
     #endregion
     
     #region Static variables
@@ -545,6 +544,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         self::FileDescriptorProto returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -1128,6 +1131,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             return returnMe;
           }
           
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
+          }
+          
           public override IBuilder MergeFrom(pb::IMessage other) {
             if (other is self::DescriptorProto.Types.ExtensionRange) {
               return MergeFrom((self::DescriptorProto.Types.ExtensionRange) other);
@@ -1457,6 +1464,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         self::DescriptorProto returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -2130,6 +2141,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::FieldDescriptorProto) {
           return MergeFrom((self::FieldDescriptorProto) other);
@@ -2582,6 +2597,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::EnumDescriptorProto) {
           return MergeFrom((self::EnumDescriptorProto) other);
@@ -2919,6 +2938,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::EnumValueDescriptorProto) {
           return MergeFrom((self::EnumValueDescriptorProto) other);
@@ -3229,6 +3252,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         self::ServiceDescriptorProto returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -3582,6 +3609,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         self::MethodDescriptorProto returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -4022,6 +4053,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::FileOptions) {
           return MergeFrom((self::FileOptions) other);
@@ -4437,6 +4472,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::MessageOptions) {
           return MergeFrom((self::MessageOptions) other);
@@ -4664,6 +4703,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::FieldOptions) {
           return MergeFrom((self::FieldOptions) other);
@@ -4881,6 +4924,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::EnumOptions) {
           return MergeFrom((self::EnumOptions) other);
@@ -5039,6 +5086,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         self::EnumValueOptions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -5201,6 +5252,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::ServiceOptions) {
           return MergeFrom((self::ServiceOptions) other);
@@ -5359,6 +5414,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         self::MethodOptions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {

@@ -34,7 +34,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
-    /**/
     #endregion
     
     #region Static variables
@@ -190,6 +189,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::ImportMessage returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {

@@ -70,6 +70,9 @@ namespace Google.ProtocolBuffers {
     }
 
     private void Write(string data) {
+      if (data.Length == 0) {
+        return;
+      }
       if (atStartOfLine) {
         atStartOfLine = false;
         writer.Write(indent);

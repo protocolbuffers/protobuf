@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -33,14 +34,14 @@ namespace Google.ProtocolBuffers {
     private readonly FieldDescriptor descriptor;
     private readonly IMessage messageDefaultInstance;
 
-    protected GeneratedExtensionBase(FieldDescriptor descriptor) {
+    protected GeneratedExtensionBase(FieldDescriptor descriptor, Type singularExtensionType) {
       if (!descriptor.IsExtension) {
         throw new ArgumentException("GeneratedExtension given a regular (non-extension) field.");
       }
 
       this.descriptor = descriptor;
       if (descriptor.MappedType == MappedType.Message) {
-        PropertyInfo defaultInstanceProperty = typeof(TExtension)
+        PropertyInfo defaultInstanceProperty = singularExtensionType
             .GetProperty("DefaultInstance", BindingFlags.Static | BindingFlags.Public);
         if (defaultInstanceProperty == null) {
           throw new ArgumentException("No public static DefaultInstance property for type " + typeof(TExtension).Name);
@@ -81,6 +82,38 @@ namespace Google.ProtocolBuffers {
         default:
           return value;
       }
+    }
+
+    /// <summary>
+    /// Converts from the type used by the native accessors to the type
+    /// used by reflection accessors. For example, the reflection accessors
+    /// for enums use EnumValueDescriptors but the native accessors use
+    /// the generated enum type.
+    /// </summary>
+    public object ToReflectionType(object value) {
+      if (descriptor.IsRepeated) {
+        if (descriptor.MappedType == MappedType.Enum) {
+          // Must convert the whole list.
+          IList<object> result = new List<object>();
+          foreach (object element in (IEnumerable) value) {
+            result.Add(SingularToReflectionType(element));
+          }
+          return result;
+        } else {
+          return value;
+        }
+      } else {
+        return SingularToReflectionType(value);
+      }
+    }
+
+    /// <summary>
+    /// Like ToReflectionType(object) but for a single element.
+    /// </summary>
+    internal Object SingularToReflectionType(object value) {
+      return descriptor.MappedType == MappedType.Enum
+          ? descriptor.EnumType.FindValueByNumber((int) value)
+          : value;
     }
 
     public abstract object FromReflectionType(object value);

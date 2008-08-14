@@ -16,6 +16,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
@@ -171,15 +172,13 @@ namespace Google.ProtocolBuffers {
       if (otherMessage == null || otherMessage.DescriptorForType != DescriptorForType) {
         return false;
       }
-      // TODO(jonskeet): Check that dictionaries support equality appropriately
-      // (I suspect they don't!)
-      return AllFields.Equals(otherMessage.AllFields);
+      return Dictionaries.Equals(AllFields, otherMessage.AllFields);
     }
 
     public override int GetHashCode() {
       int hash = 41;
       hash = (19 * hash) + DescriptorForType.GetHashCode();
-      hash = (53 * hash) + AllFields.GetHashCode();
+      hash = (53 * hash) + Dictionaries.GetHashCode(AllFields);
       return hash;
     }
   }

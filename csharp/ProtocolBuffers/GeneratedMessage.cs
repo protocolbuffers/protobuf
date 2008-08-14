@@ -48,8 +48,11 @@ namespace Google.ProtocolBuffers {
       MessageDescriptor descriptor = DescriptorForType;
       foreach (FieldDescriptor field in descriptor.Fields) {
         IFieldAccessor accessor = InternalFieldAccessors[field];
-        if ((field.IsRepeated && accessor.GetRepeatedCount(this) != 0)
-            || accessor.Has(this)) {
+        if (field.IsRepeated) {
+          if (accessor.GetRepeatedCount(this) != 0) {
+            ret[field] = accessor.GetValue(this);
+          }
+        } else if (HasField(field)) {
           ret[field] = accessor.GetValue(this);
         }
       }

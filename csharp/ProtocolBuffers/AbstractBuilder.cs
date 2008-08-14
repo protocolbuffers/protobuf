@@ -8,6 +8,7 @@ using System.IO;
 namespace Google.ProtocolBuffers {
   /// <summary>
   /// Implementation of the non-generic IMessage interface as far as possible.
+  /// TODO(jonskeet): Make this generic, to avoid so much casting in DynamicMessage.
   /// </summary>
   public abstract class AbstractBuilder : IBuilder {
     #region Unimplemented members of IBuilder
@@ -57,7 +58,7 @@ namespace Google.ProtocolBuffers {
     }
     #endregion
 
-    public IBuilder Clear() {
+    public virtual IBuilder Clear() {
       foreach(FieldDescriptor field in AllFields.Keys) {
         ClearFieldImpl(field);
       }
@@ -168,5 +169,15 @@ namespace Google.ProtocolBuffers {
     }
 
     public abstract UnknownFieldSet UnknownFields { get; set; }
+    
+    public IBuilder SetField(FieldDescriptor field, object value) {
+      this[field] = value;
+      return this;
+    }
+
+    public IBuilder SetRepeatedField(FieldDescriptor field, int index, object value) {
+      this[field, index] = value;
+      return this;
+    }
   }
 }

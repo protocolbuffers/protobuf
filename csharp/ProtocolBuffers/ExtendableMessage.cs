@@ -13,9 +13,16 @@ namespace Google.ProtocolBuffers {
     private readonly FieldSet extensions = FieldSet.CreateFieldSet();
 
     /// <summary>
+    /// Access for the builder.
+    /// </summary>
+    internal FieldSet Extensions {
+      get { return extensions; }
+    }
+
+    /// <summary>
     /// Checks if a singular extension is present.
     /// </summary>
-    public bool HasExtension(GeneratedExtensionBase<TMessage, TBuilder> extension) {
+    public bool HasExtension<TExtension>(GeneratedExtensionBase<TMessage, TExtension> extension) {
       return extensions.HasField(extension.Descriptor);
     }
 
@@ -111,7 +118,7 @@ namespace Google.ProtocolBuffers {
       }
     }
   
-    private void VerifyContainingType(FieldDescriptor field) {
+    internal void VerifyContainingType(FieldDescriptor field) {
       if (field.ContainingType != DescriptorForType) {
         throw new ArgumentException("FieldDescriptor does not match message type.");
       }
@@ -160,6 +167,14 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     protected int ExtensionsSerializedSize {
       get { return extensions.SerializedSize; }
+    }
+
+    internal void VerifyExtensionContainingType<TExtension>(GeneratedExtensionBase<TMessage, TExtension> extension) {
+      if (extension.Descriptor.ContainingType != DescriptorForType) {
+        // This can only happen if someone uses unchecked operations.
+        throw new ArgumentException("Extension is for type \"" + extension.Descriptor.ContainingType.FullName
+          + "\" which does not match message type \"" + DescriptorForType.FullName + "\".");
+      }
     }
   }
 }

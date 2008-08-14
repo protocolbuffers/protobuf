@@ -14,6 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
 namespace Google.ProtocolBuffers {
@@ -31,6 +32,10 @@ namespace Google.ProtocolBuffers {
         bytes[i] = (byte) bytesAsInts[i];
       }
       return bytes;
+    }
+
+    private static void AssertEqualBytes(byte[] a, byte[] b) {
+      Assert.AreEqual(ByteString.CopyFrom(a), ByteString.CopyFrom(b));
     }
 
     /// <summary>
@@ -174,24 +179,23 @@ namespace Google.ProtocolBuffers {
         0x9abcdef012345678UL);
     }
 
-    /* TODO(jonskeet): Put this back when we've got the rest working!
     [Test]
-    public void testWriteWholeMessage() throws Exception {
-      TestAllTypes message = TestUtil.getAllSet();
+    public void WriteWholeMessage() {
+      TestAllTypes message = TestUtil.GetAllSet();
 
-      byte[] rawBytes = message.toByteArray();
-      assertEqualBytes(TestUtil.getGoldenMessage().toByteArray(), rawBytes);
+      byte[] rawBytes = message.ToByteArray();
+      AssertEqualBytes(TestUtil.GoldenMessage.ToByteArray(), rawBytes);
 
       // Try different block sizes.
       for (int blockSize = 1; blockSize < 256; blockSize *= 2) {
         MemoryStream rawOutput = new MemoryStream();
         CodedOutputStream output =
-          CodedOutputStream.newInstance(rawOutput, blockSize);
-        message.writeTo(output);
-        output.flush();
-        assertEqualBytes(rawBytes, rawOutput.toByteArray());
+          CodedOutputStream.CreateInstance(rawOutput, blockSize);
+        message.WriteTo(output);
+        output.Flush();
+        AssertEqualBytes(rawBytes, rawOutput.ToArray());
       }
-    } */
+    }
 
 
     [Test]

@@ -51,6 +51,18 @@ namespace Google.ProtocolBuffers {
     object this[FieldDescriptor field] { get; set; }
 
     /// <summary>
+    /// Only present in the nongeneric interface - useful for tests, but
+    /// not as much in real life.
+    /// </summary>
+    IBuilder SetField(FieldDescriptor field, object value);
+
+    /// <summary>
+    /// Only present in the nongeneric interface - useful for tests, but
+    /// not as much in real life.
+    /// </summary>
+    IBuilder SetRepeatedField(FieldDescriptor field, int index, object value);
+
+    /// <summary>
     /// Get the message's type's descriptor.
     /// <see cref="IMessage{T}.DescriptorForType"/>
     /// </summary>

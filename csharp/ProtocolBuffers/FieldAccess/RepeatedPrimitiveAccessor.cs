@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public int GetRepeatedCount(IMessage message) {
-      return (int) countProperty.GetValue(null, null);
+      return (int) countProperty.GetValue(message, null);
     }
 
     public virtual object GetRepeatedValue(IMessage message, int index) {

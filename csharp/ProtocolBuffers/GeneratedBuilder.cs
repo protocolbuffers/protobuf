@@ -65,7 +65,7 @@ namespace Google.ProtocolBuffers {
     /// Called by derived classes to parse an unknown field.
     /// </summary>
     /// <returns>true unless the tag is an end-group tag</returns>
-    protected bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
+    protected virtual bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
                                      ExtensionRegistry extensionRegistry, uint tag) {
       return unknownFields.MergeFieldFrom(tag, input);
     }
@@ -115,7 +115,7 @@ namespace Google.ProtocolBuffers {
       return AddRepeatedField(field, value);
     }
 
-    public IBuilder<TMessage> ClearField(FieldDescriptor field) {
+    public virtual IBuilder<TMessage> ClearField(FieldDescriptor field) {
       InternalFieldAccessors[field].Clear(this);
       return this;
     }
@@ -155,7 +155,7 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
-    public IBuilder<TMessage> AddRepeatedField(FieldDescriptor field, object value) {
+    public virtual IBuilder<TMessage> AddRepeatedField(FieldDescriptor field, object value) {
       InternalFieldAccessors[field].AddRepeated(this, value);
       return this;
     }
@@ -190,18 +190,20 @@ namespace Google.ProtocolBuffers {
       return this;
     }
 
+    /// <summary>
+    /// Overridden when optimized for speed.
+    /// </summary>
     public virtual IBuilder<TMessage> MergeFrom(CodedInputStream input) {
       ((IBuilder)this).MergeFrom(input);
       return this;
     }
 
+    /// <summary>
+    /// Overridden when optimized for speed.
+    /// </summary>
     public virtual IBuilder<TMessage> MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
       ((IBuilder)this).MergeFrom(input, extensionRegistry);
       return this;
-    }
-
-    protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-      return MergeFrom(data, extensionRegistry);
     }
     
     /// <summary>

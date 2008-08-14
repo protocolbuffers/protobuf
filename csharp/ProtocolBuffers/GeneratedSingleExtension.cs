@@ -9,7 +9,7 @@ namespace Google.ProtocolBuffers {
   public class GeneratedSingleExtension<TContainer, TExtension> : GeneratedExtensionBase<TContainer, TExtension>    
       where TContainer : IMessage<TContainer> {
 
-    internal GeneratedSingleExtension(FieldDescriptor descriptor) : base(descriptor) {
+    internal GeneratedSingleExtension(FieldDescriptor descriptor) : base(descriptor, typeof(TExtension)) {
     }
 
     public static GeneratedSingleExtension<TContainer, TExtension> CreateInstance(FieldDescriptor descriptor) {

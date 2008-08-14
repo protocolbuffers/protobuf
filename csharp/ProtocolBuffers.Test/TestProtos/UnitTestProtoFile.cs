@@ -632,7 +632,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
-    /*public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> OptionalInt32Extension =
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> OptionalInt32Extension =
           pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[0]);
     public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> OptionalInt64Extension =
           pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[1]);
@@ -681,76 +681,76 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> OptionalCordExtension =
           pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[23]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> RepeatedInt32Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[24]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> RepeatedInt64Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[25]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<uint>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<uint>> RepeatedUint32Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[26]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<ulong>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<ulong>> RepeatedUint64Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[27]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> RepeatedSint32Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[28]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> RepeatedSint64Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[29]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<uint>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<uint>> RepeatedFixed32Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[30]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<ulong>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<ulong>> RepeatedFixed64Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[31]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> RepeatedSfixed32Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[32]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> RepeatedSfixed64Extension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[33]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<float>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<float>> RepeatedFloatExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, float>.CreateInstance(Descriptor.Extensions[34]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<double>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<double>> RepeatedDoubleExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, double>.CreateInstance(Descriptor.Extensions[35]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<bool>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<bool>> RepeatedBoolExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, bool>.CreateInstance(Descriptor.Extensions[36]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> RepeatedStringExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[37]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<pb::ByteString>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<pb::ByteString>> RepeatedBytesExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, pb::ByteString>.CreateInstance(Descriptor.Extensions[38]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::RepeatedGroup_extension>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::RepeatedGroup_extension>> RepeatedGroupExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::RepeatedGroup_extension>.CreateInstance(Descriptor.Extensions[39]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedMessage>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedMessage>> RepeatedNestedMessageExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[40]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ForeignMessage>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ForeignMessage>> RepeatedForeignMessageExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ForeignMessage>.CreateInstance(Descriptor.Extensions[41]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ImportMessage>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ImportMessage>> RepeatedImportMessageExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ImportMessage>.CreateInstance(Descriptor.Extensions[42]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedEnum>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedEnum>> RepeatedNestedEnumExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[43]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ForeignEnum>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ForeignEnum>> RepeatedForeignEnumExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ForeignEnum>.CreateInstance(Descriptor.Extensions[44]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ImportEnum>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ImportEnum>> RepeatedImportEnumExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ImportEnum>.CreateInstance(Descriptor.Extensions[45]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> RepeatedStringPieceExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[46]);
     public static readonly
-      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> name =
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> RepeatedCordExtension =
           pb::GeneratedRepeatExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[47]);
     public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> DefaultInt32Extension =
           pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[48]);
@@ -796,7 +796,6 @@ namespace Google.ProtocolBuffers.TestProtos {
           pb::GeneratedSingleExtension<self::TestFieldOrderings, string>.CreateInstance(Descriptor.Extensions[68]);
     public static readonly pb::GeneratedExtensionBase<self::TestFieldOrderings, int> MyExtensionInt =
           pb::GeneratedSingleExtension<self::TestFieldOrderings, int>.CreateInstance(Descriptor.Extensions[69]);
-    */
     #endregion
     
     #region Static variables
@@ -1195,6 +1194,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
+          }
+          
           public override IBuilder MergeFrom(pb::IMessage other) {
             if (other is self::TestAllTypes.Types.NestedMessage) {
               return MergeFrom((self::TestAllTypes.Types.NestedMessage) other);
@@ -1397,6 +1400,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
+          }
+          
           public override IBuilder MergeFrom(pb::IMessage other) {
             if (other is self::TestAllTypes.Types.OptionalGroup) {
               return MergeFrom((self::TestAllTypes.Types.OptionalGroup) other);
@@ -1597,6 +1604,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             self::TestAllTypes.Types.RepeatedGroup returnMe = result;
             result = null;
             return returnMe;
+          }
+          
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
           }
           
           public override IBuilder MergeFrom(pb::IMessage other) {
@@ -2947,6 +2958,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestAllTypes returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -5485,6 +5500,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::ForeignMessage) {
           return MergeFrom((self::ForeignMessage) other);
@@ -5642,7 +5661,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestAllExtensions, self::TestAllExtensions.Builder>.ExtendableBuilder {
+    public sealed partial class Builder : pb::ExtendableBuilder<self::TestAllExtensions, self::TestAllExtensions.Builder> {
       // Construct using self::TestAllExtensions.CreateBuilder()
       internal Builder() {}
       
@@ -5673,6 +5692,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestAllExtensions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -5849,6 +5872,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::OptionalGroup_extension returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -6053,6 +6080,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::RepeatedGroup_extension) {
           return MergeFrom((self::RepeatedGroup_extension) other);
@@ -6148,7 +6179,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::TestRequired> Single =
             pb::GeneratedSingleExtension<self::TestAllExtensions, self::TestRequired>.CreateInstance(Descriptor.Extensions[0]);
       public static readonly
-        pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestRequired>> name =
+        pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestRequired>> Multi =
             pb::GeneratedRepeatExtension<self::TestAllExtensions, self::TestRequired>.CreateInstance(Descriptor.Extensions[1]);
     }
     #endregion
@@ -6778,6 +6809,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestRequired returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -7857,6 +7892,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::TestRequiredForeign) {
           return MergeFrom((self::TestRequiredForeign) other);
@@ -8162,6 +8201,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::TestForeignNested) {
           return MergeFrom((self::TestForeignNested) other);
@@ -8369,6 +8412,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::TestEmptyMessage) {
           return MergeFrom((self::TestEmptyMessage) other);
@@ -8500,7 +8547,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestEmptyMessageWithExtensions, self::TestEmptyMessageWithExtensions.Builder>.ExtendableBuilder {
+    public sealed partial class Builder : pb::ExtendableBuilder<self::TestEmptyMessageWithExtensions, self::TestEmptyMessageWithExtensions.Builder> {
       // Construct using self::TestEmptyMessageWithExtensions.CreateBuilder()
       internal Builder() {}
       
@@ -8531,6 +8578,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestEmptyMessageWithExtensions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -8723,6 +8774,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestReallyLargeTagNumber returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -8967,6 +9022,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestRecursiveMessage returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -9218,6 +9277,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::TestMutualRecursionA) {
           return MergeFrom((self::TestMutualRecursionA) other);
@@ -9455,6 +9518,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestMutualRecursionB returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -9729,6 +9796,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
+          }
+          
           public override IBuilder MergeFrom(pb::IMessage other) {
             if (other is self::TestDupFieldNumber.Types.Foo) {
               return MergeFrom((self::TestDupFieldNumber.Types.Foo) other);
@@ -9929,6 +10000,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             self::TestDupFieldNumber.Types.Bar returnMe = result;
             result = null;
             return returnMe;
+          }
+          
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
           }
           
           public override IBuilder MergeFrom(pb::IMessage other) {
@@ -10145,6 +10220,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestDupFieldNumber returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -10491,6 +10570,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
+          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+            return MergeFrom(data, extensionRegistry);
+          }
+          
           public override IBuilder MergeFrom(pb::IMessage other) {
             if (other is self::TestNestedMessageHasBits.Types.NestedMessage) {
               return MergeFrom((self::TestNestedMessageHasBits.Types.NestedMessage) other);
@@ -10746,6 +10829,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestNestedMessageHasBits returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -11169,6 +11256,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestCamelCaseFieldNames returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -11810,7 +11901,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestFieldOrderings, self::TestFieldOrderings.Builder>.ExtendableBuilder {
+    public sealed partial class Builder : pb::ExtendableBuilder<self::TestFieldOrderings, self::TestFieldOrderings.Builder> {
       // Construct using self::TestFieldOrderings.CreateBuilder()
       internal Builder() {}
       
@@ -11841,6 +11932,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::TestFieldOrderings returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -12177,6 +12272,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::TestExtremeDefaultValues) {
           return MergeFrom((self::TestExtremeDefaultValues) other);
@@ -12493,6 +12592,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::FooRequest) {
           return MergeFrom((self::FooRequest) other);
@@ -12651,6 +12754,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::FooResponse returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {
@@ -12813,6 +12920,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
+      }
+      
       public override IBuilder MergeFrom(pb::IMessage other) {
         if (other is self::BarRequest) {
           return MergeFrom((self::BarRequest) other);
@@ -12971,6 +13082,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         self::BarResponse returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+        return MergeFrom(data, extensionRegistry);
       }
       
       public override IBuilder MergeFrom(pb::IMessage other) {

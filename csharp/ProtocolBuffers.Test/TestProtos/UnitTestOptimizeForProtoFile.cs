@@ -39,7 +39,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
-    /**/
     #endregion
     
     #region Static variables
@@ -146,7 +145,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestOptimizedForSize, self::TestOptimizedForSize.Builder>.ExtendableBuilder {
+    public sealed partial class Builder : pb::ExtendableBuilder<self::TestOptimizedForSize, self::TestOptimizedForSize.Builder> {
       // Construct using self::TestOptimizedForSize.CreateBuilder()
       internal Builder() {}
       

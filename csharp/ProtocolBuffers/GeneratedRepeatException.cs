@@ -8,11 +8,11 @@ namespace Google.ProtocolBuffers {
   /// Class used to represent repeat extensions in generated classes.
   /// </summary>
   public class GeneratedRepeatExtension<TContainer, TExtensionElement> : GeneratedExtensionBase<TContainer, IList<TExtensionElement>> {
-    private GeneratedRepeatExtension(FieldDescriptor field) : base(field) {
+    private GeneratedRepeatExtension(FieldDescriptor field) : base(field, typeof(TExtensionElement)) {
     }
 
     public static GeneratedExtensionBase<TContainer, IList<TExtensionElement>> CreateInstance(FieldDescriptor descriptor) {
-      if (descriptor.IsRepeated) {
+      if (!descriptor.IsRepeated) {
         throw new ArgumentException("Must call GeneratedRepeatExtension.CreateInstance() for repeated types.");
       }
       return new GeneratedRepeatExtension<TContainer, TExtensionElement>(descriptor);

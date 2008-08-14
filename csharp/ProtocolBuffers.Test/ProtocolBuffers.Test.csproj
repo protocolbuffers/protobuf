@@ -44,10 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractMessageTest.cs" />
     <Compile Include="ByteStringTest.cs" />
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReflectionTester.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
