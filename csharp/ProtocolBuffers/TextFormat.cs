@@ -7,5 +7,9 @@ namespace Google.ProtocolBuffers {
     public static string PrintToString(IMessage message) {
       throw new NotImplementedException();
     }
+
+    internal static string PrintToString(UnknownFieldSet unknownFieldSet) {
+      throw new NotImplementedException();
+    }
   }
 }

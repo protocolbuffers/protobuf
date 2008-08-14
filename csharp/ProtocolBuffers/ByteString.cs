@@ -105,6 +105,15 @@ namespace Google.ProtocolBuffers {
       return ToString(Encoding.UTF8);
     }
 
+    /// <summary>
+    /// Creates a CodedInputStream from this ByteString's data.
+    /// </summary>
+    public CodedInputStream CreateCodedInput() {
+      
+      // We trust CodedInputStream not to reveal the provided byte array or modify it
+      return CodedInputStream.CreateInstance(bytes);
+    }
+
     // TODO(jonskeet): CopyTo, Equals, GetHashCode if they turn out to be required
 
     /// <summary>

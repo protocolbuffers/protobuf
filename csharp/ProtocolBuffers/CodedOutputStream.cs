@@ -271,7 +271,7 @@ namespace Google.ProtocolBuffers {
         case FieldType.SFixed64: WriteSFixed64(fieldNumber, (long)value); break;
         case FieldType.SInt32: WriteSInt32(fieldNumber, (int)value); break;
         case FieldType.SInt64: WriteSInt64(fieldNumber, (long)value); break;
-        case FieldType.Enum: WriteEnum(fieldNumber, ((Descriptors.EnumValueDescriptor)value).Number);
+        case FieldType.Enum: WriteEnum(fieldNumber, ((EnumValueDescriptor)value).Number);
           break;
       }
     }
@@ -615,7 +615,7 @@ namespace Google.ProtocolBuffers {
      * @param number The field's number.
      * @param value  Object representing the field's value.  Must be of the exact
      *               type which would be returned by
-     *               {@link Message#getField(Descriptors.FieldDescriptor)} for
+     *               {@link Message#getField(FieldDescriptor)} for
      *               this field.
      */
     public static int ComputeFieldSize(FieldType fieldType, int fieldNumber, Object value) {
@@ -637,7 +637,7 @@ namespace Google.ProtocolBuffers {
         case FieldType.SFixed64: return ComputeSFixed64Size(fieldNumber, (long)value);
         case FieldType.SInt32: return ComputeSInt32Size(fieldNumber, (int)value);
         case FieldType.SInt64: return ComputeSInt64Size(fieldNumber, (long)value);
-        case FieldType.Enum: return ComputeEnumSize(fieldNumber, ((Descriptors.EnumValueDescriptor)value).Number);
+        case FieldType.Enum: return ComputeEnumSize(fieldNumber, ((EnumValueDescriptor)value).Number);
         default:
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }

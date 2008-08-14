@@ -34,13 +34,15 @@ namespace Google.ProtocolBuffers {
 
     #region Unimplemented members of IMessage
     public abstract MessageDescriptor DescriptorForType { get; }
-    public abstract IDictionary<Descriptors.FieldDescriptor, object> AllFields { get; }
-    public abstract bool HasField(Descriptors.FieldDescriptor field);
-    public abstract object this[Descriptors.FieldDescriptor field] { get; }
-    public abstract int GetRepeatedFieldCount(Descriptors.FieldDescriptor field);
-    public abstract object this[Descriptors.FieldDescriptor field, int index] { get; }
+    public abstract IDictionary<FieldDescriptor, object> AllFields { get; }
+    public abstract bool HasField(FieldDescriptor field);
+    public abstract object this[FieldDescriptor field] { get; }
+    public abstract int GetRepeatedFieldCount(FieldDescriptor field);
+    public abstract object this[FieldDescriptor field, int index] { get; }
     public abstract UnknownFieldSet UnknownFields { get; }
-    public abstract IMessage DefaultInstanceForType { get; }
+    // FIXME
+    IMessage IMessage.DefaultInstanceForType { get { return null; } }
+    IBuilder IMessage.CreateBuilderForType() { return null; }
     #endregion
 
     public bool IsInitialized {
@@ -152,8 +154,6 @@ namespace Google.ProtocolBuffers {
       codedOutput.Flush();
     }
 
-    public abstract IBuilder CreateBuilderForType();
-
     public override bool Equals(object other) {
       if (other == this) {
         return true;
@@ -173,5 +173,73 @@ namespace Google.ProtocolBuffers {
       hash = (53 * hash) + AllFields.GetHashCode();
       return hash;
     }
+
+    #region IMessage Members
+
+    MessageDescriptor IMessage.DescriptorForType {
+      get { throw new NotImplementedException(); }
+    }
+
+    IDictionary<FieldDescriptor, object> IMessage.AllFields {
+      get { throw new NotImplementedException(); }
+    }
+
+    bool IMessage.HasField(FieldDescriptor field) {
+      throw new NotImplementedException();
+    }
+
+    object IMessage.this[FieldDescriptor field] {
+      get { throw new NotImplementedException(); }
+    }
+
+    int IMessage.GetRepeatedFieldCount(FieldDescriptor field) {
+      throw new NotImplementedException();
+    }
+
+    object IMessage.this[FieldDescriptor field, int index] {
+      get { throw new NotImplementedException(); }
+    }
+
+    UnknownFieldSet IMessage.UnknownFields {
+      get { throw new NotImplementedException(); }
+    }
+
+    bool IMessage.IsInitialized {
+      get { throw new NotImplementedException(); }
+    }
+
+    void IMessage.WriteTo(CodedOutputStream output) {
+      throw new NotImplementedException();
+    }
+
+    int IMessage.SerializedSize {
+      get { throw new NotImplementedException(); }
+    }
+
+    bool IMessage.Equals(object other) {
+      throw new NotImplementedException();
+    }
+
+    int IMessage.GetHashCode() {
+      throw new NotImplementedException();
+    }
+
+    string IMessage.ToString() {
+      throw new NotImplementedException();
+    }
+
+    ByteString IMessage.ToByteString() {
+      throw new NotImplementedException();
+    }
+
+    byte[] IMessage.ToByteArray() {
+      throw new NotImplementedException();
+    }
+
+    void IMessage.WriteTo(Stream output) {
+      throw new NotImplementedException();
+    }
+
+    #endregion
   }
 }

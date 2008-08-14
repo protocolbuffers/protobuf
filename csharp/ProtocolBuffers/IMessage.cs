@@ -41,11 +41,11 @@ namespace Google.ProtocolBuffers {
     /// field is set iff HasField() returns true for that field.  A "repeated"
     /// field is set iff GetRepeatedFieldSize() is greater than zero.  The
     /// values are exactly what would be returned by calling
-    /// GetField(Descriptors.FieldDescriptor) for each field.  The map
+    /// GetField(FieldDescriptor) for each field.  The map
     /// is guaranteed to be a sorted map, so iterating over it will return fields
     /// in order by field number. 
     /// </summary>
-    IDictionary<Descriptors.FieldDescriptor, object> AllFields { get; }
+    IDictionary<FieldDescriptor, object> AllFields { get; }
 
     /// <summary>
     /// Returns true if the given field is set. This is exactly equivalent
@@ -53,7 +53,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <exception cref="ArgumentException">the field is a repeated field,
     /// or it's not a field of this type</exception>
-    bool HasField(Descriptors.FieldDescriptor field);
+    bool HasField(FieldDescriptor field);
 
     /// <summary>
     /// Obtains the value of the given field, or the default value if
@@ -61,7 +61,7 @@ namespace Google.ProtocolBuffers {
     /// value is returned. For embedded message fields, the sub-message
     /// is returned. For repeated fields, an IList&lt;T&gt; is returned.
     /// </summary>
-    object this[Descriptors.FieldDescriptor field] { get; }
+    object this[FieldDescriptor field] { get; }
 
     /// <summary>
     /// Returns the number of elements of a repeated field. This is
@@ -70,7 +70,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <exception cref="ArgumentException">the field is not a repeated field,
     /// or it's not a field of this type</exception>
-    int GetRepeatedFieldCount(Descriptors.FieldDescriptor field);
+    int GetRepeatedFieldCount(FieldDescriptor field);
 
     /// <summary>
     /// Gets an element of a repeated field. For value type fields 
@@ -81,7 +81,7 @@ namespace Google.ProtocolBuffers {
     /// or it's not a field of this type</exception>
     /// <exception cref="ArgumentOutOfRangeException">the index is out of
     /// range for the repeated field's value</exception>
-    object this[Descriptors.FieldDescriptor field, int index] { get; }
+    object this[FieldDescriptor field, int index] { get; }
 
     /// <summary>
     /// Returns the unknown fields for this message.

@@ -13,5 +13,17 @@ namespace Google.ProtocolBuffers.Descriptors {
 
     public FieldType FieldType { get; set; }
     public int FieldNumber { get; set; }
+
+    public bool IsExtension { get; set; }
+
+    public MessageDescriptor ContainingType { get; set; }
+
+    public string FullName { get; set; }
+
+    public bool IsOptional { get; set; }
+
+    public MessageDescriptor MessageType { get; set; }
+
+    public MessageDescriptor ExtensionScope { get; set; }
   }
 }

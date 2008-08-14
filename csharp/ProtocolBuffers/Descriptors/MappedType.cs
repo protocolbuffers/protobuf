@@ -7,6 +7,14 @@ namespace Google.ProtocolBuffers.Descriptors {
   /// Type as it's mapped onto a .NET type.
   /// </summary>
   public enum MappedType {
-    Message
+    Int32,
+    Int64,
+    Single,
+    Double,
+    Boolean,
+    String,
+    ByteString,
+    Message,
+    Enum
   }
 }

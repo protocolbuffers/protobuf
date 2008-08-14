@@ -43,8 +43,8 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Given a tag value, determines the field number (the upper 29 bits).
     /// </summary>
-    public static uint GetTagFieldNumber(uint tag) {
-      return tag >> TagTypeBits;
+    public static int GetTagFieldNumber(uint tag) {
+      return (int) tag >> TagTypeBits;
     }
 
     /// <summary>

@@ -321,7 +321,7 @@ namespace Google.ProtocolBuffers {
     /// Reads a field of any primitive type. Enums, groups and embedded
     /// messages are not handled by this method.
     /// </summary>
-    public object readPrimitiveField(FieldType fieldType) {
+    public object ReadPrimitiveField(FieldType fieldType) {
       switch (fieldType) {
         case FieldType.Double:   return ReadDouble();
         case FieldType.Float:    return ReadFloat();

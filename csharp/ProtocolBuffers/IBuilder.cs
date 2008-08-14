@@ -29,7 +29,6 @@ namespace Google.ProtocolBuffers {
   /// how IEnumerable and IEnumerable&lt;T&gt; work.
   /// </summary>
   public interface IBuilder {
-    IBuilder MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
     /// <summary>
     /// Returns true iff all required fields in the message and all
     /// embedded messages are set.
@@ -41,15 +40,15 @@ namespace Google.ProtocolBuffers {
     /// The returned map may or may not reflect future changes to the builder.
     /// Either way, the returned map is unmodifiable.
     /// </summary>
-    IDictionary<ProtocolBuffers.Descriptors.FieldDescriptor, object> AllFields { get; }
+    IDictionary<FieldDescriptor, object> AllFields { get; }
 
     /// <summary>
     /// Allows getting and setting of a field.
-    /// <see cref="IMessage{T}.Item(Descriptors.FieldDescriptor)"/>
+    /// <see cref="IMessage{T}.Item(FieldDescriptor)"/>
     /// </summary>
     /// <param name="field"></param>
     /// <returns></returns>
-    object this[Descriptors.FieldDescriptor field] { get; set; }
+    object this[FieldDescriptor field] { get; set; }
 
     /// <summary>
     /// Get the message's type's descriptor.
@@ -62,18 +61,44 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <param name="field"></param>
     /// <returns></returns>
-    int GetRepeatedFieldCount(Descriptors.FieldDescriptor field);
+    int GetRepeatedFieldCount(FieldDescriptor field);
 
     /// <summary>
     /// Allows getting and setting of a repeated field value.
-    /// <see cref="IMessage{T}.Item(Descriptors.FieldDescriptor, int)"/>
+    /// <see cref="IMessage{T}.Item(FieldDescriptor, int)"/>
     /// </summary>
-    object this[Descriptors.FieldDescriptor field, int index] { get; set; }
+    object this[FieldDescriptor field, int index] { get; set; }
 
     /// <summary>
     /// <see cref="IMessage{T}.HasField"/>
     /// </summary>
-    bool HasField(Descriptors.FieldDescriptor field);
+    bool HasField(FieldDescriptor field);
+
+    /// <summary>
+    /// <see cref="IMessage{T}.UnknownFields"/>
+    /// </summary>
+    UnknownFieldSet UnknownFields { get; set; }
+
+    #region Non-generic versions of generic methods in IBuilder<T>
+    IBuilder Clear();
+    IBuilder MergeFrom(IMessage other);
+    IMessage Build();
+    IMessage BuildPartial();
+    IBuilder Clone();
+    IBuilder MergeFrom(CodedInputStream input);
+    IBuilder MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
+    IMessage DefaultInstanceForType { get; }
+    IBuilder NewBuilderForField<TField>(FieldDescriptor field);
+    IBuilder ClearField(FieldDescriptor field);
+    IBuilder AddRepeatedField(FieldDescriptor field, object value);
+    IBuilder MergeUnknownFields(UnknownFieldSet unknownFields);
+    IBuilder MergeFrom(ByteString data);
+    IBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
+    IBuilder MergeFrom(byte[] data);
+    IBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
+    IBuilder MergeFrom(Stream input);
+    IBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
+    #endregion
   }
 
   /// <summary>
@@ -85,7 +110,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Resets all fields to their default values.
     /// </summary>
-    IBuilder<T> Clear();
+    new IBuilder<T> Clear();
 
     /// <summary>
     /// Merge the specified other message into the message being
@@ -111,20 +136,20 @@ namespace Google.ProtocolBuffers {
     /// <exception cref="UninitializedMessageException">the message
     /// is missing one or more required fields; use BuildPartial to bypass
     /// this check</exception>
-    IMessage<T> Build();
+    new IMessage<T> Build();
 
     /// <summary>
     /// Like Build(), but does not throw an exception if the message is missing
     /// required fields. Instead, a partial message is returned.
     /// </summary>
     /// <returns></returns>
-    IMessage<T> BuildPartial();
+    new IMessage<T> BuildPartial();
 
     /// <summary>
     /// Clones this builder.
     /// TODO(jonskeet): Explain depth of clone.
     /// </summary>
-    IBuilder<T> Clone();
+    new IBuilder<T> Clone();
 
     /// <summary>
     /// Parses a message of this type from the input and merges it with this
@@ -145,7 +170,7 @@ namespace Google.ProtocolBuffers {
     /// Use BuildPartial to build, which ignores missing required fields.
     /// </list>
     /// </remarks>
-    IBuilder<T> MergeFrom(CodedInputStream input);
+    new IBuilder<T> MergeFrom(CodedInputStream input);
 
     /// <summary>
     /// Like MergeFrom(CodedInputStream), but also parses extensions.
@@ -159,17 +184,14 @@ namespace Google.ProtocolBuffers {
     /// Get's the message's type's default instance.
     /// <see cref="IMessage{T}.DefaultInstanceForType" />
     /// </summary>
-    IMessage<T> DefaultInstanceForType { get; }
+    new IMessage<T> DefaultInstanceForType { get; }
 
     /// <summary>
     /// Create a builder for messages of the appropriate type for the given field.
     /// Messages built with this can then be passed to the various mutation properties
     /// and methods.
     /// </summary>
-    /// <typeparam name="TField"></typeparam>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    IBuilder<TField> NewBuilderForField<TField>(Descriptors.FieldDescriptor field) where TField : IMessage<TField>;
+    new IBuilder<TField> NewBuilderForField<TField>(FieldDescriptor field) where TField : IMessage<TField>;
 
     /// <summary>
     /// Clears the field. This is exactly equivalent to calling the generated
@@ -177,7 +199,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <param name="field"></param>
     /// <returns></returns>
-    IBuilder<T> ClearField(Descriptors.FieldDescriptor field);
+    new IBuilder<T> ClearField(FieldDescriptor field);
 
     /// <summary>
     /// Appends the given value as a new element for the specified repeated field.
@@ -186,51 +208,45 @@ namespace Google.ProtocolBuffers {
     /// the field does not belong to this builder's type, or the value is
     /// of the incorrect type
     /// </exception>
-    IBuilder<T> AddRepeatedField(Descriptors.FieldDescriptor field, object value);
-
-    /// <summary>
-    /// <see cref="IMessage{T}.UnknownFields"/>
-    /// </summary>
-    UnknownFieldSet UnknownFields { get; set; }
+    new IBuilder<T> AddRepeatedField(FieldDescriptor field, object value);
 
     /// <summary>
     /// Merge some unknown fields into the set for this message.
     /// </summary>
-    IBuilder<T> MergeUnknownFields(UnknownFieldSet unknownFields);
+    new IBuilder<T> MergeUnknownFields(UnknownFieldSet unknownFields);
 
     #region Convenience methods
     // TODO(jonskeet): Implement these as extension methods?
-
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream).
     /// </summary>
-    IBuilder<T> MergeFrom(ByteString data);
+    new IBuilder<T> MergeFrom(ByteString data);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    IBuilder<T> MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
+    new IBuilder<T> MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream).
     /// </summary>
-    IBuilder<T> MergeFrom(byte[] data);
+    new IBuilder<T> MergeFrom(byte[] data);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    IBuilder<T> MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
+    new IBuilder<T> MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
 
     /// <summary>
-    /// Parse <paramref name="data"/> as a message of this type and merge
+    /// Parse <paramref name="input"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream). Note that this method always reads
     /// the entire input (unless it throws an exception). If you want it to
@@ -238,14 +254,14 @@ namespace Google.ProtocolBuffers {
     /// stream which limits reading. Despite usually reading the entire
     /// stream, this method never closes the stream.
     /// </summary>
-    IBuilder<T> MergeFrom(Stream input);
+    new IBuilder<T> MergeFrom(Stream input);
 
     /// <summary>
-    /// Parse <paramref name="data"/> as a message of this type and merge
+    /// Parse <paramref name="input"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    IBuilder<T> MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
+    new IBuilder<T> MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
     #endregion
   }
 }
