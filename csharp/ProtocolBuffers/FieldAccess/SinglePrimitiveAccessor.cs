@@ -20,12 +20,14 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// <summary>
   /// Access for a non-repeated field of a "primitive" type (i.e. not another message or an enum).
   /// </summary>
-  internal class SinglePrimitiveAccessor : IFieldAccessor {
+  internal class SinglePrimitiveAccessor<TMessage, TBuilder> : IFieldAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     private readonly PropertyInfo messageProperty;
     private readonly PropertyInfo builderProperty;
-    private readonly PropertyInfo hasProperty;
-    private readonly MethodInfo clearMethod;
+    private readonly HasDelegate<TMessage> hasDelegate;
+    private readonly ClearDelegate<TBuilder> clearDelegate;
 
     /// <summary>
     /// The CLR type of the field (int, the enum type, ByteString, the message etc).
@@ -35,22 +37,24 @@ namespace Google.ProtocolBuffers.FieldAccess {
       get { return messageProperty.PropertyType; }
     }
 
-    internal SinglePrimitiveAccessor(string name, Type messageType, Type builderType) {
-      messageProperty = messageType.GetProperty(name);
-      builderProperty = builderType.GetProperty(name);
-      hasProperty = messageType.GetProperty("Has" + name);
-      clearMethod = builderType.GetMethod("Clear" + name);
+    internal SinglePrimitiveAccessor(string name) {
+      messageProperty = typeof(TMessage).GetProperty(name);
+      builderProperty = typeof(TBuilder).GetProperty(name);
+      PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
+      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
       if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null) {
         throw new ArgumentException("Not all required properties/methods available");
       }
+      hasDelegate = (HasDelegate<TMessage>)Delegate.CreateDelegate(typeof(HasDelegate<TMessage>), hasProperty.GetGetMethod());
+      clearDelegate = (ClearDelegate<TBuilder>)Delegate.CreateDelegate(typeof(ClearDelegate<TBuilder>), clearMethod);
     }
 
-    public bool Has(IMessage message) {
-      return (bool) hasProperty.GetValue(message, null);
+    public bool Has(TMessage message) {
+      return hasDelegate(message);
     }
 
-    public void Clear(IBuilder builder) {
-      clearMethod.Invoke(builder, null);
+    public void Clear(TBuilder builder) {
+      clearDelegate(builder);
     }
 
     /// <summary>
@@ -60,16 +64,16 @@ namespace Google.ProtocolBuffers.FieldAccess {
       throw new InvalidOperationException();
     }
 
-    public virtual object GetValue(IMessage message) {
+    public virtual object GetValue(TMessage message) {
       return messageProperty.GetValue(message, null);
     }
 
-    public virtual void SetValue(IBuilder builder, object value) {
+    public virtual void SetValue(TBuilder builder, object value) {
       builderProperty.SetValue(builder, value, null);
     }
 
     #region Methods only related to repeated values
-    public int GetRepeatedCount(IMessage message) {
+    public int GetRepeatedCount(TMessage message) {
       throw new InvalidOperationException();
     }
 

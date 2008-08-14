@@ -20,7 +20,9 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// <summary>
   /// Accessor for fields representing a non-repeated message value.
   /// </summary>
-  internal sealed class SingleMessageAccessor : SinglePrimitiveAccessor {
+  internal sealed class SingleMessageAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     /// <summary>
     /// The static method to create a builder for the property type. For example,
@@ -30,8 +32,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     private readonly MethodInfo createBuilderMethod;
 
 
-    internal SingleMessageAccessor(string name, Type messageType, Type builderType) 
-        : base(name, messageType, builderType) {
+    internal SingleMessageAccessor(string name) : base(name) {
       
       createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);//BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
       if (createBuilderMethod == null) {
@@ -55,7 +56,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
       return CreateBuilder().WeakMergeFrom(message).WeakBuild();
     }
 
-    public override void SetValue(IBuilder builder, object value) {
+    public override void SetValue(TBuilder builder, object value) {
       base.SetValue(builder, CoerceType(value));
     }
 

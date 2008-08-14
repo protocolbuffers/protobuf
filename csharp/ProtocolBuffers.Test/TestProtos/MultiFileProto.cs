@@ -64,18 +64,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Static variables
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor 
         = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageWithNoOuter__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor,
-            new string[] { "Nested", "Foreign", "NestedEnum", "ForeignEnum", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter),
-            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter, global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Builder> internal__static_protobuf_unittest_MessageWithNoOuter__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter, global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Builder>(internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor,
+            new string[] { "Nested", "Foreign", "NestedEnum", "ForeignEnum", });
     internal static readonly pbd::MessageDescriptor  internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor 
         = internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor,
-            new string[] { "I", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage),
-            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.Builder> internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.Builder>(internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor,
+            new string[] { "I", });
     #endregion
     
   }

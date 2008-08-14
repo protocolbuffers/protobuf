@@ -24,17 +24,17 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// <summary>
   /// Accessor for a repeated enum field.
   /// </summary>
-  internal sealed class RepeatedEnumAccessor : RepeatedPrimitiveAccessor {
+  internal sealed class RepeatedEnumAccessor<TMessage, TBuilder> : RepeatedPrimitiveAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     private readonly EnumDescriptor enumDescriptor;
 
-    internal RepeatedEnumAccessor(FieldDescriptor field, string name, Type messageType, Type builderType)
-        : base(name, messageType, builderType) {
-
+    internal RepeatedEnumAccessor(FieldDescriptor field, string name) : base(name) {
       enumDescriptor = field.EnumType;
     }
 
-    public override object GetValue(IMessage message) {
+    public override object GetValue(TMessage message) {
       List<EnumValueDescriptor> ret = new List<EnumValueDescriptor>();
       foreach (int rawValue in (IEnumerable) base.GetValue(message)) {
         ret.Add(enumDescriptor.FindValueByNumber(rawValue));

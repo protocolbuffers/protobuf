@@ -23,9 +23,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// create appropriate instances in the .proto file description class.
   /// TODO(jonskeet): See if we can hide it somewhere...
   /// </summary>
-  public sealed class FieldAccessorTable {
+  public sealed class FieldAccessorTable<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
-    readonly IFieldAccessor[] accessors;
+    readonly IFieldAccessor<TMessage, TBuilder>[] accessors;
 
     readonly MessageDescriptor descriptor;
 
@@ -39,36 +41,34 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// </summary>
     /// <param name="descriptor">The type's descriptor</param>
     /// <param name="propertyNames">The Pascal-case names of all the field-based properties in the message.</param>
-    /// <param name="messageType">The .NET type representing the message</param>
-    /// <param name="builderType">The .NET type representing the message's builder type</param>
-    public FieldAccessorTable(MessageDescriptor descriptor, String[] propertyNames, Type messageType, Type builderType) {
+    public FieldAccessorTable(MessageDescriptor descriptor, String[] propertyNames) {
       this.descriptor = descriptor;
-      accessors = new IFieldAccessor[descriptor.Fields.Count];
+      accessors = new IFieldAccessor<TMessage, TBuilder>[descriptor.Fields.Count];
       for (int i=0; i < accessors.Length; i++) {
-        accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i], messageType, builderType);
+        accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i]);
       }
     }
 
      /// <summary>
      /// Creates an accessor for a single field
      /// </summary>   
-    private static IFieldAccessor CreateAccessor(FieldDescriptor field, string name, Type messageType, Type builderType) {
+    private static IFieldAccessor<TMessage, TBuilder> CreateAccessor(FieldDescriptor field, string name) {
       if (field.IsRepeated) {
         switch (field.MappedType) {
-          case MappedType.Message: return new RepeatedMessageAccessor(name, messageType, builderType);
-          case MappedType.Enum: return new RepeatedEnumAccessor(field, name, messageType, builderType);
-          default: return new RepeatedPrimitiveAccessor(name, messageType, builderType);
+          case MappedType.Message: return new RepeatedMessageAccessor<TMessage, TBuilder>(name);
+          case MappedType.Enum: return new RepeatedEnumAccessor<TMessage, TBuilder>(field, name);
+          default: return new RepeatedPrimitiveAccessor<TMessage, TBuilder>(name);
         }
       } else {
         switch (field.MappedType) {
-          case MappedType.Message: return new SingleMessageAccessor(name, messageType, builderType);
-          case MappedType.Enum: return new SingleEnumAccessor(field, name, messageType, builderType);
-          default: return new SinglePrimitiveAccessor(name, messageType, builderType);
+          case MappedType.Message: return new SingleMessageAccessor<TMessage, TBuilder>(name);
+          case MappedType.Enum: return new SingleEnumAccessor<TMessage, TBuilder>(field, name);
+          default: return new SinglePrimitiveAccessor<TMessage, TBuilder>(name);
         }
       }
     }
 
-    internal IFieldAccessor this[FieldDescriptor field] {
+    internal IFieldAccessor<TMessage, TBuilder> this[FieldDescriptor field] {
       get {
         if (field.ContainingType != descriptor) {
           throw new ArgumentException("FieldDescriptor does not match message type.");

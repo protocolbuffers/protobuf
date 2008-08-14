@@ -34,8 +34,8 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     protected abstract TMessage MessageBeingBuilt { get; }
 
-    protected internal FieldAccessorTable InternalFieldAccessors {
-      get { return MessageBeingBuilt.FieldAccesseorsFromBuilder; }
+    protected internal FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors {
+      get { return MessageBeingBuilt.FieldAccessorsFromBuilder; }
     }
 
     public override bool IsInitialized {
@@ -104,7 +104,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public override TBuilder ClearField(FieldDescriptor field) {
-      InternalFieldAccessors[field].Clear(this);
+      InternalFieldAccessors[field].Clear(ThisBuilder);
       return ThisBuilder;
     }
 

@@ -21,23 +21,25 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// The property descriptors for each field are created once and then cached.
   /// In addition, this interface holds knowledge of repeated fields, builders etc.
   /// </summary>
-  internal interface IFieldAccessor {
+  internal interface IFieldAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     /// <summary>
     /// Indicates whether the specified message contains the field.
     /// </summary>
-    bool Has(IMessage message);
+    bool Has(TMessage message);
 
     /// <summary>
     /// Gets the count of the repeated field in the specified message.
     /// </summary>
-    int GetRepeatedCount(IMessage message);
+    int GetRepeatedCount(TMessage message);
 
     /// <summary>
     /// Clears the field in the specified builder.
     /// </summary>
     /// <param name="builder"></param>
-    void Clear(IBuilder builder);
+    void Clear(TBuilder builder);
 
     /// <summary>
     /// Creates a builder for the type of this field (which must be a message field).
@@ -47,11 +49,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// <summary>
     /// Accessor for single fields
     /// </summary>
-    object GetValue(IMessage message);
+    object GetValue(TMessage message);
     /// <summary>
     /// Mutator for single fields
     /// </summary>
-    void SetValue(IBuilder builder, object value);
+    void SetValue(TBuilder builder, object value);
 
     /// <summary>
     /// Accessor for repeated fields

@@ -58,46 +58,34 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Static variables
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSet__Descriptor 
         = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSet__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSet__Descriptor,
-            new string[] { },
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSet),
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSet, global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder> internal__static_protobuf_unittest_TestMessageSet__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSet, global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder>(internal__static_protobuf_unittest_TestMessageSet__Descriptor,
+            new string[] { });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor 
         = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor,
-            new string[] { "MessageSet", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer),
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer, global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.Builder> internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer, global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.Builder>(internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor,
+            new string[] { "MessageSet", });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor 
         = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor,
-            new string[] { "I", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1),
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1, global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.Builder> internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1, global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.Builder>(internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor,
+            new string[] { "I", });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor 
         = Descriptor.MessageTypes[3];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor,
-            new string[] { "Str", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2),
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2, global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.Builder> internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2, global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.Builder>(internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor,
+            new string[] { "Str", });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_RawMessageSet__Descriptor 
         = Descriptor.MessageTypes[4];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_RawMessageSet__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_RawMessageSet__Descriptor,
-            new string[] { "Item", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet),
-            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RawMessageSet, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Builder> internal__static_protobuf_unittest_RawMessageSet__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RawMessageSet, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Builder>(internal__static_protobuf_unittest_RawMessageSet__Descriptor,
+            new string[] { "Item", });
     internal static readonly pbd::MessageDescriptor  internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor 
         = internal__static_protobuf_unittest_RawMessageSet__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor,
-            new string[] { "TypeId", "Message", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item),
-            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder> internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder>(internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor,
+            new string[] { "TypeId", "Message", });
     #endregion
     
   }
@@ -116,11 +104,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override TestMessageSet ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSet__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<TestMessageSet, TestMessageSet.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSet__FieldAccessorTable; }
     }
     
@@ -281,11 +273,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override TestMessageSetContainer ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<TestMessageSetContainer, TestMessageSetContainer.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable; }
     }
     
@@ -508,11 +504,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override TestMessageSetExtension1 ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<TestMessageSetExtension1, TestMessageSetExtension1.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable; }
     }
     
@@ -718,11 +718,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override TestMessageSetExtension2 ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<TestMessageSetExtension2, TestMessageSetExtension2.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable; }
     }
     
@@ -928,11 +932,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override RawMessageSet ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<RawMessageSet, RawMessageSet.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet__FieldAccessorTable; }
     }
     
@@ -948,11 +956,15 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return defaultInstance; }
         }
         
+        protected override Item ThisMessage {
+          get { return this; }
+        }
+        
         public static pbd::MessageDescriptor Descriptor {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor; }
         }
         
-        protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+        protected override pb::FieldAccess.FieldAccessorTable<Item, Item.Builder> InternalFieldAccessors {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable; }
         }
         

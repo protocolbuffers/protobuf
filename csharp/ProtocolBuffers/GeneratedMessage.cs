@@ -33,11 +33,16 @@ namespace Google.ProtocolBuffers {
 
     private UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
 
-    internal FieldAccessorTable FieldAccesseorsFromBuilder {
+    /// <summary>
+    /// Returns the message as a TMessage.
+    /// </summary>
+    protected abstract TMessage ThisMessage { get; }
+
+    internal FieldAccessorTable<TMessage, TBuilder> FieldAccessorsFromBuilder {
       get { return InternalFieldAccessors; }
     }
 
-    protected abstract FieldAccessorTable InternalFieldAccessors { get; }
+    protected abstract FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors { get; }
 
     public override MessageDescriptor DescriptorForType {
       get { return InternalFieldAccessors.Descriptor; }
@@ -49,13 +54,13 @@ namespace Google.ProtocolBuffers {
       var ret = new SortedList<FieldDescriptor, object>();
       MessageDescriptor descriptor = DescriptorForType;
       foreach (FieldDescriptor field in descriptor.Fields) {
-        IFieldAccessor accessor = InternalFieldAccessors[field];
+        IFieldAccessor<TMessage, TBuilder> accessor = InternalFieldAccessors[field];
         if (field.IsRepeated) {
-          if (accessor.GetRepeatedCount(this) != 0) {
-            ret[field] = accessor.GetValue(this);
+          if (accessor.GetRepeatedCount(ThisMessage) != 0) {
+            ret[field] = accessor.GetValue(ThisMessage);
           }
         } else if (HasField(field)) {
-          ret[field] = accessor.GetValue(this);
+          ret[field] = accessor.GetValue(ThisMessage);
         }
       }
       return ret;
@@ -99,11 +104,11 @@ namespace Google.ProtocolBuffers {
     }
 
     public override bool HasField(FieldDescriptor field) {
-      return InternalFieldAccessors[field].Has(this);
+      return InternalFieldAccessors[field].Has(ThisMessage);
     }
 
     public override int GetRepeatedFieldCount(FieldDescriptor field) {
-      return InternalFieldAccessors[field].GetRepeatedCount(this);
+      return InternalFieldAccessors[field].GetRepeatedCount(ThisMessage);
     }
 
     public override object this[FieldDescriptor field, int index] {
@@ -111,7 +116,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public override object this[FieldDescriptor field] {
-      get { return InternalFieldAccessors[field].GetValue(this); }
+      get { return InternalFieldAccessors[field].GetValue(ThisMessage); }
     }
 
     public override UnknownFieldSet UnknownFields {

@@ -34,6 +34,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractBuilder.cs" />
@@ -69,6 +71,7 @@
     <Compile Include="ExtendableMessage.cs" />
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
+    <Compile Include="FieldAccess\Delegates.cs" />
     <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
     <Compile Include="FieldAccess\SingleMessageAccessor.cs" />
     <Compile Include="FieldAccess\SinglePrimitiveAccessor.cs" />

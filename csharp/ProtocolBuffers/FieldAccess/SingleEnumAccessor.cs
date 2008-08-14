@@ -20,12 +20,13 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// <summary>
   /// Accessor for fields representing a non-repeated enum value.
   /// </summary>
-  internal sealed class SingleEnumAccessor : SinglePrimitiveAccessor {
+  internal sealed class SingleEnumAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     private readonly EnumDescriptor enumDescriptor;
 
-    internal SingleEnumAccessor(FieldDescriptor field, string name, Type messageType, Type builderType) 
-        : base(name, messageType, builderType) {
+    internal SingleEnumAccessor(FieldDescriptor field, string name) : base(name) {
       enumDescriptor = field.EnumType;
     }
 
@@ -34,7 +35,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// Note that if an enum has multiple values for the same number, the descriptor
     /// for the first value with that number will be returned.
     /// </summary>
-    public override object GetValue(IMessage message) {
+    public override object GetValue(TMessage message) {
       // Note: This relies on the fact that the CLR allows unboxing from an enum to
       // its underlying value
       int rawValue = (int) base.GetValue(message);
@@ -45,7 +46,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// Sets the value as an enum (via an int) in the builder,
     /// from an EnumValueDescriptor parameter.
     /// </summary>
-    public override void SetValue(IBuilder builder, object value) {
+    public override void SetValue(TBuilder builder, object value) {
       EnumValueDescriptor valueDescriptor = (EnumValueDescriptor) value;
       base.SetValue(builder, valueDescriptor.Number);
     }

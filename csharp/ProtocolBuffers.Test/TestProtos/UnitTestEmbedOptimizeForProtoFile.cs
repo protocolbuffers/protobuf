@@ -43,11 +43,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Static variables
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestEmbedOptimizedForSize__Descriptor 
         = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestEmbedOptimizedForSize__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestEmbedOptimizedForSize__Descriptor,
-            new string[] { "OptionalMessage", "RepeatedMessage", },
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize),
-            typeof (global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.Builder));
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.Builder> internal__static_protobuf_unittest_TestEmbedOptimizedForSize__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestEmbedOptimizedForSize__Descriptor,
+            new string[] { "OptionalMessage", "RepeatedMessage", });
     #endregion
     
   }
@@ -66,11 +64,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override TestEmbedOptimizedForSize ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestEmbedOptimizeForProtoFile.internal__static_protobuf_unittest_TestEmbedOptimizedForSize__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<TestEmbedOptimizedForSize, TestEmbedOptimizedForSize.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestEmbedOptimizeForProtoFile.internal__static_protobuf_unittest_TestEmbedOptimizedForSize__FieldAccessorTable; }
     }
     

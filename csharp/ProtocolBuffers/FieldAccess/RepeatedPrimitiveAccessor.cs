@@ -21,12 +21,14 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// <summary>
   /// Accesor for a repeated field of type int, ByteString etc.
   /// </summary>
-  internal class RepeatedPrimitiveAccessor : IFieldAccessor {
+  internal class RepeatedPrimitiveAccessor<TMessage, TBuilder> : IFieldAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     private readonly PropertyInfo messageProperty;
     private readonly PropertyInfo builderProperty;
-    private readonly PropertyInfo countProperty;
-    private readonly MethodInfo clearMethod;
+    private readonly RepeatedCountDelegate<TMessage> countDelegate;
+    private readonly ClearDelegate<TBuilder> clearDelegate;
     private readonly MethodInfo addMethod;
     private readonly MethodInfo getElementMethod;
     private readonly MethodInfo setElementMethod;
@@ -40,14 +42,14 @@ namespace Google.ProtocolBuffers.FieldAccess {
       get { return getElementMethod.ReturnType; }
     }
 
-    internal RepeatedPrimitiveAccessor(string name, Type messageType, Type builderType) {      
-      messageProperty = messageType.GetProperty(name + "List");
-      builderProperty = builderType.GetProperty(name + "List");
-      countProperty = messageType.GetProperty(name + "Count");
-      clearMethod = builderType.GetMethod("Clear" + name);
-      getElementMethod = messageType.GetMethod("Get" + name, new Type[] { typeof(int) });
-      addMethod = builderType.GetMethod("Add" + name, new Type[] { ClrType });
-      setElementMethod = builderType.GetMethod("Set" + name, new Type[] { typeof(int), ClrType });
+    internal RepeatedPrimitiveAccessor(string name) {      
+      messageProperty = typeof(TMessage).GetProperty(name + "List");
+      builderProperty = typeof(TBuilder).GetProperty(name + "List");
+      PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count");
+      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
+      getElementMethod = typeof(TMessage).GetMethod("Get" + name, new Type[] { typeof(int) });
+      addMethod = typeof(TBuilder).GetMethod("Add" + name, new Type[] { ClrType });
+      setElementMethod = typeof(TBuilder).GetMethod("Set" + name, new Type[] { typeof(int), ClrType });
       if (messageProperty == null 
           || builderProperty == null 
           || countProperty == null
@@ -57,9 +59,12 @@ namespace Google.ProtocolBuffers.FieldAccess {
           || setElementMethod == null) {
         throw new ArgumentException("Not all required properties/methods available");
       }
+      clearDelegate = (ClearDelegate<TBuilder>)Delegate.CreateDelegate(typeof(ClearDelegate<TBuilder>), clearMethod);
+      countDelegate = (RepeatedCountDelegate<TMessage>)Delegate.CreateDelegate
+          (typeof(RepeatedCountDelegate<TMessage>), countProperty.GetGetMethod());
     }
 
-    public bool Has(IMessage message) {
+    public bool Has(TMessage message) {
       throw new InvalidOperationException();
     }
     
@@ -67,11 +72,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
       throw new InvalidOperationException();
     }
 
-    public virtual object GetValue(IMessage message) {
+    public virtual object GetValue(TMessage message) {
       return messageProperty.GetValue(message, null);
     }
 
-    public void SetValue(IBuilder builder, object value) {
+    public void SetValue(TBuilder builder, object value) {
       // Add all the elements individually.  This serves two purposes:
       // 1) Verifies that each element has the correct type.
       // 2) Insures that the caller cannot modify the list later on and
@@ -82,12 +87,12 @@ namespace Google.ProtocolBuffers.FieldAccess {
       }
     }
 
-    public void Clear(IBuilder builder) {
-      clearMethod.Invoke(builder, null);
+    public void Clear(TBuilder builder) {
+      clearDelegate(builder);
     }
 
-    public int GetRepeatedCount(IMessage message) {
-      return (int) countProperty.GetValue(message, null);
+    public int GetRepeatedCount(TMessage message) {
+      return countDelegate(message);
     }
 
     public virtual object GetRepeatedValue(IMessage message, int index) {

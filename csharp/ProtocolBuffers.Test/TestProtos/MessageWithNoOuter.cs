@@ -16,11 +16,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInstance; }
     }
     
+    protected override MessageWithNoOuter ThisMessage {
+      get { return this; }
+    }
+    
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor; }
     }
     
-    protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+    protected override pb::FieldAccess.FieldAccessorTable<MessageWithNoOuter, MessageWithNoOuter.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter__FieldAccessorTable; }
     }
     
@@ -40,11 +44,15 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return defaultInstance; }
         }
         
+        protected override NestedMessage ThisMessage {
+          get { return this; }
+        }
+        
         public static pbd::MessageDescriptor Descriptor {
           get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor; }
         }
         
-        protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
+        protected override pb::FieldAccess.FieldAccessorTable<NestedMessage, NestedMessage.Builder> InternalFieldAccessors {
           get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__FieldAccessorTable; }
         }
         

@@ -24,7 +24,9 @@ namespace Google.ProtocolBuffers.FieldAccess {
   /// TODO(jonskeet): Try to extract the commonality between this and SingleMessageAccessor.
   /// We almost want multiple inheritance...
   /// </summary>
-  internal sealed class RepeatedMessageAccessor : RepeatedPrimitiveAccessor {
+  internal sealed class RepeatedMessageAccessor<TMessage, TBuilder> : RepeatedPrimitiveAccessor<TMessage, TBuilder>
+      where TMessage : IMessage<TMessage, TBuilder>
+      where TBuilder : IBuilder<TMessage, TBuilder> {
 
     /// <summary>
     /// The static method to create a builder for the property type. For example,
@@ -33,8 +35,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// </summary>
     private readonly MethodInfo createBuilderMethod;
 
-    internal RepeatedMessageAccessor(string name, Type messageType, Type builderType)
-        : base(name, messageType, builderType) {
+    internal RepeatedMessageAccessor(string name) : base(name) {
       createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);
       if (createBuilderMethod == null) {
         throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);

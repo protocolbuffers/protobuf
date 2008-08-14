@@ -175,8 +175,8 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
 
   // And the FieldAccessorTable.
   printer->Print(vars,
-    "$private$static pb::FieldAccess.FieldAccessorTable internal__$identifier$__FieldAccessorTable\r\n"
-    "    = new pb::FieldAccess.FieldAccessorTable(internal__$identifier$__Descriptor,\r\n"
+    "$private$static pb::FieldAccess.FieldAccessorTable<$classname$, $classname$.Builder> internal__$identifier$__FieldAccessorTable\r\n"
+    "    = new pb::FieldAccess.FieldAccessorTable<$classname$, $classname$.Builder>(internal__$identifier$__Descriptor,\r\n"
     "        new string[] { ");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print(
@@ -184,10 +184,7 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
       "field_name",
         UnderscoresToCapitalizedCamelCase(descriptor_->field(i)));
   }
-  printer->Print("},\r\n"
-    "        typeof ($classname$),\r\n"
-    "        typeof ($classname$.Builder));\r\n",
-    "classname", ClassName(descriptor_));
+  printer->Print("});\r\n");
 
   // Generate static members for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
@@ -225,17 +222,26 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "}\r\n"
     "\r\n",
     "classname", descriptor_->name());
+
   printer->Print(
+      "protected override $classname$ ThisMessage {\r\n"
+      "  get { return this; }\r\n"
+      "}\r\n\r\n",
+      "classname", descriptor_->name());
+
+  map<string, string> vars;
+  vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
+  vars["fileclass"] = ClassName(descriptor_->file());
+  vars["classname"] = descriptor_->name();
+  printer->Print(vars,
     "public static pbd::MessageDescriptor Descriptor {\r\n"
     "  get { return $fileclass$.internal__$identifier$__Descriptor; }\r\n"
     "}\r\n"
     "\r\n"
-    "protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {\r\n"
+    "protected override pb::FieldAccess.FieldAccessorTable<$classname$, $classname$.Builder> InternalFieldAccessors {\r\n"
     "  get { return $fileclass$.internal__$identifier$__FieldAccessorTable; }\r\n"
     "}\r\n"
-    "\r\n",
-    "fileclass", ClassName(descriptor_->file()),
-    "identifier", UniqueFileScopeIdentifier(descriptor_));
+    "\r\n");
 
   // Extensions don't need to go in an extra nested type
   for (int i = 0; i < descriptor_->extension_count(); i++) {
