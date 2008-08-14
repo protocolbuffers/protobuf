@@ -2,7 +2,11 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
+if MONO
+SUBDIRS = src csharp
+else
 SUBDIRS = src
+endif
 
 EXTRA_DIST =                                                                 \
   autogen.sh                                                                 \

@@ -23,6 +23,11 @@ AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h inttypes.h limits.h stdlib.h unistd.h])
 
+if pkg-config --atleast-version=1.9 mono; then
+   with_mono=yes
+fi
+AM_CONDITIONAL(MONO, test x$with_mono = xyes)
+
 # Checks for library functions.
 AC_FUNC_MEMCMP
 AC_FUNC_STRTOD
@@ -31,4 +36,4 @@ AC_CHECK_FUNCS([ftruncate memset mkdir strchr strerror strtol])
 ACX_PTHREAD
 AC_CXX_STL_HASH
 
-AC_OUTPUT( Makefile src/Makefile )
+AC_OUTPUT( Makefile src/Makefile csharp/Makefile )
