@@ -187,15 +187,15 @@ namespace Google.ProtocolBuffers {
     }
 
     internal static ulong ParseUInt64(string text) {
-      return (ulong) ParseInteger(text, true, false);
+      return (ulong) ParseInteger(text, false, true);
     }
 
     internal static long ParseInt64(string text) {
-      return ParseInteger(text, true, false);
+      return ParseInteger(text, true, true);
     }
 
     internal static uint ParseUInt32(string text) {
-      return (uint) ParseInteger(text, true, false);
+      return (uint) ParseInteger(text, false, false);
     }
 
     internal static int ParseInt32(string text) {
@@ -229,7 +229,7 @@ namespace Google.ProtocolBuffers {
       ulong result = Convert.ToUInt64(text, radix);
 
       if (negative) {
-        ulong max = isLong ? 0x8000000UL : 0x8000L;
+        ulong max = isLong ? 0x8000000000000000UL : 0x80000000L;
         if (result > max) {
           throw new FormatException("Number of out range: " + original);
         }

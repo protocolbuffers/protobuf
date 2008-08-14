@@ -104,14 +104,18 @@ namespace Google.ProtocolBuffers {
     }
 
     IBuilder IBuilder.MergeFrom(CodedInputStream input) {
-      return ((IBuilder)this).MergeFrom(input, ExtensionRegistry.Empty);
+      return MergeFromImpl(input, ExtensionRegistry.Empty);
     }
 
-    IBuilder IBuilder.MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+    protected virtual IBuilder MergeFromImpl(CodedInputStream input, ExtensionRegistry extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
       FieldSet.MergeFrom(input, unknownFields, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
       return this;
+    }
+
+    IBuilder IBuilder.MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+      return MergeFromImpl(input, extensionRegistry);
     }
 
     IBuilder IBuilder.MergeUnknownFields(UnknownFieldSet unknownFields) {
@@ -120,8 +124,6 @@ namespace Google.ProtocolBuffers {
           .Build();
       return this;
     }
-
-    public UnknownFieldSet UnknownFields { get; set; }
 
     IBuilder IBuilder.MergeFrom(ByteString data) {
       CodedInputStream input = data.CreateCodedInput();
@@ -160,9 +162,11 @@ namespace Google.ProtocolBuffers {
 
     IBuilder IBuilder.MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      ((IBuilder) this).MergeFrom(codedInput, extensionRegistry);
+      ((IBuilder)this).MergeFrom(codedInput, extensionRegistry);
       codedInput.CheckLastTagWas(0);
       return this;
     }
+
+    public abstract UnknownFieldSet UnknownFields { get; set; }
   }
 }

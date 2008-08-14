@@ -199,6 +199,10 @@ namespace Google.ProtocolBuffers {
       ((IBuilder)this).MergeFrom(input, extensionRegistry);
       return this;
     }
+
+    protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
+      return MergeFrom(data, extensionRegistry);
+    }
     
     /// <summary>
     /// Like Build(), but will wrap UninitializedMessageException in
@@ -221,6 +225,11 @@ namespace Google.ProtocolBuffers {
         throw new UninitializedMessageException(MessageBeingBuilt);
       }
       return BuildPartial();
+    }
+
+    public override UnknownFieldSet UnknownFields {
+      get { return MessageBeingBuilt.UnknownFields; }
+      set { MessageBeingBuilt.SetUnknownFields(value); }
     }
     
     public abstract TMessage BuildPartial();

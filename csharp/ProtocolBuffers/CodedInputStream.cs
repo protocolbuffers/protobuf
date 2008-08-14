@@ -569,8 +569,8 @@ namespace Google.ProtocolBuffers {
       totalBytesRetired += bufferSize;
 
       bufferPos = 0;
-      bufferSize = (input == null) ? -1 : input.Read(buffer, 0, buffer.Length);
-      if (bufferSize == -1) {
+      bufferSize = (input == null) ? 0 : input.Read(buffer, 0, buffer.Length);
+      if (bufferSize == 0) {
         bufferSize = 0;
         if (mustSucceed) {
           throw InvalidProtocolBufferException.TruncatedMessage();

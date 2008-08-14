@@ -22,7 +22,7 @@ namespace Google.ProtocolBuffers.Descriptors {
       
       if (proto.HasType) {
         fieldType = GetFieldTypeFromProtoType(proto.Type);
-        //type = proto.Type;
+        mappedType = FieldTypeToMappedTypeMap[fieldType];
       }
       
       if (FieldNumber <= 0) {
@@ -244,8 +244,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// Immutable mapping from field type to mapped type. Built using the attributes on
     /// FieldType values.
     /// </summary>
-    public static readonly IDictionary<FieldType, MappedType> FieldTypeToWireFormatMap = MapFieldTypes();
-
+    public static readonly IDictionary<FieldType, MappedType> FieldTypeToMappedTypeMap = MapFieldTypes();
 
     private static IDictionary<FieldType, MappedType> MapFieldTypes() {
       var map = new Dictionary<FieldType, MappedType>();

@@ -11,7 +11,6 @@ namespace Google.ProtocolBuffers.FieldAccess {
 
     private readonly PropertyInfo messageProperty;
     private readonly PropertyInfo builderProperty;
-    private readonly PropertyInfo hasProperty;
     private readonly PropertyInfo countProperty;
     private readonly MethodInfo clearMethod;
     private readonly MethodInfo addMethod;
@@ -30,15 +29,13 @@ namespace Google.ProtocolBuffers.FieldAccess {
     internal RepeatedPrimitiveAccessor(string name, Type messageType, Type builderType) {      
       messageProperty = messageType.GetProperty(name + "List");
       builderProperty = builderType.GetProperty(name + "List");
-      hasProperty = messageType.GetProperty("Has" + name);
       countProperty = messageType.GetProperty(name + "Count");
       clearMethod = builderType.GetMethod("Clear" + name);
-      addMethod = builderType.GetMethod("Add" + name);
       getElementMethod = messageType.GetMethod("Get" + name, new Type[] { typeof(int) });
-      setElementMethod = builderType.GetMethod("Set" + name, new Type[] { typeof(int) });
+      addMethod = builderType.GetMethod("Add" + name, new Type[] { ClrType });
+      setElementMethod = builderType.GetMethod("Set" + name, new Type[] { typeof(int), ClrType });
       if (messageProperty == null 
           || builderProperty == null 
-          || hasProperty == null 
           || countProperty == null
           || clearMethod == null
           || addMethod == null

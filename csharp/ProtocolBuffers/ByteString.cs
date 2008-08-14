@@ -23,7 +23,7 @@ namespace Google.ProtocolBuffers {
   /// Immutable array of bytes.
   /// TODO(jonskeet): Implement the common collection interfaces?
   /// </summary>
-  public sealed class ByteString : IEnumerable<byte> {
+  public sealed class ByteString : IEnumerable<byte>, IEquatable<ByteString> {
 
     private static readonly ByteString empty = new ByteString(new byte[0]);
 
@@ -125,6 +125,34 @@ namespace Google.ProtocolBuffers {
     }
 
     // TODO(jonskeet): CopyTo, Equals, GetHashCode if they turn out to be required
+
+    public override bool Equals(object obj) {
+      ByteString other = obj as ByteString;
+      if (obj == null) {
+        return false;
+      }
+      return Equals(other);
+    }
+
+    public override int GetHashCode() {
+      int ret = 23;
+      foreach (byte b in bytes) {
+        ret = (ret << 8) | b;
+      }
+      return ret;
+    }
+
+    public bool Equals(ByteString other) {
+      if (other.bytes.Length != bytes.Length) {
+        return false;
+      }
+      for (int i = 0; i < bytes.Length; i++) {
+        if (other.bytes[i] != bytes[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
 
     /// <summary>
     /// Builder for ByteStrings which allows them to be created without extra

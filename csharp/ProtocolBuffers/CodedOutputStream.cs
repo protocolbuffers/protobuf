@@ -206,6 +206,7 @@ namespace Google.ProtocolBuffers {
 
     public void WriteBytes(int fieldNumber, ByteString value) {
       // TODO(jonskeet): Optimise this! (No need to copy the bytes twice.)
+      WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
       byte[] bytes = value.ToByteArray();
       WriteRawVarint32((uint)bytes.Length);
       WriteRawBytes(bytes);
@@ -223,12 +224,12 @@ namespace Google.ProtocolBuffers {
 
     public void WriteSFixed32(int fieldNumber, int value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-      WriteRawVarint32((uint)value);
+      WriteRawLittleEndian32((uint)value);
     }
 
     public void WriteSFixed64(int fieldNumber, long value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-      WriteRawVarint64((ulong)value);
+      WriteRawLittleEndian64((ulong)value);
     }
 
     public void WriteSInt32(int fieldNumber, int value) {

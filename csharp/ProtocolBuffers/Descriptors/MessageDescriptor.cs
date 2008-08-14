@@ -19,16 +19,16 @@ namespace Google.ProtocolBuffers.Descriptors {
       containingType = parent;
 
       nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.NestedTypeList,
-          (type, index) => new MessageDescriptor(type, file, null, index));
+          (type, index) => new MessageDescriptor(type, file, this, index));
 
       enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumTypeList,
-          (type, index) => new EnumDescriptor(type, file, null, index));
+          (type, index) => new EnumDescriptor(type, file, this, index));
 
       fields = DescriptorUtil.ConvertAndMakeReadOnly(proto.FieldList,
-          (field, index) => new FieldDescriptor(field, file, null, index, false));
+          (field, index) => new FieldDescriptor(field, file, this, index, false));
 
       extensions = DescriptorUtil.ConvertAndMakeReadOnly(proto.ExtensionList,
-          (field, index) => new FieldDescriptor(field, file, null, index, true));
+          (field, index) => new FieldDescriptor(field, file, this, index, true));
 
       file.DescriptorPool.AddSymbol(this);
     }

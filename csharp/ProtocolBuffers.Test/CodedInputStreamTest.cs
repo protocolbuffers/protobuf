@@ -15,6 +15,7 @@
 // limitations under the License.
 using System;
 using System.IO;
+using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
 namespace Google.ProtocolBuffers {
@@ -183,23 +184,22 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(unchecked((long)0x8000000000000000L), CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFFL));
     }
 
-    /* TODO(jonskeet): Reinstate this when protoc is ready
-    public void testReadWholeMessage() throws Exception {
-      TestAllTypes message = TestUtil.getAllSet();
+    [Test]
+    public void ReadWholeMessage() {
+      TestAllTypes message = TestUtil.GetAllSet();
 
-      byte[] rawBytes = message.toByteArray();
-      assertEquals(rawBytes.length, message.getSerializedSize());
+      byte[] rawBytes = message.ToByteArray();
+      Assert.AreEqual(rawBytes.Length, message.SerializedSize);
 
-      TestAllTypes message2 = TestAllTypes.parseFrom(rawBytes);
-      TestUtil.assertAllFieldsSet(message2);
+      TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);
+      TestUtil.AssertAllFieldsSet(message2);
 
       // Try different block sizes.
       for (int blockSize = 1; blockSize < 256; blockSize *= 2) {
-        message2 = TestAllTypes.parseFrom(
-          new SmallBlockInputStream(rawBytes, blockSize));
-        TestUtil.assertAllFieldsSet(message2);
+        message2 = TestAllTypes.ParseFrom(new SmallBlockInputStream(rawBytes, blockSize));
+        TestUtil.AssertAllFieldsSet(message2);
       }
-    }*/
+    }
 
     /* TODO(jonskeet): Reinstate this when protoc is ready
     public void testSkipWholeMessage() throws Exception {

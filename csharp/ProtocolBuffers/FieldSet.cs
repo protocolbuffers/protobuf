@@ -91,11 +91,8 @@ namespace Google.ProtocolBuffers {
     }
 
     // TODO(jonskeet): Should this be in UnknownFieldSet.Builder really? Or CodedInputStream?
-    internal static void MergeFrom(CodedInputStream input,
-         UnknownFieldSet.Builder unknownFields,
-         ExtensionRegistry extensionRegistry,
-         IBuilder builder) {
-
+    internal static void MergeFrom(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
+         ExtensionRegistry extensionRegistry, IBuilder builder) {
       while (true) {
         uint tag = input.ReadTag();
         if (tag == 0) {
@@ -120,15 +117,10 @@ namespace Google.ProtocolBuffers {
     /// <param name="builder">Builder to merge field into, if it's a known field</param>
     /// <param name="tag">The tag, which should already have been read from the input</param>
     /// <returns>true unless the tag is an end-group tag</returns>
-    internal static bool MergeFieldFrom(CodedInputStream input,
-        UnknownFieldSet.Builder unknownFields,
-        ExtensionRegistry extensionRegistry,
-        IBuilder builder,
-        uint tag) {
+    internal static bool MergeFieldFrom(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
+        ExtensionRegistry extensionRegistry, IBuilder builder, uint tag) {
       MessageDescriptor type = builder.DescriptorForType;
-
-      if (type.Options.MessageSetWireFormat
-          && tag == WireFormat.MessageSetTag.ItemStart) {
+      if (type.Options.MessageSetWireFormat && tag == WireFormat.MessageSetTag.ItemStart) {
         MergeMessageSetExtensionFromCodedStream(input, unknownFields, extensionRegistry, builder);
         return true;
       }
