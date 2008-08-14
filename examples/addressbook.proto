@@ -6,8 +6,10 @@ option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";
 
 option csharp_namespace = "Tutorial";
-option csharp_outer_classname = "AddressBookProtos";
-option csharp_multiple_files = true;
+option csharp_file_classname = "AddressBookProtos";
+option csharp_multiple_files = false;
+option csharp_nest_classes = false;
+option csharp_public_classes = true;
 
 message Person {
   required string name = 1;
