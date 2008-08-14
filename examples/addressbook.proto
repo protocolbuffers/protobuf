@@ -5,6 +5,10 @@ package tutorial;
 option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";
 
+option csharp_namespace = "Tutorial";
+option csharp_outer_classname = "AddressBookProtos";
+option csharp_multiple_files = true;
+
 message Person {
   required string name = 1;
   required int32 id = 2;        // Unique ID number for this person.
