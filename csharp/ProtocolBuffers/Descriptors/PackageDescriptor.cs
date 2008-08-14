@@ -3,17 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Google.ProtocolBuffers.Descriptors {
-    /*
-     * Represents a package in the symbol table.  We use PackageDescriptors
-     * just as placeholders so that someone cannot define, say, a message type
-     * that has the same name as an existing package.
-     */
-  /// <summary>
-  /// Represents a package in the symbol table.  We use PackageDescriptors
-  /// just as placeholders so that someone cannot define, say, a message type
-  /// that has the same name as an existing package.
-  /// </summary>
-    internal class PackageDescriptor : IDescriptor<IMessage> {
+    /// <summary>
+    /// Represents a package in the symbol table.  We use PackageDescriptors
+    /// just as placeholders so that someone cannot define, say, a message type
+    /// that has the same name as an existing package.
+    /// </summary>
+    internal sealed class PackageDescriptor : IDescriptor<IMessage> {
 
       private readonly string name;
       private readonly string fullName;

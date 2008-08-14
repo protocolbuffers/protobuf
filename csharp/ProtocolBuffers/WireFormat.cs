@@ -28,7 +28,7 @@ namespace Google.ProtocolBuffers {
   /// the Protocol Buffer wire format.
   /// </para>
   /// </summary>
-  public class WireFormat {
+  public static class WireFormat {
     public enum WireType : uint {
       Varint = 0,
       Fixed64 = 1,
@@ -38,13 +38,13 @@ namespace Google.ProtocolBuffers {
       Fixed32 = 5
     }
 
-    internal class MessageSetField {
+    internal static class MessageSetField {
       internal const int Item = 1;
       internal const int TypeID = 2;
       internal const int Message = 3;
     }
 
-    internal class MessageSetTag {
+    internal static class MessageSetTag {
       internal static readonly uint ItemStart = MakeTag(MessageSetField.Item, WireType.StartGroup);
       internal static readonly uint ItemEnd = MakeTag(MessageSetField.Item, WireType.EndGroup);
       internal static readonly uint TypeID = MakeTag(MessageSetField.TypeID, WireType.Varint);

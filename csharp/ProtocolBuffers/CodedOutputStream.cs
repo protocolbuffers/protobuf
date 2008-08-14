@@ -698,7 +698,7 @@ namespace Google.ProtocolBuffers {
     /// Indicates that a CodedOutputStream wrapping a flat byte array
     /// ran out of space.
     /// </summary>
-    public class OutOfSpaceException : IOException {
+    public sealed class OutOfSpaceException : IOException {
       internal OutOfSpaceException()
         : base("CodedOutputStream was writing to a flat byte array and ran out of space.") {
       }

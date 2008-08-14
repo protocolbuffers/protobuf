@@ -159,7 +159,7 @@ namespace Google.ProtocolBuffers {
     /// copying being involved. This has to be a nested type in order to have access
     /// to the private ByteString constructor.
     /// </summary>
-    internal class CodedBuilder {
+    internal sealed class CodedBuilder {
       private readonly CodedOutputStream output;
       private readonly byte[] buffer;
 

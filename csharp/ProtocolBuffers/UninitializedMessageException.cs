@@ -21,7 +21,7 @@ using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
-  public class UninitializedMessageException : Exception {
+  public sealed class UninitializedMessageException : Exception {
 
     private readonly IList<string> missingFields;
 

@@ -77,7 +77,6 @@
     <Compile Include="FieldAccess\SinglePrimitiveAccessor.cs" />
     <Compile Include="FieldAccess\RepeatedPrimitiveAccessor.cs" />
     <Compile Include="FieldAccess\RepeatedEnumAccessor.cs" />
-    <Compile Include="FieldAccess\Delegates.cs" />
     <Compile Include="FieldAccess\IFieldAccessor.cs" />
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
     <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />

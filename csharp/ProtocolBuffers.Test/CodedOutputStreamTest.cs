@@ -1,5 +1,4 @@
-﻿using System.IO;
-// Protocol Buffers - Google's data interchange format
+﻿// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.
 // http://code.google.com/p/protobuf/
 //
@@ -14,6 +13,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System.IO;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 

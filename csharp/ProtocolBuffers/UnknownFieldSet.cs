@@ -19,7 +19,18 @@ using System.IO;
 using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers {
-  public class UnknownFieldSet {
+  /// <summary>
+  /// Used to keep track of fields which were seen when parsing a protocol message
+  /// but whose field numbers or types are unrecognized. This most frequently
+  /// occurs when new fields are added to a message type and then messages containing
+  /// those fields are read by old software that was built before the new types were
+  /// added.
+  /// 
+  /// Every message contains an UnknownFieldSet.
+  /// 
+  /// Most users will never need to use this class directly.
+  /// </summary>
+  public sealed class UnknownFieldSet {
 
     private static readonly UnknownFieldSet defaultInstance = new UnknownFieldSet(new Dictionary<int, UnknownField>());
 
@@ -165,7 +176,6 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-
     /// <summary>
     /// Parses an UnknownFieldSet from the given input.
     /// </summary>
@@ -194,7 +204,10 @@ namespace Google.ProtocolBuffers {
       return CreateBuilder().MergeFrom(input).Build();
     }
 
-    public class Builder
+    /// <summary>
+    /// Builder for UnknownFieldSets.
+    /// </summary>
+    public sealed class Builder
     {
       /// <summary>
       /// Mapping from number to field. Note that by using a SortedList we ensure

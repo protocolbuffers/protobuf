@@ -1,7 +1,21 @@
-﻿using System;
+﻿// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.
+// http://code.google.com/p/protobuf/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
@@ -9,7 +23,7 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
   /// </summary>
-  public class DynamicMessage : AbstractMessage<DynamicMessage, DynamicMessage.Builder> {
+  public sealed class DynamicMessage : AbstractMessage<DynamicMessage, DynamicMessage.Builder> {
 
     private readonly MessageDescriptor type;
     private readonly FieldSet fields;
@@ -226,7 +240,10 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    public class Builder : AbstractBuilder<DynamicMessage, DynamicMessage.Builder> {
+    /// <summary>
+    /// Builder for dynamic messages. Instances are created with DynamicMessage.CreateBuilder.
+    /// </summary>
+    public sealed class Builder : AbstractBuilder<DynamicMessage, Builder> {
       private readonly MessageDescriptor type;
       private FieldSet fields;
       private UnknownFieldSet unknownFields;

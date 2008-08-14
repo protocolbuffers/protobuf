@@ -19,10 +19,8 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// Thrown when a protocol message being parsed is invalid in some way,
   /// e.g. it contains a malformed varint or a negative byte length.
-  /// 
-  /// TODO(jonskeet): Make the methods throw directly? Rename them?
   /// </summary>
-  public class InvalidProtocolBufferException : IOException {
+  public sealed class InvalidProtocolBufferException : IOException {
 
     internal InvalidProtocolBufferException(string message)
       : base(message) {
@@ -37,7 +35,6 @@ namespace Google.ProtocolBuffers {
         "misreported its own length.");
     }
 
-    /// TODO(jonskeet): Make this internal again and use InternalVisibleTo?
     internal static InvalidProtocolBufferException NegativeSize() {
       return new InvalidProtocolBufferException(
         "CodedInputStream encountered an embedded string or message " +
