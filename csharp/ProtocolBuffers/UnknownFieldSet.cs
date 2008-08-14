@@ -9,5 +9,12 @@ namespace Google.ProtocolBuffers {
     }
 
     public int SerializedSize { get { return 0; } }
+
+    public class Builder
+    {
+      internal void MergeFrom(CodedInputStream codedInputStream) {
+        throw new NotImplementedException();
+      }
+    }
   }
 }

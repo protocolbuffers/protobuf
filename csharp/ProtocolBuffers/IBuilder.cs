@@ -5,6 +5,10 @@ using System.IO;
 
 namespace Google.ProtocolBuffers {
 
+  public interface IBuilder {
+    void MergeFrom(CodedInputStream codedInputStream, ExtensionRegistry extensionRegistry);
+  }
+
   /// <summary>
   /// Interface implemented by Protocol Message builders.
   /// TODO(jonskeet): Consider "SetXXX" methods returning the builder, as well as the properties.
