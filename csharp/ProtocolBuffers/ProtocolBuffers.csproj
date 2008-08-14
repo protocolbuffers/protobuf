@@ -54,7 +54,6 @@
     <Compile Include="Descriptors\DescriptorUtil.cs" />
     <Compile Include="Descriptors\DescriptorValidationException.cs" />
     <Compile Include="Descriptors\EnumDescriptor.cs" />
-    <Compile Include="Descriptors\EnumDescriptorIndexAttribute.cs" />
     <Compile Include="Descriptors\EnumValueDescriptor.cs" />
     <Compile Include="Descriptors\FieldDescriptor.cs" />
     <Compile Include="Descriptors\FieldMappingAttribute.cs" />
