@@ -34,6 +34,13 @@ namespace Google.ProtocolBuffers.Descriptors {
     }
 
     /// <value>
+    /// If this is a nested type, get the outer descriptor, otherwise null.
+    /// </value>
+    public MessageDescriptor ContainingType {
+      get { return containingType; }
+    }
+
+    /// <value>
     /// An unmodifiable list of this message type's fields.
     /// </value>
     public IList<FieldDescriptor> Fields {

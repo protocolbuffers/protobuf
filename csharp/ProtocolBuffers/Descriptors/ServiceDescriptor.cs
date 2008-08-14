@@ -27,6 +27,15 @@ namespace Google.ProtocolBuffers.Descriptors {
     public IList<MethodDescriptor> Methods {
       get { return methods; }
     }
+   
+    /// <summary>
+    /// Finds a method by name.
+    /// </summary>
+    /// <param name="name">The unqualified name of the method (e.g. "Foo").</param>
+    /// <returns>The method's decsriptor, or null if not found.</returns>
+    public MethodDescriptor FindMethodByName(String name) {
+      return File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
+    }
 
     internal void CrossLink() {
       foreach (MethodDescriptor method in methods) {

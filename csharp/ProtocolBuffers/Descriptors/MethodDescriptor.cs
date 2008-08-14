@@ -28,7 +28,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// The method's input type.
     /// </value>
     public MessageDescriptor OutputType {
-      get { return inputType; }
+      get { return outputType; }
     }
 
     internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,

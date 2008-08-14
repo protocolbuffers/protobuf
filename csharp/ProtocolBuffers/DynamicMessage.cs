@@ -233,6 +233,10 @@ namespace Google.ProtocolBuffers {
         this.unknownFields = UnknownFieldSet.DefaultInstance;
       }
 
+      public DynamicMessage Build() {
+        return (DynamicMessage)((IBuilder)this).Build();
+      }
+
       public override IBuilder Clear() {
         fields.Clear();
         return this;

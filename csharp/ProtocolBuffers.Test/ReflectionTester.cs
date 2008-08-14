@@ -169,12 +169,12 @@ namespace Google.ProtocolBuffers {
     internal void SetAllFieldsViaReflection(IBuilder message) {
       message[f("optional_int32"   )] = 101 ;
       message[f("optional_int64"   )] = 102L;
-      message[f("optional_uint32"  )] = 103 ;
-      message[f("optional_uint64"  )] = 104L;
+      message[f("optional_uint32"  )] = 103U ;
+      message[f("optional_uint64"  )] = 104UL;
       message[f("optional_sint32"  )] = 105 ;
       message[f("optional_sint64"  )] = 106L;
-      message[f("optional_fixed32" )] = 107 ;
-      message[f("optional_fixed64" )] = 108L;
+      message[f("optional_fixed32" )] = 107U ;
+      message[f("optional_fixed64" )] = 108UL;
       message[f("optional_sfixed32")] = 109 ;
       message[f("optional_sfixed64")] = 110L;
       message[f("optional_float"   )] = 111F;
@@ -199,12 +199,12 @@ namespace Google.ProtocolBuffers {
 
       message.AddRepeatedField(f("repeated_int32"   ), 201 );
       message.AddRepeatedField(f("repeated_int64"   ), 202L);
-      message.AddRepeatedField(f("repeated_uint32"  ), 203 );
-      message.AddRepeatedField(f("repeated_uint64"  ), 204L);
+      message.AddRepeatedField(f("repeated_uint32"  ), 203U );
+      message.AddRepeatedField(f("repeated_uint64"  ), 204UL);
       message.AddRepeatedField(f("repeated_sint32"  ), 205 );
       message.AddRepeatedField(f("repeated_sint64"  ), 206L);
-      message.AddRepeatedField(f("repeated_fixed32" ), 207 );
-      message.AddRepeatedField(f("repeated_fixed64" ), 208L);
+      message.AddRepeatedField(f("repeated_fixed32" ), 207U );
+      message.AddRepeatedField(f("repeated_fixed64" ), 208UL);
       message.AddRepeatedField(f("repeated_sfixed32"), 209 );
       message.AddRepeatedField(f("repeated_sfixed64"), 210L);
       message.AddRepeatedField(f("repeated_float"   ), 211F);
@@ -229,12 +229,12 @@ namespace Google.ProtocolBuffers {
       // Add a second one of each field.
       message.AddRepeatedField(f("repeated_int32"   ), 301 );
       message.AddRepeatedField(f("repeated_int64"   ), 302L);
-      message.AddRepeatedField(f("repeated_uint32"  ), 303 );
-      message.AddRepeatedField(f("repeated_uint64"  ), 304L);
+      message.AddRepeatedField(f("repeated_uint32"  ), 303U );
+      message.AddRepeatedField(f("repeated_uint64"  ), 304UL);
       message.AddRepeatedField(f("repeated_sint32"  ), 305 );
       message.AddRepeatedField(f("repeated_sint64"  ), 306L);
-      message.AddRepeatedField(f("repeated_fixed32" ), 307 );
-      message.AddRepeatedField(f("repeated_fixed64" ), 308L);
+      message.AddRepeatedField(f("repeated_fixed32" ), 307U );
+      message.AddRepeatedField(f("repeated_fixed64" ), 308UL);
       message.AddRepeatedField(f("repeated_sfixed32"), 309 );
       message.AddRepeatedField(f("repeated_sfixed64"), 310L);
       message.AddRepeatedField(f("repeated_float"   ), 311F);
@@ -267,12 +267,12 @@ namespace Google.ProtocolBuffers {
 
       message[f("default_int32"   )] = 401 ;
       message[f("default_int64"   )] = 402L;
-      message[f("default_uint32"  )] = 403 ;
-      message[f("default_uint64"  )] = 404L;
+      message[f("default_uint32"  )] = 403U ;
+      message[f("default_uint64"  )] = 404UL;
       message[f("default_sint32"  )] = 405 ;
       message[f("default_sint64"  )] = 406L;
-      message[f("default_fixed32" )] = 407 ;
-      message[f("default_fixed64" )] = 408L;
+      message[f("default_fixed32" )] = 407U ;
+      message[f("default_fixed64" )] = 408UL;
       message[f("default_sfixed32")] = 409 ;
       message[f("default_sfixed64")] = 410L;
       message[f("default_float"   )] = 411F;
@@ -299,12 +299,12 @@ namespace Google.ProtocolBuffers {
     internal void ModifyRepeatedFieldsViaReflection(IBuilder message) {
       message[f("repeated_int32"   ), 1] = 501 ;
       message[f("repeated_int64"   ), 1] = 502L;
-      message[f("repeated_uint32"  ), 1] = 503 ;
-      message[f("repeated_uint64"  ), 1] = 504L;
+      message[f("repeated_uint32"  ), 1] = 503U ;
+      message[f("repeated_uint64"  ), 1] = 504UL;
       message[f("repeated_sint32"  ), 1] = 505 ;
       message[f("repeated_sint64"  ), 1] = 506L;
-      message[f("repeated_fixed32" ), 1] = 507 ;
-      message[f("repeated_fixed64" ), 1] = 508L;
+      message[f("repeated_fixed32" ), 1] = 507U ;
+      message[f("repeated_fixed64" ), 1] = 508UL;
       message[f("repeated_sfixed32"), 1] = 509 ;
       message[f("repeated_sfixed64"), 1] = 510L;
       message[f("repeated_float"   ), 1] = 511F;
@@ -332,7 +332,7 @@ namespace Google.ProtocolBuffers {
     /// Asserts that all fields of the specified message are set to the values
     /// assigned by SetAllFields, using the IMessage reflection interface.
     /// </summary>
-    public void assertAllFieldsSetViaReflection(IMessage message) {
+    public void AssertAllFieldsSetViaReflection(IMessage message) {
       Assert.IsTrue(message.HasField(f("optional_int32"   )));
       Assert.IsTrue(message.HasField(f("optional_int64"   )));
       Assert.IsTrue(message.HasField(f("optional_uint32"  )));
@@ -368,12 +368,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(101  , message[f("optional_int32"   )]);
       Assert.AreEqual(102L , message[f("optional_int64"   )]);
-      Assert.AreEqual(103  , message[f("optional_uint32"  )]);
-      Assert.AreEqual(104L , message[f("optional_uint64"  )]);
+      Assert.AreEqual(103U  , message[f("optional_uint32"  )]);
+      Assert.AreEqual(104UL , message[f("optional_uint64"  )]);
       Assert.AreEqual(105  , message[f("optional_sint32"  )]);
       Assert.AreEqual(106L , message[f("optional_sint64"  )]);
-      Assert.AreEqual(107  , message[f("optional_fixed32" )]);
-      Assert.AreEqual(108L , message[f("optional_fixed64" )]);
+      Assert.AreEqual(107U  , message[f("optional_fixed32" )]);
+      Assert.AreEqual(108UL , message[f("optional_fixed64" )]);
       Assert.AreEqual(109  , message[f("optional_sfixed32")]);
       Assert.AreEqual(110L , message[f("optional_sfixed64")]);
       Assert.AreEqual(111F , message[f("optional_float"   )]);
@@ -425,12 +425,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(201  , message[f("repeated_int32"   ), 0]);
       Assert.AreEqual(202L , message[f("repeated_int64"   ), 0]);
-      Assert.AreEqual(203  , message[f("repeated_uint32"  ), 0]);
-      Assert.AreEqual(204L , message[f("repeated_uint64"  ), 0]);
+      Assert.AreEqual(203U , message[f("repeated_uint32"  ), 0]);
+      Assert.AreEqual(204UL, message[f("repeated_uint64"  ), 0]);
       Assert.AreEqual(205  , message[f("repeated_sint32"  ), 0]);
       Assert.AreEqual(206L , message[f("repeated_sint64"  ), 0]);
-      Assert.AreEqual(207  , message[f("repeated_fixed32" ), 0]);
-      Assert.AreEqual(208L , message[f("repeated_fixed64" ), 0]);
+      Assert.AreEqual(207U , message[f("repeated_fixed32" ), 0]);
+      Assert.AreEqual(208UL, message[f("repeated_fixed64" ), 0]);
       Assert.AreEqual(209  , message[f("repeated_sfixed32"), 0]);
       Assert.AreEqual(210L , message[f("repeated_sfixed64"), 0]);
       Assert.AreEqual(211F , message[f("repeated_float"   ), 0]);
@@ -453,12 +453,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(301  , message[f("repeated_int32"   ), 1]);
       Assert.AreEqual(302L , message[f("repeated_int64"   ), 1]);
-      Assert.AreEqual(303  , message[f("repeated_uint32"  ), 1]);
-      Assert.AreEqual(304L , message[f("repeated_uint64"  ), 1]);
+      Assert.AreEqual(303U , message[f("repeated_uint32"  ), 1]);
+      Assert.AreEqual(304UL, message[f("repeated_uint64"  ), 1]);
       Assert.AreEqual(305  , message[f("repeated_sint32"  ), 1]);
       Assert.AreEqual(306L , message[f("repeated_sint64"  ), 1]);
-      Assert.AreEqual(307  , message[f("repeated_fixed32" ), 1]);
-      Assert.AreEqual(308L , message[f("repeated_fixed64" ), 1]);
+      Assert.AreEqual(307U , message[f("repeated_fixed32" ), 1]);
+      Assert.AreEqual(308UL, message[f("repeated_fixed64" ), 1]);
       Assert.AreEqual(309  , message[f("repeated_sfixed32"), 1]);
       Assert.AreEqual(310L , message[f("repeated_sfixed64"), 1]);
       Assert.AreEqual(311F , message[f("repeated_float"   ), 1]);
@@ -469,12 +469,8 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(317,((IMessage)message[f("repeatedgroup"), 1])[repeatedGroupA]);
       Assert.AreEqual(318,((IMessage)message[f("repeated_nested_message"), 1])[nestedB]);
-      Assert.AreEqual(319,
-        ((IMessage)message[f("repeated_foreign_message"), 1])
-                         [foreignC]);
-      Assert.AreEqual(320,
-        ((IMessage)message[f("repeated_import_message"), 1])
-                         [importD]);
+      Assert.AreEqual(319,((IMessage)message[f("repeated_foreign_message"), 1])[foreignC]);
+      Assert.AreEqual(320,((IMessage)message[f("repeated_import_message"), 1])[importD]);
 
       Assert.AreEqual( nestedBaz, message[f("repeated_nested_enum" ),1]);
       Assert.AreEqual(foreignBaz, message[f("repeated_foreign_enum"),1]);
@@ -510,12 +506,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(401  , message[f("default_int32"   )]);
       Assert.AreEqual(402L , message[f("default_int64"   )]);
-      Assert.AreEqual(403  , message[f("default_uint32"  )]);
-      Assert.AreEqual(404L , message[f("default_uint64"  )]);
+      Assert.AreEqual(403U , message[f("default_uint32"  )]);
+      Assert.AreEqual(404UL, message[f("default_uint64"  )]);
       Assert.AreEqual(405  , message[f("default_sint32"  )]);
       Assert.AreEqual(406L , message[f("default_sint64"  )]);
-      Assert.AreEqual(407  , message[f("default_fixed32" )]);
-      Assert.AreEqual(408L , message[f("default_fixed64" )]);
+      Assert.AreEqual(407U , message[f("default_fixed32" )]);
+      Assert.AreEqual(408UL, message[f("default_fixed64" )]);
       Assert.AreEqual(409  , message[f("default_sfixed32")]);
       Assert.AreEqual(410L , message[f("default_sfixed64")]);
       Assert.AreEqual(411F , message[f("default_float"   )]);
@@ -532,14 +528,11 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual("425", message[f("default_cord")]);
     }
 
-    // -------------------------------------------------------------------
-
-    /**
-     * Assert (using {@code junit.framework.Assert}} that all fields of
-     * {@code message} are cleared, and that getting the fields returns their
-     * default values, using the {@link Message} reflection interface.
-     */
-    public void assertClearViaReflection(IMessage message) {
+    /// <summary>
+    /// Assert that all fields of the message are cleared, and that
+    /// getting the fields returns their default values, using the reflection interface.
+    /// </summary>
+    public void AssertClearViaReflection(IMessage message) {
       // has_blah() should initially be false for all optional fields.
       Assert.IsFalse(message.HasField(f("optional_int32"   )));
       Assert.IsFalse(message.HasField(f("optional_int64"   )));
@@ -572,12 +565,12 @@ namespace Google.ProtocolBuffers {
       // Optional fields without defaults are set to zero or something like it.
       Assert.AreEqual(0    , message[f("optional_int32"   )]);
       Assert.AreEqual(0L   , message[f("optional_int64"   )]);
-      Assert.AreEqual(0    , message[f("optional_uint32"  )]);
-      Assert.AreEqual(0L   , message[f("optional_uint64"  )]);
+      Assert.AreEqual(0U   , message[f("optional_uint32"  )]);
+      Assert.AreEqual(0UL  , message[f("optional_uint64"  )]);
       Assert.AreEqual(0    , message[f("optional_sint32"  )]);
       Assert.AreEqual(0L   , message[f("optional_sint64"  )]);
-      Assert.AreEqual(0    , message[f("optional_fixed32" )]);
-      Assert.AreEqual(0L   , message[f("optional_fixed64" )]);
+      Assert.AreEqual(0U   , message[f("optional_fixed32" )]);
+      Assert.AreEqual(0UL  , message[f("optional_fixed64" )]);
       Assert.AreEqual(0    , message[f("optional_sfixed32")]);
       Assert.AreEqual(0L   , message[f("optional_sfixed64")]);
       Assert.AreEqual(0F   , message[f("optional_float"   )]);
@@ -587,16 +580,12 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(ByteString.Empty, message[f("optional_bytes")]);
 
       // Embedded messages should also be clear.
-      Assert.IsFalse(
-        ((IMessage)message[f("optionalgroup")]).HasField(groupA));
-      Assert.IsFalse(
-        ((IMessage)message[f("optional_nested_message")])
+      Assert.IsFalse(((IMessage)message[f("optionalgroup")]).HasField(groupA));
+      Assert.IsFalse(((IMessage)message[f("optional_nested_message")])
                          .HasField(nestedB));
-      Assert.IsFalse(
-        ((IMessage)message[f("optional_foreign_message")])
+      Assert.IsFalse(((IMessage)message[f("optional_foreign_message")])
                          .HasField(foreignC));
-      Assert.IsFalse(
-        ((IMessage)message[f("optional_import_message")])
+      Assert.IsFalse(((IMessage)message[f("optional_import_message")])
                          .HasField(importD));
 
       Assert.AreEqual(0,((IMessage)message[f("optionalgroup")])[groupA]);
@@ -667,12 +656,12 @@ namespace Google.ProtocolBuffers {
       // Fields with defaults have their default values (duh).
       Assert.AreEqual( 41    , message[f("default_int32"   )]);
       Assert.AreEqual( 42L   , message[f("default_int64"   )]);
-      Assert.AreEqual( 43    , message[f("default_uint32"  )]);
-      Assert.AreEqual( 44L   , message[f("default_uint64"  )]);
+      Assert.AreEqual( 43U   , message[f("default_uint32"  )]);
+      Assert.AreEqual( 44UL  , message[f("default_uint64"  )]);
       Assert.AreEqual(-45    , message[f("default_sint32"  )]);
       Assert.AreEqual( 46L   , message[f("default_sint64"  )]);
-      Assert.AreEqual( 47    , message[f("default_fixed32" )]);
-      Assert.AreEqual( 48L   , message[f("default_fixed64" )]);
+      Assert.AreEqual( 47U   , message[f("default_fixed32" )]);
+      Assert.AreEqual( 48UL  , message[f("default_fixed64" )]);
       Assert.AreEqual( 49    , message[f("default_sfixed32")]);
       Assert.AreEqual(-50L   , message[f("default_sfixed64")]);
       Assert.AreEqual( 51.5F , message[f("default_float"   )]);
@@ -724,12 +713,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(201  , message[f("repeated_int32"   ), 0]);
       Assert.AreEqual(202L , message[f("repeated_int64"   ), 0]);
-      Assert.AreEqual(203  , message[f("repeated_uint32"  ), 0]);
-      Assert.AreEqual(204L , message[f("repeated_uint64"  ), 0]);
+      Assert.AreEqual(203U , message[f("repeated_uint32"  ), 0]);
+      Assert.AreEqual(204UL, message[f("repeated_uint64"  ), 0]);
       Assert.AreEqual(205  , message[f("repeated_sint32"  ), 0]);
       Assert.AreEqual(206L , message[f("repeated_sint64"  ), 0]);
-      Assert.AreEqual(207  , message[f("repeated_fixed32" ), 0]);
-      Assert.AreEqual(208L , message[f("repeated_fixed64" ), 0]);
+      Assert.AreEqual(207U , message[f("repeated_fixed32" ), 0]);
+      Assert.AreEqual(208UL, message[f("repeated_fixed64" ), 0]);
       Assert.AreEqual(209  , message[f("repeated_sfixed32"), 0]);
       Assert.AreEqual(210L , message[f("repeated_sfixed64"), 0]);
       Assert.AreEqual(211F , message[f("repeated_float"   ), 0]);
@@ -752,12 +741,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(501  , message[f("repeated_int32"   ), 1]);
       Assert.AreEqual(502L , message[f("repeated_int64"   ), 1]);
-      Assert.AreEqual(503  , message[f("repeated_uint32"  ), 1]);
-      Assert.AreEqual(504L , message[f("repeated_uint64"  ), 1]);
+      Assert.AreEqual(503U , message[f("repeated_uint32"  ), 1]);
+      Assert.AreEqual(504UL, message[f("repeated_uint64"  ), 1]);
       Assert.AreEqual(505  , message[f("repeated_sint32"  ), 1]);
       Assert.AreEqual(506L , message[f("repeated_sint64"  ), 1]);
-      Assert.AreEqual(507  , message[f("repeated_fixed32" ), 1]);
-      Assert.AreEqual(508L , message[f("repeated_fixed64" ), 1]);
+      Assert.AreEqual(507U , message[f("repeated_fixed32" ), 1]);
+      Assert.AreEqual(508UL, message[f("repeated_fixed64" ), 1]);
       Assert.AreEqual(509  , message[f("repeated_sfixed32"), 1]);
       Assert.AreEqual(510L , message[f("repeated_sfixed64"), 1]);
       Assert.AreEqual(511F , message[f("repeated_float"   ), 1]);

@@ -325,8 +325,13 @@ namespace Google.ProtocolBuffers {
         if (fields.TryGetValue(field, out result)) {
           return result;
         }
-
-        // This will just do the right thing
+        if (field.MappedType == MappedType.Message) {
+          if (field.IsRepeated) {
+            return new List<object>();
+          } else {
+            return null;
+          }
+        }
         return field.DefaultValue;
       }
       set {
