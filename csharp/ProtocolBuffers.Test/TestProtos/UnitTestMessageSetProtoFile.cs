@@ -522,8 +522,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtension<self::TestMessageSet, self::TestMessageSetExtension1> MessageSetExtension =
-            pb::GeneratedExtension.CreateExtension<self::TestMessageSet, self::TestMessageSetExtension1>(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<self::TestMessageSet, self::TestMessageSetExtension1> MessageSetExtension =
+            pb::GeneratedSingleExtension<self::TestMessageSet, self::TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     
@@ -731,8 +731,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtension<self::TestMessageSet, self::TestMessageSetExtension2> MessageSetExtension =
-            pb::GeneratedExtension.CreateExtension<self::TestMessageSet, self::TestMessageSetExtension2>(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<self::TestMessageSet, self::TestMessageSetExtension2> MessageSetExtension =
+            pb::GeneratedSingleExtension<self::TestMessageSet, self::TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     

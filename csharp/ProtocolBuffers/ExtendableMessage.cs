@@ -15,21 +15,21 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Checks if a singular extension is present.
     /// </summary>
-    public bool HasExtension(GeneratedExtension<TMessage, TBuilder> extension) {
+    public bool HasExtension(GeneratedExtensionBase<TMessage, TBuilder> extension) {
       return extensions.HasField(extension.Descriptor);
     }
 
     /// <summary>
     /// Returns the number of elements in a repeated extension.
     /// </summary>
-    public int GetExtensionCount<TExtension>(GeneratedExtension<TMessage, IList<TExtension>> extension) {
+    public int GetExtensionCount<TExtension>(GeneratedExtensionBase<TMessage, IList<TExtension>> extension) {
       return extensions.GetRepeatedFieldCount(extension.Descriptor);
     }
 
     /// <summary>
     /// Returns the value of an extension.
     /// </summary>
-    public TExtension GetExtension<TExtension>(GeneratedExtension<TMessage, TExtension> extension) {
+    public TExtension GetExtension<TExtension>(GeneratedExtensionBase<TMessage, TExtension> extension) {
       object value = extensions[extension.Descriptor];
       if (value == null) {
         return (TExtension) extension.MessageDefaultInstance;
@@ -41,7 +41,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Returns one element of a repeated extension.
     /// </summary>
-    public TExtension GetExtension<TExtension>(GeneratedExtension<TMessage, IList<TExtension>> extension, int index) {
+    public TExtension GetExtension<TExtension>(GeneratedExtensionBase<TMessage, IList<TExtension>> extension, int index) {
       return (TExtension) extension.SingularFromReflectionType(extensions[extension.Descriptor, index]);
     }
 

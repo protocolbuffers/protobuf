@@ -81,8 +81,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtension<self::TestOptimizedForSize, int> TestExtension =
-            pb::GeneratedExtension.CreateExtension<self::TestOptimizedForSize, int>(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<self::TestOptimizedForSize, int> TestExtension =
+            pb::GeneratedSingleExtension<self::TestOptimizedForSize, int>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     

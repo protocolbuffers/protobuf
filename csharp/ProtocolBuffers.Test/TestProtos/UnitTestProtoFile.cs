@@ -632,170 +632,170 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
-    /*public static readonly pb::GeneratedExtension<self::TestAllExtensions, int> OptionalInt32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, int>(Descriptor.Extensions[0]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, long> OptionalInt64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, long>(Descriptor.Extensions[1]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, uint> OptionalUint32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, uint>(Descriptor.Extensions[2]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, ulong> OptionalUint64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, ulong>(Descriptor.Extensions[3]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, int> OptionalSint32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, int>(Descriptor.Extensions[4]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, long> OptionalSint64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, long>(Descriptor.Extensions[5]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, uint> OptionalFixed32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, uint>(Descriptor.Extensions[6]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, ulong> OptionalFixed64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, ulong>(Descriptor.Extensions[7]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, int> OptionalSfixed32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, int>(Descriptor.Extensions[8]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, long> OptionalSfixed64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, long>(Descriptor.Extensions[9]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, float> OptionalFloatExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, float>(Descriptor.Extensions[10]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, double> OptionalDoubleExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, double>(Descriptor.Extensions[11]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, bool> OptionalBoolExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, bool>(Descriptor.Extensions[12]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, string> OptionalStringExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, string>(Descriptor.Extensions[13]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, pb::ByteString> OptionalBytesExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, pb::ByteString>(Descriptor.Extensions[14]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::OptionalGroup_extension> OptionalGroupExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::OptionalGroup_extension>(Descriptor.Extensions[15]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage> OptionalNestedMessageExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage>(Descriptor.Extensions[16]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::ForeignMessage> OptionalForeignMessageExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::ForeignMessage>(Descriptor.Extensions[17]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::ImportMessage> OptionalImportMessageExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::ImportMessage>(Descriptor.Extensions[18]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum> OptionalNestedEnumExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>(Descriptor.Extensions[19]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::ForeignEnum> OptionalForeignEnumExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::ForeignEnum>(Descriptor.Extensions[20]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::ImportEnum> OptionalImportEnumExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::ImportEnum>(Descriptor.Extensions[21]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, string> OptionalStringPieceExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, string>(Descriptor.Extensions[22]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, string> OptionalCordExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, string>(Descriptor.Extensions[23]);
+    /*public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> OptionalInt32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> OptionalInt64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[1]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, uint> OptionalUint32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[2]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, ulong> OptionalUint64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[3]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> OptionalSint32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[4]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> OptionalSint64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[5]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, uint> OptionalFixed32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[6]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, ulong> OptionalFixed64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[7]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> OptionalSfixed32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[8]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> OptionalSfixed64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[9]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, float> OptionalFloatExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, float>.CreateInstance(Descriptor.Extensions[10]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, double> OptionalDoubleExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, double>.CreateInstance(Descriptor.Extensions[11]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, bool> OptionalBoolExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, bool>.CreateInstance(Descriptor.Extensions[12]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> OptionalStringExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[13]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, pb::ByteString> OptionalBytesExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, pb::ByteString>.CreateInstance(Descriptor.Extensions[14]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::OptionalGroup_extension> OptionalGroupExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::OptionalGroup_extension>.CreateInstance(Descriptor.Extensions[15]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage> OptionalNestedMessageExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[16]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::ForeignMessage> OptionalForeignMessageExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::ForeignMessage>.CreateInstance(Descriptor.Extensions[17]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::ImportMessage> OptionalImportMessageExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::ImportMessage>.CreateInstance(Descriptor.Extensions[18]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum> OptionalNestedEnumExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[19]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::ForeignEnum> OptionalForeignEnumExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::ForeignEnum>.CreateInstance(Descriptor.Extensions[20]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::ImportEnum> OptionalImportEnumExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::ImportEnum>.CreateInstance(Descriptor.Extensions[21]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> OptionalStringPieceExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[22]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> OptionalCordExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[23]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<int>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, int>(Descriptor.Extensions[24]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[24]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<long>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, long>(Descriptor.Extensions[25]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[25]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<uint>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, uint>(Descriptor.Extensions[26]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<uint>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[26]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<ulong>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, ulong>(Descriptor.Extensions[27]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<ulong>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[27]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<int>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, int>(Descriptor.Extensions[28]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[28]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<long>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, long>(Descriptor.Extensions[29]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[29]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<uint>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, uint>(Descriptor.Extensions[30]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<uint>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[30]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<ulong>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, ulong>(Descriptor.Extensions[31]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<ulong>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[31]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<int>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, int>(Descriptor.Extensions[32]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<int>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[32]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<long>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, long>(Descriptor.Extensions[33]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<long>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[33]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<float>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, float>(Descriptor.Extensions[34]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<float>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, float>.CreateInstance(Descriptor.Extensions[34]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<double>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, double>(Descriptor.Extensions[35]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<double>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, double>.CreateInstance(Descriptor.Extensions[35]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<bool>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, bool>(Descriptor.Extensions[36]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<bool>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, bool>.CreateInstance(Descriptor.Extensions[36]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<string>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, string>(Descriptor.Extensions[37]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[37]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<pb::ByteString>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, pb::ByteString>(Descriptor.Extensions[38]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<pb::ByteString>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, pb::ByteString>.CreateInstance(Descriptor.Extensions[38]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::RepeatedGroup_extension>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::RepeatedGroup_extension>(Descriptor.Extensions[39]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::RepeatedGroup_extension>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::RepeatedGroup_extension>.CreateInstance(Descriptor.Extensions[39]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedMessage>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage>(Descriptor.Extensions[40]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedMessage>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[40]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::ForeignMessage>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::ForeignMessage>(Descriptor.Extensions[41]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ForeignMessage>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ForeignMessage>.CreateInstance(Descriptor.Extensions[41]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::ImportMessage>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::ImportMessage>(Descriptor.Extensions[42]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ImportMessage>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ImportMessage>.CreateInstance(Descriptor.Extensions[42]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedEnum>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>(Descriptor.Extensions[43]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestAllTypes.Types.NestedEnum>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[43]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::ForeignEnum>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::ForeignEnum>(Descriptor.Extensions[44]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ForeignEnum>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ForeignEnum>.CreateInstance(Descriptor.Extensions[44]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::ImportEnum>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::ImportEnum>(Descriptor.Extensions[45]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::ImportEnum>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, self::ImportEnum>.CreateInstance(Descriptor.Extensions[45]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<string>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, string>(Descriptor.Extensions[46]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[46]);
     public static readonly
-      pb::GeneratedExtension<self::TestAllExtensions, scg::IList<string>> name =
-          pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, string>(Descriptor.Extensions[47]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, int> DefaultInt32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, int>(Descriptor.Extensions[48]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, long> DefaultInt64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, long>(Descriptor.Extensions[49]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, uint> DefaultUint32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, uint>(Descriptor.Extensions[50]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, ulong> DefaultUint64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, ulong>(Descriptor.Extensions[51]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, int> DefaultSint32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, int>(Descriptor.Extensions[52]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, long> DefaultSint64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, long>(Descriptor.Extensions[53]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, uint> DefaultFixed32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, uint>(Descriptor.Extensions[54]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, ulong> DefaultFixed64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, ulong>(Descriptor.Extensions[55]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, int> DefaultSfixed32Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, int>(Descriptor.Extensions[56]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, long> DefaultSfixed64Extension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, long>(Descriptor.Extensions[57]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, float> DefaultFloatExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, float>(Descriptor.Extensions[58]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, double> DefaultDoubleExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, double>(Descriptor.Extensions[59]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, bool> DefaultBoolExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, bool>(Descriptor.Extensions[60]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, string> DefaultStringExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, string>(Descriptor.Extensions[61]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, pb::ByteString> DefaultBytesExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, pb::ByteString>(Descriptor.Extensions[62]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>(Descriptor.Extensions[63]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::ForeignEnum> DefaultForeignEnumExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::ForeignEnum>(Descriptor.Extensions[64]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::ImportEnum> DefaultImportEnumExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::ImportEnum>(Descriptor.Extensions[65]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, string> DefaultStringPieceExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, string>(Descriptor.Extensions[66]);
-    public static readonly pb::GeneratedExtension<self::TestAllExtensions, string> DefaultCordExtension =
-          pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, string>(Descriptor.Extensions[67]);
-    public static readonly pb::GeneratedExtension<self::TestFieldOrderings, string> MyExtensionString =
-          pb::GeneratedExtension.CreateExtension<self::TestFieldOrderings, string>(Descriptor.Extensions[68]);
-    public static readonly pb::GeneratedExtension<self::TestFieldOrderings, int> MyExtensionInt =
-          pb::GeneratedExtension.CreateExtension<self::TestFieldOrderings, int>(Descriptor.Extensions[69]);
+      pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<string>> name =
+          pb::GeneratedRepeatExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[47]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> DefaultInt32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[48]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> DefaultInt64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[49]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, uint> DefaultUint32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[50]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, ulong> DefaultUint64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[51]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> DefaultSint32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[52]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> DefaultSint64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[53]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, uint> DefaultFixed32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, uint>.CreateInstance(Descriptor.Extensions[54]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, ulong> DefaultFixed64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, ulong>.CreateInstance(Descriptor.Extensions[55]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> DefaultSfixed32Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[56]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, long> DefaultSfixed64Extension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, long>.CreateInstance(Descriptor.Extensions[57]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, float> DefaultFloatExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, float>.CreateInstance(Descriptor.Extensions[58]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, double> DefaultDoubleExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, double>.CreateInstance(Descriptor.Extensions[59]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, bool> DefaultBoolExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, bool>.CreateInstance(Descriptor.Extensions[60]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> DefaultStringExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[61]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, pb::ByteString> DefaultBytesExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, pb::ByteString>.CreateInstance(Descriptor.Extensions[62]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[63]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::ForeignEnum> DefaultForeignEnumExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::ForeignEnum>.CreateInstance(Descriptor.Extensions[64]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::ImportEnum> DefaultImportEnumExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, self::ImportEnum>.CreateInstance(Descriptor.Extensions[65]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> DefaultStringPieceExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[66]);
+    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, string> DefaultCordExtension =
+          pb::GeneratedSingleExtension<self::TestAllExtensions, string>.CreateInstance(Descriptor.Extensions[67]);
+    public static readonly pb::GeneratedExtensionBase<self::TestFieldOrderings, string> MyExtensionString =
+          pb::GeneratedSingleExtension<self::TestFieldOrderings, string>.CreateInstance(Descriptor.Extensions[68]);
+    public static readonly pb::GeneratedExtensionBase<self::TestFieldOrderings, int> MyExtensionInt =
+          pb::GeneratedSingleExtension<self::TestFieldOrderings, int>.CreateInstance(Descriptor.Extensions[69]);
     */
     #endregion
     
@@ -6145,11 +6145,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtension<self::TestAllExtensions, self::TestRequired> Single =
-            pb::GeneratedExtension.CreateExtension<self::TestAllExtensions, self::TestRequired>(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, self::TestRequired> Single =
+            pb::GeneratedSingleExtension<self::TestAllExtensions, self::TestRequired>.CreateInstance(Descriptor.Extensions[0]);
       public static readonly
-        pb::GeneratedExtension<self::TestAllExtensions, scg::IList<self::TestRequired>> name =
-            pb::GeneratedExtension.CreateRepeatedExtension<self::TestAllExtensions, self::TestRequired>(Descriptor.Extensions[1]);
+        pb::GeneratedExtensionBase<self::TestAllExtensions, scg::IList<self::TestRequired>> name =
+            pb::GeneratedRepeatExtension<self::TestAllExtensions, self::TestRequired>.CreateInstance(Descriptor.Extensions[1]);
     }
     #endregion
     

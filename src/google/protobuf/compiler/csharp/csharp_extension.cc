@@ -57,12 +57,12 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
   if (descriptor_->is_repeated()) {
     printer->Print(vars,
       "public static readonly\r\n"
-      "  pb::GeneratedExtension<$containing_type$, scg::IList<$type$>> name =\r\n"
-      "      pb::GeneratedExtension.CreateRepeatedExtension<$containing_type$, $type$>(Descriptor.Extensions[$index$]);\r\n");
+      "  pb::GeneratedExtensionBase<$containing_type$, scg::IList<$type$>> name =\r\n"
+      "      pb::GeneratedRepeatExtension<$containing_type$, $type$>.CreateInstance(Descriptor.Extensions[$index$]);\r\n");
   } else {
     printer->Print(vars,
-      "public static readonly pb::GeneratedExtension<$containing_type$, $type$> $name$ =\r\n"
-      "      pb::GeneratedExtension.CreateExtension<$containing_type$, $type$>(Descriptor.Extensions[$index$]);\r\n");
+      "public static readonly pb::GeneratedExtensionBase<$containing_type$, $type$> $name$ =\r\n"
+      "      pb::GeneratedSingleExtension<$containing_type$, $type$>.CreateInstance(Descriptor.Extensions[$index$]);\r\n");
   }
 }
 

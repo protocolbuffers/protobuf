@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Add an extension from a generated file to the registry.
     /// </summary>
-    public void Add<TContainer, TExtension> (GeneratedExtension<TContainer, TExtension> extension) 
+    public void Add<TContainer, TExtension> (GeneratedExtensionBase<TContainer, TExtension> extension) 
         where TContainer : IMessage<TContainer> {
       if (extension.Descriptor.MappedType == MappedType.Message) {
         Add(new ExtensionInfo(extension.Descriptor, extension.MessageDefaultInstance));
