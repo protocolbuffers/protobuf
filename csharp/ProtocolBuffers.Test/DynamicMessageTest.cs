@@ -9,13 +9,12 @@ namespace Google.ProtocolBuffers {
   public class DynamicMessageTest {
 
     private ReflectionTester reflectionTester;
-
     private ReflectionTester extensionsReflectionTester;
 
     [SetUp]
     public void SetUp() {
-      reflectionTester = new ReflectionTester(TestAllTypes.Descriptor, null);
-      extensionsReflectionTester = new ReflectionTester(TestAllExtensions.Descriptor, TestUtil.CreateExtensionRegistry());
+      reflectionTester = ReflectionTester.CreateTestAllTypesInstance();
+      extensionsReflectionTester = ReflectionTester.CreateTestAllExtensionsInstance();
     }
 
     [Test]

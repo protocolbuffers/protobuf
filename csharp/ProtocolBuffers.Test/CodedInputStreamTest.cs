@@ -17,6 +17,7 @@ using System;
 using System.IO;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace Google.ProtocolBuffers {
   [TestFixture]
@@ -190,7 +191,6 @@ namespace Google.ProtocolBuffers {
 
       byte[] rawBytes = message.ToByteArray();
       Assert.AreEqual(rawBytes.Length, message.SerializedSize);
-
       TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);
       TestUtil.AssertAllFieldsSet(message2);
 

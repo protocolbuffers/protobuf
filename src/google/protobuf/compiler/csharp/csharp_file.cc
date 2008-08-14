@@ -165,11 +165,9 @@ void FileGenerator::Generate(io::Printer* printer) {
   // Extensions must be generated in the outer class since they are values,
   // not classes.
   printer->Print("#region Extensions\r\n");
-  printer->Print("/*");
   for (int i = 0; i < file_->extension_count(); i++) {
     ExtensionGenerator(file_->extension(i)).Generate(printer);
   }
-  printer->Print("*/\r\n");
   printer->Print("#endregion\r\n\r\n");
 
   printer->Print("#region Static variables\r\n");

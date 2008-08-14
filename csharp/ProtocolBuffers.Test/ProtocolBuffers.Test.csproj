@@ -50,6 +50,7 @@
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
+    <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />

@@ -52,7 +52,7 @@ namespace Google.ProtocolBuffers {
     /// Sets the value of one element of a repeated extension.
     /// </summary>
     public ExtendableBuilder<TMessage, TBuilder> SetExtension<TExtension>(
-        GeneratedExtensionBase<TMessage, IList<TExtension>> extension, int index, Type value) {
+        GeneratedExtensionBase<TMessage, IList<TExtension>> extension, int index, TExtension value) {
       ExtendableMessage<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
       message.Extensions[extension.Descriptor, index] = extension.SingularToReflectionType(value);
@@ -118,7 +118,6 @@ namespace Google.ProtocolBuffers {
         } else {
           base[field] = value;
         }
-        InternalFieldAccessors[field].SetValue(this, value);
       }
     }
 

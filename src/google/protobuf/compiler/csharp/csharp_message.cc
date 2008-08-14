@@ -435,7 +435,7 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "$access$ sealed partial class Builder : pb::GeneratedBuilder<$classname$, $classname$.Builder>.ExtendableBuilder {\r\n",
+      "$access$ sealed partial class Builder : pb::ExtendableBuilder<$classname$, $classname$.Builder> {\r\n",
       "classname", ClassName(descriptor_),
       "access", ClassAccessLevel(descriptor_->file()));
   } else {
@@ -522,6 +522,10 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
   //TODO(jonskeet): Work out what this is really for...
   if (descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
     printer->Print(
+      "protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {\r\n"
+      "  return MergeFrom(data, extensionRegistry);\r\n"
+      "}\r\n"
+      "\r\n"
       "public override IBuilder MergeFrom(pb::IMessage other) {\r\n"
       "  if (other is $classname$) {\r\n"
       "    return MergeFrom(($classname$) other);\r\n"

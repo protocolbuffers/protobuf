@@ -4841,7 +4841,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.repeatedNestedEnum_.Add(value);
         return this;
       }
-      public Builder AddAllRepeatedNestedEnum(scg::IEnumerable<self::TestAllTypes.Types.NestedEnum> values) {
+      public Builder AddRangeRepeatedNestedEnum(scg::IEnumerable<self::TestAllTypes.Types.NestedEnum> values) {
         if (result.repeatedNestedEnum_.Count == 0) {
           result.repeatedNestedEnum_ = new scg::List<self::TestAllTypes.Types.NestedEnum>();
         }
@@ -4874,7 +4874,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.repeatedForeignEnum_.Add(value);
         return this;
       }
-      public Builder AddAllRepeatedForeignEnum(scg::IEnumerable<self::ForeignEnum> values) {
+      public Builder AddRangeRepeatedForeignEnum(scg::IEnumerable<self::ForeignEnum> values) {
         if (result.repeatedForeignEnum_.Count == 0) {
           result.repeatedForeignEnum_ = new scg::List<self::ForeignEnum>();
         }
@@ -4907,7 +4907,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.repeatedImportEnum_.Add(value);
         return this;
       }
-      public Builder AddAllRepeatedImportEnum(scg::IEnumerable<self::ImportEnum> values) {
+      public Builder AddRangeRepeatedImportEnum(scg::IEnumerable<self::ImportEnum> values) {
         if (result.repeatedImportEnum_.Count == 0) {
           result.repeatedImportEnum_ = new scg::List<self::ImportEnum>();
         }
@@ -11640,7 +11640,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.repeatedEnumField_.Add(value);
         return this;
       }
-      public Builder AddAllRepeatedEnumField(scg::IEnumerable<self::ForeignEnum> values) {
+      public Builder AddRangeRepeatedEnumField(scg::IEnumerable<self::ForeignEnum> values) {
         if (result.repeatedEnumField_.Count == 0) {
           result.repeatedEnumField_ = new scg::List<self::ForeignEnum>();
         }

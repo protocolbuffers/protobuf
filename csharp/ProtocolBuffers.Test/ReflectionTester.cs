@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 using NUnit.Framework;
+using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -52,7 +53,7 @@ namespace Google.ProtocolBuffers {
     /// All of the TestAllExtensions extensions must be registered in the registry.
     /// TODO(jonskeet): Enforce all of these with two factory methods.
     /// </summary>
-    public ReflectionTester(MessageDescriptor baseDescriptor,
+    private ReflectionTester(MessageDescriptor baseDescriptor,
                             ExtensionRegistry extensionRegistry) {
       this.baseDescriptor = baseDescriptor;
       this.extensionRegistry = extensionRegistry;
@@ -129,9 +130,24 @@ namespace Google.ProtocolBuffers {
       Assert.IsNotNull(importBaz     );
     }
 
-    /**
-     * Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
-     */
+    /// <summary>
+    /// Creates an instance for the TestAllTypes message, with no extension registry.
+    /// </summary>
+    public static ReflectionTester CreateTestAllTypesInstance() {
+      return new ReflectionTester(TestAllTypes.Descriptor, null);
+    }
+
+    /// <summary>
+    /// Creates an instance for the TestAllExtensions message, with an
+    /// extension registry from TestUtil.CreateExtensionRegistry.
+    /// </summary>
+    public static ReflectionTester CreateTestAllExtensionsInstance() {      
+      return new ReflectionTester(TestAllExtensions.Descriptor, TestUtil.CreateExtensionRegistry());
+    }
+
+    /// <summary>
+    /// Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
+    /// </summary>
     private FieldDescriptor f(String name) {
       FieldDescriptor result;
       if (extensionRegistry == null) {
@@ -143,11 +159,10 @@ namespace Google.ProtocolBuffers {
       return result;
     }
 
-    /**
-     * Calls {@code parent.CreateBuilderForField()} or uses the
-     * {@code ExtensionRegistry} to find an appropriateIBuilder, depending
-     * on what type is being tested.
-     */
+    /// <summary>
+    /// Calls parent.CreateBuilderForField() or uses the extension registry
+    /// to find an appropriate builder, depending on what type is being tested.
+    /// </summary>
     private IBuilder CreateBuilderForField(IBuilder parent, FieldDescriptor field) {
       if (extensionRegistry == null) {
         return parent.CreateBuilderForField(field);
@@ -159,13 +174,11 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    // -------------------------------------------------------------------
-
-    /**
-     * Set every field of {@code message} to the values expected by
-     * {@code assertAllFieldsSet()}, using the {@link MessageIBuilder}
-     * reflection interface.
-     */
+    /// <summary>
+    /// Sets every field of the message to the values expected by
+    /// AssertAllFieldsSet, using the reflection interface.
+    /// </summary>
+    /// <param name="message"></param>
     internal void SetAllFieldsViaReflection(IBuilder message) {
       message[f("optional_int32"   )] = 101 ;
       message[f("optional_int64"   )] = 102L;

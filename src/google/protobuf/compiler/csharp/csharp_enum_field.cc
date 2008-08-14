@@ -198,7 +198,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  result.$name$_.Add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
-    "public Builder AddAll$capitalized_name$(scg::IEnumerable<$type$> values) {\r\n"
+    "public Builder AddRange$capitalized_name$(scg::IEnumerable<$type$> values) {\r\n"
     "  if (result.$name$_.Count == 0) {\r\n"
     "    result.$name$_ = new scg::List<$type$>();\r\n"
     "  }\r\n"
