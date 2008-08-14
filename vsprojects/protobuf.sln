@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers", "..\cshar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Test", "..\csharp\ProtocolBuffers.Test\ProtocolBuffers.Test.csproj", "{DD01ED24-3750-4567-9A23-1DB676A15610}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBed", "..\csharp\TestBed\TestBed.csproj", "{BFA454A0-63F3-4850-BE9C-8CACD242EB50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,7 @@ Global
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Win32.ActiveCfg = Release|Any CPU
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Win32.Build.0 = Release|Any CPU
 		{DD01ED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DD01ED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD01ED24-3750-4567-9A23-1DB676A15610}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -97,6 +100,19 @@ Global
 		{DD01ED24-3750-4567-9A23-1DB676A15610}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{DD01ED24-3750-4567-9A23-1DB676A15610}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{DD01ED24-3750-4567-9A23-1DB676A15610}.Release|Win32.ActiveCfg = Release|Any CPU
+		{DD01ED24-3750-4567-9A23-1DB676A15610}.Release|Win32.Build.0 = Release|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Debug|Win32.Build.0 = Debug|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Release|Win32.ActiveCfg = Release|Any CPU
+		{BFA454A0-63F3-4850-BE9C-8CACD242EB50}.Release|Win32.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
