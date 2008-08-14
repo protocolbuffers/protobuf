@@ -4,6 +4,7 @@ csharp/ProtocolBuffers/bin/
 csharp/ProtocolBuffers/obj/
 csharp/ProtocolBuffers.Test/bin/
 csharp/ProtocolBuffers.Test/obj/
+csharp/TestBed
 java/.classpath
 java/.project
 java/.settings/
@@ -16,3 +17,5 @@ java/target/
 src/tmp/
 tmp/
 vsprojects/*
+vsprojects/protobuf.sln
+benchmark.txt
