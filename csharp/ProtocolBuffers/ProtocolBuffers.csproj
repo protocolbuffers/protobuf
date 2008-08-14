@@ -69,9 +69,15 @@
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
+    <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
+    <Compile Include="FieldAccess\SingleMessageAccessor.cs" />
+    <Compile Include="FieldAccess\SinglePrimitiveAccessor.cs" />
+    <Compile Include="FieldAccess\RepeatedPrimitiveAccessor.cs" />
+    <Compile Include="FieldAccess\RepeatedEnumAccessor.cs" />
     <Compile Include="FieldAccess\Delegates.cs" />
     <Compile Include="FieldAccess\IFieldAccessor.cs" />
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
+    <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="GeneratedBuilder.cs" />
     <Compile Include="GeneratedExtension.cs" />

@@ -57,8 +57,9 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Obtains the value of the given field, or the default value if
-    /// it isn't set. For value type fields including enums, the boxed
-    /// value is returned. For embedded message fields, the sub-message
+    /// it isn't set. For value type fields, the boxed value is returned.
+    /// For enum fields, the EnumValueDescriptor for the enum is returned.
+    /// For embedded message fields, the sub-message
     /// is returned. For repeated fields, an IList&lt;T&gt; is returned.
     /// </summary>
     object this[FieldDescriptor field] { get; }

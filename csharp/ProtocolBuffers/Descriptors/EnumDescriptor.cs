@@ -43,8 +43,6 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// Finds an enum value by number. If multiple enum values have the
     /// same number, this returns the first defined value with that number.
     /// </summary>
-    /// <param name="number"></param>
-    /// <returns></returns>
     internal EnumValueDescriptor FindValueByNumber(int number) {
       return File.DescriptorPool.FindEnumValueByNumber(this, number);
     }
