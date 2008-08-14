@@ -10,7 +10,7 @@ namespace Google.ProtocolBuffers {
     where TBuilder : GeneratedBuilder<TMessage, TBuilder> {
 
     protected ExtendableMessage() {}
-    private readonly FieldSet extensions = FieldSet.CreateFieldSet();
+    private readonly FieldSet extensions = FieldSet.CreateInstance();
 
     /// <summary>
     /// Access for the builder.

@@ -91,6 +91,7 @@ public class WireFormatTest extends TestCase {
       }
 
       assertTrue(tag > previousTag);
+      previousTag = tag;
       input.skipField(tag);
     }
   }

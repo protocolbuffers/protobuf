@@ -26,7 +26,7 @@ namespace Google.ProtocolBuffers {
         where TBuilder : IBuilder<TMessage, TBuilder> {
       return message => {
         TMessage castMessage = message as TMessage;
-        if (castMessage == null) {
+        if (castMessage == null) {  
           castMessage = defaultInstance.CreateBuilderForType().MergeFrom(message).Build();
         }
         action(castMessage);

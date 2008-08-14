@@ -30,8 +30,9 @@ namespace Google.ProtocolBuffers {
       this.fields = fields;
     }
 
-    public static FieldSet CreateFieldSet() {
-      return new FieldSet(new Dictionary<FieldDescriptor, object>());
+    public static FieldSet CreateInstance() {
+      // Use SortedList to keep fields in the canonical order
+      return new FieldSet(new SortedList<FieldDescriptor, object>());
     }
 
     /// <summary>
@@ -507,7 +508,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// See <see cref="IBuilder.MergeFrom(IMessage)" />
+    /// See <see cref="IBuilder{TMessage, TBuilder}.MergeFrom(IMessage)" />
     /// </summary>
     public void MergeFrom(IMessage other) {
       MergeFields(other.AllFields);

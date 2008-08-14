@@ -36,6 +36,18 @@ namespace Google.ProtocolBuffers {
     bool IsInitialized { get; }
 
     /// <summary>
+    /// Only present in the nongeneric interface - useful for tests, but
+    /// not as much in real life.
+    /// </summary>
+    IBuilder SetField(FieldDescriptor field, object value);
+
+    /// <summary>
+    /// Only present in the nongeneric interface - useful for tests, but
+    /// not as much in real life.
+    /// </summary>
+    IBuilder SetRepeatedField(FieldDescriptor field, int index, object value);
+
+    /// <summary>
     /// Behaves like the equivalent property in IMessage&lt;T&gt;.
     /// The returned map may or may not reflect future changes to the builder.
     /// Either way, the returned map is unmodifiable.
@@ -55,18 +67,6 @@ namespace Google.ProtocolBuffers {
     /// <see cref="IMessage{TMessage, TBuilder}.DescriptorForType"/>
     /// </summary>
     MessageDescriptor DescriptorForType { get; }
-
-    /// <summary>
-    /// Only present in the nongeneric interface - useful for tests, but
-    /// not as much in real life.
-    /// </summary>
-    IBuilder SetField(FieldDescriptor field, object value);
-
-    /// <summary>
-    /// Only present in the nongeneric interface - useful for tests, but
-    /// not as much in real life.
-    /// </summary>
-    IBuilder SetRepeatedField(FieldDescriptor field, int index, object value);
 
     /// <summary>
     /// <see cref="IMessage{TMessage, TBuilder}.GetRepeatedFieldCount"/>

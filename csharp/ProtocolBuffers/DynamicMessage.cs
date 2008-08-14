@@ -233,7 +233,7 @@ namespace Google.ProtocolBuffers {
 
       internal Builder(MessageDescriptor type) {
         this.type = type;
-        this.fields = FieldSet.CreateFieldSet();
+        this.fields = FieldSet.CreateInstance();
         this.unknownFields = UnknownFieldSet.DefaultInstance;
       }
 
