@@ -95,8 +95,6 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Print("using scg = global::System.Collections.Generic;\r\n");
 
   if (!csharp_namespace_.empty()) {
-    printer->Print("using self = global::$selfnamespace$;\r\n\r\n",
-      "selfnamespace", csharp_namespace_);
     printer->Print(
       "namespace $namespace$ {\r\n",
       "namespace", csharp_namespace_);
@@ -238,8 +236,6 @@ static void GenerateSibling(const string& csharp_namespace,
   printer.Print("using scg = global::System.Collections.Generic;\r\n");
 
   if (!csharp_namespace.empty()) {
-    printer.Print("using self = global::$selfnamespace$;\r\n\r\n",
-      "selfnamespace", csharp_namespace);
     printer.Print(
       "namespace $namespace$ {\r\n",
       "namespace", csharp_namespace);

@@ -4,8 +4,6 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-using self = global::Google.ProtocolBuffers.TestProtos;
-
 namespace Google.ProtocolBuffers.TestProtos {
   
   public static partial class UnitTestMessageSetProtoFile {
@@ -63,43 +61,43 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSet__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSet__Descriptor,
             new string[] { },
-            typeof (self::TestMessageSet),
-            typeof (self::TestMessageSet.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSet),
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder));
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor 
         = Descriptor.MessageTypes[1];
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor,
             new string[] { "MessageSet", },
-            typeof (self::TestMessageSetContainer),
-            typeof (self::TestMessageSetContainer.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer),
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.Builder));
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor 
         = Descriptor.MessageTypes[2];
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor,
             new string[] { "I", },
-            typeof (self::TestMessageSetExtension1),
-            typeof (self::TestMessageSetExtension1.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1),
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.Builder));
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor 
         = Descriptor.MessageTypes[3];
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor,
             new string[] { "Str", },
-            typeof (self::TestMessageSetExtension2),
-            typeof (self::TestMessageSetExtension2.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2),
+            typeof (global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.Builder));
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_RawMessageSet__Descriptor 
         = Descriptor.MessageTypes[4];
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_RawMessageSet__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_RawMessageSet__Descriptor,
             new string[] { "Item", },
-            typeof (self::RawMessageSet),
-            typeof (self::RawMessageSet.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet),
+            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Builder));
     internal static readonly pbd::MessageDescriptor  internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor 
         = internal__static_protobuf_unittest_RawMessageSet__Descriptor.NestedTypes[0];
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor,
             new string[] { "TypeId", "Message", },
-            typeof (self::RawMessageSet.Types.Item),
-            typeof (self::RawMessageSet.Types.Item.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item),
+            typeof (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder));
     #endregion
     
   }
@@ -119,11 +117,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSet__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSet__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSet__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSet__FieldAccessorTable; }
     }
     
     public override bool IsInitialized {
@@ -153,35 +151,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public static self::TestMessageSet ParseFrom(pb::ByteString data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(pb::ByteString data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(pb::ByteString data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(byte[] data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(byte[] data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(global::System.IO.Stream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(
         global::System.IO.Stream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(pb::CodedInputStream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSet ParseFrom(pb::CodedInputStream input,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSet ParseFrom(pb::CodedInputStream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
@@ -189,26 +187,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(self::TestMessageSet prototype) {
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.TestMessageSet prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::ExtendableBuilder<self::TestMessageSet, self::TestMessageSet.Builder> {
+    public sealed partial class Builder : pb::ExtendableBuilder<global::Google.ProtocolBuffers.TestProtos.TestMessageSet, global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
       
-      // Construct using self::TestMessageSet.CreateBuilder()
+      // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSet.CreateBuilder()
       internal Builder() {}
       
-      self::TestMessageSet result = new self::TestMessageSet();
+      global::Google.ProtocolBuffers.TestProtos.TestMessageSet result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSet();
       
-      protected override self::TestMessageSet MessageBeingBuilt {
+      protected override global::Google.ProtocolBuffers.TestProtos.TestMessageSet MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new self::TestMessageSet();
+        result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSet();
         return this;
       }
       
@@ -217,30 +215,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return self::TestMessageSet.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Descriptor; }
       }
       
-      public override self::TestMessageSet DefaultInstanceForType {
-        get { return self::TestMessageSet.DefaultInstance; }
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSet DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance; }
       }
       
-      public override self::TestMessageSet BuildPartial() {
-        self::TestMessageSet returnMe = result;
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSet BuildPartial() {
+        global::Google.ProtocolBuffers.TestProtos.TestMessageSet returnMe = result;
         result = null;
         return returnMe;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
-        if (other is self::TestMessageSet) {
-          return MergeFrom((self::TestMessageSet) other);
+        if (other is global::Google.ProtocolBuffers.TestProtos.TestMessageSet) {
+          return MergeFrom((global::Google.ProtocolBuffers.TestProtos.TestMessageSet) other);
         } else {
           base.MergeFrom(other);
           return this;
         }
       }
       
-      public override Builder MergeFrom(self::TestMessageSet other) {
-        if (other == self::TestMessageSet.DefaultInstance) return this;
+      public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.TestMessageSet other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -284,20 +282,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable; }
     }
     
     // optional .protobuf_unittest.TestMessageSet message_set = 1;
     private bool hasMessageSet;
-    private self::TestMessageSet messageSet_ = self::TestMessageSet.DefaultInstance;
+    private global::Google.ProtocolBuffers.TestProtos.TestMessageSet messageSet_ = global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance;
     public bool HasMessageSet {
       get { return hasMessageSet; }
     }
-    public self::TestMessageSet MessageSet {
+    public global::Google.ProtocolBuffers.TestProtos.TestMessageSet MessageSet {
       get { return messageSet_; }
     }
     
@@ -333,35 +331,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public static self::TestMessageSetContainer ParseFrom(pb::ByteString data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(pb::ByteString data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(pb::ByteString data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(byte[] data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(byte[] data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(global::System.IO.Stream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(
         global::System.IO.Stream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(pb::CodedInputStream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSetContainer ParseFrom(pb::CodedInputStream input,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer ParseFrom(pb::CodedInputStream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
@@ -369,26 +367,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(self::TestMessageSetContainer prototype) {
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestMessageSetContainer, Builder> {
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
       
-      // Construct using self::TestMessageSetContainer.CreateBuilder()
+      // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.CreateBuilder()
       internal Builder() {}
       
-      self::TestMessageSetContainer result = new self::TestMessageSetContainer();
+      global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer();
       
-      protected override self::TestMessageSetContainer MessageBeingBuilt {
+      protected override global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new self::TestMessageSetContainer();
+        result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer();
         return this;
       }
       
@@ -397,30 +395,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return self::TestMessageSetContainer.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.Descriptor; }
       }
       
-      public override self::TestMessageSetContainer DefaultInstanceForType {
-        get { return self::TestMessageSetContainer.DefaultInstance; }
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.DefaultInstance; }
       }
       
-      public override self::TestMessageSetContainer BuildPartial() {
-        self::TestMessageSetContainer returnMe = result;
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer BuildPartial() {
+        global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer returnMe = result;
         result = null;
         return returnMe;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
-        if (other is self::TestMessageSetContainer) {
-          return MergeFrom((self::TestMessageSetContainer) other);
+        if (other is global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer) {
+          return MergeFrom((global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer) other);
         } else {
           base.MergeFrom(other);
           return this;
         }
       }
       
-      public override Builder MergeFrom(self::TestMessageSetContainer other) {
-        if (other == self::TestMessageSetContainer.DefaultInstance) return this;
+      public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.DefaultInstance) return this;
         if (other.HasMessageSet) {
           MergeMessageSet(other.MessageSet);
         }
@@ -450,7 +448,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 10: {
-              self::TestMessageSet.Builder subBuilder = self::TestMessageSet.CreateBuilder();
+              global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestMessageSet.CreateBuilder();
               if (HasMessageSet) {
                 subBuilder.MergeFrom(MessageSet);
               }
@@ -467,25 +465,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasMessageSet {
         get { return result.HasMessageSet; }
       }
-      public self::TestMessageSet MessageSet {
+      public global::Google.ProtocolBuffers.TestProtos.TestMessageSet MessageSet {
         get { return result.MessageSet; }
         set { SetMessageSet(value); }
       }
-      public Builder SetMessageSet(self::TestMessageSet value) {
+      public Builder SetMessageSet(global::Google.ProtocolBuffers.TestProtos.TestMessageSet value) {
         result.hasMessageSet = true;
         result.messageSet_ = value;
         return this;
       }
-      public Builder SetMessageSet(self::TestMessageSet.Builder builderForValue) {
+      public Builder SetMessageSet(global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder builderForValue) {
         result.hasMessageSet = true;
         result.messageSet_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeMessageSet(self::TestMessageSet value) {
+      public Builder MergeMessageSet(global::Google.ProtocolBuffers.TestProtos.TestMessageSet value) {
         if (result.HasMessageSet &&
-            result.messageSet_ != self::TestMessageSet.DefaultInstance) {
+            result.messageSet_ != global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance) {
           result.messageSet_ =
-            self::TestMessageSet.CreateBuilder(result.messageSet_).MergeFrom(value).BuildPartial();
+            global::Google.ProtocolBuffers.TestProtos.TestMessageSet.CreateBuilder(result.messageSet_).MergeFrom(value).BuildPartial();
         } else {
           result.messageSet_ = value;
         }
@@ -494,7 +492,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearMessageSet() {
         result.hasMessageSet = false;
-        result.messageSet_ = self::TestMessageSet.DefaultInstance;
+        result.messageSet_ = global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance;
         return this;
       }
     }
@@ -511,15 +509,15 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable; }
     }
     
-    public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension1> MessageSetExtension =
-          pb::GeneratedSingleExtension<self::TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1> MessageSetExtension =
+          pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
     #region Nested types
     public static class Types {
     }
@@ -564,35 +562,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public static self::TestMessageSetExtension1 ParseFrom(pb::ByteString data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(pb::ByteString data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(pb::ByteString data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(byte[] data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(byte[] data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(global::System.IO.Stream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(
         global::System.IO.Stream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(pb::CodedInputStream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSetExtension1 ParseFrom(pb::CodedInputStream input,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 ParseFrom(pb::CodedInputStream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
@@ -600,26 +598,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(self::TestMessageSetExtension1 prototype) {
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestMessageSetExtension1, Builder> {
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
       
-      // Construct using self::TestMessageSetExtension1.CreateBuilder()
+      // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.CreateBuilder()
       internal Builder() {}
       
-      self::TestMessageSetExtension1 result = new self::TestMessageSetExtension1();
+      global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1();
       
-      protected override self::TestMessageSetExtension1 MessageBeingBuilt {
+      protected override global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new self::TestMessageSetExtension1();
+        result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1();
         return this;
       }
       
@@ -628,30 +626,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return self::TestMessageSetExtension1.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.Descriptor; }
       }
       
-      public override self::TestMessageSetExtension1 DefaultInstanceForType {
-        get { return self::TestMessageSetExtension1.DefaultInstance; }
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.DefaultInstance; }
       }
       
-      public override self::TestMessageSetExtension1 BuildPartial() {
-        self::TestMessageSetExtension1 returnMe = result;
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 BuildPartial() {
+        global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 returnMe = result;
         result = null;
         return returnMe;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
-        if (other is self::TestMessageSetExtension1) {
-          return MergeFrom((self::TestMessageSetExtension1) other);
+        if (other is global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1) {
+          return MergeFrom((global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1) other);
         } else {
           base.MergeFrom(other);
           return this;
         }
       }
       
-      public override Builder MergeFrom(self::TestMessageSetExtension1 other) {
-        if (other == self::TestMessageSetExtension1.DefaultInstance) return this;
+      public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.DefaultInstance) return this;
         if (other.HasI) {
           I = other.I;
         }
@@ -721,15 +719,15 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable; }
     }
     
-    public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension2> MessageSetExtension =
-          pb::GeneratedSingleExtension<self::TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2> MessageSetExtension =
+          pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
     #region Nested types
     public static class Types {
     }
@@ -774,35 +772,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public static self::TestMessageSetExtension2 ParseFrom(pb::ByteString data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(pb::ByteString data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(pb::ByteString data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(byte[] data) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(byte[] data,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(global::System.IO.Stream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(
         global::System.IO.Stream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(pb::CodedInputStream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::TestMessageSetExtension2 ParseFrom(pb::CodedInputStream input,
+    public static global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 ParseFrom(pb::CodedInputStream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
@@ -810,26 +808,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(self::TestMessageSetExtension2 prototype) {
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::TestMessageSetExtension2, Builder> {
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
       
-      // Construct using self::TestMessageSetExtension2.CreateBuilder()
+      // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.CreateBuilder()
       internal Builder() {}
       
-      self::TestMessageSetExtension2 result = new self::TestMessageSetExtension2();
+      global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2();
       
-      protected override self::TestMessageSetExtension2 MessageBeingBuilt {
+      protected override global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new self::TestMessageSetExtension2();
+        result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2();
         return this;
       }
       
@@ -838,30 +836,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return self::TestMessageSetExtension2.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.Descriptor; }
       }
       
-      public override self::TestMessageSetExtension2 DefaultInstanceForType {
-        get { return self::TestMessageSetExtension2.DefaultInstance; }
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.DefaultInstance; }
       }
       
-      public override self::TestMessageSetExtension2 BuildPartial() {
-        self::TestMessageSetExtension2 returnMe = result;
+      public override global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 BuildPartial() {
+        global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 returnMe = result;
         result = null;
         return returnMe;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
-        if (other is self::TestMessageSetExtension2) {
-          return MergeFrom((self::TestMessageSetExtension2) other);
+        if (other is global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2) {
+          return MergeFrom((global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2) other);
         } else {
           base.MergeFrom(other);
           return this;
         }
       }
       
-      public override Builder MergeFrom(self::TestMessageSetExtension2 other) {
-        if (other == self::TestMessageSetExtension2.DefaultInstance) return this;
+      public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.DefaultInstance) return this;
         if (other.HasStr) {
           Str = other.Str;
         }
@@ -931,11 +929,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-      get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet__FieldAccessorTable; }
     }
     
     #region Nested types
@@ -951,11 +949,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public static pbd::MessageDescriptor Descriptor {
-          get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor; }
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__Descriptor; }
         }
         
         protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-          get { return self::UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable; }
         }
         
         // required int32 type_id = 2;
@@ -1015,35 +1013,35 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public static self::RawMessageSet.Types.Item ParseFrom(pb::ByteString data) {
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(pb::ByteString data,
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(pb::ByteString data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(byte[] data) {
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(byte[] data,
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(global::System.IO.Stream input) {
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(global::System.IO.Stream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(
             global::System.IO.Stream input,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                    .BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(pb::CodedInputStream input) {
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
-        public static self::RawMessageSet.Types.Item ParseFrom(pb::CodedInputStream input,
+        public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item ParseFrom(pb::CodedInputStream input,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                    .BuildParsed();
@@ -1051,26 +1049,26 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder CreateBuilderForType() { return new Builder(); }
-        public static Builder CreateBuilder(self::RawMessageSet.Types.Item prototype) {
+        public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
-        public sealed partial class Builder : pb::GeneratedBuilder<self::RawMessageSet.Types.Item, Builder> {
+        public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
           }
           
-          // Construct using self::RawMessageSet.Types.Item.CreateBuilder()
+          // Construct using global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.CreateBuilder()
           internal Builder() {}
           
-          self::RawMessageSet.Types.Item result = new self::RawMessageSet.Types.Item();
+          global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item result = new global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item();
           
-          protected override self::RawMessageSet.Types.Item MessageBeingBuilt {
+          protected override global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item MessageBeingBuilt {
             get { return result; }
           }
           
           public override Builder Clear() {
-            result = new self::RawMessageSet.Types.Item();
+            result = new global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item();
             return this;
           }
           
@@ -1079,30 +1077,30 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return self::RawMessageSet.Types.Item.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Descriptor; }
           }
           
-          public override self::RawMessageSet.Types.Item DefaultInstanceForType {
-            get { return self::RawMessageSet.Types.Item.DefaultInstance; }
+          public override global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item DefaultInstanceForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.DefaultInstance; }
           }
           
-          public override self::RawMessageSet.Types.Item BuildPartial() {
-            self::RawMessageSet.Types.Item returnMe = result;
+          public override global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item BuildPartial() {
+            global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item returnMe = result;
             result = null;
             return returnMe;
           }
           
           public override Builder MergeFrom(pb::IMessage other) {
-            if (other is self::RawMessageSet.Types.Item) {
-              return MergeFrom((self::RawMessageSet.Types.Item) other);
+            if (other is global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item) {
+              return MergeFrom((global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item) other);
             } else {
               base.MergeFrom(other);
               return this;
             }
           }
           
-          public override Builder MergeFrom(self::RawMessageSet.Types.Item other) {
-            if (other == self::RawMessageSet.Types.Item.DefaultInstance) return this;
+          public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item other) {
+            if (other == global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.DefaultInstance) return this;
             if (other.HasTypeId) {
               TypeId = other.TypeId;
             }
@@ -1191,20 +1189,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     // repeated group Item = 1 {
-    private scg::IList<self::RawMessageSet.Types.Item> item_ = pbc::Lists<self::RawMessageSet.Types.Item>.Empty;
-    public scg::IList<self::RawMessageSet.Types.Item> ItemList {
+    private scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> item_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty;
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
       get { return item_; } 
     }
     public int ItemCount
       { get { return item_.Count; }
     }
-    public self::RawMessageSet.Types.Item GetItem(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item GetItem(int index) {
       return item_ [index];
     }
     
     public override bool IsInitialized {
       get {
-        foreach (self::RawMessageSet.Types.Item element in ItemList) {
+        foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
           if (!element.IsInitialized) return false;
         }
         return true;
@@ -1212,7 +1210,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
-      foreach (self::RawMessageSet.Types.Item element in ItemList) {
+      foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
         output.WriteGroup(1, element);
       }
       UnknownFields.WriteTo(output);
@@ -1225,7 +1223,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        foreach (self::RawMessageSet.Types.Item element in ItemList) {
+        foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
           size += pb::CodedOutputStream.ComputeGroupSize(1, element);
         }
         size += UnknownFields.SerializedSize;
@@ -1234,35 +1232,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public static self::RawMessageSet ParseFrom(pb::ByteString data) {
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(pb::ByteString data,
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(pb::ByteString data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(byte[] data) {
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(byte[] data,
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(global::System.IO.Stream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(
         global::System.IO.Stream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(pb::CodedInputStream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::RawMessageSet ParseFrom(pb::CodedInputStream input,
+    public static global::Google.ProtocolBuffers.TestProtos.RawMessageSet ParseFrom(pb::CodedInputStream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
@@ -1270,26 +1268,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(self::RawMessageSet prototype) {
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.RawMessageSet prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::RawMessageSet, Builder> {
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.RawMessageSet, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
       
-      // Construct using self::RawMessageSet.CreateBuilder()
+      // Construct using global::Google.ProtocolBuffers.TestProtos.RawMessageSet.CreateBuilder()
       internal Builder() {}
       
-      self::RawMessageSet result = new self::RawMessageSet();
+      global::Google.ProtocolBuffers.TestProtos.RawMessageSet result = new global::Google.ProtocolBuffers.TestProtos.RawMessageSet();
       
-      protected override self::RawMessageSet MessageBeingBuilt {
+      protected override global::Google.ProtocolBuffers.TestProtos.RawMessageSet MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new self::RawMessageSet();
+        result = new global::Google.ProtocolBuffers.TestProtos.RawMessageSet();
         return this;
       }
       
@@ -1298,36 +1296,36 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return self::RawMessageSet.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Descriptor; }
       }
       
-      public override self::RawMessageSet DefaultInstanceForType {
-        get { return self::RawMessageSet.DefaultInstance; }
+      public override global::Google.ProtocolBuffers.TestProtos.RawMessageSet DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.RawMessageSet.DefaultInstance; }
       }
       
-      public override self::RawMessageSet BuildPartial() {
-        if (result.item_ != pbc::Lists<self::RawMessageSet.Types.Item>.Empty) {
-          result.item_ = pbc::Lists<self::RawMessageSet.Types.Item>.AsReadOnly(result.item_);
+      public override global::Google.ProtocolBuffers.TestProtos.RawMessageSet BuildPartial() {
+        if (result.item_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
+          result.item_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.AsReadOnly(result.item_);
         }
-        self::RawMessageSet returnMe = result;
+        global::Google.ProtocolBuffers.TestProtos.RawMessageSet returnMe = result;
         result = null;
         return returnMe;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
-        if (other is self::RawMessageSet) {
-          return MergeFrom((self::RawMessageSet) other);
+        if (other is global::Google.ProtocolBuffers.TestProtos.RawMessageSet) {
+          return MergeFrom((global::Google.ProtocolBuffers.TestProtos.RawMessageSet) other);
         } else {
           base.MergeFrom(other);
           return this;
         }
       }
       
-      public override Builder MergeFrom(self::RawMessageSet other) {
-        if (other == self::RawMessageSet.DefaultInstance) return this;
+      public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.RawMessageSet other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.RawMessageSet.DefaultInstance) return this;
         if (other.item_.Count != 0) {
           if (result.item_.Count == 0) {
-            result.item_ = new scg::List<self::RawMessageSet.Types.Item>();
+            result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
           }
           base.AddRange(other.item_, result.item_);
         }
@@ -1357,7 +1355,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 11: {
-              self::RawMessageSet.Types.Item.Builder subBuilder = self::RawMessageSet.Types.Item.CreateBuilder();
+              global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.CreateBuilder();
               input.ReadGroup(1, subBuilder, extensionRegistry);
               AddItem(subBuilder.BuildPartial());
               break;
@@ -1368,46 +1366,46 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       // repeated group Item = 1 {
-      public scg::IList<self::RawMessageSet.Types.Item> ItemList {
+      public scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
         get { return pbc::Lists.AsReadOnly(result.item_); }
       }
       public int ItemCount {
         get { return result.ItemCount; }
       }
-      public self::RawMessageSet.Types.Item GetItem(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item GetItem(int index) {
         return result.GetItem(index);
       }
-      public Builder SetItem(int index, self::RawMessageSet.Types.Item value) {
+      public Builder SetItem(int index, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item value) {
         result.item_[index] = value;
         return this;
       }
-      public Builder SetItem(int index, self::RawMessageSet.Types.Item.Builder builderForValue) {
+      public Builder SetItem(int index, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder builderForValue) {
         result.item_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddItem(self::RawMessageSet.Types.Item value) {
-        if (result.item_ == pbc::Lists<self::RawMessageSet.Types.Item>.Empty) {
-          result.item_ = new scg::List<self::RawMessageSet.Types.Item>();
+      public Builder AddItem(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item value) {
+        if (result.item_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
+          result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
         }
         result.item_.Add(value);
         return this;
       }
-      public Builder AddItem(self::RawMessageSet.Types.Item.Builder builderForValue) {
-        if (result.item_ == pbc::Lists<self::RawMessageSet.Types.Item>.Empty) {
-          result.item_ = new scg::List<self::RawMessageSet.Types.Item>();
+      public Builder AddItem(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder builderForValue) {
+        if (result.item_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
+          result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
         }
         result.item_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeItem(scg::IEnumerable<self::RawMessageSet.Types.Item> values) {
-        if (result.item_ == pbc::Lists<self::RawMessageSet.Types.Item>.Empty) {
-          result.item_ = new scg::List<self::RawMessageSet.Types.Item>();
+      public Builder AddRangeItem(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> values) {
+        if (result.item_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
+          result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
         }
         base.AddRange(values, result.item_);
         return this;
       }
       public Builder ClearItem() {
-        result.item_ = pbc::Lists<self::RawMessageSet.Types.Item>.Empty;
+        result.item_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty;
         return this;
       }
     }

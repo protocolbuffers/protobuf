@@ -4,8 +4,6 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-using self = global::Google.ProtocolBuffers.TestProtos;
-
 namespace Google.ProtocolBuffers.TestProtos {
   
   public static partial class MultiFileProto {
@@ -54,7 +52,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             0x50, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0xca, 0x3e, 0x0e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x46, 0x69, 0x6c, 0x65, 0x50, 0x72, 
             0x6f, 0x74, 0x6f, 0xd0, 0x3e, 0x01, 0xd8, 0x3e, 0x00, 0xe0, 0x3e, 0x01, 
         }, new pbd::FileDescriptor[] {
-                self::UnitTestProtoFile.Descriptor,
+                global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor,
         });
     #endregion
     
@@ -69,15 +67,15 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageWithNoOuter__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor,
             new string[] { "Nested", "Foreign", "NestedEnum", "ForeignEnum", },
-            typeof (self::MessageWithNoOuter),
-            typeof (self::MessageWithNoOuter.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter),
+            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Builder));
     internal static readonly pbd::MessageDescriptor  internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor 
         = internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor.NestedTypes[0];
     internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable(internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor,
             new string[] { "I", },
-            typeof (self::MessageWithNoOuter.Types.NestedMessage),
-            typeof (self::MessageWithNoOuter.Types.NestedMessage.Builder));
+            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage),
+            typeof (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.Builder));
     #endregion
     
   }

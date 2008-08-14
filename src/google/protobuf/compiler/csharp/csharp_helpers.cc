@@ -138,7 +138,7 @@ string FileCSharpNamespace(const FileDescriptor* file) {
 string ToCSharpName(const string& full_name, const FileDescriptor* file) {
   string result;
   if (!file->options().csharp_nest_classes()) {
-    result = "";
+    result = FileCSharpNamespace(file);
   } else {
     result = ClassName(file);
   }
@@ -150,17 +150,18 @@ string ToCSharpName(const string& full_name, const FileDescriptor* file) {
     classname = full_name;
   } else {
     // Strip the proto package from full_name since we've replaced it with
-    // the C# package.
+    // the C# namespace.
     classname = full_name.substr(file->package().size() + 1);
   }
   result += StringReplace(classname, ".", ".Types.", true);
-  const char *prefix = FileCSharpNamespace(file).empty() ? "global::" : "self::";
-  return prefix + result;
+  return "global::" + result;
 }
 
 string ClassName(const FileDescriptor* descriptor) {
-  string alias = FileCSharpNamespace(descriptor).empty() ? "global::" : "self::";
-  return alias + FileClassName(descriptor);
+  string result = FileCSharpNamespace(descriptor);
+  if (!result.empty()) result += '.';
+  result += FileClassName(descriptor);
+  return "global::" + result;
 }
 
 MappedType GetMappedType(FieldDescriptor::Type field_type) {

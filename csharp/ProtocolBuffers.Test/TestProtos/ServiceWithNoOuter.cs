@@ -4,18 +4,16 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-using self = global::Google.ProtocolBuffers.TestProtos;
-
 namespace Google.ProtocolBuffers.TestProtos {
   
   public abstract class ServiceWithNoOuter : pb::IService {
     public abstract void Foo(
         pb::IRpcController controller,
-        self::MessageWithNoOuter request,
-        global::System.Action<self::TestAllTypes> done);
+        global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter request,
+        global::System.Action<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> done);
     
     public static pbd::ServiceDescriptor Descriptor {
-      get { return self::MultiFileProto.Descriptor.Services[0]; }
+      get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.Descriptor.Services[0]; }
     }
     public pbd::ServiceDescriptor DescriptorForType {
       get { return Descriptor; }
@@ -33,8 +31,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       switch(method.Index) {
         case 0:
-          this.Foo(controller, (self::MessageWithNoOuter)request,
-            pb::RpcUtil.SpecializeCallback<self::TestAllTypes>(
+          this.Foo(controller, (global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter)request,
+            pb::RpcUtil.SpecializeCallback<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>(
               done));
           return;
         default:
@@ -50,7 +48,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       switch(method.Index) {
         case 0:
-          return self::MessageWithNoOuter.DefaultInstance;
+          return global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.DefaultInstance;
         default:
           throw new global::System.ArgumentException("Can't get here.");
       }
@@ -64,7 +62,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       switch(method.Index) {
         case 0:
-          return self::TestAllTypes.DefaultInstance;
+          return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance;
         default:
           throw new global::System.ArgumentException("Can't get here.");
       }
@@ -75,7 +73,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return new Stub(channel);
     }
     
-    public class Stub : self::ServiceWithNoOuter {
+    public class Stub : global::Google.ProtocolBuffers.TestProtos.ServiceWithNoOuter {
       internal Stub(pb::IRpcChannel channel) {
         this.channel = channel;
       }
@@ -88,14 +86,14 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override void Foo(
           pb::IRpcController controller,
-          self::MessageWithNoOuter request,
-          global::System.Action<self::TestAllTypes> done) {
+          global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter request,
+          global::System.Action<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> done) {
         channel.CallMethod(
           Descriptor.Methods[0],
           controller,
           request,
-          self::TestAllTypes.DefaultInstance,
-          pb::RpcUtil.GeneralizeCallback<self::TestAllTypes, self::TestAllTypes.Builder>(done, self::TestAllTypes.DefaultInstance));
+          global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance,
+          pb::RpcUtil.GeneralizeCallback<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder>(done, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance));
       }
     }
   }

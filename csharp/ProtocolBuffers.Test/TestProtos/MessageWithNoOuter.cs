@@ -4,8 +4,6 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-using self = global::Google.ProtocolBuffers.TestProtos;
-
 namespace Google.ProtocolBuffers.TestProtos {
   
   public sealed partial class MessageWithNoOuter : pb::GeneratedMessage<MessageWithNoOuter, MessageWithNoOuter.Builder> {
@@ -19,11 +17,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return self::MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-      get { return self::MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter__FieldAccessorTable; }
     }
     
     #region Nested types
@@ -43,11 +41,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public static pbd::MessageDescriptor Descriptor {
-          get { return self::MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor; }
+          get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__Descriptor; }
         }
         
         protected override pb::FieldAccess.FieldAccessorTable InternalFieldAccessors {
-          get { return self::MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.TestProtos.MultiFileProto.internal__static_protobuf_unittest_MessageWithNoOuter_NestedMessage__FieldAccessorTable; }
         }
         
         // optional int32 i = 1;
@@ -60,35 +58,35 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return i_; }
         }
         
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::ByteString data) {
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::ByteString data,
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::ByteString data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(byte[] data) {
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(byte[] data,
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(global::System.IO.Stream input) {
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(global::System.IO.Stream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(
             global::System.IO.Stream input,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                    .BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::CodedInputStream input) {
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
-        public static self::MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::CodedInputStream input,
+        public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage ParseFrom(pb::CodedInputStream input,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                    .BuildParsed();
@@ -96,26 +94,26 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder CreateBuilderForType() { return new Builder(); }
-        public static Builder CreateBuilder(self::MessageWithNoOuter.Types.NestedMessage prototype) {
+        public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
-        public sealed partial class Builder : pb::GeneratedBuilder<self::MessageWithNoOuter.Types.NestedMessage, Builder> {
+        public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
           }
           
-          // Construct using self::MessageWithNoOuter.Types.NestedMessage.CreateBuilder()
+          // Construct using global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.CreateBuilder()
           internal Builder() {}
           
-          self::MessageWithNoOuter.Types.NestedMessage result = new self::MessageWithNoOuter.Types.NestedMessage();
+          global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage result = new global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage();
           
-          protected override self::MessageWithNoOuter.Types.NestedMessage MessageBeingBuilt {
+          protected override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage MessageBeingBuilt {
             get { return result; }
           }
           
           public override Builder Clear() {
-            result = new self::MessageWithNoOuter.Types.NestedMessage();
+            result = new global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage();
             return this;
           }
           
@@ -124,15 +122,15 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return self::MessageWithNoOuter.Types.NestedMessage.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.Descriptor; }
           }
           
-          public override self::MessageWithNoOuter.Types.NestedMessage DefaultInstanceForType {
-            get { return self::MessageWithNoOuter.Types.NestedMessage.DefaultInstance; }
+          public override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage DefaultInstanceForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.DefaultInstance; }
           }
           
-          public override self::MessageWithNoOuter.Types.NestedMessage BuildPartial() {
-            self::MessageWithNoOuter.Types.NestedMessage returnMe = result;
+          public override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage BuildPartial() {
+            global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage returnMe = result;
             result = null;
             return returnMe;
           }
@@ -164,71 +162,71 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     // optional .protobuf_unittest.MessageWithNoOuter.NestedMessage nested = 1;
     private bool hasNested;
-    private self::MessageWithNoOuter.Types.NestedMessage nested_ = self::MessageWithNoOuter.Types.NestedMessage.DefaultInstance;
+    private global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage nested_ = global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.DefaultInstance;
     public bool HasNested {
       get { return hasNested; }
     }
-    public self::MessageWithNoOuter.Types.NestedMessage Nested {
+    public global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage Nested {
       get { return nested_; }
     }
     
     // repeated .protobuf_unittest.TestAllTypes foreign = 2;
-    private scg::IList<self::TestAllTypes> foreign_ = pbc::Lists<self::TestAllTypes>.Empty;
-    public scg::IList<self::TestAllTypes> ForeignList {
+    private scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> foreign_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty;
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> ForeignList {
       get { return foreign_; } 
     }
     public int ForeignCount
       { get { return foreign_.Count; }
     }
-    public self::TestAllTypes GetForeign(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes GetForeign(int index) {
       return foreign_ [index];
     }
     
     // optional .protobuf_unittest.MessageWithNoOuter.NestedEnum nested_enum = 3;
     private bool hasNestedEnum;
-    private self::MessageWithNoOuter.Types.NestedEnum nestedEnum_ = self::MessageWithNoOuter.Types.NestedEnum.BAZ;
+    private global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedEnum nestedEnum_ = global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedEnum.BAZ;
     public bool HasNestedEnum {
       get { return hasNestedEnum; }
     }
-    public self::MessageWithNoOuter.Types.NestedEnum NestedEnum {  get { return nestedEnum_; }}
+    public global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedEnum NestedEnum {  get { return nestedEnum_; }}
     
     // optional .protobuf_unittest.EnumWithNoOuter foreign_enum = 4;
     private bool hasForeignEnum;
-    private self::EnumWithNoOuter foreignEnum_ = self::EnumWithNoOuter.FOO;
+    private global::Google.ProtocolBuffers.TestProtos.EnumWithNoOuter foreignEnum_ = global::Google.ProtocolBuffers.TestProtos.EnumWithNoOuter.FOO;
     public bool HasForeignEnum {
       get { return hasForeignEnum; }
     }
-    public self::EnumWithNoOuter ForeignEnum {  get { return foreignEnum_; }}
+    public global::Google.ProtocolBuffers.TestProtos.EnumWithNoOuter ForeignEnum {  get { return foreignEnum_; }}
     
-    public static self::MessageWithNoOuter ParseFrom(pb::ByteString data) {
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(pb::ByteString data,
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(pb::ByteString data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(byte[] data) {
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(byte[] data,
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(global::System.IO.Stream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(
         global::System.IO.Stream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(pb::CodedInputStream input) {
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static self::MessageWithNoOuter ParseFrom(pb::CodedInputStream input,
+    public static global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter ParseFrom(pb::CodedInputStream input,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
                .BuildParsed();
@@ -236,26 +234,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(self::MessageWithNoOuter prototype) {
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<self::MessageWithNoOuter, Builder> {
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
       
-      // Construct using self::MessageWithNoOuter.CreateBuilder()
+      // Construct using global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.CreateBuilder()
       internal Builder() {}
       
-      self::MessageWithNoOuter result = new self::MessageWithNoOuter();
+      global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter result = new global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter();
       
-      protected override self::MessageWithNoOuter MessageBeingBuilt {
+      protected override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new self::MessageWithNoOuter();
+        result = new global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter();
         return this;
       }
       
@@ -264,18 +262,18 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return self::MessageWithNoOuter.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Descriptor; }
       }
       
-      public override self::MessageWithNoOuter DefaultInstanceForType {
-        get { return self::MessageWithNoOuter.DefaultInstance; }
+      public override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.DefaultInstance; }
       }
       
-      public override self::MessageWithNoOuter BuildPartial() {
-        if (result.foreign_ != pbc::Lists<self::TestAllTypes>.Empty) {
-          result.foreign_ = pbc::Lists<self::TestAllTypes>.AsReadOnly(result.foreign_);
+      public override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter BuildPartial() {
+        if (result.foreign_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
+          result.foreign_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.AsReadOnly(result.foreign_);
         }
-        self::MessageWithNoOuter returnMe = result;
+        global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter returnMe = result;
         result = null;
         return returnMe;
       }
@@ -285,25 +283,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasNested {
         get { return result.HasNested; }
       }
-      public self::MessageWithNoOuter.Types.NestedMessage Nested {
+      public global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage Nested {
         get { return result.Nested; }
         set { SetNested(value); }
       }
-      public Builder SetNested(self::MessageWithNoOuter.Types.NestedMessage value) {
+      public Builder SetNested(global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage value) {
         result.hasNested = true;
         result.nested_ = value;
         return this;
       }
-      public Builder SetNested(self::MessageWithNoOuter.Types.NestedMessage.Builder builderForValue) {
+      public Builder SetNested(global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.Builder builderForValue) {
         result.hasNested = true;
         result.nested_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeNested(self::MessageWithNoOuter.Types.NestedMessage value) {
+      public Builder MergeNested(global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage value) {
         if (result.HasNested &&
-            result.nested_ != self::MessageWithNoOuter.Types.NestedMessage.DefaultInstance) {
+            result.nested_ != global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.DefaultInstance) {
           result.nested_ =
-            self::MessageWithNoOuter.Types.NestedMessage.CreateBuilder(result.nested_).MergeFrom(value).BuildPartial();
+            global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.CreateBuilder(result.nested_).MergeFrom(value).BuildPartial();
         } else {
           result.nested_ = value;
         }
@@ -312,51 +310,51 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearNested() {
         result.hasNested = false;
-        result.nested_ = self::MessageWithNoOuter.Types.NestedMessage.DefaultInstance;
+        result.nested_ = global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.DefaultInstance;
         return this;
       }
       
       // repeated .protobuf_unittest.TestAllTypes foreign = 2;
-      public scg::IList<self::TestAllTypes> ForeignList {
+      public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> ForeignList {
         get { return pbc::Lists.AsReadOnly(result.foreign_); }
       }
       public int ForeignCount {
         get { return result.ForeignCount; }
       }
-      public self::TestAllTypes GetForeign(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes GetForeign(int index) {
         return result.GetForeign(index);
       }
-      public Builder SetForeign(int index, self::TestAllTypes value) {
+      public Builder SetForeign(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes value) {
         result.foreign_[index] = value;
         return this;
       }
-      public Builder SetForeign(int index, self::TestAllTypes.Builder builderForValue) {
+      public Builder SetForeign(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder builderForValue) {
         result.foreign_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddForeign(self::TestAllTypes value) {
-        if (result.foreign_ == pbc::Lists<self::TestAllTypes>.Empty) {
-          result.foreign_ = new scg::List<self::TestAllTypes>();
+      public Builder AddForeign(global::Google.ProtocolBuffers.TestProtos.TestAllTypes value) {
+        if (result.foreign_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
+          result.foreign_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
         }
         result.foreign_.Add(value);
         return this;
       }
-      public Builder AddForeign(self::TestAllTypes.Builder builderForValue) {
-        if (result.foreign_ == pbc::Lists<self::TestAllTypes>.Empty) {
-          result.foreign_ = new scg::List<self::TestAllTypes>();
+      public Builder AddForeign(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder builderForValue) {
+        if (result.foreign_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
+          result.foreign_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
         }
         result.foreign_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeForeign(scg::IEnumerable<self::TestAllTypes> values) {
-        if (result.foreign_ == pbc::Lists<self::TestAllTypes>.Empty) {
-          result.foreign_ = new scg::List<self::TestAllTypes>();
+      public Builder AddRangeForeign(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> values) {
+        if (result.foreign_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
+          result.foreign_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
         }
         base.AddRange(values, result.foreign_);
         return this;
       }
       public Builder ClearForeign() {
-        result.foreign_ = pbc::Lists<self::TestAllTypes>.Empty;
+        result.foreign_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty;
         return this;
       }
       
@@ -364,18 +362,18 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasNestedEnum {
         get { return result.HasNestedEnum; }
       }
-      public self::MessageWithNoOuter.Types.NestedEnum NestedEnum {
+      public global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedEnum NestedEnum {
         get { return result.NestedEnum; }
         set { SetNestedEnum(value); }
       }
-      public Builder SetNestedEnum(self::MessageWithNoOuter.Types.NestedEnum value) {
+      public Builder SetNestedEnum(global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedEnum value) {
         result.hasNestedEnum = true;
         result.nestedEnum_ = value;
         return this;
       }
       public Builder ClearNestedEnum() {
         result.hasNestedEnum = false;
-        result.nestedEnum_ = self::MessageWithNoOuter.Types.NestedEnum.BAZ;
+        result.nestedEnum_ = global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedEnum.BAZ;
         return this;
       }
       
@@ -383,18 +381,18 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasForeignEnum {
         get { return result.HasForeignEnum; }
       }
-      public self::EnumWithNoOuter ForeignEnum {
+      public global::Google.ProtocolBuffers.TestProtos.EnumWithNoOuter ForeignEnum {
         get { return result.ForeignEnum; }
         set { SetForeignEnum(value); }
       }
-      public Builder SetForeignEnum(self::EnumWithNoOuter value) {
+      public Builder SetForeignEnum(global::Google.ProtocolBuffers.TestProtos.EnumWithNoOuter value) {
         result.hasForeignEnum = true;
         result.foreignEnum_ = value;
         return this;
       }
       public Builder ClearForeignEnum() {
         result.hasForeignEnum = false;
-        result.foreignEnum_ = self::EnumWithNoOuter.FOO;
+        result.foreignEnum_ = global::Google.ProtocolBuffers.TestProtos.EnumWithNoOuter.FOO;
         return this;
       }
     }
