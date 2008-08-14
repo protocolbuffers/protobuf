@@ -77,8 +77,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<self::TestOptimizedForSize, int> TestExtension =
-            pb::GeneratedSingleExtension<self::TestOptimizedForSize, int>.CreateInstance(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<int> TestExtension =
+            pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     
@@ -137,12 +137,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::TestOptimizedForSize> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::TestOptimizedForSize prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::ExtendableBuilder<self::TestOptimizedForSize, self::TestOptimizedForSize.Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::TestOptimizedForSize.CreateBuilder()
       internal Builder() {}
       
@@ -152,12 +156,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::TestOptimizedForSize> Clear() {
+      public override Builder Clear() {
         result = new self::TestOptimizedForSize();
         return this;
       }
       
-      public override IBuilder<self::TestOptimizedForSize> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       

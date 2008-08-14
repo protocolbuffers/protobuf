@@ -154,19 +154,19 @@ namespace Google.ProtocolBuffers {
         case FieldType.Message: {
             IBuilder subBuilder;
             if (defaultFieldInstance != null) {
-              subBuilder = defaultFieldInstance.CreateBuilderForType();
+              subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
             } else {
               subBuilder = builder.CreateBuilderForField(field);
             }
             if (!field.IsRepeated) {
-              subBuilder.MergeFrom((IMessage) builder[field]);
+              subBuilder.WeakMergeFrom((IMessage) builder[field]);
             }
             if (field.FieldType == FieldType.Group) {
               input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
             } else {
               input.ReadMessage(subBuilder, extensionRegistry);
             }
-            value = subBuilder.Build();
+            value = subBuilder.WeakBuild();
             break;
           }
         case FieldType.Enum: {
@@ -185,7 +185,7 @@ namespace Google.ProtocolBuffers {
           break;
       }
       if (field.IsRepeated) {
-        builder.AddRepeatedField(field, value);
+        builder.WeakAddRepeatedField(field, value);
       } else {
         builder[field] = value;
       } 
@@ -236,16 +236,16 @@ namespace Google.ProtocolBuffers {
             ExtensionInfo extension = extensionRegistry[type, typeId];
             if (extension != null) {
               field = extension.Descriptor;
-              subBuilder = extension.DefaultInstance.CreateBuilderForType();
+              subBuilder = extension.DefaultInstance.WeakCreateBuilderForType();
               IMessage originalMessage = (IMessage) builder[field];
               if (originalMessage != null) {
-                subBuilder.MergeFrom(originalMessage);
+                subBuilder.WeakMergeFrom(originalMessage);
               }
               if (rawBytes != null) {
                 // We already encountered the message.  Parse it now.
                 // TODO(jonskeet): Check this is okay. It's subtly different from the Java, as it doesn't create an input stream from rawBytes.
                 // In fact, why don't we just call MergeFrom(rawBytes)? And what about the extension registry?
-                subBuilder.MergeFrom(rawBytes.CreateCodedInput());
+                subBuilder.WeakMergeFrom(rawBytes.CreateCodedInput());
                 rawBytes = null;
               }
             } else {
@@ -286,7 +286,7 @@ namespace Google.ProtocolBuffers {
       input.CheckLastTagWas(WireFormat.MessageSetTag.ItemEnd);
 
       if (subBuilder != null) {
-        builder[field] = subBuilder.Build();
+        builder[field] = subBuilder.WeakBuild();
       }
     }
 
@@ -381,7 +381,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// See <see cref="IBuilder.AddRepeatedField" />
+    /// See <see cref="IBuilder{TMessage, TBuilder}.AddRepeatedField" />
     /// </summary>
     internal void AddRepeatedField(FieldDescriptor field, object value) {
       if (!field.IsRepeated) {
@@ -449,7 +449,7 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// See <see cref="IBuilder.ClearField" />
+    /// See <see cref="IBuilder{TMessage, TBuilder}.ClearField" />
     /// </summary>
     public void ClearField(FieldDescriptor field) {
       fields.Remove(field);
@@ -495,10 +495,10 @@ namespace Google.ProtocolBuffers {
           }
         } else if (field.MappedType == MappedType.Message && existingValue != null) {
           IMessage existingMessage = (IMessage)existingValue;
-          IMessage merged = existingMessage.CreateBuilderForType()
-              .MergeFrom(existingMessage)
-              .MergeFrom((IMessage)entry.Value)
-              .Build();
+          IMessage merged = existingMessage.WeakCreateBuilderForType()
+              .WeakMergeFrom(existingMessage)
+              .WeakMergeFrom((IMessage) entry.Value)
+              .WeakBuild();
           this[field] = merged;
         } else {
           this[field] = entry.Value;

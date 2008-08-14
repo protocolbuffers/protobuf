@@ -174,12 +174,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::TestEmbedOptimizedForSize> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::TestEmbedOptimizedForSize prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::GeneratedBuilder<self::TestEmbedOptimizedForSize, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::TestEmbedOptimizedForSize.CreateBuilder()
       internal Builder() {}
       
@@ -189,12 +193,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::TestEmbedOptimizedForSize> Clear() {
+      public override Builder Clear() {
         result = new self::TestEmbedOptimizedForSize();
         return this;
       }
       
-      public override IBuilder<self::TestEmbedOptimizedForSize> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       
@@ -215,11 +219,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
-      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-        return MergeFrom(data, extensionRegistry);
-      }
-      
-      public override IBuilder MergeFrom(pb::IMessage other) {
+      public override Builder MergeFrom(pb::IMessage other) {
         if (other is self::TestEmbedOptimizedForSize) {
           return MergeFrom((self::TestEmbedOptimizedForSize) other);
         } else {
@@ -228,7 +228,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
-      public override IBuilder<self::TestEmbedOptimizedForSize> MergeFrom(self::TestEmbedOptimizedForSize other) {
+      public override Builder MergeFrom(self::TestEmbedOptimizedForSize other) {
         if (other == self::TestEmbedOptimizedForSize.DefaultInstance) return this;
         if (other.HasOptionalMessage) {
           MergeOptionalMessage(other.OptionalMessage);
@@ -243,11 +243,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public override IBuilder<self::TestEmbedOptimizedForSize> MergeFrom(pb::CodedInputStream input) {
+      public override Builder MergeFrom(pb::CodedInputStream input) {
         return MergeFrom(input, pb::ExtensionRegistry.Empty);
       }
       
-      public override IBuilder<self::TestEmbedOptimizedForSize> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
         pb::UnknownFieldSet.Builder unknownFields =
           pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {

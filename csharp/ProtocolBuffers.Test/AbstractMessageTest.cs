@@ -10,15 +10,13 @@ namespace Google.ProtocolBuffers {
 
     [Test]
     public void Clear() {
-      AbstractMessageWrapper message = (AbstractMessageWrapper)
-        new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder(TestUtil.GetAllSet())).Clear().Build();
+      AbstractMessageWrapper message = new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder(TestUtil.GetAllSet())).Clear().Build();
       TestUtil.AssertClear((TestAllTypes) message.WrappedMessage);
     }
 
     [Test]
     public void Copy() {
-      AbstractMessageWrapper message = (AbstractMessageWrapper)
-        new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder()).MergeFrom(TestUtil.GetAllSet()).Build();
+      AbstractMessageWrapper message = new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder()).MergeFrom(TestUtil.GetAllSet()).Build();
       TestUtil.AssertAllFieldsSet((TestAllTypes) message.WrappedMessage);
     }
 
@@ -40,7 +38,7 @@ namespace Google.ProtocolBuffers {
     [Test]
     public void Parsing() {
       IBuilder builder = new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder());
-      AbstractMessageWrapper message = (AbstractMessageWrapper) builder.MergeFrom(TestUtil.GetAllSet().ToByteString()).Build();
+      AbstractMessageWrapper message = (AbstractMessageWrapper) builder.WeakMergeFrom(TestUtil.GetAllSet().ToByteString()).WeakBuild();
       TestUtil.AssertAllFieldsSet((TestAllTypes) message.WrappedMessage);
     }
 
@@ -177,7 +175,7 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(message, message);
       
       // Object should be equal to a dynamic copy of itself.
-      DynamicMessage dynamic = (DynamicMessage) ((IBuilder) DynamicMessage.CreateBuilder(message)).Build();
+      DynamicMessage dynamic = DynamicMessage.CreateBuilder(message).Build();
       Assert.AreEqual(message, dynamic);
       Assert.AreEqual(dynamic, message);
       Assert.AreEqual(dynamic.GetHashCode(), message.GetHashCode());
@@ -207,7 +205,7 @@ namespace Google.ProtocolBuffers {
     /// test that AbstractMessage's implementations work even if the wrapped
     /// object does not use them.
     /// </summary>
-    private class AbstractMessageWrapper : AbstractMessage {
+    private class AbstractMessageWrapper : AbstractMessage<AbstractMessageWrapper, AbstractMessageWrapper.Builder> {
       private readonly IMessage wrappedMessage;
 
       public IMessage WrappedMessage {
@@ -222,8 +220,8 @@ namespace Google.ProtocolBuffers {
         get { return wrappedMessage.DescriptorForType; }
       }
 
-      protected override IMessage DefaultInstanceForTypeImpl {
-        get { return new AbstractMessageWrapper(wrappedMessage.DefaultInstanceForType); }
+      public override AbstractMessageWrapper DefaultInstanceForType {
+        get { return new AbstractMessageWrapper(wrappedMessage.WeakDefaultInstanceForType); }
       }
 
       public override IDictionary<FieldDescriptor, object> AllFields {
@@ -250,15 +248,24 @@ namespace Google.ProtocolBuffers {
         get { return wrappedMessage.UnknownFields; }
       }
 
-      protected override IBuilder CreateBuilderForTypeImpl() {
-        return new Builder(wrappedMessage.CreateBuilderForType());
+      public override Builder CreateBuilderForType() {
+        return new Builder(wrappedMessage.WeakCreateBuilderForType());
       }
 
-      internal class Builder : AbstractBuilder {
+      internal class Builder : AbstractBuilder<AbstractMessageWrapper, Builder> {
         private readonly IBuilder wrappedBuilder;
+
+        protected override Builder ThisBuilder {
+          get { return this; }
+        }
 
         internal Builder(IBuilder wrappedBuilder) {
           this.wrappedBuilder = wrappedBuilder;
+        }
+
+        public override Builder MergeFrom(AbstractMessageWrapper other) {
+          wrappedBuilder.WeakMergeFrom(other.wrappedMessage);
+          return this;
         }
 
         public override bool IsInitialized {
@@ -296,29 +303,29 @@ namespace Google.ProtocolBuffers {
           set { wrappedBuilder.UnknownFields = value; }
         }
 
-        protected override IMessage BuildImpl() {
-          return new AbstractMessageWrapper(wrappedBuilder.Build());
+        public override AbstractMessageWrapper Build() {
+          return new AbstractMessageWrapper(wrappedBuilder.WeakBuild());
         }
 
-        protected override IMessage BuildPartialImpl() {
-          return new AbstractMessageWrapper(wrappedBuilder.BuildPartial());
+        public override AbstractMessageWrapper BuildPartial() {
+          return new AbstractMessageWrapper(wrappedBuilder.WeakBuildPartial());
         }
 
-        protected override IBuilder CloneImpl() {
-          return new Builder(wrappedBuilder.Clone());
+        public override Builder Clone() {
+          return new Builder(wrappedBuilder.WeakClone());
         }
 
-        protected override IMessage DefaultInstanceForTypeImpl {
-          get { return wrappedBuilder.DefaultInstanceForType; }
+        public override AbstractMessageWrapper DefaultInstanceForType {
+          get { return new AbstractMessageWrapper(wrappedBuilder.WeakDefaultInstanceForType); }
         }
 
-        protected override IBuilder ClearFieldImpl(FieldDescriptor field) {
-          wrappedBuilder.ClearField(field);
+        public override Builder ClearField(FieldDescriptor field) {
+          wrappedBuilder.WeakClearField(field);
           return this;
         }
 
-        protected override IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value) {
-          wrappedBuilder.AddRepeatedField(field, value);
+        public override Builder AddRepeatedField(FieldDescriptor field, object value) {
+          wrappedBuilder.WeakAddRepeatedField(field, value);
           return this;
         }
 
@@ -327,13 +334,13 @@ namespace Google.ProtocolBuffers {
           return this;
         }
 
-        public override IBuilder MergeFrom(IMessage other) {
-          wrappedBuilder.MergeFrom(other);
+        public override Builder MergeFrom(IMessage other) {
+          wrappedBuilder.WeakMergeFrom(other);
           return this;
         }
 
-        protected override IBuilder MergeFromImpl(CodedInputStream input, ExtensionRegistry extensionRegistry) {
-          wrappedBuilder.MergeFrom(input, extensionRegistry);
+        public override Builder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+          wrappedBuilder.WeakMergeFrom(input, extensionRegistry);
           return this;
         }
       }

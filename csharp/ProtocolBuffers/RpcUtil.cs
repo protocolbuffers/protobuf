@@ -21,12 +21,13 @@ namespace Google.ProtocolBuffers {
     /// callback is given a message with a different descriptor, an
     /// exception will be thrown.
     /// </summary>
-    public static Action<IMessage> GeneralizeCallback<T>(Action<T> action, T defaultInstance)
-        where T : class, IMessage<T> {
+    public static Action<IMessage> GeneralizeCallback<TMessage, TBuilder>(Action<TMessage> action, TMessage defaultInstance)
+        where TMessage : class, IMessage<TMessage, TBuilder> 
+        where TBuilder : IBuilder<TMessage, TBuilder> {
       return message => {
-        T castMessage = message as T;
+        TMessage castMessage = message as TMessage;
         if (castMessage == null) {
-          castMessage = (T) defaultInstance.CreateBuilderForType().MergeFrom(message).Build();
+          castMessage = defaultInstance.CreateBuilderForType().MergeFrom(message).Build();
         }
         action(castMessage);
       };

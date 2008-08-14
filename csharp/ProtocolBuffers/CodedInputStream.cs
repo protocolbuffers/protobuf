@@ -224,7 +224,7 @@ namespace Google.ProtocolBuffers {
         throw InvalidProtocolBufferException.RecursionLimitExceeded();
       }
       ++recursionDepth;
-      builder.MergeFrom(this, extensionRegistry);
+      builder.WeakMergeFrom(this, extensionRegistry);
       CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
       --recursionDepth;
     }
@@ -253,7 +253,7 @@ namespace Google.ProtocolBuffers {
       }
       int oldLimit = PushLimit(length);
       ++recursionDepth;
-      builder.MergeFrom(this, extensionRegistry);
+      builder.WeakMergeFrom(this, extensionRegistry);
       CheckLastTagWas(0);
       --recursionDepth;
       PopLimit(oldLimit);

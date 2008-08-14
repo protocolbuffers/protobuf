@@ -59,8 +59,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
-    public static readonly pb::GeneratedExtensionBase<self::TestAllExtensions, int> ExtensionWithOuter =
-          pb::GeneratedSingleExtension<self::TestAllExtensions, int>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly pb::GeneratedExtensionBase<int> ExtensionWithOuter =
+          pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
     #endregion
     
     #region Static variables

@@ -10,7 +10,7 @@ namespace Google.ProtocolBuffers {
   /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
   /// TODO: Implement appropriate generics.
   /// </summary>
-  public class DynamicMessage : AbstractMessage {
+  public class DynamicMessage : AbstractMessage<DynamicMessage, DynamicMessage.Builder> {
 
     private readonly MessageDescriptor type;
     private readonly FieldSet fields;
@@ -42,8 +42,8 @@ namespace Google.ProtocolBuffers {
     /// Parses a message of the given type from the given stream.
     /// </summary>
     public static DynamicMessage ParseFrom(MessageDescriptor type, CodedInputStream input) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(input);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(input);
       return dynamicBuilder.BuildParsed();
 
     }
@@ -56,8 +56,8 @@ namespace Google.ProtocolBuffers {
     /// <param name="extensionRegistry"></param>
     /// <returns></returns>
     public static DynamicMessage ParseFrom(MessageDescriptor type, CodedInputStream input, ExtensionRegistry extensionRegistry) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder) builder.MergeFrom(input, extensionRegistry);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(input, extensionRegistry);
       return dynamicBuilder.BuildParsed();
     }
 
@@ -65,8 +65,8 @@ namespace Google.ProtocolBuffers {
     /// Parses a message of the given type from the given stream.
     /// </summary>
     public static DynamicMessage ParseFrom(MessageDescriptor type, Stream input) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(input);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(input);
       return dynamicBuilder.BuildParsed();
     }
 
@@ -78,8 +78,8 @@ namespace Google.ProtocolBuffers {
     /// <param name="extensionRegistry"></param>
     /// <returns></returns>
     public static DynamicMessage ParseFrom(MessageDescriptor type, Stream input, ExtensionRegistry extensionRegistry) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(input, extensionRegistry);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(input, extensionRegistry);
       return dynamicBuilder.BuildParsed();
     }
 
@@ -87,8 +87,8 @@ namespace Google.ProtocolBuffers {
     /// Parse <paramref name="data"/> as a message of the given type and return it.
     /// </summary>
     public static DynamicMessage ParseFrom(MessageDescriptor type, ByteString data) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(data);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(data);
       return dynamicBuilder.BuildParsed();
     }
 
@@ -96,8 +96,8 @@ namespace Google.ProtocolBuffers {
     /// Parse <paramref name="data"/> as a message of the given type and return it.
     /// </summary>
     public static DynamicMessage ParseFrom(MessageDescriptor type, ByteString data, ExtensionRegistry extensionRegistry) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(data, extensionRegistry);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(data, extensionRegistry);
       return dynamicBuilder.BuildParsed();
 
     }
@@ -106,8 +106,8 @@ namespace Google.ProtocolBuffers {
     /// Parse <paramref name="data"/> as a message of the given type and return it.
     /// </summary>
     public static DynamicMessage ParseFrom(MessageDescriptor type, byte[] data) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(data);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(data);
       return dynamicBuilder.BuildParsed();
     }
 
@@ -115,8 +115,8 @@ namespace Google.ProtocolBuffers {
     /// Parse <paramref name="data"/> as a message of the given type and return it.
     /// </summary>
     public static DynamicMessage ParseFrom(MessageDescriptor type, byte[] data, ExtensionRegistry extensionRegistry) {
-      IBuilder builder = CreateBuilder(type);
-      Builder dynamicBuilder = (Builder)builder.MergeFrom(data, extensionRegistry);
+      Builder builder = CreateBuilder(type);
+      Builder dynamicBuilder = builder.MergeFrom(data, extensionRegistry);
       return dynamicBuilder.BuildParsed();
     }
 
@@ -134,7 +134,7 @@ namespace Google.ProtocolBuffers {
     /// <param name="prototype"></param>
     /// <returns></returns>
     public static Builder CreateBuilder(IMessage prototype) {
-      return (Builder) new Builder(prototype.DescriptorForType).MergeFrom(prototype);
+      return new Builder(prototype.DescriptorForType).MergeFrom(prototype);
     }
 
     // -----------------------------------------------------------------
@@ -144,7 +144,7 @@ namespace Google.ProtocolBuffers {
       get { return type; }
     }
 
-    protected override IMessage DefaultInstanceForTypeImpl {
+    public override DynamicMessage DefaultInstanceForType {
       get { return GetDefaultInstance(type); }
     }
 
@@ -214,7 +214,7 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    protected override IBuilder CreateBuilderForTypeImpl() {
+    public override Builder CreateBuilderForType() {
       return new Builder(type);
     }
 
@@ -227,7 +227,7 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    public class Builder : AbstractBuilder {
+    public class Builder : AbstractBuilder<DynamicMessage, DynamicMessage.Builder> {
       private readonly MessageDescriptor type;
       private FieldSet fields;
       private UnknownFieldSet unknownFields;
@@ -238,16 +238,16 @@ namespace Google.ProtocolBuffers {
         this.unknownFields = UnknownFieldSet.DefaultInstance;
       }
 
-      public DynamicMessage Build() {
-        return (DynamicMessage)((IBuilder)this).Build();
+      protected override Builder ThisBuilder {
+        get { return this; }
       }
 
-      public override IBuilder Clear() {
+      public override Builder Clear() {
         fields.Clear();
         return this;
       }
 
-      public override IBuilder MergeFrom(IMessage other) {
+      public override Builder MergeFrom(IMessage other) {
         if (other.DescriptorForType != type) {
           throw new ArgumentException("MergeFrom(IMessage) can only merge messages of the same type.");
         }
@@ -255,11 +255,19 @@ namespace Google.ProtocolBuffers {
         return this;
       }
 
-      protected override IMessage BuildImpl() {
+      public override Builder MergeFrom(DynamicMessage other) {
+        if (other.DescriptorForType != type) {
+          throw new ArgumentException("MergeFrom(IMessage) can only merge messages of the same type.");
+        }
+        fields.MergeFrom(other);
+        return this;
+      }
+
+      public override DynamicMessage Build() {
    	    if (!IsInitialized) {
           throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields));
         }
-        return BuildPartialImpl();
+        return BuildPartial();
       }
 
       /// <summary>
@@ -271,10 +279,10 @@ namespace Google.ProtocolBuffers {
         if (!IsInitialized) {
           throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields)).AsInvalidProtocolBufferException();
         }
-        return (DynamicMessage) BuildPartialImpl();
+        return BuildPartial();
       }
 
-      protected override IMessage BuildPartialImpl() {
+      public override DynamicMessage BuildPartial() {
         fields.MakeImmutable();
         DynamicMessage result = new DynamicMessage(type, fields, unknownFields);
         fields = null;
@@ -282,7 +290,7 @@ namespace Google.ProtocolBuffers {
         return result;
       }
 
-      protected override IBuilder CloneImpl() {
+      public override Builder Clone() {
         Builder result = new Builder(type);
         result.fields.MergeFrom(fields);
         return result;
@@ -292,7 +300,7 @@ namespace Google.ProtocolBuffers {
       	get { return fields.IsInitializedWithRespectTo(type); }
       }
 
-      protected override IBuilder MergeFromImpl(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
         UnknownFieldSet.Builder unknownFieldsBuilder = UnknownFieldSet.CreateBuilder(unknownFields);
         FieldSet.MergeFrom(input, unknownFieldsBuilder, extensionRegistry, this);
         unknownFields = unknownFieldsBuilder.Build();
@@ -303,7 +311,7 @@ namespace Google.ProtocolBuffers {
         get { return type; }
       }
 
-      protected override IMessage DefaultInstanceForTypeImpl {
+      public override DynamicMessage DefaultInstanceForType {
         get { return GetDefaultInstance(type); }
       }
 
@@ -316,7 +324,7 @@ namespace Google.ProtocolBuffers {
         if (field.MappedType != MappedType.Message) {
           throw new ArgumentException("CreateBuilderForField is only valid for fields with message type.");
         }
-        return new Builder(field.MessageType);        
+        return new Builder(field.MessageType);     
       }
 
       public override bool HasField(FieldDescriptor field) {
@@ -350,7 +358,7 @@ namespace Google.ProtocolBuffers {
         }
       }
 
-      protected override IBuilder ClearFieldImpl(FieldDescriptor field) {
+      public override Builder ClearField(FieldDescriptor field) {
         VerifyContainingType(field);
         fields.ClearField(field);
         return this;
@@ -361,7 +369,7 @@ namespace Google.ProtocolBuffers {
         return fields.GetRepeatedFieldCount(field);
       }
 
-      protected override IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value) {
+      public override Builder AddRepeatedField(FieldDescriptor field, object value) {
         VerifyContainingType(field);
         fields.AddRepeatedField(field, value);
         return this;

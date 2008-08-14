@@ -13,9 +13,9 @@ namespace Google.ProtocolBuffers {
   /// most of the IMessage interface using reflection. Users
   /// can ignore this class as an implementation detail.
   /// </summary>
-  public abstract class GeneratedMessage<TMessage, TBuilder> : AbstractMessage, IMessage<TMessage>
+  public abstract class GeneratedMessage<TMessage, TBuilder> : AbstractMessage<TMessage, TBuilder>
       where TMessage : GeneratedMessage<TMessage, TBuilder> 
-      where TBuilder : IBuilder<TMessage> {
+      where TBuilder : GeneratedBuilder<TMessage, TBuilder> {
 
     private UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
 
@@ -28,18 +28,6 @@ namespace Google.ProtocolBuffers {
     public override MessageDescriptor DescriptorForType {
       get { return InternalFieldAccessors.Descriptor; }
     }
-
-    protected override IMessage DefaultInstanceForTypeImpl {
-      get { return DefaultInstanceForType; }
-    }
-
-    protected override IBuilder CreateBuilderForTypeImpl() {
-      return CreateBuilderForType();
-    }
-
-    public abstract TMessage DefaultInstanceForType { get; }
-
-    public abstract IBuilder<TMessage> CreateBuilderForType();
 
     internal IDictionary<FieldDescriptor, Object> GetMutableFieldMap() {
 

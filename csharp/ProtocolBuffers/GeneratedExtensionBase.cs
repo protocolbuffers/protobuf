@@ -29,7 +29,7 @@ namespace Google.ProtocolBuffers {
   /// The interface implemented by both GeneratedException and GeneratedRepeatException,
   /// to make it easier to cope with repeats separately.
   /// </remarks>
-  public abstract class GeneratedExtensionBase<TContainer, TExtension> {
+  public abstract class GeneratedExtensionBase<TExtension> {
 
     private readonly FieldDescriptor descriptor;
     private readonly IMessage messageDefaultInstance;
@@ -73,8 +73,8 @@ namespace Google.ProtocolBuffers {
             // GeneratedExtension manually and gives it a different type.
             // This should not happen in normal use.  But, to be nice, we'll
             // copy the message to whatever type the caller was expecting.
-            return MessageDefaultInstance.CreateBuilderForType()
-                           .MergeFrom((IMessage)value).Build();
+            return MessageDefaultInstance.WeakCreateBuilderForType()
+                           .WeakMergeFrom((IMessage)value).WeakBuild();
           }
         case MappedType.Enum:
           // Just return a boxed int - that can be unboxed to the enum

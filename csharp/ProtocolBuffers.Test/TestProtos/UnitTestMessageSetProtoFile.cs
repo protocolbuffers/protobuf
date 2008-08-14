@@ -188,12 +188,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::TestMessageSet> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::TestMessageSet prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::ExtendableBuilder<self::TestMessageSet, self::TestMessageSet.Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::TestMessageSet.CreateBuilder()
       internal Builder() {}
       
@@ -203,12 +207,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::TestMessageSet> Clear() {
+      public override Builder Clear() {
         result = new self::TestMessageSet();
         return this;
       }
       
-      public override IBuilder<self::TestMessageSet> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       
@@ -226,11 +230,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
-      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-        return MergeFrom(data, extensionRegistry);
-      }
-      
-      public override IBuilder MergeFrom(pb::IMessage other) {
+      public override Builder MergeFrom(pb::IMessage other) {
         if (other is self::TestMessageSet) {
           return MergeFrom((self::TestMessageSet) other);
         } else {
@@ -239,17 +239,17 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
-      public override IBuilder<self::TestMessageSet> MergeFrom(self::TestMessageSet other) {
+      public override Builder MergeFrom(self::TestMessageSet other) {
         if (other == self::TestMessageSet.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
       
-      public override IBuilder<self::TestMessageSet> MergeFrom(pb::CodedInputStream input) {
+      public override Builder MergeFrom(pb::CodedInputStream input) {
         return MergeFrom(input, pb::ExtensionRegistry.Empty);
       }
       
-      public override IBuilder<self::TestMessageSet> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
         pb::UnknownFieldSet.Builder unknownFields =
           pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {
@@ -368,12 +368,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::TestMessageSetContainer> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::TestMessageSetContainer prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::GeneratedBuilder<self::TestMessageSetContainer, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::TestMessageSetContainer.CreateBuilder()
       internal Builder() {}
       
@@ -383,12 +387,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::TestMessageSetContainer> Clear() {
+      public override Builder Clear() {
         result = new self::TestMessageSetContainer();
         return this;
       }
       
-      public override IBuilder<self::TestMessageSetContainer> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       
@@ -406,11 +410,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
-      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-        return MergeFrom(data, extensionRegistry);
-      }
-      
-      public override IBuilder MergeFrom(pb::IMessage other) {
+      public override Builder MergeFrom(pb::IMessage other) {
         if (other is self::TestMessageSetContainer) {
           return MergeFrom((self::TestMessageSetContainer) other);
         } else {
@@ -419,7 +419,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
-      public override IBuilder<self::TestMessageSetContainer> MergeFrom(self::TestMessageSetContainer other) {
+      public override Builder MergeFrom(self::TestMessageSetContainer other) {
         if (other == self::TestMessageSetContainer.DefaultInstance) return this;
         if (other.HasMessageSet) {
           MergeMessageSet(other.MessageSet);
@@ -428,11 +428,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public override IBuilder<self::TestMessageSetContainer> MergeFrom(pb::CodedInputStream input) {
+      public override Builder MergeFrom(pb::CodedInputStream input) {
         return MergeFrom(input, pb::ExtensionRegistry.Empty);
       }
       
-      public override IBuilder<self::TestMessageSetContainer> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
         pb::UnknownFieldSet.Builder unknownFields =
           pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {
@@ -520,8 +520,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<self::TestMessageSet, self::TestMessageSetExtension1> MessageSetExtension =
-            pb::GeneratedSingleExtension<self::TestMessageSet, self::TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension1> MessageSetExtension =
+            pb::GeneratedSingleExtension<self::TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     
@@ -599,12 +599,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::TestMessageSetExtension1> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::TestMessageSetExtension1 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::GeneratedBuilder<self::TestMessageSetExtension1, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::TestMessageSetExtension1.CreateBuilder()
       internal Builder() {}
       
@@ -614,12 +618,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::TestMessageSetExtension1> Clear() {
+      public override Builder Clear() {
         result = new self::TestMessageSetExtension1();
         return this;
       }
       
-      public override IBuilder<self::TestMessageSetExtension1> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       
@@ -637,11 +641,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
-      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-        return MergeFrom(data, extensionRegistry);
-      }
-      
-      public override IBuilder MergeFrom(pb::IMessage other) {
+      public override Builder MergeFrom(pb::IMessage other) {
         if (other is self::TestMessageSetExtension1) {
           return MergeFrom((self::TestMessageSetExtension1) other);
         } else {
@@ -650,7 +650,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
-      public override IBuilder<self::TestMessageSetExtension1> MergeFrom(self::TestMessageSetExtension1 other) {
+      public override Builder MergeFrom(self::TestMessageSetExtension1 other) {
         if (other == self::TestMessageSetExtension1.DefaultInstance) return this;
         if (other.HasI) {
           I = other.I;
@@ -659,11 +659,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public override IBuilder<self::TestMessageSetExtension1> MergeFrom(pb::CodedInputStream input) {
+      public override Builder MergeFrom(pb::CodedInputStream input) {
         return MergeFrom(input, pb::ExtensionRegistry.Empty);
       }
       
-      public override IBuilder<self::TestMessageSetExtension1> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
         pb::UnknownFieldSet.Builder unknownFields =
           pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {
@@ -730,8 +730,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     public static class Types {
-      public static readonly pb::GeneratedExtensionBase<self::TestMessageSet, self::TestMessageSetExtension2> MessageSetExtension =
-            pb::GeneratedSingleExtension<self::TestMessageSet, self::TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
+      public static readonly pb::GeneratedExtensionBase<self::TestMessageSetExtension2> MessageSetExtension =
+            pb::GeneratedSingleExtension<self::TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
     }
     #endregion
     
@@ -809,12 +809,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::TestMessageSetExtension2> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::TestMessageSetExtension2 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::GeneratedBuilder<self::TestMessageSetExtension2, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::TestMessageSetExtension2.CreateBuilder()
       internal Builder() {}
       
@@ -824,12 +828,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::TestMessageSetExtension2> Clear() {
+      public override Builder Clear() {
         result = new self::TestMessageSetExtension2();
         return this;
       }
       
-      public override IBuilder<self::TestMessageSetExtension2> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       
@@ -847,11 +851,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
-      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-        return MergeFrom(data, extensionRegistry);
-      }
-      
-      public override IBuilder MergeFrom(pb::IMessage other) {
+      public override Builder MergeFrom(pb::IMessage other) {
         if (other is self::TestMessageSetExtension2) {
           return MergeFrom((self::TestMessageSetExtension2) other);
         } else {
@@ -860,7 +860,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
-      public override IBuilder<self::TestMessageSetExtension2> MergeFrom(self::TestMessageSetExtension2 other) {
+      public override Builder MergeFrom(self::TestMessageSetExtension2 other) {
         if (other == self::TestMessageSetExtension2.DefaultInstance) return this;
         if (other.HasStr) {
           Str = other.Str;
@@ -869,11 +869,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public override IBuilder<self::TestMessageSetExtension2> MergeFrom(pb::CodedInputStream input) {
+      public override Builder MergeFrom(pb::CodedInputStream input) {
         return MergeFrom(input, pb::ExtensionRegistry.Empty);
       }
       
-      public override IBuilder<self::TestMessageSetExtension2> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
         pb::UnknownFieldSet.Builder unknownFields =
           pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {
@@ -1050,12 +1050,16 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public static Builder CreateBuilder() { return new Builder(); }
-        public override IBuilder<self::RawMessageSet.Types.Item> CreateBuilderForType() { return new Builder(); }
+        public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(self::RawMessageSet.Types.Item prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
         public sealed partial class Builder : pb::GeneratedBuilder<self::RawMessageSet.Types.Item, Builder> {
+          protected override Builder ThisBuilder {
+            get { return this; }
+          }
+          
           // Construct using self::RawMessageSet.Types.Item.CreateBuilder()
           internal Builder() {}
           
@@ -1065,12 +1069,12 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return result; }
           }
           
-          public override IBuilder<self::RawMessageSet.Types.Item> Clear() {
+          public override Builder Clear() {
             result = new self::RawMessageSet.Types.Item();
             return this;
           }
           
-          public override IBuilder<self::RawMessageSet.Types.Item> Clone() {
+          public override Builder Clone() {
             return new Builder().MergeFrom(result);
           }
           
@@ -1088,11 +1092,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
-          protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-            return MergeFrom(data, extensionRegistry);
-          }
-          
-          public override IBuilder MergeFrom(pb::IMessage other) {
+          public override Builder MergeFrom(pb::IMessage other) {
             if (other is self::RawMessageSet.Types.Item) {
               return MergeFrom((self::RawMessageSet.Types.Item) other);
             } else {
@@ -1101,7 +1101,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
           
-          public override IBuilder<self::RawMessageSet.Types.Item> MergeFrom(self::RawMessageSet.Types.Item other) {
+          public override Builder MergeFrom(self::RawMessageSet.Types.Item other) {
             if (other == self::RawMessageSet.Types.Item.DefaultInstance) return this;
             if (other.HasTypeId) {
               TypeId = other.TypeId;
@@ -1113,11 +1113,11 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
           
-          public override IBuilder<self::RawMessageSet.Types.Item> MergeFrom(pb::CodedInputStream input) {
+          public override Builder MergeFrom(pb::CodedInputStream input) {
             return MergeFrom(input, pb::ExtensionRegistry.Empty);
           }
           
-          public override IBuilder<self::RawMessageSet.Types.Item> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+          public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
             pb::UnknownFieldSet.Builder unknownFields =
               pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
             while (true) {
@@ -1269,12 +1269,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::RawMessageSet> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::RawMessageSet prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::GeneratedBuilder<self::RawMessageSet, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::RawMessageSet.CreateBuilder()
       internal Builder() {}
       
@@ -1284,12 +1288,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::RawMessageSet> Clear() {
+      public override Builder Clear() {
         result = new self::RawMessageSet();
         return this;
       }
       
-      public override IBuilder<self::RawMessageSet> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       
@@ -1310,11 +1314,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
-      protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {
-        return MergeFrom(data, extensionRegistry);
-      }
-      
-      public override IBuilder MergeFrom(pb::IMessage other) {
+      public override Builder MergeFrom(pb::IMessage other) {
         if (other is self::RawMessageSet) {
           return MergeFrom((self::RawMessageSet) other);
         } else {
@@ -1323,7 +1323,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
-      public override IBuilder<self::RawMessageSet> MergeFrom(self::RawMessageSet other) {
+      public override Builder MergeFrom(self::RawMessageSet other) {
         if (other == self::RawMessageSet.DefaultInstance) return this;
         if (other.item_.Count != 0) {
           if (result.item_.Count == 0) {
@@ -1335,11 +1335,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public override IBuilder<self::RawMessageSet> MergeFrom(pb::CodedInputStream input) {
+      public override Builder MergeFrom(pb::CodedInputStream input) {
         return MergeFrom(input, pb::ExtensionRegistry.Empty);
       }
       
-      public override IBuilder<self::RawMessageSet> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
         pb::UnknownFieldSet.Builder unknownFields =
           pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {

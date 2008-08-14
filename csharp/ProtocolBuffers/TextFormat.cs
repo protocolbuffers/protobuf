@@ -44,6 +44,7 @@ namespace Google.ProtocolBuffers {
     }
 
     private static void Print(IMessage message, TextGenerator generator) {
+      // TODO(jonskeet): Check why descriptor is never used.
       MessageDescriptor descriptor = message.DescriptorForType;
       foreach (KeyValuePair<FieldDescriptor, object> entry in message.AllFields) {
         PrintField(entry.Key, entry.Value, generator);

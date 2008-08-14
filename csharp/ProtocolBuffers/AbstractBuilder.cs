@@ -8,10 +8,16 @@ using System.IO;
 namespace Google.ProtocolBuffers {
   /// <summary>
   /// Implementation of the non-generic IMessage interface as far as possible.
-  /// TODO(jonskeet): Make this generic, to avoid so much casting in DynamicMessage.
   /// </summary>
-  public abstract class AbstractBuilder : IBuilder {
+  public abstract class AbstractBuilder<TMessage, TBuilder> : IBuilder<TMessage, TBuilder> 
+      where TMessage : AbstractMessage<TMessage, TBuilder>
+      where TBuilder : AbstractBuilder<TMessage, TBuilder> {
+
+    protected abstract TBuilder ThisBuilder { get; }
+    
     #region Unimplemented members of IBuilder
+    public abstract UnknownFieldSet UnknownFields { get; set; }
+    public abstract TBuilder MergeFrom(TMessage other);
     public abstract bool IsInitialized { get; }
     public abstract IDictionary<FieldDescriptor, object> AllFields { get; }
     public abstract object this[FieldDescriptor field] { get; set; }
@@ -19,55 +25,75 @@ namespace Google.ProtocolBuffers {
     public abstract int GetRepeatedFieldCount(FieldDescriptor field);
     public abstract object this[FieldDescriptor field, int index] { get; set; }
     public abstract bool HasField(FieldDescriptor field);
-    #endregion
-
-    #region New abstract methods to be overridden by implementations, allow explicit interface implementation
-    protected abstract IMessage BuildImpl();
-    protected abstract IMessage BuildPartialImpl();
-    protected abstract IBuilder CloneImpl();
-    protected abstract IMessage DefaultInstanceForTypeImpl { get; }
-    protected abstract IBuilder ClearFieldImpl(FieldDescriptor field);
-    protected abstract IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value);
-    #endregion
-
-    #region Methods simply proxying to the "Impl" methods, explicitly implementing IBuilder
-    IMessage IBuilder.Build() {
-      return BuildImpl();
-    }
-
-    IMessage IBuilder.BuildPartial() {
-      return BuildPartialImpl();
-    }
-
-    IBuilder IBuilder.Clone() {
-      return CloneImpl();
-    }
-    
-    IMessage IBuilder.DefaultInstanceForType {
-      get { return DefaultInstanceForTypeImpl; }
-    }
-
+    public abstract TMessage Build();
+    public abstract TMessage BuildPartial();
+    public abstract TBuilder Clone();
+    public abstract TMessage DefaultInstanceForType { get; }
     public abstract IBuilder CreateBuilderForField(FieldDescriptor field);
+    public abstract TBuilder ClearField(FieldDescriptor field);
+    public abstract TBuilder AddRepeatedField(FieldDescriptor field, object value);
+    #endregion
 
-    IBuilder IBuilder.ClearField(FieldDescriptor field) {
-      return ClearFieldImpl(field);
+    #region Implementation of methods which don't require type parameter information
+    public IMessage WeakBuild() {
+      return Build();
     }
 
-    IBuilder IBuilder.AddRepeatedField(FieldDescriptor field, object value) {
-      return AddRepeatedFieldImpl(field, value);
+    public IBuilder WeakAddRepeatedField(FieldDescriptor field, object value) {
+      return AddRepeatedField(field, value);
+    }
+
+    public IBuilder WeakClear() {
+      return Clear();
+    }
+
+    public IBuilder WeakMergeFrom(IMessage message) {
+      return MergeFrom(message);
+    }
+
+    public IBuilder WeakMergeFrom(CodedInputStream input) {
+      return MergeFrom(input);
+    }
+
+    public IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry) {
+      return MergeFrom(input, registry);
+    }
+
+    public IBuilder WeakMergeFrom(ByteString data) {
+      return MergeFrom(data);
+    }
+
+    public IBuilder WeakMergeFrom(ByteString data, ExtensionRegistry registry) {
+      return MergeFrom(data, registry);
+    }
+
+    public IMessage WeakBuildPartial() {
+      return BuildPartial();
+    }
+
+    public IBuilder WeakClone() {
+      return Clone();
+    }
+
+    public IMessage WeakDefaultInstanceForType {
+      get { return DefaultInstanceForType; } 
+    }
+
+    public IBuilder WeakClearField(FieldDescriptor field) {
+      return ClearField(field);
     }
     #endregion
 
-    public virtual IBuilder Clear() {
+    public virtual TBuilder Clear() {
       foreach(FieldDescriptor field in AllFields.Keys) {
-        ClearFieldImpl(field);
+        ClearField(field);
       }
-      return this;
+      return ThisBuilder;
     }
 
-    public virtual IBuilder MergeFrom(IMessage other) {
+    public virtual TBuilder MergeFrom(IMessage other) {
       if (other.DescriptorForType != DescriptorForType) {
-        throw new ArgumentException("MergeFrom(Message) can only merge messages of the same type.");
+        throw new ArgumentException("MergeFrom(IMessage) can only merge messages of the same type.");
       }
 
       // Note:  We don't attempt to verify that other's fields have valid
@@ -83,101 +109,95 @@ namespace Google.ProtocolBuffers {
         if (field.IsRepeated) {
           // Concatenate repeated fields
           foreach (object element in (IEnumerable) entry.Value) {
-            AddRepeatedFieldImpl(field, element);
+            AddRepeatedField(field, element);
           }
         } else if (field.MappedType == MappedType.Message) {
           // Merge singular messages
           IMessage existingValue = (IMessage) this[field];
-          if (existingValue == existingValue.DefaultInstanceForType) {
+          if (existingValue == existingValue.WeakDefaultInstanceForType) {
             this[field] = entry.Value;
           } else {
-            this[field] = existingValue.CreateBuilderForType()
-                                       .MergeFrom(existingValue)
-                                       .MergeFrom((IMessage) entry.Value)
-                                       .Build();
+            this[field] = existingValue.WeakCreateBuilderForType()
+                                       .WeakMergeFrom(existingValue)
+                                       .WeakMergeFrom((IMessage) entry.Value)
+                                       .WeakBuild();
           }
         } else {
           // Overwrite simple values
           this[field] = entry.Value;
         }
       }
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(CodedInputStream input) {
-      return MergeFromImpl(input, ExtensionRegistry.Empty);
+    public virtual TBuilder MergeFrom(CodedInputStream input) {
+      return MergeFrom(input, ExtensionRegistry.Empty);
     }
 
-    protected virtual IBuilder MergeFromImpl(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+    public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
       FieldSet.MergeFrom(input, unknownFields, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
-      return MergeFromImpl(input, extensionRegistry);
-    }
-
-    IBuilder IBuilder.MergeUnknownFields(UnknownFieldSet unknownFields) {
+    public virtual TBuilder MergeUnknownFields(UnknownFieldSet unknownFields) {
       UnknownFields = UnknownFieldSet.CreateBuilder(UnknownFields)
           .MergeFrom(unknownFields)
           .Build();
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(ByteString data) {
+    public virtual TBuilder MergeFrom(ByteString data) {
       CodedInputStream input = data.CreateCodedInput();
-      ((IBuilder)this).MergeFrom(input);
+      MergeFrom(input);
       input.CheckLastTagWas(0);
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
+    public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
       CodedInputStream input = data.CreateCodedInput();
-      ((IBuilder)this).MergeFrom(input, extensionRegistry);
+      MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(byte[] data) {
+    public virtual TBuilder MergeFrom(byte[] data) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
-      ((IBuilder)this).MergeFrom(input);
+      MergeFrom(input);
       input.CheckLastTagWas(0);
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
+    public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
-      ((IBuilder)this).MergeFrom(input, extensionRegistry);
+      MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(Stream input) {
+    public virtual TBuilder MergeFrom(Stream input) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      ((IBuilder)this).MergeFrom(codedInput);
+      MergeFrom(codedInput);
       codedInput.CheckLastTagWas(0);
-      return this;
+      return ThisBuilder;
     }
 
-    IBuilder IBuilder.MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
+    public virtual TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      ((IBuilder)this).MergeFrom(codedInput, extensionRegistry);
+      MergeFrom(codedInput, extensionRegistry);
       codedInput.CheckLastTagWas(0);
-      return this;
+      return ThisBuilder;
     }
 
-    public abstract UnknownFieldSet UnknownFields { get; set; }
-    
-    public IBuilder SetField(FieldDescriptor field, object value) {
+    public virtual IBuilder SetField(FieldDescriptor field, object value) {
       this[field] = value;
-      return this;
+      return ThisBuilder;
     }
 
-    public IBuilder SetRepeatedField(FieldDescriptor field, int index, object value) {
+    public virtual IBuilder SetRepeatedField(FieldDescriptor field, int index, object value) {
       this[field, index] = value;
-      return this;
+      return ThisBuilder;
     }
   }
 }

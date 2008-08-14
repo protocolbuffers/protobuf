@@ -21,7 +21,7 @@ namespace Google.ProtocolBuffers {
     public void DynamicMessageAccessors() {
       IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
       reflectionTester.SetAllFieldsViaReflection(builder);
-      IMessage message = builder.Build();
+      IMessage message = builder.WeakBuild();
       reflectionTester.AssertAllFieldsSetViaReflection(message);
     }
 
@@ -32,7 +32,7 @@ namespace Google.ProtocolBuffers {
     // It treats them just like any other fields.
     IBuilder builder = DynamicMessage.CreateBuilder(TestAllExtensions.Descriptor);
     extensionsReflectionTester.SetAllFieldsViaReflection(builder);
-    IMessage message = builder.Build();
+    IMessage message = builder.WeakBuild();
     extensionsReflectionTester.AssertAllFieldsSetViaReflection(message);
   }
 
@@ -41,7 +41,7 @@ namespace Google.ProtocolBuffers {
       IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
       reflectionTester.SetAllFieldsViaReflection(builder);
       reflectionTester.ModifyRepeatedFieldsViaReflection(builder);
-      IMessage message = builder.Build();
+      IMessage message = builder.WeakBuild();
       reflectionTester.AssertRepeatedFieldsModifiedViaReflection(message);
     }
 
@@ -57,7 +57,7 @@ namespace Google.ProtocolBuffers {
 
       IBuilder dynamicBuilder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
       reflectionTester.SetAllFieldsViaReflection(dynamicBuilder);
-      IMessage dynamicMessage = dynamicBuilder.Build();
+      IMessage dynamicMessage = dynamicBuilder.WeakBuild();
 
       Assert.AreEqual(message.SerializedSize, dynamicMessage.SerializedSize);
     }
@@ -66,7 +66,7 @@ namespace Google.ProtocolBuffers {
     public void DynamicMessageSerialization() {
       IBuilder builder =  DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
       reflectionTester.SetAllFieldsViaReflection(builder);
-      IMessage message = builder.Build();
+      IMessage message = builder.WeakBuild();
 
       ByteString rawBytes = message.ToByteString();
       TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);

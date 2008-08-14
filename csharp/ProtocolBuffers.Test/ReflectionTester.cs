@@ -170,7 +170,7 @@ namespace Google.ProtocolBuffers {
         ExtensionInfo extension = extensionRegistry[field.ContainingType, field.FieldNumber];
         Assert.IsNotNull(extension);
         Assert.IsNotNull(extension.DefaultInstance);
-        return extension.DefaultInstance.CreateBuilderForType();
+        return extension.DefaultInstance.WeakCreateBuilderForType();
       }
     }
 
@@ -196,10 +196,10 @@ namespace Google.ProtocolBuffers {
       message[f("optional_string"  )] = "115";
       message[f("optional_bytes")] = TestUtil.ToBytes("116");
 
-      message[f("optionalgroup")] = CreateBuilderForField(message, f("optionalgroup")).SetField(groupA, 117).Build();
-      message[f("optional_nested_message")] = CreateBuilderForField(message, f("optional_nested_message")).SetField(nestedB, 118).Build();
-      message[f("optional_foreign_message")] = CreateBuilderForField(message, f("optional_foreign_message")).SetField(foreignC, 119).Build();
-      message[f("optional_import_message")] = CreateBuilderForField(message, f("optional_import_message")).SetField(importD, 120).Build();
+      message[f("optionalgroup")] = CreateBuilderForField(message, f("optionalgroup")).SetField(groupA, 117).WeakBuild();
+      message[f("optional_nested_message")] = CreateBuilderForField(message, f("optional_nested_message")).SetField(nestedB, 118).WeakBuild();
+      message[f("optional_foreign_message")] = CreateBuilderForField(message, f("optional_foreign_message")).SetField(foreignC, 119).WeakBuild();
+      message[f("optional_import_message")] = CreateBuilderForField(message, f("optional_import_message")).SetField(importD, 120).WeakBuild();
 
       message[f("optional_nested_enum" )] =  nestedBaz;
       message[f("optional_foreign_enum")] = foreignBaz;
@@ -210,71 +210,71 @@ namespace Google.ProtocolBuffers {
 
       // -----------------------------------------------------------------
 
-      message.AddRepeatedField(f("repeated_int32"   ), 201 );
-      message.AddRepeatedField(f("repeated_int64"   ), 202L);
-      message.AddRepeatedField(f("repeated_uint32"  ), 203U );
-      message.AddRepeatedField(f("repeated_uint64"  ), 204UL);
-      message.AddRepeatedField(f("repeated_sint32"  ), 205 );
-      message.AddRepeatedField(f("repeated_sint64"  ), 206L);
-      message.AddRepeatedField(f("repeated_fixed32" ), 207U );
-      message.AddRepeatedField(f("repeated_fixed64" ), 208UL);
-      message.AddRepeatedField(f("repeated_sfixed32"), 209 );
-      message.AddRepeatedField(f("repeated_sfixed64"), 210L);
-      message.AddRepeatedField(f("repeated_float"   ), 211F);
-      message.AddRepeatedField(f("repeated_double"  ), 212D);
-      message.AddRepeatedField(f("repeated_bool"    ), true);
-      message.AddRepeatedField(f("repeated_string"  ), "215");
-      message.AddRepeatedField(f("repeated_bytes"   ), TestUtil.ToBytes("216"));
+      message.WeakAddRepeatedField(f("repeated_int32"   ), 201 );
+      message.WeakAddRepeatedField(f("repeated_int64"   ), 202L);
+      message.WeakAddRepeatedField(f("repeated_uint32"  ), 203U );
+      message.WeakAddRepeatedField(f("repeated_uint64"  ), 204UL);
+      message.WeakAddRepeatedField(f("repeated_sint32"  ), 205 );
+      message.WeakAddRepeatedField(f("repeated_sint64"  ), 206L);
+      message.WeakAddRepeatedField(f("repeated_fixed32" ), 207U );
+      message.WeakAddRepeatedField(f("repeated_fixed64" ), 208UL);
+      message.WeakAddRepeatedField(f("repeated_sfixed32"), 209 );
+      message.WeakAddRepeatedField(f("repeated_sfixed64"), 210L);
+      message.WeakAddRepeatedField(f("repeated_float"   ), 211F);
+      message.WeakAddRepeatedField(f("repeated_double"  ), 212D);
+      message.WeakAddRepeatedField(f("repeated_bool"    ), true);
+      message.WeakAddRepeatedField(f("repeated_string"  ), "215");
+      message.WeakAddRepeatedField(f("repeated_bytes"   ), TestUtil.ToBytes("216"));
 
 
-      message.AddRepeatedField(f("repeatedgroup"), CreateBuilderForField(message, f("repeatedgroup")).SetField(repeatedGroupA, 217).Build());
-      message.AddRepeatedField(f("repeated_nested_message"), CreateBuilderForField(message, f("repeated_nested_message")).SetField(nestedB, 218).Build());
-      message.AddRepeatedField(f("repeated_foreign_message"), CreateBuilderForField(message, f("repeated_foreign_message")).SetField(foreignC, 219).Build());
-      message.AddRepeatedField(f("repeated_import_message"), CreateBuilderForField(message, f("repeated_import_message")).SetField(importD, 220).Build());
+      message.WeakAddRepeatedField(f("repeatedgroup"), CreateBuilderForField(message, f("repeatedgroup")).SetField(repeatedGroupA, 217).WeakBuild());
+      message.WeakAddRepeatedField(f("repeated_nested_message"), CreateBuilderForField(message, f("repeated_nested_message")).SetField(nestedB, 218).WeakBuild());
+      message.WeakAddRepeatedField(f("repeated_foreign_message"), CreateBuilderForField(message, f("repeated_foreign_message")).SetField(foreignC, 219).WeakBuild());
+      message.WeakAddRepeatedField(f("repeated_import_message"), CreateBuilderForField(message, f("repeated_import_message")).SetField(importD, 220).WeakBuild());
 
-      message.AddRepeatedField(f("repeated_nested_enum" ),  nestedBar);
-      message.AddRepeatedField(f("repeated_foreign_enum"), foreignBar);
-      message.AddRepeatedField(f("repeated_import_enum" ),  importBar);
+      message.WeakAddRepeatedField(f("repeated_nested_enum" ),  nestedBar);
+      message.WeakAddRepeatedField(f("repeated_foreign_enum"), foreignBar);
+      message.WeakAddRepeatedField(f("repeated_import_enum" ),  importBar);
 
-      message.AddRepeatedField(f("repeated_string_piece" ), "224");
-      message.AddRepeatedField(f("repeated_cord" ), "225");
+      message.WeakAddRepeatedField(f("repeated_string_piece" ), "224");
+      message.WeakAddRepeatedField(f("repeated_cord" ), "225");
 
       // Add a second one of each field.
-      message.AddRepeatedField(f("repeated_int32"   ), 301 );
-      message.AddRepeatedField(f("repeated_int64"   ), 302L);
-      message.AddRepeatedField(f("repeated_uint32"  ), 303U );
-      message.AddRepeatedField(f("repeated_uint64"  ), 304UL);
-      message.AddRepeatedField(f("repeated_sint32"  ), 305 );
-      message.AddRepeatedField(f("repeated_sint64"  ), 306L);
-      message.AddRepeatedField(f("repeated_fixed32" ), 307U );
-      message.AddRepeatedField(f("repeated_fixed64" ), 308UL);
-      message.AddRepeatedField(f("repeated_sfixed32"), 309 );
-      message.AddRepeatedField(f("repeated_sfixed64"), 310L);
-      message.AddRepeatedField(f("repeated_float"   ), 311F);
-      message.AddRepeatedField(f("repeated_double"  ), 312D);
-      message.AddRepeatedField(f("repeated_bool"    ), false);
-      message.AddRepeatedField(f("repeated_string"  ), "315");
-      message.AddRepeatedField(f("repeated_bytes"   ), TestUtil.ToBytes("316"));
+      message.WeakAddRepeatedField(f("repeated_int32"   ), 301 );
+      message.WeakAddRepeatedField(f("repeated_int64"   ), 302L);
+      message.WeakAddRepeatedField(f("repeated_uint32"  ), 303U );
+      message.WeakAddRepeatedField(f("repeated_uint64"  ), 304UL);
+      message.WeakAddRepeatedField(f("repeated_sint32"  ), 305 );
+      message.WeakAddRepeatedField(f("repeated_sint64"  ), 306L);
+      message.WeakAddRepeatedField(f("repeated_fixed32" ), 307U );
+      message.WeakAddRepeatedField(f("repeated_fixed64" ), 308UL);
+      message.WeakAddRepeatedField(f("repeated_sfixed32"), 309 );
+      message.WeakAddRepeatedField(f("repeated_sfixed64"), 310L);
+      message.WeakAddRepeatedField(f("repeated_float"   ), 311F);
+      message.WeakAddRepeatedField(f("repeated_double"  ), 312D);
+      message.WeakAddRepeatedField(f("repeated_bool"    ), false);
+      message.WeakAddRepeatedField(f("repeated_string"  ), "315");
+      message.WeakAddRepeatedField(f("repeated_bytes"   ), TestUtil.ToBytes("316"));
 
-      message.AddRepeatedField(f("repeatedgroup"),
+      message.WeakAddRepeatedField(f("repeatedgroup"),
         CreateBuilderForField(message, f("repeatedgroup"))
-               .SetField(repeatedGroupA, 317).Build());
-      message.AddRepeatedField(f("repeated_nested_message"),
+               .SetField(repeatedGroupA, 317).WeakBuild());
+      message.WeakAddRepeatedField(f("repeated_nested_message"),
         CreateBuilderForField(message, f("repeated_nested_message"))
-               .SetField(nestedB, 318).Build());
-      message.AddRepeatedField(f("repeated_foreign_message"),
+               .SetField(nestedB, 318).WeakBuild());
+      message.WeakAddRepeatedField(f("repeated_foreign_message"),
         CreateBuilderForField(message, f("repeated_foreign_message"))
-               .SetField(foreignC, 319).Build());
-      message.AddRepeatedField(f("repeated_import_message"),
+               .SetField(foreignC, 319).WeakBuild());
+      message.WeakAddRepeatedField(f("repeated_import_message"),
         CreateBuilderForField(message, f("repeated_import_message"))
-               .SetField(importD, 320).Build());
+               .SetField(importD, 320).WeakBuild());
 
-      message.AddRepeatedField(f("repeated_nested_enum" ),  nestedBaz);
-      message.AddRepeatedField(f("repeated_foreign_enum"), foreignBaz);
-      message.AddRepeatedField(f("repeated_import_enum" ),  importBaz);
+      message.WeakAddRepeatedField(f("repeated_nested_enum" ),  nestedBaz);
+      message.WeakAddRepeatedField(f("repeated_foreign_enum"), foreignBaz);
+      message.WeakAddRepeatedField(f("repeated_import_enum" ),  importBaz);
 
-      message.AddRepeatedField(f("repeated_string_piece" ), "324");
-      message.AddRepeatedField(f("repeated_cord" ), "325");
+      message.WeakAddRepeatedField(f("repeated_string_piece" ), "324");
+      message.WeakAddRepeatedField(f("repeated_cord" ), "325");
 
       // -----------------------------------------------------------------
 
@@ -326,10 +326,10 @@ namespace Google.ProtocolBuffers {
       message[f("repeated_string"  ), 1] = "515";
       message.SetRepeatedField(f("repeated_bytes"   ), 1, TestUtil.ToBytes("516"));
 
-      message.SetRepeatedField(f("repeatedgroup"), 1, CreateBuilderForField(message, f("repeatedgroup")).SetField(repeatedGroupA, 517).Build());
-      message.SetRepeatedField(f("repeated_nested_message"), 1, CreateBuilderForField(message, f("repeated_nested_message")).SetField(nestedB, 518).Build());
-      message.SetRepeatedField(f("repeated_foreign_message"), 1, CreateBuilderForField(message, f("repeated_foreign_message")).SetField(foreignC, 519).Build());
-      message.SetRepeatedField(f("repeated_import_message"), 1, CreateBuilderForField(message, f("repeated_import_message")).SetField(importD, 520).Build());
+      message.SetRepeatedField(f("repeatedgroup"), 1, CreateBuilderForField(message, f("repeatedgroup")).SetField(repeatedGroupA, 517).WeakBuild());
+      message.SetRepeatedField(f("repeated_nested_message"), 1, CreateBuilderForField(message, f("repeated_nested_message")).SetField(nestedB, 518).WeakBuild());
+      message.SetRepeatedField(f("repeated_foreign_message"), 1, CreateBuilderForField(message, f("repeated_foreign_message")).SetField(foreignC, 519).WeakBuild());
+      message.SetRepeatedField(f("repeated_import_message"), 1, CreateBuilderForField(message, f("repeated_import_message")).SetField(importD, 520).WeakBuild());
 
       message[f("repeated_nested_enum" ), 1] =  nestedFoo;
       message[f("repeated_foreign_enum"), 1] = foreignFoo;

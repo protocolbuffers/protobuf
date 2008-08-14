@@ -23,7 +23,9 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// Implementation of the non-generic IMessage interface as far as possible.
   /// </summary>
-  public abstract class AbstractMessage : IMessage {
+  public abstract class AbstractMessage<TMessage, TBuilder> : IMessage<TMessage, TBuilder> 
+      where TMessage : AbstractMessage<TMessage, TBuilder> 
+      where TBuilder : AbstractBuilder<TMessage, TBuilder> {
     // TODO(jonskeet): Cleaner to use a Nullable<int>?
     /// <summary>
     /// The serialized size if it's already been computed, or -1
@@ -39,21 +41,17 @@ namespace Google.ProtocolBuffers {
     public abstract int GetRepeatedFieldCount(FieldDescriptor field);
     public abstract object this[FieldDescriptor field, int index] { get; }
     public abstract UnknownFieldSet UnknownFields { get; }
+    public abstract TMessage DefaultInstanceForType { get; }
+    public abstract TBuilder CreateBuilderForType();
     #endregion
-
-    #region New abstract methods to be overridden by implementations, allow explicit interface implementation
-    protected abstract IMessage DefaultInstanceForTypeImpl { get; }
-    protected abstract IBuilder CreateBuilderForTypeImpl();
-    #endregion
-
-    #region Methods simply proxying to the "Impl" methods, explicitly implementing IMessage
-    IMessage IMessage.DefaultInstanceForType { 
-      get { return DefaultInstanceForTypeImpl; }
+    
+    public IBuilder WeakCreateBuilderForType() {
+      return CreateBuilderForType();
     }
-    IBuilder IMessage.CreateBuilderForType() { 
-      return CreateBuilderForTypeImpl(); 
+
+    public IMessage WeakDefaultInstanceForType {
+      get { return DefaultInstanceForType; }
     }
-    #endregion
 
     public virtual bool IsInitialized {
       get {
@@ -71,7 +69,7 @@ namespace Google.ProtocolBuffers {
             if (field.IsRepeated) {
               // We know it's an IList<T>, but not the exact type - so
               // IEnumerable is the best we can do. (C# generics aren't covariant yet.)
-              foreach (IMessage element in (IEnumerable)entry.Value) {
+              foreach (IMessage element in (IEnumerable) entry.Value) {
                 if (!element.IsInitialized) {
                   return false;
                 }
@@ -124,7 +122,7 @@ namespace Google.ProtocolBuffers {
         foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
           FieldDescriptor field = entry.Key;
           if (field.IsRepeated) {
-            foreach (object element in (IEnumerable)entry.Value) {
+            foreach (object element in (IEnumerable) entry.Value) {
               size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, element);
             }
           } else {

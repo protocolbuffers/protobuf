@@ -95,12 +95,16 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public static Builder CreateBuilder() { return new Builder(); }
-        public override IBuilder<self::MessageWithNoOuter.Types.NestedMessage> CreateBuilderForType() { return new Builder(); }
+        public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(self::MessageWithNoOuter.Types.NestedMessage prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
         public sealed partial class Builder : pb::GeneratedBuilder<self::MessageWithNoOuter.Types.NestedMessage, Builder> {
+          protected override Builder ThisBuilder {
+            get { return this; }
+          }
+          
           // Construct using self::MessageWithNoOuter.Types.NestedMessage.CreateBuilder()
           internal Builder() {}
           
@@ -110,12 +114,12 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return result; }
           }
           
-          public override IBuilder<self::MessageWithNoOuter.Types.NestedMessage> Clear() {
+          public override Builder Clear() {
             result = new self::MessageWithNoOuter.Types.NestedMessage();
             return this;
           }
           
-          public override IBuilder<self::MessageWithNoOuter.Types.NestedMessage> Clone() {
+          public override Builder Clone() {
             return new Builder().MergeFrom(result);
           }
           
@@ -231,12 +235,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static Builder CreateBuilder() { return new Builder(); }
-    public override IBuilder<self::MessageWithNoOuter> CreateBuilderForType() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(self::MessageWithNoOuter prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
     public sealed partial class Builder : pb::GeneratedBuilder<self::MessageWithNoOuter, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
       // Construct using self::MessageWithNoOuter.CreateBuilder()
       internal Builder() {}
       
@@ -246,12 +254,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return result; }
       }
       
-      public override IBuilder<self::MessageWithNoOuter> Clear() {
+      public override Builder Clear() {
         result = new self::MessageWithNoOuter();
         return this;
       }
       
-      public override IBuilder<self::MessageWithNoOuter> Clone() {
+      public override Builder Clone() {
         return new Builder().MergeFrom(result);
       }
       

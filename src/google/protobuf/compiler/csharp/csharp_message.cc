@@ -423,7 +423,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
 void MessageGenerator::GenerateBuilder(io::Printer* printer) {
   printer->Print(
     "public static Builder CreateBuilder() { return new Builder(); }\r\n"
-    "public override IBuilder<$classname$> CreateBuilderForType() { return new Builder(); }\r\n"
+    "public override Builder CreateBuilderForType() { return new Builder(); }\r\n"
     "public static Builder CreateBuilder($classname$ prototype) {\r\n"
     "  return (Builder) new Builder().MergeFrom(prototype);\r\n"
     "}\r\n"
@@ -441,7 +441,13 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
       "classname", ClassName(descriptor_),
       "access", ClassAccessLevel(descriptor_->file()));
   }
+
   printer->Indent();
+
+  printer->Print(
+      "protected override Builder ThisBuilder {\r\n"
+      "  get { return this; }\r\n"
+      "}\r\n\r\n");
 
   GenerateCommonBuilderMethods(printer);
 
@@ -475,12 +481,12 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "  get { return result; }\r\n"
     "}\r\n"
     "\r\n"
-    "public override IBuilder<$classname$> Clear() {\r\n"
+    "public override Builder Clear() {\r\n"
     "  result = new $classname$();\r\n"
     "  return this;\r\n"
     "}\r\n"
     "\r\n"
-    "public override IBuilder<$classname$> Clone() {\r\n"
+    "public override Builder Clone() {\r\n"
     "  return new Builder().MergeFrom(result);\r\n"
     "}\r\n"
     "\r\n"
@@ -516,14 +522,14 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
-  //TODO(jonskeet): Work out what this is really for...
   if (descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
     printer->Print(
-      "protected override IBuilder MergeFromImpl(CodedInputStream data, ExtensionRegistry extensionRegistry) {\r\n"
+      /*
+      "protected override Builder MergeFrom(CodedInputStream data, ExtensionRegistry extensionRegistry) {\r\n"
       "  return MergeFrom(data, extensionRegistry);\r\n"
       "}\r\n"
-      "\r\n"
-      "public override IBuilder MergeFrom(pb::IMessage other) {\r\n"
+      "\r\n"*/
+      "public override Builder MergeFrom(pb::IMessage other) {\r\n"
       "  if (other is $classname$) {\r\n"
       "    return MergeFrom(($classname$) other);\r\n"
       "  } else {\r\n"
@@ -532,7 +538,7 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
       "  }\r\n"
       "}\r\n"
       "\r\n"
-      "public override IBuilder<$classname$> MergeFrom($classname$ other) {\r\n"
+      "public override Builder MergeFrom($classname$ other) {\r\n"
       // Optimization:  If other is the default instance, we know none of its
       //   fields are set so we can skip the merge.
       "  if (other == $classname$.DefaultInstance) return this;\r\n",
@@ -559,11 +565,11 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
     SortFieldsByNumber(descriptor_));
 
   printer->Print(
-    "public override IBuilder<$classname$> MergeFrom(pb::CodedInputStream input) {\r\n"
+    "public override Builder MergeFrom(pb::CodedInputStream input) {\r\n"
     "  return MergeFrom(input, pb::ExtensionRegistry.Empty);\r\n"
     "}\r\n"
     "\r\n"
-    "public override IBuilder<$classname$> MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {\r\n",
+    "public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {\r\n",
     "classname", ClassName(descriptor_));
   printer->Indent();
 

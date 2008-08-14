@@ -153,8 +153,7 @@ namespace Google.ProtocolBuffers {
       builder[descriptor.FindDescriptor<FieldDescriptor>("optional_message")] = TestRequiredInitialized;
       Assert.IsTrue(builder.IsInitialized);
 
-      // TODO(jonskeet): Remove this nastiness by making IBuilder always generic.
-      ((IBuilder) builder).AddRepeatedField(descriptor.FindDescriptor<FieldDescriptor>("repeated_message"), TestRequiredUninitialized);
+      builder.AddRepeatedField(descriptor.FindDescriptor<FieldDescriptor>("repeated_message"), TestRequiredUninitialized);
       Assert.IsFalse(builder.IsInitialized);
 
       builder.SetRepeatedField(descriptor.FindDescriptor<FieldDescriptor>("repeated_message"), 0, TestRequiredInitialized);
@@ -266,8 +265,7 @@ namespace Google.ProtocolBuffers {
     [Test]
     public void DynamicBuildPartial() {
       // We're mostly testing that no exception is thrown.
-      // TODO(jonskeet): Fix this ghastly casting mess
-      DynamicMessage message = (DynamicMessage) ((IBuilder) DynamicMessage.CreateBuilder(TestRequired.Descriptor)).BuildPartial();
+      DynamicMessage message = DynamicMessage.CreateBuilder(TestRequired.Descriptor).BuildPartial();
       Assert.IsFalse(message.Initialized);
     }
 

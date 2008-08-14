@@ -21,11 +21,8 @@ using Google.ProtocolBuffers.Descriptors;
 namespace Google.ProtocolBuffers {
 
   /// <summary>
-  /// Non-generic interface implemented by all Protocol Buffers messages.
-  /// Some members are repeated in the generic interface but with a
-  /// type-specific signature. Type-safe implementations
-  /// are encouraged to implement these non-generic members explicitly,
-  /// and the generic members implicitly.
+  /// Non-generic interface used for all parts of the API which don't require
+  /// any type knowledge.
   /// </summary>
   public interface IMessage {
     /// <summary>
@@ -152,7 +149,17 @@ namespace Google.ProtocolBuffers {
     void WriteTo(Stream output);
     #endregion
 
-    #region Weakly typed members
+    /// <summary>
+    /// Creates a builder for the type, but in a weakly typed manner. This
+    /// is typically implemented by strongly typed builders by just returning
+    /// the result of CreateBuilderForType.
+    /// </summary>
+    IBuilder WeakCreateBuilderForType();
+
+    IMessage WeakDefaultInstanceForType { get; }
+  }
+
+  public interface IMessage<TMessage> : IMessage {
     /// <summary>
     /// Returns an instance of this message type with all fields set to
     /// their default values. This may or may not be a singleton. This differs
@@ -160,33 +167,20 @@ namespace Google.ProtocolBuffers {
     /// method is an abstract method of IMessage whereas DefaultInstance is
     /// a static property of a specific class. They return the same thing.
     /// </summary>
-    IMessage DefaultInstanceForType { get; }
-
-    /// <summary>
-    /// Constructs a new builder for a message of the same type as this message.
-    /// </summary>
-    IBuilder CreateBuilderForType();
-    #endregion
+    TMessage DefaultInstanceForType { get; }
   }
 
   /// <summary>
   /// Type-safe interface for all generated messages to implement.
   /// </summary>
-  public interface IMessage<T> : IMessage where T : IMessage<T> {
-    /// <summary>
-    /// Returns an instance of this message type with all fields set to
-    /// their default values. This may or may not be a singleton. This differs
-    /// from the DefaultInstance property of each generated message class in that this
-    /// method is an abstract method of IMessage whereas DefaultInstance is
-    /// a static property of a specific class. They return the same thing.
-    /// </summary>
-    new T DefaultInstanceForType { get; }
-
+  public interface IMessage<TMessage, TBuilder> : IMessage<TMessage>
+      where TMessage : IMessage<TMessage, TBuilder> 
+      where TBuilder : IBuilder<TMessage, TBuilder> {
     #region Builders
     /// <summary>
     /// Constructs a new builder for a message of the same type as this message.
     /// </summary>
-    new IBuilder<T> CreateBuilderForType();
+    TBuilder CreateBuilderForType();
     #endregion
   }
 }

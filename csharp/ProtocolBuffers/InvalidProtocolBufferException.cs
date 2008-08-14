@@ -67,13 +67,13 @@ namespace Google.ProtocolBuffers {
     internal static InvalidProtocolBufferException RecursionLimitExceeded() {
       return new InvalidProtocolBufferException(
         "Protocol message had too many levels of nesting.  May be malicious.  " +
-        "Use CodedInputStream.setRecursionLimit() to increase the depth limit.");
+        "Use CodedInputStream.SetRecursionLimit() to increase the depth limit.");
     }
 
     internal static InvalidProtocolBufferException SizeLimitExceeded() {
       return new InvalidProtocolBufferException(
         "Protocol message was too large.  May be malicious.  " +
-        "Use CodedInputStream.setSizeLimit() to increase the size limit.");
+        "Use CodedInputStream.SetSizeLimit() to increase the size limit.");
     }
   }
 }

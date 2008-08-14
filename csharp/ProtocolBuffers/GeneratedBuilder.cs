@@ -13,9 +13,9 @@ namespace Google.ProtocolBuffers {
   /// most of the IBuilder interface using reflection. Users can ignore this class
   /// as an implementation detail.
   /// </summary>
-  public abstract class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder, IBuilder<TMessage>
+  public abstract class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder<TMessage, TBuilder>
       where TMessage : GeneratedMessage <TMessage, TBuilder>
-      where TBuilder : GeneratedBuilder<TMessage, TBuilder>, IBuilder<TMessage> {
+      where TBuilder : GeneratedBuilder<TMessage, TBuilder> {
 
     /// <summary>
     /// Returns the message being built at the moment.
@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers {
           : MessageBeingBuilt[field];
       }
       set {
-        InternalFieldAccessors[field].SetValue(this, value);
+        InternalFieldAccessors[field].SetValue(ThisBuilder, value);
       }
     }
 
@@ -87,40 +87,16 @@ namespace Google.ProtocolBuffers {
       return MessageBeingBuilt.HasField(field);
     }
 
-    protected override IMessage BuildImpl() {
-      return Build();
-    }
-
-    protected override IMessage BuildPartialImpl() {
-      return BuildPartial();
-    }
-
-    protected override IBuilder CloneImpl() {
-      return Clone();
-    }
-
-    protected override IMessage DefaultInstanceForTypeImpl {
-      get { return DefaultInstanceForType; }
-    }
-
     public override IBuilder CreateBuilderForField(FieldDescriptor field) {
       return InternalFieldAccessors[field].CreateBuilder();
     }
 
-    protected override IBuilder ClearFieldImpl(FieldDescriptor field) {
-      return ClearField(field);
-    }
-
-    protected override IBuilder AddRepeatedFieldImpl(FieldDescriptor field, object value) {
-      return AddRepeatedField(field, value);
-    }
-
-    public virtual IBuilder<TMessage> ClearField(FieldDescriptor field) {
+    public override TBuilder ClearField(FieldDescriptor field) {
       InternalFieldAccessors[field].Clear(this);
-      return this;
+      return ThisBuilder;
     }
 
-    public virtual IBuilder<TMessage> MergeFrom(TMessage other) {
+    public override TBuilder MergeFrom(TMessage other) {
       if (other.DescriptorForType != InternalFieldAccessors.Descriptor) {
         throw new ArgumentException("Message type mismatch");
       }
@@ -135,77 +111,31 @@ namespace Google.ProtocolBuffers {
         } else if (field.MappedType == MappedType.Message && HasField(field)) {
           // Merge singular embedded messages
           IMessage oldValue = (IMessage)this[field];
-          this[field] = oldValue.CreateBuilderForType()
-              .MergeFrom(oldValue)
-              .MergeFrom((IMessage)entry.Value)
-              .BuildPartial();
+          this[field] = oldValue.WeakCreateBuilderForType()
+              .WeakMergeFrom(oldValue)
+              .WeakMergeFrom((IMessage)entry.Value)
+              .WeakBuildPartial();
         } else {
           // Just overwrite
           this[field] = entry.Value;
         }
       }
-      return this;
+      return ThisBuilder;
     }
 
-    public virtual IBuilder<TMessage> MergeUnknownFields(UnknownFieldSet unknownFields) {
+    public override TBuilder MergeUnknownFields(UnknownFieldSet unknownFields) {
       TMessage result = MessageBeingBuilt;
       result.SetUnknownFields(UnknownFieldSet.CreateBuilder(result.UnknownFields)
           .MergeFrom(unknownFields)
           .Build());
-      return this;
+      return ThisBuilder;
     }
 
-    public virtual IBuilder<TMessage> AddRepeatedField(FieldDescriptor field, object value) {
+    public override TBuilder AddRepeatedField(FieldDescriptor field, object value) {
       InternalFieldAccessors[field].AddRepeated(this, value);
-      return this;
+      return ThisBuilder;
     }
 
-    public IBuilder<TMessage> MergeFrom(ByteString data) {
-      ((IBuilder) this).MergeFrom(data);
-      return this;
-    }
-
-    public IBuilder<TMessage> MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
-      ((IBuilder) this).MergeFrom(data, extensionRegistry);
-      return this;
-    }
-
-    public IBuilder<TMessage> MergeFrom(byte[] data) {
-      ((IBuilder) this).MergeFrom(data);
-      return this;
-    }
-
-    public IBuilder<TMessage> MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
-      ((IBuilder) this).MergeFrom(data, extensionRegistry);
-      return this;
-    }
-
-    public IBuilder<TMessage> MergeFrom(Stream input) {
-      ((IBuilder) this).MergeFrom(input);
-      return this;
-    }
-
-    public IBuilder<TMessage> MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
-      ((IBuilder) this).MergeFrom(input, extensionRegistry);
-      return this;
-    }
-
-    /// <summary>
-    /// Overridden when optimized for speed.
-    /// </summary>
-    public virtual IBuilder<TMessage> MergeFrom(CodedInputStream input) {
-      ((IBuilder)this).MergeFrom(input);
-      return this;
-    }
-
-    /// <summary>
-    /// Overridden when optimized for speed.
-    /// </summary>
-    public virtual IBuilder<TMessage> MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
-      ((IBuilder)this).MergeFrom(input, extensionRegistry);
-      return this;
-    }
-    
     /// <summary>
     /// Like Build(), but will wrap UninitializedMessageException in
     /// InvalidProtocolBufferException.
@@ -219,10 +149,10 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
-    /// Implementation of <see cref="IBuilder{T}.Build" />.
+    /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
     /// TODO(jonskeet): This used to be generated for each class. Find out why.
     /// </summary>
-    public TMessage Build() {
+    public override TMessage Build() {
       if (!IsInitialized) {
         throw new UninitializedMessageException(MessageBeingBuilt);
       }
@@ -232,14 +162,6 @@ namespace Google.ProtocolBuffers {
     public override UnknownFieldSet UnknownFields {
       get { return MessageBeingBuilt.UnknownFields; }
       set { MessageBeingBuilt.SetUnknownFields(value); }
-    }
-    
-    public abstract TMessage BuildPartial();
-    public abstract IBuilder<TMessage> Clone();
-    public abstract new IBuilder<TMessage> Clear();
-    public abstract TMessage DefaultInstanceForType { get; }
-    
-    public abstract class ExtendableBuilder : GeneratedBuilder<TMessage, TBuilder> {
     }
   }
 }

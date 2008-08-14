@@ -95,7 +95,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           controller,
           request,
           self::TestAllTypes.DefaultInstance,
-          pb::RpcUtil.GeneralizeCallback(done, self::TestAllTypes.DefaultInstance));
+          pb::RpcUtil.GeneralizeCallback<self::TestAllTypes, self::TestAllTypes.Builder>(done, self::TestAllTypes.DefaultInstance));
       }
     }
   }

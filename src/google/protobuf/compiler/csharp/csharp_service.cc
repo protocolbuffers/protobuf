@@ -199,7 +199,7 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
       "    controller,\r\n"
       "    request,\r\n"
       "    $output$.DefaultInstance,\r\n"
-      "    pb::RpcUtil.GeneralizeCallback(done, $output$.DefaultInstance));\r\n"
+      "    pb::RpcUtil.GeneralizeCallback<$output$, $output$.Builder>(done, $output$.DefaultInstance));\r\n"
       "}\r\n");
   }
 

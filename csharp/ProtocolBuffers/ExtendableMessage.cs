@@ -5,9 +5,9 @@ using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers {
-  public abstract class ExtendableMessage<TMessage,TBuilder> : GeneratedMessage<TMessage,TBuilder>
+  public abstract class ExtendableMessage<TMessage, TBuilder> : GeneratedMessage<TMessage, TBuilder>
     where TMessage : GeneratedMessage<TMessage, TBuilder>
-    where TBuilder : IBuilder<TMessage> {
+    where TBuilder : GeneratedBuilder<TMessage, TBuilder> {
 
     protected ExtendableMessage() {}
     private readonly FieldSet extensions = FieldSet.CreateFieldSet();
@@ -22,21 +22,21 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Checks if a singular extension is present.
     /// </summary>
-    public bool HasExtension<TExtension>(GeneratedExtensionBase<TMessage, TExtension> extension) {
+    public bool HasExtension<TExtension>(GeneratedExtensionBase<TExtension> extension) {
       return extensions.HasField(extension.Descriptor);
     }
 
     /// <summary>
     /// Returns the number of elements in a repeated extension.
     /// </summary>
-    public int GetExtensionCount<TExtension>(GeneratedExtensionBase<TMessage, IList<TExtension>> extension) {
+    public int GetExtensionCount<TExtension>(GeneratedExtensionBase<IList<TExtension>> extension) {
       return extensions.GetRepeatedFieldCount(extension.Descriptor);
     }
 
     /// <summary>
     /// Returns the value of an extension.
     /// </summary>
-    public TExtension GetExtension<TExtension>(GeneratedExtensionBase<TMessage, TExtension> extension) {
+    public TExtension GetExtension<TExtension>(GeneratedExtensionBase<TExtension> extension) {
       object value = extensions[extension.Descriptor];
       if (value == null) {
         return (TExtension) extension.MessageDefaultInstance;
@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Returns one element of a repeated extension.
     /// </summary>
-    public TExtension GetExtension<TExtension>(GeneratedExtensionBase<TMessage, IList<TExtension>> extension, int index) {
+    public TExtension GetExtension<TExtension>(GeneratedExtensionBase<IList<TExtension>> extension, int index) {
       return (TExtension) extension.SingularFromReflectionType(extensions[extension.Descriptor, index]);
     }
 
@@ -169,7 +169,7 @@ namespace Google.ProtocolBuffers {
       get { return extensions.SerializedSize; }
     }
 
-    internal void VerifyExtensionContainingType<TExtension>(GeneratedExtensionBase<TMessage, TExtension> extension) {
+    internal void VerifyExtensionContainingType<TExtension>(GeneratedExtensionBase<TExtension> extension) {
       if (extension.Descriptor.ContainingType != DescriptorForType) {
         // This can only happen if someone uses unchecked operations.
         throw new ArgumentException("Extension is for type \"" + extension.Descriptor.ContainingType.FullName
