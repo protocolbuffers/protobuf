@@ -58,9 +58,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestOptimizedForSize : pb::ExtendableMessage<TestOptimizedForSize, TestOptimizedForSize.Builder> {
-    // Use TestOptimizedForSize.CreateBuilder() to construct.
-    private TestOptimizedForSize() {}
-    
     private static readonly TestOptimizedForSize defaultInstance = new TestOptimizedForSize();
     public static TestOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
@@ -116,7 +113,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestOptimizedForSize ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestOptimizedForSize parseFrom(byte[] data,
+    public static self::TestOptimizedForSize ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();

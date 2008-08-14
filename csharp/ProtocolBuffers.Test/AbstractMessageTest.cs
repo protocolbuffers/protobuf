@@ -63,13 +63,13 @@ namespace Google.ProtocolBuffers {
       TestRequired.Builder builder = TestRequired.CreateBuilder();
       AbstractMessageWrapper.Builder abstractBuilder = new AbstractMessageWrapper.Builder(builder);
 
-      Assert.IsFalse(abstractBuilder.Initialized);
+      Assert.IsFalse(abstractBuilder.IsInitialized);
       builder.A = 1;
-      Assert.IsFalse(abstractBuilder.Initialized);
+      Assert.IsFalse(abstractBuilder.IsInitialized);
       builder.B = 1;
-      Assert.IsFalse(abstractBuilder.Initialized);
+      Assert.IsFalse(abstractBuilder.IsInitialized);
       builder.C = 1;
-      Assert.IsTrue(abstractBuilder.Initialized);
+      Assert.IsTrue(abstractBuilder.IsInitialized);
     }
 
     [Test]
@@ -77,19 +77,19 @@ namespace Google.ProtocolBuffers {
       TestRequiredForeign.Builder builder = TestRequiredForeign.CreateBuilder();
       AbstractMessageWrapper.Builder abstractBuilder = new AbstractMessageWrapper.Builder(builder);
 
-      Assert.IsTrue(abstractBuilder.Initialized);
+      Assert.IsTrue(abstractBuilder.IsInitialized);
 
       builder.SetOptionalMessage(TestRequiredUninitialized);
-      Assert.IsFalse(abstractBuilder.Initialized);
+      Assert.IsFalse(abstractBuilder.IsInitialized);
 
       builder.SetOptionalMessage(TestRequiredInitialized);
-      Assert.IsTrue(abstractBuilder.Initialized);
+      Assert.IsTrue(abstractBuilder.IsInitialized);
 
       builder.AddRepeatedMessage(TestRequiredUninitialized);
-      Assert.IsFalse(abstractBuilder.Initialized);
+      Assert.IsFalse(abstractBuilder.IsInitialized);
 
       builder.SetRepeatedMessage(0, TestRequiredInitialized);
-      Assert.IsTrue(abstractBuilder.Initialized);
+      Assert.IsTrue(abstractBuilder.IsInitialized);
     }
 
     // -----------------------------------------------------------------
@@ -261,8 +261,8 @@ namespace Google.ProtocolBuffers {
           this.wrappedBuilder = wrappedBuilder;
         }
 
-        public override bool Initialized {
-          get { return wrappedBuilder.Initialized; }
+        public override bool IsInitialized {
+          get { return wrappedBuilder.IsInitialized; }
         }
 
         public override IDictionary<FieldDescriptor, object> AllFields {

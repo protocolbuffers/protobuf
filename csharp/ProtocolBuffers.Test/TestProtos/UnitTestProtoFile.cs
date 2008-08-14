@@ -1033,9 +1033,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestAllTypes : pb::GeneratedMessage<TestAllTypes, TestAllTypes.Builder> {
-    // Use TestAllTypes.CreateBuilder() to construct.
-    private TestAllTypes() {}
-    
     private static readonly TestAllTypes defaultInstance = new TestAllTypes();
     public static TestAllTypes DefaultInstance {
       get { return defaultInstance; }
@@ -1062,9 +1059,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
-        // Use NestedMessage.CreateBuilder() to construct.
-        private NestedMessage() {}
-        
         private static readonly NestedMessage defaultInstance = new NestedMessage();
         public static NestedMessage DefaultInstance {
           get { return defaultInstance; }
@@ -1132,7 +1126,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static self::TestAllTypes.Types.NestedMessage ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::TestAllTypes.Types.NestedMessage parseFrom(byte[] data,
+        public static self::TestAllTypes.Types.NestedMessage ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -1268,9 +1262,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class OptionalGroup : pb::GeneratedMessage<OptionalGroup, OptionalGroup.Builder> {
-        // Use OptionalGroup.CreateBuilder() to construct.
-        private OptionalGroup() {}
-        
         private static readonly OptionalGroup defaultInstance = new OptionalGroup();
         public static OptionalGroup DefaultInstance {
           get { return defaultInstance; }
@@ -1338,7 +1329,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static self::TestAllTypes.Types.OptionalGroup ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::TestAllTypes.Types.OptionalGroup parseFrom(byte[] data,
+        public static self::TestAllTypes.Types.OptionalGroup ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -1474,9 +1465,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class RepeatedGroup : pb::GeneratedMessage<RepeatedGroup, RepeatedGroup.Builder> {
-        // Use RepeatedGroup.CreateBuilder() to construct.
-        private RepeatedGroup() {}
-        
         private static readonly RepeatedGroup defaultInstance = new RepeatedGroup();
         public static RepeatedGroup DefaultInstance {
           get { return defaultInstance; }
@@ -1544,7 +1532,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static self::TestAllTypes.Types.RepeatedGroup ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::TestAllTypes.Types.RepeatedGroup parseFrom(byte[] data,
+        public static self::TestAllTypes.Types.RepeatedGroup ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -2866,7 +2854,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestAllTypes ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestAllTypes parseFrom(byte[] data,
+    public static self::TestAllTypes ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -5368,9 +5356,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class ForeignMessage : pb::GeneratedMessage<ForeignMessage, ForeignMessage.Builder> {
-    // Use ForeignMessage.CreateBuilder() to construct.
-    private ForeignMessage() {}
-    
     private static readonly ForeignMessage defaultInstance = new ForeignMessage();
     public static ForeignMessage DefaultInstance {
       get { return defaultInstance; }
@@ -5438,7 +5423,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::ForeignMessage ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::ForeignMessage parseFrom(byte[] data,
+    public static self::ForeignMessage ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -5574,9 +5559,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestAllExtensions : pb::ExtendableMessage<TestAllExtensions, TestAllExtensions.Builder> {
-    // Use TestAllExtensions.CreateBuilder() to construct.
-    private TestAllExtensions() {}
-    
     private static readonly TestAllExtensions defaultInstance = new TestAllExtensions();
     public static TestAllExtensions DefaultInstance {
       get { return defaultInstance; }
@@ -5632,7 +5614,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestAllExtensions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestAllExtensions parseFrom(byte[] data,
+    public static self::TestAllExtensions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -5742,9 +5724,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class OptionalGroup_extension : pb::GeneratedMessage<OptionalGroup_extension, OptionalGroup_extension.Builder> {
-    // Use OptionalGroup_extension.CreateBuilder() to construct.
-    private OptionalGroup_extension() {}
-    
     private static readonly OptionalGroup_extension defaultInstance = new OptionalGroup_extension();
     public static OptionalGroup_extension DefaultInstance {
       get { return defaultInstance; }
@@ -5812,7 +5791,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::OptionalGroup_extension ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::OptionalGroup_extension parseFrom(byte[] data,
+    public static self::OptionalGroup_extension ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -5948,9 +5927,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class RepeatedGroup_extension : pb::GeneratedMessage<RepeatedGroup_extension, RepeatedGroup_extension.Builder> {
-    // Use RepeatedGroup_extension.CreateBuilder() to construct.
-    private RepeatedGroup_extension() {}
-    
     private static readonly RepeatedGroup_extension defaultInstance = new RepeatedGroup_extension();
     public static RepeatedGroup_extension DefaultInstance {
       get { return defaultInstance; }
@@ -6018,7 +5994,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::RepeatedGroup_extension ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::RepeatedGroup_extension parseFrom(byte[] data,
+    public static self::RepeatedGroup_extension ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -6154,9 +6130,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestRequired : pb::GeneratedMessage<TestRequired, TestRequired.Builder> {
-    // Use TestRequired.CreateBuilder() to construct.
-    private TestRequired() {}
-    
     private static readonly TestRequired defaultInstance = new TestRequired();
     public static TestRequired DefaultInstance {
       get { return defaultInstance; }
@@ -6749,7 +6722,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestRequired ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestRequired parseFrom(byte[] data,
+    public static self::TestRequired ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -7717,9 +7690,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestRequiredForeign : pb::GeneratedMessage<TestRequiredForeign, TestRequiredForeign.Builder> {
-    // Use TestRequiredForeign.CreateBuilder() to construct.
-    private TestRequiredForeign() {}
-    
     private static readonly TestRequiredForeign defaultInstance = new TestRequiredForeign();
     public static TestRequiredForeign DefaultInstance {
       get { return defaultInstance; }
@@ -7827,7 +7797,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestRequiredForeign ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestRequiredForeign parseFrom(byte[] data,
+    public static self::TestRequiredForeign ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -8069,9 +8039,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestForeignNested : pb::GeneratedMessage<TestForeignNested, TestForeignNested.Builder> {
-    // Use TestForeignNested.CreateBuilder() to construct.
-    private TestForeignNested() {}
-    
     private static readonly TestForeignNested defaultInstance = new TestForeignNested();
     public static TestForeignNested DefaultInstance {
       get { return defaultInstance; }
@@ -8139,7 +8106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestForeignNested ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestForeignNested parseFrom(byte[] data,
+    public static self::TestForeignNested ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -8296,9 +8263,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestEmptyMessage : pb::GeneratedMessage<TestEmptyMessage, TestEmptyMessage.Builder> {
-    // Use TestEmptyMessage.CreateBuilder() to construct.
-    private TestEmptyMessage() {}
-    
     private static readonly TestEmptyMessage defaultInstance = new TestEmptyMessage();
     public static TestEmptyMessage DefaultInstance {
       get { return defaultInstance; }
@@ -8350,7 +8314,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestEmptyMessage ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestEmptyMessage parseFrom(byte[] data,
+    public static self::TestEmptyMessage ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -8460,9 +8424,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestEmptyMessageWithExtensions : pb::ExtendableMessage<TestEmptyMessageWithExtensions, TestEmptyMessageWithExtensions.Builder> {
-    // Use TestEmptyMessageWithExtensions.CreateBuilder() to construct.
-    private TestEmptyMessageWithExtensions() {}
-    
     private static readonly TestEmptyMessageWithExtensions defaultInstance = new TestEmptyMessageWithExtensions();
     public static TestEmptyMessageWithExtensions DefaultInstance {
       get { return defaultInstance; }
@@ -8518,7 +8479,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestEmptyMessageWithExtensions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestEmptyMessageWithExtensions parseFrom(byte[] data,
+    public static self::TestEmptyMessageWithExtensions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -8628,9 +8589,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestReallyLargeTagNumber : pb::GeneratedMessage<TestReallyLargeTagNumber, TestReallyLargeTagNumber.Builder> {
-    // Use TestReallyLargeTagNumber.CreateBuilder() to construct.
-    private TestReallyLargeTagNumber() {}
-    
     private static readonly TestReallyLargeTagNumber defaultInstance = new TestReallyLargeTagNumber();
     public static TestReallyLargeTagNumber DefaultInstance {
       get { return defaultInstance; }
@@ -8714,7 +8672,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestReallyLargeTagNumber ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestReallyLargeTagNumber parseFrom(byte[] data,
+    public static self::TestReallyLargeTagNumber ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -8876,9 +8834,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestRecursiveMessage : pb::GeneratedMessage<TestRecursiveMessage, TestRecursiveMessage.Builder> {
-    // Use TestRecursiveMessage.CreateBuilder() to construct.
-    private TestRecursiveMessage() {}
-    
     private static readonly TestRecursiveMessage defaultInstance = new TestRecursiveMessage();
     public static TestRecursiveMessage DefaultInstance {
       get { return defaultInstance; }
@@ -8962,7 +8917,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestRecursiveMessage ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestRecursiveMessage parseFrom(byte[] data,
+    public static self::TestRecursiveMessage ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -9145,9 +9100,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMutualRecursionA : pb::GeneratedMessage<TestMutualRecursionA, TestMutualRecursionA.Builder> {
-    // Use TestMutualRecursionA.CreateBuilder() to construct.
-    private TestMutualRecursionA() {}
-    
     private static readonly TestMutualRecursionA defaultInstance = new TestMutualRecursionA();
     public static TestMutualRecursionA DefaultInstance {
       get { return defaultInstance; }
@@ -9215,7 +9167,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestMutualRecursionA ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMutualRecursionA parseFrom(byte[] data,
+    public static self::TestMutualRecursionA ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -9372,9 +9324,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMutualRecursionB : pb::GeneratedMessage<TestMutualRecursionB, TestMutualRecursionB.Builder> {
-    // Use TestMutualRecursionB.CreateBuilder() to construct.
-    private TestMutualRecursionB() {}
-    
     private static readonly TestMutualRecursionB defaultInstance = new TestMutualRecursionB();
     public static TestMutualRecursionB DefaultInstance {
       get { return defaultInstance; }
@@ -9458,7 +9407,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestMutualRecursionB ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestMutualRecursionB parseFrom(byte[] data,
+    public static self::TestMutualRecursionB ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -9641,9 +9590,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestDupFieldNumber : pb::GeneratedMessage<TestDupFieldNumber, TestDupFieldNumber.Builder> {
-    // Use TestDupFieldNumber.CreateBuilder() to construct.
-    private TestDupFieldNumber() {}
-    
     private static readonly TestDupFieldNumber defaultInstance = new TestDupFieldNumber();
     public static TestDupFieldNumber DefaultInstance {
       get { return defaultInstance; }
@@ -9664,9 +9610,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Nested types
     public static class Types {
       public sealed partial class Foo : pb::GeneratedMessage<Foo, Foo.Builder> {
-        // Use Foo.CreateBuilder() to construct.
-        private Foo() {}
-        
         private static readonly Foo defaultInstance = new Foo();
         public static Foo DefaultInstance {
           get { return defaultInstance; }
@@ -9734,7 +9677,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static self::TestDupFieldNumber.Types.Foo ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::TestDupFieldNumber.Types.Foo parseFrom(byte[] data,
+        public static self::TestDupFieldNumber.Types.Foo ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -9870,9 +9813,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class Bar : pb::GeneratedMessage<Bar, Bar.Builder> {
-        // Use Bar.CreateBuilder() to construct.
-        private Bar() {}
-        
         private static readonly Bar defaultInstance = new Bar();
         public static Bar DefaultInstance {
           get { return defaultInstance; }
@@ -9940,7 +9880,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static self::TestDupFieldNumber.Types.Bar ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::TestDupFieldNumber.Types.Bar parseFrom(byte[] data,
+        public static self::TestDupFieldNumber.Types.Bar ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -10160,7 +10100,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestDupFieldNumber ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestDupFieldNumber parseFrom(byte[] data,
+    public static self::TestDupFieldNumber ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -10390,9 +10330,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestNestedMessageHasBits : pb::GeneratedMessage<TestNestedMessageHasBits, TestNestedMessageHasBits.Builder> {
-    // Use TestNestedMessageHasBits.CreateBuilder() to construct.
-    private TestNestedMessageHasBits() {}
-    
     private static readonly TestNestedMessageHasBits defaultInstance = new TestNestedMessageHasBits();
     public static TestNestedMessageHasBits DefaultInstance {
       get { return defaultInstance; }
@@ -10413,9 +10350,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Nested types
     public static class Types {
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
-        // Use NestedMessage.CreateBuilder() to construct.
-        private NestedMessage() {}
-        
         private static readonly NestedMessage defaultInstance = new NestedMessage();
         public static NestedMessage DefaultInstance {
           get { return defaultInstance; }
@@ -10504,7 +10438,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static self::TestNestedMessageHasBits.Types.NestedMessage ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::TestNestedMessageHasBits.Types.NestedMessage parseFrom(byte[] data,
+        public static self::TestNestedMessageHasBits.Types.NestedMessage ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -10769,7 +10703,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestNestedMessageHasBits ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestNestedMessageHasBits parseFrom(byte[] data,
+    public static self::TestNestedMessageHasBits ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -10926,9 +10860,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestCamelCaseFieldNames : pb::GeneratedMessage<TestCamelCaseFieldNames, TestCamelCaseFieldNames.Builder> {
-    // Use TestCamelCaseFieldNames.CreateBuilder() to construct.
-    private TestCamelCaseFieldNames() {}
-    
     private static readonly TestCamelCaseFieldNames defaultInstance = new TestCamelCaseFieldNames();
     public static TestCamelCaseFieldNames DefaultInstance {
       get { return defaultInstance; }
@@ -11188,7 +11119,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestCamelCaseFieldNames ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestCamelCaseFieldNames parseFrom(byte[] data,
+    public static self::TestCamelCaseFieldNames ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -11765,9 +11696,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestFieldOrderings : pb::ExtendableMessage<TestFieldOrderings, TestFieldOrderings.Builder> {
-    // Use TestFieldOrderings.CreateBuilder() to construct.
-    private TestFieldOrderings() {}
-    
     private static readonly TestFieldOrderings defaultInstance = new TestFieldOrderings();
     public static TestFieldOrderings DefaultInstance {
       get { return defaultInstance; }
@@ -11872,7 +11800,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestFieldOrderings ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestFieldOrderings parseFrom(byte[] data,
+    public static self::TestFieldOrderings ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -12060,9 +11988,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestExtremeDefaultValues : pb::GeneratedMessage<TestExtremeDefaultValues, TestExtremeDefaultValues.Builder> {
-    // Use TestExtremeDefaultValues.CreateBuilder() to construct.
-    private TestExtremeDefaultValues() {}
-    
     private static readonly TestExtremeDefaultValues defaultInstance = new TestExtremeDefaultValues();
     public static TestExtremeDefaultValues DefaultInstance {
       get { return defaultInstance; }
@@ -12210,7 +12135,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestExtremeDefaultValues ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestExtremeDefaultValues parseFrom(byte[] data,
+    public static self::TestExtremeDefaultValues ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -12476,9 +12401,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class FooRequest : pb::GeneratedMessage<FooRequest, FooRequest.Builder> {
-    // Use FooRequest.CreateBuilder() to construct.
-    private FooRequest() {}
-    
     private static readonly FooRequest defaultInstance = new FooRequest();
     public static FooRequest DefaultInstance {
       get { return defaultInstance; }
@@ -12530,7 +12452,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::FooRequest ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::FooRequest parseFrom(byte[] data,
+    public static self::FooRequest ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -12640,9 +12562,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class FooResponse : pb::GeneratedMessage<FooResponse, FooResponse.Builder> {
-    // Use FooResponse.CreateBuilder() to construct.
-    private FooResponse() {}
-    
     private static readonly FooResponse defaultInstance = new FooResponse();
     public static FooResponse DefaultInstance {
       get { return defaultInstance; }
@@ -12694,7 +12613,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::FooResponse ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::FooResponse parseFrom(byte[] data,
+    public static self::FooResponse ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -12804,9 +12723,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class BarRequest : pb::GeneratedMessage<BarRequest, BarRequest.Builder> {
-    // Use BarRequest.CreateBuilder() to construct.
-    private BarRequest() {}
-    
     private static readonly BarRequest defaultInstance = new BarRequest();
     public static BarRequest DefaultInstance {
       get { return defaultInstance; }
@@ -12858,7 +12774,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::BarRequest ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::BarRequest parseFrom(byte[] data,
+    public static self::BarRequest ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -12968,9 +12884,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class BarResponse : pb::GeneratedMessage<BarResponse, BarResponse.Builder> {
-    // Use BarResponse.CreateBuilder() to construct.
-    private BarResponse() {}
-    
     private static readonly BarResponse defaultInstance = new BarResponse();
     public static BarResponse DefaultInstance {
       get { return defaultInstance; }
@@ -13022,7 +12935,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::BarResponse ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::BarResponse parseFrom(byte[] data,
+    public static self::BarResponse ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();

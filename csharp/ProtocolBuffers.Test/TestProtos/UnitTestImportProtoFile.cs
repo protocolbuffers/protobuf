@@ -59,9 +59,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class ImportMessage : pb::GeneratedMessage<ImportMessage, ImportMessage.Builder> {
-    // Use ImportMessage.CreateBuilder() to construct.
-    private ImportMessage() {}
-    
     private static readonly ImportMessage defaultInstance = new ImportMessage();
     public static ImportMessage DefaultInstance {
       get { return defaultInstance; }
@@ -129,7 +126,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::ImportMessage ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::ImportMessage parseFrom(byte[] data,
+    public static self::ImportMessage ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();

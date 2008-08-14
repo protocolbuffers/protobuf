@@ -51,8 +51,13 @@
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />
+    <Compile Include="MessageTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />
+    <Compile Include="TestProtos\EnumWithNoOuter.cs" />
+    <Compile Include="TestProtos\MessageWithNoOuter.cs" />
+    <Compile Include="TestProtos\MultiFileProto.cs" />
+    <Compile Include="TestProtos\ServiceWithNoOuter.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />

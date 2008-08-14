@@ -33,7 +33,7 @@ namespace Google.ProtocolBuffers {
     /// Returns true iff all required fields in the message and all
     /// embedded messages are set.
     /// </summary>
-    bool Initialized { get; }
+    bool IsInitialized { get; }
 
     /// <summary>
     /// Behaves like the equivalent property in IMessage&lt;T&gt;.
@@ -172,7 +172,7 @@ namespace Google.ProtocolBuffers {
     /// required fields, it will throw an UninitializedMessageException.
     /// There are a few good ways to deal with this:
     /// <list>
-    /// <item>Call Initialized to verify to verify that all required fields are
+    /// <item>Call IsInitialized to verify to verify that all required fields are
     /// set before building.</item>
     /// <item>Parse  the message separately using one of the static ParseFrom
     /// methods, then use MergeFrom(IMessage&lt;T&gt;) to merge it with

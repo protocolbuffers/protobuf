@@ -278,9 +278,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   
   #region Messages
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
-    // Use FileDescriptorProto.CreateBuilder() to construct.
-    private FileDescriptorProto() {}
-    
     private static readonly FileDescriptorProto defaultInstance = new FileDescriptorProto();
     public static FileDescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -471,7 +468,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::FileDescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::FileDescriptorProto parseFrom(byte[] data,
+    public static self::FileDescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -960,9 +957,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
-    // Use DescriptorProto.CreateBuilder() to construct.
-    private DescriptorProto() {}
-    
     private static readonly DescriptorProto defaultInstance = new DescriptorProto();
     public static DescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -983,9 +977,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     #region Nested types
     public static class Types {
       public sealed partial class ExtensionRange : pb::GeneratedMessage<ExtensionRange, ExtensionRange.Builder> {
-        // Use ExtensionRange.CreateBuilder() to construct.
-        private ExtensionRange() {}
-        
         private static readonly ExtensionRange defaultInstance = new ExtensionRange();
         public static ExtensionRange DefaultInstance {
           get { return defaultInstance; }
@@ -1069,7 +1060,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         public static self::DescriptorProto.Types.ExtensionRange ParseFrom(byte[] data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
-        public static self::DescriptorProto.Types.ExtensionRange parseFrom(byte[] data,
+        public static self::DescriptorProto.Types.ExtensionRange ParseFrom(byte[] data,
             pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                    .BuildParsed();
@@ -1389,7 +1380,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::DescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::DescriptorProto parseFrom(byte[] data,
+    public static self::DescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -1867,9 +1858,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
-    // Use FieldDescriptorProto.CreateBuilder() to construct.
-    private FieldDescriptorProto() {}
-    
     private static readonly FieldDescriptorProto defaultInstance = new FieldDescriptorProto();
     public static FieldDescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -2079,7 +2067,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::FieldDescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::FieldDescriptorProto parseFrom(byte[] data,
+    public static self::FieldDescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -2428,9 +2416,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
-    // Use EnumDescriptorProto.CreateBuilder() to construct.
-    private EnumDescriptorProto() {}
-    
     private static readonly EnumDescriptorProto defaultInstance = new EnumDescriptorProto();
     public static EnumDescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -2532,7 +2517,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::EnumDescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::EnumDescriptorProto parseFrom(byte[] data,
+    public static self::EnumDescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -2774,9 +2759,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
-    // Use EnumValueDescriptorProto.CreateBuilder() to construct.
-    private EnumValueDescriptorProto() {}
-    
     private static readonly EnumValueDescriptorProto defaultInstance = new EnumValueDescriptorProto();
     public static EnumValueDescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -2876,7 +2858,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::EnumValueDescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::EnumValueDescriptorProto parseFrom(byte[] data,
+    public static self::EnumValueDescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -3085,9 +3067,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class ServiceDescriptorProto : pb::GeneratedMessage<ServiceDescriptorProto, ServiceDescriptorProto.Builder> {
-    // Use ServiceDescriptorProto.CreateBuilder() to construct.
-    private ServiceDescriptorProto() {}
-    
     private static readonly ServiceDescriptorProto defaultInstance = new ServiceDescriptorProto();
     public static ServiceDescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -3189,7 +3168,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::ServiceDescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::ServiceDescriptorProto parseFrom(byte[] data,
+    public static self::ServiceDescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -3431,9 +3410,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class MethodDescriptorProto : pb::GeneratedMessage<MethodDescriptorProto, MethodDescriptorProto.Builder> {
-    // Use MethodDescriptorProto.CreateBuilder() to construct.
-    private MethodDescriptorProto() {}
-    
     private static readonly MethodDescriptorProto defaultInstance = new MethodDescriptorProto();
     public static MethodDescriptorProto DefaultInstance {
       get { return defaultInstance; }
@@ -3549,7 +3525,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::MethodDescriptorProto ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::MethodDescriptorProto parseFrom(byte[] data,
+    public static self::MethodDescriptorProto ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -3784,9 +3760,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class FileOptions : pb::GeneratedMessage<FileOptions, FileOptions.Builder> {
-    // Use FileOptions.CreateBuilder() to construct.
-    private FileOptions() {}
-    
     private static readonly FileOptions defaultInstance = new FileOptions();
     public static FileOptions DefaultInstance {
       get { return defaultInstance; }
@@ -3991,7 +3964,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::FileOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::FileOptions parseFrom(byte[] data,
+    public static self::FileOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -4340,9 +4313,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class MessageOptions : pb::GeneratedMessage<MessageOptions, MessageOptions.Builder> {
-    // Use MessageOptions.CreateBuilder() to construct.
-    private MessageOptions() {}
-    
     private static readonly MessageOptions defaultInstance = new MessageOptions();
     public static MessageOptions DefaultInstance {
       get { return defaultInstance; }
@@ -4410,7 +4380,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::MessageOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::MessageOptions parseFrom(byte[] data,
+    public static self::MessageOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -4546,9 +4516,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class FieldOptions : pb::GeneratedMessage<FieldOptions, FieldOptions.Builder> {
-    // Use FieldOptions.CreateBuilder() to construct.
-    private FieldOptions() {}
-    
     private static readonly FieldOptions defaultInstance = new FieldOptions();
     public static FieldOptions DefaultInstance {
       get { return defaultInstance; }
@@ -4641,7 +4608,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::FieldOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::FieldOptions parseFrom(byte[] data,
+    public static self::FieldOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -4808,9 +4775,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumOptions : pb::GeneratedMessage<EnumOptions, EnumOptions.Builder> {
-    // Use EnumOptions.CreateBuilder() to construct.
-    private EnumOptions() {}
-    
     private static readonly EnumOptions defaultInstance = new EnumOptions();
     public static EnumOptions DefaultInstance {
       get { return defaultInstance; }
@@ -4862,7 +4826,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::EnumOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::EnumOptions parseFrom(byte[] data,
+    public static self::EnumOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -4972,9 +4936,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumValueOptions : pb::GeneratedMessage<EnumValueOptions, EnumValueOptions.Builder> {
-    // Use EnumValueOptions.CreateBuilder() to construct.
-    private EnumValueOptions() {}
-    
     private static readonly EnumValueOptions defaultInstance = new EnumValueOptions();
     public static EnumValueOptions DefaultInstance {
       get { return defaultInstance; }
@@ -5026,7 +4987,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::EnumValueOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::EnumValueOptions parseFrom(byte[] data,
+    public static self::EnumValueOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -5136,9 +5097,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class ServiceOptions : pb::GeneratedMessage<ServiceOptions, ServiceOptions.Builder> {
-    // Use ServiceOptions.CreateBuilder() to construct.
-    private ServiceOptions() {}
-    
     private static readonly ServiceOptions defaultInstance = new ServiceOptions();
     public static ServiceOptions DefaultInstance {
       get { return defaultInstance; }
@@ -5190,7 +5148,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::ServiceOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::ServiceOptions parseFrom(byte[] data,
+    public static self::ServiceOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();
@@ -5300,9 +5258,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class MethodOptions : pb::GeneratedMessage<MethodOptions, MethodOptions.Builder> {
-    // Use MethodOptions.CreateBuilder() to construct.
-    private MethodOptions() {}
-    
     private static readonly MethodOptions defaultInstance = new MethodOptions();
     public static MethodOptions DefaultInstance {
       get { return defaultInstance; }
@@ -5354,7 +5309,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static self::MethodOptions ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::MethodOptions parseFrom(byte[] data,
+    public static self::MethodOptions ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();

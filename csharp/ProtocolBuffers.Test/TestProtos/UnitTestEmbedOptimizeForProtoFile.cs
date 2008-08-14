@@ -59,9 +59,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestEmbedOptimizedForSize : pb::GeneratedMessage<TestEmbedOptimizedForSize, TestEmbedOptimizedForSize.Builder> {
-    // Use TestEmbedOptimizedForSize.CreateBuilder() to construct.
-    private TestEmbedOptimizedForSize() {}
-    
     private static readonly TestEmbedOptimizedForSize defaultInstance = new TestEmbedOptimizedForSize();
     public static TestEmbedOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
@@ -153,7 +150,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static self::TestEmbedOptimizedForSize ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static self::TestEmbedOptimizedForSize parseFrom(byte[] data,
+    public static self::TestEmbedOptimizedForSize ParseFrom(byte[] data,
         pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
                .BuildParsed();

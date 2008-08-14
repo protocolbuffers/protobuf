@@ -5,6 +5,11 @@ using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
+
+  /// <summary>
+  /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
+  /// TODO: Implement appropriate generics.
+  /// </summary>
   public class DynamicMessage : AbstractMessage {
 
     private readonly MessageDescriptor type;
@@ -242,7 +247,7 @@ namespace Google.ProtocolBuffers {
         return this;
       }
 
-      public override IBuilder  MergeFrom(IMessage other) {
+      public override IBuilder MergeFrom(IMessage other) {
         if (other.DescriptorForType != type) {
           throw new ArgumentException("MergeFrom(IMessage) can only merge messages of the same type.");
         }
@@ -251,7 +256,7 @@ namespace Google.ProtocolBuffers {
       }
 
       protected override IMessage BuildImpl() {
-   	    if (!Initialized) {
+   	    if (!IsInitialized) {
           throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields));
         }
         return BuildPartialImpl();
@@ -263,7 +268,7 @@ namespace Google.ProtocolBuffers {
       /// </summary>
       /// <returns></returns>
       internal DynamicMessage BuildParsed() {
-        if (!Initialized) {
+        if (!IsInitialized) {
           throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields)).AsInvalidProtocolBufferException();
         }
         return (DynamicMessage) BuildPartialImpl();
@@ -283,7 +288,7 @@ namespace Google.ProtocolBuffers {
         return result;
       }
 
-      public override bool Initialized {
+      public override bool IsInitialized {
       	get { return fields.IsInitializedWithRespectTo(type); }
       }
 

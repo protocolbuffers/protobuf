@@ -12,7 +12,7 @@ namespace Google.ProtocolBuffers {
   /// </summary>
   public abstract class AbstractBuilder : IBuilder {
     #region Unimplemented members of IBuilder
-    public abstract bool Initialized { get; }
+    public abstract bool IsInitialized { get; }
     public abstract IDictionary<FieldDescriptor, object> AllFields { get; }
     public abstract object this[FieldDescriptor field] { get; set; }
     public abstract MessageDescriptor DescriptorForType { get; }
@@ -78,7 +78,7 @@ namespace Google.ProtocolBuffers {
       //   implementations).
       // TODO(jonskeet):  Provide a function somewhere called makeDeepCopy()
       //   which allows people to make secure deep copies of messages.
-      foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
+      foreach (KeyValuePair<FieldDescriptor, object> entry in other.AllFields) {
         FieldDescriptor field = entry.Key;
         if (field.IsRepeated) {
           // Concatenate repeated fields

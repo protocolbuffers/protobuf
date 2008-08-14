@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Google.ProtocolBuffers.Descriptors;
 using NUnit.Framework;
 using Google.ProtocolBuffers.TestProtos;
 
@@ -176,49 +177,41 @@ namespace Google.ProtocolBuffers {
     public void ExtensionReflectionDefaults() {
       extensionsReflectionTester.AssertClearViaReflection(TestAllExtensions.DefaultInstance);
       extensionsReflectionTester.AssertClearViaReflection(TestAllExtensions.CreateBuilder().Build());
-    }
-
-    public void testClearExtension() {
-      // clearExtension() is not actually used in TestUtil, so try it manually.
+    }    
+    
+    [Test]
+    public void ClearExtension() {
+      // ClearExtension() is not actually used in TestUtil, so try it manually.
       Assert.IsFalse(TestAllExtensions.CreateBuilder()
           .SetExtension(UnitTestProtoFile.OptionalInt32Extension, 1)
           .ClearExtension(UnitTestProtoFile.OptionalInt32Extension)
           .HasExtension(UnitTestProtoFile.OptionalInt32Extension));
-      Assert.AreEqual(0,
-        TestAllExtensions.CreateBuilder()
+      Assert.AreEqual(0, TestAllExtensions.CreateBuilder()
           .AddExtension(UnitTestProtoFile.RepeatedInt32Extension, 1)
           .ClearExtension(UnitTestProtoFile.RepeatedInt32Extension)
           .GetExtensionCount(UnitTestProtoFile.RepeatedInt32Extension));
     }
 
-    // =================================================================
-    // multiple_files_test
-    /* FIXME: Find this proto!
+    [Test]
     public void MultipleFilesOption() {
       // We mostly just want to check that things compile.
       MessageWithNoOuter message = MessageWithNoOuter.CreateBuilder()
-          .setNested(MessageWithNoOuter.NestedMessage.CreateBuilder().setI(1))
-          .addForeign(TestAllTypes.CreateBuilder().setOptionalInt32(1))
-          .setNestedEnum(MessageWithNoOuter.NestedEnum.BAZ)
-          .setForeignEnum(EnumWithNoOuter.BAR)
+          .SetNested(MessageWithNoOuter.Types.NestedMessage.CreateBuilder().SetI(1))
+          .AddForeign(TestAllTypes.CreateBuilder().SetOptionalInt32(1))
+          .SetNestedEnum(MessageWithNoOuter.Types.NestedEnum.BAZ)
+          .SetForeignEnum(EnumWithNoOuter.BAR)
           .Build();
-      Assert.AreEqual(message, MessageWithNoOuter.parseFrom(message.toByteString()));
+      Assert.AreEqual(message, MessageWithNoOuter.ParseFrom(message.ToByteString()));
 
-      Assert.AreEqual(MultipleFilesTestProto.getDescriptor(),
-                   MessageWithNoOuter.getDescriptor().getFile());
+      Assert.AreEqual(MultiFileProto.Descriptor, MessageWithNoOuter.Descriptor.File);
 
-      Descriptors.FieldDescriptor field =
-        MessageWithNoOuter.getDescriptor().findFieldByName("foreign_enum");
-      Assert.AreEqual(EnumWithNoOuter.BAR.getValueDescriptor(),
-                   message.getField(field));
+      FieldDescriptor field = MessageWithNoOuter.Descriptor.FindDescriptor<FieldDescriptor>("foreign_enum");
+      Assert.AreEqual(MultiFileProto.Descriptor.FindTypeByName<EnumDescriptor>("EnumWithNoOuter")
+        .FindValueByNumber((int)EnumWithNoOuter.BAR), message[field]);
 
-      Assert.AreEqual(MultipleFilesTestProto.getDescriptor(),
-                   ServiceWithNoOuter.getDescriptor().getFile());
+      Assert.AreEqual(MultiFileProto.Descriptor, ServiceWithNoOuter.Descriptor.File);
 
-      assertFalse(
-        TestAllExtensions.getDefaultInstance().hasExtension(
-          MultipleFilesTestProto.extensionWithOuter));
+      Assert.IsFalse(TestAllExtensions.DefaultInstance.HasExtension(MultiFileProto.ExtensionWithOuter));
     }
-    */
   }
 }

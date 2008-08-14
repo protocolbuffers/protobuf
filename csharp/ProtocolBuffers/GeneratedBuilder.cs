@@ -26,7 +26,7 @@ namespace Google.ProtocolBuffers {
       get { return MessageBeingBuilt.FieldAccesseorsFromBuilder; }
     }
 
-    public override bool Initialized {
+    public override bool IsInitialized {
       get { return MessageBeingBuilt.IsInitialized; }
     }
 
@@ -212,7 +212,7 @@ namespace Google.ProtocolBuffers {
     /// TODO(jonskeet): This used to be generated for each class. Find out why.
     /// </summary>
     public TMessage BuildParsed() {
-      if (!Initialized) {
+      if (!IsInitialized) {
         throw new UninitializedMessageException(MessageBeingBuilt).AsInvalidProtocolBufferException();
       }
       return BuildPartial();
@@ -223,7 +223,7 @@ namespace Google.ProtocolBuffers {
     /// TODO(jonskeet): This used to be generated for each class. Find out why.
     /// </summary>
     public TMessage Build() {
-      if (!Initialized) {
+      if (!IsInitialized) {
         throw new UninitializedMessageException(MessageBeingBuilt);
       }
       return BuildPartial();
