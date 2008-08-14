@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 using System.IO;
+using Google.ProtocolBuffers.FieldAccess;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -20,6 +22,10 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     protected abstract TMessage MessageBeingBuilt { get; }
 
+    protected internal FieldAccessorTable InternalFieldAccessors {
+      get { return MessageBeingBuilt.InternalFieldAccessors; }
+    }
+
     public override bool Initialized {
       get { return MessageBeingBuilt.IsInitialized; }
     }
@@ -33,11 +39,11 @@ namespace Google.ProtocolBuffers {
         // For repeated fields, the underlying list object is still modifiable at this point.
         // Make sure not to expose the modifiable list to the caller.
         return field.IsRepeated
-          ? MessageBeingBuilt.InternalFieldAccessors[field].GetRepeatedWrapper(this)
+          ? InternalFieldAccessors[field].GetRepeatedWrapper(this)
           : MessageBeingBuilt[field];
       }
       set {
-        MessageBeingBuilt.InternalFieldAccessors[field].SetValue(this, value);
+        InternalFieldAccessors[field].SetValue(this, value);
       }
     }
 
@@ -74,7 +80,7 @@ namespace Google.ProtocolBuffers {
 
     public override object this[FieldDescriptor field, int index] {
       get { return MessageBeingBuilt[field, index]; }
-      set { MessageBeingBuilt.InternalFieldAccessors[field].SetRepeated(this, index, value); }
+      set { InternalFieldAccessors[field].SetRepeated(this, index, value); }
     }
 
     public override bool HasField(FieldDescriptor field) {
@@ -98,7 +104,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public override IBuilder CreateBuilderForField(FieldDescriptor field) {
-      return MessageBeingBuilt.InternalFieldAccessors[field].CreateBuilder();
+      return InternalFieldAccessors[field].CreateBuilder();
     }
 
     protected override IBuilder ClearFieldImpl(FieldDescriptor field) {
@@ -110,16 +116,47 @@ namespace Google.ProtocolBuffers {
     }
 
     public IBuilder<TMessage> ClearField(FieldDescriptor field) {
-      MessageBeingBuilt.InternalFieldAccessors[field].Clear(this);
+      InternalFieldAccessors[field].Clear(this);
       return this;
     }
 
-    // FIXME: Implement!
-    public virtual IBuilder<TMessage> MergeFrom(TMessage other) { return this; }
-    public virtual IBuilder<TMessage> MergeUnknownFields(UnknownFieldSet unknownFields) { return this; }
+    public virtual IBuilder<TMessage> MergeFrom(TMessage other) {
+      if (other.DescriptorForType != InternalFieldAccessors.Descriptor) {
+        throw new ArgumentException("Message type mismatch");
+      }
+
+      foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
+        FieldDescriptor field = entry.Key;
+        if (field.IsRepeated) {
+          // Concatenate repeated fields
+          foreach (object element in (IEnumerable)entry.Value) {
+            AddRepeatedField(field, element);
+          }
+        } else if (field.MappedType == MappedType.Message && HasField(field)) {
+          // Merge singular embedded messages
+          IMessage oldValue = (IMessage)this[field];
+          this[field] = oldValue.CreateBuilderForType()
+              .MergeFrom(oldValue)
+              .MergeFrom((IMessage)entry.Value)
+              .BuildPartial();
+        } else {
+          // Just overwrite
+          this[field] = entry.Value;
+        }
+      }
+      return this;
+    }
+
+    public virtual IBuilder<TMessage> MergeUnknownFields(UnknownFieldSet unknownFields) {
+      TMessage result = MessageBeingBuilt;
+      result.SetUnknownFields(UnknownFieldSet.CreateBuilder(result.UnknownFields)
+          .MergeFrom(unknownFields)
+          .Build());
+      return this;
+    }
 
     public IBuilder<TMessage> AddRepeatedField(FieldDescriptor field, object value) {
-      MessageBeingBuilt.InternalFieldAccessors[field].AddRepeated(this, value);
+      InternalFieldAccessors[field].AddRepeated(this, value);
       return this;
     }
 

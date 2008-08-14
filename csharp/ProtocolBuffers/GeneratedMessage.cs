@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.FieldAccess;
@@ -14,7 +16,7 @@ namespace Google.ProtocolBuffers {
   public abstract class GeneratedMessage<TMessage, TBuilder> : AbstractMessage, IMessage<TMessage>
       where TMessage : GeneratedMessage<TMessage, TBuilder> where TBuilder : IBuilder<TMessage> {
 
-    private readonly UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
+    private UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
 
     protected internal abstract FieldAccessorTable InternalFieldAccessors { get; }
 
@@ -71,6 +73,16 @@ namespace Google.ProtocolBuffers {
 
     public override UnknownFieldSet UnknownFields {
       get { return unknownFields; }
+    }
+
+    /// <summary>
+    /// Replaces the set of unknown fields for this message. This should
+    /// only be used before a message is built, by the builder. (In the
+    /// Java code it is private, but the builder is nested so has access
+    /// to it.)
+    /// </summary>
+    internal void SetUnknownFields(UnknownFieldSet fieldSet) {
+      unknownFields = fieldSet;
     }
   }
 }
