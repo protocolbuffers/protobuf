@@ -215,9 +215,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
   printer->Indent();
   printer->Print(
-    "// Use $classname$.CreateBuilder() to construct.\r\n"
-    "private $classname$() {}\r\n"
-    "\r\n"
     "private static readonly $classname$ defaultInstance = new $classname$();\r\n"
     "public static $classname$ DefaultInstance {\r\n"
     "  get { return defaultInstance; }\r\n"
@@ -383,7 +380,7 @@ GenerateParseFromMethods(io::Printer* printer) {
     "public static $classname$ ParseFrom(byte[] data) {\r\n"
     "  return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();\r\n"
     "}\r\n"
-    "public static $classname$ parseFrom(byte[] data,\r\n"
+    "public static $classname$ ParseFrom(byte[] data,\r\n"
     "    pb::ExtensionRegistry extensionRegistry) {\r\n"
     "  return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))\r\n"
     "           .BuildParsed();\r\n"

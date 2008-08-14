@@ -26,6 +26,12 @@ package protobuf_unittest;
 option java_multiple_files = true;
 option java_outer_classname = "MultipleFilesTestProto";
 
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+option csharp_file_classname = "MultiFileProto";
+option csharp_multiple_files = true;
+option csharp_nest_classes = false;
+option csharp_public_classes = true;
+
 message MessageWithNoOuter {
   message NestedMessage {
     optional int32 i = 1;

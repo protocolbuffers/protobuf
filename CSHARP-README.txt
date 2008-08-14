@@ -38,3 +38,5 @@ o Nested types always end up under a "Types" static class which
   is merely present to avoid name clashes.
 o FileDescriptor.FindByName has been made generic to allow simple
   type-safe searching for any nested type.
+o No enum.valueOf for enums (due to them being simple C# enums)
+o Public Builder constructors to aid C# object/collection initializers
