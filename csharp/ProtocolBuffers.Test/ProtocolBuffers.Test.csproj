@@ -54,6 +54,7 @@
     <Compile Include="MessageTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />
+    <Compile Include="ServiceTest.cs" />
     <Compile Include="TestProtos\EnumWithNoOuter.cs" />
     <Compile Include="TestProtos\MessageWithNoOuter.cs" />
     <Compile Include="TestProtos\MultiFileProto.cs" />
@@ -64,6 +65,8 @@
     <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestProtoFile.cs" />
     <Compile Include="TestUtil.cs" />
+    <Compile Include="TextFormatTest.cs" />
+    <Compile Include="UnknownFieldSetTest.cs" />
     <Compile Include="WireFormatTest.cs" />
   </ItemGroup>
   <ItemGroup>

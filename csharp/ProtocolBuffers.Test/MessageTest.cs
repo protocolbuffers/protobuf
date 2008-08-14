@@ -58,8 +58,11 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(MergeResultText, result.ToString());
     }
 
-    /** Test merging two DynamicMessages. */
-    public void testDynamicMergeFrom() {
+    /// <summary>
+    /// Test merging two DynamicMessages.
+    /// </summary>
+    [Test]
+    public void DynamicMergeFrom() {
       DynamicMessage result = (DynamicMessage) DynamicMessage.CreateBuilder(MergeDest)
           .MergeFrom((DynamicMessage) DynamicMessage.CreateBuilder(MergeSource).Build())
           .Build();

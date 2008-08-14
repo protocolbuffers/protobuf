@@ -123,6 +123,9 @@ namespace Google.ProtocolBuffers {
   public interface IBuilder<TMessage, TBuilder> : IBuilder
       where TMessage : IMessage<TMessage, TBuilder> 
       where TBuilder : IBuilder<TMessage, TBuilder> {
+
+    TBuilder SetUnknownFields(UnknownFieldSet unknownFields);
+
     /// <summary>
     /// Resets all fields to their default values.
     /// </summary>

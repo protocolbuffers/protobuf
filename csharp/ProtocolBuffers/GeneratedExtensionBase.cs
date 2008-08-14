@@ -78,7 +78,8 @@ namespace Google.ProtocolBuffers {
           }
         case MappedType.Enum:
           // Just return a boxed int - that can be unboxed to the enum
-          return ((EnumValueDescriptor) value).Number;
+          EnumValueDescriptor enumValue = (EnumValueDescriptor) value;
+          return enumValue.Number;
         default:
           return value;
       }

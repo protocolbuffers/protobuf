@@ -31,7 +31,7 @@ namespace Google.ProtocolBuffers {
         // Must convert the whole list.
         List<TExtensionElement> result = new List<TExtensionElement>();
         foreach (object element in (IEnumerable) value) {
-          ((IList) result).Add(SingularFromReflectionType(element));
+          result.Add((TExtensionElement) SingularFromReflectionType(element));
         }
         return result;
       } else {

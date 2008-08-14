@@ -84,6 +84,11 @@ namespace Google.ProtocolBuffers {
     }
     #endregion
 
+    public TBuilder SetUnknownFields(UnknownFieldSet fields) {
+      UnknownFields = fields;
+      return ThisBuilder;
+    }
+
     public virtual TBuilder Clear() {
       foreach(FieldDescriptor field in AllFields.Keys) {
         ClearField(field);
