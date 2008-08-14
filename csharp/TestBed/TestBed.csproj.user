@@ -1,0 +1,10 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <StartWorkingDirectory>C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\</StartWorkingDirectory>
+    <StartArguments>nwind.proto.bin</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <StartWorkingDirectory>C:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\TestBed\</StartWorkingDirectory>
+    <StartArguments>nwind.proto.bin</StartArguments>
+  </PropertyGroup>
+</Project>
