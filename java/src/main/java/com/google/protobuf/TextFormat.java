@@ -91,7 +91,6 @@ public final class TextFormat {
 
   private static void print(Message message, TextGenerator generator)
       throws IOException {
-    Descriptor descriptor = message.getDescriptorForType();
     for (Map.Entry<FieldDescriptor, Object> field :
          message.getAllFields().entrySet()) {
       printField(field.getKey(), field.getValue(), generator);
