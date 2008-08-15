@@ -26,12 +26,11 @@ namespace Google.ProtocolBuffers {
   public abstract class AbstractMessage<TMessage, TBuilder> : IMessage<TMessage, TBuilder> 
       where TMessage : AbstractMessage<TMessage, TBuilder> 
       where TBuilder : AbstractBuilder<TMessage, TBuilder> {
-    // TODO(jonskeet): Cleaner to use a Nullable<int>?
     /// <summary>
-    /// The serialized size if it's already been computed, or -1
+    /// The serialized size if it's already been computed, or null
     /// if we haven't computed it yet.
     /// </summary>
-    private int memoizedSize = -1;
+    private int? memoizedSize = null;
 
     #region Unimplemented members of IMessage
     public abstract MessageDescriptor DescriptorForType { get; }
@@ -113,12 +112,11 @@ namespace Google.ProtocolBuffers {
 
     public virtual int SerializedSize {
       get {
-        int size = memoizedSize;
-        if (size != -1) {
-          return size;
+        if (memoizedSize != null) {
+          return memoizedSize.Value;
         }
 
-        size = 0;
+        int size = 0;
         foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
           FieldDescriptor field = entry.Key;
           if (field.IsRepeated) {
