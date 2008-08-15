@@ -295,5 +295,20 @@ namespace Google.ProtocolBuffers {
       }
     }
 
+    [Test]
+    public void LargeVarint() {
+      ByteString data =
+        UnknownFieldSet.CreateBuilder()
+          .AddField(1,
+            UnknownField.CreateBuilder()
+              .AddVarint(0x7FFFFFFFFFFFFFFFL)
+              .Build())
+          .Build()
+          .ToByteString();
+      UnknownFieldSet parsed = UnknownFieldSet.ParseFrom(data);
+      UnknownField field = parsed[1];
+      Assert.AreEqual(1, field.VarintList.Count);
+      Assert.AreEqual(0x7FFFFFFFFFFFFFFFUL, field.VarintList[0]);
+    }
   }
 }

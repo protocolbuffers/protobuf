@@ -314,7 +314,6 @@ namespace Google.ProtocolBuffers {
         int number = WireFormat.GetTagFieldNumber(tag);
         switch (WireFormat.GetTagWireType(tag)) {
           case WireFormat.WireType.Varint:
-            // TODO(jonskeet): Check this is correct (different to Java)
             GetFieldBuilder(number).AddVarint(input.ReadUInt64());
             return true;
           case WireFormat.WireType.Fixed64:
