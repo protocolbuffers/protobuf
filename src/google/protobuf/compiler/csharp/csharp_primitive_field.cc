@@ -243,10 +243,10 @@ GenerateMembers(io::Printer* printer) const {
     "public scg::IList<$type$> $capitalized_name$List {\r\n"
     "  get { return $name$_; }\r\n"   // note:  unmodifiable list
     "}\r\n"
-    "public int $capitalized_name$Count {\r\n" // TODO(jonskeet): Remove?
+    "public int $capitalized_name$Count {\r\n"
     "  get { return $name$_.Count; }\r\n"
     "}\r\n"
-    "public $type$ Get$capitalized_name$(int index) {\r\n" // TODO(jonskeet): Remove?
+    "public $type$ Get$capitalized_name$(int index) {\r\n"
     "  return $name$_[index];\r\n"
     "}\r\n");
 }
@@ -257,7 +257,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     // Note:  We return an unmodifiable list because otherwise the caller
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
-    //   immutable.
+    //   immutable. This unfortunately limits the use for collection initializers...
     "public scg::IList<$type$> $capitalized_name$List {\r\n"
     "  get { return pbc::Lists<$type$>.AsReadOnly(result.$name$_); }\r\n"
     "}\r\n"

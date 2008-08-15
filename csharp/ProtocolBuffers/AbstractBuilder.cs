@@ -121,7 +121,7 @@ namespace Google.ProtocolBuffers {
       //   them to insure that they don't change after verification (since
       //   the Message interface itself cannot enforce immutability of
       //   implementations).
-      // TODO(jonskeet):  Provide a function somewhere called makeDeepCopy()
+      // TODO(jonskeet):  Provide a function somewhere called MakeDeepCopy()
       //   which allows people to make secure deep copies of messages.
       foreach (KeyValuePair<FieldDescriptor, object> entry in other.AllFields) {
         FieldDescriptor field = entry.Key;
