@@ -233,7 +233,6 @@ namespace Google.ProtocolBuffers {
     TBuilder MergeUnknownFields(UnknownFieldSet unknownFields);
 
     #region Convenience methods
-    // TODO(jonskeet): Implement these as extension methods?
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around

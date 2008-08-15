@@ -26,8 +26,7 @@ namespace Google.ProtocolBuffers {
       : base(message) {
     }
 
-    /// TODO(jonskeet): Make this internal again and use InternalVisibleTo?
-    public static InvalidProtocolBufferException TruncatedMessage() {
+    internal static InvalidProtocolBufferException TruncatedMessage() {
       return new InvalidProtocolBufferException(
         "While parsing a protocol message, the input ended unexpectedly " +
         "in the middle of a field.  This could mean either than the " +
