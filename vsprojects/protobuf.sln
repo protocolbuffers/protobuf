@@ -71,7 +71,6 @@ Global
 		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Debug|Win32.Build.0 = Debug|Win32
 		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Release|Any CPU.ActiveCfg = Release|Win32
 		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{4DF72760-C055-40A5-A77E-30A17E2AC2DB}.Release|Mixed Platforms.Build.0 = Release|Win32
