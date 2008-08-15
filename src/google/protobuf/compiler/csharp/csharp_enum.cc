@@ -71,20 +71,18 @@ void EnumGenerator::Generate(io::Printer* printer) {
     printer->Print(vars,
       "$name$ = $number$,\r\n");
   }
+
+  for (int i = 0; i < aliases_.size(); i++) {
+    map<string, string> vars;
+    vars["name"] = aliases_[i].value->name();
+    vars["canonical_number"] = SimpleItoa(aliases_[i].canonical_value->number());
+    printer->Print(vars,
+      "$name$ = $canonical_number$,\r\n");
+  }
+
   printer->Outdent();
   printer->Print("}\r\n\r\n");
 
-  // -----------------------------------------------------------------
-  // TODO(jonskeet): Think about aliases!
-  /*
-  for (int i = 0; i < aliases_.size(); i++) {
-    map<string, string> vars;
-    vars["classname"] = descriptor_->name();
-    vars["name"] = aliases_[i].value->name();
-    vars["canonical_name"] = aliases_[i].canonical_value->name();
-    printer->Print(vars,
-      "public static final $classname$ $name$ = $canonical_name$;\r\n");
-  }*/
 }
 
 }  // namespace csharp

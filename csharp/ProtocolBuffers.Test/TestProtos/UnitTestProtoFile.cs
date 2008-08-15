@@ -957,6 +957,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     FOO1 = 1,
     BAR1 = 2,
     BAZ = 3,
+    FOO2 = 1,
+    BAR2 = 2,
   }
   
   public enum TestSparseEnum {
