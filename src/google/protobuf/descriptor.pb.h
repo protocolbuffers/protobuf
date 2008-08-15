@@ -1284,6 +1284,40 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
   inline void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
   
+  // optional string csharp_namespace = 1000;
+  inline bool has_csharp_namespace() const;
+  inline void clear_csharp_namespace();
+  inline const ::std::string& csharp_namespace() const;
+  inline void set_csharp_namespace(const ::std::string& value);
+  inline void set_csharp_namespace(const char* value);
+  inline ::std::string* mutable_csharp_namespace();
+  
+  // optional string csharp_file_classname = 1001;
+  inline bool has_csharp_file_classname() const;
+  inline void clear_csharp_file_classname();
+  inline const ::std::string& csharp_file_classname() const;
+  inline void set_csharp_file_classname(const ::std::string& value);
+  inline void set_csharp_file_classname(const char* value);
+  inline ::std::string* mutable_csharp_file_classname();
+  
+  // optional bool csharp_multiple_files = 1002 [default = false];
+  inline bool has_csharp_multiple_files() const;
+  inline void clear_csharp_multiple_files();
+  inline bool csharp_multiple_files() const;
+  inline void set_csharp_multiple_files(bool value);
+  
+  // optional bool csharp_nest_classes = 1003 [default = false];
+  inline bool has_csharp_nest_classes() const;
+  inline void clear_csharp_nest_classes();
+  inline bool csharp_nest_classes() const;
+  inline void set_csharp_nest_classes(bool value);
+  
+  // optional bool csharp_public_classes = 1004 [default = true];
+  inline bool has_csharp_public_classes() const;
+  inline void clear_csharp_public_classes();
+  inline bool csharp_public_classes() const;
+  inline void set_csharp_public_classes(bool value);
+  
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
@@ -1294,11 +1328,18 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   static const ::std::string _default_java_outer_classname_;
   bool java_multiple_files_;
   int optimize_for_;
+  ::std::string* csharp_namespace_;
+  static const ::std::string _default_csharp_namespace_;
+  ::std::string* csharp_file_classname_;
+  static const ::std::string _default_csharp_file_classname_;
+  bool csharp_multiple_files_;
+  bool csharp_nest_classes_;
+  bool csharp_public_classes_;
   friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
   static const FileOptions default_instance_;
-  static const int _offsets_[4];
+  static const int _offsets_[9];
   
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -2962,6 +3003,124 @@ inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_Optimi
   GOOGLE_DCHECK(::google::protobuf::FileOptions_OptimizeMode_IsValid(value));
   _set_bit(3);
   optimize_for_ = value;
+}
+
+// optional string csharp_namespace = 1000;
+inline bool FileOptions::has_csharp_namespace() const {
+  return _has_bit(4);
+}
+inline void FileOptions::clear_csharp_namespace() {
+  if (csharp_namespace_ != &_default_csharp_namespace_) {
+    csharp_namespace_->clear();
+  }
+  _clear_bit(4);
+}
+inline const ::std::string& FileOptions::csharp_namespace() const {
+  return *csharp_namespace_;
+}
+inline void FileOptions::set_csharp_namespace(const ::std::string& value) {
+  _set_bit(4);
+  if (csharp_namespace_ == &_default_csharp_namespace_) {
+    csharp_namespace_ = new ::std::string;
+  }
+  csharp_namespace_->assign(value);
+}
+inline void FileOptions::set_csharp_namespace(const char* value) {
+  _set_bit(4);
+  if (csharp_namespace_ == &_default_csharp_namespace_) {
+    csharp_namespace_ = new ::std::string;
+  }
+  csharp_namespace_->assign(value);
+}
+inline ::std::string* FileOptions::mutable_csharp_namespace() {
+  _set_bit(4);
+  if (csharp_namespace_ == &_default_csharp_namespace_) {
+    csharp_namespace_ = new ::std::string;
+  }
+  return csharp_namespace_;
+}
+
+// optional string csharp_file_classname = 1001;
+inline bool FileOptions::has_csharp_file_classname() const {
+  return _has_bit(5);
+}
+inline void FileOptions::clear_csharp_file_classname() {
+  if (csharp_file_classname_ != &_default_csharp_file_classname_) {
+    csharp_file_classname_->clear();
+  }
+  _clear_bit(5);
+}
+inline const ::std::string& FileOptions::csharp_file_classname() const {
+  return *csharp_file_classname_;
+}
+inline void FileOptions::set_csharp_file_classname(const ::std::string& value) {
+  _set_bit(5);
+  if (csharp_file_classname_ == &_default_csharp_file_classname_) {
+    csharp_file_classname_ = new ::std::string;
+  }
+  csharp_file_classname_->assign(value);
+}
+inline void FileOptions::set_csharp_file_classname(const char* value) {
+  _set_bit(5);
+  if (csharp_file_classname_ == &_default_csharp_file_classname_) {
+    csharp_file_classname_ = new ::std::string;
+  }
+  csharp_file_classname_->assign(value);
+}
+inline ::std::string* FileOptions::mutable_csharp_file_classname() {
+  _set_bit(5);
+  if (csharp_file_classname_ == &_default_csharp_file_classname_) {
+    csharp_file_classname_ = new ::std::string;
+  }
+  return csharp_file_classname_;
+}
+
+// optional bool csharp_multiple_files = 1002 [default = false];
+inline bool FileOptions::has_csharp_multiple_files() const {
+  return _has_bit(6);
+}
+inline void FileOptions::clear_csharp_multiple_files() {
+  csharp_multiple_files_ = false;
+  _clear_bit(6);
+}
+inline bool FileOptions::csharp_multiple_files() const {
+  return csharp_multiple_files_;
+}
+inline void FileOptions::set_csharp_multiple_files(bool value) {
+  _set_bit(6);
+  csharp_multiple_files_ = value;
+}
+
+// optional bool csharp_nest_classes = 1003 [default = false];
+inline bool FileOptions::has_csharp_nest_classes() const {
+  return _has_bit(7);
+}
+inline void FileOptions::clear_csharp_nest_classes() {
+  csharp_nest_classes_ = false;
+  _clear_bit(7);
+}
+inline bool FileOptions::csharp_nest_classes() const {
+  return csharp_nest_classes_;
+}
+inline void FileOptions::set_csharp_nest_classes(bool value) {
+  _set_bit(7);
+  csharp_nest_classes_ = value;
+}
+
+// optional bool csharp_public_classes = 1004 [default = true];
+inline bool FileOptions::has_csharp_public_classes() const {
+  return _has_bit(8);
+}
+inline void FileOptions::clear_csharp_public_classes() {
+  csharp_public_classes_ = true;
+  _clear_bit(8);
+}
+inline bool FileOptions::csharp_public_classes() const {
+  return csharp_public_classes_;
+}
+inline void FileOptions::set_csharp_public_classes(bool value) {
+  _set_bit(8);
+  csharp_public_classes_ = value;
 }
 
 // -------------------------------------------------------------------

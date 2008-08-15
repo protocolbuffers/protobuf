@@ -128,20 +128,26 @@ void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "ptions\"\177\n\025MethodDescriptorProto\022\014\n\004name\030"
     "\001 \001(\t\022\022\n\ninput_type\030\002 \001(\t\022\023\n\013output_type"
     "\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google.protobu"
-    "f.MethodOptions\"\333\001\n\013FileOptions\022\024\n\014java_"
+    "f.MethodOptions\"\210\003\n\013FileOptions\022\024\n\014java_"
     "package\030\001 \001(\t\022\034\n\024java_outer_classname\030\010 "
     "\001(\t\022\"\n\023java_multiple_files\030\n \001(\010:\005false\022"
     "J\n\014optimize_for\030\t \001(\0162).google.protobuf."
-    "FileOptions.OptimizeMode:\tCODE_SIZE\"(\n\014O"
-    "ptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\"8\n"
-    "\016MessageOptions\022&\n\027message_set_wire_form"
-    "at\030\001 \001(\010:\005false\"\205\001\n\014FieldOptions\0222\n\005ctyp"
-    "e\030\001 \001(\0162#.google.protobuf.FieldOptions.C"
-    "Type\022\034\n\024experimental_map_key\030\t \001(\t\"#\n\005CT"
-    "ype\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"\r\n\013EnumO"
-    "ptions\"\022\n\020EnumValueOptions\"\020\n\016ServiceOpt"
-    "ions\"\017\n\rMethodOptionsB)\n\023com.google.prot"
-    "obufB\020DescriptorProtosH\001", 2624);
+    "FileOptions.OptimizeMode:\tCODE_SIZE\022\031\n\020c"
+    "sharp_namespace\030\350\007 \001(\t\022\036\n\025csharp_file_cl"
+    "assname\030\351\007 \001(\t\022%\n\025csharp_multiple_files\030"
+    "\352\007 \001(\010:\005false\022#\n\023csharp_nest_classes\030\353\007 "
+    "\001(\010:\005false\022$\n\025csharp_public_classes\030\354\007 \001"
+    "(\010:\004true\"(\n\014OptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tC"
+    "ODE_SIZE\020\002\"8\n\016MessageOptions\022&\n\027message_"
+    "set_wire_format\030\001 \001(\010:\005false\"\205\001\n\014FieldOp"
+    "tions\0222\n\005ctype\030\001 \001(\0162#.google.protobuf.F"
+    "ieldOptions.CType\022\034\n\024experimental_map_ke"
+    "y\030\t \001(\t\"#\n\005CType\022\010\n\004CORD\020\001\022\020\n\014STRING_PIE"
+    "CE\020\002\"\r\n\013EnumOptions\"\022\n\020EnumValueOptions\""
+    "\020\n\016ServiceOptions\"\017\n\rMethodOptionsBr\n\023co"
+    "m.google.protobufB\020DescriptorProtosH\001\302>\'"
+    "Google.ProtocolBuffers.DescriptorProtos\312"
+    ">\023DescriptorProtoFile\320>\000\330>\000\340>\001", 2870);
   FileDescriptorSet_descriptor_ = file->message_type(0);
   FileDescriptorSet_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -2998,11 +3004,21 @@ const ::std::string FileOptions::_default_java_package_;
 const ::std::string FileOptions::_default_java_outer_classname_;
 
 
-const int FileOptions::_offsets_[4] = {
+const ::std::string FileOptions::_default_csharp_namespace_;
+const ::std::string FileOptions::_default_csharp_file_classname_;
+
+
+
+const int FileOptions::_offsets_[9] = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_package_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_outer_classname_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_multiple_files_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, optimize_for_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_namespace_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_file_classname_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_multiple_files_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_nest_classes_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_public_classes_),
 };
 
 FileOptions::FileOptions()
@@ -3010,7 +3026,12 @@ FileOptions::FileOptions()
     java_package_(const_cast< ::std::string*>(&_default_java_package_)),
     java_outer_classname_(const_cast< ::std::string*>(&_default_java_outer_classname_)),
     java_multiple_files_(false),
-    optimize_for_(2) {
+    optimize_for_(2),
+    csharp_namespace_(const_cast< ::std::string*>(&_default_csharp_namespace_)),
+    csharp_file_classname_(const_cast< ::std::string*>(&_default_csharp_file_classname_)),
+    csharp_multiple_files_(false),
+    csharp_nest_classes_(false),
+    csharp_public_classes_(true) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -3021,7 +3042,12 @@ FileOptions::FileOptions(const FileOptions& from)
     java_package_(const_cast< ::std::string*>(&_default_java_package_)),
     java_outer_classname_(const_cast< ::std::string*>(&_default_java_outer_classname_)),
     java_multiple_files_(false),
-    optimize_for_(2) {
+    optimize_for_(2),
+    csharp_namespace_(const_cast< ::std::string*>(&_default_csharp_namespace_)),
+    csharp_file_classname_(const_cast< ::std::string*>(&_default_csharp_file_classname_)),
+    csharp_multiple_files_(false),
+    csharp_nest_classes_(false),
+    csharp_public_classes_(true) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3032,6 +3058,12 @@ FileOptions::~FileOptions() {
   }
   if (java_outer_classname_ != &_default_java_outer_classname_) {
     delete java_outer_classname_;
+  }
+  if (csharp_namespace_ != &_default_csharp_namespace_) {
+    delete csharp_namespace_;
+  }
+  if (csharp_file_classname_ != &_default_csharp_file_classname_) {
+    delete csharp_file_classname_;
   }
   if (this != &default_instance_) {
   }
@@ -3060,6 +3092,21 @@ void FileOptions::Clear() {
     }
     java_multiple_files_ = false;
     optimize_for_ = 2;
+    if (_has_bit(4)) {
+      if (csharp_namespace_ != &_default_csharp_namespace_) {
+        csharp_namespace_->clear();
+      }
+    }
+    if (_has_bit(5)) {
+      if (csharp_file_classname_ != &_default_csharp_file_classname_) {
+        csharp_file_classname_->clear();
+      }
+    }
+    csharp_multiple_files_ = false;
+    csharp_nest_classes_ = false;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    csharp_public_classes_ = true;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -3122,6 +3169,72 @@ bool FileOptions::MergePartialFromCodedStream(
         DO_(::google::protobuf::internal::WireFormat::ReadBool(
               input, &java_multiple_files_));
         _set_bit(2);
+        if (input->ExpectTag(8002)) goto parse_csharp_namespace;
+        break;
+      }
+      
+      // optional string csharp_namespace = 1000;
+      case 1000: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_csharp_namespace:
+        DO_(::google::protobuf::internal::WireFormat::ReadString(input, mutable_csharp_namespace()));
+        if (input->ExpectTag(8010)) goto parse_csharp_file_classname;
+        break;
+      }
+      
+      // optional string csharp_file_classname = 1001;
+      case 1001: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_csharp_file_classname:
+        DO_(::google::protobuf::internal::WireFormat::ReadString(input, mutable_csharp_file_classname()));
+        if (input->ExpectTag(8016)) goto parse_csharp_multiple_files;
+        break;
+      }
+      
+      // optional bool csharp_multiple_files = 1002 [default = false];
+      case 1002: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
+          goto handle_uninterpreted;
+        }
+       parse_csharp_multiple_files:
+        DO_(::google::protobuf::internal::WireFormat::ReadBool(
+              input, &csharp_multiple_files_));
+        _set_bit(6);
+        if (input->ExpectTag(8024)) goto parse_csharp_nest_classes;
+        break;
+      }
+      
+      // optional bool csharp_nest_classes = 1003 [default = false];
+      case 1003: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
+          goto handle_uninterpreted;
+        }
+       parse_csharp_nest_classes:
+        DO_(::google::protobuf::internal::WireFormat::ReadBool(
+              input, &csharp_nest_classes_));
+        _set_bit(7);
+        if (input->ExpectTag(8032)) goto parse_csharp_public_classes;
+        break;
+      }
+      
+      // optional bool csharp_public_classes = 1004 [default = true];
+      case 1004: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
+          goto handle_uninterpreted;
+        }
+       parse_csharp_public_classes:
+        DO_(::google::protobuf::internal::WireFormat::ReadBool(
+              input, &csharp_public_classes_));
+        _set_bit(8);
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -3165,6 +3278,31 @@ bool FileOptions::SerializeWithCachedSizes(
     DO_(::google::protobuf::internal::WireFormat::WriteBool(10, this->java_multiple_files(), output));
   }
   
+  // optional string csharp_namespace = 1000;
+  if (_has_bit(4)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteString(1000, this->csharp_namespace(), output));
+  }
+  
+  // optional string csharp_file_classname = 1001;
+  if (_has_bit(5)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteString(1001, this->csharp_file_classname(), output));
+  }
+  
+  // optional bool csharp_multiple_files = 1002 [default = false];
+  if (_has_bit(6)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBool(1002, this->csharp_multiple_files(), output));
+  }
+  
+  // optional bool csharp_nest_classes = 1003 [default = false];
+  if (_has_bit(7)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBool(1003, this->csharp_nest_classes(), output));
+  }
+  
+  // optional bool csharp_public_classes = 1004 [default = true];
+  if (_has_bit(8)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBool(1004, this->csharp_public_classes(), output));
+  }
+  
   if (!unknown_fields().empty()) {
     DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output));
@@ -3198,6 +3336,35 @@ int FileOptions::ByteSize() const {
     if (has_optimize_for()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::EnumSize(this->optimize_for());
+    }
+    
+    // optional string csharp_namespace = 1000;
+    if (has_csharp_namespace()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormat::StringSize(this->csharp_namespace());
+    }
+    
+    // optional string csharp_file_classname = 1001;
+    if (has_csharp_file_classname()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormat::StringSize(this->csharp_file_classname());
+    }
+    
+    // optional bool csharp_multiple_files = 1002 [default = false];
+    if (has_csharp_multiple_files()) {
+      total_size += 2 + 1;
+    }
+    
+    // optional bool csharp_nest_classes = 1003 [default = false];
+    if (has_csharp_nest_classes()) {
+      total_size += 2 + 1;
+    }
+    
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional bool csharp_public_classes = 1004 [default = true];
+    if (has_csharp_public_classes()) {
+      total_size += 2 + 1;
     }
     
   }
@@ -3236,6 +3403,23 @@ void FileOptions::MergeFrom(const FileOptions& from) {
     }
     if (from._has_bit(3)) {
       set_optimize_for(from.optimize_for());
+    }
+    if (from._has_bit(4)) {
+      set_csharp_namespace(from.csharp_namespace());
+    }
+    if (from._has_bit(5)) {
+      set_csharp_file_classname(from.csharp_file_classname());
+    }
+    if (from._has_bit(6)) {
+      set_csharp_multiple_files(from.csharp_multiple_files());
+    }
+    if (from._has_bit(7)) {
+      set_csharp_nest_classes(from.csharp_nest_classes());
+    }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from._has_bit(8)) {
+      set_csharp_public_classes(from.csharp_public_classes());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
