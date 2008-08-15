@@ -6,9 +6,9 @@ BETA WARNING
 ============
 
 This package is a beta.  This means that API may change in an
-incompatible way in the future.  It's unlikely that any big changes
-will be made, but we can make no promises.  Expect a non-beta release
-sometime in August 2008.
+incompatible way in the future (however, the wire format will *not*
+change).  It's unlikely that any big changes will be made, but we can
+make no promises.  Expect a non-beta release in late August 2008.
 
 C++ Installation - Unix
 =======================

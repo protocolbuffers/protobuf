@@ -1,3 +1,57 @@
+2008-08-15 version 2.0.1:
+
+  protoc
+  * New flags --encode and --decode can be used to convert between protobuf text
+    format and binary format from the command-line.
+  * New flag --descriptor_set_out can be used to write FileDescriptorProtos for
+    all parsed files directly into a single output file.  This is particularly
+    useful if you wish to parse .proto files from programs written in languages
+    other than C++: just run protoc as a background process and have it output
+    a FileDescriptorList, then parse that natively.
+  * Improved error message when an enum value's name conflicts with another
+    symbol defined in the enum type's scope, e.g. if two enum types declared
+    in the same scope have values with the same name.  This is disallowed for
+    compatibility with C++, but this wasn't clear from the error.
+  * Fixed absolute output paths on Windows.
+  * Allow trailing slashes in --proto_path mappings.
+
+  C++
+  * Reflection objects are now per-class rather than per-instance.  To make this
+    possible, the Reflection interface had to be changed such that all methods
+    take the Message instance as a parameter.  This change improves performance
+    significantly in memory-bandwidth-limited use cases, since it makes the
+    message objects smaller.  Note that source-incompatible interface changes
+    like this will not be made again after the library leaves beta.
+  * Heuristically detect sub-messages when printing unknown fields.
+  * Fix static initialization ordering bug that caused crashes at startup when
+    compiling on Mac with static linking.
+  * Fixed TokenizerTest when compiling with -DNDEBUG on Linux.
+  * Fixed incorrect definition of kint32min.
+  * Fix bytes type setter to work with byte sequences with embedded NULLs.
+  * Other irrelevant tweaks.
+
+  Java
+  * Fixed UnknownFieldSet's parsing of varints larger than 32 bits.
+  * Fixed TextFormat's parsing of "inf" and "nan".
+  * Fixed TextFormat's parsing of comments.
+  * Added info to Java POM that will be required when we upload the
+    package to a Maven repo.
+
+  Python
+  * MergeFrom(message) and CopyFrom(message) are now implemented.
+  * SerializeToString() raises an exception if the message is missing required
+    fields.
+  * Code organization improvements.
+  * Fixed doc comments for RpcController and RpcChannel, which had somehow been
+    swapped.
+  * Fixed text_format_test on Windows where floating-point exponents sometimes
+    contain extra zeros.
+  * Fix Python service CallMethod() implementation.
+
+  Other
+  * Improved readmes.
+  * VIM syntax highlighting improvements.
+
 2008-07-07 version 2.0.0:
 
   * First public release.
