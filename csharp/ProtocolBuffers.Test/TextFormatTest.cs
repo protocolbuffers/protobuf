@@ -219,6 +219,37 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void ParseCompatibility() {
+      string original = "repeated_float: inf\n" +
+                        "repeated_float: -inf\n" +
+                        "repeated_float: nan\n" +
+                        "repeated_float: inff\n" +
+                        "repeated_float: -inff\n" +
+                        "repeated_float: nanf\n" +
+                        "repeated_float: 1.0f\n" +
+                        "repeated_float: infinityf\n" +
+                        "repeated_float: -Infinityf\n" +
+                        "repeated_double: infinity\n" +
+                        "repeated_double: -infinity\n" +
+                        "repeated_double: nan\n";
+      string canonical = "repeated_float: Infinity\n" +
+                          "repeated_float: -Infinity\n" +
+                          "repeated_float: NaN\n" +
+                          "repeated_float: Infinity\n" +
+                          "repeated_float: -Infinity\n" +
+                          "repeated_float: NaN\n" +
+                          "repeated_float: 1\n" + // Java has 1.0; this is fine
+                          "repeated_float: Infinity\n" +
+                          "repeated_float: -Infinity\n" +
+                          "repeated_double: Infinity\n" +
+                          "repeated_double: -Infinity\n" +
+                          "repeated_double: NaN\n";
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      TextFormat.Merge(original, builder);
+      Assert.AreEqual(canonical, builder.Build().ToString());
+    }
+
+    [Test]
     public void ParseExotic() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       TextFormat.Merge(ExoticText, builder);
@@ -258,6 +289,19 @@ namespace Google.ProtocolBuffers {
       Assert.IsTrue(builder.HasOptionalGroup);
       Assert.AreEqual(1, builder.OptionalGroup.A);
     }
+
+    [Test]
+    public void ParseComment() {
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      TextFormat.Merge(
+        "# this is a comment\n" +
+        "optional_int32: 1  # another comment\n" +
+        "optional_int64: 2\n" +
+        "# EOF comment", builder);
+      Assert.AreEqual(1, builder.OptionalInt32);
+      Assert.AreEqual(2, builder.OptionalInt64);
+    }
+
 
     private static void AssertParseError(string error, string text) {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();

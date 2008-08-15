@@ -53,13 +53,18 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     private int previousColumn = 0;
 
-    private static Regex WhitespaceAndCommentPattern = new Regex("\\G(\\s|(#[^\\\n]*\\n))+", RegexOptions.Compiled);
-    private static Regex TokenPattern = new Regex(
+    private static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(\\s|(#.*$))+", 
+        RegexOptions.Compiled | RegexOptions.Multiline);
+    private static readonly Regex TokenPattern = new Regex(
       "\\G[a-zA-Z_][0-9a-zA-Z_+-]*|" +              // an identifier
       "\\G[0-9+-][0-9a-zA-Z_.+-]*|" +                  // a number
-      "\\G\"([^\"\\\n\\\\]|\\\\[^\\\n])*(\"|\\\\?$)|" +    // a double-quoted string
-      "\\G\'([^\"\\\n\\\\]|\\\\[^\\\n])*(\'|\\\\?$)",      // a single-quoted string
-      RegexOptions.Compiled);
+      "\\G\"([^\"\\\n\\\\]|\\\\.)*(\"|\\\\?$)|" +    // a double-quoted string
+      "\\G\'([^\"\\\n\\\\]|\\\\.)*(\'|\\\\?$)",      // a single-quoted string
+      RegexOptions.Compiled | RegexOptions.Multiline);
+
+    private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex FloatInfinity = new Regex("^-?inf(inity)?f?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex FloatNan = new Regex("^nanf?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     /** Construct a tokenizer that parses tokens from the given text. */
     public TextTokenizer(string text) {
@@ -243,6 +248,18 @@ namespace Google.ProtocolBuffers {
     /// Otherwise, throw a FormatException.
     /// </summary>
     public double ConsumeDouble() {
+      // We need to parse infinity and nan separately because
+      // double.Parse() does not accept "inf", "infinity", or "nan".
+      if (DoubleInfinity.IsMatch(currentToken)) {
+        bool negative = currentToken.StartsWith("-");
+        NextToken();
+        return negative ? double.NegativeInfinity : double.PositiveInfinity;
+      }
+      if (currentToken.Equals("nan", StringComparison.InvariantCultureIgnoreCase)) {
+        NextToken();
+        return Double.NaN;
+      }
+
       try {
         double result = double.Parse(currentToken, CultureInfo.InvariantCulture);
         NextToken();
@@ -258,7 +275,24 @@ namespace Google.ProtocolBuffers {
     /// If the next token is a float, consume it and return its value.
     /// Otherwise, throw a FormatException.
     /// </summary>
-    public float consumeFloat() {
+    public float ConsumeFloat() {
+
+      // We need to parse infinity and nan separately because
+      // Float.parseFloat() does not accept "inf", "infinity", or "nan".
+      if (FloatInfinity.IsMatch(currentToken)) {
+        bool negative = currentToken.StartsWith("-");
+        NextToken();
+        return negative ? float.NegativeInfinity : float.PositiveInfinity;
+      }
+      if (FloatNan.IsMatch(currentToken)) {
+        NextToken();
+        return float.NaN;
+      }
+
+      if (currentToken.EndsWith("f")) {
+        currentToken = currentToken.TrimEnd('f');
+      }
+
       try {
         float result = float.Parse(currentToken, CultureInfo.InvariantCulture);
         NextToken();

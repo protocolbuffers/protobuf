@@ -40,8 +40,6 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Outputs a textual representation of <paramref name="fields" /> to <paramref name="output"/>.
     /// </summary>
-    /// <param name="fields"></param>
-    /// <param name="output"></param>
     public static void Print(UnknownFieldSet fields, TextWriter output) {
       TextGenerator generator = new TextGenerator(output);
       PrintUnknownFields(fields, generator);
@@ -564,7 +562,7 @@ namespace Google.ProtocolBuffers {
             break;
 
           case FieldType.Float:
-            value = tokenizer.consumeFloat();
+            value = tokenizer.ConsumeFloat();
             break;
 
           case FieldType.Double:
