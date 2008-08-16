@@ -151,7 +151,6 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Like Build(), but will wrap UninitializedMessageException in
     /// InvalidProtocolBufferException.
-    /// TODO(jonskeet): This used to be generated for each class. Find out why.
     /// </summary>
     public TMessage BuildParsed() {
       if (!IsInitialized) {
@@ -162,7 +161,6 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
-    /// TODO(jonskeet): This used to be generated for each class. Find out why.
     /// </summary>
     public override TMessage Build() {
       if (!IsInitialized) {

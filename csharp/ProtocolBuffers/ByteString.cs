@@ -1,4 +1,7 @@
-﻿// Protocol Buffers - Google's data interchange format
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.
 // http://code.google.com/p/protobuf/
 //
@@ -14,9 +17,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 using System.Text;
-using System;
-using System.Collections.Generic;
-using System.Collections;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -27,7 +27,7 @@ namespace Google.ProtocolBuffers {
 
     private static readonly ByteString empty = new ByteString(new byte[0]);
 
-    private byte[] bytes;
+    private readonly byte[] bytes;
 
     /// <summary>
     /// Constructs a new ByteString from the given byte array. The array is
@@ -124,7 +124,7 @@ namespace Google.ProtocolBuffers {
       return CodedInputStream.CreateInstance(bytes);
     }
 
-    // TODO(jonskeet): CopyTo, Equals, GetHashCode if they turn out to be required
+    // TODO(jonskeet): CopyTo if it turns out to be required
 
     public override bool Equals(object obj) {
       ByteString other = obj as ByteString;
