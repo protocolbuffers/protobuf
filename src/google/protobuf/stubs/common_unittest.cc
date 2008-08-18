@@ -37,11 +37,12 @@ namespace {
 TEST(VersionTest, VersionMatchesConfig) {
   // Verify that the version string specified in config.h matches the one
   // in common.h.  The config.h version is a string which may have a suffix
-  // like "beta", so we remove that.
+  // like "beta" or "rc1", so we remove that.
   string version = PACKAGE_VERSION;
-  int pos = version.size();
-  while (pos > 0 && !ascii_isdigit(version[pos-1])) {
-    --pos;
+  int pos = 0;
+  while (pos < version.size() &&
+         (ascii_isdigit(version[pos]) || version[pos] == '.')) {
+    ++pos;
   }
   version.erase(pos);
 
