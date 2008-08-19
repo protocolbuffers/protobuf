@@ -148,7 +148,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize result = new global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize();
       

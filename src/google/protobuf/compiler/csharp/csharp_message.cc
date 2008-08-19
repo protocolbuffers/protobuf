@@ -481,7 +481,7 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
 void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
   printer->Print(
     "// Construct using $classname$.CreateBuilder()\r\n"
-    "internal Builder() {}\r\n"
+    "$access$ Builder() {}\r\n"
     "\r\n"
     "$classname$ result = new $classname$();\r\n"
     "\r\n"
@@ -506,7 +506,8 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "  get { return $classname$.DefaultInstance; }\r\n"
     "}\r\n"
     "\r\n",
-    "classname", ClassName(descriptor_));
+    "classname", ClassName(descriptor_),
+    "access", ClassAccessLevel(descriptor_->file()));
 
   // -----------------------------------------------------------------
 

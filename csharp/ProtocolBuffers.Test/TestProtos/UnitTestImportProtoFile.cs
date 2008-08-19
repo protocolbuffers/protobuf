@@ -161,7 +161,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.ImportMessage.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.ImportMessage result = new global::Google.ProtocolBuffers.TestProtos.ImportMessage();
       

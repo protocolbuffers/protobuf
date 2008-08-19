@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -41,6 +41,7 @@
     <Compile Include="AbstractBuilder.cs" />
     <Compile Include="AbstractMessage.cs" />
     <Compile Include="ByteString.cs" />
+    <Compile Include="Delegates.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
     <Compile Include="Collections\Dictionaries.cs" />
@@ -93,6 +94,8 @@
     <Compile Include="IRpcChannel.cs" />
     <Compile Include="IRpcController.cs" />
     <Compile Include="IService.cs" />
+    <Compile Include="MessageStreamIterator.cs" />
+    <Compile Include="MessageStreamWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RpcUtil.cs" />
     <Compile Include="TextFormat.cs" />

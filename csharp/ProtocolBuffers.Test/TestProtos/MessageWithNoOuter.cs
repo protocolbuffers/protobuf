@@ -112,7 +112,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage result = new global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.Types.NestedMessage();
           
@@ -252,7 +252,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter result = new global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter();
       

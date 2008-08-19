@@ -21,10 +21,6 @@ namespace Google.ProtocolBuffers {
   [TestFixture]
   public class CodedOutputStreamTest {
 
-    private static void AssertEqualBytes(byte[] a, byte[] b) {
-      Assert.AreEqual(ByteString.CopyFrom(a), ByteString.CopyFrom(b));
-    }
-
     /// <summary>
     /// Writes the given value using WriteRawVarint32() and WriteRawVarint64() and
     /// checks that the result matches the given bytes
@@ -171,7 +167,7 @@ namespace Google.ProtocolBuffers {
       TestAllTypes message = TestUtil.GetAllSet();
 
       byte[] rawBytes = message.ToByteArray();
-      AssertEqualBytes(TestUtil.GoldenMessage.ToByteArray(), rawBytes);
+      TestUtil.AssertEqualBytes(TestUtil.GoldenMessage.ToByteArray(), rawBytes);
 
       // Try different block sizes.
       for (int blockSize = 1; blockSize < 256; blockSize *= 2) {
@@ -180,7 +176,7 @@ namespace Google.ProtocolBuffers {
           CodedOutputStream.CreateInstance(rawOutput, blockSize);
         message.WriteTo(output);
         output.Flush();
-        AssertEqualBytes(rawBytes, rawOutput.ToArray());
+        TestUtil.AssertEqualBytes(rawBytes, rawOutput.ToArray());
       }
     }
 

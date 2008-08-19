@@ -189,7 +189,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSet.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestMessageSet result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSet();
       
@@ -373,7 +373,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetContainer();
       
@@ -608,7 +608,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1 result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1();
       
@@ -822,7 +822,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2 result = new global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2();
       
@@ -1071,7 +1071,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item result = new global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item();
           
@@ -1290,7 +1290,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.RawMessageSet.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.RawMessageSet result = new global::Google.ProtocolBuffers.TestProtos.RawMessageSet();
       

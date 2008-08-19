@@ -363,7 +363,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet result = new global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet();
       
@@ -726,7 +726,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto();
       
@@ -1326,7 +1326,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange result = new global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange();
           
@@ -1646,7 +1646,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto();
       
@@ -2337,7 +2337,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto();
       
@@ -2791,7 +2791,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto();
       
@@ -3136,7 +3136,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto();
       
@@ -3450,7 +3450,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto();
       
@@ -3811,7 +3811,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto result = new global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto();
       
@@ -4254,7 +4254,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.FileOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.FileOptions();
       
@@ -4674,7 +4674,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions();
       
@@ -4906,7 +4906,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions();
       
@@ -5128,7 +5128,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions();
       
@@ -5293,7 +5293,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions();
       
@@ -5458,7 +5458,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions();
       
@@ -5623,7 +5623,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions result = new global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions();
       

@@ -1111,7 +1111,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage result = new global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage();
           
@@ -1318,7 +1318,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup result = new global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup();
           
@@ -1525,7 +1525,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup result = new global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup();
           
@@ -2847,7 +2847,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestAllTypes.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestAllTypes result = new global::Google.ProtocolBuffers.TestProtos.TestAllTypes();
       
@@ -5420,7 +5420,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.ForeignMessage result = new global::Google.ProtocolBuffers.TestProtos.ForeignMessage();
       
@@ -5615,7 +5615,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestAllExtensions result = new global::Google.ProtocolBuffers.TestProtos.TestAllExtensions();
       
@@ -5796,7 +5796,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension result = new global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension();
       
@@ -6003,7 +6003,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension result = new global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension();
       
@@ -6735,7 +6735,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestRequired.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestRequired result = new global::Google.ProtocolBuffers.TestProtos.TestRequired();
       
@@ -7814,7 +7814,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign result = new global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign();
       
@@ -8127,7 +8127,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestForeignNested.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestForeignNested result = new global::Google.ProtocolBuffers.TestProtos.TestForeignNested();
       
@@ -8339,7 +8339,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage result = new global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage();
       
@@ -8508,7 +8508,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions result = new global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions();
       
@@ -8705,7 +8705,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber result = new global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber();
       
@@ -8954,7 +8954,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage result = new global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage();
       
@@ -9208,7 +9208,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA result = new global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA();
       
@@ -9452,7 +9452,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB result = new global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB();
       
@@ -9730,7 +9730,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo result = new global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo();
           
@@ -9937,7 +9937,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar result = new global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar();
           
@@ -10157,7 +10157,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber result = new global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber();
       
@@ -10503,7 +10503,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           // Construct using global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.CreateBuilder()
-          internal Builder() {}
+          public Builder() {}
           
           global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage result = new global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage();
           
@@ -10768,7 +10768,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits result = new global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits();
       
@@ -11188,7 +11188,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames result = new global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames();
       
@@ -11873,7 +11873,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings result = new global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings();
       
@@ -12212,7 +12212,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues result = new global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues();
       
@@ -12533,7 +12533,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.FooRequest.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.FooRequest result = new global::Google.ProtocolBuffers.TestProtos.FooRequest();
       
@@ -12698,7 +12698,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.FooResponse.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.FooResponse result = new global::Google.ProtocolBuffers.TestProtos.FooResponse();
       
@@ -12863,7 +12863,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.BarRequest.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.BarRequest result = new global::Google.ProtocolBuffers.TestProtos.BarRequest();
       
@@ -13028,7 +13028,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       // Construct using global::Google.ProtocolBuffers.TestProtos.BarResponse.CreateBuilder()
-      internal Builder() {}
+      public Builder() {}
       
       global::Google.ProtocolBuffers.TestProtos.BarResponse result = new global::Google.ProtocolBuffers.TestProtos.BarResponse();
       

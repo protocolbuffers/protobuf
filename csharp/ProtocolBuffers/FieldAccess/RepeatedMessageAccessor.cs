@@ -36,7 +36,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     private readonly Func<IBuilder> createBuilderDelegate;
 
     internal RepeatedMessageAccessor(string name) : base(name) {
-      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);
+      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", Type.EmptyTypes);
       if (createBuilderMethod == null) {
         throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);
       }

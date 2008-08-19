@@ -71,5 +71,10 @@ namespace Google.ProtocolBuffers {
         "Protocol message was too large.  May be malicious.  " +
         "Use CodedInputStream.SetSizeLimit() to increase the size limit.");
     }
+
+    internal static InvalidProtocolBufferException InvalidMessageStreamTag() {
+      return new InvalidProtocolBufferException(
+        "Stream of protocol messages had invalid tag. Expected tag is length-delimited field 1.");
+    }
   }
 }

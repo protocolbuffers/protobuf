@@ -31,8 +31,8 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// </summary>
     private readonly Func<IBuilder> createBuilderDelegate;
 
-    internal SingleMessageAccessor(string name) : base(name) {      
-      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", new Type[0]);
+    internal SingleMessageAccessor(string name) : base(name) {
+      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", Type.EmptyTypes);
       if (createBuilderMethod == null) {
         throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);
       }
