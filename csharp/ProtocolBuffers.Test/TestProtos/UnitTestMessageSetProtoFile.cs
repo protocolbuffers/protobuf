@@ -95,7 +95,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestMessageSet : pb::ExtendableMessage<TestMessageSet, TestMessageSet.Builder> {
-    private static readonly TestMessageSet defaultInstance = new TestMessageSet();
+    private static readonly TestMessageSet defaultInstance = new Builder().BuildPartial();
     public static TestMessageSet DefaultInstance {
       get { return defaultInstance; }
     }
@@ -264,7 +264,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMessageSetContainer : pb::GeneratedMessage<TestMessageSetContainer, TestMessageSetContainer.Builder> {
-    private static readonly TestMessageSetContainer defaultInstance = new TestMessageSetContainer();
+    private static readonly TestMessageSetContainer defaultInstance = new Builder().BuildPartial();
     public static TestMessageSetContainer DefaultInstance {
       get { return defaultInstance; }
     }
@@ -495,7 +495,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMessageSetExtension1 : pb::GeneratedMessage<TestMessageSetExtension1, TestMessageSetExtension1.Builder> {
-    private static readonly TestMessageSetExtension1 defaultInstance = new TestMessageSetExtension1();
+    private static readonly TestMessageSetExtension1 defaultInstance = new Builder().BuildPartial();
     public static TestMessageSetExtension1 DefaultInstance {
       get { return defaultInstance; }
     }
@@ -709,7 +709,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMessageSetExtension2 : pb::GeneratedMessage<TestMessageSetExtension2, TestMessageSetExtension2.Builder> {
-    private static readonly TestMessageSetExtension2 defaultInstance = new TestMessageSetExtension2();
+    private static readonly TestMessageSetExtension2 defaultInstance = new Builder().BuildPartial();
     public static TestMessageSetExtension2 DefaultInstance {
       get { return defaultInstance; }
     }
@@ -923,7 +923,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class RawMessageSet : pb::GeneratedMessage<RawMessageSet, RawMessageSet.Builder> {
-    private static readonly RawMessageSet defaultInstance = new RawMessageSet();
+    private static readonly RawMessageSet defaultInstance = new Builder().BuildPartial();
     public static RawMessageSet DefaultInstance {
       get { return defaultInstance; }
     }
@@ -947,7 +947,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Nested types
     public static class Types {
       public sealed partial class Item : pb::GeneratedMessage<Item, Item.Builder> {
-        private static readonly Item defaultInstance = new Item();
+        private static readonly Item defaultInstance = new Builder().BuildPartial();
         public static Item DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1201,7 +1201,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     // repeated group Item = 1 {
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> item_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> item_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
       get { return item_; } 
     }
@@ -1316,9 +1316,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override global::Google.ProtocolBuffers.TestProtos.RawMessageSet BuildPartial() {
-        if (result.item_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
-          result.item_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.AsReadOnly(result.item_);
-        }
+        result.item_.MakeReadOnly();
         global::Google.ProtocolBuffers.TestProtos.RawMessageSet returnMe = result;
         result = null;
         return returnMe;
@@ -1336,9 +1334,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.RawMessageSet other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.RawMessageSet.DefaultInstance) return this;
         if (other.item_.Count != 0) {
-          if (result.item_.Count == 0) {
-            result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
-          }
           base.AddRange(other.item_, result.item_);
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -1379,7 +1374,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated group Item = 1 {
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
-        get { return pbc::Lists.AsReadOnly(result.item_); }
+        get { return result.item_; }
       }
       public int ItemCount {
         get { return result.ItemCount; }
@@ -1396,28 +1391,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddItem(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item value) {
-        if (result.item_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
-          result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
-        }
         result.item_.Add(value);
         return this;
       }
       public Builder AddItem(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder builderForValue) {
-        if (result.item_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
-          result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
-        }
         result.item_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeItem(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> values) {
-        if (result.item_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty) {
-          result.item_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
-        }
         base.AddRange(values, result.item_);
         return this;
       }
       public Builder ClearItem() {
-        result.item_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>.Empty;
+        result.item_.Clear();
         return this;
       }
     }

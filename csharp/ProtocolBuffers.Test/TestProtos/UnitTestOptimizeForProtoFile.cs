@@ -54,7 +54,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestOptimizedForSize : pb::ExtendableMessage<TestOptimizedForSize, TestOptimizedForSize.Builder> {
-    private static readonly TestOptimizedForSize defaultInstance = new TestOptimizedForSize();
+    private static readonly TestOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
     }

@@ -7,7 +7,7 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   public sealed partial class MessageWithNoOuter : pb::GeneratedMessage<MessageWithNoOuter, MessageWithNoOuter.Builder> {
-    private static readonly MessageWithNoOuter defaultInstance = new MessageWithNoOuter();
+    private static readonly MessageWithNoOuter defaultInstance = new Builder().BuildPartial();
     public static MessageWithNoOuter DefaultInstance {
       get { return defaultInstance; }
     }
@@ -35,7 +35,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
-        private static readonly NestedMessage defaultInstance = new NestedMessage();
+        private static readonly NestedMessage defaultInstance = new Builder().BuildPartial();
         public static NestedMessage DefaultInstance {
           get { return defaultInstance; }
         }
@@ -179,7 +179,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest.TestAllTypes foreign = 2;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> foreign_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> foreign_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> ForeignList {
       get { return foreign_; } 
     }
@@ -278,9 +278,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter BuildPartial() {
-        if (result.foreign_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
-          result.foreign_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.AsReadOnly(result.foreign_);
-        }
+        result.foreign_.MakeReadOnly();
         global::Google.ProtocolBuffers.TestProtos.MessageWithNoOuter returnMe = result;
         result = null;
         return returnMe;
@@ -324,7 +322,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated .protobuf_unittest.TestAllTypes foreign = 2;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> ForeignList {
-        get { return pbc::Lists.AsReadOnly(result.foreign_); }
+        get { return result.foreign_; }
       }
       public int ForeignCount {
         get { return result.ForeignCount; }
@@ -341,28 +339,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddForeign(global::Google.ProtocolBuffers.TestProtos.TestAllTypes value) {
-        if (result.foreign_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
-          result.foreign_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
-        }
         result.foreign_.Add(value);
         return this;
       }
       public Builder AddForeign(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder builderForValue) {
-        if (result.foreign_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
-          result.foreign_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
-        }
         result.foreign_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeForeign(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes> values) {
-        if (result.foreign_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty) {
-          result.foreign_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>();
-        }
         base.AddRange(values, result.foreign_);
         return this;
       }
       public Builder ClearForeign() {
-        result.foreign_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes>.Empty;
+        result.foreign_.Clear();
         return this;
       }
       

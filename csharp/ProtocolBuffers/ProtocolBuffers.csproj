@@ -41,6 +41,7 @@
     <Compile Include="AbstractBuilder.cs" />
     <Compile Include="AbstractMessage.cs" />
     <Compile Include="ByteString.cs" />
+    <Compile Include="Collections\PopsicleList.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
@@ -72,7 +73,6 @@
     <Compile Include="ExtendableMessage.cs" />
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
-    <Compile Include="FieldAccess\Delegates.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />
     <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
     <Compile Include="FieldAccess\SingleMessageAccessor.cs" />

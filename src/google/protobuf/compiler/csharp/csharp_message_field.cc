@@ -175,9 +175,9 @@ RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private scg::IList<$type$> $name$_ = pbc::Lists<$type$>.Empty;\r\n"
+    "private pbc::PopsicleList<$type$> $name$_ = new pbc::PopsicleList<$type$>();\r\n"
     "public scg::IList<$type$> $capitalized_name$List {\r\n"
-    "  get { return $name$_; } \r\n"   // note:  unmodifiable list
+    "  get { return $name$_; } \r\n"   // Will be unmodifiable by the time it's exposed
     "}\r\n"
     "public int $capitalized_name$Count\r\n"
     "  { get { return $name$_.Count; }\r\n"
@@ -190,12 +190,10 @@ GenerateMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    // Note:  We return an unmodifiable list because otherwise the caller
-    //   could hold on to the returned list and modify it after the message
-    //   has been built, thus mutating the message which is supposed to be
-    //   immutable.
+    // Note:  We can return the original list here, because we
+    // make it read-only when we build.
     "public scg::IList<$type$> $capitalized_name$List {\r\n"
-    "  get { return pbc::Lists.AsReadOnly(result.$name$_); }\r\n"
+    "  get { return result.$name$_; }\r\n"
     "}\r\n"
     "public int $capitalized_name$Count {\r\n"
     "  get { return result.$capitalized_name$Count; }\r\n"
@@ -212,28 +210,19 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  return this;\r\n"
     "}\r\n"
     "public Builder Add$capitalized_name$($type$ value) {\r\n"
-    "  if (result.$name$_ == pbc::Lists<$type$>.Empty) {\r\n"
-    "    result.$name$_ = new scg::List<$type$>();\r\n"
-    "  }\r\n"
     "  result.$name$_.Add(value);\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder Add$capitalized_name$($type$.Builder builderForValue) {\r\n"
-    "  if (result.$name$_ == pbc::Lists<$type$>.Empty) {\r\n"
-    "    result.$name$_ = new scg::List<$type$>();\r\n"
-    "  }\r\n"
     "  result.$name$_.Add(builderForValue.Build());\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder AddRange$capitalized_name$(scg::IEnumerable<$type$> values) {\r\n"
-    "  if (result.$name$_ == pbc::Lists<$type$>.Empty) {\r\n"
-    "    result.$name$_ = new scg::List<$type$>();\r\n"
-    "  }\r\n"
     "  base.AddRange(values, result.$name$_);\r\n"
     "  return this;\r\n"
     "}\r\n"
     "public Builder Clear$capitalized_name$() {\r\n"
-    "  result.$name$_ = pbc::Lists<$type$>.Empty;\r\n"
+    "  result.$name$_.Clear();\r\n"
     "  return this;\r\n"
     "}\r\n");
 }
@@ -242,9 +231,6 @@ void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (other.$name$_.Count != 0) {\r\n"
-    "  if (result.$name$_.Count == 0) {\r\n"
-    "    result.$name$_ = new scg::List<$type$>();\r\n"
-    "  }\r\n"
     "  base.AddRange(other.$name$_, result.$name$_);\r\n"
     "}\r\n");
 }
@@ -252,9 +238,7 @@ GenerateMergingCode(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (result.$name$_ != pbc::Lists<$type$>.Empty) {\r\n"
-    "  result.$name$_ = pbc::Lists<$type$>.AsReadOnly(result.$name$_);\r\n"
-    "}\r\n");
+    "result.$name$_.MakeReadOnly();\r\n");
 }
 
 void RepeatedMessageFieldGenerator::

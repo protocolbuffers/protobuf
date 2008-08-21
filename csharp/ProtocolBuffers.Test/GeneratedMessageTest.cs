@@ -13,6 +13,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System;
+using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
@@ -28,7 +30,50 @@ namespace Google.ProtocolBuffers {
       reflectionTester = ReflectionTester.CreateTestAllTypesInstance();
       extensionsReflectionTester = ReflectionTester.CreateTestAllExtensionsInstance();
     }
-    
+
+    [Test]
+    public void RepeatedAddPrimitiveBeforeBuild() {
+      TestAllTypes message = new TestAllTypes.Builder { RepeatedInt32List = { 1, 2, 3 } }.Build();
+      TestUtil.AssertEqual(new int[]{1, 2, 3}, message.RepeatedInt32List);
+    }
+
+    [Test]
+    public void AddPrimitiveFailsAfterBuild() {
+      TestAllTypes.Builder builder = new TestAllTypes.Builder();
+      IList<int> list = builder.RepeatedInt32List;
+      list.Add(1); // Fine
+      builder.Build();
+
+      try {
+        list.Add(2);
+        Assert.Fail("List should be frozen");
+      } catch (NotSupportedException) {
+        // Expected
+      }
+    }
+
+    [Test]
+    public void RepeatedAddMessageBeforeBuild() {
+      TestAllTypes message = new TestAllTypes.Builder {
+          RepeatedNestedMessageList = { new TestAllTypes.Types.NestedMessage.Builder { Bb = 10 }.Build() } }.Build();
+      Assert.AreEqual(1, message.RepeatedNestedMessageCount);
+      Assert.AreEqual(10, message.RepeatedNestedMessageList[0].Bb);
+    }
+
+    [Test]
+    public void AddMessageFailsAfterBuild() {
+      TestAllTypes.Builder builder = new TestAllTypes.Builder();
+      IList<TestAllTypes.Types.NestedMessage> list = builder.RepeatedNestedMessageList;
+      builder.Build();
+
+      try {
+        list.Add(new TestAllTypes.Types.NestedMessage.Builder { Bb = 10 }.Build());
+        Assert.Fail("List should be frozen");
+      } catch (NotSupportedException) {
+        // Expected
+      }
+    }
+
     [Test]
     public void DefaultInstance() {
       Assert.AreSame(TestAllTypes.DefaultInstance, TestAllTypes.DefaultInstance.DefaultInstanceForType);

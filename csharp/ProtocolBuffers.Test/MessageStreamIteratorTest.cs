@@ -11,7 +11,7 @@ namespace Google.ProtocolBuffers {
     [Test]
     public void ThreeMessagesInMemory() {
       MemoryStream stream = new MemoryStream(MessageStreamWriterTest.ThreeMessageData);      
-      IEnumerable<NestedMessage> iterator = MessageStreamIterator.FromStreamProvider<NestedMessage>(() => stream);
+      IEnumerable<NestedMessage> iterator = MessageStreamIterator<NestedMessage>.FromStreamProvider(() => stream);
       List<NestedMessage> messages = new List<NestedMessage>(iterator);
 
       Assert.AreEqual(3, messages.Count);

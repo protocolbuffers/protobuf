@@ -212,7 +212,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
   printer->Indent();
   printer->Print(
-    "private static readonly $classname$ defaultInstance = new $classname$();\r\n"
+    // Must call Build() to make sure all lists are made read-only
+    "private static readonly $classname$ defaultInstance = new Builder().BuildPartial();\r\n"
     "public static $classname$ DefaultInstance {\r\n"
     "  get { return defaultInstance; }\r\n"
     "}\r\n"

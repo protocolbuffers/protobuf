@@ -255,7 +255,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   
   #region Messages
   public sealed partial class FileDescriptorSet : pb::GeneratedMessage<FileDescriptorSet, FileDescriptorSet.Builder> {
-    private static readonly FileDescriptorSet defaultInstance = new FileDescriptorSet();
+    private static readonly FileDescriptorSet defaultInstance = new Builder().BuildPartial();
     public static FileDescriptorSet DefaultInstance {
       get { return defaultInstance; }
     }
@@ -277,7 +277,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.FileDescriptorProto file = 1;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> file_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> file_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> FileList {
       get { return file_; } 
     }
@@ -389,9 +389,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet BuildPartial() {
-        if (result.file_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.Empty) {
-          result.file_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.AsReadOnly(result.file_);
-        }
+        result.file_.MakeReadOnly();
         global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet returnMe = result;
         result = null;
         return returnMe;
@@ -409,9 +407,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.DefaultInstance) return this;
         if (other.file_.Count != 0) {
-          if (result.file_.Count == 0) {
-            result.file_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>();
-          }
           base.AddRange(other.file_, result.file_);
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -452,7 +447,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       
       // repeated .google.protobuf.FileDescriptorProto file = 1;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> FileList {
-        get { return pbc::Lists.AsReadOnly(result.file_); }
+        get { return result.file_; }
       }
       public int FileCount {
         get { return result.FileCount; }
@@ -469,35 +464,26 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddFile(global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto value) {
-        if (result.file_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.Empty) {
-          result.file_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>();
-        }
         result.file_.Add(value);
         return this;
       }
       public Builder AddFile(global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder builderForValue) {
-        if (result.file_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.Empty) {
-          result.file_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>();
-        }
         result.file_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeFile(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> values) {
-        if (result.file_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.Empty) {
-          result.file_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>();
-        }
         base.AddRange(values, result.file_);
         return this;
       }
       public Builder ClearFile() {
-        result.file_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>.Empty;
+        result.file_.Clear();
         return this;
       }
     }
   }
   
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
-    private static readonly FileDescriptorProto defaultInstance = new FileDescriptorProto();
+    private static readonly FileDescriptorProto defaultInstance = new Builder().BuildPartial();
     public static FileDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -539,9 +525,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated string dependency = 3;
-    private scg::IList<string> dependency_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> dependency_ = new pbc::PopsicleList<string>();
     public scg::IList<string> DependencyList {
-      get { return dependency_; }
+      get { return dependency_; } 
     }
     public int DependencyCount {
       get { return dependency_.Count; }
@@ -551,7 +537,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.DescriptorProto message_type = 4;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> messageType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> messageType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> MessageTypeList {
       get { return messageType_; } 
     }
@@ -563,7 +549,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> enumType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
       get { return enumType_; } 
     }
@@ -575,7 +561,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> service_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> service_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> ServiceList {
       get { return service_; } 
     }
@@ -587,7 +573,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> extension_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
       get { return extension_; } 
     }
@@ -752,19 +738,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto BuildPartial() {
-        result.dependency_ = pbc::Lists<string>.AsReadOnly(result.dependency_);
-        if (result.messageType_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.messageType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.AsReadOnly(result.messageType_);
-        }
-        if (result.enumType_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.AsReadOnly(result.enumType_);
-        }
-        if (result.service_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.Empty) {
-          result.service_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.AsReadOnly(result.service_);
-        }
-        if (result.extension_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.AsReadOnly(result.extension_);
-        }
+        result.dependency_.MakeReadOnly();
+        result.messageType_.MakeReadOnly();
+        result.enumType_.MakeReadOnly();
+        result.service_.MakeReadOnly();
+        result.extension_.MakeReadOnly();
         global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -788,33 +766,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Package = other.Package;
         }
         if (other.dependency_.Count != 0) {
-          if (result.dependency_.Count == 0) {
-            result.dependency_ = new scg::List<string>();
-          }
           base.AddRange(other.dependency_, result.dependency_);
         }
         if (other.messageType_.Count != 0) {
-          if (result.messageType_.Count == 0) {
-            result.messageType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-          }
           base.AddRange(other.messageType_, result.messageType_);
         }
         if (other.enumType_.Count != 0) {
-          if (result.enumType_.Count == 0) {
-            result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-          }
           base.AddRange(other.enumType_, result.enumType_);
         }
         if (other.service_.Count != 0) {
-          if (result.service_.Count == 0) {
-            result.service_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>();
-          }
           base.AddRange(other.service_, result.service_);
         }
         if (other.extension_.Count != 0) {
-          if (result.extension_.Count == 0) {
-            result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-          }
           base.AddRange(other.extension_, result.extension_);
         }
         if (other.HasOptions) {
@@ -935,7 +898,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       
       // repeated string dependency = 3;
       public scg::IList<string> DependencyList {
-        get { return pbc::Lists<string>.AsReadOnly(result.dependency_); }
+        get { return result.dependency_; }
       }
       public int DependencyCount {
         get { return result.DependencyCount; }
@@ -948,27 +911,21 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddDependency(string value) {
-        if (result.dependency_.Count == 0) {
-          result.dependency_ = new scg::List<string>();
-        }
         result.dependency_.Add(value);
         return this;
       }
       public Builder AddRangeDependency(scg::IEnumerable<string> values) {
-        if (result.dependency_.Count == 0) {
-          result.dependency_ = new scg::List<string>();
-        }
         base.AddRange(values, result.dependency_);
         return this;
       }
       public Builder ClearDependency() {
-        result.dependency_ = pbc::Lists<string>.Empty;
+        result.dependency_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.DescriptorProto message_type = 4;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> MessageTypeList {
-        get { return pbc::Lists.AsReadOnly(result.messageType_); }
+        get { return result.messageType_; }
       }
       public int MessageTypeCount {
         get { return result.MessageTypeCount; }
@@ -985,34 +942,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddMessageType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto value) {
-        if (result.messageType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.messageType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-        }
         result.messageType_.Add(value);
         return this;
       }
       public Builder AddMessageType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder builderForValue) {
-        if (result.messageType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.messageType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-        }
         result.messageType_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeMessageType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> values) {
-        if (result.messageType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.messageType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-        }
         base.AddRange(values, result.messageType_);
         return this;
       }
       public Builder ClearMessageType() {
-        result.messageType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty;
+        result.messageType_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
-        get { return pbc::Lists.AsReadOnly(result.enumType_); }
+        get { return result.enumType_; }
       }
       public int EnumTypeCount {
         get { return result.EnumTypeCount; }
@@ -1029,34 +977,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto value) {
-        if (result.enumType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-        }
         result.enumType_.Add(value);
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder builderForValue) {
-        if (result.enumType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-        }
         result.enumType_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeEnumType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> values) {
-        if (result.enumType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-        }
         base.AddRange(values, result.enumType_);
         return this;
       }
       public Builder ClearEnumType() {
-        result.enumType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty;
+        result.enumType_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.ServiceDescriptorProto service = 6;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> ServiceList {
-        get { return pbc::Lists.AsReadOnly(result.service_); }
+        get { return result.service_; }
       }
       public int ServiceCount {
         get { return result.ServiceCount; }
@@ -1073,34 +1012,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddService(global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto value) {
-        if (result.service_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.Empty) {
-          result.service_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>();
-        }
         result.service_.Add(value);
         return this;
       }
       public Builder AddService(global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder builderForValue) {
-        if (result.service_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.Empty) {
-          result.service_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>();
-        }
         result.service_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeService(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> values) {
-        if (result.service_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.Empty) {
-          result.service_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>();
-        }
         base.AddRange(values, result.service_);
         return this;
       }
       public Builder ClearService() {
-        result.service_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>.Empty;
+        result.service_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.FieldDescriptorProto extension = 7;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
-        get { return pbc::Lists.AsReadOnly(result.extension_); }
+        get { return result.extension_; }
       }
       public int ExtensionCount {
         get { return result.ExtensionCount; }
@@ -1117,28 +1047,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
-        if (result.extension_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         result.extension_.Add(value);
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
-        if (result.extension_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         result.extension_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeExtension(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> values) {
-        if (result.extension_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         base.AddRange(values, result.extension_);
         return this;
       }
       public Builder ClearExtension() {
-        result.extension_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty;
+        result.extension_.Clear();
         return this;
       }
       
@@ -1180,7 +1101,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
-    private static readonly DescriptorProto defaultInstance = new DescriptorProto();
+    private static readonly DescriptorProto defaultInstance = new Builder().BuildPartial();
     public static DescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -1204,7 +1125,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     #region Nested types
     public static class Types {
       public sealed partial class ExtensionRange : pb::GeneratedMessage<ExtensionRange, ExtensionRange.Builder> {
-        private static readonly ExtensionRange defaultInstance = new ExtensionRange();
+        private static readonly ExtensionRange defaultInstance = new Builder().BuildPartial();
         public static ExtensionRange DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1466,7 +1387,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.FieldDescriptorProto field = 2;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> field_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> field_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> FieldList {
       get { return field_; } 
     }
@@ -1478,7 +1399,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> extension_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
       get { return extension_; } 
     }
@@ -1490,7 +1411,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.DescriptorProto nested_type = 3;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> nestedType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> nestedType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> NestedTypeList {
       get { return nestedType_; } 
     }
@@ -1502,7 +1423,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> enumType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
       get { return enumType_; } 
     }
@@ -1514,7 +1435,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> extensionRange_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRangeList {
       get { return extensionRange_; } 
     }
@@ -1672,21 +1593,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto BuildPartial() {
-        if (result.field_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.field_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.AsReadOnly(result.field_);
-        }
-        if (result.extension_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.AsReadOnly(result.extension_);
-        }
-        if (result.nestedType_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.nestedType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.AsReadOnly(result.nestedType_);
-        }
-        if (result.enumType_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.AsReadOnly(result.enumType_);
-        }
-        if (result.extensionRange_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.Empty) {
-          result.extensionRange_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.AsReadOnly(result.extensionRange_);
-        }
+        result.field_.MakeReadOnly();
+        result.extension_.MakeReadOnly();
+        result.nestedType_.MakeReadOnly();
+        result.enumType_.MakeReadOnly();
+        result.extensionRange_.MakeReadOnly();
         global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -1707,33 +1618,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Name = other.Name;
         }
         if (other.field_.Count != 0) {
-          if (result.field_.Count == 0) {
-            result.field_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-          }
           base.AddRange(other.field_, result.field_);
         }
         if (other.extension_.Count != 0) {
-          if (result.extension_.Count == 0) {
-            result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-          }
           base.AddRange(other.extension_, result.extension_);
         }
         if (other.nestedType_.Count != 0) {
-          if (result.nestedType_.Count == 0) {
-            result.nestedType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-          }
           base.AddRange(other.nestedType_, result.nestedType_);
         }
         if (other.enumType_.Count != 0) {
-          if (result.enumType_.Count == 0) {
-            result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-          }
           base.AddRange(other.enumType_, result.enumType_);
         }
         if (other.extensionRange_.Count != 0) {
-          if (result.extensionRange_.Count == 0) {
-            result.extensionRange_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
-          }
           base.AddRange(other.extensionRange_, result.extensionRange_);
         }
         if (other.HasOptions) {
@@ -1833,7 +1729,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       
       // repeated .google.protobuf.FieldDescriptorProto field = 2;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> FieldList {
-        get { return pbc::Lists.AsReadOnly(result.field_); }
+        get { return result.field_; }
       }
       public int FieldCount {
         get { return result.FieldCount; }
@@ -1850,34 +1746,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddField(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
-        if (result.field_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.field_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         result.field_.Add(value);
         return this;
       }
       public Builder AddField(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
-        if (result.field_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.field_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         result.field_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeField(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> values) {
-        if (result.field_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.field_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         base.AddRange(values, result.field_);
         return this;
       }
       public Builder ClearField() {
-        result.field_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty;
+        result.field_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.FieldDescriptorProto extension = 6;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
-        get { return pbc::Lists.AsReadOnly(result.extension_); }
+        get { return result.extension_; }
       }
       public int ExtensionCount {
         get { return result.ExtensionCount; }
@@ -1894,34 +1781,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
-        if (result.extension_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         result.extension_.Add(value);
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
-        if (result.extension_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         result.extension_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeExtension(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> values) {
-        if (result.extension_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty) {
-          result.extension_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
-        }
         base.AddRange(values, result.extension_);
         return this;
       }
       public Builder ClearExtension() {
-        result.extension_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>.Empty;
+        result.extension_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.DescriptorProto nested_type = 3;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> NestedTypeList {
-        get { return pbc::Lists.AsReadOnly(result.nestedType_); }
+        get { return result.nestedType_; }
       }
       public int NestedTypeCount {
         get { return result.NestedTypeCount; }
@@ -1938,34 +1816,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddNestedType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto value) {
-        if (result.nestedType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.nestedType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-        }
         result.nestedType_.Add(value);
         return this;
       }
       public Builder AddNestedType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder builderForValue) {
-        if (result.nestedType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.nestedType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-        }
         result.nestedType_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeNestedType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> values) {
-        if (result.nestedType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty) {
-          result.nestedType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
-        }
         base.AddRange(values, result.nestedType_);
         return this;
       }
       public Builder ClearNestedType() {
-        result.nestedType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>.Empty;
+        result.nestedType_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
-        get { return pbc::Lists.AsReadOnly(result.enumType_); }
+        get { return result.enumType_; }
       }
       public int EnumTypeCount {
         get { return result.EnumTypeCount; }
@@ -1982,34 +1851,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto value) {
-        if (result.enumType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-        }
         result.enumType_.Add(value);
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder builderForValue) {
-        if (result.enumType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-        }
         result.enumType_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeEnumType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> values) {
-        if (result.enumType_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty) {
-          result.enumType_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
-        }
         base.AddRange(values, result.enumType_);
         return this;
       }
       public Builder ClearEnumType() {
-        result.enumType_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>.Empty;
+        result.enumType_.Clear();
         return this;
       }
       
       // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRangeList {
-        get { return pbc::Lists.AsReadOnly(result.extensionRange_); }
+        get { return result.extensionRange_; }
       }
       public int ExtensionRangeCount {
         get { return result.ExtensionRangeCount; }
@@ -2026,28 +1886,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddExtensionRange(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange value) {
-        if (result.extensionRange_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.Empty) {
-          result.extensionRange_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
-        }
         result.extensionRange_.Add(value);
         return this;
       }
       public Builder AddExtensionRange(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder builderForValue) {
-        if (result.extensionRange_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.Empty) {
-          result.extensionRange_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
-        }
         result.extensionRange_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeExtensionRange(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> values) {
-        if (result.extensionRange_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.Empty) {
-          result.extensionRange_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
-        }
         base.AddRange(values, result.extensionRange_);
         return this;
       }
       public Builder ClearExtensionRange() {
-        result.extensionRange_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>.Empty;
+        result.extensionRange_.Clear();
         return this;
       }
       
@@ -2089,7 +1940,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
-    private static readonly FieldDescriptorProto defaultInstance = new FieldDescriptorProto();
+    private static readonly FieldDescriptorProto defaultInstance = new Builder().BuildPartial();
     public static FieldDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -2651,7 +2502,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
-    private static readonly EnumDescriptorProto defaultInstance = new EnumDescriptorProto();
+    private static readonly EnumDescriptorProto defaultInstance = new Builder().BuildPartial();
     public static EnumDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -2683,7 +2534,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> value_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> value_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> ValueList {
       get { return value_; } 
     }
@@ -2817,9 +2668,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto BuildPartial() {
-        if (result.value_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.Empty) {
-          result.value_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.AsReadOnly(result.value_);
-        }
+        result.value_.MakeReadOnly();
         global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -2840,9 +2689,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Name = other.Name;
         }
         if (other.value_.Count != 0) {
-          if (result.value_.Count == 0) {
-            result.value_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>();
-          }
           base.AddRange(other.value_, result.value_);
         }
         if (other.HasOptions) {
@@ -2918,7 +2764,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       
       // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> ValueList {
-        get { return pbc::Lists.AsReadOnly(result.value_); }
+        get { return result.value_; }
       }
       public int ValueCount {
         get { return result.ValueCount; }
@@ -2935,28 +2781,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddValue(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto value) {
-        if (result.value_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.Empty) {
-          result.value_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>();
-        }
         result.value_.Add(value);
         return this;
       }
       public Builder AddValue(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder builderForValue) {
-        if (result.value_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.Empty) {
-          result.value_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>();
-        }
         result.value_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeValue(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> values) {
-        if (result.value_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.Empty) {
-          result.value_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>();
-        }
         base.AddRange(values, result.value_);
         return this;
       }
       public Builder ClearValue() {
-        result.value_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>.Empty;
+        result.value_.Clear();
         return this;
       }
       
@@ -2998,7 +2835,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
-    private static readonly EnumValueDescriptorProto defaultInstance = new EnumValueDescriptorProto();
+    private static readonly EnumValueDescriptorProto defaultInstance = new Builder().BuildPartial();
     public static EnumValueDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -3310,7 +3147,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class ServiceDescriptorProto : pb::GeneratedMessage<ServiceDescriptorProto, ServiceDescriptorProto.Builder> {
-    private static readonly ServiceDescriptorProto defaultInstance = new ServiceDescriptorProto();
+    private static readonly ServiceDescriptorProto defaultInstance = new Builder().BuildPartial();
     public static ServiceDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -3342,7 +3179,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     // repeated .google.protobuf.MethodDescriptorProto method = 2;
-    private scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> method_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> method_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> MethodList {
       get { return method_; } 
     }
@@ -3476,9 +3313,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto BuildPartial() {
-        if (result.method_ != pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.Empty) {
-          result.method_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.AsReadOnly(result.method_);
-        }
+        result.method_.MakeReadOnly();
         global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -3499,9 +3334,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Name = other.Name;
         }
         if (other.method_.Count != 0) {
-          if (result.method_.Count == 0) {
-            result.method_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>();
-          }
           base.AddRange(other.method_, result.method_);
         }
         if (other.HasOptions) {
@@ -3577,7 +3409,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       
       // repeated .google.protobuf.MethodDescriptorProto method = 2;
       public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> MethodList {
-        get { return pbc::Lists.AsReadOnly(result.method_); }
+        get { return result.method_; }
       }
       public int MethodCount {
         get { return result.MethodCount; }
@@ -3594,28 +3426,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddMethod(global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto value) {
-        if (result.method_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.Empty) {
-          result.method_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>();
-        }
         result.method_.Add(value);
         return this;
       }
       public Builder AddMethod(global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder builderForValue) {
-        if (result.method_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.Empty) {
-          result.method_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>();
-        }
         result.method_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeMethod(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> values) {
-        if (result.method_ == pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.Empty) {
-          result.method_ = new scg::List<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>();
-        }
         base.AddRange(values, result.method_);
         return this;
       }
       public Builder ClearMethod() {
-        result.method_ = pbc::Lists<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>.Empty;
+        result.method_.Clear();
         return this;
       }
       
@@ -3657,7 +3480,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class MethodDescriptorProto : pb::GeneratedMessage<MethodDescriptorProto, MethodDescriptorProto.Builder> {
-    private static readonly MethodDescriptorProto defaultInstance = new MethodDescriptorProto();
+    private static readonly MethodDescriptorProto defaultInstance = new Builder().BuildPartial();
     public static MethodDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -4011,7 +3834,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class FileOptions : pb::GeneratedMessage<FileOptions, FileOptions.Builder> {
-    private static readonly FileOptions defaultInstance = new FileOptions();
+    private static readonly FileOptions defaultInstance = new Builder().BuildPartial();
     public static FileOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -4568,7 +4391,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class MessageOptions : pb::GeneratedMessage<MessageOptions, MessageOptions.Builder> {
-    private static readonly MessageOptions defaultInstance = new MessageOptions();
+    private static readonly MessageOptions defaultInstance = new Builder().BuildPartial();
     public static MessageOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -4775,7 +4598,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class FieldOptions : pb::GeneratedMessage<FieldOptions, FieldOptions.Builder> {
-    private static readonly FieldOptions defaultInstance = new FieldOptions();
+    private static readonly FieldOptions defaultInstance = new Builder().BuildPartial();
     public static FieldOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5038,7 +4861,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumOptions : pb::GeneratedMessage<EnumOptions, EnumOptions.Builder> {
-    private static readonly EnumOptions defaultInstance = new EnumOptions();
+    private static readonly EnumOptions defaultInstance = new Builder().BuildPartial();
     public static EnumOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5203,7 +5026,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class EnumValueOptions : pb::GeneratedMessage<EnumValueOptions, EnumValueOptions.Builder> {
-    private static readonly EnumValueOptions defaultInstance = new EnumValueOptions();
+    private static readonly EnumValueOptions defaultInstance = new Builder().BuildPartial();
     public static EnumValueOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5368,7 +5191,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class ServiceOptions : pb::GeneratedMessage<ServiceOptions, ServiceOptions.Builder> {
-    private static readonly ServiceOptions defaultInstance = new ServiceOptions();
+    private static readonly ServiceOptions defaultInstance = new Builder().BuildPartial();
     public static ServiceOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5533,7 +5356,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   public sealed partial class MethodOptions : pb::GeneratedMessage<MethodOptions, MethodOptions.Builder> {
-    private static readonly MethodOptions defaultInstance = new MethodOptions();
+    private static readonly MethodOptions defaultInstance = new Builder().BuildPartial();
     public static MethodOptions DefaultInstance {
       get { return defaultInstance; }
     }

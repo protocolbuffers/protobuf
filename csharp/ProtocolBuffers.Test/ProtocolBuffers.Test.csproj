@@ -50,6 +50,7 @@
     <Compile Include="ByteStringTest.cs" />
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
+    <Compile Include="Collections\PopsicleListTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />

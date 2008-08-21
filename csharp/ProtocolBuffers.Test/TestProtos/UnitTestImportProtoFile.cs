@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class ImportMessage : pb::GeneratedMessage<ImportMessage, ImportMessage.Builder> {
-    private static readonly ImportMessage defaultInstance = new ImportMessage();
+    private static readonly ImportMessage defaultInstance = new Builder().BuildPartial();
     public static ImportMessage DefaultInstance {
       get { return defaultInstance; }
     }

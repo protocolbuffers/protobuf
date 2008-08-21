@@ -975,7 +975,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestAllTypes : pb::GeneratedMessage<TestAllTypes, TestAllTypes.Builder> {
-    private static readonly TestAllTypes defaultInstance = new TestAllTypes();
+    private static readonly TestAllTypes defaultInstance = new Builder().BuildPartial();
     public static TestAllTypes DefaultInstance {
       get { return defaultInstance; }
     }
@@ -1005,7 +1005,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
-        private static readonly NestedMessage defaultInstance = new NestedMessage();
+        private static readonly NestedMessage defaultInstance = new Builder().BuildPartial();
         public static NestedMessage DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1212,7 +1212,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class OptionalGroup : pb::GeneratedMessage<OptionalGroup, OptionalGroup.Builder> {
-        private static readonly OptionalGroup defaultInstance = new OptionalGroup();
+        private static readonly OptionalGroup defaultInstance = new Builder().BuildPartial();
         public static OptionalGroup DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1419,7 +1419,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class RepeatedGroup : pb::GeneratedMessage<RepeatedGroup, RepeatedGroup.Builder> {
-        private static readonly RepeatedGroup defaultInstance = new RepeatedGroup();
+        private static readonly RepeatedGroup defaultInstance = new Builder().BuildPartial();
         public static RepeatedGroup DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1863,9 +1863,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated int32 repeated_int32 = 31;
-    private scg::IList<int> repeatedInt32_ = pbc::Lists<int>.Empty;
+    private pbc::PopsicleList<int> repeatedInt32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedInt32List {
-      get { return repeatedInt32_; }
+      get { return repeatedInt32_; } 
     }
     public int RepeatedInt32Count {
       get { return repeatedInt32_.Count; }
@@ -1875,9 +1875,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated int64 repeated_int64 = 32;
-    private scg::IList<long> repeatedInt64_ = pbc::Lists<long>.Empty;
+    private pbc::PopsicleList<long> repeatedInt64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> RepeatedInt64List {
-      get { return repeatedInt64_; }
+      get { return repeatedInt64_; } 
     }
     public int RepeatedInt64Count {
       get { return repeatedInt64_.Count; }
@@ -1887,9 +1887,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated uint32 repeated_uint32 = 33;
-    private scg::IList<uint> repeatedUint32_ = pbc::Lists<uint>.Empty;
+    private pbc::PopsicleList<uint> repeatedUint32_ = new pbc::PopsicleList<uint>();
     public scg::IList<uint> RepeatedUint32List {
-      get { return repeatedUint32_; }
+      get { return repeatedUint32_; } 
     }
     public int RepeatedUint32Count {
       get { return repeatedUint32_.Count; }
@@ -1899,9 +1899,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated uint64 repeated_uint64 = 34;
-    private scg::IList<ulong> repeatedUint64_ = pbc::Lists<ulong>.Empty;
+    private pbc::PopsicleList<ulong> repeatedUint64_ = new pbc::PopsicleList<ulong>();
     public scg::IList<ulong> RepeatedUint64List {
-      get { return repeatedUint64_; }
+      get { return repeatedUint64_; } 
     }
     public int RepeatedUint64Count {
       get { return repeatedUint64_.Count; }
@@ -1911,9 +1911,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated sint32 repeated_sint32 = 35;
-    private scg::IList<int> repeatedSint32_ = pbc::Lists<int>.Empty;
+    private pbc::PopsicleList<int> repeatedSint32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedSint32List {
-      get { return repeatedSint32_; }
+      get { return repeatedSint32_; } 
     }
     public int RepeatedSint32Count {
       get { return repeatedSint32_.Count; }
@@ -1923,9 +1923,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated sint64 repeated_sint64 = 36;
-    private scg::IList<long> repeatedSint64_ = pbc::Lists<long>.Empty;
+    private pbc::PopsicleList<long> repeatedSint64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> RepeatedSint64List {
-      get { return repeatedSint64_; }
+      get { return repeatedSint64_; } 
     }
     public int RepeatedSint64Count {
       get { return repeatedSint64_.Count; }
@@ -1935,9 +1935,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated fixed32 repeated_fixed32 = 37;
-    private scg::IList<uint> repeatedFixed32_ = pbc::Lists<uint>.Empty;
+    private pbc::PopsicleList<uint> repeatedFixed32_ = new pbc::PopsicleList<uint>();
     public scg::IList<uint> RepeatedFixed32List {
-      get { return repeatedFixed32_; }
+      get { return repeatedFixed32_; } 
     }
     public int RepeatedFixed32Count {
       get { return repeatedFixed32_.Count; }
@@ -1947,9 +1947,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated fixed64 repeated_fixed64 = 38;
-    private scg::IList<ulong> repeatedFixed64_ = pbc::Lists<ulong>.Empty;
+    private pbc::PopsicleList<ulong> repeatedFixed64_ = new pbc::PopsicleList<ulong>();
     public scg::IList<ulong> RepeatedFixed64List {
-      get { return repeatedFixed64_; }
+      get { return repeatedFixed64_; } 
     }
     public int RepeatedFixed64Count {
       get { return repeatedFixed64_.Count; }
@@ -1959,9 +1959,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated sfixed32 repeated_sfixed32 = 39;
-    private scg::IList<int> repeatedSfixed32_ = pbc::Lists<int>.Empty;
+    private pbc::PopsicleList<int> repeatedSfixed32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedSfixed32List {
-      get { return repeatedSfixed32_; }
+      get { return repeatedSfixed32_; } 
     }
     public int RepeatedSfixed32Count {
       get { return repeatedSfixed32_.Count; }
@@ -1971,9 +1971,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated sfixed64 repeated_sfixed64 = 40;
-    private scg::IList<long> repeatedSfixed64_ = pbc::Lists<long>.Empty;
+    private pbc::PopsicleList<long> repeatedSfixed64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> RepeatedSfixed64List {
-      get { return repeatedSfixed64_; }
+      get { return repeatedSfixed64_; } 
     }
     public int RepeatedSfixed64Count {
       get { return repeatedSfixed64_.Count; }
@@ -1983,9 +1983,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated float repeated_float = 41;
-    private scg::IList<float> repeatedFloat_ = pbc::Lists<float>.Empty;
+    private pbc::PopsicleList<float> repeatedFloat_ = new pbc::PopsicleList<float>();
     public scg::IList<float> RepeatedFloatList {
-      get { return repeatedFloat_; }
+      get { return repeatedFloat_; } 
     }
     public int RepeatedFloatCount {
       get { return repeatedFloat_.Count; }
@@ -1995,9 +1995,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated double repeated_double = 42;
-    private scg::IList<double> repeatedDouble_ = pbc::Lists<double>.Empty;
+    private pbc::PopsicleList<double> repeatedDouble_ = new pbc::PopsicleList<double>();
     public scg::IList<double> RepeatedDoubleList {
-      get { return repeatedDouble_; }
+      get { return repeatedDouble_; } 
     }
     public int RepeatedDoubleCount {
       get { return repeatedDouble_.Count; }
@@ -2007,9 +2007,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated bool repeated_bool = 43;
-    private scg::IList<bool> repeatedBool_ = pbc::Lists<bool>.Empty;
+    private pbc::PopsicleList<bool> repeatedBool_ = new pbc::PopsicleList<bool>();
     public scg::IList<bool> RepeatedBoolList {
-      get { return repeatedBool_; }
+      get { return repeatedBool_; } 
     }
     public int RepeatedBoolCount {
       get { return repeatedBool_.Count; }
@@ -2019,9 +2019,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated string repeated_string = 44;
-    private scg::IList<string> repeatedString_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> repeatedString_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringList {
-      get { return repeatedString_; }
+      get { return repeatedString_; } 
     }
     public int RepeatedStringCount {
       get { return repeatedString_.Count; }
@@ -2031,9 +2031,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated bytes repeated_bytes = 45;
-    private scg::IList<pb::ByteString> repeatedBytes_ = pbc::Lists<pb::ByteString>.Empty;
+    private pbc::PopsicleList<pb::ByteString> repeatedBytes_ = new pbc::PopsicleList<pb::ByteString>();
     public scg::IList<pb::ByteString> RepeatedBytesList {
-      get { return repeatedBytes_; }
+      get { return repeatedBytes_; } 
     }
     public int RepeatedBytesCount {
       get { return repeatedBytes_.Count; }
@@ -2043,7 +2043,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated group RepeatedGroup = 46 {
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> repeatedGroup_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> repeatedGroup_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> RepeatedGroupList {
       get { return repeatedGroup_; } 
     }
@@ -2055,7 +2055,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest.TestAllTypes.NestedMessage repeated_nested_message = 48;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
       get { return repeatedNestedMessage_; } 
     }
@@ -2067,7 +2067,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest.ForeignMessage repeated_foreign_message = 49;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedForeignMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedForeignMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
       get { return repeatedForeignMessage_; } 
     }
@@ -2079,7 +2079,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest_import.ImportMessage repeated_import_message = 50;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> repeatedImportMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> repeatedImportMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> RepeatedImportMessageList {
       get { return repeatedImportMessage_; } 
     }
@@ -2127,9 +2127,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
-    private scg::IList<string> repeatedStringPiece_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> repeatedStringPiece_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringPieceList {
-      get { return repeatedStringPiece_; }
+      get { return repeatedStringPiece_; } 
     }
     public int RepeatedStringPieceCount {
       get { return repeatedStringPiece_.Count; }
@@ -2139,9 +2139,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated string repeated_cord = 55 [ctype = CORD];
-    private scg::IList<string> repeatedCord_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> repeatedCord_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedCordList {
-      get { return repeatedCord_; }
+      get { return repeatedCord_; } 
     }
     public int RepeatedCordCount {
       get { return repeatedCord_.Count; }
@@ -2873,38 +2873,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override global::Google.ProtocolBuffers.TestProtos.TestAllTypes BuildPartial() {
-        result.repeatedInt32_ = pbc::Lists<int>.AsReadOnly(result.repeatedInt32_);
-        result.repeatedInt64_ = pbc::Lists<long>.AsReadOnly(result.repeatedInt64_);
-        result.repeatedUint32_ = pbc::Lists<uint>.AsReadOnly(result.repeatedUint32_);
-        result.repeatedUint64_ = pbc::Lists<ulong>.AsReadOnly(result.repeatedUint64_);
-        result.repeatedSint32_ = pbc::Lists<int>.AsReadOnly(result.repeatedSint32_);
-        result.repeatedSint64_ = pbc::Lists<long>.AsReadOnly(result.repeatedSint64_);
-        result.repeatedFixed32_ = pbc::Lists<uint>.AsReadOnly(result.repeatedFixed32_);
-        result.repeatedFixed64_ = pbc::Lists<ulong>.AsReadOnly(result.repeatedFixed64_);
-        result.repeatedSfixed32_ = pbc::Lists<int>.AsReadOnly(result.repeatedSfixed32_);
-        result.repeatedSfixed64_ = pbc::Lists<long>.AsReadOnly(result.repeatedSfixed64_);
-        result.repeatedFloat_ = pbc::Lists<float>.AsReadOnly(result.repeatedFloat_);
-        result.repeatedDouble_ = pbc::Lists<double>.AsReadOnly(result.repeatedDouble_);
-        result.repeatedBool_ = pbc::Lists<bool>.AsReadOnly(result.repeatedBool_);
-        result.repeatedString_ = pbc::Lists<string>.AsReadOnly(result.repeatedString_);
-        result.repeatedBytes_ = pbc::Lists<pb::ByteString>.AsReadOnly(result.repeatedBytes_);
-        if (result.repeatedGroup_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.Empty) {
-          result.repeatedGroup_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.AsReadOnly(result.repeatedGroup_);
-        }
-        if (result.repeatedNestedMessage_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.Empty) {
-          result.repeatedNestedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.AsReadOnly(result.repeatedNestedMessage_);
-        }
-        if (result.repeatedForeignMessage_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedForeignMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.AsReadOnly(result.repeatedForeignMessage_);
-        }
-        if (result.repeatedImportMessage_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.Empty) {
-          result.repeatedImportMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.AsReadOnly(result.repeatedImportMessage_);
-        }
+        result.repeatedInt32_.MakeReadOnly();
+        result.repeatedInt64_.MakeReadOnly();
+        result.repeatedUint32_.MakeReadOnly();
+        result.repeatedUint64_.MakeReadOnly();
+        result.repeatedSint32_.MakeReadOnly();
+        result.repeatedSint64_.MakeReadOnly();
+        result.repeatedFixed32_.MakeReadOnly();
+        result.repeatedFixed64_.MakeReadOnly();
+        result.repeatedSfixed32_.MakeReadOnly();
+        result.repeatedSfixed64_.MakeReadOnly();
+        result.repeatedFloat_.MakeReadOnly();
+        result.repeatedDouble_.MakeReadOnly();
+        result.repeatedBool_.MakeReadOnly();
+        result.repeatedString_.MakeReadOnly();
+        result.repeatedBytes_.MakeReadOnly();
+        result.repeatedGroup_.MakeReadOnly();
+        result.repeatedNestedMessage_.MakeReadOnly();
+        result.repeatedForeignMessage_.MakeReadOnly();
+        result.repeatedImportMessage_.MakeReadOnly();
         result.repeatedNestedEnum_ = pbc::Lists.AsReadOnly(result.repeatedNestedEnum_);
         result.repeatedForeignEnum_ = pbc::Lists.AsReadOnly(result.repeatedForeignEnum_);
         result.repeatedImportEnum_ = pbc::Lists.AsReadOnly(result.repeatedImportEnum_);
-        result.repeatedStringPiece_ = pbc::Lists<string>.AsReadOnly(result.repeatedStringPiece_);
-        result.repeatedCord_ = pbc::Lists<string>.AsReadOnly(result.repeatedCord_);
+        result.repeatedStringPiece_.MakeReadOnly();
+        result.repeatedCord_.MakeReadOnly();
         global::Google.ProtocolBuffers.TestProtos.TestAllTypes returnMe = result;
         result = null;
         return returnMe;
@@ -2994,117 +2986,60 @@ namespace Google.ProtocolBuffers.TestProtos {
           OptionalCord = other.OptionalCord;
         }
         if (other.repeatedInt32_.Count != 0) {
-          if (result.repeatedInt32_.Count == 0) {
-            result.repeatedInt32_ = new scg::List<int>();
-          }
           base.AddRange(other.repeatedInt32_, result.repeatedInt32_);
         }
         if (other.repeatedInt64_.Count != 0) {
-          if (result.repeatedInt64_.Count == 0) {
-            result.repeatedInt64_ = new scg::List<long>();
-          }
           base.AddRange(other.repeatedInt64_, result.repeatedInt64_);
         }
         if (other.repeatedUint32_.Count != 0) {
-          if (result.repeatedUint32_.Count == 0) {
-            result.repeatedUint32_ = new scg::List<uint>();
-          }
           base.AddRange(other.repeatedUint32_, result.repeatedUint32_);
         }
         if (other.repeatedUint64_.Count != 0) {
-          if (result.repeatedUint64_.Count == 0) {
-            result.repeatedUint64_ = new scg::List<ulong>();
-          }
           base.AddRange(other.repeatedUint64_, result.repeatedUint64_);
         }
         if (other.repeatedSint32_.Count != 0) {
-          if (result.repeatedSint32_.Count == 0) {
-            result.repeatedSint32_ = new scg::List<int>();
-          }
           base.AddRange(other.repeatedSint32_, result.repeatedSint32_);
         }
         if (other.repeatedSint64_.Count != 0) {
-          if (result.repeatedSint64_.Count == 0) {
-            result.repeatedSint64_ = new scg::List<long>();
-          }
           base.AddRange(other.repeatedSint64_, result.repeatedSint64_);
         }
         if (other.repeatedFixed32_.Count != 0) {
-          if (result.repeatedFixed32_.Count == 0) {
-            result.repeatedFixed32_ = new scg::List<uint>();
-          }
           base.AddRange(other.repeatedFixed32_, result.repeatedFixed32_);
         }
         if (other.repeatedFixed64_.Count != 0) {
-          if (result.repeatedFixed64_.Count == 0) {
-            result.repeatedFixed64_ = new scg::List<ulong>();
-          }
           base.AddRange(other.repeatedFixed64_, result.repeatedFixed64_);
         }
         if (other.repeatedSfixed32_.Count != 0) {
-          if (result.repeatedSfixed32_.Count == 0) {
-            result.repeatedSfixed32_ = new scg::List<int>();
-          }
           base.AddRange(other.repeatedSfixed32_, result.repeatedSfixed32_);
         }
         if (other.repeatedSfixed64_.Count != 0) {
-          if (result.repeatedSfixed64_.Count == 0) {
-            result.repeatedSfixed64_ = new scg::List<long>();
-          }
           base.AddRange(other.repeatedSfixed64_, result.repeatedSfixed64_);
         }
         if (other.repeatedFloat_.Count != 0) {
-          if (result.repeatedFloat_.Count == 0) {
-            result.repeatedFloat_ = new scg::List<float>();
-          }
           base.AddRange(other.repeatedFloat_, result.repeatedFloat_);
         }
         if (other.repeatedDouble_.Count != 0) {
-          if (result.repeatedDouble_.Count == 0) {
-            result.repeatedDouble_ = new scg::List<double>();
-          }
           base.AddRange(other.repeatedDouble_, result.repeatedDouble_);
         }
         if (other.repeatedBool_.Count != 0) {
-          if (result.repeatedBool_.Count == 0) {
-            result.repeatedBool_ = new scg::List<bool>();
-          }
           base.AddRange(other.repeatedBool_, result.repeatedBool_);
         }
         if (other.repeatedString_.Count != 0) {
-          if (result.repeatedString_.Count == 0) {
-            result.repeatedString_ = new scg::List<string>();
-          }
           base.AddRange(other.repeatedString_, result.repeatedString_);
         }
         if (other.repeatedBytes_.Count != 0) {
-          if (result.repeatedBytes_.Count == 0) {
-            result.repeatedBytes_ = new scg::List<pb::ByteString>();
-          }
           base.AddRange(other.repeatedBytes_, result.repeatedBytes_);
         }
         if (other.repeatedGroup_.Count != 0) {
-          if (result.repeatedGroup_.Count == 0) {
-            result.repeatedGroup_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>();
-          }
           base.AddRange(other.repeatedGroup_, result.repeatedGroup_);
         }
         if (other.repeatedNestedMessage_.Count != 0) {
-          if (result.repeatedNestedMessage_.Count == 0) {
-            result.repeatedNestedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
-          }
           base.AddRange(other.repeatedNestedMessage_, result.repeatedNestedMessage_);
         }
         if (other.repeatedForeignMessage_.Count != 0) {
-          if (result.repeatedForeignMessage_.Count == 0) {
-            result.repeatedForeignMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-          }
           base.AddRange(other.repeatedForeignMessage_, result.repeatedForeignMessage_);
         }
         if (other.repeatedImportMessage_.Count != 0) {
-          if (result.repeatedImportMessage_.Count == 0) {
-            result.repeatedImportMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ImportMessage>();
-          }
           base.AddRange(other.repeatedImportMessage_, result.repeatedImportMessage_);
         }
         if (other.repeatedNestedEnum_.Count != 0) {
@@ -3126,15 +3061,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           base.AddRange(other.repeatedImportEnum_, result.repeatedImportEnum_);
         }
         if (other.repeatedStringPiece_.Count != 0) {
-          if (result.repeatedStringPiece_.Count == 0) {
-            result.repeatedStringPiece_ = new scg::List<string>();
-          }
           base.AddRange(other.repeatedStringPiece_, result.repeatedStringPiece_);
         }
         if (other.repeatedCord_.Count != 0) {
-          if (result.repeatedCord_.Count == 0) {
-            result.repeatedCord_ = new scg::List<string>();
-          }
           base.AddRange(other.repeatedCord_, result.repeatedCord_);
         }
         if (other.HasDefaultInt32) {
@@ -4097,7 +4026,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated int32 repeated_int32 = 31;
       public scg::IList<int> RepeatedInt32List {
-        get { return pbc::Lists<int>.AsReadOnly(result.repeatedInt32_); }
+        get { return result.repeatedInt32_; }
       }
       public int RepeatedInt32Count {
         get { return result.RepeatedInt32Count; }
@@ -4110,27 +4039,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedInt32(int value) {
-        if (result.repeatedInt32_.Count == 0) {
-          result.repeatedInt32_ = new scg::List<int>();
-        }
         result.repeatedInt32_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedInt32(scg::IEnumerable<int> values) {
-        if (result.repeatedInt32_.Count == 0) {
-          result.repeatedInt32_ = new scg::List<int>();
-        }
         base.AddRange(values, result.repeatedInt32_);
         return this;
       }
       public Builder ClearRepeatedInt32() {
-        result.repeatedInt32_ = pbc::Lists<int>.Empty;
+        result.repeatedInt32_.Clear();
         return this;
       }
       
       // repeated int64 repeated_int64 = 32;
       public scg::IList<long> RepeatedInt64List {
-        get { return pbc::Lists<long>.AsReadOnly(result.repeatedInt64_); }
+        get { return result.repeatedInt64_; }
       }
       public int RepeatedInt64Count {
         get { return result.RepeatedInt64Count; }
@@ -4143,27 +4066,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedInt64(long value) {
-        if (result.repeatedInt64_.Count == 0) {
-          result.repeatedInt64_ = new scg::List<long>();
-        }
         result.repeatedInt64_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedInt64(scg::IEnumerable<long> values) {
-        if (result.repeatedInt64_.Count == 0) {
-          result.repeatedInt64_ = new scg::List<long>();
-        }
         base.AddRange(values, result.repeatedInt64_);
         return this;
       }
       public Builder ClearRepeatedInt64() {
-        result.repeatedInt64_ = pbc::Lists<long>.Empty;
+        result.repeatedInt64_.Clear();
         return this;
       }
       
       // repeated uint32 repeated_uint32 = 33;
       public scg::IList<uint> RepeatedUint32List {
-        get { return pbc::Lists<uint>.AsReadOnly(result.repeatedUint32_); }
+        get { return result.repeatedUint32_; }
       }
       public int RepeatedUint32Count {
         get { return result.RepeatedUint32Count; }
@@ -4176,27 +4093,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedUint32(uint value) {
-        if (result.repeatedUint32_.Count == 0) {
-          result.repeatedUint32_ = new scg::List<uint>();
-        }
         result.repeatedUint32_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedUint32(scg::IEnumerable<uint> values) {
-        if (result.repeatedUint32_.Count == 0) {
-          result.repeatedUint32_ = new scg::List<uint>();
-        }
         base.AddRange(values, result.repeatedUint32_);
         return this;
       }
       public Builder ClearRepeatedUint32() {
-        result.repeatedUint32_ = pbc::Lists<uint>.Empty;
+        result.repeatedUint32_.Clear();
         return this;
       }
       
       // repeated uint64 repeated_uint64 = 34;
       public scg::IList<ulong> RepeatedUint64List {
-        get { return pbc::Lists<ulong>.AsReadOnly(result.repeatedUint64_); }
+        get { return result.repeatedUint64_; }
       }
       public int RepeatedUint64Count {
         get { return result.RepeatedUint64Count; }
@@ -4209,27 +4120,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedUint64(ulong value) {
-        if (result.repeatedUint64_.Count == 0) {
-          result.repeatedUint64_ = new scg::List<ulong>();
-        }
         result.repeatedUint64_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedUint64(scg::IEnumerable<ulong> values) {
-        if (result.repeatedUint64_.Count == 0) {
-          result.repeatedUint64_ = new scg::List<ulong>();
-        }
         base.AddRange(values, result.repeatedUint64_);
         return this;
       }
       public Builder ClearRepeatedUint64() {
-        result.repeatedUint64_ = pbc::Lists<ulong>.Empty;
+        result.repeatedUint64_.Clear();
         return this;
       }
       
       // repeated sint32 repeated_sint32 = 35;
       public scg::IList<int> RepeatedSint32List {
-        get { return pbc::Lists<int>.AsReadOnly(result.repeatedSint32_); }
+        get { return result.repeatedSint32_; }
       }
       public int RepeatedSint32Count {
         get { return result.RepeatedSint32Count; }
@@ -4242,27 +4147,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedSint32(int value) {
-        if (result.repeatedSint32_.Count == 0) {
-          result.repeatedSint32_ = new scg::List<int>();
-        }
         result.repeatedSint32_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedSint32(scg::IEnumerable<int> values) {
-        if (result.repeatedSint32_.Count == 0) {
-          result.repeatedSint32_ = new scg::List<int>();
-        }
         base.AddRange(values, result.repeatedSint32_);
         return this;
       }
       public Builder ClearRepeatedSint32() {
-        result.repeatedSint32_ = pbc::Lists<int>.Empty;
+        result.repeatedSint32_.Clear();
         return this;
       }
       
       // repeated sint64 repeated_sint64 = 36;
       public scg::IList<long> RepeatedSint64List {
-        get { return pbc::Lists<long>.AsReadOnly(result.repeatedSint64_); }
+        get { return result.repeatedSint64_; }
       }
       public int RepeatedSint64Count {
         get { return result.RepeatedSint64Count; }
@@ -4275,27 +4174,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedSint64(long value) {
-        if (result.repeatedSint64_.Count == 0) {
-          result.repeatedSint64_ = new scg::List<long>();
-        }
         result.repeatedSint64_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedSint64(scg::IEnumerable<long> values) {
-        if (result.repeatedSint64_.Count == 0) {
-          result.repeatedSint64_ = new scg::List<long>();
-        }
         base.AddRange(values, result.repeatedSint64_);
         return this;
       }
       public Builder ClearRepeatedSint64() {
-        result.repeatedSint64_ = pbc::Lists<long>.Empty;
+        result.repeatedSint64_.Clear();
         return this;
       }
       
       // repeated fixed32 repeated_fixed32 = 37;
       public scg::IList<uint> RepeatedFixed32List {
-        get { return pbc::Lists<uint>.AsReadOnly(result.repeatedFixed32_); }
+        get { return result.repeatedFixed32_; }
       }
       public int RepeatedFixed32Count {
         get { return result.RepeatedFixed32Count; }
@@ -4308,27 +4201,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedFixed32(uint value) {
-        if (result.repeatedFixed32_.Count == 0) {
-          result.repeatedFixed32_ = new scg::List<uint>();
-        }
         result.repeatedFixed32_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedFixed32(scg::IEnumerable<uint> values) {
-        if (result.repeatedFixed32_.Count == 0) {
-          result.repeatedFixed32_ = new scg::List<uint>();
-        }
         base.AddRange(values, result.repeatedFixed32_);
         return this;
       }
       public Builder ClearRepeatedFixed32() {
-        result.repeatedFixed32_ = pbc::Lists<uint>.Empty;
+        result.repeatedFixed32_.Clear();
         return this;
       }
       
       // repeated fixed64 repeated_fixed64 = 38;
       public scg::IList<ulong> RepeatedFixed64List {
-        get { return pbc::Lists<ulong>.AsReadOnly(result.repeatedFixed64_); }
+        get { return result.repeatedFixed64_; }
       }
       public int RepeatedFixed64Count {
         get { return result.RepeatedFixed64Count; }
@@ -4341,27 +4228,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedFixed64(ulong value) {
-        if (result.repeatedFixed64_.Count == 0) {
-          result.repeatedFixed64_ = new scg::List<ulong>();
-        }
         result.repeatedFixed64_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedFixed64(scg::IEnumerable<ulong> values) {
-        if (result.repeatedFixed64_.Count == 0) {
-          result.repeatedFixed64_ = new scg::List<ulong>();
-        }
         base.AddRange(values, result.repeatedFixed64_);
         return this;
       }
       public Builder ClearRepeatedFixed64() {
-        result.repeatedFixed64_ = pbc::Lists<ulong>.Empty;
+        result.repeatedFixed64_.Clear();
         return this;
       }
       
       // repeated sfixed32 repeated_sfixed32 = 39;
       public scg::IList<int> RepeatedSfixed32List {
-        get { return pbc::Lists<int>.AsReadOnly(result.repeatedSfixed32_); }
+        get { return result.repeatedSfixed32_; }
       }
       public int RepeatedSfixed32Count {
         get { return result.RepeatedSfixed32Count; }
@@ -4374,27 +4255,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedSfixed32(int value) {
-        if (result.repeatedSfixed32_.Count == 0) {
-          result.repeatedSfixed32_ = new scg::List<int>();
-        }
         result.repeatedSfixed32_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedSfixed32(scg::IEnumerable<int> values) {
-        if (result.repeatedSfixed32_.Count == 0) {
-          result.repeatedSfixed32_ = new scg::List<int>();
-        }
         base.AddRange(values, result.repeatedSfixed32_);
         return this;
       }
       public Builder ClearRepeatedSfixed32() {
-        result.repeatedSfixed32_ = pbc::Lists<int>.Empty;
+        result.repeatedSfixed32_.Clear();
         return this;
       }
       
       // repeated sfixed64 repeated_sfixed64 = 40;
       public scg::IList<long> RepeatedSfixed64List {
-        get { return pbc::Lists<long>.AsReadOnly(result.repeatedSfixed64_); }
+        get { return result.repeatedSfixed64_; }
       }
       public int RepeatedSfixed64Count {
         get { return result.RepeatedSfixed64Count; }
@@ -4407,27 +4282,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedSfixed64(long value) {
-        if (result.repeatedSfixed64_.Count == 0) {
-          result.repeatedSfixed64_ = new scg::List<long>();
-        }
         result.repeatedSfixed64_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedSfixed64(scg::IEnumerable<long> values) {
-        if (result.repeatedSfixed64_.Count == 0) {
-          result.repeatedSfixed64_ = new scg::List<long>();
-        }
         base.AddRange(values, result.repeatedSfixed64_);
         return this;
       }
       public Builder ClearRepeatedSfixed64() {
-        result.repeatedSfixed64_ = pbc::Lists<long>.Empty;
+        result.repeatedSfixed64_.Clear();
         return this;
       }
       
       // repeated float repeated_float = 41;
       public scg::IList<float> RepeatedFloatList {
-        get { return pbc::Lists<float>.AsReadOnly(result.repeatedFloat_); }
+        get { return result.repeatedFloat_; }
       }
       public int RepeatedFloatCount {
         get { return result.RepeatedFloatCount; }
@@ -4440,27 +4309,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedFloat(float value) {
-        if (result.repeatedFloat_.Count == 0) {
-          result.repeatedFloat_ = new scg::List<float>();
-        }
         result.repeatedFloat_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedFloat(scg::IEnumerable<float> values) {
-        if (result.repeatedFloat_.Count == 0) {
-          result.repeatedFloat_ = new scg::List<float>();
-        }
         base.AddRange(values, result.repeatedFloat_);
         return this;
       }
       public Builder ClearRepeatedFloat() {
-        result.repeatedFloat_ = pbc::Lists<float>.Empty;
+        result.repeatedFloat_.Clear();
         return this;
       }
       
       // repeated double repeated_double = 42;
       public scg::IList<double> RepeatedDoubleList {
-        get { return pbc::Lists<double>.AsReadOnly(result.repeatedDouble_); }
+        get { return result.repeatedDouble_; }
       }
       public int RepeatedDoubleCount {
         get { return result.RepeatedDoubleCount; }
@@ -4473,27 +4336,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedDouble(double value) {
-        if (result.repeatedDouble_.Count == 0) {
-          result.repeatedDouble_ = new scg::List<double>();
-        }
         result.repeatedDouble_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedDouble(scg::IEnumerable<double> values) {
-        if (result.repeatedDouble_.Count == 0) {
-          result.repeatedDouble_ = new scg::List<double>();
-        }
         base.AddRange(values, result.repeatedDouble_);
         return this;
       }
       public Builder ClearRepeatedDouble() {
-        result.repeatedDouble_ = pbc::Lists<double>.Empty;
+        result.repeatedDouble_.Clear();
         return this;
       }
       
       // repeated bool repeated_bool = 43;
       public scg::IList<bool> RepeatedBoolList {
-        get { return pbc::Lists<bool>.AsReadOnly(result.repeatedBool_); }
+        get { return result.repeatedBool_; }
       }
       public int RepeatedBoolCount {
         get { return result.RepeatedBoolCount; }
@@ -4506,27 +4363,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedBool(bool value) {
-        if (result.repeatedBool_.Count == 0) {
-          result.repeatedBool_ = new scg::List<bool>();
-        }
         result.repeatedBool_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedBool(scg::IEnumerable<bool> values) {
-        if (result.repeatedBool_.Count == 0) {
-          result.repeatedBool_ = new scg::List<bool>();
-        }
         base.AddRange(values, result.repeatedBool_);
         return this;
       }
       public Builder ClearRepeatedBool() {
-        result.repeatedBool_ = pbc::Lists<bool>.Empty;
+        result.repeatedBool_.Clear();
         return this;
       }
       
       // repeated string repeated_string = 44;
       public scg::IList<string> RepeatedStringList {
-        get { return pbc::Lists<string>.AsReadOnly(result.repeatedString_); }
+        get { return result.repeatedString_; }
       }
       public int RepeatedStringCount {
         get { return result.RepeatedStringCount; }
@@ -4539,27 +4390,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedString(string value) {
-        if (result.repeatedString_.Count == 0) {
-          result.repeatedString_ = new scg::List<string>();
-        }
         result.repeatedString_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedString(scg::IEnumerable<string> values) {
-        if (result.repeatedString_.Count == 0) {
-          result.repeatedString_ = new scg::List<string>();
-        }
         base.AddRange(values, result.repeatedString_);
         return this;
       }
       public Builder ClearRepeatedString() {
-        result.repeatedString_ = pbc::Lists<string>.Empty;
+        result.repeatedString_.Clear();
         return this;
       }
       
       // repeated bytes repeated_bytes = 45;
       public scg::IList<pb::ByteString> RepeatedBytesList {
-        get { return pbc::Lists<pb::ByteString>.AsReadOnly(result.repeatedBytes_); }
+        get { return result.repeatedBytes_; }
       }
       public int RepeatedBytesCount {
         get { return result.RepeatedBytesCount; }
@@ -4572,27 +4417,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedBytes(pb::ByteString value) {
-        if (result.repeatedBytes_.Count == 0) {
-          result.repeatedBytes_ = new scg::List<pb::ByteString>();
-        }
         result.repeatedBytes_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedBytes(scg::IEnumerable<pb::ByteString> values) {
-        if (result.repeatedBytes_.Count == 0) {
-          result.repeatedBytes_ = new scg::List<pb::ByteString>();
-        }
         base.AddRange(values, result.repeatedBytes_);
         return this;
       }
       public Builder ClearRepeatedBytes() {
-        result.repeatedBytes_ = pbc::Lists<pb::ByteString>.Empty;
+        result.repeatedBytes_.Clear();
         return this;
       }
       
       // repeated group RepeatedGroup = 46 {
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> RepeatedGroupList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedGroup_); }
+        get { return result.repeatedGroup_; }
       }
       public int RepeatedGroupCount {
         get { return result.RepeatedGroupCount; }
@@ -4609,34 +4448,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup value) {
-        if (result.repeatedGroup_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.Empty) {
-          result.repeatedGroup_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>();
-        }
         result.repeatedGroup_.Add(value);
         return this;
       }
       public Builder AddRepeatedGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder builderForValue) {
-        if (result.repeatedGroup_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.Empty) {
-          result.repeatedGroup_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>();
-        }
         result.repeatedGroup_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedGroup(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> values) {
-        if (result.repeatedGroup_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.Empty) {
-          result.repeatedGroup_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>();
-        }
         base.AddRange(values, result.repeatedGroup_);
         return this;
       }
       public Builder ClearRepeatedGroup() {
-        result.repeatedGroup_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>.Empty;
+        result.repeatedGroup_.Clear();
         return this;
       }
       
       // repeated .protobuf_unittest.TestAllTypes.NestedMessage repeated_nested_message = 48;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedNestedMessage_); }
+        get { return result.repeatedNestedMessage_; }
       }
       public int RepeatedNestedMessageCount {
         get { return result.RepeatedNestedMessageCount; }
@@ -4653,34 +4483,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
-        if (result.repeatedNestedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.Empty) {
-          result.repeatedNestedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
-        }
         result.repeatedNestedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
-        if (result.repeatedNestedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.Empty) {
-          result.repeatedNestedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
-        }
         result.repeatedNestedMessage_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedNestedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> values) {
-        if (result.repeatedNestedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.Empty) {
-          result.repeatedNestedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
-        }
         base.AddRange(values, result.repeatedNestedMessage_);
         return this;
       }
       public Builder ClearRepeatedNestedMessage() {
-        result.repeatedNestedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.Empty;
+        result.repeatedNestedMessage_.Clear();
         return this;
       }
       
       // repeated .protobuf_unittest.ForeignMessage repeated_foreign_message = 49;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedForeignMessage_); }
+        get { return result.repeatedForeignMessage_; }
       }
       public int RepeatedForeignMessageCount {
         get { return result.RepeatedForeignMessageCount; }
@@ -4697,34 +4518,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
-        if (result.repeatedForeignMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedForeignMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-        }
         result.repeatedForeignMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
-        if (result.repeatedForeignMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedForeignMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-        }
         result.repeatedForeignMessage_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedForeignMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> values) {
-        if (result.repeatedForeignMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedForeignMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-        }
         base.AddRange(values, result.repeatedForeignMessage_);
         return this;
       }
       public Builder ClearRepeatedForeignMessage() {
-        result.repeatedForeignMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty;
+        result.repeatedForeignMessage_.Clear();
         return this;
       }
       
       // repeated .protobuf_unittest_import.ImportMessage repeated_import_message = 50;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> RepeatedImportMessageList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedImportMessage_); }
+        get { return result.repeatedImportMessage_; }
       }
       public int RepeatedImportMessageCount {
         get { return result.RepeatedImportMessageCount; }
@@ -4741,28 +4553,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage value) {
-        if (result.repeatedImportMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.Empty) {
-          result.repeatedImportMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ImportMessage>();
-        }
         result.repeatedImportMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder builderForValue) {
-        if (result.repeatedImportMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.Empty) {
-          result.repeatedImportMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ImportMessage>();
-        }
         result.repeatedImportMessage_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedImportMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ImportMessage> values) {
-        if (result.repeatedImportMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.Empty) {
-          result.repeatedImportMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ImportMessage>();
-        }
         base.AddRange(values, result.repeatedImportMessage_);
         return this;
       }
       public Builder ClearRepeatedImportMessage() {
-        result.repeatedImportMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.Empty;
+        result.repeatedImportMessage_.Clear();
         return this;
       }
       
@@ -4867,7 +4670,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
       public scg::IList<string> RepeatedStringPieceList {
-        get { return pbc::Lists<string>.AsReadOnly(result.repeatedStringPiece_); }
+        get { return result.repeatedStringPiece_; }
       }
       public int RepeatedStringPieceCount {
         get { return result.RepeatedStringPieceCount; }
@@ -4880,27 +4683,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedStringPiece(string value) {
-        if (result.repeatedStringPiece_.Count == 0) {
-          result.repeatedStringPiece_ = new scg::List<string>();
-        }
         result.repeatedStringPiece_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedStringPiece(scg::IEnumerable<string> values) {
-        if (result.repeatedStringPiece_.Count == 0) {
-          result.repeatedStringPiece_ = new scg::List<string>();
-        }
         base.AddRange(values, result.repeatedStringPiece_);
         return this;
       }
       public Builder ClearRepeatedStringPiece() {
-        result.repeatedStringPiece_ = pbc::Lists<string>.Empty;
+        result.repeatedStringPiece_.Clear();
         return this;
       }
       
       // repeated string repeated_cord = 55 [ctype = CORD];
       public scg::IList<string> RepeatedCordList {
-        get { return pbc::Lists<string>.AsReadOnly(result.repeatedCord_); }
+        get { return result.repeatedCord_; }
       }
       public int RepeatedCordCount {
         get { return result.RepeatedCordCount; }
@@ -4913,21 +4710,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedCord(string value) {
-        if (result.repeatedCord_.Count == 0) {
-          result.repeatedCord_ = new scg::List<string>();
-        }
         result.repeatedCord_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedCord(scg::IEnumerable<string> values) {
-        if (result.repeatedCord_.Count == 0) {
-          result.repeatedCord_ = new scg::List<string>();
-        }
         base.AddRange(values, result.repeatedCord_);
         return this;
       }
       public Builder ClearRepeatedCord() {
-        result.repeatedCord_ = pbc::Lists<string>.Empty;
+        result.repeatedCord_.Clear();
         return this;
       }
       
@@ -5314,7 +5105,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class ForeignMessage : pb::GeneratedMessage<ForeignMessage, ForeignMessage.Builder> {
-    private static readonly ForeignMessage defaultInstance = new ForeignMessage();
+    private static readonly ForeignMessage defaultInstance = new Builder().BuildPartial();
     public static ForeignMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5521,7 +5312,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestAllExtensions : pb::ExtendableMessage<TestAllExtensions, TestAllExtensions.Builder> {
-    private static readonly TestAllExtensions defaultInstance = new TestAllExtensions();
+    private static readonly TestAllExtensions defaultInstance = new Builder().BuildPartial();
     public static TestAllExtensions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5690,7 +5481,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class OptionalGroup_extension : pb::GeneratedMessage<OptionalGroup_extension, OptionalGroup_extension.Builder> {
-    private static readonly OptionalGroup_extension defaultInstance = new OptionalGroup_extension();
+    private static readonly OptionalGroup_extension defaultInstance = new Builder().BuildPartial();
     public static OptionalGroup_extension DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5897,7 +5688,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class RepeatedGroup_extension : pb::GeneratedMessage<RepeatedGroup_extension, RepeatedGroup_extension.Builder> {
-    private static readonly RepeatedGroup_extension defaultInstance = new RepeatedGroup_extension();
+    private static readonly RepeatedGroup_extension defaultInstance = new Builder().BuildPartial();
     public static RepeatedGroup_extension DefaultInstance {
       get { return defaultInstance; }
     }
@@ -6104,7 +5895,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestRequired : pb::GeneratedMessage<TestRequired, TestRequired.Builder> {
-    private static readonly TestRequired defaultInstance = new TestRequired();
+    private static readonly TestRequired defaultInstance = new Builder().BuildPartial();
     public static TestRequired DefaultInstance {
       get { return defaultInstance; }
     }
@@ -7668,7 +7459,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestRequiredForeign : pb::GeneratedMessage<TestRequiredForeign, TestRequiredForeign.Builder> {
-    private static readonly TestRequiredForeign defaultInstance = new TestRequiredForeign();
+    private static readonly TestRequiredForeign defaultInstance = new Builder().BuildPartial();
     public static TestRequiredForeign DefaultInstance {
       get { return defaultInstance; }
     }
@@ -7700,7 +7491,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest.TestRequired repeated_message = 2;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired> repeatedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestRequired> repeatedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestRequired>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired> RepeatedMessageList {
       get { return repeatedMessage_; } 
     }
@@ -7840,9 +7631,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign BuildPartial() {
-        if (result.repeatedMessage_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.Empty) {
-          result.repeatedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.AsReadOnly(result.repeatedMessage_);
-        }
+        result.repeatedMessage_.MakeReadOnly();
         global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign returnMe = result;
         result = null;
         return returnMe;
@@ -7863,9 +7652,6 @@ namespace Google.ProtocolBuffers.TestProtos {
           MergeOptionalMessage(other.OptionalMessage);
         }
         if (other.repeatedMessage_.Count != 0) {
-          if (result.repeatedMessage_.Count == 0) {
-            result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestRequired>();
-          }
           base.AddRange(other.repeatedMessage_, result.repeatedMessage_);
         }
         if (other.HasDummy) {
@@ -7957,7 +7743,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated .protobuf_unittest.TestRequired repeated_message = 2;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired> RepeatedMessageList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedMessage_); }
+        get { return result.repeatedMessage_; }
       }
       public int RepeatedMessageCount {
         get { return result.RepeatedMessageCount; }
@@ -7974,28 +7760,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired value) {
-        if (result.repeatedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.Empty) {
-          result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestRequired>();
-        }
         result.repeatedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder builderForValue) {
-        if (result.repeatedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.Empty) {
-          result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestRequired>();
-        }
         result.repeatedMessage_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestRequired> values) {
-        if (result.repeatedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.Empty) {
-          result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestRequired>();
-        }
         base.AddRange(values, result.repeatedMessage_);
         return this;
       }
       public Builder ClearRepeatedMessage() {
-        result.repeatedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestRequired>.Empty;
+        result.repeatedMessage_.Clear();
         return this;
       }
       
@@ -8021,7 +7798,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestForeignNested : pb::GeneratedMessage<TestForeignNested, TestForeignNested.Builder> {
-    private static readonly TestForeignNested defaultInstance = new TestForeignNested();
+    private static readonly TestForeignNested defaultInstance = new Builder().BuildPartial();
     public static TestForeignNested DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8249,7 +8026,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestEmptyMessage : pb::GeneratedMessage<TestEmptyMessage, TestEmptyMessage.Builder> {
-    private static readonly TestEmptyMessage defaultInstance = new TestEmptyMessage();
+    private static readonly TestEmptyMessage defaultInstance = new Builder().BuildPartial();
     public static TestEmptyMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8414,7 +8191,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestEmptyMessageWithExtensions : pb::ExtendableMessage<TestEmptyMessageWithExtensions, TestEmptyMessageWithExtensions.Builder> {
-    private static readonly TestEmptyMessageWithExtensions defaultInstance = new TestEmptyMessageWithExtensions();
+    private static readonly TestEmptyMessageWithExtensions defaultInstance = new Builder().BuildPartial();
     public static TestEmptyMessageWithExtensions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8583,7 +8360,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestReallyLargeTagNumber : pb::GeneratedMessage<TestReallyLargeTagNumber, TestReallyLargeTagNumber.Builder> {
-    private static readonly TestReallyLargeTagNumber defaultInstance = new TestReallyLargeTagNumber();
+    private static readonly TestReallyLargeTagNumber defaultInstance = new Builder().BuildPartial();
     public static TestReallyLargeTagNumber DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8832,7 +8609,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestRecursiveMessage : pb::GeneratedMessage<TestRecursiveMessage, TestRecursiveMessage.Builder> {
-    private static readonly TestRecursiveMessage defaultInstance = new TestRecursiveMessage();
+    private static readonly TestRecursiveMessage defaultInstance = new Builder().BuildPartial();
     public static TestRecursiveMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9102,7 +8879,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMutualRecursionA : pb::GeneratedMessage<TestMutualRecursionA, TestMutualRecursionA.Builder> {
-    private static readonly TestMutualRecursionA defaultInstance = new TestMutualRecursionA();
+    private static readonly TestMutualRecursionA defaultInstance = new Builder().BuildPartial();
     public static TestMutualRecursionA DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9330,7 +9107,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestMutualRecursionB : pb::GeneratedMessage<TestMutualRecursionB, TestMutualRecursionB.Builder> {
-    private static readonly TestMutualRecursionB defaultInstance = new TestMutualRecursionB();
+    private static readonly TestMutualRecursionB defaultInstance = new Builder().BuildPartial();
     public static TestMutualRecursionB DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9600,7 +9377,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestDupFieldNumber : pb::GeneratedMessage<TestDupFieldNumber, TestDupFieldNumber.Builder> {
-    private static readonly TestDupFieldNumber defaultInstance = new TestDupFieldNumber();
+    private static readonly TestDupFieldNumber defaultInstance = new Builder().BuildPartial();
     public static TestDupFieldNumber DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9624,7 +9401,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Nested types
     public static class Types {
       public sealed partial class Foo : pb::GeneratedMessage<Foo, Foo.Builder> {
-        private static readonly Foo defaultInstance = new Foo();
+        private static readonly Foo defaultInstance = new Builder().BuildPartial();
         public static Foo DefaultInstance {
           get { return defaultInstance; }
         }
@@ -9831,7 +9608,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public sealed partial class Bar : pb::GeneratedMessage<Bar, Bar.Builder> {
-        private static readonly Bar defaultInstance = new Bar();
+        private static readonly Bar defaultInstance = new Builder().BuildPartial();
         public static Bar DefaultInstance {
           get { return defaultInstance; }
         }
@@ -10352,7 +10129,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestNestedMessageHasBits : pb::GeneratedMessage<TestNestedMessageHasBits, TestNestedMessageHasBits.Builder> {
-    private static readonly TestNestedMessageHasBits defaultInstance = new TestNestedMessageHasBits();
+    private static readonly TestNestedMessageHasBits defaultInstance = new Builder().BuildPartial();
     public static TestNestedMessageHasBits DefaultInstance {
       get { return defaultInstance; }
     }
@@ -10376,7 +10153,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Nested types
     public static class Types {
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
-        private static readonly NestedMessage defaultInstance = new NestedMessage();
+        private static readonly NestedMessage defaultInstance = new Builder().BuildPartial();
         public static NestedMessage DefaultInstance {
           get { return defaultInstance; }
         }
@@ -10398,9 +10175,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         // repeated int32 nestedmessage_repeated_int32 = 1;
-        private scg::IList<int> nestedmessageRepeatedInt32_ = pbc::Lists<int>.Empty;
+        private pbc::PopsicleList<int> nestedmessageRepeatedInt32_ = new pbc::PopsicleList<int>();
         public scg::IList<int> NestedmessageRepeatedInt32List {
-          get { return nestedmessageRepeatedInt32_; }
+          get { return nestedmessageRepeatedInt32_; } 
         }
         public int NestedmessageRepeatedInt32Count {
           get { return nestedmessageRepeatedInt32_.Count; }
@@ -10410,7 +10187,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         // repeated .protobuf_unittest.ForeignMessage nestedmessage_repeated_foreignmessage = 2;
-        private scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> nestedmessageRepeatedForeignmessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty;
+        private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> nestedmessageRepeatedForeignmessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
         public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> NestedmessageRepeatedForeignmessageList {
           get { return nestedmessageRepeatedForeignmessage_; } 
         }
@@ -10529,10 +10306,8 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage BuildPartial() {
-            result.nestedmessageRepeatedInt32_ = pbc::Lists<int>.AsReadOnly(result.nestedmessageRepeatedInt32_);
-            if (result.nestedmessageRepeatedForeignmessage_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-              result.nestedmessageRepeatedForeignmessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.AsReadOnly(result.nestedmessageRepeatedForeignmessage_);
-            }
+            result.nestedmessageRepeatedInt32_.MakeReadOnly();
+            result.nestedmessageRepeatedForeignmessage_.MakeReadOnly();
             global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage returnMe = result;
             result = null;
             return returnMe;
@@ -10550,15 +10325,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage other) {
             if (other == global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance) return this;
             if (other.nestedmessageRepeatedInt32_.Count != 0) {
-              if (result.nestedmessageRepeatedInt32_.Count == 0) {
-                result.nestedmessageRepeatedInt32_ = new scg::List<int>();
-              }
               base.AddRange(other.nestedmessageRepeatedInt32_, result.nestedmessageRepeatedInt32_);
             }
             if (other.nestedmessageRepeatedForeignmessage_.Count != 0) {
-              if (result.nestedmessageRepeatedForeignmessage_.Count == 0) {
-                result.nestedmessageRepeatedForeignmessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-              }
               base.AddRange(other.nestedmessageRepeatedForeignmessage_, result.nestedmessageRepeatedForeignmessage_);
             }
             this.MergeUnknownFields(other.UnknownFields);
@@ -10603,7 +10372,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           // repeated int32 nestedmessage_repeated_int32 = 1;
           public scg::IList<int> NestedmessageRepeatedInt32List {
-            get { return pbc::Lists<int>.AsReadOnly(result.nestedmessageRepeatedInt32_); }
+            get { return result.nestedmessageRepeatedInt32_; }
           }
           public int NestedmessageRepeatedInt32Count {
             get { return result.NestedmessageRepeatedInt32Count; }
@@ -10616,27 +10385,21 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
           public Builder AddNestedmessageRepeatedInt32(int value) {
-            if (result.nestedmessageRepeatedInt32_.Count == 0) {
-              result.nestedmessageRepeatedInt32_ = new scg::List<int>();
-            }
             result.nestedmessageRepeatedInt32_.Add(value);
             return this;
           }
           public Builder AddRangeNestedmessageRepeatedInt32(scg::IEnumerable<int> values) {
-            if (result.nestedmessageRepeatedInt32_.Count == 0) {
-              result.nestedmessageRepeatedInt32_ = new scg::List<int>();
-            }
             base.AddRange(values, result.nestedmessageRepeatedInt32_);
             return this;
           }
           public Builder ClearNestedmessageRepeatedInt32() {
-            result.nestedmessageRepeatedInt32_ = pbc::Lists<int>.Empty;
+            result.nestedmessageRepeatedInt32_.Clear();
             return this;
           }
           
           // repeated .protobuf_unittest.ForeignMessage nestedmessage_repeated_foreignmessage = 2;
           public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> NestedmessageRepeatedForeignmessageList {
-            get { return pbc::Lists.AsReadOnly(result.nestedmessageRepeatedForeignmessage_); }
+            get { return result.nestedmessageRepeatedForeignmessage_; }
           }
           public int NestedmessageRepeatedForeignmessageCount {
             get { return result.NestedmessageRepeatedForeignmessageCount; }
@@ -10653,28 +10416,19 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
           public Builder AddNestedmessageRepeatedForeignmessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
-            if (result.nestedmessageRepeatedForeignmessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-              result.nestedmessageRepeatedForeignmessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-            }
             result.nestedmessageRepeatedForeignmessage_.Add(value);
             return this;
           }
           public Builder AddNestedmessageRepeatedForeignmessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
-            if (result.nestedmessageRepeatedForeignmessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-              result.nestedmessageRepeatedForeignmessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-            }
             result.nestedmessageRepeatedForeignmessage_.Add(builderForValue.Build());
             return this;
           }
           public Builder AddRangeNestedmessageRepeatedForeignmessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> values) {
-            if (result.nestedmessageRepeatedForeignmessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-              result.nestedmessageRepeatedForeignmessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-            }
             base.AddRange(values, result.nestedmessageRepeatedForeignmessage_);
             return this;
           }
           public Builder ClearNestedmessageRepeatedForeignmessage() {
-            result.nestedmessageRepeatedForeignmessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty;
+            result.nestedmessageRepeatedForeignmessage_.Clear();
             return this;
           }
         }
@@ -10890,7 +10644,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestCamelCaseFieldNames : pb::GeneratedMessage<TestCamelCaseFieldNames, TestCamelCaseFieldNames.Builder> {
-    private static readonly TestCamelCaseFieldNames defaultInstance = new TestCamelCaseFieldNames();
+    private static readonly TestCamelCaseFieldNames defaultInstance = new Builder().BuildPartial();
     public static TestCamelCaseFieldNames DefaultInstance {
       get { return defaultInstance; }
     }
@@ -10970,9 +10724,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated int32 RepeatedPrimitiveField = 7;
-    private scg::IList<int> repeatedPrimitiveField_ = pbc::Lists<int>.Empty;
+    private pbc::PopsicleList<int> repeatedPrimitiveField_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedPrimitiveFieldList {
-      get { return repeatedPrimitiveField_; }
+      get { return repeatedPrimitiveField_; } 
     }
     public int RepeatedPrimitiveFieldCount {
       get { return repeatedPrimitiveField_.Count; }
@@ -10982,9 +10736,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated string RepeatedStringField = 8;
-    private scg::IList<string> repeatedStringField_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> repeatedStringField_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringFieldList {
-      get { return repeatedStringField_; }
+      get { return repeatedStringField_; } 
     }
     public int RepeatedStringFieldCount {
       get { return repeatedStringField_.Count; }
@@ -11006,7 +10760,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest.ForeignMessage RepeatedMessageField = 10;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedMessageField_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedMessageField_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedMessageFieldList {
       get { return repeatedMessageField_; } 
     }
@@ -11018,9 +10772,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated string RepeatedStringPieceField = 11 [ctype = STRING_PIECE];
-    private scg::IList<string> repeatedStringPieceField_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> repeatedStringPieceField_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringPieceFieldList {
-      get { return repeatedStringPieceField_; }
+      get { return repeatedStringPieceField_; } 
     }
     public int RepeatedStringPieceFieldCount {
       get { return repeatedStringPieceField_.Count; }
@@ -11030,9 +10784,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated string RepeatedCordField = 12 [ctype = CORD];
-    private scg::IList<string> repeatedCordField_ = pbc::Lists<string>.Empty;
+    private pbc::PopsicleList<string> repeatedCordField_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedCordFieldList {
-      get { return repeatedCordField_; }
+      get { return repeatedCordField_; } 
     }
     public int RepeatedCordFieldCount {
       get { return repeatedCordField_.Count; }
@@ -11214,14 +10968,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames BuildPartial() {
-        result.repeatedPrimitiveField_ = pbc::Lists<int>.AsReadOnly(result.repeatedPrimitiveField_);
-        result.repeatedStringField_ = pbc::Lists<string>.AsReadOnly(result.repeatedStringField_);
+        result.repeatedPrimitiveField_.MakeReadOnly();
+        result.repeatedStringField_.MakeReadOnly();
         result.repeatedEnumField_ = pbc::Lists.AsReadOnly(result.repeatedEnumField_);
-        if (result.repeatedMessageField_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedMessageField_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.AsReadOnly(result.repeatedMessageField_);
-        }
-        result.repeatedStringPieceField_ = pbc::Lists<string>.AsReadOnly(result.repeatedStringPieceField_);
-        result.repeatedCordField_ = pbc::Lists<string>.AsReadOnly(result.repeatedCordField_);
+        result.repeatedMessageField_.MakeReadOnly();
+        result.repeatedStringPieceField_.MakeReadOnly();
+        result.repeatedCordField_.MakeReadOnly();
         global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames returnMe = result;
         result = null;
         return returnMe;
@@ -11257,15 +11009,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           CordField = other.CordField;
         }
         if (other.repeatedPrimitiveField_.Count != 0) {
-          if (result.repeatedPrimitiveField_.Count == 0) {
-            result.repeatedPrimitiveField_ = new scg::List<int>();
-          }
           base.AddRange(other.repeatedPrimitiveField_, result.repeatedPrimitiveField_);
         }
         if (other.repeatedStringField_.Count != 0) {
-          if (result.repeatedStringField_.Count == 0) {
-            result.repeatedStringField_ = new scg::List<string>();
-          }
           base.AddRange(other.repeatedStringField_, result.repeatedStringField_);
         }
         if (other.repeatedEnumField_.Count != 0) {
@@ -11275,21 +11021,12 @@ namespace Google.ProtocolBuffers.TestProtos {
           base.AddRange(other.repeatedEnumField_, result.repeatedEnumField_);
         }
         if (other.repeatedMessageField_.Count != 0) {
-          if (result.repeatedMessageField_.Count == 0) {
-            result.repeatedMessageField_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-          }
           base.AddRange(other.repeatedMessageField_, result.repeatedMessageField_);
         }
         if (other.repeatedStringPieceField_.Count != 0) {
-          if (result.repeatedStringPieceField_.Count == 0) {
-            result.repeatedStringPieceField_ = new scg::List<string>();
-          }
           base.AddRange(other.repeatedStringPieceField_, result.repeatedStringPieceField_);
         }
         if (other.repeatedCordField_.Count != 0) {
-          if (result.repeatedCordField_.Count == 0) {
-            result.repeatedCordField_ = new scg::List<string>();
-          }
           base.AddRange(other.repeatedCordField_, result.repeatedCordField_);
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -11520,7 +11257,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated int32 RepeatedPrimitiveField = 7;
       public scg::IList<int> RepeatedPrimitiveFieldList {
-        get { return pbc::Lists<int>.AsReadOnly(result.repeatedPrimitiveField_); }
+        get { return result.repeatedPrimitiveField_; }
       }
       public int RepeatedPrimitiveFieldCount {
         get { return result.RepeatedPrimitiveFieldCount; }
@@ -11533,27 +11270,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedPrimitiveField(int value) {
-        if (result.repeatedPrimitiveField_.Count == 0) {
-          result.repeatedPrimitiveField_ = new scg::List<int>();
-        }
         result.repeatedPrimitiveField_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedPrimitiveField(scg::IEnumerable<int> values) {
-        if (result.repeatedPrimitiveField_.Count == 0) {
-          result.repeatedPrimitiveField_ = new scg::List<int>();
-        }
         base.AddRange(values, result.repeatedPrimitiveField_);
         return this;
       }
       public Builder ClearRepeatedPrimitiveField() {
-        result.repeatedPrimitiveField_ = pbc::Lists<int>.Empty;
+        result.repeatedPrimitiveField_.Clear();
         return this;
       }
       
       // repeated string RepeatedStringField = 8;
       public scg::IList<string> RepeatedStringFieldList {
-        get { return pbc::Lists<string>.AsReadOnly(result.repeatedStringField_); }
+        get { return result.repeatedStringField_; }
       }
       public int RepeatedStringFieldCount {
         get { return result.RepeatedStringFieldCount; }
@@ -11566,21 +11297,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedStringField(string value) {
-        if (result.repeatedStringField_.Count == 0) {
-          result.repeatedStringField_ = new scg::List<string>();
-        }
         result.repeatedStringField_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedStringField(scg::IEnumerable<string> values) {
-        if (result.repeatedStringField_.Count == 0) {
-          result.repeatedStringField_ = new scg::List<string>();
-        }
         base.AddRange(values, result.repeatedStringField_);
         return this;
       }
       public Builder ClearRepeatedStringField() {
-        result.repeatedStringField_ = pbc::Lists<string>.Empty;
+        result.repeatedStringField_.Clear();
         return this;
       }
       
@@ -11619,7 +11344,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated .protobuf_unittest.ForeignMessage RepeatedMessageField = 10;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedMessageFieldList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedMessageField_); }
+        get { return result.repeatedMessageField_; }
       }
       public int RepeatedMessageFieldCount {
         get { return result.RepeatedMessageFieldCount; }
@@ -11636,34 +11361,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
-        if (result.repeatedMessageField_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedMessageField_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-        }
         result.repeatedMessageField_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
-        if (result.repeatedMessageField_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedMessageField_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-        }
         result.repeatedMessageField_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedMessageField(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> values) {
-        if (result.repeatedMessageField_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty) {
-          result.repeatedMessageField_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-        }
         base.AddRange(values, result.repeatedMessageField_);
         return this;
       }
       public Builder ClearRepeatedMessageField() {
-        result.repeatedMessageField_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.Empty;
+        result.repeatedMessageField_.Clear();
         return this;
       }
       
       // repeated string RepeatedStringPieceField = 11 [ctype = STRING_PIECE];
       public scg::IList<string> RepeatedStringPieceFieldList {
-        get { return pbc::Lists<string>.AsReadOnly(result.repeatedStringPieceField_); }
+        get { return result.repeatedStringPieceField_; }
       }
       public int RepeatedStringPieceFieldCount {
         get { return result.RepeatedStringPieceFieldCount; }
@@ -11676,27 +11392,21 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedStringPieceField(string value) {
-        if (result.repeatedStringPieceField_.Count == 0) {
-          result.repeatedStringPieceField_ = new scg::List<string>();
-        }
         result.repeatedStringPieceField_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedStringPieceField(scg::IEnumerable<string> values) {
-        if (result.repeatedStringPieceField_.Count == 0) {
-          result.repeatedStringPieceField_ = new scg::List<string>();
-        }
         base.AddRange(values, result.repeatedStringPieceField_);
         return this;
       }
       public Builder ClearRepeatedStringPieceField() {
-        result.repeatedStringPieceField_ = pbc::Lists<string>.Empty;
+        result.repeatedStringPieceField_.Clear();
         return this;
       }
       
       // repeated string RepeatedCordField = 12 [ctype = CORD];
       public scg::IList<string> RepeatedCordFieldList {
-        get { return pbc::Lists<string>.AsReadOnly(result.repeatedCordField_); }
+        get { return result.repeatedCordField_; }
       }
       public int RepeatedCordFieldCount {
         get { return result.RepeatedCordFieldCount; }
@@ -11709,28 +11419,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedCordField(string value) {
-        if (result.repeatedCordField_.Count == 0) {
-          result.repeatedCordField_ = new scg::List<string>();
-        }
         result.repeatedCordField_.Add(value);
         return this;
       }
       public Builder AddRangeRepeatedCordField(scg::IEnumerable<string> values) {
-        if (result.repeatedCordField_.Count == 0) {
-          result.repeatedCordField_ = new scg::List<string>();
-        }
         base.AddRange(values, result.repeatedCordField_);
         return this;
       }
       public Builder ClearRepeatedCordField() {
-        result.repeatedCordField_ = pbc::Lists<string>.Empty;
+        result.repeatedCordField_.Clear();
         return this;
       }
     }
   }
   
   public sealed partial class TestFieldOrderings : pb::ExtendableMessage<TestFieldOrderings, TestFieldOrderings.Builder> {
-    private static readonly TestFieldOrderings defaultInstance = new TestFieldOrderings();
+    private static readonly TestFieldOrderings defaultInstance = new Builder().BuildPartial();
     public static TestFieldOrderings DefaultInstance {
       get { return defaultInstance; }
     }
@@ -12026,7 +11730,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class TestExtremeDefaultValues : pb::GeneratedMessage<TestExtremeDefaultValues, TestExtremeDefaultValues.Builder> {
-    private static readonly TestExtremeDefaultValues defaultInstance = new TestExtremeDefaultValues();
+    private static readonly TestExtremeDefaultValues defaultInstance = new Builder().BuildPartial();
     public static TestExtremeDefaultValues DefaultInstance {
       get { return defaultInstance; }
     }
@@ -12443,7 +12147,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class FooRequest : pb::GeneratedMessage<FooRequest, FooRequest.Builder> {
-    private static readonly FooRequest defaultInstance = new FooRequest();
+    private static readonly FooRequest defaultInstance = new Builder().BuildPartial();
     public static FooRequest DefaultInstance {
       get { return defaultInstance; }
     }
@@ -12608,7 +12312,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class FooResponse : pb::GeneratedMessage<FooResponse, FooResponse.Builder> {
-    private static readonly FooResponse defaultInstance = new FooResponse();
+    private static readonly FooResponse defaultInstance = new Builder().BuildPartial();
     public static FooResponse DefaultInstance {
       get { return defaultInstance; }
     }
@@ -12773,7 +12477,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class BarRequest : pb::GeneratedMessage<BarRequest, BarRequest.Builder> {
-    private static readonly BarRequest defaultInstance = new BarRequest();
+    private static readonly BarRequest defaultInstance = new Builder().BuildPartial();
     public static BarRequest DefaultInstance {
       get { return defaultInstance; }
     }
@@ -12938,7 +12642,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   public sealed partial class BarResponse : pb::GeneratedMessage<BarResponse, BarResponse.Builder> {
-    private static readonly BarResponse defaultInstance = new BarResponse();
+    private static readonly BarResponse defaultInstance = new Builder().BuildPartial();
     public static BarResponse DefaultInstance {
       get { return defaultInstance; }
     }

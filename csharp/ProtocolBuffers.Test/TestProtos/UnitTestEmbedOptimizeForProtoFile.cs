@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   public sealed partial class TestEmbedOptimizedForSize : pb::GeneratedMessage<TestEmbedOptimizedForSize, TestEmbedOptimizedForSize.Builder> {
-    private static readonly TestEmbedOptimizedForSize defaultInstance = new TestEmbedOptimizedForSize();
+    private static readonly TestEmbedOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestEmbedOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
     }
@@ -87,7 +87,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     // repeated .protobuf_unittest.TestOptimizedForSize repeated_message = 2;
-    private scg::IList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> repeatedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.Empty;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> repeatedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> RepeatedMessageList {
       get { return repeatedMessage_; } 
     }
@@ -211,9 +211,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize BuildPartial() {
-        if (result.repeatedMessage_ != pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.Empty) {
-          result.repeatedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.AsReadOnly(result.repeatedMessage_);
-        }
+        result.repeatedMessage_.MakeReadOnly();
         global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize returnMe = result;
         result = null;
         return returnMe;
@@ -234,9 +232,6 @@ namespace Google.ProtocolBuffers.TestProtos {
           MergeOptionalMessage(other.OptionalMessage);
         }
         if (other.repeatedMessage_.Count != 0) {
-          if (result.repeatedMessage_.Count == 0) {
-            result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>();
-          }
           base.AddRange(other.repeatedMessage_, result.repeatedMessage_);
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -321,7 +316,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       // repeated .protobuf_unittest.TestOptimizedForSize repeated_message = 2;
       public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> RepeatedMessageList {
-        get { return pbc::Lists.AsReadOnly(result.repeatedMessage_); }
+        get { return result.repeatedMessage_; }
       }
       public int RepeatedMessageCount {
         get { return result.RepeatedMessageCount; }
@@ -338,28 +333,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
-        if (result.repeatedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.Empty) {
-          result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>();
-        }
         result.repeatedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
-        if (result.repeatedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.Empty) {
-          result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>();
-        }
         result.repeatedMessage_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> values) {
-        if (result.repeatedMessage_ == pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.Empty) {
-          result.repeatedMessage_ = new scg::List<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>();
-        }
         base.AddRange(values, result.repeatedMessage_);
         return this;
       }
       public Builder ClearRepeatedMessage() {
-        result.repeatedMessage_ = pbc::Lists<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>.Empty;
+        result.repeatedMessage_.Clear();
         return this;
       }
     }
