@@ -3,17 +3,14 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <!-- This is commented until the parent can be deployed to a repository. -->
-  <!--
-    <parent>
-    <groupId>com</groupId>
+  <parent>
+    <groupId>com.google</groupId>
     <artifactId>google</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    </parent>
-  -->
+    <version>1</version>
+  </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>2.0.1-SNAPSHOT</version>
+  <version>2.0.1</version>
   <packaging>jar</packaging>
   <name>Protocol Buffer Java API</name>
   <description>

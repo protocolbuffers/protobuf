@@ -393,12 +393,6 @@ class LIBPROTOBUF_EXPORT Message {
 // objects on-demand, on the other hand, would be expensive and prone to
 // memory leaks.  So, instead we ended up with this flat interface.
 //
-// WARNING:  This class is currently in the process of being converted from
-//   a per-instance object to a per-class object.  You'll notice that there
-//   are two sets of methods below:  ones that take a Message pointer or
-//   reference as a parameter, and ones that don't.  The former ones are the
-//   new interface; the latter ones will go away soon.
-//
 // TODO(kenton):  Create a utility class which callers can use to read and
 //   write fields from a Reflection without paying attention to the type.
 class LIBPROTOBUF_EXPORT Reflection {

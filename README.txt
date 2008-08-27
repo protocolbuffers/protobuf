@@ -2,14 +2,6 @@ Protocol Buffers - Google's data interchange format
 Copyright 2008 Google Inc.
 http://code.google.com/apis/protocolbuffers/
 
-BETA WARNING
-============
-
-This package is a beta.  This means that API may change in an
-incompatible way in the future (however, the wire format will *not*
-change).  It's unlikely that any big changes will be made, but we can
-make no promises.  Expect a non-beta release in late August 2008.
-
 C++ Installation - Unix
 =======================
 
@@ -58,6 +50,20 @@ If you are using Micosoft Visual C++, see vsprojects/readme.txt.
 
 If you are using Cygwin or MinGW, follow the Unix installation
 instructions, above.
+
+Binary Compatibility Warning
+============================
+
+Due to the nature of C++, it is unlikely that any two versions of the
+Protocol Buffers C++ runtime libraries will have compatible ABIs.
+That is, if you linked an executable against an older version of
+libprotobuf, it is unlikely to work with a newer version without
+re-compiling.  This problem, when it occurs, will normally be detected
+immediately on startup of your app.  Still, you may want to consider
+using static linkage.  You can configure this package to install
+static libraries only using:
+
+  ./configure --disable-shared
 
 Java and Python Installation
 ============================
