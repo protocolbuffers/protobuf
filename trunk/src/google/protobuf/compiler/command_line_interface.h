@@ -67,7 +67,7 @@ class DiskSourceTree;       // importer.h
 //   }
 //
 // The compiler is invoked with syntax like:
-//   protoc --cpp_out=outdir --foo_out=outdir --proto_path=src foo.proto
+//   protoc --cpp_out=outdir --foo_out=outdir --proto_path=src src/foo.proto
 //
 // For a full description of the command-line syntax, invoke it with --help.
 class LIBPROTOC_EXPORT CommandLineInterface {

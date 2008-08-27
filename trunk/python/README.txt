@@ -15,6 +15,14 @@ Python part of the code.  In this case, you will need to obtain the
 Protocol Compiler from some other source before you can use this
 package.
 
+Development Warning
+===================
+
+The Python implementation of Protocol Buffers is not as mature as the C++
+and Java implementations.  It may be more buggy, and it is known to be
+pretty slow at this time.  If you would like to help fix these issues,
+join the Protocol Buffers discussion list and let us know!
+
 Installation
 ============
 
