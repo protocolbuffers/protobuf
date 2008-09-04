@@ -29,7 +29,6 @@ namespace Google.ProtocolBuffers.FieldAccess {
     private readonly Action<TBuilder, object> setValueDelegate;
     private readonly Func<TMessage, bool> hasDelegate;
     private readonly Func<TBuilder, IBuilder> clearDelegate;
-    delegate void SingleValueDelegate<TSource>(TSource source, object value);
 
     /// <summary>
     /// The CLR type of the field (int, the enum type, ByteString, the message etc).
