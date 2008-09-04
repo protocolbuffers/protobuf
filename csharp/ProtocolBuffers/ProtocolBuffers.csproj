@@ -84,9 +84,9 @@
     <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="GeneratedBuilder.cs" />
+    <Compile Include="GeneratedRepeatExtension.cs" />
     <Compile Include="GeneratedSingleExtension.cs" />
     <Compile Include="GeneratedMessage.cs" />
-    <Compile Include="GeneratedRepeatException.cs" />
     <Compile Include="IBuilder.cs" />
     <Compile Include="GeneratedExtensionBase.cs" />
     <Compile Include="IMessage.cs" />
