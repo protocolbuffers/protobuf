@@ -63,7 +63,7 @@ namespace Google.ProtocolBuffers {
     object this[FieldDescriptor field] { get; set; }
 
     /// <summary>
-    /// Get the message's type's descriptor.
+    /// Get the message's type descriptor.
     /// <see cref="IMessage{TMessage, TBuilder}.DescriptorForType"/>
     /// </summary>
     MessageDescriptor DescriptorForType { get; }
