@@ -92,7 +92,7 @@ namespace Google.ProtocolBuffers {
                 }
               }
             } else {
-              if (!((IMessage) this[field]).IsInitialized) {
+              if (HasField(field) && !((IMessage) this[field]).IsInitialized) {
                 return false;
               }
             }

@@ -94,7 +94,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
             }
           }
         } else {
-          if (!((Message) getField(field)).isInitialized()) {
+          if (hasField(field) && !((Message) getField(field)).isInitialized()) {
             return false;
           }
         }

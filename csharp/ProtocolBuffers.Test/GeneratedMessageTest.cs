@@ -270,5 +270,21 @@ namespace Google.ProtocolBuffers {
 
       Assert.IsFalse(TestAllExtensions.DefaultInstance.HasExtension(MultiFileProto.ExtensionWithOuter));
     }
+
+    [Test]
+    public void OptionalFieldWithRequiredSubfieldsOptimizedForSize() {      
+      TestOptionalOptimizedForSize message = TestOptionalOptimizedForSize.DefaultInstance;
+      Assert.IsTrue(message.IsInitialized);
+
+      message = TestOptionalOptimizedForSize.CreateBuilder().SetO(
+          TestRequiredOptimizedForSize.CreateBuilder().BuildPartial()
+          ).BuildPartial();
+      Assert.IsFalse(message.IsInitialized);
+
+      message = TestOptionalOptimizedForSize.CreateBuilder().SetO(
+          TestRequiredOptimizedForSize.CreateBuilder().SetX(5).BuildPartial()
+          ).BuildPartial();
+      Assert.IsTrue(message.IsInitialized);
+    }
   }
 }

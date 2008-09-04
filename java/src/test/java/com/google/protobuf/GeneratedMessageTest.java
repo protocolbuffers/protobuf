@@ -16,19 +16,21 @@
 
 package com.google.protobuf;
 
-import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.ForeignMessage;
-import protobuf_unittest.UnittestProto.ForeignEnum;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
-import protobuf_unittest.MultipleFilesTestProto;
-import protobuf_unittest.MessageWithNoOuter;
-import protobuf_unittest.EnumWithNoOuter;
-import protobuf_unittest.ServiceWithNoOuter;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
-import java.util.Arrays;
+import protobuf_unittest.EnumWithNoOuter;
+import protobuf_unittest.MessageWithNoOuter;
+import protobuf_unittest.MultipleFilesTestProto;
+import protobuf_unittest.ServiceWithNoOuter;
+import protobuf_unittest.UnittestProto;
+import protobuf_unittest.UnittestOptimizeFor.TestOptionalOptimizedForSize;
+import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
+import protobuf_unittest.UnittestProto.ForeignEnum;
+import protobuf_unittest.UnittestProto.ForeignMessage;
+import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 
 /**
  * Unit test for generated messages and generated code.  See also
@@ -93,7 +95,7 @@ public class GeneratedMessageTest extends TestCase {
     // TODO(ngd): Upgrade to using real #equals method once implemented
     assertEquals(expectedMessage.toString(), message.toString());
   }
-
+  
   public void testSettingRepeatedForeignMessageUsingBuilder() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder()
         // Pass builder for foreign message instance.
@@ -243,4 +245,19 @@ public class GeneratedMessageTest extends TestCase {
       TestAllExtensions.getDefaultInstance().hasExtension(
         MultipleFilesTestProto.extensionWithOuter));
   }
+  
+   public void testOptionalFieldWithRequiredSubfieldsOptimizedForSize() throws Exception {      
+     TestOptionalOptimizedForSize message = TestOptionalOptimizedForSize.getDefaultInstance();
+     assertTrue(message.isInitialized());
+
+     message = TestOptionalOptimizedForSize.newBuilder().setO(
+         TestRequiredOptimizedForSize.newBuilder().buildPartial()
+         ).buildPartial();
+     assertFalse(message.isInitialized());
+
+     message = TestOptionalOptimizedForSize.newBuilder().setO(
+         TestRequiredOptimizedForSize.newBuilder().setX(5).buildPartial()
+         ).buildPartial();
+     assertTrue(message.isInitialized());
+   }
 }

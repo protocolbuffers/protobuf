@@ -26,11 +26,18 @@ namespace Google.ProtocolBuffers.TestProtos {
             0x2a, 0x09, 0x08, 0xe8, 0x07, 0x10, 0x80, 0x80, 0x80, 0x80, 0x02, 0x32, 0x40, 0x0a, 0x0e, 0x74, 0x65, 0x73, 0x74, 0x5f, 
             0x65, 0x78, 0x74, 0x65, 0x6e, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x27, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 
             0x5f, 0x75, 0x6e, 0x69, 0x74, 0x74, 0x65, 0x73, 0x74, 0x2e, 0x54, 0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6d, 0x69, 
-            0x7a, 0x65, 0x64, 0x46, 0x6f, 0x72, 0x53, 0x69, 0x7a, 0x65, 0x18, 0xd2, 0x09, 0x20, 0x01, 0x28, 0x05, 0x42, 0x45, 0x48, 
-            0x02, 0xc2, 0x3e, 0x21, 0x47, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x42, 
-            0x75, 0x66, 0x66, 0x65, 0x72, 0x73, 0x2e, 0x54, 0x65, 0x73, 0x74, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0xca, 0x3e, 0x1c, 
-            0x55, 0x6e, 0x69, 0x74, 0x54, 0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6d, 0x69, 0x7a, 0x65, 0x46, 0x6f, 0x72, 0x50, 
-            0x72, 0x6f, 0x74, 0x6f, 0x46, 0x69, 0x6c, 0x65, 
+            0x7a, 0x65, 0x64, 0x46, 0x6f, 0x72, 0x53, 0x69, 0x7a, 0x65, 0x18, 0xd2, 0x09, 0x20, 0x01, 0x28, 0x05, 0x22, 0x29, 0x0a, 
+            0x1c, 0x54, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6d, 0x69, 0x7a, 
+            0x65, 0x64, 0x46, 0x6f, 0x72, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x09, 0x0a, 0x01, 0x78, 0x18, 0x01, 0x20, 0x02, 0x28, 0x05, 
+            0x22, 0x5a, 0x0a, 0x1c, 0x54, 0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 
+            0x6d, 0x69, 0x7a, 0x65, 0x64, 0x46, 0x6f, 0x72, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x3a, 0x0a, 0x01, 0x6f, 0x18, 0x01, 0x20, 
+            0x01, 0x28, 0x0b, 0x32, 0x2f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x74, 
+            0x65, 0x73, 0x74, 0x2e, 0x54, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4f, 0x70, 0x74, 0x69, 
+            0x6d, 0x69, 0x7a, 0x65, 0x64, 0x46, 0x6f, 0x72, 0x53, 0x69, 0x7a, 0x65, 0x42, 0x45, 0x48, 0x02, 0xc2, 0x3e, 0x21, 0x47, 
+            0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 
+            0x73, 0x2e, 0x54, 0x65, 0x73, 0x74, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0xca, 0x3e, 0x1c, 0x55, 0x6e, 0x69, 0x74, 0x54, 
+            0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6d, 0x69, 0x7a, 0x65, 0x46, 0x6f, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x46, 
+            0x69, 0x6c, 0x65, 
         }, new pbd::FileDescriptor[] {
                 global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor,
         });
@@ -45,6 +52,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder> internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor,
             new string[] { "I", "Msg", });
+    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor 
+        = Descriptor.MessageTypes[1];
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder> internal__static_protobuf_unittest_TestRequiredOptimizedForSize__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor,
+            new string[] { "X", });
+    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor 
+        = Descriptor.MessageTypes[2];
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Builder> internal__static_protobuf_unittest_TestOptionalOptimizedForSize__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor,
+            new string[] { "O", });
     #endregion
     
   }
@@ -231,6 +248,284 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder ClearMsg() {
         result.hasMsg = false;
         result.msg_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance;
+        return this;
+      }
+    }
+  }
+  
+  public sealed partial class TestRequiredOptimizedForSize : pb::GeneratedMessage<TestRequiredOptimizedForSize, TestRequiredOptimizedForSize.Builder> {
+    private static readonly TestRequiredOptimizedForSize defaultInstance = new Builder().BuildPartial();
+    public static TestRequiredOptimizedForSize DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestRequiredOptimizedForSize DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestRequiredOptimizedForSize ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestRequiredOptimizedForSize, TestRequiredOptimizedForSize.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestRequiredOptimizedForSize__FieldAccessorTable; }
+    }
+    
+    // required int32 x = 1;
+    private bool hasX;
+    private int x_ = 0;
+    public bool HasX {
+      get { return hasX; }
+    }
+    public int X {
+      get { return x_; }
+    }
+    
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(pb::ByteString data,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
+               .BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(byte[] data,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
+               .BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(
+        global::System.IO.Stream input,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
+               .BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize ParseFrom(pb::CodedInputStream input,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
+               .BuildParsed();
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
+      // Construct using global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.CreateBuilder()
+      public Builder() {}
+      
+      global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize result = new global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize();
+      
+      protected override global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Descriptor; }
+      }
+      
+      public override global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance; }
+      }
+      
+      public override global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize BuildPartial() {
+        global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      
+      // required int32 x = 1;
+      public bool HasX {
+        get { return result.HasX; }
+      }
+      public int X {
+        get { return result.X; }
+        set { SetX(value); }
+      }
+      public Builder SetX(int value) {
+        result.hasX = true;
+        result.x_ = value;
+        return this;
+      }
+      public Builder ClearX() {
+        result.hasX = false;
+        result.x_ = 0;
+        return this;
+      }
+    }
+  }
+  
+  public sealed partial class TestOptionalOptimizedForSize : pb::GeneratedMessage<TestOptionalOptimizedForSize, TestOptionalOptimizedForSize.Builder> {
+    private static readonly TestOptionalOptimizedForSize defaultInstance = new Builder().BuildPartial();
+    public static TestOptionalOptimizedForSize DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestOptionalOptimizedForSize DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestOptionalOptimizedForSize ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestOptionalOptimizedForSize, TestOptionalOptimizedForSize.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestOptionalOptimizedForSize__FieldAccessorTable; }
+    }
+    
+    // optional .protobuf_unittest.TestRequiredOptimizedForSize o = 1;
+    private bool hasO;
+    private global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize o_ = global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance;
+    public bool HasO {
+      get { return hasO; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize O {
+      get { return o_; }
+    }
+    
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(pb::ByteString data,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
+               .BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(byte[] data,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
+               .BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(
+        global::System.IO.Stream input,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
+               .BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize ParseFrom(pb::CodedInputStream input,
+        pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
+               .BuildParsed();
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      
+      // Construct using global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.CreateBuilder()
+      public Builder() {}
+      
+      global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize result = new global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize();
+      
+      protected override global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Descriptor; }
+      }
+      
+      public override global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.DefaultInstance; }
+      }
+      
+      public override global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize BuildPartial() {
+        global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      
+      // optional .protobuf_unittest.TestRequiredOptimizedForSize o = 1;
+      public bool HasO {
+        get { return result.HasO; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize O {
+        get { return result.O; }
+        set { SetO(value); }
+      }
+      public Builder SetO(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize value) {
+        result.hasO = true;
+        result.o_ = value;
+        return this;
+      }
+      public Builder SetO(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder builderForValue) {
+        result.hasO = true;
+        result.o_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeO(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize value) {
+        if (result.HasO &&
+            result.o_ != global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance) {
+          result.o_ =
+            global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.CreateBuilder(result.o_).MergeFrom(value).BuildPartial();
+        } else {
+          result.o_ = value;
+        }
+        result.hasO = true;
+        return this;
+      }
+      public Builder ClearO() {
+        result.hasO = false;
+        result.o_ = global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance;
         return this;
       }
     }
