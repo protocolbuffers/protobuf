@@ -21,6 +21,9 @@ using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
+  /// <summary>
+  /// TODO(jonskeet): Write summary text.
+  /// </summary>
   public sealed class UninitializedMessageException : Exception {
 
     private readonly IList<string> missingFields;
