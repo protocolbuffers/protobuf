@@ -47,6 +47,11 @@ def generate_proto(source):
       sys.exit(-1)
 
 def MakeTestSuite():
+  # This is apparently needed on some systems to make sure that the tests
+  # work even if a previous version is already installed.
+  if 'google' in sys.modules:
+    del sys.modules['google']
+
   generate_proto("../src/google/protobuf/unittest.proto")
   generate_proto("../src/google/protobuf/unittest_import.proto")
   generate_proto("../src/google/protobuf/unittest_mset.proto")
