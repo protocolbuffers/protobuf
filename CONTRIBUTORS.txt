@@ -47,3 +47,5 @@ Non-Google patch contributors:
   Dilip Joseph <dilip.antony.joseph@gmail.com>
     * Heuristic detection of sub-messages when printing unknown fields in
       text format.
+  Brian Atkinson <nairb774@gmail.com>
+    * Added @Override annotation to generated Java code where appropriate.
