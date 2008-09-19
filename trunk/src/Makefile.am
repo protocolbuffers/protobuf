@@ -55,7 +55,7 @@ nobase_include_HEADERS =                                       \
 lib_LTLIBRARIES = libprotobuf.la libprotoc.la
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 0:0:0
+libprotobuf_la_LDFLAGS = -version-info 2:0:0
 libprotobuf_la_SOURCES =                                       \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/hash.cc                                \
