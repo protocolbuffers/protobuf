@@ -29,15 +29,62 @@
 #include HASH_MAP_H
 #include HASH_SET_H
 #else
-// TODO(kenton):  Deal with non-existence of hash_map somehow.  Maybe emulate
-//   it with map?
-#error "Your STL implementation lacks hash_map and/or hash_set."
+#define MISSING_HASH
+#include <map>
+#include <set>
 #endif
 
 namespace google {
 namespace protobuf {
 
-#ifdef _MSC_VER
+#ifdef MISSING_HASH
+
+// This system doesn't have hash_map or hash_set.  Emulate them using map and
+// set.
+
+// Make hash<T> be the same as less<T>.  Note that everywhere where custom
+// hash functions are defined in the protobuf code, they are also defined such
+// that they can be used as "less" functions, which is required by MSVC anyway.
+template <typename Key>
+struct hash {
+  // Dummy, just to make derivative hash functions compile.
+  int operator()(const Key& key) {
+    GOOGLE_LOG(FATAL) << "Should never be called.";
+    return 0;
+  }
+
+  inline bool operator()(const Key& a, const Key& b) const {
+    return a < b;
+  }
+};
+
+// Make sure char* is compared by value.
+template <>
+struct hash<const char*> {
+  // Dummy, just to make derivative hash functions compile.
+  int operator()(const char* key) {
+    GOOGLE_LOG(FATAL) << "Should never be called.";
+    return 0;
+  }
+
+  inline bool operator()(const char* a, const char* b) const {
+    return strcmp(a, b) < 0;
+  }
+};
+
+template <typename Key, typename Data,
+          typename HashFcn = hash<Key>,
+          typename EqualKey = int >
+class hash_map : public std::map<Key, Data, HashFcn> {
+};
+
+template <typename Key,
+          typename HashFcn = hash<Key>,
+          typename EqualKey = int >
+class hash_set : public std::set<Key, HashFcn> {
+};
+
+#elif defined(_MSC_VER)
 
 template <typename Key>
 struct hash : public HASH_NAMESPACE::hash_compare<Key> {
