@@ -712,6 +712,9 @@ GenerateInitializerList(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
 
+  printer->Print(
+    "::google::protobuf::Message(),\n");
+
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
       "_extensions_(&$classname$_descriptor_,\n"
