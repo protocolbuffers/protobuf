@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -185,8 +199,27 @@ message MethodDescriptorProto {
 // Each of the definitions above may have "options" attached.  These are
 // just annotations which may cause code to be generated slightly differently
 // or may contain hints for code that manipulates protocol messages.
+//
+// Clients may define custom options as extensions of the *Options messages.
+// These extensions may not yet be known at parsing time, so the parser cannot
+// store the values in them.  Instead it stores them in a field in the *Options
+// message called uninterpreted_option. This field must have the same name
+// across all *Options messages. We then use this field to populate the
+// extensions when we build a descriptor, at which point all protos have been
+// parsed and so all extensions are known.
+//
+// Extension numbers for custom options may be chosen as follows:
+// * For options which will only be used within a single application or
+//   organization, or for experimental options, use field numbers 50000
+//   through 99999.  It is up to you to ensure that you do not use the
+//   same number for multiple options.
+// * For options which will be published and used publicly by multiple
+//   independent entities, e-mail kenton@google.com to reserve extension
+//   numbers.  Simply tell me how many you need and I'll send you back a
+//   set of numbers to use -- there's no need to explain how you intend to
+//   use them.  If this turns out to be popular, a web service will be set up
+//   to automatically assign option numbers.
 
-// TODO(kenton):  Allow extensions to options.
 
 message FileOptions {
 
@@ -218,6 +251,12 @@ message FileOptions {
     CODE_SIZE = 2;  // Use ReflectionOps to implement these methods.
   }
   optional OptimizeMode optimize_for = 9 [default=CODE_SIZE];
+
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
 }
 
 message MessageOptions {
@@ -240,6 +279,12 @@ message MessageOptions {
   // Because this is an option, the above two restrictions are not enforced by
   // the protocol compiler.
   optional bool message_set_wire_format = 1 [default=false];
+
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
 }
 
 message FieldOptions {
@@ -267,12 +312,28 @@ message FieldOptions {
   // In this situation, the map key for Item will be set to "name".
   // TODO: Fully-implement this, then remove the "experimental_" prefix.
   optional string experimental_map_key = 9;
+
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
 }
 
 message EnumOptions {
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
 }
 
 message EnumValueOptions {
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
 }
 
 message ServiceOptions {
@@ -281,6 +342,12 @@ message ServiceOptions {
   //   framework.  We apologize for hoarding these numbers to ourselves, but
   //   we were already using them long before we decided to release Protocol
   //   Buffers.
+
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
 }
 
 message MethodOptions {
@@ -289,4 +356,37 @@ message MethodOptions {
   //   framework.  We apologize for hoarding these numbers to ourselves, but
   //   we were already using them long before we decided to release Protocol
   //   Buffers.
+
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
+}
+
+// A message representing a option the parser does not recognize. This only
+// appears in options protos created by the compiler::Parser class.
+// DescriptorPool resolves these when building Descriptor objects. Therefore,
+// options protos in descriptor objects (e.g. returned by Descriptor::options(),
+// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
+// in them.
+message UninterpretedOption {
+  // The name of the uninterpreted option.  Each string represents a segment in
+  // a dot-separated name.  is_extension is true iff a segment represents an
+  // extension (denoted with parentheses in options specs in .proto files).
+  // E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
+  // "foo.(bar.baz).qux".
+  message NamePart {
+    required string name_part = 1;
+    required bool is_extension = 2;
+  }
+  repeated NamePart name = 2;
+
+  // The value of the uninterpreted option, in whatever type the tokenizer
+  // identified it as during parsing. Exactly one of these should be set.
+  optional string identifier_value = 3;
+  optional uint64 positive_int_value = 4;
+  optional int64 negative_int_value = 5;
+  optional double double_value = 6;
+  optional bytes string_value = 7;
 }

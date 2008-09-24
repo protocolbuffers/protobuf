@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -73,12 +87,16 @@ class EnumValueOptions;
 class ServiceOptions;
 class MethodOptions;
 class FileOptions;
+class UninterpretedOption;
 
 // Defined in message.h
 class Message;
 
 // Defined in descriptor.cc
 class DescriptorBuilder;
+
+// Defined in unknown_field_set.h.
+class UnknownField;
 
 // Describes a type of protocol message, or a particular group within a
 // message.  To obtain the Descriptor for a given message object, call
@@ -108,10 +126,11 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // in which it is nested.  Otherwise, returns NULL.
   const Descriptor* containing_type() const;
 
-  // Get options for this message type.  These are specified in the .proto
-  // file by placing lines like "option foo = 1234;" in the message definition.
-  // The exact set of known options is defined by MessageOptions in
-  // google/protobuf/descriptor.proto.
+  // Get options for this message type.  These are specified in the .proto file
+  // by placing lines like "option foo = 1234;" in the message definition.
+  // Allowed options are defined by MessageOptions in
+  // google/protobuf/descriptor.proto, and any available extensions of that
+  // message.
   const MessageOptions& options() const;
 
   // Write the contents of this Descriptor into the given DescriptorProto.
@@ -195,6 +214,8 @@ class LIBPROTOBUF_EXPORT Descriptor {
   const FieldDescriptor* FindExtensionByName(const string& name) const;
 
  private:
+  typedef MessageOptions OptionsType;
+
   // Internal version of DebugString; controls the level of indenting for
   // correct depth
   void DebugString(int depth, string *contents) const;
@@ -387,8 +408,9 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   // Get the FieldOptions for this field.  This includes things listed in
   // square brackets after the field definition.  E.g., the field:
   //   optional string text = 1 [ctype=CORD];
-  // has the "ctype" option set.  FieldOptions is actually a protocol message,
-  // which makes it easier to extend.
+  // has the "ctype" option set.  Allowed options are defined by FieldOptions
+  // in google/protobuf/descriptor.proto, and any available extensions of that
+  // message.
   const FieldOptions& options() const;
 
   // See Descriptor::CopyTo().
@@ -397,6 +419,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   // See Descriptor::DebugString().
   string DebugString() const;
  private:
+  typedef FieldOptions OptionsType;
+
   // See Descriptor::DebugString().
   void DebugString(int depth, string *contents) const;
 
@@ -481,10 +505,10 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   // Otherwise, NULL.
   const Descriptor* containing_type() const;
 
-  // Get options for this enum type.  These are specified in the .proto
-  // file by placing lines like "option foo = 1234;" in the enum definition.
-  // The exact set of known options is defined by EnumOptions in
-  // google/protobuf/descriptor.proto.
+  // Get options for this enum type.  These are specified in the .proto file by
+  // placing lines like "option foo = 1234;" in the enum definition.  Allowed
+  // options are defined by EnumOptions in google/protobuf/descriptor.proto,
+  // and any available extensions of that message.
   const EnumOptions& options() const;
 
   // See Descriptor::CopyTo().
@@ -494,6 +518,8 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   string DebugString() const;
 
  private:
+  typedef EnumOptions OptionsType;
+
   // See Descriptor::DebugString().
   void DebugString(int depth, string *contents) const;
 
@@ -535,10 +561,11 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
   // The type of this value.  Never NULL.
   const EnumDescriptor* type() const;
 
-  // Get options for this enum value.  These are specified in the .proto
-  // file by adding text like "[foo = 1234]" after an enum value definition.
-  // The exact set of known options is defined by EnumValueOptions in
-  // google/protobuf/descriptor.proto.
+  // Get options for this enum value.  These are specified in the .proto file
+  // by adding text like "[foo = 1234]" after an enum value definition.
+  // Allowed options are defined by EnumValueOptions in
+  // google/protobuf/descriptor.proto, and any available extensions of that
+  // message.
   const EnumValueOptions& options() const;
 
   // See Descriptor::CopyTo().
@@ -548,6 +575,8 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
   string DebugString() const;
 
  private:
+  typedef EnumValueOptions OptionsType;
+
   // See Descriptor::DebugString().
   void DebugString(int depth, string *contents) const;
 
@@ -580,10 +609,11 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
   // The .proto file in which this service was defined.  Never NULL.
   const FileDescriptor* file() const;
 
-  // Get options for this service type.  These are specified in the .proto
-  // file by placing lines like "option foo = 1234;" in the service definition.
-  // The exact set of known options is defined by ServiceOptions in
-  // google/protobuf/descriptor.proto.
+  // Get options for this service type.  These are specified in the .proto file
+  // by placing lines like "option foo = 1234;" in the service definition.
+  // Allowed options are defined by ServiceOptions in
+  // google/protobuf/descriptor.proto, and any available extensions of that
+  // message.
   const ServiceOptions& options() const;
 
   // The number of methods this service defines.
@@ -602,6 +632,8 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
   string DebugString() const;
 
  private:
+  typedef ServiceOptions OptionsType;
+
   // See Descriptor::DebugString().
   void DebugString(string *contents) const;
 
@@ -641,10 +673,11 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
   // Gets the type of protocol message which this message produces as output.
   const Descriptor* output_type() const;
 
-  // Get options for this method.  These are specified in the .proto
-  // file by placing lines like "option foo = 1234;" in curly-braces after
-  // a method declaration.  The exact set of known options is defined by
-  // MethodOptions in google/protobuf/descriptor.proto.
+  // Get options for this method.  These are specified in the .proto file by
+  // placing lines like "option foo = 1234;" in curly-braces after a method
+  // declaration.  Allowed options are defined by MethodOptions in
+  // google/protobuf/descriptor.proto, and any available extensions of that
+  // message.
   const MethodOptions& options() const;
 
   // See Descriptor::CopyTo().
@@ -654,6 +687,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
   string DebugString() const;
 
  private:
+  typedef MethodOptions OptionsType;
+
   // See Descriptor::DebugString().
   void DebugString(int depth, string *contents) const;
 
@@ -720,10 +755,11 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   // These are returned in the order they were defined in the .proto file.
   const FieldDescriptor* extension(int index) const;
 
-  // Get options for this file.  These are specified in the .proto
-  // file by placing lines like "option foo = 1234;" at the top level, outside
-  // of any other definitions.  The exact set of known options is defined by
-  // FileOptions in google/protobuf/descriptor.proto.
+  // Get options for this file.  These are specified in the .proto file by
+  // placing lines like "option foo = 1234;" at the top level, outside of any
+  // other definitions.  Allowed options are defined by FileOptions in
+  // google/protobuf/descriptor.proto, and any available extensions of that
+  // message.
   const FileOptions& options() const;
 
   // Find a top-level message type by name.  Returns NULL if not found.
@@ -745,6 +781,8 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   string DebugString() const;
 
  private:
+  typedef FileOptions OptionsType;
+
   const string* name_;
   const string* package_;
   const DescriptorPool* pool_;
@@ -880,6 +918,8 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
       DEFAULT_VALUE,     // field default value
       INPUT_TYPE,        // method input type
       OUTPUT_TYPE,       // method output type
+      OPTION_NAME,       // name in assignment
+      OPTION_VALUE,      // value in option assignment
       OTHER              // some other problem
     };
 
@@ -936,10 +976,12 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // underlay for a new DescriptorPool in which you add only the new file.
   explicit DescriptorPool(const DescriptorPool* underlay);
 
-  // Called by generated classes at init time.  Do NOT call this in your
-  // own code!
+  // Called by generated classes at init time.  Do NOT call this in your own
+  // code! descriptor_assigner, if not NULL, is used to assign global
+  // descriptor pointers at the appropriate point during building.
+  typedef void (*InternalDescriptorAssigner)(const FileDescriptor*);
   const FileDescriptor* InternalBuildGeneratedFile(
-    const void* data, int size);
+    const void* data, int size, InternalDescriptorAssigner descriptor_assigner);
 
   // For internal use only:  Gets a non-const pointer to the generated pool.
   // This is called at static-initialization time only, so thread-safety is

@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -21,12 +35,17 @@
 #include <google/protobuf/stubs/hash.h>
 #include <map>
 #include <set>
+#include <vector>
 #include <algorithm>
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/text_format.h>
+#include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -368,11 +387,13 @@ DescriptorPool::Tables::Tables()
     allocations_before_checkpoint_(0) {}
 
 DescriptorPool::Tables::~Tables() {
+  // Note that the deletion order is important, since the destructors of some
+  // messages may refer to objects in allocations_.
+  STLDeleteElements(&messages_);
   for (int i = 0; i < allocations_.size(); i++) {
     operator delete(allocations_[i]);
   }
   STLDeleteElements(&strings_);
-  STLDeleteElements(&messages_);
 }
 
 void DescriptorPool::Tables::Checkpoint() {
@@ -1549,6 +1570,31 @@ void MethodDescriptor::DebugString(int depth, string *contents) const {
 }
 // ===================================================================
 
+namespace {
+
+// Represents an options message to interpret. Extension names in the option
+// name are respolved relative to name_scope. element_name and orig_opt are
+// used only for error reporting (since the parser records locations against
+// pointers in the original options, not the mutable copy). The Message must be
+// one of the Options messages in descriptor.proto.
+struct OptionsToInterpret {
+  OptionsToInterpret(const string& ns,
+                     const string& el,
+                     const Message* orig_opt,
+                     Message* opt)
+      : name_scope(ns),
+        element_name(el),
+        original_options(orig_opt),
+        options(opt) {
+  }
+  string name_scope;
+  string element_name;
+  const Message* original_options;
+  Message* options;
+};
+
+}  // namespace
+
 class DescriptorBuilder {
  public:
   DescriptorBuilder(const DescriptorPool* pool,
@@ -1556,12 +1602,21 @@ class DescriptorBuilder {
                     DescriptorPool::ErrorCollector* error_collector);
   ~DescriptorBuilder();
 
-  const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
+  const FileDescriptor* BuildFile(const FileDescriptorProto& proto,
+      DescriptorPool::InternalDescriptorAssigner descriptor_assigner);
 
  private:
+  friend class OptionInterpreter;
+
   const DescriptorPool* pool_;
   DescriptorPool::Tables* tables_;  // for convenience
   DescriptorPool::ErrorCollector* error_collector_;
+
+  // As we build descriptors we store copies of the options messages in
+  // them. We put pointers to those copies in this vector, as we build, so we
+  // can later (after cross-linking) interpret those options.
+  vector<OptionsToInterpret> options_to_interpret_;
+
   bool had_errors_;
   string filename_;
   FileDescriptor* file_;
@@ -1597,7 +1652,7 @@ class DescriptorBuilder {
   Symbol FindSymbol(const string& name);
 
   // Like FindSymbol(), but looks up the name relative to some other symbol
-  // name.  This first searches syblings of relative_to, then siblings of its
+  // name.  This first searches siblings of relative_to, then siblings of its
   // parents, etc.  For example, LookupSymbol("foo.bar", "baz.qux.corge") makes
   // the following calls, returning the first non-null result:
   // FindSymbol("baz.qux.foo.bar"), FindSymbol("baz.foo.bar"),
@@ -1630,6 +1685,21 @@ class DescriptorBuilder {
   inline void AllocateArray(int size, Type** output) {
     *output = tables_->AllocateArray<Type>(size);
   }
+
+  // Allocates a copy of orig_options in tables_ and stores it in the
+  // descriptor. Remembers its uninterpreted options, to be interpreted
+  // later. DescriptorT must be one of the Descriptor messages from
+  // descriptor.proto.
+  template<class DescriptorT> void AllocateOptions(
+      const typename DescriptorT::OptionsType& orig_options,
+      DescriptorT* descriptor);
+
+  // Implementation for AllocateOptions(). Don't call this directly.
+  template<class DescriptorT> void AllocateOptionsImpl(
+      const string& name_scope,
+      const string& element_name,
+      const typename DescriptorT::OptionsType& orig_options,
+      DescriptorT* descriptor);
 
   // These methods all have the same signature for the sake of the BUILD_ARRAY
   // macro, below.
@@ -1666,16 +1736,134 @@ class DescriptorBuilder {
                    const ServiceDescriptor* parent,
                    MethodDescriptor* result);
 
+  // Must be run only after building.
+  //
+  // NOTE: Options will not be available during cross-linking, as they
+  // have not yet been interpreted. Defer any handling of options to the
+  // Validate*Options methods.
   void CrossLinkFile(FileDescriptor* file, const FileDescriptorProto& proto);
   void CrossLinkMessage(Descriptor* message, const DescriptorProto& proto);
   void CrossLinkField(FieldDescriptor* field,
                       const FieldDescriptorProto& proto);
+  void CrossLinkEnum(EnumDescriptor* enum_type,
+                     const EnumDescriptorProto& proto);
+  void CrossLinkEnumValue(EnumValueDescriptor* enum_value,
+                          const EnumValueDescriptorProto& proto);
   void CrossLinkService(ServiceDescriptor* service,
                         const ServiceDescriptorProto& proto);
   void CrossLinkMethod(MethodDescriptor* method,
                        const MethodDescriptorProto& proto);
-  void CrossLinkMapKey(FieldDescriptor* field,
-                       const FieldDescriptorProto& proto);
+
+  // Must be run only after cross-linking.
+  void InterpretOptions();
+
+  // A helper class for interpreting options.
+  class OptionInterpreter {
+   public:
+    // Creates an interpreter that operates in the context of the pool of the
+    // specified builder, which must not be NULL. We don't take ownership of the
+    // builder.
+    explicit OptionInterpreter(DescriptorBuilder* builder);
+
+    ~OptionInterpreter();
+
+    // Interprets the uninterpreted options in the specified Options message.
+    // On error, calls AddError() on the underlying builder and returns false.
+    // Otherwise returns true.
+    bool InterpretOptions(OptionsToInterpret* options_to_interpret);
+
+   private:
+    // Interprets uninterpreted_option_ on the specified message, which
+    // must be the mutable copy of the original options message to which
+    // uninterpreted_option_ belongs.
+    bool InterpretSingleOption(Message* options);
+
+    // A recursive helper function that drills into the intermediate fields
+    // in unknown_fields to check if field #field_number is set on the
+    // innermost message. Returns false and sets an error if so.
+    bool ExamineIfOptionIsSet(
+        vector<const FieldDescriptor*>::const_iterator intermediate_fields_iter,
+        vector<const FieldDescriptor*>::const_iterator intermediate_fields_end,
+        const FieldDescriptor* innermost_field, const string& debug_msg_name,
+        const UnknownFieldSet& unknown_fields);
+
+    // Validates the value for the option field of the currently interpreted
+    // option and then sets it on the unknown_field.
+    bool SetOptionValue(const FieldDescriptor* option_field,
+                        UnknownField* unknown_field);
+
+    // Convenience functions to set an int field the right way, depending on
+    // its wire type (a single int CppType can represent multiple wire types).
+    void SetInt32(int32 value, FieldDescriptor::Type type,
+                  UnknownField* unknown_field);
+    void SetInt64(int64 value, FieldDescriptor::Type type,
+                  UnknownField* unknown_field);
+    void SetUInt32(uint32 value, FieldDescriptor::Type type,
+                   UnknownField* unknown_field);
+    void SetUInt64(uint64 value, FieldDescriptor::Type type,
+                   UnknownField* unknown_field);
+
+    // A helper function that adds an error at the specified location of the
+    // option we're currently interpreting, and returns false.
+    bool AddOptionError(DescriptorPool::ErrorCollector::ErrorLocation location,
+                        const string& msg) {
+      builder_->AddError(options_to_interpret_->element_name,
+                         *uninterpreted_option_, location, msg);
+      return false;
+    }
+
+    // A helper function that adds an error at the location of the option name
+    // and returns false.
+    bool AddNameError(const string& msg) {
+      return AddOptionError(DescriptorPool::ErrorCollector::OPTION_NAME, msg);
+    }
+
+    // A helper function that adds an error at the location of the option name
+    // and returns false.
+    bool AddValueError(const string& msg) {
+      return AddOptionError(DescriptorPool::ErrorCollector::OPTION_VALUE, msg);
+    }
+
+    // We interpret against this builder's pool. Is never NULL. We don't own
+    // this pointer.
+    DescriptorBuilder* builder_;
+
+    // The options we're currently interpreting, or NULL if we're not in a call
+    // to InterpretOptions.
+    const OptionsToInterpret* options_to_interpret_;
+
+    // The option we're currently interpreting within options_to_interpret_, or
+    // NULL if we're not in a call to InterpretOptions(). This points to a
+    // submessage of the original option, not the mutable copy. Therefore we
+    // can use it to find locations recorded by the parser.
+    const UninterpretedOption* uninterpreted_option_;
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OptionInterpreter);
+  };
+
+  // Must be run only after options have been interpreted.
+  //
+  // NOTE: Validation code must only reference the options in the mutable
+  // descriptors, which are the ones that have been interpreted. The const
+  // proto references are passed in only so they can be provided to calls to
+  // AddError(). Do not look at their options, which have not been interpreted.
+  void ValidateFileOptions(FileDescriptor* file,
+                           const FileDescriptorProto& proto);
+  void ValidateMessageOptions(Descriptor* message,
+                              const DescriptorProto& proto);
+  void ValidateFieldOptions(FieldDescriptor* field,
+                            const FieldDescriptorProto& proto);
+  void ValidateEnumOptions(EnumDescriptor* enm,
+                           const EnumDescriptorProto& proto);
+  void ValidateEnumValueOptions(EnumValueDescriptor* enum_value,
+                                const EnumValueDescriptorProto& proto);
+  void ValidateServiceOptions(ServiceDescriptor* service,
+                              const ServiceDescriptorProto& proto);
+  void ValidateMethodOptions(MethodDescriptor* method,
+                             const MethodDescriptorProto& proto);
+
+  void ValidateMapKey(FieldDescriptor* field,
+                      const FieldDescriptorProto& proto);
 };
 
 const FileDescriptor* DescriptorPool::BuildFile(
@@ -1685,7 +1873,7 @@ const FileDescriptor* DescriptorPool::BuildFile(
        "DescriptorDatabase.  You must instead find a way to get your file "
        "into the underlying database.";
   GOOGLE_CHECK(mutex_ == NULL);   // Implied by the above GOOGLE_CHECK.
-  return DescriptorBuilder(this, tables_.get(), NULL).BuildFile(proto);
+  return DescriptorBuilder(this, tables_.get(), NULL).BuildFile(proto, NULL);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
@@ -1697,18 +1885,19 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
        "into the underlying database.";
   GOOGLE_CHECK(mutex_ == NULL);   // Implied by the above GOOGLE_CHECK.
   return DescriptorBuilder(this, tables_.get(),
-                           error_collector).BuildFile(proto);
+                           error_collector).BuildFile(proto, NULL);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
   return DescriptorBuilder(this, tables_.get(),
-                           default_error_collector_).BuildFile(proto);
+                           default_error_collector_).BuildFile(proto, NULL);
 }
 
 const FileDescriptor* DescriptorPool::InternalBuildGeneratedFile(
-    const void* data, int size) {
+    const void* data, int size,
+    InternalDescriptorAssigner descriptor_assigner) {
   // So, this function is called in the process of initializing the
   // descriptors for generated proto classes.  Each generated .pb.cc file
   // has an internal procedure called BuildDescriptors() which is called the
@@ -1748,9 +1937,18 @@ const FileDescriptor* DescriptorPool::InternalBuildGeneratedFile(
   //
   // Note that because this is only triggered at static initialization time,
   // there are no thread-safety concerns here.
+  GOOGLE_CHECK(fallback_database_ == NULL)
+    << "Cannot call BuildFile on a DescriptorPool that uses a "
+       "DescriptorDatabase.  You must instead find a way to get your file "
+       "into the underlying database.";
+  GOOGLE_CHECK(mutex_ == NULL);   // Implied by the above GOOGLE_CHECK.
+
   FileDescriptorProto proto;
   GOOGLE_CHECK(proto.ParseFromArray(data, size));
-  const FileDescriptor* result = BuildFile(proto);
+  const FileDescriptor* result =
+      DescriptorBuilder(this, tables_.get(), NULL).BuildFile(
+          proto, descriptor_assigner);
+
   GOOGLE_CHECK(result != NULL);
 
   return result;
@@ -2000,6 +2198,38 @@ void DescriptorBuilder::ValidateSymbolName(
 
 // -------------------------------------------------------------------
 
+// This generic implementation is good for all descriptors except
+// FileDescriptor.
+template<class DescriptorT> void DescriptorBuilder::AllocateOptions(
+    const typename DescriptorT::OptionsType& orig_options,
+    DescriptorT* descriptor) {
+  AllocateOptionsImpl(descriptor->full_name(), descriptor->full_name(),
+                      orig_options, descriptor);
+}
+
+// We specialize for FileDescriptor.
+template<> void DescriptorBuilder::AllocateOptions(
+    const FileDescriptor::OptionsType& orig_options,
+    FileDescriptor* descriptor) {
+  // We add the dummy token so that LookupSymbol does the right thing.
+  AllocateOptionsImpl(descriptor->package() + ".dummy", descriptor->name(),
+                      orig_options, descriptor);
+}
+
+template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
+    const string& name_scope,
+    const string& element_name,
+    const typename DescriptorT::OptionsType& orig_options,
+    DescriptorT* descriptor) {
+  typename DescriptorT::OptionsType* options =
+      tables_->AllocateMessage<typename DescriptorT::OptionsType>();
+  options->CopyFrom(orig_options);
+  options_to_interpret_.push_back(
+      OptionsToInterpret(name_scope, element_name, &orig_options, options));
+  descriptor->options_ = options;
+}
+
+
 // A common pattern:  We want to convert a repeated field in the descriptor
 // to an array of values, calling some method to build each value.
 #define BUILD_ARRAY(INPUT, OUTPUT, NAME, METHOD, PARENT)             \
@@ -2010,7 +2240,8 @@ void DescriptorBuilder::ValidateSymbolName(
   }
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
-    const FileDescriptorProto& proto) {
+    const FileDescriptorProto& proto,
+    DescriptorPool::InternalDescriptorAssigner descriptor_assigner) {
   filename_ = proto.name();
 
   // Check to see if this file is already on the pending files list.
@@ -2131,15 +2362,38 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &FileOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    FileOptions* options = tables_->AllocateMessage<FileOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
+  }
+
+  // Note that the following steps must occur in exactly the specified order.
+
+  // Assign descriptors, if needed.
+  if (descriptor_assigner != NULL) {
+    (*descriptor_assigner)(result);
   }
 
   // Cross-link.
   CrossLinkFile(result, proto);
+
+  // Interpret any remaining uninterpreted options gathered into
+  // options_to_interpret_ during descriptor building.  Cross-linking has made
+  // extension options known, so all interpretations should now succeed.
+  if (!had_errors_) {
+    OptionInterpreter option_interpreter(this);
+    for (vector<OptionsToInterpret>::iterator iter =
+             options_to_interpret_.begin();
+         iter != options_to_interpret_.end(); ++iter) {
+      option_interpreter.InterpretOptions(&(*iter));
+    }
+    options_to_interpret_.clear();
+  }
+
+  // Validate options.
+  if (!had_errors_) {
+    ValidateFileOptions(result, proto);
+  }
 
   if (had_errors_) {
     tables_->Rollback();
@@ -2174,11 +2428,9 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &MessageOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    MessageOptions* options = tables_->AllocateMessage<MessageOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -2389,11 +2641,9 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &FieldOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    FieldOptions* options = tables_->AllocateMessage<FieldOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -2454,11 +2704,9 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &EnumOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    EnumOptions* options = tables_->AllocateMessage<EnumOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -2483,11 +2731,9 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &EnumValueOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    EnumValueOptions* options = tables_->AllocateMessage<EnumValueOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
   }
 
   // Again, enum values are weird because we makes them appear as siblings
@@ -2552,11 +2798,9 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &ServiceOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    ServiceOptions* options = tables_->AllocateMessage<ServiceOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
   }
 
   AddSymbol(result->full_name(), NULL, result->name(),
@@ -2582,11 +2826,9 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
 
   // Copy options.
   if (!proto.has_options()) {
-    result->options_ = &MethodOptions::default_instance();
+    result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    MethodOptions* options = tables_->AllocateMessage<MethodOptions>();
-    options->CopyFrom(proto.options());
-    result->options_ = options;
+    AllocateOptions(proto.options(), result);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -2599,12 +2841,20 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
 
 void DescriptorBuilder::CrossLinkFile(
     FileDescriptor* file, const FileDescriptorProto& proto) {
+  if (file->options_ == NULL) {
+    file->options_ = &FileOptions::default_instance();
+  }
+
   for (int i = 0; i < file->message_type_count(); i++) {
     CrossLinkMessage(&file->message_types_[i], proto.message_type(i));
   }
 
   for (int i = 0; i < file->extension_count(); i++) {
     CrossLinkField(&file->extensions_[i], proto.extension(i));
+  }
+
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    CrossLinkEnum(&file->enum_types_[i], proto.enum_type(i));
   }
 
   for (int i = 0; i < file->service_count(); i++) {
@@ -2614,8 +2864,16 @@ void DescriptorBuilder::CrossLinkFile(
 
 void DescriptorBuilder::CrossLinkMessage(
     Descriptor* message, const DescriptorProto& proto) {
+  if (message->options_ == NULL) {
+    message->options_ = &MessageOptions::default_instance();
+  }
+
   for (int i = 0; i < message->nested_type_count(); i++) {
     CrossLinkMessage(&message->nested_types_[i], proto.nested_type(i));
+  }
+
+  for (int i = 0; i < message->enum_type_count(); i++) {
+    CrossLinkEnum(&message->enum_types_[i], proto.enum_type(i));
   }
 
   for (int i = 0; i < message->field_count(); i++) {
@@ -2629,6 +2887,10 @@ void DescriptorBuilder::CrossLinkMessage(
 
 void DescriptorBuilder::CrossLinkField(
     FieldDescriptor* field, const FieldDescriptorProto& proto) {
+  if (field->options_ == NULL) {
+    field->options_ = &FieldOptions::default_instance();
+  }
+
   if (proto.has_extendee()) {
     Symbol extendee = LookupSymbol(proto.extendee(), field->full_name());
     if (extendee.IsNull()) {
@@ -2734,10 +2996,6 @@ void DescriptorBuilder::CrossLinkField(
     }
   }
 
-  if (proto.has_options() && proto.options().has_experimental_map_key()) {
-    CrossLinkMapKey(field, proto);
-  }
-
   // Add the field to the fields-by-number table.
   // Note:  We have to do this *after* cross-linking because extensions do not
   //   know their containing type until now.
@@ -2762,30 +3020,32 @@ void DescriptorBuilder::CrossLinkField(
                                    conflicting_field->name()));
     }
   }
+}
 
-  // Note:  Default instance may not yet be initialized here, so we have to
-  //   avoid reading from it.
-  if (field->containing_type_ != NULL &&
-      &field->containing_type()->options() !=
-        &MessageOptions::default_instance() &&
-      field->containing_type()->options().message_set_wire_format()) {
-    if (field->is_extension()) {
-      if (!field->is_optional() ||
-          field->type() != FieldDescriptor::TYPE_MESSAGE) {
-        AddError(field->full_name(), proto,
-                 DescriptorPool::ErrorCollector::TYPE,
-                 "Extensions of MessageSets must be optional messages.");
-      }
-    } else {
-      AddError(field->full_name(), proto,
-               DescriptorPool::ErrorCollector::NAME,
-               "MessageSets cannot have fields, only extensions.");
-    }
+void DescriptorBuilder::CrossLinkEnum(
+    EnumDescriptor* enum_type, const EnumDescriptorProto& proto) {
+  if (enum_type->options_ == NULL) {
+    enum_type->options_ = &EnumOptions::default_instance();
+  }
+
+  for (int i = 0; i < enum_type->value_count(); i++) {
+    CrossLinkEnumValue(&enum_type->values_[i], proto.value(i));
+  }
+}
+
+void DescriptorBuilder::CrossLinkEnumValue(
+    EnumValueDescriptor* enum_value, const EnumValueDescriptorProto& proto) {
+  if (enum_value->options_ == NULL) {
+    enum_value->options_ = &EnumValueOptions::default_instance();
   }
 }
 
 void DescriptorBuilder::CrossLinkService(
     ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
+  if (service->options_ == NULL) {
+    service->options_ = &ServiceOptions::default_instance();
+  }
+
   for (int i = 0; i < service->method_count(); i++) {
     CrossLinkMethod(&service->methods_[i], proto.method(i));
   }
@@ -2793,6 +3053,10 @@ void DescriptorBuilder::CrossLinkService(
 
 void DescriptorBuilder::CrossLinkMethod(
     MethodDescriptor* method, const MethodDescriptorProto& proto) {
+  if (method->options_ == NULL) {
+    method->options_ = &MethodOptions::default_instance();
+  }
+
   Symbol input_type = LookupSymbol(proto.input_type(), method->full_name());
   if (input_type.IsNull()) {
     AddNotDefinedError(method->full_name(), proto,
@@ -2820,9 +3084,78 @@ void DescriptorBuilder::CrossLinkMethod(
   }
 }
 
-void DescriptorBuilder::CrossLinkMapKey(
-    FieldDescriptor* field,
+// -------------------------------------------------------------------
+
+#define VALIDATE_OPTIONS_FROM_ARRAY(descriptor, array_name, type)  \
+  for (int i = 0; i < descriptor->array_name##_count(); ++i) {     \
+    Validate##type##Options(descriptor->array_name##s_ + i,        \
+                            proto.array_name(i));                  \
+  }
+
+void DescriptorBuilder::ValidateFileOptions(FileDescriptor* file,
+                                            const FileDescriptorProto& proto) {
+  VALIDATE_OPTIONS_FROM_ARRAY(file, message_type, Message);
+  VALIDATE_OPTIONS_FROM_ARRAY(file, enum_type, Enum);
+  VALIDATE_OPTIONS_FROM_ARRAY(file, service, Service);
+  VALIDATE_OPTIONS_FROM_ARRAY(file, extension, Field);
+}
+
+void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
+                                               const DescriptorProto& proto) {
+  VALIDATE_OPTIONS_FROM_ARRAY(message, field, Field);
+  VALIDATE_OPTIONS_FROM_ARRAY(message, nested_type, Message);
+  VALIDATE_OPTIONS_FROM_ARRAY(message, enum_type, Enum);
+  VALIDATE_OPTIONS_FROM_ARRAY(message, extension, Field);
+}
+
+void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
     const FieldDescriptorProto& proto) {
+  if (field->options().has_experimental_map_key()) {
+    ValidateMapKey(field, proto);
+  }
+
+  // Note:  Default instance may not yet be initialized here, so we have to
+  //   avoid reading from it.
+  if (field->containing_type_ != NULL &&
+      &field->containing_type()->options() !=
+      &MessageOptions::default_instance() &&
+      field->containing_type()->options().message_set_wire_format()) {
+    if (field->is_extension()) {
+      if (!field->is_optional() ||
+          field->type() != FieldDescriptor::TYPE_MESSAGE) {
+        AddError(field->full_name(), proto,
+                 DescriptorPool::ErrorCollector::TYPE,
+                 "Extensions of MessageSets must be optional messages.");
+      }
+    } else {
+      AddError(field->full_name(), proto,
+               DescriptorPool::ErrorCollector::NAME,
+               "MessageSets cannot have fields, only extensions.");
+    }
+  }
+}
+
+void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
+                                            const EnumDescriptorProto& proto) {
+  VALIDATE_OPTIONS_FROM_ARRAY(enm, value, EnumValue);
+}
+
+void DescriptorBuilder::ValidateEnumValueOptions(
+    EnumValueDescriptor* enum_value, const EnumValueDescriptorProto& proto) {
+  // Nothing to do so far.
+}
+void DescriptorBuilder::ValidateServiceOptions(ServiceDescriptor* service,
+    const ServiceDescriptorProto& proto) {
+  VALIDATE_OPTIONS_FROM_ARRAY(service, method, Method);
+}
+
+void DescriptorBuilder::ValidateMethodOptions(MethodDescriptor* method,
+    const MethodDescriptorProto& proto) {
+  // Nothing to do so far.
+}
+
+void DescriptorBuilder::ValidateMapKey(FieldDescriptor* field,
+                                       const FieldDescriptorProto& proto) {
   if (!field->is_repeated()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
              "map type is only allowed for repeated fields.");
@@ -2843,7 +3176,7 @@ void DescriptorBuilder::CrossLinkMapKey(
   }
 
   // Find the field in item_type named by "experimental_map_key"
-  const string& key_name = proto.options().experimental_map_key();
+  const string& key_name = field->options().experimental_map_key();
   const Symbol key_symbol = LookupSymbol(
       key_name,
       // We append ".key_name" to the containing type's name since
@@ -2872,6 +3205,592 @@ void DescriptorBuilder::CrossLinkMapKey(
   }
 
   field->experimental_map_key_ = key_field;
+}
+
+#undef VALIDATE_OPTIONS_FROM_ARRAY
+
+// -------------------------------------------------------------------
+
+DescriptorBuilder::OptionInterpreter::OptionInterpreter(
+    DescriptorBuilder* builder) : builder_(builder) {
+  GOOGLE_CHECK(builder_);
+}
+
+DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {
+}
+
+bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
+    OptionsToInterpret* options_to_interpret) {
+  // Note that these may be in different pools, so we can't use the same
+  // descriptor and reflection objects on both.
+  Message* options = options_to_interpret->options;
+  const Message* original_options = options_to_interpret->original_options;
+
+  bool failed = false;
+  options_to_interpret_ = options_to_interpret;
+
+  // Find the uninterpreted_option field in the original options.
+  const FieldDescriptor* original_uninterpreted_options_field =
+      original_options->GetDescriptor()->
+          FindFieldByName("uninterpreted_option");
+  GOOGLE_CHECK(original_uninterpreted_options_field != NULL)
+      << "No field named \"uninterpreted_option\" in the Options proto.";
+
+  const int num_uninterpreted_options = original_options->GetReflection()->
+      FieldSize(*original_options, original_uninterpreted_options_field);
+  for (int i = 0; i < num_uninterpreted_options; ++i) {
+    uninterpreted_option_ = ::google::protobuf::down_cast<const UninterpretedOption*>(
+        &original_options->GetReflection()->GetRepeatedMessage(
+            *original_options, original_uninterpreted_options_field, i));
+    if (!InterpretSingleOption(options)) {
+      // Error already added by InterpretSingleOption().
+      failed = true;
+      break;
+    }
+  }
+  // Reset these, so we don't have any dangling pointers.
+  uninterpreted_option_ = NULL;
+  options_to_interpret_ = NULL;
+
+  if (!failed) {
+    // Find the uninterpreted_option field in the mutable copy of the options.
+    const FieldDescriptor* uninterpreted_options_field =
+        options->GetDescriptor()->FindFieldByName("uninterpreted_option");
+    GOOGLE_CHECK(uninterpreted_options_field != NULL)
+        << "No field named \"uninterpreted_option\" in the Options proto.";
+
+    // We don't want to carry around the uninterpreted options, now that we've
+    // interpreted them.
+    options->GetReflection()->ClearField(options, uninterpreted_options_field);
+
+
+    // InterpretSingleOption() added the interpreted options in the
+    // UnknownFieldSet, in case the option isn't yet known to us.  Now we
+    // serialize the options message and deserialize it back.  That way, any
+    // option fields that we do happen to know about will get moved from the
+    // UnknownFieldSet into the real fields, and thus be available right away.
+    // If they are not known, that's OK too. They will get reparsed into the
+    // UnknownFieldSet and wait there until the message is parsed by something
+    // that does know about the options.
+    string buf;
+    options->AppendToString(&buf);
+    GOOGLE_CHECK(options->ParseFromString(buf))
+        << "Protocol message serialized itself in invalid fashion.";
+  }
+
+  return !failed;
+}
+
+bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
+    Message* options) {
+  // First do some basic validation.
+  if (uninterpreted_option_->name_size() == 0) {
+    // This should never happen unless the parser has gone seriously awry or
+    // someone has manually created the uninterpreted option badly.
+    return AddNameError("Option must have a name.");
+  }
+  if (uninterpreted_option_->name(0).name_part() == "uninterpreted_option") {
+    return AddNameError("Option must not use reserved name "
+                        "\"uninterpreted_option\".");
+  }
+
+  const Descriptor* options_descriptor = NULL;
+  // Get the options message's descriptor from the builder's pool, so that we
+  // get the version that knows about any extension options declared in the
+  // file we're currently building. The descriptor should be there as long as
+  // the file we're building imported "google/protobuf/descriptors.proto".
+
+  // Note that we use DescriptorBuilder::FindSymbol(), not
+  // DescriptorPool::FindMessageTypeByName() because we're already holding the
+  // pool's mutex, and the latter method locks it again.
+  Symbol symbol = builder_->FindSymbol(options->GetDescriptor()->full_name());
+  if (!symbol.IsNull() && symbol.type == Symbol::MESSAGE) {
+    options_descriptor = symbol.descriptor;
+  } else {
+    // The options message's descriptor was not in the builder's pool, so use
+    // the standard version from the generated pool. We're not holding the
+    // generated pool's mutex, so we can search it the straightforward way.
+    options_descriptor = options->GetDescriptor();
+  }
+  GOOGLE_CHECK(options_descriptor);
+
+  // We iterate over the name parts to drill into the submessages until we find
+  // the leaf field for the option. As we drill down we remember the current
+  // submessage's descriptor in |descriptor| and the next field in that
+  // submessage in |field|. We also track the fields we're drilling down
+  // through in |intermediate_fields|. As we go, we reconstruct the full option
+  // name in |debug_msg_name|, for use in error messages.
+  const Descriptor* descriptor = options_descriptor;
+  const FieldDescriptor* field = NULL;
+  vector<const FieldDescriptor*> intermediate_fields;
+  string debug_msg_name = "";
+
+  for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
+    const string& name_part = uninterpreted_option_->name(i).name_part();
+    if (debug_msg_name.size() > 0) {
+      debug_msg_name += ".";
+    }
+    if (uninterpreted_option_->name(i).is_extension()) {
+      debug_msg_name += "(" + name_part + ")";
+      // Search for the extension's descriptor as an extension in the builder's
+      // pool. Note that we use DescriptorBuilder::LookupSymbol(), not
+      // DescriptorPool::FindExtensionByName(), for two reasons: 1) It allows
+      // relative lookups, and 2) because we're already holding the pool's
+      // mutex, and the latter method locks it again.
+      Symbol symbol = builder_->LookupSymbol(name_part,
+                                             options_to_interpret_->name_scope);
+      if (!symbol.IsNull() && symbol.type == Symbol::FIELD) {
+        field = symbol.field_descriptor;
+      }
+      // If we don't find the field then the field's descriptor was not in the
+      // builder's pool, but there's no point in looking in the generated
+      // pool. We require that you import the file that defines any extensions
+      // you use, so they must be present in the builder's pool.
+    } else {
+      debug_msg_name += name_part;
+      // Search for the field's descriptor as a regular field in the builder's
+      // pool. First we must qualify it by its message name. Note that we use
+      // DescriptorBuilder::FindSymbol(), not DescriptorPool::FindFieldByName()
+      // because we're already holding the pool's mutex, and the latter method
+      // locks it again.
+      string fully_qualified_name = descriptor->full_name() + "." + name_part;
+      Symbol symbol = builder_->FindSymbol(fully_qualified_name);
+      if (!symbol.IsNull() && symbol.type == Symbol::FIELD) {
+        field = symbol.field_descriptor;
+      } else {
+        // The field's descriptor was not in the builder's pool, so search for
+        // the standard version from the generated pool. We're not holding the
+        // generated pool's mutex, so we can search it the straightforward way.
+        field = DescriptorPool::generated_pool()->FindFieldByName(
+            fully_qualified_name);
+      }
+    }
+
+    if (!field) {
+      return AddNameError("Option \"" + debug_msg_name + "\" unknown.");
+    } else if (field->containing_type() != descriptor) {
+      // This can only happen if, due to some insane misconfiguration of the
+      // pools, we find the options message in one pool but the field in
+      // another. This would probably imply a hefty bug somewhere.
+      return AddNameError("Option field \"" + debug_msg_name +
+                          "\" is not a field or extension of message \"" +
+                          descriptor->name() + "\".");
+    } else if (field->is_repeated()) {
+      return AddNameError("Option field \"" + debug_msg_name +
+                          "\" is repeated. Repeated options are not "
+                          "supported.");
+    } else if (i < uninterpreted_option_->name_size() - 1) {
+      if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+        return AddNameError("Option \"" +  debug_msg_name +
+                            "\" is an atomic type, not a message.");
+      } else {
+        // Drill down into the submessage.
+        intermediate_fields.push_back(field);
+        descriptor = field->message_type();
+      }
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      return AddNameError("Option field \"" + debug_msg_name +
+                          "\" cannot be of message type.");
+    }
+  }
+
+  // We've found the leaf field. Now we use UnknownFieldSets to set its value
+  // on the options message. We do so because the message may not yet know
+  // about its extension fields, so we may not be able to set the fields
+  // directly. But the UnknownFieldSets will serialize to the same wire-format
+  // message, so reading that message back in once the extension fields are
+  // known will populate them correctly.
+
+  // First see if the option is already set.
+  if (!ExamineIfOptionIsSet(
+          intermediate_fields.begin(),
+          intermediate_fields.end(),
+          field, debug_msg_name,
+          options->GetReflection()->GetUnknownFields(*options))) {
+    return false;  // ExamineIfOptionIsSet() already added the error.
+  }
+
+
+  // First set the value on the UnknownFieldSet corresponding to the
+  // innermost message.
+  scoped_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
+  if (!SetOptionValue(field, unknown_fields.get()->AddField(field->number()))) {
+    return false;  // SetOptionValue() already added the error.
+  }
+
+  // Now wrap the UnknownFieldSet with UnknownFieldSets corresponding to all
+  // the intermediate messages.
+  for (vector<const FieldDescriptor*>::reverse_iterator iter =
+           intermediate_fields.rbegin();
+       iter != intermediate_fields.rend(); ++iter) {
+    scoped_ptr<UnknownFieldSet> parent_unknown_fields(new UnknownFieldSet());
+    switch ((*iter)->type()) {
+      case FieldDescriptor::TYPE_MESSAGE: {
+        io::StringOutputStream outstr(
+            parent_unknown_fields->AddField((*iter)->number())->
+            add_length_delimited());
+        io::CodedOutputStream out(&outstr);
+        GOOGLE_CHECK(internal::WireFormat::SerializeUnknownFields(*unknown_fields,
+                                                           &out))
+            << "Unexpected failure while serializing option submessage "
+            << debug_msg_name << "\".";
+        break;
+      }
+
+      case FieldDescriptor::TYPE_GROUP: {
+         parent_unknown_fields->AddField((*iter)->number())->
+            add_group()->MergeFrom(*unknown_fields);
+        break;
+      }
+
+      default:
+        GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_MESSAGE: "
+                   << (*iter)->type();
+        return false;
+    }
+    unknown_fields.reset(parent_unknown_fields.release());
+  }
+
+  // Now merge the UnknownFieldSet corresponding to the top-level message into
+  // the options message.
+  options->GetReflection()->MutableUnknownFields(options)->MergeFrom(
+      *unknown_fields);
+
+  return true;
+}
+
+bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
+    vector<const FieldDescriptor*>::const_iterator intermediate_fields_iter,
+    vector<const FieldDescriptor*>::const_iterator intermediate_fields_end,
+    const FieldDescriptor* innermost_field, const string& debug_msg_name,
+    const UnknownFieldSet& unknown_fields) {
+  if (intermediate_fields_iter == intermediate_fields_end) {
+    // We're at the innermost submessage.
+    if (unknown_fields.FindFieldByNumber(innermost_field->number()) != NULL) {
+      return AddNameError("Option \"" + debug_msg_name +
+                          "\" was already set.");
+    } else {
+      return true;
+    }
+  }
+
+  const UnknownField* unknown_field = unknown_fields.FindFieldByNumber(
+      (*intermediate_fields_iter)->number());
+  if (unknown_field != NULL) {
+    FieldDescriptor::Type type = (*intermediate_fields_iter)->type();
+    // Recurse into the next submessage.
+    ++intermediate_fields_iter;
+    switch (type) {
+      case FieldDescriptor::TYPE_MESSAGE:
+        for (int i = 0; i < unknown_field->length_delimited_size(); ++i) {
+          UnknownFieldSet intermediate_unknown_fields;
+          if (intermediate_unknown_fields.ParseFromString(
+                  unknown_field->length_delimited(i)) &&
+              !ExamineIfOptionIsSet(intermediate_fields_iter,
+                                    intermediate_fields_end,
+                                    innermost_field, debug_msg_name,
+                                    intermediate_unknown_fields)) {
+            return false;  // Error already added.
+          }
+        }
+        break;
+
+      case FieldDescriptor::TYPE_GROUP:
+        for (int i = 0; i < unknown_field->group_size(); ++i) {
+          if (!ExamineIfOptionIsSet(intermediate_fields_iter,
+                                    intermediate_fields_end,
+                                    innermost_field, debug_msg_name,
+                                    unknown_field->group(i))) {
+            return false;  // Error already added.
+          }
+        }
+        break;
+
+      default:
+        GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_MESSAGE: " << type;
+        return false;
+    }
+  }
+  return true;
+}
+
+bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
+    const FieldDescriptor* option_field,
+    UnknownField* unknown_field) {
+  // We switch on the CppType to validate.
+  switch (option_field->cpp_type()) {
+
+    case FieldDescriptor::CPPTYPE_INT32:
+      if (uninterpreted_option_->has_positive_int_value()) {
+        if (uninterpreted_option_->positive_int_value() >
+            static_cast<uint64>(kint32max)) {
+          return AddValueError("Value out of range for int32 option \"" +
+                               option_field->full_name() + "\".");
+        } else {
+          SetInt32(uninterpreted_option_->positive_int_value(),
+                   option_field->type(), unknown_field);
+        }
+      } else if (uninterpreted_option_->has_negative_int_value()) {
+        if (uninterpreted_option_->negative_int_value() <
+            static_cast<int64>(kint32min)) {
+          return AddValueError("Value out of range for int32 option \"" +
+                               option_field->full_name() + "\".");
+        } else {
+          SetInt32(uninterpreted_option_->negative_int_value(),
+                   option_field->type(), unknown_field);
+        }
+      } else {
+        return AddValueError("Value must be integer for int32 option \"" +
+                             option_field->full_name() + "\".");
+      }
+      break;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+      if (uninterpreted_option_->has_positive_int_value()) {
+        if (uninterpreted_option_->positive_int_value() >
+            static_cast<uint64>(kint64max)) {
+          return AddValueError("Value out of range for int64 option \"" +
+                               option_field->full_name() + "\".");
+        } else {
+          SetInt64(uninterpreted_option_->positive_int_value(),
+                   option_field->type(), unknown_field);
+        }
+      } else if (uninterpreted_option_->has_negative_int_value()) {
+        SetInt64(uninterpreted_option_->negative_int_value(),
+                 option_field->type(), unknown_field);
+      } else {
+        return AddValueError("Value must be integer for int64 option \"" +
+                             option_field->full_name() + "\".");
+      }
+      break;
+
+    case FieldDescriptor::CPPTYPE_UINT32:
+      if (uninterpreted_option_->has_positive_int_value()) {
+        if (uninterpreted_option_->positive_int_value() > kuint32max) {
+          return AddValueError("Value out of range for uint32 option \"" +
+                               option_field->name() + "\".");
+        } else {
+          SetUInt32(uninterpreted_option_->positive_int_value(),
+                    option_field->type(), unknown_field);
+        }
+      } else {
+        return AddValueError("Value must be non-negative integer for uint32 "
+                             "option \"" + option_field->full_name() + "\".");
+      }
+      break;
+
+    case FieldDescriptor::CPPTYPE_UINT64:
+      if (uninterpreted_option_->has_positive_int_value()) {
+        SetUInt64(uninterpreted_option_->positive_int_value(),
+                  option_field->type(), unknown_field);
+      } else {
+        return AddValueError("Value must be non-negative integer for uint64 "
+                             "option \"" + option_field->full_name() + "\".");
+      }
+      break;
+
+    case FieldDescriptor::CPPTYPE_FLOAT: {
+      float value;
+      if (uninterpreted_option_->has_double_value()) {
+        value = uninterpreted_option_->double_value();
+      } else if (uninterpreted_option_->has_positive_int_value()) {
+        value = uninterpreted_option_->positive_int_value();
+      } else if (uninterpreted_option_->has_negative_int_value()) {
+        value = uninterpreted_option_->negative_int_value();
+      } else {
+        return AddValueError("Value must be number for float option \"" +
+                             option_field->full_name() + "\".");
+      }
+      unknown_field->add_fixed32(
+          google::protobuf::internal::WireFormat::EncodeFloat(value));
+      break;
+    }
+
+    case FieldDescriptor::CPPTYPE_DOUBLE: {
+      double value;
+      if (uninterpreted_option_->has_double_value()) {
+        value = uninterpreted_option_->double_value();
+      } else if (uninterpreted_option_->has_positive_int_value()) {
+        value = uninterpreted_option_->positive_int_value();
+      } else if (uninterpreted_option_->has_negative_int_value()) {
+        value = uninterpreted_option_->negative_int_value();
+      } else {
+        return AddValueError("Value must be number for double option \"" +
+                             option_field->full_name() + "\".");
+      }
+      unknown_field->add_fixed64(
+          google::protobuf::internal::WireFormat::EncodeDouble(value));
+      break;
+    }
+
+    case FieldDescriptor::CPPTYPE_BOOL:
+      uint64 value;
+      if (!uninterpreted_option_->has_identifier_value()) {
+        return AddValueError("Value must be identifier for boolean option "
+                             "\"" + option_field->full_name() + "\".");
+      }
+      if (uninterpreted_option_->identifier_value() == "true") {
+        value = 1;
+      } else if (uninterpreted_option_->identifier_value() == "false") {
+        value = 0;
+      } else {
+        return AddValueError("Value must be \"true\" or \"false\" for boolean "
+                             "option \"" + option_field->full_name() + "\".");
+      }
+      unknown_field->add_varint(value);
+      break;
+
+    case FieldDescriptor::CPPTYPE_ENUM: {
+      if (!uninterpreted_option_->has_identifier_value()) {
+        return AddValueError("Value must be identifier for enum-valued option "
+                             "\"" + option_field->full_name() + "\".");
+      }
+      const EnumDescriptor* enum_type = option_field->enum_type();
+      const string& value_name = uninterpreted_option_->identifier_value();
+      const EnumValueDescriptor* enum_value = NULL;
+
+      if (enum_type->file()->pool() != DescriptorPool::generated_pool()) {
+        // Note that the enum value's fully-qualified name is a sibling of the
+        // enum's name, not a child of it.
+        string fully_qualified_name = enum_type->full_name();
+        fully_qualified_name.resize(fully_qualified_name.size() -
+                                    enum_type->name().size());
+        fully_qualified_name += value_name;
+
+        // Search for the enum value's descriptor in the builder's pool. Note
+        // that we use DescriptorBuilder::LookupSymbol(), not
+        // DescriptorPool::FindEnumValueByName() because we're already holding
+        // the pool's mutex, and the latter method locks it again.
+        Symbol symbol = builder_->FindSymbol(fully_qualified_name);
+        if (!symbol.IsNull() && symbol.type == Symbol::ENUM_VALUE) {
+          if (symbol.enum_value_descriptor->type() != enum_type) {
+            return AddValueError("Enum type \"" + enum_type->full_name() +
+                "\" has no value named \"" + value_name + "\" for option \"" +
+                option_field->full_name() +
+                "\". This appears to be a value from a sibling type.");
+          } else {
+            enum_value = symbol.enum_value_descriptor;
+          }
+        }
+      } else {
+        // The enum type is in the generated pool, so we can search for the
+        // value there.
+        enum_value = enum_type->FindValueByName(value_name);
+      }
+
+      if (enum_value == NULL) {
+        return AddValueError("Enum type \"" +
+                             option_field->enum_type()->full_name() +
+                             "\" has no value named \"" + value_name + "\" for "
+                             "option \"" + option_field->full_name() + "\".");
+      } else {
+        // Sign-extension is not a problem, since we cast directly from int32 to
+        // uint64, without first going through uint32.
+        unknown_field->add_varint(static_cast<uint64>(
+                                    static_cast<int64>(enum_value->number())));
+      }
+      break;
+    }
+
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (!uninterpreted_option_->has_string_value()) {
+        return AddValueError("Value must be quoted string for string option "
+                             "\"" + option_field->full_name() + "\".");
+      }
+      // The string has already been unquoted and unescaped by the parser.
+      unknown_field->add_length_delimited(
+          uninterpreted_option_->string_value());
+      break;
+
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      // We don't currently support defining a message-typed option, so we
+      // should never actually get here.
+      return AddValueError("Option \"" + option_field->full_name() +
+                           "\" is a message.  To set fields within it, use "
+                           "syntax like \"" + option_field->name() +
+                           ".foo = value\".");
+      break;
+  }
+
+  return true;
+}
+
+void DescriptorBuilder::OptionInterpreter::SetInt32(int32 value,
+    FieldDescriptor::Type type, UnknownField* unknown_field) {
+  switch (type) {
+    case FieldDescriptor::TYPE_INT32:
+      unknown_field->add_varint(static_cast<uint64>(static_cast<int64>(value)));
+      break;
+
+    case FieldDescriptor::TYPE_SFIXED32:
+      unknown_field->add_fixed32(static_cast<uint32>(value));
+      break;
+
+    case FieldDescriptor::TYPE_SINT32:
+      unknown_field->add_varint(
+          google::protobuf::internal::WireFormat::ZigZagEncode32(value));
+      break;
+
+    default:
+      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_INT32: " << type;
+      break;
+  }
+}
+
+void DescriptorBuilder::OptionInterpreter::SetInt64(int64 value,
+    FieldDescriptor::Type type, UnknownField* unknown_field) {
+  switch (type) {
+    case FieldDescriptor::TYPE_INT64:
+      unknown_field->add_varint(static_cast<uint64>(value));
+      break;
+
+    case FieldDescriptor::TYPE_SFIXED64:
+      unknown_field->add_fixed64(static_cast<uint64>(value));
+      break;
+
+    case FieldDescriptor::TYPE_SINT64:
+      unknown_field->add_varint(
+          google::protobuf::internal::WireFormat::ZigZagEncode64(value));
+      break;
+
+    default:
+      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_INT64: " << type;
+      break;
+  }
+}
+
+void DescriptorBuilder::OptionInterpreter::SetUInt32(uint32 value,
+    FieldDescriptor::Type type, UnknownField* unknown_field) {
+  switch (type) {
+    case FieldDescriptor::TYPE_UINT32:
+      unknown_field->add_varint(static_cast<uint64>(value));
+      break;
+
+    case FieldDescriptor::TYPE_FIXED32:
+      unknown_field->add_fixed32(static_cast<uint32>(value));
+      break;
+
+    default:
+      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_UINT32: " << type;
+      break;
+  }
+}
+
+void DescriptorBuilder::OptionInterpreter::SetUInt64(uint64 value,
+    FieldDescriptor::Type type, UnknownField* unknown_field) {
+  switch (type) {
+    case FieldDescriptor::TYPE_UINT64:
+      unknown_field->add_varint(value);
+      break;
+
+    case FieldDescriptor::TYPE_FIXED64:
+      unknown_field->add_fixed64(value);
+      break;
+
+    default:
+      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_UINT64: " << type;
+      break;
+  }
 }
 
 }  // namespace protobuf

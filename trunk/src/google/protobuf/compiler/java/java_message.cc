@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -162,26 +176,51 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   }
 
   // The descriptor for this type.
-  if (descriptor_->containing_type() == NULL) {
-    printer->Print(vars,
-      "$private$static final com.google.protobuf.Descriptors.Descriptor\n"
-      "  internal_$identifier$_descriptor =\n"
-      "    getDescriptor().getMessageTypes().get($index$);\n");
-  } else {
-    printer->Print(vars,
-      "$private$static final com.google.protobuf.Descriptors.Descriptor\n"
-      "  internal_$identifier$_descriptor =\n"
-      "    internal_$parent$_descriptor.getNestedTypes().get($index$);\n");
-  }
+  printer->Print(vars,
+    "$private$static com.google.protobuf.Descriptors.Descriptor\n"
+    "  internal_$identifier$_descriptor;\n");
 
   // And the FieldAccessorTable.
   printer->Print(vars,
     "$private$static\n"
     "  com.google.protobuf.GeneratedMessage.FieldAccessorTable\n"
-    "    internal_$identifier$_fieldAccessorTable = new\n"
-    "      com.google.protobuf.GeneratedMessage.FieldAccessorTable(\n"
-    "        internal_$identifier$_descriptor,\n"
-    "        new java.lang.String[] { ");
+    "    internal_$identifier$_fieldAccessorTable;\n");
+
+  // Generate static members for all nested types.
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // TODO(kenton):  Reuse MessageGenerator objects?
+    MessageGenerator(descriptor_->nested_type(i))
+      .GenerateStaticVariables(printer);
+  }
+}
+
+void MessageGenerator::GenerateStaticVariableInitializers(
+    io::Printer* printer) {
+  map<string, string> vars;
+  vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
+  vars["index"] = SimpleItoa(descriptor_->index());
+  vars["classname"] = ClassName(descriptor_);
+  if (descriptor_->containing_type() != NULL) {
+    vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
+  }
+
+  // The descriptor for this type.
+  if (descriptor_->containing_type() == NULL) {
+    printer->Print(vars,
+      "internal_$identifier$_descriptor =\n"
+      "  getDescriptor().getMessageTypes().get($index$);\n");
+  } else {
+    printer->Print(vars,
+      "internal_$identifier$_descriptor =\n"
+      "  internal_$parent$_descriptor.getNestedTypes().get($index$);\n");
+  }
+
+  // And the FieldAccessorTable.
+  printer->Print(vars,
+    "internal_$identifier$_fieldAccessorTable = new\n"
+    "  com.google.protobuf.GeneratedMessage.FieldAccessorTable(\n"
+    "    internal_$identifier$_descriptor,\n"
+    "    new java.lang.String[] { ");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print(
       "\"$field_name$\", ",
@@ -189,15 +228,21 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
         UnderscoresToCapitalizedCamelCase(descriptor_->field(i)));
   }
   printer->Print("},\n"
-    "        $classname$.class,\n"
-    "        $classname$.Builder.class);\n",
+    "    $classname$.class,\n"
+    "    $classname$.Builder.class);\n",
     "classname", ClassName(descriptor_));
 
-  // Generate static members for all nested types.
+  // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // TODO(kenton):  Reuse MessageGenerator objects?
     MessageGenerator(descriptor_->nested_type(i))
-      .GenerateStaticVariables(printer);
+      .GenerateStaticVariableInitializers(printer);
+  }
+
+  for (int i = 0; i < descriptor_->extension_count(); i++) {
+    // TODO(kenton):  Reuse ExtensionGenerator objects?
+    ExtensionGenerator(descriptor_->extension(i))
+      .GenerateInitializationCode(printer);
   }
 }
 
@@ -277,6 +322,18 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   GenerateParseFromMethods(printer);
   GenerateBuilder(printer);
+
+  // Force the static initialization code for the file to run, since it may
+  // initialize static variables declared in this class.
+  printer->Print(
+    "\n"
+    "static {\n"
+    "  $file$.getDescriptor();\n"
+    "}\n",
+    "file", ClassName(descriptor_->file()));
+
+  printer->Outdent();
+  printer->Print("}\n\n");
 }
 
 // ===================================================================
@@ -475,8 +532,6 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print("}\n");
-  printer->Outdent();
-  printer->Print("}\n\n");
 }
 
 // ===================================================================
@@ -725,6 +780,20 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
     "  return true;\n"
     "}\n"
     "\n");
+}
+
+// ===================================================================
+
+void MessageGenerator::GenerateExtensionRegistrationCode(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->extension_count(); i++) {
+    ExtensionGenerator(descriptor_->extension(i))
+      .GenerateRegistrationCode(printer);
+  }
+
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    MessageGenerator(descriptor_->nested_type(i))
+      .GenerateExtensionRegistrationCode(printer);
+  }
 }
 
 }  // namespace java

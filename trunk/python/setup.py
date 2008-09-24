@@ -125,7 +125,7 @@ if __name__ == '__main__':
         url = 'http://code.google.com/p/protobuf/',
         maintainer = maintainer_email,
         maintainer_email = 'protobuf@googlegroups.com',
-        license = 'Apache License, Version 2.0',
+        license = 'New BSD License',
         description = 'Protocol Buffers',
         long_description =
           "Protocol Buffers are Google's data interchange format.",

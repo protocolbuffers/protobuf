@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: jschorr@google.com (Joseph Schorr)
 //  Based on original Protocol Buffers design by
@@ -78,14 +92,25 @@ void Message::PrintDebugString() const {
 // returning false. Borrowed from parser.cc (Thanks Kenton!).
 #define DO(STATEMENT) if (STATEMENT) {} else return false
 
-class TextFormat::ParserImpl {
+class TextFormat::Parser::ParserImpl {
  public:
+
+  // Determines if repeated values for a non-repeated field are
+  // permitted, e.g., the string "foo: 1 foo: 2" for a
+  // required/optional field named "foo".
+  enum SingularOverwritePolicy {
+    ALLOW_SINGULAR_OVERWRITES = 0,   // the last value is retained
+    FORBID_SINGULAR_OVERWRITES = 1,  // an error is issued
+  };
+
   ParserImpl(io::ZeroCopyInputStream* input_stream,
-             io::ErrorCollector* error_collector)
+             io::ErrorCollector* error_collector,
+             SingularOverwritePolicy singular_overwrite_policy)
     : error_collector_(error_collector),
       tokenizer_error_collector_(this),
       tokenizer_(input_stream, &tokenizer_error_collector_),
-      root_message_type_(NULL) {
+      root_message_type_(NULL),
+      singular_overwrite_policy_(singular_overwrite_policy) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
     tokenizer_.set_allow_f_after_float(true);
@@ -212,6 +237,14 @@ class TextFormat::ParserImpl {
                     "\" has no field named \"" + field_name + "\".");
         return false;
       }
+    }
+
+    // Fail if the field is not repeated and it has already been specified.
+    if ((singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) &&
+        !field->is_repeated() && reflection->HasField(*message, field)) {
+      ReportError("Non-repeated field \"" + field_name +
+                  "\" is specified multiple times.");
+      return false;
     }
 
     // Perform special handling for embedded message types.
@@ -519,7 +552,7 @@ class TextFormat::ParserImpl {
   // collect any base-level parse errors and feed them to the ParserImpl.
   class ParserErrorCollector : public io::ErrorCollector {
    public:
-    explicit ParserErrorCollector(TextFormat::ParserImpl* parser) :
+    explicit ParserErrorCollector(TextFormat::Parser::ParserImpl* parser) :
         parser_(parser) { }
 
     virtual ~ParserErrorCollector() { };
@@ -530,13 +563,14 @@ class TextFormat::ParserImpl {
 
    private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ParserErrorCollector);
-    TextFormat::ParserImpl* parser_;
+    TextFormat::Parser::ParserImpl* parser_;
   };
 
   io::ErrorCollector* error_collector_;
   ParserErrorCollector tokenizer_error_collector_;
   io::Tokenizer tokenizer_;
   const Descriptor* root_message_type_;
+  SingularOverwritePolicy singular_overwrite_policy_;
 };
 
 #undef DO
@@ -665,7 +699,9 @@ TextFormat::Parser::~Parser() {}
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
   output->Clear();
-  return Merge(input, output);
+  ParserImpl parser(input, error_collector_,
+                    ParserImpl::FORBID_SINGULAR_OVERWRITES);
+  return MergeUsingImpl(input, output, &parser);
 }
 
 bool TextFormat::Parser::ParseFromString(const string& input,
@@ -676,16 +712,9 @@ bool TextFormat::Parser::ParseFromString(const string& input,
 
 bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                                Message* output) {
-  ParserImpl parser(input, error_collector_);
-  if (!parser.Parse(output)) return false;
-  if (!allow_partial_ && !output->IsInitialized()) {
-    vector<string> missing_fields;
-    output->FindInitializationErrors(&missing_fields);
-    parser.ReportError(-1, 0, "Message missing required fields: " +
-                              JoinStrings(missing_fields, ", "));
-    return false;
-  }
-  return true;
+  ParserImpl parser(input, error_collector_,
+                    ParserImpl::ALLOW_SINGULAR_OVERWRITES);
+  return MergeUsingImpl(input, output, &parser);
 }
 
 bool TextFormat::Parser::MergeFromString(const string& input,
@@ -694,6 +723,19 @@ bool TextFormat::Parser::MergeFromString(const string& input,
   return Merge(&input_stream, output);
 }
 
+bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
+                                        Message* output,
+                                        ParserImpl* parser_impl) {
+  if (!parser_impl->Parse(output)) return false;
+  if (!allow_partial_ && !output->IsInitialized()) {
+    vector<string> missing_fields;
+    output->FindInitializationErrors(&missing_fields);
+    parser_impl->ReportError(-1, 0, "Message missing required fields: " +
+                                    JoinStrings(missing_fields, ", "));
+    return false;
+  }
+  return true;
+}
 
 /* static */ bool TextFormat::Parse(io::ZeroCopyInputStream* input,
                                     Message* output) {

@@ -3,11 +3,12 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
+  <!-- remove the reference to the parent until the google repo is synced with central -->
+  <!--<parent>
     <groupId>com.google</groupId>
     <artifactId>google</artifactId>
     <version>1</version>
-  </parent>
+  </parent>-->
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
   <version>2.0.2-SNAPSHOT</version>
@@ -21,8 +22,8 @@
   <url>http://code.google.com/p/protobuf</url>
   <licenses>
     <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <name>New BSD license</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -32,6 +33,20 @@
       scm:svn:http://protobuf.googlecode.com/svn/trunk/
     </connection>
   </scm>
+  <!-- this is temporarily copied from the parent pom.  remove this section when that is used -->
+  <distributionManagement>
+    <repository>
+      <id>google-maven-repository</id>
+      <name>Google Maven Repository</name>
+      <url>https://google-maven-repository.googlecode.com/svn/trunk/repository/</url>
+    </repository>
+    <snapshotRepository>
+      <id>google-maven-snapshot-repository</id>
+      <name>Google Maven Snapshot Repository</name>
+      <url>https://google-maven-repository.googlecode.com/svn/trunk/snapshot-repository/</url>
+      <uniqueVersion>true</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -107,6 +122,8 @@
                     value="src/test/java/com/google/protobuf/multiple_files_test.proto" />
                   <arg
                     value="../src/google/protobuf/unittest_optimize_for.proto" />
+                  <arg
+                    value="../src/google/protobuf/unittest_custom_options.proto" />
                 </exec>
               </tasks>
               <testSourceRoot>target/generated-test-sources</testSourceRoot>

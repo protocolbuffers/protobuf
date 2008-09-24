@@ -152,6 +152,7 @@ protoc_inputs =                                                \
   google/protobuf/unittest_mset.proto                          \
   google/protobuf/unittest_optimize_for.proto                  \
   google/protobuf/unittest_embed_optimize_for.proto            \
+  google/protobuf/unittest_custom_options.proto                \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
 
 EXTRA_DIST =                                                   \
@@ -180,6 +181,8 @@ protoc_outputs =                                               \
   google/protobuf/unittest_optimize_for.pb.h                   \
   google/protobuf/unittest_embed_optimize_for.pb.cc            \
   google/protobuf/unittest_embed_optimize_for.pb.h             \
+  google/protobuf/unittest_custom_options.pb.cc                \
+  google/protobuf/unittest_custom_options.pb.h                 \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 

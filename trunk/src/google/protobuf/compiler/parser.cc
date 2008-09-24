@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -294,7 +308,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     syntax_identifier_ = "proto2";
   }
 
-  // Repeatedly parse statemetns until we reach the end of the file.
+  // Repeatedly parse statements until we reach the end of the file.
   while (!AtEnd()) {
     if (!ParseTopLevelStatement(file)) {
       // This statement failed to parse.  Skip it, but keep looping to parse
@@ -603,140 +617,120 @@ bool Parser::ParseDefaultAssignment(FieldDescriptorProto* field) {
   return true;
 }
 
-bool Parser::ParseOptionAssignment(Message* options) {
-  const Reflection* reflection = options->GetReflection();
-  const Descriptor* descriptor = options->GetDescriptor();
-
-  // Parse name.
-  string name;
-  int line = input_->current().line;
-  int column = input_->current().column;
-  DO(ConsumeIdentifier(&name, "Expected option name."));
-
-  // Is it valid?
-  const FieldDescriptor* field = descriptor->FindFieldByName(name);
-  if (field == NULL) {
-    AddError(line, column, "Unknown option: " + name);
-    return false;
-  }
-  if (field->is_repeated()) {
-    AddError(line, column, "Not implemented: repeated options.");
-    return false;
-  }
-  if (reflection->HasField(*options, field)) {
-    AddError(line, column, "Option \"" + name + "\" was already set.");
-    return false;
-  }
-
-  // Are we trying to assign a member of a message?
-  if (LookingAt(".")) {
-    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-      AddError("Option \"" + name + "\" is an atomic type, not a message.");
-      return false;
+bool Parser::ParseOptionNamePart(UninterpretedOption* uninterpreted_option) {
+  UninterpretedOption::NamePart* name = uninterpreted_option->add_name();
+  string identifier;  // We parse identifiers into this string.
+  if (LookingAt("(")) {  // This is an extension.
+    DO(Consume("("));
+    // An extension name consists of dot-separated identifiers, and may begin
+    // with a dot.
+    if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+      DO(ConsumeIdentifier(&identifier, "Expected identifier."));
+      name->mutable_name_part()->append(identifier);
     }
-    DO(Consume("."));
+    while (LookingAt(".")) {
+      DO(Consume("."));
+      name->mutable_name_part()->append(".");
+      DO(ConsumeIdentifier(&identifier, "Expected identifier."));
+      name->mutable_name_part()->append(identifier);
+    }
+    DO(Consume(")"));
+    name->set_is_extension(true);
+  } else {  // This is a regular field.
+    DO(ConsumeIdentifier(&identifier, "Expected identifier."));
+    name->mutable_name_part()->append(identifier);
+    name->set_is_extension(false);
+  }
+  return true;
+}
 
-    // This field is a message/group.  The user must identify a field within
-    // it to set.
-    return ParseOptionAssignment(reflection->MutableMessage(options, field));
+// We don't interpret the option here. Instead we store it in an
+// UninterpretedOption, to be interpreted later.
+bool Parser::ParseOptionAssignment(Message* options) {
+  // Create an entry in the uninterpreted_option field.
+  const FieldDescriptor* uninterpreted_option_field = options->GetDescriptor()->
+      FindFieldByName("uninterpreted_option");
+  GOOGLE_CHECK(uninterpreted_option_field != NULL)
+      << "No field named \"uninterpreted_option\" in the Options proto.";
+
+  UninterpretedOption* uninterpreted_option = ::google::protobuf::down_cast<UninterpretedOption*>(
+      options->GetReflection()->AddMessage(options,
+                                           uninterpreted_option_field));
+
+  // Parse dot-separated name.
+  RecordLocation(uninterpreted_option,
+                 DescriptorPool::ErrorCollector::OPTION_NAME);
+
+  DO(ParseOptionNamePart(uninterpreted_option));
+
+  while (LookingAt(".")) {
+    DO(Consume("."));
+    DO(ParseOptionNamePart(uninterpreted_option));
   }
 
   DO(Consume("="));
 
-  // Parse the option value.
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32: {
+  RecordLocation(uninterpreted_option,
+                 DescriptorPool::ErrorCollector::OPTION_VALUE);
+
+  // All values are a single token, except for negative numbers, which consist
+  // of a single '-' symbol, followed by a positive number.
+  bool is_negative = TryConsume("-");
+
+  switch (input_->current().type) {
+    case io::Tokenizer::TYPE_START:
+      GOOGLE_LOG(FATAL) << "Trying to read value before any tokens have been read.";
+      return false;
+
+    case io::Tokenizer::TYPE_END:
+      AddError("Unexpected end of stream while parsing option value.");
+      return false;
+
+    case io::Tokenizer::TYPE_IDENTIFIER: {
+      if (is_negative) {
+        AddError("Invalid '-' symbol before identifier.");
+        return false;
+      }
+      string value;
+      DO(ConsumeIdentifier(&value, "Expected identifier."));
+      uninterpreted_option->set_identifier_value(value);
+      break;
+    }
+
+    case io::Tokenizer::TYPE_INTEGER: {
       uint64 value;
-      bool is_negative = TryConsume("-");
-      uint64 max_value = kint32max;
-      if (is_negative) ++max_value;
+      uint64 max_value =
+          is_negative ? static_cast<uint64>(kint64max) + 1 : kuint64max;
       DO(ConsumeInteger64(max_value, &value, "Expected integer."));
-      reflection->SetInt32(options, field, is_negative ? -value : value);
-      break;
-    }
-
-    case FieldDescriptor::CPPTYPE_INT64: {
-      uint64 value;
-      bool is_negative = TryConsume("-");
-      uint64 max_value = kint64max;
-      if (is_negative) ++max_value;
-      DO(ConsumeInteger64(max_value, &value, "Expected integer."));
-      reflection->SetInt64(options, field, is_negative ? -value : value);
-      break;
-    }
-
-    case FieldDescriptor::CPPTYPE_UINT32: {
-      uint64 value;
-      DO(ConsumeInteger64(kuint32max, &value, "Expected integer."));
-      reflection->SetUInt32(options, field, value);
-      break;
-    }
-
-    case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value;
-      DO(ConsumeInteger64(kuint64max, &value, "Expected integer."));
-      reflection->SetUInt64(options, field, value);
-      break;
-    }
-
-    case FieldDescriptor::CPPTYPE_DOUBLE: {
-      double value;
-      bool is_negative = TryConsume("-");
-      DO(ConsumeNumber(&value, "Expected number."));
-      reflection->SetDouble(options, field, is_negative ? -value : value);
-      break;
-    }
-
-    case FieldDescriptor::CPPTYPE_FLOAT: {
-      double value;
-      bool is_negative = TryConsume("-");
-      DO(ConsumeNumber(&value, "Expected number."));
-      reflection->SetFloat(options, field, is_negative ? -value : value);
-      break;
-    }
-
-    case FieldDescriptor::CPPTYPE_BOOL:
-      if (TryConsume("true")) {
-        reflection->SetBool(options, field, true);
-      } else if (TryConsume("false")) {
-        reflection->SetBool(options, field, false);
+      if (is_negative) {
+        uninterpreted_option->set_negative_int_value(-value);
       } else {
-        AddError("Expected \"true\" or \"false\".");
-        return false;
+        uninterpreted_option->set_positive_int_value(value);
       }
-      break;
-
-    case FieldDescriptor::CPPTYPE_ENUM: {
-      string value_name;
-      int value_line = input_->current().line;
-      int value_column = input_->current().column;
-      DO(ConsumeIdentifier(&value_name, "Expected enum value."));
-      const EnumValueDescriptor* value =
-        field->enum_type()->FindValueByName(value_name);
-      if (value == NULL) {
-        AddError(value_line, value_column,
-          "Enum type \"" + field->enum_type()->full_name() + "\" has no value "
-          "named \"" + value_name + "\".");
-        return false;
-      }
-      reflection->SetEnum(options, field, value);
       break;
     }
 
-    case FieldDescriptor::CPPTYPE_STRING: {
+    case io::Tokenizer::TYPE_FLOAT: {
+      double value;
+      DO(ConsumeNumber(&value, "Expected number."));
+      uninterpreted_option->set_double_value(is_negative ? -value : value);
+      break;
+    }
+
+    case io::Tokenizer::TYPE_STRING: {
+      if (is_negative) {
+        AddError("Invalid '-' symbol before string.");
+        return false;
+      }
       string value;
       DO(ConsumeString(&value, "Expected string."));
-      reflection->SetString(options, field, value);
+      uninterpreted_option->set_string_value(value);
       break;
     }
 
-    case FieldDescriptor::CPPTYPE_MESSAGE: {
-      // TODO(kenton):  Allow use of protocol buffer text format here?
-      AddError("\"" + name + "\" is a message.  To set fields within it, use "
-               "syntax like \"" + name + ".foo = value\".");
+    case io::Tokenizer::TYPE_SYMBOL:
+      AddError("Expected option value.");
       return false;
-      break;
-    }
   }
 
   return true;

@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -393,10 +407,6 @@ GenerateClassDefinition(io::Printer* printer) {
     "  return *this;\n"
     "}\n"
     "\n"
-    "inline static const $classname$& default_instance() {\n"
-    "  return default_instance_;\n"
-    "}\n"
-    "\n"
     "inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {\n"
     "  return _unknown_fields_;\n"
     "}\n"
@@ -406,6 +416,7 @@ GenerateClassDefinition(io::Printer* printer) {
     "}\n"
     "\n"
     "static const ::google::protobuf::Descriptor* descriptor();\n"
+    "static const $classname$& default_instance();"
     "\n"
     "// implements Message ----------------------------------------------\n"
     "\n"
@@ -492,8 +503,8 @@ GenerateClassDefinition(io::Printer* printer) {
 
   // Generate offsets and _has_bits_ boilerplate.
   printer->Print(vars,
-    "friend void $builddescriptorsname$();\n"
-    "static const $classname$ default_instance_;\n");
+    "friend void $builddescriptorsname$_AssignGlobalDescriptors(\n"
+    "    const ::google::protobuf::FileDescriptor* file);\n");
 
   if (descriptor_->field_count() > 0) {
     printer->Print(vars,
@@ -522,7 +533,11 @@ GenerateClassDefinition(io::Printer* printer) {
     "}\n"
     "inline void _clear_bit(int index) {\n"
     "  _has_bits_[index / 32] &= ~(1u << (index % 32));\n"
-    "}\n");
+    "}\n"
+    "\n"
+    "void InitAsDefaultInstance();\n"
+    "static $classname$* default_instance_;\n",
+    "classname", classname_);
 
   printer->Outdent();
   printer->Print(vars, "};");
@@ -577,12 +592,18 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
         "$parent$_descriptor_->nested_type($index$);\n");
   }
 
+  // Construct the default instance.  We can't call InitAsDefaultInstance() yet
+  // because we need to make sure all default instances that this one might
+  // depend on are constructed first.
+  printer->Print(vars,
+    "$classname$::default_instance_ = new $classname$();\n");
+
   // Construct the reflection object.
   printer->Print(vars,
     "$classname$_reflection_ =\n"
     "  new ::google::protobuf::internal::GeneratedMessageReflection(\n"
     "    $classname$_descriptor_,\n"
-    "    &$classname$::default_instance(),\n"
+    "    $classname$::default_instance_,\n"
     "    $classname$::_offsets_,\n"
     "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, _has_bits_[0]),\n"
     "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
@@ -611,7 +632,19 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
   // Register this message type with the message factory.
   printer->Print(vars,
     "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
-    "  $classname$_descriptor_, &$classname$::default_instance());\n");
+    "  $classname$_descriptor_, $classname$::default_instance_);\n");
+}
+
+void MessageGenerator::
+GenerateDefaultInstanceInitializer(io::Printer* printer) {
+  printer->Print(
+    "$classname$::default_instance_->InitAsDefaultInstance();\n",
+    "classname", classname_);
+
+  // Handle nested types.
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    nested_generators_[i]->GenerateDefaultInstanceInitializer(printer);
+  }
 }
 
 void MessageGenerator::
@@ -626,11 +659,6 @@ GenerateClassMethods(io::Printer* printer) {
     printer->Print(kThinSeparator);
     printer->Print("\n");
   }
-
-  printer->Print(
-    "const $classname$ $classname$::default_instance_;\n"
-    "\n",
-    "classname", classname_);
 
   // Generate non-inline field definitions.
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -746,10 +774,17 @@ GenerateStructors(io::Printer* printer) {
   GenerateInitializerList(printer);
   printer->Print(" {\n"
     "  ::memset(_has_bits_, 0, sizeof(_has_bits_));\n"
-    "  if (this == &default_instance_) {\n");
+    "}\n");
+
+  printer->Print(
+    "\n"
+    "void $classname$::InitAsDefaultInstance() {",
+    "classname", classname_);
 
   // The default instance needs all of its embedded message pointers
-  // cross-linked to other default instances.
+  // cross-linked to other default instances.  We can't do this initialization
+  // in the constructor because some other default instances may not have been
+  // constructed yet at that time.
   // TODO(kenton):  Maybe all message fields (even for non-default messages)
   //   should be initialized to point at default instances rather than NULL?
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -758,13 +793,12 @@ GenerateStructors(io::Printer* printer) {
     if (!field->is_repeated() &&
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
-          "    $name$_ = const_cast< $type$*>(&$type$::default_instance());\n",
+          "  $name$_ = const_cast< $type$*>(&$type$::default_instance());\n",
           "name", FieldName(field),
           "type", ClassName(field->message_type(), true));
     }
   }
   printer->Print(
-    "  }\n"
     "}\n"
     "\n");
 
@@ -794,7 +828,7 @@ GenerateStructors(io::Printer* printer) {
   }
 
   printer->Print(
-    "if (this != &default_instance_) {\n");
+    "if (this != default_instance_) {\n");
 
   // We need to delete all embedded messages.
   // TODO(kenton):  If we make unset messages point at default instances
@@ -820,6 +854,13 @@ GenerateStructors(io::Printer* printer) {
     "  if ($classname$_descriptor_ == NULL) $builddescriptorsname$();\n"
     "  return $classname$_descriptor_;\n"
     "}\n"
+    "\n"
+    "const $classname$& $classname$::default_instance() {\n"
+    "  if (default_instance_ == NULL) $builddescriptorsname$();\n"
+    "  return *default_instance_;\n"
+    "}\n"
+    "\n"
+    "$classname$* $classname$::default_instance_ = NULL;\n"
     "\n"
     "$classname$* $classname$::New() const {\n"
     "  return new $classname$;\n"
