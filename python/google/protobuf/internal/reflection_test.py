@@ -1,18 +1,36 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2008 Google Inc.
+# Copyright 2008 Google Inc.  All rights reserved.
 # http://code.google.com/p/protobuf/
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# -*- coding: utf-8 -*-
+#
+# Copyright 2007 Google Inc. All Rights Reserved.
 
 """Unittest for reflection.py, which also indirectly tests the output of the
 pure-Python protocol compiler.
@@ -296,6 +314,9 @@ class RefectionTest(unittest.TestCase):
     self.assertEqual(unittest_import_pb2.IMPORT_BAR,
                      proto.default_import_enum)
 
+    proto = unittest_pb2.TestExtremeDefaultValues()
+    self.assertEqual(u'\u1234', proto.utf8_string)
+
   def testHasFieldWithUnknownFieldName(self):
     proto = unittest_pb2.TestAllTypes()
     self.assertRaises(ValueError, proto.HasField, 'nonexistent_field')
@@ -315,6 +336,13 @@ class RefectionTest(unittest.TestCase):
     # Composite fields.
     self.assertRaises(AttributeError, setattr, proto,
                       'optional_nested_message', 23)
+    # Assignment to a repeated nested message field without specifying
+    # the index in the array of nested messages.
+    self.assertRaises(AttributeError, setattr, proto.repeated_nested_message,
+                      'bb', 34)
+    # Assignment to an attribute of a repeated field.
+    self.assertRaises(AttributeError, setattr, proto.repeated_float,
+                      'some_attribute', 34)
     # proto.nonexistent_field = 23 should fail as well.
     self.assertRaises(AttributeError, setattr, proto, 'nonexistent_field', 23)
 
@@ -410,6 +438,35 @@ class RefectionTest(unittest.TestCase):
     self.assertTrue(not proto.repeated_int32)
     self.assertEqual(0, len(proto.repeated_int32))
 
+  def testRepeatedScalarsRemove(self):
+    proto = unittest_pb2.TestAllTypes()
+
+    self.assertTrue(not proto.repeated_int32)
+    self.assertEqual(0, len(proto.repeated_int32))
+    proto.repeated_int32.append(5)
+    proto.repeated_int32.append(10)
+    proto.repeated_int32.append(5)
+    proto.repeated_int32.append(5)
+
+    self.assertEqual(4, len(proto.repeated_int32))
+    proto.repeated_int32.remove(5)
+    self.assertEqual(3, len(proto.repeated_int32))
+    self.assertEqual(10, proto.repeated_int32[0])
+    self.assertEqual(5, proto.repeated_int32[1])
+    self.assertEqual(5, proto.repeated_int32[2])
+
+    proto.repeated_int32.remove(5)
+    self.assertEqual(2, len(proto.repeated_int32))
+    self.assertEqual(10, proto.repeated_int32[0])
+    self.assertEqual(5, proto.repeated_int32[1])
+
+    proto.repeated_int32.remove(10)
+    self.assertEqual(1, len(proto.repeated_int32))
+    self.assertEqual(5, proto.repeated_int32[0])
+
+    # Remove a non-existent element.
+    self.assertRaises(ValueError, proto.repeated_int32.remove, 123)
+
   def testRepeatedComposites(self):
     proto = unittest_pb2.TestAllTypes()
     self.assertTrue(not proto.repeated_nested_message)
@@ -441,6 +498,11 @@ class RefectionTest(unittest.TestCase):
     self.assertEqual(2, len(result))
     self.assertTrue(m0 is result[0])
     self.assertTrue(m1 is result[1])
+
+    # Test item deletion.
+    del proto.repeated_nested_message[0]
+    self.assertEqual(1, len(proto.repeated_nested_message))
+    self.assertTrue(m1 is proto.repeated_nested_message[0])
 
     # Test clearing.
     proto.ClearField('repeated_nested_message')
@@ -893,6 +955,76 @@ class RefectionTest(unittest.TestCase):
     proto.Extensions[extension].c = 3
     self.assertTrue(proto.IsInitialized())
 
+  def testStringUTF8Encoding(self):
+    proto = unittest_pb2.TestAllTypes()
+
+    # Assignment of a unicode object to a field of type 'bytes' is not allowed.
+    self.assertRaises(TypeError,
+                      setattr, proto, 'optional_bytes', u'unicode object')
+
+    # Check that the default value is of python's 'unicode' type.
+    self.assertEqual(type(proto.optional_string), unicode)
+
+    proto.optional_string = unicode('Testing')
+    self.assertEqual(proto.optional_string, str('Testing'))
+
+    # Assign a value of type 'str' which can be encoded in UTF-8.
+    proto.optional_string = str('Testing')
+    self.assertEqual(proto.optional_string, unicode('Testing'))
+
+    # Values of type 'str' are also accepted as long as they can be encoded in
+    # UTF-8.
+    self.assertEqual(type(proto.optional_string), str)
+
+    # Try to assign a 'str' value which contains bytes that aren't 7-bit ASCII.
+    self.assertRaises(ValueError,
+                      setattr, proto, 'optional_string', str('a\x80a'))
+    # Assign a 'str' object which contains a UTF-8 encoded string.
+    self.assertRaises(ValueError,
+                      setattr, proto, 'optional_string', 'Тест')
+    # No exception thrown.
+    proto.optional_string = 'abc'
+
+  def testStringUTF8Serialization(self):
+    proto = unittest_mset_pb2.TestMessageSet()
+    extension_message = unittest_mset_pb2.TestMessageSetExtension2
+    extension = extension_message.message_set_extension
+
+    test_utf8 = u'Тест'
+    test_utf8_bytes = test_utf8.encode('utf-8')
+
+    # 'Test' in another language, using UTF-8 charset.
+    proto.Extensions[extension].str = test_utf8
+
+    # Serialize using the MessageSet wire format (this is specified in the
+    # .proto file).
+    serialized = proto.SerializeToString()
+
+    # Check byte size.
+    self.assertEqual(proto.ByteSize(), len(serialized))
+
+    raw = unittest_mset_pb2.RawMessageSet()
+    raw.MergeFromString(serialized)
+
+    message2 = unittest_mset_pb2.TestMessageSetExtension2()
+
+    self.assertEqual(1, len(raw.item))
+    # Check that the type_id is the same as the tag ID in the .proto file.
+    self.assertEqual(raw.item[0].type_id, 1547769)
+
+    # Check the actually bytes on the wire.
+    self.assertTrue(
+        raw.item[0].message.endswith(test_utf8_bytes))
+    message2.MergeFromString(raw.item[0].message)
+
+    self.assertEqual(type(message2.str), unicode)
+    self.assertEqual(message2.str, test_utf8)
+
+    # How about if the bytes on the wire aren't a valid UTF-8 encoded string.
+    bytes = raw.item[0].message.replace(
+        test_utf8_bytes, len(test_utf8_bytes) * '\xff')
+    self.assertRaises(UnicodeDecodeError, message2.MergeFromString, bytes)
+
 
 #  Since we had so many tests for protocol buffer equality, we broke these out
 #  into separate TestCase classes.
@@ -1120,6 +1252,14 @@ class ByteSizeTest(unittest.TestCase):
     # Also need 2 bytes for each entry for tag.
     self.assertEqual(1 + 2 + 2*2, self.Size())
 
+  def testRepeatedScalarsRemove(self):
+    self.proto.repeated_int32.append(10)  # 1 byte.
+    self.proto.repeated_int32.append(128)  # 2 bytes.
+    # Also need 2 bytes for each entry for tag.
+    self.assertEqual(1 + 2 + 2*2, self.Size())
+    self.proto.repeated_int32.remove(128)
+    self.assertEqual(1 + 2, self.Size())
+
   def testRepeatedComposites(self):
     # Empty message.  2 bytes tag plus 1 byte length.
     foreign_message_0 = self.proto.repeated_nested_message.add()
@@ -1127,6 +1267,33 @@ class ByteSizeTest(unittest.TestCase):
     foreign_message_1 = self.proto.repeated_nested_message.add()
     foreign_message_1.bb = 7
     self.assertEqual(2 + 1 + 2 + 1 + 1 + 1, self.Size())
+
+  def testRepeatedCompositesDelete(self):
+    # Empty message.  2 bytes tag plus 1 byte length.
+    foreign_message_0 = self.proto.repeated_nested_message.add()
+    # 2 bytes tag plus 1 byte length plus 1 byte bb tag 1 byte int.
+    foreign_message_1 = self.proto.repeated_nested_message.add()
+    foreign_message_1.bb = 9
+    self.assertEqual(2 + 1 + 2 + 1 + 1 + 1, self.Size())
+
+    # 2 bytes tag plus 1 byte length plus 1 byte bb tag 1 byte int.
+    del self.proto.repeated_nested_message[0]
+    self.assertEqual(2 + 1 + 1 + 1, self.Size())
+
+    # Now add a new message.
+    foreign_message_2 = self.proto.repeated_nested_message.add()
+    foreign_message_2.bb = 12
+
+    # 2 bytes tag plus 1 byte length plus 1 byte bb tag 1 byte int.
+    # 2 bytes tag plus 1 byte length plus 1 byte bb tag 1 byte int.
+    self.assertEqual(2 + 1 + 1 + 1 + 2 + 1 + 1 + 1, self.Size())
+
+    # 2 bytes tag plus 1 byte length plus 1 byte bb tag 1 byte int.
+    del self.proto.repeated_nested_message[1]
+    self.assertEqual(2 + 1 + 1 + 1, self.Size())
+
+    del self.proto.repeated_nested_message[0]
+    self.assertEqual(0, self.Size())
 
   def testRepeatedGroups(self):
     # 2-byte START_GROUP plus 2-byte END_GROUP.
@@ -1416,6 +1583,16 @@ class SerializationTest(unittest.TestCase):
     # unknown.
     proto2 = unittest_pb2.TestEmptyMessage()
 
+    # Parsing this message should succeed.
+    proto2.MergeFromString(serialized)
+
+    # Now test with a int64 field set.
+    proto = unittest_pb2.TestAllTypes()
+    proto.optional_int64 = 0x0fffffffffffffff
+    serialized = proto.SerializeToString()
+    # The empty message should be parsable with all of the fields
+    # unknown.
+    proto2 = unittest_pb2.TestEmptyMessage()
     # Parsing this message should succeed.
     proto2.MergeFromString(serialized)
 

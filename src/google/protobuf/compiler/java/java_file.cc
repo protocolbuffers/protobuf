@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,6 +48,41 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
+
+namespace {
+
+// Recursively searches the given message to see if it contains any extensions.
+bool UsesExtensions(const Message& message) {
+  const Reflection* reflection = message.GetReflection();
+
+  // We conservatively assume that unknown fields are extensions.
+  if (reflection->GetUnknownFields(message).field_count() > 0) return true;
+
+  vector<const FieldDescriptor*> fields;
+  reflection->ListFields(message, &fields);
+
+  for (int i = 0; i < fields.size(); i++) {
+    if (fields[i]->is_extension()) return true;
+
+    if (fields[i]->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      if (fields[i]->is_repeated()) {
+        int size = reflection->FieldSize(message, fields[i]);
+        for (int j = 0; j < size; j++) {
+          const Message& sub_message =
+            reflection->GetRepeatedMessage(message, fields[i], j);
+          if (UsesExtensions(sub_message)) return true;
+        }
+      } else {
+        const Message& sub_message = reflection->GetMessage(message, fields[i]);
+        if (UsesExtensions(sub_message)) return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+}  // namespace
 
 FileGenerator::FileGenerator(const FileDescriptor* file)
   : file_(file),
@@ -100,70 +149,23 @@ void FileGenerator::Generate(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
-  // Embed the descriptor.  We simply serialize the entire FileDescriptorProto
-  // and embed it as a string literal, which is parsed and built into real
-  // descriptors at initialization time.  We unfortunately have to put it in
-  // a string literal, not a byte array, because apparently using a literal
-  // byte array causes the Java compiler to generate *instructions* to
-  // initialize each and every byte of the array, e.g. as if you typed:
-  //   b[0] = 123; b[1] = 456; b[2] = 789;
-  // This makes huge bytecode files and can easily hit the compiler's internal
-  // code size limits (error "code to large").  String literals are apparently
-  // embedded raw, which is what we want.
-  FileDescriptorProto file_proto;
-  file_->CopyTo(&file_proto);
-  string file_data;
-  file_proto.SerializeToString(&file_data);
-
   printer->Print(
-    "public static com.google.protobuf.Descriptors.FileDescriptor\n"
-    "    getDescriptor() {\n"
-    "  return descriptor;\n"
-    "}\n"
-    "private static final com.google.protobuf.Descriptors.FileDescriptor\n"
-    "    descriptor = buildDescriptor();\n"
-    "private static\n"
-    "    com.google.protobuf.Descriptors.FileDescriptor\n"
-    "    buildDescriptor() {\n"
-    "  java.lang.String descriptorData =\n");
-  printer->Indent();
+    "public static void registerAllExtensions(\n"
+    "    com.google.protobuf.ExtensionRegistry registry) {\n");
   printer->Indent();
 
-  // Only write 40 bytes per line.
-  static const int kBytesPerLine = 40;
-  for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
-    if (i > 0) printer->Print(" +\n");
-    printer->Print("\"$data$\"",
-      "data", CEscape(file_data.substr(i, kBytesPerLine)));
+  for (int i = 0; i < file_->extension_count(); i++) {
+    ExtensionGenerator(file_->extension(i)).GenerateRegistrationCode(printer);
   }
-  printer->Print(";\n");
+
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    MessageGenerator(file_->message_type(i))
+      .GenerateExtensionRegistrationCode(printer);
+  }
 
   printer->Outdent();
   printer->Print(
-    "try {\n"
-    "  return com.google.protobuf.Descriptors.FileDescriptor\n"
-    "    .internalBuildGeneratedFileFrom(descriptorData,\n"
-    "      new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
-
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    printer->Print(
-      "        $dependency$.getDescriptor(),\n",
-      "dependency", ClassName(file_->dependency(i)));
-  }
-
-  printer->Print(
-    "      });\n"
-    "} catch (Exception e) {\n"
-    "  throw new RuntimeException(\n"
-    "    \"Failed to parse protocol buffer descriptor for \" +\n"
-    "    \"\\\"$filename$\\\".\", e);\n"
-    "}\n",
-    "filename", file_->name());
-
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
+    "}\n");
 
   // -----------------------------------------------------------------
 
@@ -190,6 +192,124 @@ void FileGenerator::Generate(io::Printer* printer) {
     // TODO(kenton):  Reuse MessageGenerator objects?
     MessageGenerator(file_->message_type(i)).GenerateStaticVariables(printer);
   }
+
+  printer->Print("\n");
+
+  // -----------------------------------------------------------------
+
+  // Embed the descriptor.  We simply serialize the entire FileDescriptorProto
+  // and embed it as a string literal, which is parsed and built into real
+  // descriptors at initialization time.  We unfortunately have to put it in
+  // a string literal, not a byte array, because apparently using a literal
+  // byte array causes the Java compiler to generate *instructions* to
+  // initialize each and every byte of the array, e.g. as if you typed:
+  //   b[0] = 123; b[1] = 456; b[2] = 789;
+  // This makes huge bytecode files and can easily hit the compiler's internal
+  // code size limits (error "code to large").  String literals are apparently
+  // embedded raw, which is what we want.
+  FileDescriptorProto file_proto;
+  file_->CopyTo(&file_proto);
+  string file_data;
+  file_proto.SerializeToString(&file_data);
+
+  printer->Print(
+    "public static com.google.protobuf.Descriptors.FileDescriptor\n"
+    "    getDescriptor() {\n"
+    "  return descriptor;\n"
+    "}\n"
+    "private static com.google.protobuf.Descriptors.FileDescriptor\n"
+    "    descriptor;\n"
+    "static {\n"
+    "  java.lang.String descriptorData =\n");
+  printer->Indent();
+  printer->Indent();
+
+  // Only write 40 bytes per line.
+  static const int kBytesPerLine = 40;
+  for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
+    if (i > 0) printer->Print(" +\n");
+    printer->Print("\"$data$\"",
+      "data", CEscape(file_data.substr(i, kBytesPerLine)));
+  }
+  printer->Print(";\n");
+
+  printer->Outdent();
+
+  // -----------------------------------------------------------------
+  // Create the InternalDescriptorAssigner.
+
+  printer->Print(
+    "com.google.protobuf.Descriptors.FileDescriptor."
+      "InternalDescriptorAssigner assigner =\n"
+    "  new com.google.protobuf.Descriptors.FileDescriptor."
+      "InternalDescriptorAssigner() {\n"
+    "    public com.google.protobuf.ExtensionRegistry assignDescriptors(\n"
+    "        com.google.protobuf.Descriptors.FileDescriptor root) {\n"
+    "      descriptor = root;\n");
+
+  printer->Indent();
+  printer->Indent();
+  printer->Indent();
+
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    // TODO(kenton):  Reuse MessageGenerator objects?
+    MessageGenerator(file_->message_type(i))
+      .GenerateStaticVariableInitializers(printer);
+  }
+
+  for (int i = 0; i < file_->extension_count(); i++) {
+    // TODO(kenton):  Reuse ExtensionGenerator objects?
+    ExtensionGenerator(file_->extension(i))
+      .GenerateInitializationCode(printer);
+  }
+
+  if (UsesExtensions(file_proto)) {
+    // Must construct an ExtensionRegistry containing all possible extensions
+    // and return it.
+    printer->Print(
+      "com.google.protobuf.ExtensionRegistry registry =\n"
+      "  com.google.protobuf.ExtensionRegistry.newInstance();\n"
+      "registerAllExtensions(registry);\n");
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      printer->Print(
+        "$dependency$.registerAllExtensions(registry);\n",
+        "dependency", ClassName(file_->dependency(i)));
+    }
+    printer->Print(
+      "return registry;\n");
+  } else {
+    printer->Print(
+      "return null;\n");
+  }
+
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
+
+  printer->Print(
+    "    }\n"
+    "  };\n");
+
+  // -----------------------------------------------------------------
+  // Invoke internalBuildGeneratedFileFrom() to build the file.
+
+  printer->Print(
+    "com.google.protobuf.Descriptors.FileDescriptor\n"
+    "  .internalBuildGeneratedFileFrom(descriptorData,\n"
+    "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
+
+  for (int i = 0; i < file_->dependency_count(); i++) {
+    printer->Print(
+      "      $dependency$.getDescriptor(),\n",
+      "dependency", ClassName(file_->dependency(i)));
+  }
+
+  printer->Print(
+    "    }, assigner);\n");
+
+  printer->Outdent();
+  printer->Print(
+    "}\n");
 
   printer->Outdent();
   printer->Print("}\n");

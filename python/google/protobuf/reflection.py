@@ -1,18 +1,32 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2008 Google Inc.
+# Copyright 2008 Google Inc.  All rights reserved.
 # http://code.google.com/p/protobuf/
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # This code is meant to work on Python 2.4 and above only.
 #
@@ -263,7 +277,7 @@ def _DefaultValueForField(message, field):
       return _RepeatedCompositeFieldContainer(listener, field.message_type)
     else:
       return _RepeatedScalarFieldContainer(
-          listener, type_checkers.VALUE_CHECKERS[field.cpp_type])
+          listener, type_checkers.GetTypeChecker(field.cpp_type, field.type))
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
     assert field.default_value is None
@@ -371,7 +385,7 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
   python_field_name = _ValueFieldName(proto_field_name)
   has_field_name = _HasFieldName(proto_field_name)
   property_name = _PropertyName(proto_field_name)
-  type_checker = type_checkers.VALUE_CHECKERS[field.cpp_type]
+  type_checker = type_checkers.GetTypeChecker(field.cpp_type, field.type)
 
   def getter(self):
     return getattr(self, python_field_name)
@@ -830,7 +844,7 @@ def _SkipField(field_number, wire_type, decoder):
       just after reading the the tag and wire type of the field.
   """
   if wire_type == wire_format.WIRETYPE_VARINT:
-    decoder.ReadInt32()
+    decoder.ReadUInt64()
   elif wire_type == wire_format.WIRETYPE_FIXED64:
     decoder.ReadFixed64()
   elif wire_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
@@ -1260,8 +1274,10 @@ class _Listener(object):
 # TODO(robinson): Provide a clear() method here in addition to ClearField()?
 class _RepeatedScalarFieldContainer(object):
 
-  """Simple, type-checked, list-like container for holding repeated scalars.
-  """
+  """Simple, type-checked, list-like container for holding repeated scalars."""
+
+  # Minimizes memory usage and disallows assignment to other attributes.
+  __slots__ = ['_message_listener', '_type_checker', '_values']
 
   def __init__(self, message_listener, type_checker):
     """
@@ -1283,6 +1299,10 @@ class _RepeatedScalarFieldContainer(object):
     self._message_listener.ByteSizeDirty()
     if len(self._values) == 1:
       self._message_listener.TransitionToNonempty()
+
+  def remove(self, elem):
+    self._values.remove(elem)
+    self._message_listener.ByteSizeDirty()
 
   # List-like __getitem__() support also makes us iterable (via "iter(foo)"
   # or implicitly via "for i in mylist:") for free.
@@ -1320,8 +1340,10 @@ class _RepeatedScalarFieldContainer(object):
 # _RepeatedScalarFieldContaininer?
 class _RepeatedCompositeFieldContainer(object):
 
-  """Simple, list-like container for holding repeated composite fields.
-  """
+  """Simple, list-like container for holding repeated composite fields."""
+
+  # Minimizes memory usage and disallows assignment to other attributes.
+  __slots__ = ['_values', '_message_descriptor', '_message_listener']
 
   def __init__(self, message_listener, message_descriptor):
     """Note that we pass in a descriptor instead of the generated directly,
@@ -1349,6 +1371,10 @@ class _RepeatedCompositeFieldContainer(object):
     self._message_listener.ByteSizeDirty()
     self._message_listener.TransitionToNonempty()
     return new_element
+
+  def __delitem__(self, key):
+    self._message_listener.ByteSizeDirty()
+    del self._values[key]
 
   # List-like __getitem__() support also makes us iterable (via "iter(foo)"
   # or implicitly via "for i in mylist:") for free.
@@ -1504,7 +1530,7 @@ class _ExtensionDict(object):
         and field.cpp_type != _FieldDescriptor.CPPTYPE_MESSAGE):
       # It's slightly wasteful to lookup the type checker each time,
       # but we expect this to be a vanishingly uncommon case anyway.
-      type_checker = type_checkers.VALUE_CHECKERS[field.cpp_type]
+      type_checker = type_checkers.GetTypeChecker(field.cpp_type, field.type)
       type_checker.CheckValue(value)
       self._values[handle_id] = value
       self._has_bits[handle_id] = True

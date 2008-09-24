@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -338,13 +352,39 @@ TEST_F(ParseMessageTest, FieldDefaults) {
 TEST_F(ParseMessageTest, FieldOptions) {
   ExpectParsesTo(
     "message TestMessage {\n"
-    "  optional string foo = 1 [ctype=CORD];\n"
+    "  optional string foo = 1\n"
+    "      [ctype=CORD, (foo)=7, foo.(.bar.baz).qux.quux.(corge)=-33, \n"
+    "       (quux)=\"x\040y\", (baz.qux)=hey];\n"
     "}\n",
 
     "message_type {"
     "  name: \"TestMessage\""
-    "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_STRING number:1"
-    "          options { ctype:CORD } }"
+    "  field { name: \"foo\" label: LABEL_OPTIONAL type: TYPE_STRING number: 1"
+    "          options { uninterpreted_option: { name { name_part: \"ctype\" "
+    "                                                   is_extension: false } "
+    "                                            identifier_value: \"CORD\"  }"
+    "                    uninterpreted_option: { name { name_part: \"foo\" "
+    "                                                   is_extension: true } "
+    "                                            positive_int_value: 7  }"
+    "                    uninterpreted_option: { name { name_part: \"foo\" "
+    "                                                   is_extension: false } "
+    "                                            name { name_part: \".bar.baz\""
+    "                                                   is_extension: true } "
+    "                                            name { name_part: \"qux\" "
+    "                                                   is_extension: false } "
+    "                                            name { name_part: \"quux\" "
+    "                                                   is_extension: false } "
+    "                                            name { name_part: \"corge\" "
+    "                                                   is_extension: true } "
+    "                                            negative_int_value: -33 }"
+    "                    uninterpreted_option: { name { name_part: \"quux\" "
+    "                                                   is_extension: true } "
+    "                                            string_value: \"x y\" }"
+    "                    uninterpreted_option: { name { name_part: \"baz.qux\" "
+    "                                                   is_extension: true } "
+    "                                            identifier_value: \"hey\" }"
+    "          }"
+    "  }"
     "}");
 }
 
@@ -569,16 +609,14 @@ TEST_F(ParseMiscTest, ParseFileOptions) {
     "option optimize_for = CODE_SIZE;",
 
     "options {"
-    "  java_package: \"com.google.foo\""
-    "  optimize_for: CODE_SIZE"
+    "uninterpreted_option { name { name_part: \"java_package\" "
+    "                              is_extension: false }"
+    "                       string_value: \"com.google.foo\"} "
+    "uninterpreted_option { name { name_part: \"optimize_for\" "
+    "                              is_extension: false }"
+    "                       identifier_value: \"CODE_SIZE\" } "
     "}");
 }
-
-// TODO(kenton):  We'd like to be able to test all possible option types,
-//   but we are unable to do so here because we can only test the options
-//   that actually exist, which currently doesn't cover everything.  Perhaps
-//   we can solve this in the future by allowing options to be extended, then
-//   defining extensions of every type?
 
 // ===================================================================
 // Error tests
@@ -687,15 +725,15 @@ TEST_F(ParseErrorTest, ExpectedOptionName) {
     "message TestMessage {\n"
     "  optional uint32 foo = 1 [];\n"
     "}\n",
-    "1:27: Expected option name.\n");
+    "1:27: Expected identifier.\n");
 }
 
-TEST_F(ParseErrorTest, UnknownOption) {
+TEST_F(ParseErrorTest, NonExtensionOptionNameBeginningWithDot) {
   ExpectHasErrors(
     "message TestMessage {\n"
-    "  optional uint32 foo = 1 [nosuchoption=5];\n"
+    "  optional uint32 foo = 1 [.foo=1];\n"
     "}\n",
-    "1:27: Unknown option: nosuchoption\n");
+    "1:27: Expected identifier.\n");
 }
 
 TEST_F(ParseErrorTest, DefaultValueTypeMismatch) {
@@ -874,7 +912,7 @@ TEST_F(ParseErrorTest, MethodOptionTypeError) {
     "service Foo {\n"
     "  rpc Bar(Baz) returns(Baz) { option invalid syntax; }\n"
     "}\n",
-    "2:37: Unknown option: invalid\n");
+    "2:45: Expected \"=\".\n");
 }
 
 // -------------------------------------------------------------------
@@ -892,36 +930,6 @@ TEST_F(ParseErrorTest, MultiplePackagesInFile) {
     "package bar;\n",
     "1:0: Multiple package definitions.\n");
 }
-
-// -------------------------------------------------------------------
-// Option errors
-
-TEST_F(ParseErrorTest, OptionWrongType) {
-  ExpectHasErrors(
-    "message TestMessage {\n"
-    "  optional string foo = 1 [ctype=1];\n"
-    "}\n",
-    "1:33: Expected enum value.\n");
-}
-
-TEST_F(ParseErrorTest, DupOption) {
-  ExpectHasErrors(
-    "message TestMessage {\n"
-    "  optional uint32 foo = 1 [ctype=CORD,ctype=CORD];\n"
-    "}\n",
-    "1:38: Option \"ctype\" was already set.\n");
-}
-
-TEST_F(ParseErrorTest, NotMessageOption) {
-  ExpectHasErrors(
-    "message TestMessage {\n"
-    "  optional uint32 foo = 1 [ctype.blah=1];\n"
-    "}\n",
-    "1:32: Option \"ctype\" is an atomic type, not a message.\n");
-}
-
-// TODO(kenton):  Test errors for all possible option types (see TODO above,
-//   under the option parsing tests).
 
 // ===================================================================
 // Test that errors detected by DescriptorPool correctly report line and
@@ -989,6 +997,36 @@ TEST_F(ParserValidationErrorTest, FieldDefaultValueError) {
     "  optional Baz bar = 1 [default=NO_SUCH_VALUE];\n"
     "}\n",
     "2:32: Enum type \"Baz\" has no value named \"NO_SUCH_VALUE\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, FileOptionNameError) {
+  ExpectHasValidationErrors(
+    "option foo = 5;",
+    "0:7: Option \"foo\" unknown.\n");
+}
+
+TEST_F(ParserValidationErrorTest, FileOptionValueError) {
+  ExpectHasValidationErrors(
+    "option java_outer_classname = 5;",
+    "0:30: Value must be quoted string for string option "
+    "\"google.protobuf.FileOptions.java_outer_classname\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, FieldOptionNameError) {
+  ExpectHasValidationErrors(
+    "message Foo {\n"
+    "  optional bool bar = 1 [foo=1];\n"
+    "}\n",
+    "1:25: Option \"foo\" unknown.\n");
+}
+
+TEST_F(ParserValidationErrorTest, FieldOptionValueError) {
+  ExpectHasValidationErrors(
+    "message Foo {\n"
+    "  optional int32 bar = 1 [ctype=1];\n"
+    "}\n",
+    "1:32: Value must be identifier for enum-valued option "
+    "\"google.protobuf.FieldOptions.ctype\".\n");
 }
 
 TEST_F(ParserValidationErrorTest, ExtensionRangeNumberError) {

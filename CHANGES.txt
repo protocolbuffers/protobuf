@@ -1,3 +1,48 @@
+2008-09-24 version 2.0.2:
+
+  General
+  * License changed from Apache 2.0 to New BSD.
+  * It is now possible to define custom "options", which are basically
+    annotations which may be placed on definitions in a .proto file.
+    For example, you might define a field option called "foo" like so:
+      import "google/protobuf/descriptor.proto"
+      extend google.protobuf.FieldOptions {
+        optional string foo = 12345;
+      }
+    Then you annotate a field using the "foo" option:
+      message MyMessage {
+        optional int32 some_field = 1 [(foo) = "bar"]
+      }
+    The value of this option is then visible via the message's
+    Descriptor:
+      const FieldDescriptor* field =
+        MyMessage::descriptor()->FindFieldByName("some_field");
+      assert(field->options().GetExtension(foo) == "bar");
+    This feature has been implemented and tested in C++ and Java.
+    Other languages may or may not need to do extra work to support
+    custom options, depending on how they construct descriptors.
+
+  C++
+  * Fixed some GCC warnings that only occur when using -pedantic.
+  * Improved static initialization code, making ordering more
+    predictable among other things.
+  * TextFormat will no longer accept messages which contain multiple
+    instances of a singular field.  Previously, the latter instance
+    would overwrite the former.
+  * Now works on systems that don't have hash_map.
+
+  Java
+  * Print @Override annotation in generated code where appropriate.
+
+  Python
+  * Strings now use the "unicode" type rather than the "str" type.
+    String fields may still be assigned ASCII "str" values; they will
+    automatically be converted.
+  * Adding a property to an object representing a repeated field now
+    raises an exception.  For example:
+      # No longer works (and never should have).
+      message.some_repeated_field.foo = 1
+
 2008-08-15 version 2.0.1:
 
   protoc

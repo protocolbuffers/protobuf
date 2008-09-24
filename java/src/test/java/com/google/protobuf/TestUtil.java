@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Note:  This file contains many lines over 80 characters.  It even contains
 // many lines over 100 characters, which fails a presubmit test.  However,
@@ -748,76 +762,7 @@ class TestUtil {
    * given {@link ExtensionRegistry}.
    */
   public static void registerAllExtensions(ExtensionRegistry registry) {
-    registry.add(UnittestProto.optionalInt32Extension         );
-    registry.add(UnittestProto.optionalInt64Extension         );
-    registry.add(UnittestProto.optionalUint32Extension        );
-    registry.add(UnittestProto.optionalUint64Extension        );
-    registry.add(UnittestProto.optionalSint32Extension        );
-    registry.add(UnittestProto.optionalSint64Extension        );
-    registry.add(UnittestProto.optionalFixed32Extension       );
-    registry.add(UnittestProto.optionalFixed64Extension       );
-    registry.add(UnittestProto.optionalSfixed32Extension      );
-    registry.add(UnittestProto.optionalSfixed64Extension      );
-    registry.add(UnittestProto.optionalFloatExtension         );
-    registry.add(UnittestProto.optionalDoubleExtension        );
-    registry.add(UnittestProto.optionalBoolExtension          );
-    registry.add(UnittestProto.optionalStringExtension        );
-    registry.add(UnittestProto.optionalBytesExtension         );
-    registry.add(UnittestProto.optionalGroupExtension         );
-    registry.add(UnittestProto.optionalNestedMessageExtension );
-    registry.add(UnittestProto.optionalForeignMessageExtension);
-    registry.add(UnittestProto.optionalImportMessageExtension );
-    registry.add(UnittestProto.optionalNestedEnumExtension    );
-    registry.add(UnittestProto.optionalForeignEnumExtension   );
-    registry.add(UnittestProto.optionalImportEnumExtension    );
-    registry.add(UnittestProto.optionalStringPieceExtension   );
-    registry.add(UnittestProto.optionalCordExtension          );
-
-    registry.add(UnittestProto.repeatedInt32Extension         );
-    registry.add(UnittestProto.repeatedInt64Extension         );
-    registry.add(UnittestProto.repeatedUint32Extension        );
-    registry.add(UnittestProto.repeatedUint64Extension        );
-    registry.add(UnittestProto.repeatedSint32Extension        );
-    registry.add(UnittestProto.repeatedSint64Extension        );
-    registry.add(UnittestProto.repeatedFixed32Extension       );
-    registry.add(UnittestProto.repeatedFixed64Extension       );
-    registry.add(UnittestProto.repeatedSfixed32Extension      );
-    registry.add(UnittestProto.repeatedSfixed64Extension      );
-    registry.add(UnittestProto.repeatedFloatExtension         );
-    registry.add(UnittestProto.repeatedDoubleExtension        );
-    registry.add(UnittestProto.repeatedBoolExtension          );
-    registry.add(UnittestProto.repeatedStringExtension        );
-    registry.add(UnittestProto.repeatedBytesExtension         );
-    registry.add(UnittestProto.repeatedGroupExtension         );
-    registry.add(UnittestProto.repeatedNestedMessageExtension );
-    registry.add(UnittestProto.repeatedForeignMessageExtension);
-    registry.add(UnittestProto.repeatedImportMessageExtension );
-    registry.add(UnittestProto.repeatedNestedEnumExtension    );
-    registry.add(UnittestProto.repeatedForeignEnumExtension   );
-    registry.add(UnittestProto.repeatedImportEnumExtension    );
-    registry.add(UnittestProto.repeatedStringPieceExtension   );
-    registry.add(UnittestProto.repeatedCordExtension          );
-
-    registry.add(UnittestProto.defaultInt32Extension      );
-    registry.add(UnittestProto.defaultInt64Extension      );
-    registry.add(UnittestProto.defaultUint32Extension     );
-    registry.add(UnittestProto.defaultUint64Extension     );
-    registry.add(UnittestProto.defaultSint32Extension     );
-    registry.add(UnittestProto.defaultSint64Extension     );
-    registry.add(UnittestProto.defaultFixed32Extension    );
-    registry.add(UnittestProto.defaultFixed64Extension    );
-    registry.add(UnittestProto.defaultSfixed32Extension   );
-    registry.add(UnittestProto.defaultSfixed64Extension   );
-    registry.add(UnittestProto.defaultFloatExtension      );
-    registry.add(UnittestProto.defaultDoubleExtension     );
-    registry.add(UnittestProto.defaultBoolExtension       );
-    registry.add(UnittestProto.defaultStringExtension     );
-    registry.add(UnittestProto.defaultBytesExtension      );
-    registry.add(UnittestProto.defaultNestedEnumExtension );
-    registry.add(UnittestProto.defaultForeignEnumExtension);
-    registry.add(UnittestProto.defaultImportEnumExtension );
-    registry.add(UnittestProto.defaultStringPieceExtension);
-    registry.add(UnittestProto.defaultCordExtension       );
+    UnittestProto.registerAllExtensions(registry);
   }
 
   /**

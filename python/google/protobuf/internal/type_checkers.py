@@ -1,18 +1,32 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2008 Google Inc.
+# Copyright 2008 Google Inc.  All rights reserved.
 # http://code.google.com/p/protobuf/
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Provides type checking routines.
 
@@ -37,6 +51,24 @@ from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
 
 _FieldDescriptor = descriptor.FieldDescriptor
+
+
+def GetTypeChecker(cpp_type, field_type):
+  """Returns a type checker for a message field of the specified types.
+
+  Args:
+    cpp_type: C++ type of the field (see descriptor.py).
+    field_type: Protocol message field type (see descriptor.py).
+
+  Returns:
+    An instance of TypeChecker which can be used to verify the types
+    of values assigned to a field of the specified type.
+  """
+  if (cpp_type == _FieldDescriptor.CPPTYPE_STRING and
+      field_type == _FieldDescriptor.TYPE_STRING):
+    return UnicodeValueChecker()
+  return _VALUE_CHECKERS[cpp_type]
+
 
 # None of the typecheckers below make any attempt to guard against people
 # subclassing builtin types and doing weird things.  We're not trying to
@@ -74,6 +106,26 @@ class IntValueChecker(object):
       raise ValueError('Value out of range: %d' % proposed_value)
 
 
+class UnicodeValueChecker(object):
+
+  """Checker used for string fields."""
+
+  def CheckValue(self, proposed_value):
+    if not isinstance(proposed_value, (str, unicode)):
+      message = ('%.1024r has type %s, but expected one of: %s' %
+                 (proposed_value, type(proposed_value), (str, unicode)))
+      raise TypeError(message)
+
+    # If the value is of type 'str' make sure that it is in 7-bit ASCII
+    # encoding.
+    if isinstance(proposed_value, str):
+      try:
+        unicode(proposed_value, 'ascii')
+      except UnicodeDecodeError:
+        raise ValueError('%.1024r isn\'t in 7-bit ASCII encoding.'
+                         % (proposed_value))
+
+
 class Int32ValueChecker(IntValueChecker):
   # We're sure to use ints instead of longs here since comparison may be more
   # efficient.
@@ -97,7 +149,7 @@ class Uint64ValueChecker(IntValueChecker):
 
 
 # Type-checkers for all scalar CPPTYPEs.
-VALUE_CHECKERS = {
+_VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_INT32: Int32ValueChecker(),
     _FieldDescriptor.CPPTYPE_INT64: Int64ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT32: Uint32ValueChecker(),

@@ -1,18 +1,32 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2008 Google Inc.
+# Copyright 2008 Google Inc.  All rights reserved.
 # http://code.google.com/p/protobuf/
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Test for google.protobuf.internal.decoder."""
 
@@ -88,7 +102,9 @@ class DecoderTest(unittest.TestCase):
     expected_stream_method(*args).AndReturn(stream_method_return)
 
     self.mox.ReplayAll()
-    self.assertEqual(expected_result, decoder_method(d))
+    result = decoder_method(d)
+    self.assertEqual(expected_result, result)
+    self.assert_(isinstance(result, type(expected_result)))
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -103,20 +119,24 @@ class DecoderTest(unittest.TestCase):
          'ReadLittleEndian32', 0xffffffff],
         ['fixed64', decoder.Decoder.ReadFixed64, 0xffffffffffffffff,
         'ReadLittleEndian64', 0xffffffffffffffff],
-        ['sfixed32', decoder.Decoder.ReadSFixed32, -1,
+        ['sfixed32', decoder.Decoder.ReadSFixed32, long(-1),
          'ReadLittleEndian32', 0xffffffff],
-        ['sfixed64', decoder.Decoder.ReadSFixed64, -1,
+        ['sfixed64', decoder.Decoder.ReadSFixed64, long(-1),
          'ReadLittleEndian64', 0xffffffffffffffff],
         ['float', decoder.Decoder.ReadFloat, 0.0,
-         'ReadString', struct.pack('f', 0.0), 4],
+         'ReadBytes', struct.pack('f', 0.0), 4],
         ['double', decoder.Decoder.ReadDouble, 0.0,
-         'ReadString', struct.pack('d', 0.0), 8],
+         'ReadBytes', struct.pack('d', 0.0), 8],
         ['bool', decoder.Decoder.ReadBool, True, 'ReadVarUInt32', 1],
         ['enum', decoder.Decoder.ReadEnum, 23, 'ReadVarUInt32', 23],
         ['string', decoder.Decoder.ReadString,
-         test_string, 'ReadString', test_string, len(test_string)],
+         unicode(test_string, 'utf-8'), 'ReadBytes', test_string,
+         len(test_string)],
+        ['utf8-string', decoder.Decoder.ReadString,
+         unicode(test_string, 'utf-8'), 'ReadBytes', test_string,
+         len(test_string)],
         ['bytes', decoder.Decoder.ReadBytes,
-         test_string, 'ReadString', test_string, len(test_string)],
+         test_string, 'ReadBytes', test_string, len(test_string)],
         # We test zigzag decoding routines more extensively below.
         ['sint32', decoder.Decoder.ReadSInt32, -1, 'ReadVarUInt32', 1],
         ['sint64', decoder.Decoder.ReadSInt64, -1, 'ReadVarUInt64', 1],
@@ -124,7 +144,7 @@ class DecoderTest(unittest.TestCase):
     # Ensure that we're testing different Decoder methods and using
     # different test names in all test cases above.
     self.assertEqual(len(scalar_tests), len(set(t[0] for t in scalar_tests)))
-    self.assertEqual(len(scalar_tests), len(set(t[1] for t in scalar_tests)))
+    self.assert_(len(scalar_tests) >= len(set(t[1] for t in scalar_tests)))
     for args in scalar_tests:
       self.ReadScalarTestHelper(*args)
 

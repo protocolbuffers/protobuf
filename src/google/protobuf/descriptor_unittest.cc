@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -24,9 +38,11 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -1517,6 +1533,133 @@ TEST_F(MiscTest, FieldOptions) {
   EXPECT_EQ(FieldOptions::CORD, bar->options().ctype());
 }
 
+TEST(CustomOptions, OptionLocations) {
+  const Descriptor* message =
+      protobuf_unittest::TestMessageWithCustomOptions::descriptor();
+  const FileDescriptor* file = message->file();
+  const FieldDescriptor* field = message->FindFieldByName("field1");
+  const EnumDescriptor* enm = message->FindEnumTypeByName("AnEnum");
+  // TODO(benjy): Support EnumValue options, once the compiler does.
+  const ServiceDescriptor* service =
+      file->FindServiceByName("TestServiceWithCustomOptions");
+  const MethodDescriptor* method = service->FindMethodByName("Foo");
+
+  EXPECT_EQ(GOOGLE_LONGLONG(9876543210),
+            file->options().GetExtension(protobuf_unittest::file_opt1));
+  EXPECT_EQ(-56,
+            message->options().GetExtension(protobuf_unittest::message_opt1));
+  EXPECT_EQ(GOOGLE_LONGLONG(8765432109),
+            field->options().GetExtension(protobuf_unittest::field_opt1));
+  EXPECT_EQ(42,  // Check that we get the default for an option we don't set.
+            field->options().GetExtension(protobuf_unittest::field_opt2));
+  EXPECT_EQ(-789,
+            enm->options().GetExtension(protobuf_unittest::enum_opt1));
+  EXPECT_EQ(GOOGLE_LONGLONG(-9876543210),
+            service->options().GetExtension(protobuf_unittest::service_opt1));
+  EXPECT_EQ(protobuf_unittest::METHODOPT1_VAL2,
+            method->options().GetExtension(protobuf_unittest::method_opt1));
+
+  // See that the regular options went through unscathed.
+  EXPECT_TRUE(message->options().has_message_set_wire_format());
+  EXPECT_EQ(FieldOptions::CORD, field->options().ctype());
+}
+
+TEST(CustomOptions, OptionTypes) {
+  const MessageOptions* options = NULL;
+
+  options =
+      &protobuf_unittest::CustomOptionMinIntegerValues::descriptor()->options();
+  EXPECT_EQ(false    , options->GetExtension(protobuf_unittest::bool_opt));
+  EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::int32_opt));
+  EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::int64_opt));
+  EXPECT_EQ(0        , options->GetExtension(protobuf_unittest::uint32_opt));
+  EXPECT_EQ(0        , options->GetExtension(protobuf_unittest::uint64_opt));
+  EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::sint32_opt));
+  EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::sint64_opt));
+  EXPECT_EQ(0        , options->GetExtension(protobuf_unittest::fixed32_opt));
+  EXPECT_EQ(0        , options->GetExtension(protobuf_unittest::fixed64_opt));
+  EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::sfixed32_opt));
+  EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::sfixed64_opt));
+
+  options =
+      &protobuf_unittest::CustomOptionMaxIntegerValues::descriptor()->options();
+  EXPECT_EQ(true      , options->GetExtension(protobuf_unittest::bool_opt));
+  EXPECT_EQ(kint32max , options->GetExtension(protobuf_unittest::int32_opt));
+  EXPECT_EQ(kint64max , options->GetExtension(protobuf_unittest::int64_opt));
+  EXPECT_EQ(kuint32max, options->GetExtension(protobuf_unittest::uint32_opt));
+  EXPECT_EQ(kuint64max, options->GetExtension(protobuf_unittest::uint64_opt));
+  EXPECT_EQ(kint32max , options->GetExtension(protobuf_unittest::sint32_opt));
+  EXPECT_EQ(kint64max , options->GetExtension(protobuf_unittest::sint64_opt));
+  EXPECT_EQ(kuint32max, options->GetExtension(protobuf_unittest::fixed32_opt));
+  EXPECT_EQ(kuint64max, options->GetExtension(protobuf_unittest::fixed64_opt));
+  EXPECT_EQ(kint32max , options->GetExtension(protobuf_unittest::sfixed32_opt));
+  EXPECT_EQ(kint64max , options->GetExtension(protobuf_unittest::sfixed64_opt));
+
+  options =
+      &protobuf_unittest::CustomOptionOtherValues::descriptor()->options();
+  EXPECT_EQ(-100, options->GetExtension(protobuf_unittest::int32_opt));
+  EXPECT_FLOAT_EQ(12.3456789,
+                  options->GetExtension(protobuf_unittest::float_opt));
+  EXPECT_DOUBLE_EQ(1.234567890123456789,
+                   options->GetExtension(protobuf_unittest::double_opt));
+  EXPECT_EQ("Hello, \"World\"",
+            options->GetExtension(protobuf_unittest::string_opt));
+
+  EXPECT_EQ(string("Hello\0World", 11),
+            options->GetExtension(protobuf_unittest::bytes_opt));
+
+  EXPECT_EQ(protobuf_unittest::DummyMessageContainingEnum::TEST_OPTION_ENUM_TYPE2,
+            options->GetExtension(protobuf_unittest::enum_opt));
+
+  options =
+      &protobuf_unittest::SettingRealsFromPositiveInts::descriptor()->options();
+  EXPECT_FLOAT_EQ(12, options->GetExtension(protobuf_unittest::float_opt));
+  EXPECT_DOUBLE_EQ(154, options->GetExtension(protobuf_unittest::double_opt));
+
+  options =
+      &protobuf_unittest::SettingRealsFromNegativeInts::descriptor()->options();
+  EXPECT_FLOAT_EQ(-12, options->GetExtension(protobuf_unittest::float_opt));
+  EXPECT_DOUBLE_EQ(-154, options->GetExtension(protobuf_unittest::double_opt));
+}
+
+TEST(CustomOptions, ComplexExtensionOptions) {
+  const MessageOptions* options =
+      &protobuf_unittest::VariousComplexOptions::descriptor()->options();
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt1).foo(), 42);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt1).
+            GetExtension(protobuf_unittest::quux), 324);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt1).
+            GetExtension(protobuf_unittest::corge).qux(), 876);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).baz(), 987);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).
+            GetExtension(protobuf_unittest::grault), 654);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).bar().foo(),
+            743);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).bar().
+            GetExtension(protobuf_unittest::quux), 1999);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).bar().
+            GetExtension(protobuf_unittest::corge).qux(), 2008);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).
+            GetExtension(protobuf_unittest::garply).foo(), 741);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).
+            GetExtension(protobuf_unittest::garply).
+            GetExtension(protobuf_unittest::quux), 1998);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).
+            GetExtension(protobuf_unittest::garply).
+            GetExtension(protobuf_unittest::corge).qux(), 2121);
+  EXPECT_EQ(options->GetExtension(
+      protobuf_unittest::ComplexOptionType2::ComplexOptionType4::complex_opt4).
+            waldo(), 1971);
+  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).
+            fred().waldo(), 321);
+  EXPECT_EQ(9, options->GetExtension(protobuf_unittest::complex_opt3).qux());
+  EXPECT_EQ(22, options->GetExtension(protobuf_unittest::complex_opt3).
+                complexoptiontype5().plugh());
+  EXPECT_EQ(24, options->GetExtension(protobuf_unittest::complexopt6).xyzzy());
+}
+
+
+
 // ===================================================================
 
 // The tests below trigger every unique call to AddError() in descriptor.cc,
@@ -1542,6 +1685,8 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
       case TYPE         : location_name = "TYPE"         ; break;
       case EXTENDEE     : location_name = "EXTENDEE"     ; break;
       case DEFAULT_VALUE: location_name = "DEFAULT_VALUE"; break;
+      case OPTION_NAME  : location_name = "OPTION_NAME"  ; break;
+      case OPTION_VALUE : location_name = "OPTION_VALUE" ; break;
       case INPUT_TYPE   : location_name = "INPUT_TYPE"   ; break;
       case OUTPUT_TYPE  : location_name = "OUTPUT_TYPE"  ; break;
       case OTHER        : location_name = "OTHER"        ; break;
@@ -1575,6 +1720,19 @@ class ValidationErrorTest : public testing::Test {
     EXPECT_TRUE(
       pool_.BuildFileCollectingErrors(file_proto, &error_collector) == NULL);
     EXPECT_EQ(expected_errors, error_collector.text_);
+  }
+
+  // Builds some already-parsed file in our test pool.
+  void BuildFileInTestPool(const FileDescriptor* file) {
+    FileDescriptorProto file_proto;
+    file->CopyTo(&file_proto);
+    ASSERT_TRUE(pool_.BuildFile(file_proto) != NULL);
+  }
+
+  // Build descriptor.proto in our test pool. This allows us to extend it in
+  // the test pool, so we can test custom options.
+  void BuildDescriptorMessagesInTestPool() {
+    BuildFileInTestPool(DescriptorProto::descriptor()->file());
   }
 
   DescriptorPool pool_;
@@ -2239,6 +2397,389 @@ TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
     "}",
 
     "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message type.\n");
+}
+
+
+TEST_F(ValidationErrorTest, OptionWrongType) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type { "
+    "  name: \"TestMessage\" "
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_STRING "
+    "          options { uninterpreted_option { name { name_part: \"ctype\" "
+    "                                                  is_extension: false }"
+    "                                           positive_int_value: 1 }"
+    "          }"
+    "  }"
+    "}\n",
+
+    "foo.proto: TestMessage.foo: OPTION_VALUE: Value must be identifier for "
+    "enum-valued option \"google.protobuf.FieldOptions.ctype\".\n");
+}
+
+TEST_F(ValidationErrorTest, OptionExtendsAtomicType) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type { "
+    "  name: \"TestMessage\" "
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_STRING "
+    "          options { uninterpreted_option { name { name_part: \"ctype\" "
+    "                                                  is_extension: false }"
+    "                                           name { name_part: \"foo\" "
+    "                                                  is_extension: true }"
+    "                                           positive_int_value: 1 }"
+    "          }"
+    "  }"
+    "}\n",
+
+    "foo.proto: TestMessage.foo: OPTION_NAME: Option \"ctype\" is an "
+    "atomic type, not a message.\n");
+}
+
+TEST_F(ValidationErrorTest, DupOption) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type { "
+    "  name: \"TestMessage\" "
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_UINT32 "
+    "          options { uninterpreted_option { name { name_part: \"ctype\" "
+    "                                                  is_extension: false }"
+    "                                           identifier_value: \"CORD\" }"
+    "                    uninterpreted_option { name { name_part: \"ctype\" "
+    "                                                  is_extension: false }"
+    "                                           identifier_value: \"CORD\" }"
+    "          }"
+    "  }"
+    "}\n",
+
+    "foo.proto: TestMessage.foo: OPTION_NAME: Option \"ctype\" was "
+    "already set.\n");
+}
+
+TEST_F(ValidationErrorTest, InvalidOptionName) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type { "
+    "  name: \"TestMessage\" "
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_BOOL "
+    "          options { uninterpreted_option { "
+    "                      name { name_part: \"uninterpreted_option\" "
+    "                             is_extension: false }"
+    "                      positive_int_value: 1 "
+    "                    }"
+    "          }"
+    "  }"
+    "}\n",
+
+    "foo.proto: TestMessage.foo: OPTION_NAME: Option must not use "
+    "reserved name \"uninterpreted_option\".\n");
+}
+
+TEST_F(ValidationErrorTest, RepeatedOption) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_REPEATED "
+    "            type: TYPE_FLOAT extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 double_value: 1.2 } }",
+
+    "foo.proto: foo.proto: OPTION_NAME: Option field \"(foo)\" is repeated. "
+    "Repeated options are not supported.\n");
+}
+
+TEST_F(ValidationErrorTest, CustomOptionConflictingFieldNumber) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo1\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT32 extendee: \"google.protobuf.FieldOptions\" }"
+    "extension { name: \"foo2\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT32 extendee: \"google.protobuf.FieldOptions\" }",
+
+    "foo.proto: foo2: NUMBER: Extension number 7672757 has already been used "
+    "in \"google.protobuf.FieldOptions\" by extension \"foo1\".\n");
+}
+
+TEST_F(ValidationErrorTest, Int32OptionValueOutOfPositiveRange) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 positive_int_value: 0x80000000 } "
+    "}",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+    "for int32 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, Int32OptionValueOutOfNegativeRange) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 negative_int_value: -0x80000001 } "
+    "}",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+    "for int32 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, Int32OptionValueIsNotPositiveInt) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 string_value: \"5\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be integer "
+    "for int32 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, Int64OptionValueOutOfRange) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT64 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 positive_int_value: 0x8000000000000000 } "
+    "}",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+    "for int64 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, Int64OptionValueIsNotPositiveInt) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT64 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 identifier_value: \"5\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be integer "
+    "for int64 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, UInt32OptionValueOutOfRange) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_UINT32 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 positive_int_value: 0x100000000 } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+    "for uint32 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, UInt32OptionValueIsNotPositiveInt) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_UINT32 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 double_value: -5.6 } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be non-negative integer "
+    "for uint32 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, UInt64OptionValueIsNotPositiveInt) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_UINT64 extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 negative_int_value: -5 } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be non-negative integer "
+    "for uint64 option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, FloatOptionValueIsNotNumber) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_FLOAT extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 string_value: \"bar\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be number "
+    "for float option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, DoubleOptionValueIsNotNumber) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_DOUBLE extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 string_value: \"bar\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be number "
+    "for double option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, BoolOptionValueIsNotTrueOrFalse) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_BOOL extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 identifier_value: \"bar\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be \"true\" or \"false\" "
+    "for boolean option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, EnumOptionValueIsNotIdentifier) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "enum_type { name: \"FooEnum\" value { name: \"BAR\" number: 1 } "
+    "                              value { name: \"BAZ\" number: 2 } }"
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_ENUM type_name: \"FooEnum\" "
+    "            extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 string_value: \"QUUX\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be identifier for "
+    "enum-valued option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, EnumOptionValueIsNotEnumValueName) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "enum_type { name: \"FooEnum\" value { name: \"BAR\" number: 1 } "
+    "                              value { name: \"BAZ\" number: 2 } }"
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_ENUM type_name: \"FooEnum\" "
+    "            extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 identifier_value: \"QUUX\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Enum type \"FooEnum\" has no value "
+    "named \"QUUX\" for option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, EnumOptionValueIsSiblingEnumValueName) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "enum_type { name: \"FooEnum1\" value { name: \"BAR\" number: 1 } "
+    "                               value { name: \"BAZ\" number: 2 } }"
+    "enum_type { name: \"FooEnum2\" value { name: \"QUX\" number: 1 } "
+    "                               value { name: \"QUUX\" number: 2 } }"
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_ENUM type_name: \"FooEnum1\" "
+    "            extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 identifier_value: \"QUUX\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Enum type \"FooEnum1\" has no value "
+    "named \"QUUX\" for option \"foo\". This appears to be a value from a "
+    "sibling type.\n");
+}
+
+TEST_F(ValidationErrorTest, StringOptionValueIsNotString) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_STRING extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"foo\" "
+    "                                        is_extension: true } "
+    "                                 identifier_value: \"QUUX\" } }",
+
+    "foo.proto: foo.proto: OPTION_VALUE: Value must be quoted string for "
+    "string option \"foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, TryingToSetMessageValuedOption) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "message_type { "
+    "  name: \"TestMessage\" "
+    "  field { name:\"baz\" number:1 label:LABEL_OPTIONAL type:TYPE_STRING }"
+    "}"
+    "extension { name: \"bar\" number: 7672757 label: LABEL_OPTIONAL "
+    "            type: TYPE_MESSAGE type_name: \"TestMessage\" "
+    "            extendee: \"google.protobuf.FileOptions\" }"
+    "options { uninterpreted_option { name { name_part: \"bar\" "
+    "                                        is_extension: true } "
+    "                                 identifier_value: \"QUUX\" } }",
+
+    "foo.proto: foo.proto: OPTION_NAME: Option field \"(bar)\" cannot be of "
+    "message type.\n");
 }
 
 TEST_F(ValidationErrorTest, RollbackAfterError) {

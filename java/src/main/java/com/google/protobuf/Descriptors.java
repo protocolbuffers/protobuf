@@ -1,18 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.google.protobuf;
 
@@ -219,10 +233,9 @@ public final class Descriptors {
      * to {@code buildFrom} except that the {@code FileDescriptorProto} is
      * encoded in protocol buffer wire format.
      */
-    public static FileDescriptor internalBuildGeneratedFileFrom(
-        String descriptorData, FileDescriptor[] dependencies)
-        throws DescriptorValidationException,
-               InvalidProtocolBufferException {
+    public static void internalBuildGeneratedFileFrom(
+        String descriptorData, FileDescriptor[] dependencies,
+        InternalDescriptorAssigner descriptorAssigner) {
       // Hack:  We can't embed a raw byte array inside generated Java code
       //   (at least, not efficiently), but we can embed Strings.  So, the
       //   protocol compiler embeds the FileDescriptorProto as a giant
@@ -231,17 +244,64 @@ public final class Descriptors {
       //   characters, each one representing a byte of the FileDescriptorProto's
       //   serialized form.  So, if we convert it to bytes in ISO-8859-1, we
       //   should get the original bytes that we want.
+
+      byte[] descriptorBytes;
       try {
-        FileDescriptorProto proto =
-          FileDescriptorProto.parseFrom(descriptorData.getBytes("ISO-8859-1"));
-        return buildFrom(proto, dependencies);
+        descriptorBytes = descriptorData.getBytes("ISO-8859-1");
       } catch (java.io.UnsupportedEncodingException e) {
         throw new RuntimeException(
           "Standard encoding ISO-8859-1 not supported by JVM.", e);
       }
+
+      FileDescriptorProto proto;
+      try {
+        proto = FileDescriptorProto.parseFrom(descriptorBytes);
+      } catch (InvalidProtocolBufferException e) {
+        throw new IllegalArgumentException(
+          "Failed to parse protocol buffer descriptor for generated code.", e);
+      }
+
+      FileDescriptor result;
+      try {
+        result = buildFrom(proto, dependencies);
+      } catch (DescriptorValidationException e) {
+        throw new IllegalArgumentException(
+          "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
+      }
+
+      ExtensionRegistry registry = descriptorAssigner.assignDescriptors(result);
+
+      if (registry != null) {
+        // We must re-parse the proto using the registry.
+        try {
+          proto = FileDescriptorProto.parseFrom(descriptorBytes, registry);
+        } catch (InvalidProtocolBufferException e) {
+          throw new IllegalArgumentException(
+            "Failed to parse protocol buffer descriptor for generated code.",
+            e);
+        }
+
+        result.setProto(proto);
+      }
     }
 
-    private final FileDescriptorProto proto;
+    /**
+     * This class should be used by generated code only.  When calling
+     * {@link FileDescriptor#internalBuildGeneratedFileFrom}, the caller
+     * provides a callback implementing this interface.  The callback is called
+     * after the FileDescriptor has been constructed, in order to assign all
+     * the global variales defined in the generated code which point at parts
+     * of the FileDescriptor.  The callback returns an ExtensionRegistry which
+     * contains any extensions which might be used in the descriptor -- that
+     * is, extensions of the various "Options" messages defined in
+     * descriptor.proto.  The callback may also return null to indicate that
+     * no extensions are used in the decsriptor.
+     */
+    public static interface InternalDescriptorAssigner {
+      ExtensionRegistry assignDescriptors(FileDescriptor root);
+    }
+
+    private FileDescriptorProto proto;
     private final Descriptor[] messageTypes;
     private final EnumDescriptor[] enumTypes;
     private final ServiceDescriptor[] services;
@@ -294,6 +354,36 @@ public final class Descriptors {
 
       for (int i = 0; i < extensions.length; i++) {
         extensions[i].crossLink();
+      }
+    }
+
+    /**
+     * Replace our {@link FileDescriptorProto} with the given one, which is
+     * identical except that it might contain extensions that weren't present
+     * in the original.  This method is needed for bootstrapping when a file
+     * defines custom options.  The options may be defined in the file itself,
+     * so we can't actually parse them until we've constructed the descriptors,
+     * but to construct the decsriptors we have to have parsed the descriptor
+     * protos.  So, we have to parse the descriptor protos a second time after
+     * constructing the descriptors.
+     */
+    private void setProto(FileDescriptorProto proto) {
+      this.proto = proto;
+
+      for (int i = 0; i < messageTypes.length; i++) {
+        messageTypes[i].setProto(proto.getMessageType(i));
+      }
+
+      for (int i = 0; i < enumTypes.length; i++) {
+        enumTypes[i].setProto(proto.getEnumType(i));
+      }
+
+      for (int i = 0; i < services.length; i++) {
+        services[i].setProto(proto.getService(i));
+      }
+
+      for (int i = 0; i < extensions.length; i++) {
+        extensions[i].setProto(proto.getExtension(i));
       }
     }
   }
@@ -428,7 +518,7 @@ public final class Descriptors {
     }
 
     private final int index;
-    private final DescriptorProto proto;
+    private DescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
     private final Descriptor containingType;
@@ -487,6 +577,27 @@ public final class Descriptors {
 
       for (int i = 0; i < extensions.length; i++) {
         extensions[i].crossLink();
+      }
+    }
+
+    /** See {@link FileDescriptor.setProto}. */
+    private void setProto(DescriptorProto proto) {
+      this.proto = proto;
+
+      for (int i = 0; i < nestedTypes.length; i++) {
+        nestedTypes[i].setProto(proto.getNestedType(i));
+      }
+
+      for (int i = 0; i < enumTypes.length; i++) {
+        enumTypes[i].setProto(proto.getEnumType(i));
+      }
+
+      for (int i = 0; i < fields.length; i++) {
+        fields[i].setProto(proto.getField(i));
+      }
+
+      for (int i = 0; i < extensions.length; i++) {
+        extensions[i].setProto(proto.getExtension(i));
       }
     }
   }
@@ -642,7 +753,7 @@ public final class Descriptors {
 
     private final int index;
 
-    private final FieldDescriptorProto proto;
+    private FieldDescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
     private final Descriptor extensionScope;
@@ -942,6 +1053,11 @@ public final class Descriptors {
         }
       }
     }
+
+    /** See {@link FileDescriptor.setProto}. */
+    private void setProto(FieldDescriptorProto proto) {
+      this.proto = proto;
+    }
   }
 
   // =================================================================
@@ -1006,7 +1122,7 @@ public final class Descriptors {
     }
 
     private final int index;
-    private final EnumDescriptorProto proto;
+    private EnumDescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
     private final Descriptor containingType;
@@ -1037,6 +1153,15 @@ public final class Descriptors {
       }
 
       file.pool.addSymbol(this);
+    }
+
+    /** See {@link FileDescriptor.setProto}. */
+    private void setProto(EnumDescriptorProto proto) {
+      this.proto = proto;
+
+      for (int i = 0; i < values.length; i++) {
+        values[i].setProto(proto.getValue(i));
+      }
     }
   }
 
@@ -1082,7 +1207,7 @@ public final class Descriptors {
     public EnumValueOptions getOptions() { return proto.getOptions(); }
 
     private final int index;
-    private final EnumValueDescriptorProto proto;
+    private EnumValueDescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
     private final EnumDescriptor type;
@@ -1101,6 +1226,11 @@ public final class Descriptors {
 
       file.pool.addSymbol(this);
       file.pool.addEnumValueByNumber(this);
+    }
+
+    /** See {@link FileDescriptor.setProto}. */
+    private void setProto(EnumValueDescriptorProto proto) {
+      this.proto = proto;
     }
   }
 
@@ -1152,7 +1282,7 @@ public final class Descriptors {
     }
 
     private final int index;
-    private final ServiceDescriptorProto proto;
+    private ServiceDescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
     private MethodDescriptor[] methods;
@@ -1178,6 +1308,15 @@ public final class Descriptors {
     private void crossLink() throws DescriptorValidationException {
       for (int i = 0; i < methods.length; i++) {
         methods[i].crossLink();
+      }
+    }
+
+    /** See {@link FileDescriptor.setProto}. */
+    private void setProto(ServiceDescriptorProto proto) {
+      this.proto = proto;
+
+      for (int i = 0; i < methods.length; i++) {
+        methods[i].setProto(proto.getMethod(i));
       }
     }
   }
@@ -1224,7 +1363,7 @@ public final class Descriptors {
     public MethodOptions getOptions() { return proto.getOptions(); }
 
     private final int index;
-    private final MethodDescriptorProto proto;
+    private MethodDescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
     private final ServiceDescriptor service;
@@ -1264,6 +1403,11 @@ public final class Descriptors {
           "\"" + proto.getOutputType() + "\" is not a message type.");
       }
       this.outputType = (Descriptor)outputType;
+    }
+
+    /** See {@link FileDescriptor.setProto}. */
+    private void setProto(MethodDescriptorProto proto) {
+      this.proto = proto;
     }
   }
 

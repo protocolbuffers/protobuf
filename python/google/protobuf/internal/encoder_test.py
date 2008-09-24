@@ -1,18 +1,32 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2008 Google Inc.
+# Copyright 2008 Google Inc.  All rights reserved.
 # http://code.google.com/p/protobuf/
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Test for google.protobuf.internal.encoder."""
 
@@ -42,7 +56,8 @@ class EncoderTest(unittest.TestCase):
 
   def AppendScalarTestHelper(self, test_name, encoder_method,
                              expected_stream_method_name,
-                             wire_type, field_value, expected_value=None):
+                             wire_type, field_value,
+                             expected_value=None, expected_length=None):
     """Helper for testAppendScalars.
 
     Calls one of the Encoder methods, and ensures that the Encoder
@@ -63,6 +78,9 @@ class EncoderTest(unittest.TestCase):
       expected_value: The value we expect Encoder to pass into
         the OutputStream method.  If None, we expect field_value
         to pass through unmodified.
+      expected_length: The length we expect Encoder to pass to the
+        AppendVarUInt32 method. If None we expect the length of the
+        field_value.
     """
     if expected_value is None:
       expected_value = field_value
@@ -78,7 +96,9 @@ class EncoderTest(unittest.TestCase):
     self.mock_stream.AppendVarUInt32(self.PackTag(field_number, wire_type))
     # If we're length-delimited, we should then append the length.
     if wire_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
-      self.mock_stream.AppendVarUInt32(len(field_value))
+      if expected_length is None:
+        expected_length = len(field_value)
+      self.mock_stream.AppendVarUInt32(expected_length)
     # Should then append the value itself.
     # We have to use names instead of methods to work around some
     # mox weirdness.  (ResetAll() is overzealous).
@@ -92,6 +112,8 @@ class EncoderTest(unittest.TestCase):
     self.mox.ResetAll()
 
   def testAppendScalars(self):
+    utf8_bytes = '\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82'
+    utf8_string = unicode(utf8_bytes, 'utf-8')
     scalar_tests = [
         ['int32', self.encoder.AppendInt32, 'AppendVarint32',
          wire_format.WIRETYPE_VARINT, 0],
@@ -120,6 +142,9 @@ class EncoderTest(unittest.TestCase):
         ['string', self.encoder.AppendString, 'AppendRawBytes',
          wire_format.WIRETYPE_LENGTH_DELIMITED,
          "You're in a maze of twisty little passages, all alike."],
+        ['utf8-string', self.encoder.AppendString, 'AppendRawBytes',
+         wire_format.WIRETYPE_LENGTH_DELIMITED, utf8_string,
+         utf8_bytes, len(utf8_bytes)],
         # We test zigzag encoding routines more extensively below.
         ['sint32', self.encoder.AppendSInt32, 'AppendVarUInt32',
          wire_format.WIRETYPE_VARINT, -1, 1],
@@ -129,7 +154,7 @@ class EncoderTest(unittest.TestCase):
     # Ensure that we're testing different Encoder methods and using
     # different test names in all test cases above.
     self.assertEqual(len(scalar_tests), len(set(t[0] for t in scalar_tests)))
-    self.assertEqual(len(scalar_tests), len(set(t[1] for t in scalar_tests)))
+    self.assert_(len(scalar_tests) >= len(set(t[1] for t in scalar_tests)))
     for args in scalar_tests:
       self.AppendScalarTestHelper(*args)
 
