@@ -56,7 +56,7 @@ using namespace std;  // Don't do this at home, kids.
   TypeName(const TypeName&);                           \
   void operator=(const TypeName&)
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
   #ifdef LIBPROTOBUF_EXPORTS
     #define LIBPROTOBUF_EXPORT __declspec(dllexport)
   #else

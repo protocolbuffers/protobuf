@@ -262,6 +262,10 @@
 				RelativePath=".\google\protobuf\unittest_embed_optimize_for.pb.h"
 				>
 			</File>
+			<File
+				RelativePath=".\google\protobuf\unittest_custom_options.pb.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -404,6 +408,10 @@
 			</File>
 			<File
 				RelativePath=".\google\protobuf\unittest_embed_optimize_for.pb.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\google\protobuf\unittest_custom_options.pb.cc"
 				>
 			</File>
 			<File
@@ -560,6 +568,30 @@
 					Description="Generating unittest_embed_optimize_for.pb.{h,cc}..."
 					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_embed_optimize_for.proto&#x0D;&#x0A;"
 					Outputs="google\protobuf\unittest_embed_optimize_for.pb.h;google\protobuf\unittest_embed_optimize_for.pb.cc"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\src\google\protobuf\unittest_custom_options.proto"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating unittest_custom_options.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_custom_options.proto&#x0D;&#x0A;"
+					Outputs="google\protobuf\unittest_custom_options.pb.h;google\protobuf\unittest_custom_options.pb.cc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating unittest_custom_options.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_custom_options.proto&#x0D;&#x0A;"
+					Outputs="google\protobuf\unittest_custom_options.pb.h;google\protobuf\unittest_custom_options.pb.cc"
 				/>
 			</FileConfiguration>
 		</File>

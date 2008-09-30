@@ -59,7 +59,8 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
     service_generators_(
       new scoped_ptr<ServiceGenerator>[file->service_count()]),
     extension_generators_(
-      new scoped_ptr<ExtensionGenerator>[file->extension_count()]) {
+      new scoped_ptr<ExtensionGenerator>[file->extension_count()]),
+    dllexport_decl_(dllexport_decl) {
 
   for (int i = 0; i < file->message_type_count(); i++) {
     message_generators_[i].reset(
@@ -146,11 +147,13 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   // declare it to be a friend of each class.
   printer->Print(
     "\n"
-    "// Internal implementation detail -- do not call this.\n"
+    "// Internal implementation detail -- do not call these.\n"
+    "void $dllexport_decl$ $builddescriptorsname$();\n"
     "void $builddescriptorsname$_AssignGlobalDescriptors(\n"
     "    ::google::protobuf::FileDescriptor* file);\n"
     "\n",
-    "builddescriptorsname", GlobalBuildDescriptorsName(file_->name()));
+    "builddescriptorsname", GlobalBuildDescriptorsName(file_->name()),
+    "dllexport_decl", dllexport_decl_);
 
   // Generate forward declarations of classes.
   for (int i = 0; i < file_->message_type_count(); i++) {
@@ -234,31 +237,6 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     "#include <google/protobuf/reflection_ops.h>\n"
     "#include <google/protobuf/wire_format_inl.h>\n",
     "basename", StripProto(file_->name()));
-
-  // For each dependency, write a prototype for that dependency's
-  // BuildDescriptors() function.  We don't expose these in the header because
-  // they are internal implementation details, and since this is generated code
-  // we don't have the usual risks involved with declaring external functions
-  // within a .cc file.
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    const FileDescriptor* dependency = file_->dependency(i);
-    // Open the dependency's namespace.
-    vector<string> dependency_package_parts;
-    SplitStringUsing(dependency->package(), ".", &dependency_package_parts);
-    for (int i = 0; i < dependency_package_parts.size(); i++) {
-      printer->Print("namespace $name$ { ",
-                     "name", dependency_package_parts[i]);
-    }
-    // Declare its BuildDescriptors() function.
-    printer->Print(
-      "void $function$();",
-      "function", GlobalBuildDescriptorsName(dependency->name()));
-    // Close the namespace.
-    for (int i = 0; i < dependency_package_parts.size(); i++) {
-      printer->Print(" }");
-    }
-    printer->Print("\n");
-  }
 
   GenerateNamespaceOpeners(printer);
 

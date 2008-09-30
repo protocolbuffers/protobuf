@@ -1,4 +1,4 @@
-2008-09-24 version 2.0.2:
+2008-09-29 version 2.0.2:
 
   General
   * License changed from Apache 2.0 to New BSD.
@@ -42,6 +42,10 @@
     raises an exception.  For example:
       # No longer works (and never should have).
       message.some_repeated_field.foo = 1
+
+  Windows
+  * We now build static libraries rather than DLLs by default on MSVC.
+    See vsprojects/readme.txt for more information.
 
 2008-08-15 version 2.0.1:
 
