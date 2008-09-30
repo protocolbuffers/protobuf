@@ -15,8 +15,8 @@ fi
 
 set -ex
 
-# TODO(kenton):  Use -Wall and fix the resulting warnings.
-autoreconf -f -i
+# TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
+autoreconf -f -i -Wall,no-obsolete
 
 rm -rf autom4te.cache config.h.in~
 exit 0
