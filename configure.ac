@@ -7,10 +7,10 @@ AC_PREREQ(2.59)
 # * java/pom.xml
 # * python/setup.py
 # * src/google/protobuf/stubs/common.h
-AC_INIT(protobuf, 2.0.2-SNAPSHOT, protobuf@googlegroups.com)
+AC_INIT([protobuf],[2.0.2-SNAPSHOT],[protobuf@googlegroups.com])
 
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
@@ -31,4 +31,5 @@ AC_CHECK_FUNCS([ftruncate memset mkdir strchr strerror strtol])
 ACX_PTHREAD
 AC_CXX_STL_HASH
 
-AC_OUTPUT( Makefile src/Makefile )
+AC_CONFIG_FILES([Makefile src/Makefile ])
+AC_OUTPUT
