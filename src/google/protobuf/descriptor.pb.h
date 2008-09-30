@@ -25,7 +25,8 @@
 namespace google {
 namespace protobuf {
 
-// Internal implementation detail -- do not call this.
+// Internal implementation detail -- do not call these.
+void LIBPROTOBUF_EXPORT protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
 void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
     ::google::protobuf::FileDescriptor* file);
 

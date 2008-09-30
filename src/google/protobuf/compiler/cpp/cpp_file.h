@@ -85,6 +85,8 @@ class FileGenerator {
   // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.
   vector<string> package_parts_;
 
+  string dllexport_decl_;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
 
