@@ -175,7 +175,8 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// </summary>
     /// <param name="proto">The protocol message form of the FileDescriptor.</param>
     /// <param name="dependencies">FileDescriptors corresponding to all of the
-    /// file's dependencies, in the exact order listed in the .proto file</param>
+    /// file's dependencies, in the exact order listed in the .proto file. May be null,
+    /// in which case it is treated as an empty array.</param>
     /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
     /// a valid descriptor. This can occur for a number of reasons, such as a field
     /// having an undefined type or because two messages were defined with the same name.</exception>
@@ -189,6 +190,10 @@ namespace Google.ProtocolBuffers.Descriptors {
       // FieldDescriptor for an embedded message contains a pointer directly
       // to the Descriptor for that message's type.  We also detect undefined
       // types in the linking step.
+      if (dependencies == null) {
+        dependencies = new FileDescriptor[0];
+      }
+
       DescriptorPool pool = new DescriptorPool(dependencies);
       FileDescriptor result = new FileDescriptor(proto, dependencies, pool);
 

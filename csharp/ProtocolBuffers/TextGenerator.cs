@@ -20,9 +20,9 @@ using System.Text;
 namespace Google.ProtocolBuffers {
 
   /// <summary>
-  /// Helper class to control indentation
+  /// Helper class to control indentation. Used for TextFormat and by ProtoGen.
   /// </summary>
-  internal sealed class TextGenerator {
+  public sealed class TextGenerator {
 
     /// <summary>
     /// Writer to write formatted text to.
@@ -40,9 +40,10 @@ namespace Google.ProtocolBuffers {
     readonly StringBuilder indent = new StringBuilder();
 
     /// <summary>
-    /// Creates a generator writing to the given writer.
+    /// Creates a generator writing to the given writer. The writer
+    /// is not closed by this class.
     /// </summary>
-    internal TextGenerator(TextWriter writer) {
+    public TextGenerator(TextWriter writer) {
       this.writer = writer;
     }
 
@@ -51,18 +52,31 @@ namespace Google.ProtocolBuffers {
     /// will be inserted at the beginning of each line of text. Indent() may
     /// be called multiple times to produce deeper indents.
     /// </summary>
-    internal void Indent() {
+    public void Indent() {
       indent.Append("  ");
     }
 
     /// <summary>
     /// Reduces the current indent level by two spaces.
     /// </summary>
-    internal void Outdent() {
+    public void Outdent() {
       if (indent.Length == 0) {
         throw new InvalidOperationException("Too many calls to Outdent()");
       }
       indent.Length -= 2;
+    }
+
+    public void WriteLine(string text) {
+      Print(text);
+      Print("\n");
+    }
+
+    public void WriteLine(string format, params object[] args) {
+      WriteLine(string.Format(format, args));
+    }
+
+    public void WriteLine() {
+      WriteLine("");
     }
 
     /// <summary>

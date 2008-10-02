@@ -314,6 +314,7 @@ namespace Google.ProtocolBuffers {
     internal static string EscapeText(string input) {
       return EscapeBytes(ByteString.CopyFromUtf8(input));
     }
+
     /// <summary>
     /// Escapes bytes in the format used in protocol buffer text format, which
     /// is the same as the format used for C string literals.  All bytes
