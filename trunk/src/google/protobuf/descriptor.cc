@@ -2208,7 +2208,7 @@ template<class DescriptorT> void DescriptorBuilder::AllocateOptions(
 }
 
 // We specialize for FileDescriptor.
-template<> void DescriptorBuilder::AllocateOptions(
+template<> void DescriptorBuilder::AllocateOptions<FileDescriptor>(
     const FileDescriptor::OptionsType& orig_options,
     FileDescriptor* descriptor) {
   // We add the dummy token so that LookupSymbol does the right thing.

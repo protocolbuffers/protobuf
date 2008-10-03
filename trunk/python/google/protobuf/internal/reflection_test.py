@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # http://code.google.com/p/protobuf/
@@ -27,10 +29,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-# -*- coding: utf-8 -*-
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
 
 """Unittest for reflection.py, which also indirectly tests the output of the
 pure-Python protocol compiler.
