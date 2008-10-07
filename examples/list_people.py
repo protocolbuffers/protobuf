@@ -15,11 +15,11 @@ def ListPeople(address_book):
 
     for phone_number in person.phone:
       if phone_number.type == addressbook_pb2.Person.MOBILE:
-        print "  Mobile phone #: ",
+        print "  Mobile phone #:",
       elif phone_number.type == addressbook_pb2.Person.HOME:
-        print "  Home phone #: ",
+        print "  Home phone #:",
       elif phone_number.type == addressbook_pb2.Person.WORK:
-        print "  Work phone #: ",
+        print "  Work phone #:",
       print phone_number.number
 
 # Main procedure:  Reads the entire address book from a file and prints all
