@@ -219,8 +219,8 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
 
     printer->Print(sub_vars,
       "void $classname$::$name$(::google::protobuf::RpcController* controller,\n"
-      "                         const $input_type$* request,\n"
-      "                         $output_type$* response,\n"
+      "                         const $input_type$*,\n"
+      "                         $output_type$*,\n"
       "                         ::google::protobuf::Closure* done) {\n"
       "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
       "  done->Run();\n"
