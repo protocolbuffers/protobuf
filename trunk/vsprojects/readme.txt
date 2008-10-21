@@ -14,15 +14,14 @@ Compiling and Installing
    "include" directory (under the top-level package directory).
 6) Copy the contents of the include directory to wherever you want to put
    headers.
-7) Copy protoc.exe and the two DLLs (libprotobuf and libprotoc) wherever you
-   put build tools.
-8) Copy libprotobuf.{lib,dll} and libprotoc.{lib,dll} wherever you put
-   libraries.
+7) Copy protoc.exe wherever you put build tools (probably somewhere in your
+   PATH).
+8) Copy libprotobuf.lib and libprotoc.lib wherever you put libraries.
 
 * To avoid conflicts between the MSVC debug and release runtime libraries, when
-  compiling a debug build of your application, you must link against a debug
-  build of libprotobuf.dll.  Similarly, release builds must link against
-  release DLLs.
+  compiling a debug build of your application, you may need to link against a
+  debug build of libprotobuf.lib.  Similarly, release builds should link against
+  release libs.
 
 DLLs vs. static linking
 =======================
