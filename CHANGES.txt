@@ -1,3 +1,0 @@
-2008-07-07 version 2.0.0:
-
-  * First public release.

@@ -1,7 +1,0 @@
-assemblies_dir=@PREFIX@
-Libraries=${assemblies_dir}/gac/Google.ProtocolBuffers/1.0.0.0__17b3b1f090c3ea48/Google.ProtocolBuffers.dll
-
-Name: Google Protocol Buffers for C#
-Description: Google Protocol Buffers for C#
-Version: 1.0.0.0
-Libs: -r:${assemblies_dir}/gac/Google.ProtocolBuffers/1.0.0.0__17b3b1f090c3ea48/Google.ProtocolBuffers.dll
