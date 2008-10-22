@@ -9,6 +9,7 @@ src/ProtoGen/obj/
 src/ProtoGen.Test/bin/
 src/ProtoGen.Test/obj/
 tmp/
+dist/
 *.user
 *.suo
 _ReSharper.*

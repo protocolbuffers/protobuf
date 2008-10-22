@@ -19,7 +19,12 @@
   <property name="tools-protoc" 
             value="${project::get-base-directory()}/lib/protoc.exe"
             overwrite="false" />
-  
+
+  <!-- Output directory for copying generated binaries -->
+  <property name="output-dir"
+            value="${path::combine(project::get-base-directory(), 'dist')}"
+            overwrite="false" />            
+
   <!-- Base directory to find protos (core, C# options, tests) -->
   <property name="protos-dir"
             value="${path::combine(project::get-base-directory(), 'protos')}"
@@ -52,6 +57,7 @@
         <include name="${src}/ProtocolBuffers.Test/bin/**" />
         <include name="${src}/ProtocolBuffers.Test/obj/**" />
         <include name="${tmp-dir}" />
+        <include name="${output-dir}" />
       </fileset>
     </delete>
   </target>
@@ -103,14 +109,16 @@
     </copy>
   </target>
       
-  <target name="build" description="Builds all C# code">
+  <target name="build"
+          description="Builds all C# code">
     <msbuild project="${src}/ProtocolBuffers.sln">
       <property name="Configuration"
                 value="${build-configuration}" />
     </msbuild>
   </target>
   
-  <target name="test" description="Runs all unit tests">
+  <target name="test"
+          description="Runs all unit tests">
     <nunit2>
       <formatter type="Plain" />
       <test assemblyname="${src}/ProtocolBuffers.Test/bin/${build-configuration}/Google.ProtocolBuffers.Test.dll" />
@@ -118,8 +126,23 @@
     </nunit2>
   </target>
   
-  <target name="perf-test" description="Runs all performance tests">
+  <target name="perf-test"
+          description="Runs all performance tests">
     <fail message="Performance tests not implemented yet" />
+  </target>
+  
+  <target name="dist" 
+          description="Copies compiled binaries into the output directory">
+    <delete dir="${output-dir}" />
+    <mkdir dir="${output-dir}" />
+    <copy todir="${output-dir}"
+          flatten="true">
+      <fileset basedir="${src}">
+        <include name="ProtocolBuffers/bin/${build-configuration}/Google.ProtocolBuffers.dll" />
+        <include name="ProtoGen/bin/${build-configuration}/ProtoGen.exe" />
+      </fileset>
+    </copy>
+    
   </target>
   
   

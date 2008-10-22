@@ -37,6 +37,7 @@ namespace Google.ProtocolBuffers {
         while (ancestor != null) {
           string candidate = Path.Combine(ancestor.FullName, "testdata");
           if (Directory.Exists(candidate)) {
+            testDataDirectory = candidate;
             return candidate;
           }
           ancestor = ancestor.Parent;
