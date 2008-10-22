@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers", "ProtocolBuffers\ProtocolBuffers.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Test", "ProtocolBuffers.Test\ProtocolBuffers.Test.csproj", "{DD01ED24-3750-4567-9A23-1DB676A15610}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoGen", "ProtoGen\ProtoGen.csproj", "{250ADE34-82FD-4BAE-86D5-985FBE589C4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoGen.Test", "ProtoGen.Test\ProtoGen.Test.csproj", "{C268DA4C-4004-47DA-AF23-44C983281A68}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD01ED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD01ED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD01ED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD01ED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C268DA4C-4004-47DA-AF23-44C983281A68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C268DA4C-4004-47DA-AF23-44C983281A68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C268DA4C-4004-47DA-AF23-44C983281A68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C268DA4C-4004-47DA-AF23-44C983281A68}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<project name="Protocol Buffers" default="build" basedir=".">
+  <description>Port of Google's Protocol Buffers to C#/.NET</description>
+
+  <!-- NAntContrib configuration. TODO(jonskeet): Improve this? -->
+  <property name="nantcontrib-dir"
+            value="${path::combine(nant::get-base-directory(), '../../NAntContrib')}"
+            overwrite="false" />
+
+  <loadtasks assembly="${path::combine(nantcontrib-dir, 'bin/NAnt.Contrib.Tasks.dll')}" />  
+  
+  <property name="build-configuration"
+            value="Debug" 
+            overwrite="false" />
+  
+  <property name="src"
+            value="${project::get-base-directory()}/src" />
+  
+  <property name="tools-protoc" 
+            value="${project::get-base-directory()}/lib/protoc.exe"
+            overwrite="false" />
+  
+  <!-- Base directory to find protos (core, C# options, tests) -->
+  <property name="protos-dir"
+            value="${path::combine(project::get-base-directory(), 'protos')}"
+            overwrite="false" />
+  
+  <!-- Scratch directory used when generating code -->
+  <property name="tmp-dir"
+            value="${path::combine(project::get-base-directory(), 'tmp')}"
+            overwrite="false" />
+  
+  <!-- Which version of protogen to use when regenerating source -->
+  <property name="tools-protogen-config"
+            value="Debug"
+            overwrite="false" />
+  
+  <property name="tools-protogen" 
+            value="${src}/ProtoGen/bin/${tools-protogen-config}/protogen.exe" 
+            overwrite="false"/>
+  
+  <target name="clean" 
+          description="Removes built binaries (of all configurations) and the source generation directory">
+    <delete>
+      <fileset>
+        <include name="${src}/ProtoGen/bin/**" />
+        <include name="${src}/ProtoGen/obj/**" />
+        <include name="${src}/ProtoGen.Test/bin/**" />
+        <include name="${src}/ProtoGen.Test/obj/**" />
+        <include name="${src}/ProtocolBuffers/bin/**" />
+        <include name="${src}/ProtocolBuffers/obj/**" />
+        <include name="${src}/ProtocolBuffers.Test/bin/**" />
+        <include name="${src}/ProtocolBuffers.Test/obj/**" />
+        <include name="${tmp-dir}" />
+      </fileset>
+    </delete>
+  </target>
+  
+  <target name="generate-source" 
+          description="Generate source (unit tests, core messages etc). Does not copy source.">
+    <fail message="protoc and protogen must both exist"
+          unless="${file::exists(tools-protoc) and file::exists(tools-protogen)}" />
+    <delete dir="${tmp-dir}" />
+    <mkdir dir="${tmp-dir}" />
+    <exec program="${tools-protoc}"
+          workingdir="${tmp-dir}">
+      <arg value="--proto_path=${protos-dir}" />
+      <arg value="--descriptor_set_out=compiled.pb" />
+      <arg file="${protos-dir}/google/protobuf/descriptor.proto" />
+      <arg file="${protos-dir}/google/protobuf/csharp_options.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_custom_options.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_embed_optimize_for.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_import.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_mset.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_optimize_for.proto" />
+    </exec>
+    
+    <exec program="${tools-protogen}"
+          workingdir="${tmp-dir}">
+      <arg value="compiled.pb" />
+    </exec>    
+  </target>
+  
+  <target name="copy-generated-source" 
+          description="Copies generated source from temporary directory to source tree. Use with care!">
+    <copy todir="${src}/ProtocolBuffers/DescriptorProtos">
+      <fileset basedir="${tmp-dir}">
+        <include name="DescriptorProtoFile.cs" />
+        <include name="CSharpOptions.cs" />
+      </fileset>
+    </copy>
+
+    <copy todir="${src}/ProtocolBuffers.Test/TestProtos">
+      <fileset basedir="${tmp-dir}">
+        <include name="UnitTestProtoFile.cs" />
+        <include name="UnitTestCustomOptionsProtoFile.cs" />
+        <include name="UnitTestEmbedOptimizeForProtoFile.cs" />
+        <include name="UnitTestImportProtoFile.cs" />
+        <include name="UnitTestMessageSetProtoFile.cs" />
+        <include name="UnitTestOptimizeForProtoFile.cs" />
+      </fileset>
+    </copy>
+  </target>
+      
+  <target name="build" description="Builds all C# code">
+    <msbuild project="${src}/ProtocolBuffers.sln">
+      <property name="Configuration"
+                value="${build-configuration}" />
+    </msbuild>
+  </target>
+  
+  <target name="test" description="Runs all unit tests">
+    <nunit2>
+      <formatter type="Plain" />
+      <test assemblyname="${src}/ProtocolBuffers.Test/bin/${build-configuration}/Google.ProtocolBuffers.Test.dll" />
+      <test assemblyname="${src}/Protogen.Test/bin/${build-configuration}/Google.ProtocolBuffers.ProtoGen.Test.dll" />
+    </nunit2>
+  </target>
+  
+  <target name="perf-test" description="Runs all performance tests">
+    <fail message="Performance tests not implemented yet" />
+  </target>
+  
+  
+</project>

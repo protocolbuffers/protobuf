@@ -1,0 +1,16 @@
+// Extra options for C# generator
+
+import "google/protobuf/descriptor.proto";
+
+package google.protobuf;
+
+option (CSharpNamespace) = "Google.ProtocolBuffers.DescriptorProtos";
+option (CSharpUmbrellaClassname) = "CSharpOptions";
+
+extend FileOptions {
+  optional string CSharpNamespace = 20000;
+  optional string CSharpUmbrellaClassname = 20001;
+  optional bool CSharpMultipleFiles = 20002;
+  optional bool CSharpNestClasses = 20003;
+  optional bool CSharpPublicClasses = 20004;
+}
