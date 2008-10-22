@@ -1,14 +1,13 @@
 Current task list (not in order)
 
-1) Fix GeneratedBuilder.MergeFrom
-2) Extra unit tests for pending Java optimisation
-3) Refactor IsInitialized
-4) Performance framework
-5) Optionally remove dependencies to core and csharp options
-6) Remove multifile support
-7) Remove bootstrapping hack
-8) Improve "regenerating descriptor.proto" hack
-10) Mono support
-11) Docs
-12) Clean up protogen code
-13) Add flags to protogen
+- Extra unit tests for pending Java optimisation
+- Refactor IsInitialized
+- Performance framework
+- Optionally remove dependencies to core and csharp options
+- Remove multifile support
+- Remove bootstrapping hack
+- Improve "regenerating descriptor.proto" hack
+- Mono support
+- Docs
+- Clean up protogen code
+- Add flags to protogen
