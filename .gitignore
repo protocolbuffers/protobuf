@@ -12,3 +12,4 @@ tmp/
 *.user
 *.suo
 _ReSharper.*
+*.sln.cache
