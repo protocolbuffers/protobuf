@@ -1,0 +1,6 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <StartWorkingDirectory>c:\Users\Jon\Documents\Visual Studio 2008\Projects\ProtocolBuffers\csharp\testprotos</StartWorkingDirectory>
+    <StartArguments>unittest.protobin</StartArguments>
+  </PropertyGroup>
+</Project>

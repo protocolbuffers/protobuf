@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
       PropertyInfo messageProperty = typeof(TMessage).GetProperty(name + "List");
       PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name + "List");
       PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count");
-      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
+      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, Type.EmptyTypes);
       getElementMethod = typeof(TMessage).GetMethod("Get" + name, new Type[] { typeof(int) });
       clrType = getElementMethod.ReturnType;
       MethodInfo addMethod = typeof(TBuilder).GetMethod("Add" + name, new Type[] { ClrType });

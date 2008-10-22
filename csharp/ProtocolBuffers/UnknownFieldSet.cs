@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
+using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -454,6 +455,11 @@ namespace Google.ProtocolBuffers {
       /// <returns>true unless the tag is an end-group tag</returns>
       internal bool MergeFieldFrom(CodedInputStream input, 
           ExtensionRegistry extensionRegistry, IBuilder builder, uint tag) {
+
+        if (DescriptorProtoFile.Bootstrapping) {
+          return MergeFieldFrom(tag, input);
+        }
+
         MessageDescriptor type = builder.DescriptorForType;
         if (type.Options.MessageSetWireFormat && tag == WireFormat.MessageSetTag.ItemStart) {
           MergeMessageSetExtensionFromCodedStream(input, extensionRegistry, builder);

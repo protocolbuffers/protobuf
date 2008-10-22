@@ -10,40 +10,31 @@ namespace Google.ProtocolBuffers.TestProtos {
   
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
-        get { return descriptor; }
+      get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom (
-        new byte[] {
-            0x0a, 0x25, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x75, 0x6e, 
-            0x69, 0x74, 0x74, 0x65, 0x73, 0x74, 0x5f, 0x69, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 
-            0x18, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x74, 0x65, 0x73, 0x74, 0x5f, 0x69, 
-            0x6d, 0x70, 0x6f, 0x72, 0x74, 0x22, 0x1a, 0x0a, 0x0d, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 
-            0x67, 0x65, 0x12, 0x09, 0x0a, 0x01, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x2a, 0x3c, 0x0a, 0x0a, 0x49, 0x6d, 0x70, 
-            0x6f, 0x72, 0x74, 0x45, 0x6e, 0x75, 0x6d, 0x12, 0x0e, 0x0a, 0x0a, 0x49, 0x4d, 0x50, 0x4f, 0x52, 0x54, 0x5f, 0x46, 0x4f, 
-            0x4f, 0x10, 0x07, 0x12, 0x0e, 0x0a, 0x0a, 0x49, 0x4d, 0x50, 0x4f, 0x52, 0x54, 0x5f, 0x42, 0x41, 0x52, 0x10, 0x08, 0x12, 
-            0x0e, 0x0a, 0x0a, 0x49, 0x4d, 0x50, 0x4f, 0x52, 0x54, 0x5f, 0x42, 0x41, 0x5a, 0x10, 0x09, 0x42, 0x5a, 0x0a, 0x18, 0x63, 
-            0x6f, 0x6d, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x74, 
-            0x65, 0x73, 0x74, 0x48, 0x01, 0xc2, 0x3e, 0x21, 0x47, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 
-            0x63, 0x6f, 0x6c, 0x42, 0x75, 0x66, 0x66, 0x65, 0x72, 0x73, 0x2e, 0x54, 0x65, 0x73, 0x74, 0x50, 0x72, 0x6f, 0x74, 0x6f, 
-            0x73, 0xca, 0x3e, 0x17, 0x55, 0x6e, 0x69, 0x74, 0x54, 0x65, 0x73, 0x74, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x50, 0x72, 
-            0x6f, 0x74, 0x6f, 0x46, 0x69, 0x6c, 0x65, 
-        }, new pbd::FileDescriptor[] {
+    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
+        global::System.Convert.FromBase64String(
+        "ChV1bml0dGVzdF9pbXBvcnQucHJvdG8SGHByb3RvYnVmX3VuaXR0ZXN0X2lt" + 
+        "cG9ydBokZ29vZ2xlL3Byb3RvYnVmL2NzaGFycF9vcHRpb25zLnByb3RvGiBn" + 
+        "b29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90byIaCg1JbXBvcnRNZXNz" + 
+        "YWdlEgkKAWQYASABKAUqPAoKSW1wb3J0RW51bRIOCgpJTVBPUlRfRk9PEAcS" + 
+        "DgoKSU1QT1JUX0JBUhAIEg4KCklNUE9SVF9CQVoQCUJcChhjb20uZ29vZ2xl" + 
+        "LnByb3RvYnVmLnRlc3RIAYLiCSFHb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRl" + 
+        "c3RQcm90b3OK4gkXVW5pdFRlc3RJbXBvcnRQcm90b0ZpbGU="),
+        new pbd::FileDescriptor[] {
+          global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
+          global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
         });
     #endregion
     
-    #region Extensions
-    #endregion
-    
     #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_import_ImportMessage__Descriptor 
+    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_import_ImportMessage__Descriptor
         = Descriptor.MessageTypes[0];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ImportMessage, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder> internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ImportMessage, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder>(internal__static_protobuf_unittest_import_ImportMessage__Descriptor,
             new string[] { "D", });
     #endregion
-    
   }
-  
   #region Enums
   public enum ImportEnum {
     IMPORT_FOO = 7,
@@ -76,7 +67,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable; }
     }
     
-    // optional int32 d = 1;
     private bool hasD;
     private int d_ = 0;
     public bool HasD {
@@ -115,62 +105,50 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(pb::ByteString data) {
+    public static ImportMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(pb::ByteString data,
-        pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
-               .BuildParsed();
+    public static ImportMessage ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(byte[] data) {
+    public static ImportMessage ParseFrom(byte[] data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(byte[] data,
-        pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry))
-               .BuildParsed();
+    public static ImportMessage ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(global::System.IO.Stream input) {
+    public static ImportMessage ParseFrom(global::System.IO.Stream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(
-        global::System.IO.Stream input,
-        pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
-               .BuildParsed();
+    public static ImportMessage ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(pb::CodedInputStream input) {
+    public static ImportMessage ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
-    public static global::Google.ProtocolBuffers.TestProtos.ImportMessage ParseFrom(pb::CodedInputStream input,
-        pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry))
-               .BuildParsed();
+    public static ImportMessage ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
-    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(global::Google.ProtocolBuffers.TestProtos.ImportMessage prototype) {
+    public static Builder CreateBuilder(ImportMessage prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
-    public sealed partial class Builder : pb::GeneratedBuilder<global::Google.ProtocolBuffers.TestProtos.ImportMessage, Builder> {
+    public sealed partial class Builder : pb::GeneratedBuilder<ImportMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      
-      // Construct using global::Google.ProtocolBuffers.TestProtos.ImportMessage.CreateBuilder()
       public Builder() {}
       
-      global::Google.ProtocolBuffers.TestProtos.ImportMessage result = new global::Google.ProtocolBuffers.TestProtos.ImportMessage();
+      ImportMessage result = new ImportMessage();
       
-      protected override global::Google.ProtocolBuffers.TestProtos.ImportMessage MessageBeingBuilt {
+      protected override ImportMessage MessageBeingBuilt {
         get { return result; }
       }
       
       public override Builder Clear() {
-        result = new global::Google.ProtocolBuffers.TestProtos.ImportMessage();
+        result = new ImportMessage();
         return this;
       }
       
@@ -179,30 +157,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.ImportMessage.Descriptor; }
+        get { return ImportMessage.Descriptor; }
       }
       
-      public override global::Google.ProtocolBuffers.TestProtos.ImportMessage DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance; }
+      public override ImportMessage DefaultInstanceForType {
+        get { return ImportMessage.DefaultInstance; }
       }
       
-      public override global::Google.ProtocolBuffers.TestProtos.ImportMessage BuildPartial() {
-        global::Google.ProtocolBuffers.TestProtos.ImportMessage returnMe = result;
+      public override ImportMessage BuildPartial() {
+        ImportMessage returnMe = result;
         result = null;
         return returnMe;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
-        if (other is global::Google.ProtocolBuffers.TestProtos.ImportMessage) {
-          return MergeFrom((global::Google.ProtocolBuffers.TestProtos.ImportMessage) other);
+        if (other is ImportMessage) {
+          return MergeFrom((ImportMessage) other);
         } else {
           base.MergeFrom(other);
           return this;
         }
       }
       
-      public override Builder MergeFrom(global::Google.ProtocolBuffers.TestProtos.ImportMessage other) {
-        if (other == global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance) return this;
+      public override Builder MergeFrom(ImportMessage other) {
+        if (other == ImportMessage.DefaultInstance) return this;
         if (other.HasD) {
           D = other.D;
         }
@@ -215,17 +193,16 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        pb::UnknownFieldSet.Builder unknownFields =
-          pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+        pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
         while (true) {
           uint tag = input.ReadTag();
           switch (tag) {
-            case 0:
+            case 0: {
               this.UnknownFields = unknownFields.Build();
               return this;
+            }
             default: {
-              if (!ParseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
+              if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
                 this.UnknownFields = unknownFields.Build();
                 return this;
               }
@@ -240,7 +217,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       
-      // optional int32 d = 1;
       public bool HasD {
         get { return result.HasD; }
       }
@@ -263,6 +239,4 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #endregion
   
-  #region Services
-  #endregion
 }

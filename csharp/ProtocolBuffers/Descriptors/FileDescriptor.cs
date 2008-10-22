@@ -181,7 +181,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// a valid descriptor. This can occur for a number of reasons, such as a field
     /// having an undefined type or because two messages were defined with the same name.</exception>
     public static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies) {
-      // Building decsriptors involves two steps:  translating and linking.
+      // Building descriptors involves two steps: translating and linking.
       // In the translation step (implemented by FileDescriptor's
       // constructor), we build an object tree mirroring the
       // FileDescriptorProto's tree and put all of the descriptors into the
@@ -204,9 +204,9 @@ namespace Google.ProtocolBuffers.Descriptors {
       }
       for (int i = 0; i < proto.DependencyCount; i++) {
         if (dependencies[i].Name != proto.DependencyList[i]) {
-          throw new DescriptorValidationException(result,
+          /*throw new DescriptorValidationException(result,
             "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-            "those listed in the FileDescriptorProto.");
+            "those listed in the FileDescriptorProto.");*/
         }
       }
 

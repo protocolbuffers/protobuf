@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers.ProtoGen {
   /// <summary>
@@ -8,7 +9,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
   class Program {
     static int Main(string[] args) {
       try {
-
+        // Hack to make sure everything's initialized
+        DescriptorProtoFile.Descriptor.ToString();
         GeneratorOptions options = ParseCommandLineArguments(args);
 
         IList<string> validationFailures;
@@ -25,16 +27,20 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
         return 0;
       } catch (Exception e) {
-        Console.Error.WriteLine("Caught unhandled exception: {0}", e);
+        Console.Error.WriteLine("Error: {0}", e.Message);
+        Console.Error.WriteLine();
+        Console.Error.WriteLine("Detailed exception information: {0}", e);
         return 1;
       }
     }
 
     private static GeneratorOptions ParseCommandLineArguments(string[] args) {
       GeneratorOptions options = new GeneratorOptions();
-      string baseDir = "c:\\Users\\Jon\\Documents\\Visual Studio 2008\\Projects\\ProtocolBuffers";
-      options.OutputDirectory = baseDir + "\\tmp";
-      options.InputFiles = new[] { baseDir + "\\protos\\nwind.protobin" };
+      //string baseDir = "c:\\Users\\Jon\\Documents\\Visual Studio 2008\\Projects\\ProtocolBuffers";
+      //options.OutputDirectory = baseDir + "\\tmp";
+      //options.InputFiles = new[] { baseDir + "\\protos\\nwind-solo.protobin" };
+      options.OutputDirectory = ".";
+      options.InputFiles = args;
       return options;
     }
   }

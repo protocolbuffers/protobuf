@@ -38,12 +38,31 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DescriptorUtil.cs" />
+    <Compile Include="EnumFieldGenerator.cs" />
+    <Compile Include="EnumGenerator.cs" />
+    <Compile Include="ExtensionGenerator.cs" />
+    <Compile Include="FieldGeneratorBase.cs" />
+    <Compile Include="IFieldSourceGenerator.cs" />
+    <Compile Include="ISourceGenerator.cs" />
+    <Compile Include="MessageFieldGenerator.cs" />
+    <Compile Include="MessageGenerator.cs" />
+    <Compile Include="PrimitiveFieldGenerator.cs" />
+    <Compile Include="RepeatedEnumFieldGenerator.cs" />
+    <Compile Include="RepeatedMessageFieldGenerator.cs" />
+    <Compile Include="RepeatedPrimitiveFieldGenerator.cs" />
+    <Compile Include="ServiceGenerator.cs" />
+    <Compile Include="SourceFileGenerator.cs" />
     <Compile Include="DependencyResolutionException.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="GeneratorOptions.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="InvalidOptionsException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SourceGeneratorBase.cs" />
+    <Compile Include="SourceGenerators.cs" />
+    <Compile Include="UmbrellaClassGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -48,6 +48,7 @@
     <Compile Include="Collections\Dictionaries.cs" />
     <Compile Include="Collections\Lists.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="DescriptorProtos\CSharpOptions.cs" />
     <Compile Include="DescriptorProtos\DescriptorProtoFile.cs" />
     <Compile Include="DescriptorProtos\IDescriptorProto.cs" />
     <Compile Include="DescriptorProtos\PartialClasses.cs" />

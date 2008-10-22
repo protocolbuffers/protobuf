@@ -33,6 +33,7 @@ namespace Google.ProtocolBuffers {
   /// be impossible to guarantee if this were a public class, of course.
   /// 
   /// All repeated fields are stored as IList[object] even 
+  /// TODO(jonskeet): Finish this comment!
   /// </summary>
   internal sealed class FieldSet {
 

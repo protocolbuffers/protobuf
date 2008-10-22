@@ -8,7 +8,7 @@
     <ProjectGuid>{C268DA4C-4004-47DA-AF23-44C983281A68}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProtoGen</RootNamespace>
+    <RootNamespace>Google.ProtocolBuffers.ProtoGen</RootNamespace>
     <AssemblyName>Google.ProtocolBuffers.ProtoGen.Test</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -42,10 +42,14 @@
       <HintPath>..\lib\Rhino.Mocks.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyResolutionTest.cs" />
+    <Compile Include="DescriptorUtilTest.cs" />
     <Compile Include="GeneratorTest.cs" />
+    <Compile Include="HelpersTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

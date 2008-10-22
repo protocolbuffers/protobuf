@@ -39,10 +39,13 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     internal SinglePrimitiveAccessor(string name) {
-      PropertyInfo messageProperty = typeof(TMessage).GetProperty(name);
-      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name);
+
+      string propertyName = name == typeof(TMessage).Name ? name + "_" : name;
+      PropertyInfo messageProperty = typeof(TMessage).GetProperty(propertyName);
+      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name); // FIXME!
+      if (builderProperty == null) builderProperty = typeof(TBuilder).GetProperty(propertyName); // FIXME!
       PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
-      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
+      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, Type.EmptyTypes);
       if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null) {
         throw new ArgumentException("Not all required properties/methods available");
       }

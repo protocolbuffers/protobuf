@@ -97,6 +97,10 @@ namespace Google.ProtocolBuffers {
       Write(text.Substring(pos));
     }
 
+    public void Write(string format, params object[] args) {
+      Write(string.Format(format, args));
+    }
+    
     private void Write(string data) {
       if (data.Length == 0) {
         return;
