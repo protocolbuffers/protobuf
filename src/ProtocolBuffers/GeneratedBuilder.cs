@@ -113,7 +113,7 @@ namespace Google.ProtocolBuffers {
         throw new ArgumentException("Message type mismatch");
       }
 
-      foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
+      foreach (KeyValuePair<FieldDescriptor, object> entry in other.AllFields) {
         FieldDescriptor field = entry.Key;
         if (field.IsRepeated) {
           // Concatenate repeated fields

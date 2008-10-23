@@ -287,5 +287,29 @@ namespace Google.ProtocolBuffers {
           ).BuildPartial();
       Assert.IsTrue(message.IsInitialized);
     }
+
+    [Test]
+    public void TestOptimizedForSizeMergeUsesAllFieldsFromTarget() {
+      TestOptimizedForSize withFieldSet = new TestOptimizedForSize.Builder { I = 10 }.Build();
+      TestOptimizedForSize.Builder builder = new TestOptimizedForSize.Builder();
+      builder.MergeFrom(withFieldSet);
+      TestOptimizedForSize built = builder.Build();
+      Assert.AreEqual(10, built.I);
+    }
+
+    [Test]
+    public void UninitializedExtensionInOptimizedForSizeMakesMessageUninitialized() {
+      TestOptimizedForSize.Builder builder = new TestOptimizedForSize.Builder();
+      builder.SetExtension(TestOptimizedForSize.TestExtension2,
+          new TestRequiredOptimizedForSize.Builder().BuildPartial());
+      Assert.IsFalse(builder.IsInitialized);
+      Assert.IsFalse(builder.BuildPartial().IsInitialized);
+
+      builder = new TestOptimizedForSize.Builder();
+      builder.SetExtension(TestOptimizedForSize.TestExtension2,
+          new TestRequiredOptimizedForSize.Builder { X = 10 }.BuildPartial());
+      Assert.IsTrue(builder.IsInitialized);
+      Assert.IsTrue(builder.BuildPartial().IsInitialized);
+    }
   }
 }

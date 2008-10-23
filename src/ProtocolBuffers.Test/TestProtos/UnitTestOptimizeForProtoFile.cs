@@ -17,15 +17,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         "Citnb29nbGUvcHJvdG9idWYvdW5pdHRlc3Rfb3B0aW1pemVfZm9yLnByb3Rv" + 
         "EhFwcm90b2J1Zl91bml0dGVzdBokZ29vZ2xlL3Byb3RvYnVmL2NzaGFycF9v" + 
         "cHRpb25zLnByb3RvGiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90" + 
-        "bxoeZ29vZ2xlL3Byb3RvYnVmL3VuaXR0ZXN0LnByb3RvIp4BChRUZXN0T3B0" + 
+        "bxoeZ29vZ2xlL3Byb3RvYnVmL3VuaXR0ZXN0LnByb3RvIpICChRUZXN0T3B0" + 
         "aW1pemVkRm9yU2l6ZRIJCgFpGAEgASgFEi4KA21zZxgTIAEoCzIhLnByb3Rv" + 
         "YnVmX3VuaXR0ZXN0LkZvcmVpZ25NZXNzYWdlKgkI6AcQgICAgAIyQAoOdGVz" + 
         "dF9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0T3B0aW1pemVk" + 
-        "Rm9yU2l6ZRjSCSABKAUiKQocVGVzdFJlcXVpcmVkT3B0aW1pemVkRm9yU2l6" + 
-        "ZRIJCgF4GAEgAigFIloKHFRlc3RPcHRpb25hbE9wdGltaXplZEZvclNpemUS" + 
-        "OgoBbxgBIAEoCzIvLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RSZXF1aXJlZE9w" + 
-        "dGltaXplZEZvclNpemVCR0gCguIJIUdvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMu" + 
-        "VGVzdFByb3Rvc4riCRxVbml0VGVzdE9wdGltaXplRm9yUHJvdG9GaWxl"),
+        "Rm9yU2l6ZRjSCSABKAUycgoPdGVzdF9leHRlbnNpb24yEicucHJvdG9idWZf" + 
+        "dW5pdHRlc3QuVGVzdE9wdGltaXplZEZvclNpemUY0wkgASgLMi8ucHJvdG9i" + 
+        "dWZfdW5pdHRlc3QuVGVzdFJlcXVpcmVkT3B0aW1pemVkRm9yU2l6ZSIpChxU" + 
+        "ZXN0UmVxdWlyZWRPcHRpbWl6ZWRGb3JTaXplEgkKAXgYASACKAUiWgocVGVz" + 
+        "dE9wdGlvbmFsT3B0aW1pemVkRm9yU2l6ZRI6CgFvGAEgASgLMi8ucHJvdG9i" + 
+        "dWZfdW5pdHRlc3QuVGVzdFJlcXVpcmVkT3B0aW1pemVkRm9yU2l6ZUJHSAKC" + 
+        "4gkhR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9ziuIJHFVuaXRU" + 
+        "ZXN0T3B0aW1pemVGb3JQcm90b0ZpbGU="),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
@@ -76,6 +79,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public static readonly pb::GeneratedExtensionBase<int> TestExtension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize> TestExtension2 =
+        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize>.CreateInstance(Descriptor.Extensions[1]);
     private bool hasI;
     private int i_ = 0;
     public bool HasI {
