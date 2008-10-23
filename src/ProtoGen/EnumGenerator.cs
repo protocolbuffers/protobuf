@@ -1,4 +1,4 @@
-﻿using Google.ProtocolBuffers.Descriptors;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
   internal class EnumGenerator : SourceGeneratorBase<EnumDescriptor>, ISourceGenerator {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;

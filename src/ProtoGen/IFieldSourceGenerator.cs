@@ -1,4 +1,4 @@
-﻿namespace Google.ProtocolBuffers.ProtoGen {
+namespace Google.ProtocolBuffers.ProtoGen {
   internal interface IFieldSourceGenerator {
     void GenerateMembers(TextGenerator writer);
     void GenerateBuilderMembers(TextGenerator writer);

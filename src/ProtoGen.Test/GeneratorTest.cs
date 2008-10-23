@@ -1,4 +1,4 @@
-﻿using Google.ProtocolBuffers.DescriptorProtos;
+using Google.ProtocolBuffers.DescriptorProtos;
 using NUnit.Framework;
 using Google.ProtocolBuffers.Descriptors;
 

@@ -1,4 +1,4 @@
-﻿using Google.ProtocolBuffers.ProtoGen;
+using Google.ProtocolBuffers.ProtoGen;
 using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.ProtoGen {

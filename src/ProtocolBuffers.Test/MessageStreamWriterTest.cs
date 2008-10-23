@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using NUnit.Framework;
 using NestedMessage = Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage;
 
