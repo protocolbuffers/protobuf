@@ -508,8 +508,6 @@ GenerateClassDefinition(io::Printer* printer) {
 
   if (descriptor_->field_count() > 0) {
     printer->Print(vars,
-      "static const int _offsets_[$field_count$];\n"
-      "\n"
       "::google::protobuf::uint32 _has_bits_[($field_count$ + 31) / 32];\n");
   } else {
     // Zero-size arrays aren't technically allowed, and MSVC in particular
@@ -517,8 +515,6 @@ GenerateClassDefinition(io::Printer* printer) {
     // other code compile.  Since this is an uncommon case, we'll just declare
     // them with size 1 and waste some space.  Oh well.
     printer->Print(
-      "static const int _offsets_[1];\n"
-      "\n"
       "::google::protobuf::uint32 _has_bits_[1];\n");
   }
 
@@ -598,13 +594,16 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
   printer->Print(vars,
     "$classname$::default_instance_ = new $classname$();\n");
 
+  // Generate the offsets.
+  GenerateOffsets(printer);
+
   // Construct the reflection object.
   printer->Print(vars,
     "$classname$_reflection_ =\n"
     "  new ::google::protobuf::internal::GeneratedMessageReflection(\n"
     "    $classname$_descriptor_,\n"
     "    $classname$::default_instance_,\n"
-    "    $classname$::_offsets_,\n"
+    "    $classname$_offsets_,\n"
     "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, _has_bits_[0]),\n"
     "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
       "$classname$, _unknown_fields_),\n");
@@ -672,9 +671,6 @@ GenerateClassMethods(io::Printer* printer) {
     extension_generators_[i]->GenerateDefinition(printer);
   }
 
-  GenerateOffsets(printer);
-  printer->Print("\n");
-
   GenerateStructors(printer);
   printer->Print("\n");
 
@@ -718,7 +714,7 @@ GenerateClassMethods(io::Printer* printer) {
 void MessageGenerator::
 GenerateOffsets(io::Printer* printer) {
   printer->Print(
-    "const int $classname$::_offsets_[$field_count$] = {\n",
+    "static const int $classname$_offsets_[$field_count$] = {\n",
     "classname", classname_,
     "field_count", SimpleItoa(max(1, descriptor_->field_count())));
   printer->Indent();
