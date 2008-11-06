@@ -1693,6 +1693,9 @@ class DescriptorBuilder {
   template<class DescriptorT> void AllocateOptions(
       const typename DescriptorT::OptionsType& orig_options,
       DescriptorT* descriptor);
+  // Specialization for FileOptions.
+  void AllocateOptions(const FileOptions& orig_options,
+                       FileDescriptor* descriptor);
 
   // Implementation for AllocateOptions(). Don't call this directly.
   template<class DescriptorT> void AllocateOptionsImpl(
@@ -2208,9 +2211,8 @@ template<class DescriptorT> void DescriptorBuilder::AllocateOptions(
 }
 
 // We specialize for FileDescriptor.
-template<> void DescriptorBuilder::AllocateOptions<FileDescriptor>(
-    const FileDescriptor::OptionsType& orig_options,
-    FileDescriptor* descriptor) {
+void DescriptorBuilder::AllocateOptions(const FileOptions& orig_options,
+                                        FileDescriptor* descriptor) {
   // We add the dummy token so that LookupSymbol does the right thing.
   AllocateOptionsImpl(descriptor->package() + ".dummy", descriptor->name(),
                       orig_options, descriptor);
