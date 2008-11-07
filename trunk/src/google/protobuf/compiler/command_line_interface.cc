@@ -476,7 +476,7 @@ bool CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
   }
   if (imports_in_descriptor_set_ && descriptor_set_name_.empty()) {
     cerr << "--include_imports only makes sense when combined with "
-            "--descriptor_set_name." << endl;
+            "--descriptor_set_out." << endl;
   }
 
   return true;
