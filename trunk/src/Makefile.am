@@ -204,7 +204,7 @@ unittest_proto_middleman: protoc$(EXEEXT) $(protoc_inputs)
 
 $(protoc_outputs): unittest_proto_middleman
 
-noinst_PROGRAMS = protobuf-test
+check_PROGRAMS = protobuf-test
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
