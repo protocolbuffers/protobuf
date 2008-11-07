@@ -90,10 +90,10 @@ class IoTest : public testing::Test {
   // Helper to read a fixed-length array of data from an input stream.
   int ReadFromInput(ZeroCopyInputStream* input, void* data, int size);
   // Write a string to the output stream.
-  void WriteString(ZeroCopyOutputStream* output, const char* str);
+  void WriteString(ZeroCopyOutputStream* output, const string& str);
   // Read a number of bytes equal to the size of the given string and checks
   // that it matches the string.
-  void ReadString(ZeroCopyInputStream* input, const char* str);
+  void ReadString(ZeroCopyInputStream* input, const string& str);
   // Writes some text to the output stream in a particular order.  Returns
   // the number of bytes written, incase the caller needs that to set up an
   // input stream.
@@ -101,6 +101,12 @@ class IoTest : public testing::Test {
   // Reads text from an input stream and expects it to match what
   // WriteStuff() writes.
   void ReadStuff(ZeroCopyInputStream* input);
+
+  // Similar to WriteStuff, but performs more sophisticated testing.
+  int WriteStuffLarge(ZeroCopyOutputStream* output);
+  // Reads and tests a stream that should have been written to
+  // via WriteStuffLarge().
+  void ReadStuffLarge(ZeroCopyInputStream* input);
 
   static const int kBlockSizes[];
   static const int kBlockSizeCount;
@@ -121,6 +127,7 @@ bool IoTest::WriteToOutput(ZeroCopyOutputStream* output,
     if (!output->Next(&out, &out_size)) {
       return false;
     }
+    EXPECT_GT(out_size, 0);
 
     if (in_size <= out_size) {
       memcpy(out, in, in_size);
@@ -145,6 +152,7 @@ int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
     if (!input->Next(&in, &in_size)) {
       return size - out_size;
     }
+    EXPECT_GT(in_size, 0);
 
     if (out_size <= in_size) {
       memcpy(out, in, out_size);
@@ -158,16 +166,15 @@ int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
   }
 }
 
-void IoTest::WriteString(ZeroCopyOutputStream* output, const char* str) {
-  EXPECT_TRUE(WriteToOutput(output, str, strlen(str)));
+void IoTest::WriteString(ZeroCopyOutputStream* output, const string& str) {
+  EXPECT_TRUE(WriteToOutput(output, str.c_str(), str.size()));
 }
 
-void IoTest::ReadString(ZeroCopyInputStream* input, const char* str) {
-  int length = strlen(str);
-  scoped_array<char> buffer(new char[length + 1]);
-  buffer[length] = '\0';
-  EXPECT_EQ(ReadFromInput(input, buffer.get(), length), length);
-  EXPECT_STREQ(str, buffer.get());
+void IoTest::ReadString(ZeroCopyInputStream* input, const string& str) {
+  scoped_array<char> buffer(new char[str.size() + 1]);
+  buffer[str.size()] = '\0';
+  EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
+  EXPECT_STREQ(str.c_str(), buffer.get());
 }
 
 int IoTest::WriteStuff(ZeroCopyOutputStream* output) {
@@ -197,6 +204,37 @@ void IoTest::ReadStuff(ZeroCopyInputStream* input) {
   ReadString(input, "bar");
 
   EXPECT_EQ(input->ByteCount(), 68);
+
+  uint8 byte;
+  EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
+}
+
+int IoTest::WriteStuffLarge(ZeroCopyOutputStream* output) {
+  WriteString(output, "Hello world!\n");
+  WriteString(output, "Some te");
+  WriteString(output, "xt.  Blah blah.");
+  WriteString(output, string(100000, 'x'));  // A very long string
+  WriteString(output, string(100000, 'y'));  // A very long string
+  WriteString(output, "01234567890123456789");
+
+  EXPECT_EQ(output->ByteCount(), 200055);
+
+  int result = output->ByteCount();
+  return result;
+}
+
+// Reads text from an input stream and expects it to match what WriteStuff()
+// writes.
+void IoTest::ReadStuffLarge(ZeroCopyInputStream* input) {
+  ReadString(input, "Hello world!\nSome text.  ");
+  EXPECT_TRUE(input->Skip(5));
+  ReadString(input, "blah.");
+  EXPECT_TRUE(input->Skip(100000 - 10));
+  ReadString(input, string(10, 'x') + string(100000 - 20000, 'y'));
+  EXPECT_TRUE(input->Skip(20000 - 10));
+  ReadString(input, "yyyyyyyyyy01234567890123456789");
+
+  EXPECT_EQ(input->ByteCount(), 200055);
 
   uint8 byte;
   EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
@@ -369,18 +407,36 @@ TEST_F(IoTest, PipeIo) {
 TEST_F(IoTest, IostreamIo) {
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
-      stringstream stream;
-
       {
-        OstreamOutputStream output(&stream, kBlockSizes[i]);
-        WriteStuff(&output);
-        EXPECT_FALSE(stream.fail());
+        stringstream stream;
+
+        {
+          OstreamOutputStream output(&stream, kBlockSizes[i]);
+          WriteStuff(&output);
+          EXPECT_FALSE(stream.fail());
+        }
+
+        {
+          IstreamInputStream input(&stream, kBlockSizes[j]);
+          ReadStuff(&input);
+          EXPECT_TRUE(stream.eof());
+        }
       }
 
       {
-        IstreamInputStream input(&stream, kBlockSizes[j]);
-        ReadStuff(&input);
-        EXPECT_TRUE(stream.eof());
+        stringstream stream;
+
+        {
+          OstreamOutputStream output(&stream, kBlockSizes[i]);
+          WriteStuffLarge(&output);
+          EXPECT_FALSE(stream.fail());
+        }
+
+        {
+          IstreamInputStream input(&stream, kBlockSizes[j]);
+          ReadStuffLarge(&input);
+          EXPECT_TRUE(stream.eof());
+        }
       }
     }
   }
