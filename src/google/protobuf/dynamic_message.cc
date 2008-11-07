@@ -131,36 +131,20 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
   return 0;
 }
 
-struct DescendingFieldSizeOrder {
-  inline bool operator()(const FieldDescriptor* a,
-                         const FieldDescriptor* b) {
-    // All repeated fields come first.
-    if (a->is_repeated()) {
-      if (b->is_repeated()) {
-        // Repeated fields and are not ordered with respect to each other.
-        return false;
-      } else {
-        return true;
-      }
-    } else if (b->is_repeated()) {
-      return false;
-    } else {
-      // Remaining fields in descending order by size.
-      return FieldSpaceUsed(a) > FieldSpaceUsed(b);
-    }
-  }
-};
-
 inline int DivideRoundingUp(int i, int j) {
   return (i + (j - 1)) / j;
 }
 
 static const int kSafeAlignment = sizeof(uint64);
 
+inline int AlignTo(int offset, int alignment) {
+  return DivideRoundingUp(offset, alignment) * alignment;
+}
+
 // Rounds the given byte offset up to the next offset aligned such that any
 // type may be stored at it.
 inline int AlignOffset(int offset) {
-  return DivideRoundingUp(offset, kSafeAlignment) * kSafeAlignment;
+  return AlignTo(offset, kSafeAlignment);
 }
 
 #define bitsizeof(T) (sizeof(T) * 8)
@@ -466,18 +450,6 @@ const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
   int* offsets = new int[type->field_count()];
   type_info->offsets.reset(offsets);
 
-  // Sort the fields of this message in descending order by size.  We
-  // assume that if we then pack the fields tightly in this order, all fields
-  // will end up properly-aligned, since all field sizes are powers of two or
-  // are multiples of the system word size.
-  scoped_array<const FieldDescriptor*> ordered_fields(
-    new const FieldDescriptor*[type->field_count()]);
-  for (int i = 0; i < type->field_count(); i++) {
-    ordered_fields[i] = type->field(i);
-  }
-  stable_sort(&ordered_fields[0], &ordered_fields[type->field_count()],
-              DescendingFieldSizeOrder());
-
   // Decide all field offsets by packing in order.
   // We place the DynamicMessage object itself at the beginning of the allocated
   // space.
@@ -501,12 +473,13 @@ const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
     type_info->extensions_offset = -1;
   }
 
-  // All the fields.  We don't need to align after each field because they are
-  // sorted in descending size order, and the size of a type is always a
-  // multiple of its alignment.
+  // All the fields.
   for (int i = 0; i < type->field_count(); i++) {
-    offsets[ordered_fields[i]->index()] = size;
-    size += FieldSpaceUsed(ordered_fields[i]);
+    // Make sure field is aligned to avoid bus errors.
+    int field_size = FieldSpaceUsed(type->field(i));
+    size = AlignTo(size, min(kSafeAlignment, field_size));
+    offsets[i] = size;
+    size += field_size;
   }
 
   // Add the UnknownFieldSet to the end.
