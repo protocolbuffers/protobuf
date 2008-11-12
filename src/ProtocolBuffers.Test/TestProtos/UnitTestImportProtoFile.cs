@@ -19,9 +19,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         "b3B0aW9ucy5wcm90bxogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJv" + 
         "dG8iGgoNSW1wb3J0TWVzc2FnZRIJCgFkGAEgASgFKjwKCkltcG9ydEVudW0S" + 
         "DgoKSU1QT1JUX0ZPTxAHEg4KCklNUE9SVF9CQVIQCBIOCgpJTVBPUlRfQkFa" + 
-        "EAlCXAoYY29tLmdvb2dsZS5wcm90b2J1Zi50ZXN0SAGC4gkhR29vZ2xlLlBy" + 
-        "b3RvY29sQnVmZmVycy5UZXN0UHJvdG9ziuIJF1VuaXRUZXN0SW1wb3J0UHJv" + 
-        "dG9GaWxl"),
+        "EAlCWwoYY29tLmdvb2dsZS5wcm90b2J1Zi50ZXN0SAHCPjwKIUdvb2dsZS5Q" + 
+        "cm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIXVW5pdFRlc3RJbXBvcnRQcm90" + 
+        "b0ZpbGU="),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 

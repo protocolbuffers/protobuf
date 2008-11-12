@@ -13,6 +13,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
       : base(descriptor) {
     }
 
+    public string UmbrellaClassName {
+      get { throw new NotImplementedException(); }
+    }
+
     public void Generate(TextGenerator writer) {
       WriteIntroduction(writer);
       WriteDescriptor(writer);
@@ -23,18 +27,18 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
       writer.WriteLine("#endregion");
       // The class declaration either gets closed before or after the children are written.
-      if (!DescriptorUtil.NestClasses(Descriptor)) {
+      if (!Descriptor.CSharpOptions.NestClasses) {
         writer.Outdent();
         writer.WriteLine("}");
       }
       WriteChildren(writer, "Enums", Descriptor.EnumTypes);
       WriteChildren(writer, "Messages", Descriptor.MessageTypes);
       WriteChildren(writer, "Services", Descriptor.Services);
-      if (DescriptorUtil.NestClasses(Descriptor)) {
+      if (Descriptor.CSharpOptions.NestClasses) {
         writer.Outdent();
         writer.WriteLine("}");
       }
-      if (DescriptorUtil.GetNamespace(Descriptor) != "") {
+      if (Descriptor.CSharpOptions.Namespace != "") {
         writer.Outdent();
         writer.WriteLine("}");
       }
@@ -45,13 +49,13 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine();
       Helpers.WriteNamespaces(writer);
 
-      if (DescriptorUtil.GetNamespace(Descriptor) != "") {
-        writer.WriteLine("namespace {0} {{", DescriptorUtil.GetNamespace(Descriptor));
+      if (Descriptor.CSharpOptions.Namespace != "") {
+        writer.WriteLine("namespace {0} {{", Descriptor.CSharpOptions.Namespace);
         writer.Indent();
         writer.WriteLine();
       }
 
-      writer.WriteLine("{0} static partial class {1} {{", ClassAccessLevel, DescriptorUtil.GetUmbrellaClassName(Descriptor));
+      writer.WriteLine("{0} static partial class {1} {{", ClassAccessLevel, Descriptor.CSharpOptions.UmbrellaClassname);
       writer.WriteLine();
       writer.Indent();
     }
@@ -79,11 +83,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       writer.WriteLine("new pbd::FileDescriptor[] {");
       foreach (FileDescriptor dependency in Descriptor.Dependencies) {
-        // TODO(jonskeet): The normal code won't work for the bootstrapping descriptor, because we don't get unknown fields :(
-        if (dependency.Package == "google.protobuf" && dependency.Name.EndsWith("descriptor.proto")) {
-          writer.WriteLine("  global::" + typeof(DescriptorProtoFile).FullName + ".Descriptor, ");
-          continue;
-        }
         writer.WriteLine("  {0}.Descriptor, ", DescriptorUtil.GetFullUmbrellaClassName(dependency));
       }
       writer.WriteLine("});");

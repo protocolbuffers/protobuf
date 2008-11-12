@@ -50,7 +50,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
             if (!Descriptor.HasDefaultValue) {
               return "pb::ByteString.Empty";
             }
-            return string.Format("(pb::ByteString) {0}.Descriptor.Fields[{1}].DefaultValue", DescriptorUtil.GetClassName(Descriptor.ContainingType), Descriptor.Index);
+            return string.Format("(pb::ByteString) {0}.Descriptor.Fields[{1}].DefaultValue", GetClassName(Descriptor.ContainingType), Descriptor.Index);
           case FieldType.String:
             if (AllPrintableAscii(Descriptor.Proto.DefaultValue)) {
               // All chars are ASCII and printable.  In this case we only
@@ -61,7 +61,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
                   .Replace("\"", "\\\"")
                   + "\"";
             }
-            return string.Format("(string) {0}.Descriptor.Fields[{1}].DefaultValue", DescriptorUtil.GetClassName(Descriptor.ContainingType), Descriptor.Index);
+            return string.Format("(string) {0}.Descriptor.Fields[{1}].DefaultValue", GetClassName(Descriptor.ContainingType), Descriptor.Index);
           case FieldType.Enum:
             return TypeName + "." + ((EnumValueDescriptor) Descriptor.DefaultValue).Name;
           case FieldType.Message:
@@ -88,11 +88,11 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     protected string CapitalizedName {
-      get { return Helpers.UnderscoresToPascalCase(DescriptorUtil.GetFieldName(Descriptor)); }
+      get { return NameHelpers.UnderscoresToPascalCase(GetFieldName(Descriptor)); }
     }
 
     protected string Name {
-      get { return Helpers.UnderscoresToCamelCase(DescriptorUtil.GetFieldName(Descriptor)); }
+      get { return NameHelpers.UnderscoresToCamelCase(GetFieldName(Descriptor)); }
     }
 
     protected int Number {
@@ -103,10 +103,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
       get {
         switch (Descriptor.FieldType) {
           case FieldType.Enum:
-            return DescriptorUtil.GetClassName(Descriptor.EnumType);
+            return GetClassName(Descriptor.EnumType);
           case FieldType.Message:
           case FieldType.Group:
-            return DescriptorUtil.GetClassName(Descriptor.MessageType);
+            return GetClassName(Descriptor.MessageType);
           default:
             return DescriptorUtil.GetMappedTypeName(Descriptor.MappedType);
         }

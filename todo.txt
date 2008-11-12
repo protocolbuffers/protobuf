@@ -1,12 +1,11 @@
 Current task list (not in order)
 
-- Extra unit tests for pending Java optimisation
+Diff stuff
+
 - Refactor IsInitialized
 - Performance framework
 - Optionally remove dependencies to core and csharp options
 - Remove multifile support
-- Remove bootstrapping hack
-- Improve "regenerating descriptor.proto" hack
 - Mono support
 - Docs
 - Clean up protogen code

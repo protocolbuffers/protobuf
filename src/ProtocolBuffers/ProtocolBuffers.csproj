@@ -97,6 +97,7 @@
     <Compile Include="IService.cs" />
     <Compile Include="MessageStreamIterator.cs" />
     <Compile Include="MessageStreamWriter.cs" />
+    <Compile Include="NameHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RpcUtil.cs" />
     <Compile Include="TextFormat.cs" />

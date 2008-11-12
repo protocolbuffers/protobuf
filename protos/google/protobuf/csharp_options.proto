@@ -4,13 +4,22 @@ import "google/protobuf/descriptor.proto";
 
 package google.protobuf;
 
-option (CSharpNamespace) = "Google.ProtocolBuffers.DescriptorProtos";
-option (CSharpUmbrellaClassname) = "CSharpOptions";
+message CSharpFileOptions {
+  optional string namespace = 1;
+  optional string umbrella_classname= 2;
+  optional bool public_classes = 3;
+  optional bool multiple_files = 4;
+  optional bool nest_classes = 5;
 
-extend FileOptions {
-  optional string CSharpNamespace = 20000;
-  optional string CSharpUmbrellaClassname = 20001;
-  optional bool CSharpMultipleFiles = 20002;
-  optional bool CSharpNestClasses = 20003;
-  optional bool CSharpPublicClasses = 20004;
+  extend FileOptions {
+    optional CSharpFileOptions csharp_options = 1000;
+  }
+}
+
+message CSharpFieldOptions {
+  optional string property_name = 1;
+
+  extend FieldOptions {
+    optional CSharpFieldOptions csharp_options = 1000;
+  }
 }

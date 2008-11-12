@@ -20,17 +20,17 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.Indent();
 
       foreach (MethodDescriptor method in Descriptor.Methods) {
-        writer.WriteLine("{0} abstract void {1}(", ClassAccessLevel, Helpers.UnderscoresToPascalCase(method.Name));
+        writer.WriteLine("{0} abstract void {1}(", ClassAccessLevel, NameHelpers.UnderscoresToPascalCase(method.Name));
         writer.WriteLine("    pb::IRpcController controller,");
-        writer.WriteLine("    {0} request,", DescriptorUtil.GetClassName(method.InputType));
-        writer.WriteLine("    global::System.Action<{0}> done);", DescriptorUtil.GetClassName(method.OutputType));
+        writer.WriteLine("    {0} request,", GetClassName(method.InputType));
+        writer.WriteLine("    global::System.Action<{0}> done);", GetClassName(method.OutputType));
       }
 
       // Generate Descriptor and DescriptorForType.
       writer.WriteLine();
       writer.WriteLine("{0} static pbd::ServiceDescriptor Descriptor {{", ClassAccessLevel);
       writer.WriteLine("  get {{ return {0}.Descriptor.Services[{1}]; }}",
-          DescriptorUtil.GetUmbrellaClassName(Descriptor.File), Descriptor.Index);
+        Descriptor.File.CSharpOptions.UmbrellaClassname, Descriptor.Index);
       writer.WriteLine("}");
       writer.WriteLine("{0} pbd::ServiceDescriptor DescriptorForType {{", ClassAccessLevel);
       writer.WriteLine("  get { return Descriptor; }");
@@ -62,8 +62,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
       foreach (MethodDescriptor method in Descriptor.Methods) {
         writer.WriteLine("case {0}:", method.Index);
         writer.WriteLine("  this.{0}(controller, ({1}) request,",
-            Helpers.UnderscoresToPascalCase(method.Name), DescriptorUtil.GetClassName(method.InputType));
-        writer.WriteLine("      pb::RpcUtil.SpecializeCallback<{0}>(", DescriptorUtil.GetClassName(method.OutputType));
+            NameHelpers.UnderscoresToPascalCase(method.Name), GetClassName(method.InputType));
+        writer.WriteLine("      pb::RpcUtil.SpecializeCallback<{0}>(", GetClassName(method.OutputType));
         writer.WriteLine("      done));");
         writer.WriteLine("  return;");
       }
@@ -89,7 +89,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       foreach (MethodDescriptor method in Descriptor.Methods) {
         writer.WriteLine("case {0}:", method.Index);
         writer.WriteLine("  return {0}.DefaultInstance;", 
-          DescriptorUtil.GetClassName(which == RequestOrResponse.Request ? method.InputType : method.OutputType));
+          GetClassName(which == RequestOrResponse.Request ? method.InputType : method.OutputType));
       }
       writer.WriteLine("default:");
       writer.WriteLine("  throw new global::System.InvalidOperationException(\"Can't get here.\");");
@@ -105,7 +105,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("  return new Stub(channel);");
       writer.WriteLine("}");
       writer.WriteLine();
-      writer.WriteLine("{0} class Stub : {1} {{", ClassAccessLevel, DescriptorUtil.GetClassName(Descriptor));
+      writer.WriteLine("{0} class Stub : {1} {{", ClassAccessLevel, GetClassName(Descriptor));
       writer.Indent();
       writer.WriteLine("internal Stub(pb::IRpcChannel channel) {");
       writer.WriteLine("  this.channel = channel;");
@@ -119,15 +119,15 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       foreach (MethodDescriptor method in Descriptor.Methods) {
         writer.WriteLine();
-        writer.WriteLine("public override void {0}(", Helpers.UnderscoresToPascalCase(method.Name));
+        writer.WriteLine("public override void {0}(", NameHelpers.UnderscoresToPascalCase(method.Name));
         writer.WriteLine("    pb::IRpcController controller,");
-        writer.WriteLine("    {0} request,", DescriptorUtil.GetClassName(method.InputType));
-        writer.WriteLine("    global::System.Action<{0}> done) {{", DescriptorUtil.GetClassName(method.OutputType));
+        writer.WriteLine("    {0} request,", GetClassName(method.InputType));
+        writer.WriteLine("    global::System.Action<{0}> done) {{", GetClassName(method.OutputType));
         writer.Indent();
         writer.WriteLine("channel.CallMethod(Descriptor.Methods[{0}],", method.Index);
-        writer.WriteLine("    controller, request, {0}.DefaultInstance,", DescriptorUtil.GetClassName(method.OutputType));
+        writer.WriteLine("    controller, request, {0}.DefaultInstance,", GetClassName(method.OutputType));
         writer.WriteLine("    pb::RpcUtil.GeneralizeCallback<{0}, {0}.Builder>(done, {0}.DefaultInstance));",
-            DescriptorUtil.GetClassName(method.OutputType));
+            GetClassName(method.OutputType));
         writer.Outdent();
         writer.WriteLine("}");
       }

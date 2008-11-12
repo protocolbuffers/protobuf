@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Google.ProtocolBuffers.ProtoGen {
   [TestFixture]
   public class DescriptorUtilTest {
-
+    /* FIXME: Move these around!
     [Test]
     public void ExplicitNamespace() {
       FileDescriptorProto proto = new FileDescriptorProto.Builder {
@@ -64,6 +64,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
       FileDescriptorProto proto = new FileDescriptorProto.Builder { Name = "x/y/foo_bar" }.Build();
       FileDescriptor descriptor = FileDescriptor.BuildFrom(proto, null);
       Assert.AreEqual("FooBar", DescriptorUtil.GetUmbrellaClassName(descriptor));
-    }
+    } */
   }
 }

@@ -15,7 +15,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     private string FullClassName {
-      get { return DescriptorUtil.GetClassName(Descriptor); }
+      get { return GetClassName(Descriptor); }
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       string identifier = GetUniqueFileScopeIdentifier(Descriptor);
 
       // The descriptor for this type.
-      string access = Descriptor.File.Options.GetExtension(CSharpOptions.CSharpNestClasses) ? "private" : "internal";
+      string access = Descriptor.File.CSharpOptions.NestClasses ? "private" : "internal";
       writer.WriteLine("{0} static readonly pbd::MessageDescriptor internal__{1}__Descriptor", access, identifier);
       if (Descriptor.ContainingType == null) {
         writer.WriteLine("    = Descriptor.MessageTypes[{0}];", Descriptor.Index);
@@ -51,7 +51,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
           FullClassName, identifier);
       writer.Print("        new string[] { ");
       foreach (FieldDescriptor field in Descriptor.Fields) {
-        writer.Write("\"{0}\", ", Helpers.UnderscoresToPascalCase(DescriptorUtil.GetFieldName(field)));
+        writer.Write("\"{0}\", ", NameHelpers.UnderscoresToPascalCase(GetFieldName(field)));
       }
       writer.WriteLine("});");
 
@@ -80,12 +80,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("}");
       writer.WriteLine();
       writer.WriteLine("public static pbd::MessageDescriptor Descriptor {");
-      writer.WriteLine("  get {{ return {0}.internal__{1}__Descriptor; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor.File),
+      writer.WriteLine("  get {{ return {0}.internal__{1}__Descriptor; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor),
           GetUniqueFileScopeIdentifier(Descriptor));
       writer.WriteLine("}");
       writer.WriteLine();
       writer.WriteLine("protected override pb::FieldAccess.FieldAccessorTable<{0}, {0}.Builder> InternalFieldAccessors {{", ClassName);
-      writer.WriteLine("  get {{ return {0}.internal__{1}__FieldAccessorTable; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor.File),
+      writer.WriteLine("  get {{ return {0}.internal__{1}__FieldAccessorTable; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor),
           GetUniqueFileScopeIdentifier(Descriptor));
       writer.WriteLine("}");
       writer.WriteLine();
@@ -186,7 +186,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine();
     }
 
-    private static void GenerateSerializeOneField(TextGenerator writer, FieldDescriptor fieldDescriptor) {
+    private void GenerateSerializeOneField(TextGenerator writer, FieldDescriptor fieldDescriptor) {
       SourceGenerators.CreateFieldGenerator(fieldDescriptor).GenerateSerializationCode(writer);
     }
 
@@ -415,7 +415,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // "has" fields into a single bitfield.
       foreach (FieldDescriptor field in Descriptor.Fields) {
         if (field.IsRequired) {
-          writer.WriteLine("if (!has{0}) return false;", Helpers.UnderscoresToPascalCase(field.Name));
+          writer.WriteLine("if (!has{0}) return false;", NameHelpers.UnderscoresToPascalCase(field.Name));
         }
       }
   
@@ -425,9 +425,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
             !HasRequiredFields(field.MessageType, new Dictionary<MessageDescriptor, object>())) {
           continue;
         }
-        string propertyName = Helpers.UnderscoresToPascalCase(DescriptorUtil.GetFieldName(field));
+        string propertyName = NameHelpers.UnderscoresToPascalCase(GetFieldName(field));
         if (field.IsRepeated) {
-          writer.WriteLine("foreach ({0} element in {1}List) {{", DescriptorUtil.GetClassName(field.MessageType), propertyName);
+          writer.WriteLine("foreach ({0} element in {1}List) {{", GetClassName(field.MessageType), propertyName);
           writer.WriteLine("  if (!element.IsInitialized) return false;");
           writer.WriteLine("}");
         } else if (field.IsOptional) {

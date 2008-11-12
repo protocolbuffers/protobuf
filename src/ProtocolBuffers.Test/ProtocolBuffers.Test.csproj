@@ -42,6 +42,8 @@
       <HintPath>..\..\lib\Rhino.Mocks.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractMessageTest.cs" />
@@ -55,6 +57,7 @@
     <Compile Include="MessageStreamIteratorTest.cs" />
     <Compile Include="MessageStreamWriterTest.cs" />
     <Compile Include="MessageTest.cs" />
+    <Compile Include="NameHelpersTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />
     <Compile Include="ServiceTest.cs" />

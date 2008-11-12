@@ -30,11 +30,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
       foreach (string inputFile in options.InputFiles) {
         FileDescriptorSet descriptorProtos;       
         ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
-        extensionRegistry.Add(CSharpOptions.CSharpUmbrellaClassname);
-        extensionRegistry.Add(CSharpOptions.CSharpMultipleFiles);
-        extensionRegistry.Add(CSharpOptions.CSharpNamespace);
-        extensionRegistry.Add(CSharpOptions.CSharpNestClasses);
-        extensionRegistry.Add(CSharpOptions.CSharpPublicClasses);
+        extensionRegistry.Add(CSharpFileOptions.CSharpOptions);
+        extensionRegistry.Add(CSharpFieldOptions.CSharpOptions);
         using (Stream inputStream = File.OpenRead(inputFile)) {
           descriptorProtos = FileDescriptorSet.ParseFrom(inputStream, extensionRegistry);
         }
@@ -51,12 +48,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
     /// already have been resolved.
     /// </summary>
     private void Generate(FileDescriptor descriptor) {
-      string umbrellaClass = DescriptorUtil.GetUmbrellaClassName(descriptor);
-      string ns = DescriptorUtil.GetNamespace(descriptor);
-      using (TextWriter textWriter = File.CreateText(Path.Combine(options.OutputDirectory, umbrellaClass + ".cs"))) {
-        TextGenerator writer = new TextGenerator(textWriter);
-        
-        UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
+      UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
+      using (TextWriter textWriter = File.CreateText(Path.Combine(options.OutputDirectory, descriptor.CSharpOptions.UmbrellaClassname + ".cs"))) {
+        TextGenerator writer = new TextGenerator(textWriter);        
         ucg.Generate(writer);
         /*
         GenerateSiblings(umbrellaSource, descriptor, descriptor.MessageTypes);

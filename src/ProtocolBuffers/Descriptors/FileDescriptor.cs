@@ -50,6 +50,8 @@ namespace Google.ProtocolBuffers.Descriptors {
     private readonly IList<FieldDescriptor> extensions;
     private readonly IList<FileDescriptor> dependencies;
     private readonly DescriptorPool pool;
+    private CSharpFileOptions csharpFileOptions;
+    private readonly object optionsLock = new object();
     
     private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool) {
       this.pool = pool;
@@ -71,6 +73,44 @@ namespace Google.ProtocolBuffers.Descriptors {
         (field, index) => new FieldDescriptor(field, this, null, index, true));
     }
 
+    private CSharpFileOptions BuildOrFakeCSharpOptions() {
+      // TODO(jonskeet): Check if we could use FileDescriptorProto.Descriptor.Name - interesting bootstrap issues
+      if (proto.Name == "google/protobuf/descriptor.proto") {
+        return new CSharpFileOptions.Builder {
+          Namespace = "Google.ProtocolBuffers.DescriptorProtos",
+          UmbrellaClassname = "DescriptorProtoFile", NestClasses = false, MultipleFiles = false, PublicClasses = true
+        }.Build();
+      }
+      if (proto.Name == "google/protobuf/csharp_options.proto") {
+        return new CSharpFileOptions.Builder {
+          Namespace = "Google.ProtocolBuffers.DescriptorProtos",
+          UmbrellaClassname = "CSharpOptions", NestClasses = false, MultipleFiles = false, PublicClasses = true
+        }.Build();
+      }
+      CSharpFileOptions.Builder builder = CSharpFileOptions.CreateBuilder();
+      if (proto.Options.HasExtension(CSharpFileOptions.CSharpOptions)) {
+        builder.MergeFrom(proto.Options.GetExtension(CSharpFileOptions.CSharpOptions));
+      }
+      if (!builder.HasNamespace) {
+        builder.Namespace = Package;
+      }
+      if (!builder.HasMultipleFiles) {
+        builder.MultipleFiles = false;
+      }
+      if (!builder.HasNestClasses) {
+        builder.NestClasses = false;
+      }
+      if (!builder.HasPublicClasses) {
+        builder.PublicClasses = true;
+      }
+      if (!builder.HasUmbrellaClassname) {
+        int lastSlash = Name.LastIndexOf('/');
+        string baseName = Name.Substring(lastSlash + 1);
+        builder.UmbrellaClassname = NameHelpers.UnderscoresToPascalCase(NameHelpers.StripProto(baseName));        
+      }
+      return builder.Build();
+    }
+
     /// <value>
     /// The descriptor in its protocol message representation.
     /// </value>
@@ -83,6 +123,22 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// </value>
     public FileOptions Options {
       get { return proto.Options; }
+    }
+
+    /// <summary>
+    /// Returns the C#-specific options for this file descriptor. This will always be
+    /// completely filled in.
+    /// FIXME: This isn't thread-safe. Can't do it at construction time due to bootstrapping issues.
+    /// </summary>
+    public CSharpFileOptions CSharpOptions {
+      get {
+        lock (optionsLock) {
+          if (csharpFileOptions == null) {
+            csharpFileOptions = BuildOrFakeCSharpOptions();
+          }
+        }
+        return csharpFileOptions;
+      }
     }
 
     /// <value>
@@ -250,7 +306,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     
     /// <summary>
     /// This method is to be called by generated code only.  It is equivalent
-    /// to BuilderFrom except that the FileDescriptorProto is encoded in
+    /// to BuildFrom except that the FileDescriptorProto is encoded in
     /// protocol buffer wire format.
     /// </summary>
     public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData,

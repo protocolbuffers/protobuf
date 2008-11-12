@@ -9,15 +9,15 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void Generate(TextGenerator writer) {
-      string name = Helpers.UnderscoresToPascalCase(DescriptorUtil.GetFieldName(Descriptor));
+      string name = NameHelpers.UnderscoresToPascalCase(GetFieldName(Descriptor));
 
       string type;
       switch (Descriptor.MappedType) {
         case MappedType.Message:
-          type = DescriptorUtil.GetClassName(Descriptor.MessageType);
+          type = GetClassName(Descriptor.MessageType);
           break;
         case MappedType.Enum:
-          type = DescriptorUtil.GetClassName(Descriptor.EnumType);
+          type = GetClassName(Descriptor.EnumType);
           break;
         default:
           type = DescriptorUtil.GetMappedTypeName(Descriptor.MappedType);
