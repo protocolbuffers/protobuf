@@ -9,7 +9,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void Generate(TextGenerator writer) {
-      string name = NameHelpers.UnderscoresToPascalCase(GetFieldName(Descriptor));
+      string name = Descriptor.CSharpOptions.PropertyName;
 
       string type;
       switch (Descriptor.MappedType) {

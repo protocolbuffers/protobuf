@@ -88,8 +88,8 @@ namespace Google.ProtocolBuffers.Descriptors {
         }.Build();
       }
       CSharpFileOptions.Builder builder = CSharpFileOptions.CreateBuilder();
-      if (proto.Options.HasExtension(CSharpFileOptions.CSharpOptions)) {
-        builder.MergeFrom(proto.Options.GetExtension(CSharpFileOptions.CSharpOptions));
+      if (proto.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions)) {
+        builder.MergeFrom(proto.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions));
       }
       if (!builder.HasNamespace) {
         builder.Namespace = Package;
@@ -128,7 +128,6 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// <summary>
     /// Returns the C#-specific options for this file descriptor. This will always be
     /// completely filled in.
-    /// FIXME: This isn't thread-safe. Can't do it at construction time due to bootstrapping issues.
     /// </summary>
     public CSharpFileOptions CSharpOptions {
       get {

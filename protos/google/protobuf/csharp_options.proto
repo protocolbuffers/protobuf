@@ -10,16 +10,21 @@ message CSharpFileOptions {
   optional bool public_classes = 3;
   optional bool multiple_files = 4;
   optional bool nest_classes = 5;
+}
 
-  extend FileOptions {
-    optional CSharpFileOptions csharp_options = 1000;
-  }
+extend FileOptions {
+  optional CSharpFileOptions csharp_file_options = 1000;
+}
+
+extend FieldOptions {
+  optional CSharpFieldOptions csharp_field_options = 1000;
 }
 
 message CSharpFieldOptions {
+  // Provides the ability to override the name of the property
+  // generated for this field. This does not currently work with
+  // messages optimised for reflection, and is only applied to the
+  // actual property rather than associated methods. (Careful
+  // consideration needed here...)
   optional string property_name = 1;
-
-  extend FieldOptions {
-    optional CSharpFieldOptions csharp_options = 1000;
-  }
 }

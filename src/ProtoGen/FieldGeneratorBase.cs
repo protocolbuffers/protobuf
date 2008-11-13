@@ -73,17 +73,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
-    /// <summary>
-    /// Usually the same as CapitalizedName, except when the enclosing type has the same name,
-    /// in which case an underscore is appended.
-    /// </summary>
     protected string PropertyName {
       get {
-        string ret = CapitalizedName;
-        if (ret == Descriptor.ContainingType.Name) {
-          ret += "_";
-        }
-        return ret;
+        return Descriptor.CSharpOptions.PropertyName;
       }
     }
 

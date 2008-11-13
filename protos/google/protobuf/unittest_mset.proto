@@ -2,8 +2,8 @@
 // line onwards is as per original distribution.
 import "google/protobuf/csharp_options.proto";
 import "google/protobuf/descriptor.proto";
-option (google.protobuf.CSharpFileOptions.csharp_options).namespace = "Google.ProtocolBuffers.TestProtos";
-option (google.protobuf.CSharpFileOptions.csharp_options).umbrella_classname = "UnitTestMessageSetProtoFile";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestMessageSetProtoFile";
 
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.

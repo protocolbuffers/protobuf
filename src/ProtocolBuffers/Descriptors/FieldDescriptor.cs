@@ -50,6 +50,9 @@ namespace Google.ProtocolBuffers.Descriptors {
     private FieldType fieldType;
     private MappedType mappedType;
 
+    private CSharpFieldOptions csharpFieldOptions;
+    private readonly object optionsLock = new object();
+
     internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
         MessageDescriptor parent, int index, bool isExtension) 
         : base(proto, file, ComputeFullName(file, parent, proto.Name), index) {
@@ -85,6 +88,31 @@ namespace Google.ProtocolBuffers.Descriptors {
       }
 
       file.DescriptorPool.AddSymbol(this);
+    }
+
+    private CSharpFieldOptions BuildOrFakeCSharpOptions() {
+      // TODO(jonskeet): Check if we could use FileDescriptorProto.Descriptor.Name - interesting bootstrap issues
+      if (File.Proto.Name == "google/protobuf/csharp_options.proto") {
+        if (Name=="csharp_field_options") {
+          return new CSharpFieldOptions.Builder { PropertyName = "CSharpFieldOptions" }.Build();
+        }
+        if (Name=="csharp_file_options") {
+          return new CSharpFieldOptions.Builder { PropertyName = "CSharpFileOptions" }.Build();
+        }
+      }
+      CSharpFieldOptions.Builder builder = CSharpFieldOptions.CreateBuilder();
+      if (Proto.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFieldOptions)) {
+        builder.MergeFrom(Proto.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFieldOptions));
+      }
+      if (!builder.HasPropertyName) {
+        string fieldName = FieldType == FieldType.Group ? MessageType.Name : Name;
+        string propertyName = NameHelpers.UnderscoresToPascalCase(fieldName);
+        if (propertyName == ContainingType.Name) {
+          propertyName += "_";
+        }
+        builder.PropertyName = propertyName;
+      }
+      return builder.Build();
     }
 
     /// <summary>
@@ -190,6 +218,21 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// </summary>
     public MessageDescriptor ContainingType {
       get { return containingType; }
+    }
+
+    /// <summary>
+    /// Returns the C#-specific options for this file descriptor. This will always be
+    /// completely filled in.
+    /// </summary>
+    public CSharpFieldOptions CSharpOptions {
+      get {
+        lock (optionsLock) {
+          if (csharpFieldOptions == null) {
+            csharpFieldOptions = BuildOrFakeCSharpOptions();
+          }
+        }
+        return csharpFieldOptions;
+      }
     }
     
     /// <summary>

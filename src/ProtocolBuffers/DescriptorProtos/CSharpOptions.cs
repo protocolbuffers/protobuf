@@ -16,18 +16,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         global::System.Convert.FromBase64String(
         "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
         "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-        "4wEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+        "iAEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
         "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSFgoOcHVibGljX2NsYXNzZXMYAyAB" + 
         "KAgSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFzc2VzGAUg" + 
-        "ASgIMlkKDmNzaGFycF9vcHRpb25zEhwuZ29vZ2xlLnByb3RvYnVmLkZpbGVP" + 
-        "cHRpb25zGOgHIAEoCzIiLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBGaWxlT3B0" + 
-        "aW9ucyKIAQoSQ1NoYXJwRmllbGRPcHRpb25zEhUKDXByb3BlcnR5X25hbWUY" + 
-        "ASABKAkyWwoOY3NoYXJwX29wdGlvbnMSHS5nb29nbGUucHJvdG9idWYuRmll" + 
-        "bGRPcHRpb25zGOgHIAEoCzIjLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBGaWVs" + 
-        "ZE9wdGlvbnM="),
+        "ASgIIisKEkNTaGFycEZpZWxkT3B0aW9ucxIVCg1wcm9wZXJ0eV9uYW1lGAEg" + 
+        "ASgJOl4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYu" + 
+        "RmlsZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZp" + 
+        "bGVPcHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnBy" + 
+        "b3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYu" + 
+        "Q1NoYXJwRmllbGRPcHRpb25z"),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
         });
+    #endregion
+    
+    #region Extensions
+    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions> CSharpFileOptions =
+        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions>.CreateInstance(Descriptor.Extensions[0]);
+    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions> CSharpFieldOptions =
+        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions>.CreateInstance(Descriptor.Extensions[1]);
     #endregion
     
     #region Static variables
@@ -66,8 +73,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable; }
     }
     
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions> CSharpOptions =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions>.CreateInstance(Descriptor.Extensions[0]);
     private bool hasNamespace;
     private string namespace_ = "";
     public bool HasNamespace {
@@ -293,8 +298,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable; }
     }
     
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions> CSharpOptions =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions>.CreateInstance(Descriptor.Extensions[0]);
     private bool hasPropertyName;
     private string propertyName_ = "";
     public bool HasPropertyName {
