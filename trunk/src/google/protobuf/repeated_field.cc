@@ -36,6 +36,12 @@
 
 namespace google {
 namespace protobuf {
+
+// HP C++ on Tru64 can't handle the stuff below being defined out-of-line, so
+// on that platform everything is defined in repeated_field.h.  On other
+// platforms, we want these to be out-of-line to avoid code bloat.
+#if !defined(__DECCXX) || !defined(__osf__)
+
 namespace internal {
 
 GenericRepeatedField::~GenericRepeatedField() {}
@@ -50,6 +56,7 @@ void RepeatedPtrField<string>::Clear() {
   current_size_ = 0;
 }
 
-}  // namespace protobuf
+#endif  // !defined(__DECCXX) || !defined(__osf__)
 
+}  // namespace protobuf
 }  // namespace google

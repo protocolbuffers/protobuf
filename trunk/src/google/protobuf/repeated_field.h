@@ -69,7 +69,12 @@ namespace internal {
 class LIBPROTOBUF_EXPORT GenericRepeatedField {
  public:
   inline GenericRepeatedField() {}
+#if defined(__DECCXX) && defined(__osf__)
+  // HP C++ on Tru64 has trouble when this is not defined inline.
+  virtual ~GenericRepeatedField() {}
+#else
   virtual ~GenericRepeatedField();
+#endif
 
  private:
   // We only want GeneratedMessageReflection to see and use these, so we
@@ -516,9 +521,20 @@ void RepeatedPtrField<Element>::Clear() {
   current_size_ = 0;
 }
 
+#if defined(__DECCXX) && defined(__osf__)
+// HP C++ on Tru64 has trouble when this is not defined inline.
+template <>
+inline void RepeatedPtrField<string>::Clear() {
+  for (int i = 0; i < current_size_; i++) {
+    elements_[i]->clear();
+  }
+  current_size_ = 0;
+}
+#else
 // Specialization defined in repeated_field.cc.
 template <>
 void LIBPROTOBUF_EXPORT RepeatedPtrField<string>::Clear();
+#endif
 
 template <typename Element>
 void RepeatedPtrField<Element>::MergeFrom(const RepeatedPtrField& other) {
@@ -698,9 +714,16 @@ class RepeatedPtrIterator
               typename internal::remove_pointer<It>::type>::type> {
  public:
   typedef RepeatedPtrIterator<It> iterator;
-  typedef typename iterator::reference reference;
-  typedef typename iterator::pointer pointer;
-  typedef typename iterator::difference_type difference_type;
+  typedef std::iterator<
+          std::random_access_iterator_tag,
+          typename internal::remove_pointer<
+              typename internal::remove_pointer<It>::type>::type> superclass;
+
+  // Let the compiler know that these are type names, so we don't have to
+  // write "typename" in front of them everywhere.
+  typedef typename superclass::reference reference;
+  typedef typename superclass::pointer pointer;
+  typedef typename superclass::difference_type difference_type;
 
   RepeatedPtrIterator() : it_(NULL) {}
   explicit RepeatedPtrIterator(const It& it) : it_(it) {}

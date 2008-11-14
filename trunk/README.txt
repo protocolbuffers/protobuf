@@ -21,7 +21,7 @@ Proceed at your own risk.
 
 For advanced usage information on configure and make, see INSTALL.txt.
 
-** Hint on insall location **
+** Hint on install location **
 
   By default, the package will be installed to /usr/local.  However,
   on many platforms, /usr/local/lib is not part of LD_LIBRARY_PATH.
@@ -42,6 +42,14 @@ For advanced usage information on configure and make, see INSTALL.txt.
     ./configure LDFLAGS=-L$PWD/src/solaris
 
   See src/solaris/libstdc++.la for more info on this bug.
+
+** Note for HP C++ Tru64 users **
+
+  To compile invoke configure as follows:
+
+    ./configure CXXFLAGS="-O -std ansi -ieee -D__USE_STD_IOSTREAM"
+
+  Also, you will need to use gmake instead of make.
 
 C++ Installation - Windows
 ==========================

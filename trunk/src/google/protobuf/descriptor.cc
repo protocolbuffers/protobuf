@@ -1175,8 +1175,13 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
 void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   proto->set_name(name());
   proto->set_number(number());
-  proto->set_label(static_cast<FieldDescriptorProto::Label>(label()));
-  proto->set_type(static_cast<FieldDescriptorProto::Type>(type()));
+
+  // Some compilers do not allow static_cast directly between two enum types,
+  // so we must cast to int first.
+  proto->set_label(static_cast<FieldDescriptorProto::Label>(
+                     implicit_cast<int>(label())));
+  proto->set_type(static_cast<FieldDescriptorProto::Type>(
+                    implicit_cast<int>(type())));
 
   if (is_extension()) {
     proto->set_extendee(".");
@@ -2487,9 +2492,14 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->full_name_    = full_name;
   result->file_         = file_;
   result->number_       = proto.number();
-  result->type_         = static_cast<FieldDescriptor::Type>(proto.type());
-  result->label_        = static_cast<FieldDescriptor::Label>(proto.label());
   result->is_extension_ = is_extension;
+
+  // Some compilers do not allow static_cast directly between two enum types,
+  // so we must cast to int first.
+  result->type_  = static_cast<FieldDescriptor::Type>(
+                     implicit_cast<int>(proto.type()));
+  result->label_ = static_cast<FieldDescriptor::Label>(
+                     implicit_cast<int>(proto.label()));
 
   // Some of these may be filled in when cross-linking.
   result->containing_type_ = NULL;

@@ -67,7 +67,8 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-namespace {
+// Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
+namespace cpp_unittest {
 
 
 class MockErrorCollector : public MultiFileErrorCollector {
@@ -854,7 +855,7 @@ TEST_F(GeneratedServiceTest, NotImplemented) {
   EXPECT_TRUE(controller.called_);
 }
 
-}  // namespace
+}  // namespace cpp_unittest
 
 }  // namespace cpp
 }  // namespace compiler

@@ -52,7 +52,9 @@
 
 namespace google {
 namespace protobuf {
-namespace {
+
+// Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
+namespace text_format_unittest {
 
 inline bool IsNaN(double value) {
   // NaN is never equal to anything, even itself.
@@ -778,7 +780,7 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
   EXPECT_EQ(2, descriptors.size());
 }
 
-} // namespace
+}  // namespace text_format_unittest
 }  // namespace protobuf
 
 }  // namespace google

@@ -40,7 +40,11 @@
 #include <cstddef>
 #include <string>
 #include <string.h>
-#ifndef _MSC_VER
+#if defined(__osf__)
+// Tru64 lacks stdint.h, but has inttypes.h which defines a superset of
+// what stdint.h would define.
+#include <inttypes.h>
+#elif !defined(_MSC_VER)
 #include <stdint.h>
 #endif
 

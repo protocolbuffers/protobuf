@@ -42,6 +42,10 @@ namespace protobuf {
 #ifdef _MSC_VER
 #define strtoll  _strtoi64
 #define strtoull _strtoui64
+#elif defined(__DECCXX) && defined(__osf__)
+// HP C++ on Tru64 does not have strtoll, but strtol is already 64-bit.
+#define strtoll strtol
+#define strtoull strtoul
 #endif
 
 // ----------------------------------------------------------------------
