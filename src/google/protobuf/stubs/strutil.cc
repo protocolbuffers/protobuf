@@ -58,17 +58,22 @@ inline bool IsNaN(double value) {
   return value != value;
 }
 
+// These are defined as macros on some platforms.  #undef them so that we can
+// redefine them.
+#undef isxdigit
+#undef isprint
+
 // The definitions of these in ctype.h change based on locale.  Since our
 // string manipulation is all in relation to the protocol buffer and C++
 // languages, we always want to use the C locale.  So, we re-define these
 // exactly as we want them.
-static bool isxdigit(char c) {
+inline bool isxdigit(char c) {
   return ('0' <= c && c <= '9') ||
          ('a' <= c && c <= 'f') ||
          ('A' <= c && c <= 'F');
 }
 
-static bool isprint(char c) {
+inline bool isprint(char c) {
   return c >= 0x20 && c <= 0x7E;
 }
 

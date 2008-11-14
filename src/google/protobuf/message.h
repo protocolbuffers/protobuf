@@ -110,7 +110,14 @@
 
 #include <vector>
 #include <string>
+
+#ifdef __DECCXX
+// HP C++'s iosfwd doesn't work.
+#include <iostream>
+#else
 #include <iosfwd>
+#endif
+
 #include <google/protobuf/stubs/common.h>
 
 namespace google {

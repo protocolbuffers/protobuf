@@ -210,12 +210,13 @@ String StreamableToString(const T& streamable);
 
 // Formats a value to be used in a failure message.
 
-#ifdef __SYMBIAN32__
+#if defined (__SYMBIAN32__) || (defined (__DECCXX) && defined(__osf__))
 
-// These are needed as the Nokia Symbian Compiler cannot decide between
-// const T& and const T* in a function template. The Nokia compiler _can_
-// decide between class template specializations for T and T*, so a
-// tr1::type_traits-like is_pointer works, and we can overload on that.
+// These are needed as the Nokia Symbian Compiler and HP C++ on Tru64
+// cannot decide between const T& and const T* in a function template.
+// These compliers _can_ decide between class template specializations
+// for T and T*, so a tr1::type_traits-like is_pointer works, and we
+// can overload on that.
 
 // This overload makes sure that all pointers (including
 // those to char or wchar_t) are printed as raw pointers.
@@ -255,7 +256,6 @@ inline String FormatForFailureMessage(T* pointer) {
 
 // These overloaded versions handle narrow and wide characters.
 String FormatForFailureMessage(char ch);
-String FormatForFailureMessage(wchar_t wchar);
 
 // When this operand is a const char* or char*, and the other operand
 // is a ::std::string or ::string, we print this operand as a C string

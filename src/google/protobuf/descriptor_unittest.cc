@@ -53,7 +53,7 @@
 namespace google {
 namespace protobuf {
 
-namespace {
+namespace GOOGLE_ANONYMOUS_NAMESPACE{
 
 // Some helpers to make assembling descriptors faster.
 DescriptorProto* AddMessage(FileDescriptorProto* file, const string& name) {
@@ -1323,7 +1323,7 @@ class MiscTest : public testing::Test {
     DescriptorProto* message = AddMessage(&file_proto, "TestMessage");
     FieldDescriptorProto* field =
       AddField(message, "foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
-               static_cast<FieldDescriptorProto::Type>(type));
+               static_cast<FieldDescriptorProto::Type>(static_cast<int>(type)));
 
     if (type == FieldDescriptor::TYPE_MESSAGE ||
         type == FieldDescriptor::TYPE_GROUP) {

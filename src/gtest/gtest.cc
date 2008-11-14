@@ -112,6 +112,21 @@
 
 namespace testing {
 
+// Calling ForEach(internal::Delete<T>) doesn't work on HP C++ / Tru64.  So,
+// we must define a separate non-template function for each type.
+static void DeleteTestCase(TestCase *x)
+{
+ delete x;
+}
+static void DeleteEnvironment(Environment *x)
+{
+ delete x;
+}
+static void DeleteTestInfo(TestInfo *x)
+{
+ delete x;
+}
+
 // Constants.
 
 // A test that matches this pattern is disabled and not run.
@@ -799,28 +814,6 @@ String FormatForFailureMessage(char ch) {
                         ch_as_uint, ch_as_uint);
 }
 
-// For a wchar_t value, we print it as a C++ wchar_t literal and as an
-// unsigned integer (both in decimal and in hexidecimal).
-String FormatForFailureMessage(wchar_t wchar) {
-  // The C++ standard doesn't specify the exact size of the wchar_t
-  // type.  It just says that it shall have the same size as another
-  // integral type, called its underlying type.
-  //
-  // Therefore, in order to print a wchar_t value in the numeric form,
-  // we first convert it to the largest integral type (UInt64) and
-  // then print the converted value.
-  //
-  // We use streaming to print the value as "%llu" doesn't work
-  // correctly with MSVC 7.1.
-  const UInt64 wchar_as_uint64 = wchar;
-  Message msg;
-  // A String object cannot contain '\0', so we print "\\0" when wchar is
-  // L'\0'.
-  msg << "L'" << (wchar ? ToUtf8String(wchar).c_str() : "\\0") << "' ("
-      << wchar_as_uint64 << ", 0x" << ::std::setbase(16)
-      << wchar_as_uint64 << ")";
-  return msg.GetString();
-}
 
 }  // namespace internal
 
@@ -2059,7 +2052,7 @@ TestCase::TestCase(const char* name,
 // Destructor of TestCase.
 TestCase::~TestCase() {
   // Deletes every Test in the collection.
-  test_info_list_->ForEach(internal::Delete<TestInfo>);
+  test_info_list_->ForEach(DeleteTestInfo);
 
   // Then deletes the Test collection.
   delete test_info_list_;
@@ -3039,10 +3032,10 @@ UnitTestImpl::UnitTestImpl(UnitTest* parent)
 
 UnitTestImpl::~UnitTestImpl() {
   // Deletes every TestCase.
-  test_cases_.ForEach(internal::Delete<TestCase>);
+  test_cases_.ForEach(DeleteTestCase);
 
   // Deletes every Environment.
-  environments_.ForEach(internal::Delete<Environment>);
+  environments_.ForEach(DeleteEnvironment);
 
   // Deletes the current test result printer.
   delete result_printer_;
