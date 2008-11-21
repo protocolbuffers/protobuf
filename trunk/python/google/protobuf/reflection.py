@@ -54,6 +54,7 @@ import heapq
 import threading
 import weakref
 # We use "as" to avoid name collisions with variables.
+from google.protobuf.internal import containers
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import message_listener as message_listener_mod
@@ -274,9 +275,10 @@ def _DefaultValueForField(message, field):
     if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
       # We can't look at _concrete_class yet since it might not have
       # been set.  (Depends on order in which we initialize the classes).
-      return _RepeatedCompositeFieldContainer(listener, field.message_type)
+      return containers.RepeatedCompositeFieldContainer(
+          listener, field.message_type)
     else:
-      return _RepeatedScalarFieldContainer(
+      return containers.RepeatedScalarFieldContainer(
           listener, type_checkers.GetTypeChecker(field.cpp_type, field.type))
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
@@ -1268,135 +1270,6 @@ class _Listener(object):
     except ReferenceError:
       # Same as above.
       pass
-
-
-# TODO(robinson): Move elsewhere?
-# TODO(robinson): Provide a clear() method here in addition to ClearField()?
-class _RepeatedScalarFieldContainer(object):
-
-  """Simple, type-checked, list-like container for holding repeated scalars."""
-
-  # Minimizes memory usage and disallows assignment to other attributes.
-  __slots__ = ['_message_listener', '_type_checker', '_values']
-
-  def __init__(self, message_listener, type_checker):
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The _RepeatedScalarFieldContaininer will call this object's
-        TransitionToNonempty() method when it transitions from being empty to
-        being nonempty.
-      type_checker: A _ValueChecker instance to run on elements inserted
-        into this container.
-    """
-    self._message_listener = message_listener
-    self._type_checker = type_checker
-    self._values = []
-
-  def append(self, elem):
-    self._type_checker.CheckValue(elem)
-    self._values.append(elem)
-    self._message_listener.ByteSizeDirty()
-    if len(self._values) == 1:
-      self._message_listener.TransitionToNonempty()
-
-  def remove(self, elem):
-    self._values.remove(elem)
-    self._message_listener.ByteSizeDirty()
-
-  # List-like __getitem__() support also makes us iterable (via "iter(foo)"
-  # or implicitly via "for i in mylist:") for free.
-  def __getitem__(self, key):
-    return self._values[key]
-
-  def __setitem__(self, key, value):
-    # No need to call TransitionToNonempty(), since if we're able to
-    # set the element at this index, we were already nonempty before
-    # this method was called.
-    self._message_listener.ByteSizeDirty()
-    self._type_checker.CheckValue(value)
-    self._values[key] = value
-
-  def __len__(self):
-    return len(self._values)
-
-  def __eq__(self, other):
-    if self is other:
-      return True
-    # Special case for the same type which should be common and fast.
-    if isinstance(other, self.__class__):
-      return other._values == self._values
-    # We are presumably comparing against some other sequence type.
-    return other == self._values
-
-  def __ne__(self, other):
-    # Can't use != here since it would infinitely recurse.
-    return not self == other
-
-
-# TODO(robinson): Move elsewhere?
-# TODO(robinson): Provide a clear() method here in addition to ClearField()?
-# TODO(robinson): Unify common functionality with
-# _RepeatedScalarFieldContaininer?
-class _RepeatedCompositeFieldContainer(object):
-
-  """Simple, list-like container for holding repeated composite fields."""
-
-  # Minimizes memory usage and disallows assignment to other attributes.
-  __slots__ = ['_values', '_message_descriptor', '_message_listener']
-
-  def __init__(self, message_listener, message_descriptor):
-    """Note that we pass in a descriptor instead of the generated directly,
-    since at the time we construct a _RepeatedCompositeFieldContainer we
-    haven't yet necessarily initialized the type that will be contained in the
-    container.
-
-    Args:
-      message_listener: A MessageListener implementation.
-        The _RepeatedCompositeFieldContainer will call this object's
-        TransitionToNonempty() method when it transitions from being empty to
-        being nonempty.
-      message_descriptor: A Descriptor instance describing the protocol type
-        that should be present in this container.  We'll use the
-        _concrete_class field of this descriptor when the client calls add().
-    """
-    self._message_listener = message_listener
-    self._message_descriptor = message_descriptor
-    self._values = []
-
-  def add(self):
-    new_element = self._message_descriptor._concrete_class()
-    new_element._SetListener(self._message_listener)
-    self._values.append(new_element)
-    self._message_listener.ByteSizeDirty()
-    self._message_listener.TransitionToNonempty()
-    return new_element
-
-  def __delitem__(self, key):
-    self._message_listener.ByteSizeDirty()
-    del self._values[key]
-
-  # List-like __getitem__() support also makes us iterable (via "iter(foo)"
-  # or implicitly via "for i in mylist:") for free.
-  def __getitem__(self, key):
-    return self._values[key]
-
-  def __len__(self):
-    return len(self._values)
-
-  def __eq__(self, other):
-    if self is other:
-      return True
-    if not isinstance(other, self.__class__):
-      raise TypeError('Can only compare repeated composite fields against '
-                      'other repeated composite fields.')
-    return self._values == other._values
-
-  def __ne__(self, other):
-    # Can't use != here since it would infinitely recurse.
-    return not self == other
-
-  # TODO(robinson): Implement, document, and test slicing support.
 
 
 # TODO(robinson): Move elsewhere?  This file is getting pretty ridiculous...

@@ -64,12 +64,12 @@ inline bool IsNaN(double value) {
 // A basic string with different escapable characters for testing.
 const string kEscapeTestString =
   "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
-  "slashes \\";
+  "slashes \\ and  multiple   spaces";
 
 // A representation of the above string with all the characters escaped.
 const string kEscapeTestStringEscaped =
   "\"\\\"A string with \\' characters \\n and \\r newlines "
-  "and \\t tabs and \\001 slashes \\\\\"";
+  "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
 class TextFormatTest : public testing::Test {
  public:
@@ -126,6 +126,18 @@ TEST_F(TextFormatExtensionsTest, Extensions) {
   EXPECT_EQ(proto_debug_string_, proto_.DebugString());
 }
 
+TEST_F(TextFormatTest, ShortDebugString) {
+  proto_.set_optional_int32(1);
+  proto_.set_optional_string("hello");
+  proto_.mutable_optional_nested_message()->set_bb(2);
+  proto_.mutable_optional_foreign_message();
+
+  EXPECT_EQ("optional_int32: 1 optional_string: \"hello\" "
+            "optional_nested_message { bb: 2 } "
+            "optional_foreign_message { }",
+            proto_.ShortDebugString());
+}
+
 TEST_F(TextFormatTest, StringEscape) {
   // Set the string value to test.
   proto_.set_optional_string(kEscapeTestString);
@@ -140,6 +152,10 @@ TEST_F(TextFormatTest, StringEscape) {
 
   // Compare.
   EXPECT_EQ(correct_string, debug_string);
+
+  string expected_short_debug_string = "optional_string: "
+      + kEscapeTestStringEscaped;
+  EXPECT_EQ(expected_short_debug_string, proto_.ShortDebugString());
 }
 
 TEST_F(TextFormatTest, PrintUnknownFields) {
@@ -733,6 +749,22 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
   EXPECT_EQ("Error parsing text-format protobuf_unittest.TestAllTypes: "
             "1:14: Message type \"protobuf_unittest.TestAllTypes\" has no field "
             "named \"no_such_field\".",
+            errors[0]);
+}
+
+TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
+  vector<string> errors;
+
+  {
+    ScopedMemoryLog log;
+    unittest::TestAllTypes proto;
+    EXPECT_FALSE(TextFormat::ParseFromString("\020", &proto));
+    errors = log.GetMessages(ERROR);
+  }
+
+  ASSERT_EQ(1, errors.size());
+  EXPECT_EQ("Error parsing text-format protobuf_unittest.TestAllTypes: "
+            "1:1: Invalid control characters encountered in text.",
             errors[0]);
 }
 

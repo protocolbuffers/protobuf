@@ -34,6 +34,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdio.h>
 #include <stack>
 #include <limits>
 
@@ -65,13 +66,23 @@ string Message::ShortDebugString() const {
   //   DebugString() and munging the result.
   string result = DebugString();
 
-  // Replace each contiguous range of whitespace (including newlines) with a
-  // single space.
-  for (int i = 0; i < result.size(); i++) {
-    int pos = i;
-    while (isspace(result[pos])) ++pos;
-    if (pos > i) result.replace(i, pos - i, " ");
+  // Replace each contiguous range of whitespace (including newlines, and
+  // starting with a newline) with a single space.
+  int out = 0;
+  for (int i = 0; i < result.size(); ++i) {
+    if (result[i] != '\n') {
+      result[out++] = result[i];
+    } else {
+      while (i < result.size() && isspace(result[i])) ++i;
+      --i;
+      result[out++] = ' ';
+    }
   }
+  // Remove trailing space, if there is one.
+  if (out > 0 && isspace(result[out - 1])) {
+    --out;
+  }
+  result.resize(out);
 
   return result;
 }
@@ -103,14 +114,16 @@ class TextFormat::Parser::ParserImpl {
     FORBID_SINGULAR_OVERWRITES = 1,  // an error is issued
   };
 
-  ParserImpl(io::ZeroCopyInputStream* input_stream,
+  ParserImpl(const Descriptor* root_message_type,
+             io::ZeroCopyInputStream* input_stream,
              io::ErrorCollector* error_collector,
              SingularOverwritePolicy singular_overwrite_policy)
     : error_collector_(error_collector),
       tokenizer_error_collector_(this),
       tokenizer_(input_stream, &tokenizer_error_collector_),
-      root_message_type_(NULL),
-      singular_overwrite_policy_(singular_overwrite_policy) {
+      root_message_type_(root_message_type),
+      singular_overwrite_policy_(singular_overwrite_policy),
+      had_errors_(false) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
     tokenizer_.set_allow_f_after_float(true);
@@ -128,12 +141,10 @@ class TextFormat::Parser::ParserImpl {
   // false if an error occurs (an error will also be logged to
   // GOOGLE_LOG(ERROR)).
   bool Parse(Message* output) {
-    root_message_type_ = output->GetDescriptor();
-
     // Consume fields until we cannot do so anymore.
     while(true) {
       if (LookingAtType(io::Tokenizer::TYPE_END)) {
-        return true;
+        return !had_errors_;
       }
 
       DO(ConsumeField(output));
@@ -141,6 +152,7 @@ class TextFormat::Parser::ParserImpl {
   }
 
   void ReportError(int line, int col, const string& message) {
+    had_errors_ = true;
     if (error_collector_ == NULL) {
       if (line >= 0) {
         GOOGLE_LOG(ERROR) << "Error parsing text-format "
@@ -571,6 +583,7 @@ class TextFormat::Parser::ParserImpl {
   io::Tokenizer tokenizer_;
   const Descriptor* root_message_type_;
   SingularOverwritePolicy singular_overwrite_policy_;
+  bool had_errors_;
 };
 
 #undef DO
@@ -699,7 +712,7 @@ TextFormat::Parser::~Parser() {}
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
   output->Clear();
-  ParserImpl parser(input, error_collector_,
+  ParserImpl parser(output->GetDescriptor(), input, error_collector_,
                     ParserImpl::FORBID_SINGULAR_OVERWRITES);
   return MergeUsingImpl(input, output, &parser);
 }
@@ -712,7 +725,7 @@ bool TextFormat::Parser::ParseFromString(const string& input,
 
 bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                                Message* output) {
-  ParserImpl parser(input, error_collector_,
+  ParserImpl parser(output->GetDescriptor(), input, error_collector_,
                     ParserImpl::ALLOW_SINGULAR_OVERWRITES);
   return MergeUsingImpl(input, output, &parser);
 }

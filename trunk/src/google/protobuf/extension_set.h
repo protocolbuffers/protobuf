@@ -209,6 +209,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   void Clear();
   void MergeFrom(const ExtensionSet& other);
+  void Swap(ExtensionSet* other);
   bool IsInitialized() const;
 
   // These parsing and serialization functions all want a pointer to the
@@ -233,6 +234,10 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   int ByteSize(const Message& message) const;
+
+  // Returns (an estimate of) the total number of bytes used for storing the
+  // extensions in memory, excluding sizeof(*this).
+  int SpaceUsedExcludingSelf() const;
 
  private:
   // Like FindKnownExtension(), but GOOGLE_CHECK-fail if not found.
@@ -286,6 +291,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void Clear();
     int GetSize() const;
     void Free();
+    int SpaceUsedExcludingSelf() const;
   };
 
   // The Extension struct is small enough to be passed by value, so we use it

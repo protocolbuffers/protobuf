@@ -136,6 +136,36 @@ TEST(ExtensionSetTest, CopyFrom) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
+TEST(ExtensionSetTest, CopyFromUpcasted) {
+  unittest::TestAllExtensions message1, message2;
+  string data;
+  const Message& upcasted_message = message1;
+
+  TestUtil::SetAllExtensions(&message1);
+  message2.CopyFrom(upcasted_message);
+  TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(ExtensionSetTest, SwapWithEmpty) {
+  unittest::TestAllExtensions message1, message2;
+  TestUtil::SetAllExtensions(&message1);
+
+  TestUtil::ExpectAllExtensionsSet(message1);
+  TestUtil::ExpectExtensionsClear(message2);
+  message1.Swap(&message2);
+  TestUtil::ExpectAllExtensionsSet(message2);
+  TestUtil::ExpectExtensionsClear(message1);
+}
+
+TEST(ExtensionSetTest, SwapWithSelf) {
+  unittest::TestAllExtensions message;
+  TestUtil::SetAllExtensions(&message);
+
+  TestUtil::ExpectAllExtensionsSet(message);
+  message.Swap(&message);
+  TestUtil::ExpectAllExtensionsSet(message);
+}
+
 TEST(ExtensionSetTest, Serialization) {
   // Serialize as TestAllExtensions and parse as TestAllTypes to insure wire
   // compatibility of extensions.
@@ -201,6 +231,143 @@ TEST(ExtensionSetTest, MutableString) {
   ASSERT_EQ(1, message.ExtensionSize(unittest::repeated_string_extension));
   EXPECT_EQ("bar",
             message.GetExtension(unittest::repeated_string_extension, 0));
+}
+
+TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
+  // Scalar primitive extensions should increase the extension set size by a
+  // minimum of the size of the primitive type.
+#define TEST_SCALAR_EXTENSIONS_SPACE_USED(type, value)                        \
+  do {                                                                        \
+    unittest::TestAllExtensions message;                                      \
+    const int base_size = message.SpaceUsed();                                \
+    message.SetExtension(unittest::optional_##type##_extension, value);       \
+    int min_expected_size = base_size +                                       \
+        sizeof(message.GetExtension(unittest::optional_##type##_extension));  \
+    EXPECT_LE(min_expected_size, message.SpaceUsed());                        \
+  } while (0)
+
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(int32   , 101);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(int64   , 102);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(uint32  , 103);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(uint64  , 104);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(sint32  , 105);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(sint64  , 106);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(fixed32 , 107);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(fixed64 , 108);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(sfixed32, 109);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(sfixed64, 110);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(float   , 111);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(double  , 112);
+  TEST_SCALAR_EXTENSIONS_SPACE_USED(bool    , true);
+#undef TEST_SCALAR_EXTENSIONS_SPACE_USED
+  {
+    unittest::TestAllExtensions message;
+    const int base_size = message.SpaceUsed();
+    message.SetExtension(unittest::optional_nested_enum_extension,
+                         unittest::TestAllTypes::FOO);
+    int min_expected_size = base_size +
+        sizeof(message.GetExtension(unittest::optional_nested_enum_extension));
+    EXPECT_LE(min_expected_size, message.SpaceUsed());
+  }
+  {
+    // Strings may cause extra allocations depending on their length; ensure
+    // that gets included as well.
+    unittest::TestAllExtensions message;
+    const int base_size = message.SpaceUsed();
+    const string s("this is a fairly large string that will cause some "
+                   "allocation in order to store it in the extension");
+    message.SetExtension(unittest::optional_string_extension, s);
+    int min_expected_size = base_size + s.length();
+    EXPECT_LE(min_expected_size, message.SpaceUsed());
+  }
+  {
+    // Messages also have additional allocation that need to be counted.
+    unittest::TestAllExtensions message;
+    const int base_size = message.SpaceUsed();
+    unittest::ForeignMessage foreign;
+    foreign.set_c(42);
+    message.MutableExtension(unittest::optional_foreign_message_extension)->
+        CopyFrom(foreign);
+    int min_expected_size = base_size + foreign.SpaceUsed();
+    EXPECT_LE(min_expected_size, message.SpaceUsed());
+  }
+
+  // Repeated primitive extensions will increase space used by at least a
+  // RepeatedField<T>, and will cause additional allocations when the array
+  // gets too big for the initial space.
+  // This macro:
+  //   - Adds a value to the repeated extension, then clears it, establishing
+  //     the base size.
+  //   - Adds a small number of values, testing that it doesn't increase the
+  //     SpaceUsed()
+  //   - Adds a large number of values (requiring allocation in the repeated
+  //     field), and ensures that that allocation is included in SpaceUsed()
+#define TEST_REPEATED_EXTENSIONS_SPACE_USED(type, cpptype, value)              \
+  do {                                                                         \
+    unittest::TestAllExtensions message;                                       \
+    const int base_size = message.SpaceUsed();                                 \
+    int min_expected_size = sizeof(RepeatedField<cpptype>) + base_size;        \
+    message.AddExtension(unittest::repeated_##type##_extension, value);        \
+    message.ClearExtension(unittest::repeated_##type##_extension);             \
+    const int empty_repeated_field_size = message.SpaceUsed();                 \
+    EXPECT_LE(min_expected_size, empty_repeated_field_size) << #type;          \
+    message.AddExtension(unittest::repeated_##type##_extension, value);        \
+    message.AddExtension(unittest::repeated_##type##_extension, value);        \
+    EXPECT_EQ(empty_repeated_field_size, message.SpaceUsed()) << #type;        \
+    message.ClearExtension(unittest::repeated_##type##_extension);             \
+    for (int i = 0; i < 16; ++i) {                                             \
+      message.AddExtension(unittest::repeated_##type##_extension, value);      \
+    }                                                                          \
+    int expected_size = sizeof(cpptype) * 16 + empty_repeated_field_size;      \
+    EXPECT_EQ(expected_size, message.SpaceUsed()) << #type;                    \
+  } while (0)
+
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(int32   , int32 , 101);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(int64   , int64 , 102);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(uint32  , uint32, 103);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(uint64  , uint64, 104);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(sint32  , int32 , 105);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(sint64  , int64 , 106);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(fixed32 , uint32, 107);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(fixed64 , uint64, 108);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(sfixed32, int32 , 109);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(sfixed64, int64 , 110);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(float   , float , 111);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(double  , double, 112);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(bool    , bool  , true);
+  TEST_REPEATED_EXTENSIONS_SPACE_USED(nested_enum, int,
+                                      unittest::TestAllTypes::FOO);
+#undef TEST_REPEATED_EXTENSIONS_SPACE_USED
+  // Repeated strings
+  {
+    unittest::TestAllExtensions message;
+    const int base_size = message.SpaceUsed();
+    int min_expected_size = sizeof(RepeatedPtrField<string>) + base_size;
+    const string value(256, 'x');
+    // Once items are allocated, they may stick around even when cleared so
+    // without the hardcore memory management accessors there isn't a notion of
+    // the empty repeated field memory usage as there is with primitive types.
+    for (int i = 0; i < 16; ++i) {
+      message.AddExtension(unittest::repeated_string_extension, value);
+    }
+    min_expected_size += (sizeof(value) + value.size()) * 16;
+    EXPECT_LE(min_expected_size, message.SpaceUsed());
+  }
+  // Repeated messages
+  {
+    unittest::TestAllExtensions message;
+    const int base_size = message.SpaceUsed();
+    int min_expected_size = sizeof(RepeatedPtrField<unittest::ForeignMessage>) +
+        base_size;
+    unittest::ForeignMessage prototype;
+    prototype.set_c(2);
+    for (int i = 0; i < 16; ++i) {
+      message.AddExtension(unittest::repeated_foreign_message_extension)->
+          CopyFrom(prototype);
+    }
+    min_expected_size += 16 * prototype.SpaceUsed();
+    EXPECT_LE(min_expected_size, message.SpaceUsed());
+  }
 }
 
 }  // namespace

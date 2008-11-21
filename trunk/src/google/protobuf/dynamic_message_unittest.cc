@@ -127,5 +127,20 @@ TEST_F(DynamicMessageTest, Extensions) {
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
 }
 
+TEST_F(DynamicMessageTest, SpaceUsed) {
+  // Test that SpaceUsed() works properly
+
+  // Since we share the implementation with generated messages, we don't need
+  // to test very much here.  Just make sure it appears to be working.
+
+  scoped_ptr<Message> message(prototype_->New());
+  TestUtil::ReflectionTester reflection_tester(descriptor_);
+
+  int initial_space_used = message->SpaceUsed();
+
+  reflection_tester.SetAllFieldsViaReflection(message.get());
+  EXPECT_LT(initial_space_used, message->SpaceUsed());
+}
+
 }  // namespace protobuf
 }  // namespace google

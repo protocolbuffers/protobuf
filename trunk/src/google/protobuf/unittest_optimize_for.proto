@@ -48,6 +48,7 @@ message TestOptimizedForSize {
 
   extend TestOptimizedForSize {
     optional int32 test_extension = 1234;
+    optional TestRequiredOptimizedForSize test_extension2 = 1235;
   }
 }
 

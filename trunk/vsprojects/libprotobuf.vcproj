@@ -356,6 +356,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\stubs\structurally_valid.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\text_format.cc"
 				>
 			</File>

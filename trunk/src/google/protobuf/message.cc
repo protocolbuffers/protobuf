@@ -204,6 +204,10 @@ void Message::SetCachedSize(int size) const {
                 "Must implement one or the other.";
 }
 
+int Message::SpaceUsed() const {
+  return GetReflection()->SpaceUsed(*this);
+}
+
 bool Message::SerializeToCodedStream(io::CodedOutputStream* output) const {
   GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
   return SerializePartialToCodedStream(output);
@@ -290,6 +294,24 @@ bool Message::SerializePartialToOstream(ostream* output) const {
   return SerializePartialToZeroCopyStream(&zero_copy_output);
 }
 
+
+string Message::SerializeAsString() const {
+  // If the compiler implements the (Named) Return Value Optimization,
+  // the local variable 'result' will not actually reside on the stack
+  // of this function, but will be overlaid with the object that the
+  // caller supplied for the return value to be constructed in.
+  string output;
+  if (!AppendToString(&output))
+    output.clear();
+  return output;
+}
+
+string Message::SerializePartialAsString() const {
+  string output;
+  if (!AppendPartialToString(&output))
+    output.clear();
+  return output;
+}
 
 Reflection::~Reflection() {}
 

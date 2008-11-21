@@ -198,7 +198,7 @@ class Message(object):
   # Typically (in python), an underscore is appended to names that are
   # keywords. So they would become lambda_ or yield_.
   # """
-  def ListFields(self, field_name):
+  def ListFields(self):
     """Returns a list of (FieldDescriptor, value) tuples for all
     fields in the message which are not empty.  A singular field is non-empty
     if HasField() would return true, and a repeated field is non-empty if

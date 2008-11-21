@@ -116,19 +116,24 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   //   pool:          DescriptorPool to search for extension definitions.  Only
   //                  used by FindKnownExtensionByName() and
   //                  FindKnownExtensionByNumber().
+  //   object_size:   The size of a message object of this type, as measured
+  //                  by sizeof().
   GeneratedMessageReflection(const Descriptor* descriptor,
                              const Message* default_instance,
                              const int offsets[],
                              int has_bits_offset,
                              int unknown_fields_offset,
                              int extensions_offset,
-                             const DescriptorPool* pool);
+                             const DescriptorPool* pool,
+                             int object_size);
   ~GeneratedMessageReflection();
 
   // implements Reflection -------------------------------------------
 
   const UnknownFieldSet& GetUnknownFields(const Message& message) const;
   UnknownFieldSet* MutableUnknownFields(Message* message) const;
+
+  int SpaceUsed(const Message& message) const;
 
   bool HasField(const Message& message, const FieldDescriptor* field) const;
   int FieldSize(const Message& message, const FieldDescriptor* field) const;
@@ -266,6 +271,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   int has_bits_offset_;
   int unknown_fields_offset_;
   int extensions_offset_;
+  int object_size_;
 
   const DescriptorPool* descriptor_pool_;
 
@@ -373,6 +379,11 @@ inline To dynamic_cast_if_available(From from) {
   return dynamic_cast<To>(from);
 #endif
 }
+
+// Compute the space used by a string, not including sizeof(string) itself.
+// This is slightly complicated because small strings store their data within
+// the string object but large strings do not.
+int StringSpaceUsedExcludingSelf(const string& str);
 
 
 }  // namespace internal

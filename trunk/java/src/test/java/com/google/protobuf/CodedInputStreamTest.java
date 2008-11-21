@@ -412,4 +412,14 @@ public class CodedInputStreamTest extends TestCase {
     String text = input.readString();
     assertEquals(0xfffd, text.charAt(0));
   }
+
+  public void testReadFromSlice() throws Exception {
+    byte[] bytes = bytes(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    CodedInputStream in = CodedInputStream.newInstance(bytes, 3, 5);
+    for (int i = 3; i < 8; i++) {
+      assertEquals(i, in.readRawByte());
+    }
+    // eof
+    assertEquals(0, in.readTag());
+  }
 }

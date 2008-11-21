@@ -30,8 +30,9 @@
 
 package com.google.protobuf;
 
-import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
+import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestOptionalOptimizedForSize;
+import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.ForeignEnum;
@@ -260,8 +261,10 @@ public class GeneratedMessageTest extends TestCase {
         MultipleFilesTestProto.extensionWithOuter));
   }
 
-  public void testOptionalFieldWithRequiredSubfieldsOptimizedForSize() throws Exception {
-    TestOptionalOptimizedForSize message = TestOptionalOptimizedForSize.getDefaultInstance();
+  public void testOptionalFieldWithRequiredSubfieldsOptimizedForSize()
+    throws Exception {
+    TestOptionalOptimizedForSize message =
+        TestOptionalOptimizedForSize.getDefaultInstance();
     assertTrue(message.isInitialized());
     
     message = TestOptionalOptimizedForSize.newBuilder().setO(
@@ -273,5 +276,20 @@ public class GeneratedMessageTest extends TestCase {
         TestRequiredOptimizedForSize.newBuilder().setX(5).buildPartial()
         ).buildPartial();
     assertTrue(message.isInitialized());
+  }
+
+  public void testUninitializedExtensionInOptimizedForSize()
+      throws Exception {
+    TestOptimizedForSize.Builder builder = TestOptimizedForSize.newBuilder();
+    builder.setExtension(TestOptimizedForSize.testExtension2,
+        TestRequiredOptimizedForSize.newBuilder().buildPartial());
+    assertFalse(builder.isInitialized());
+    assertFalse(builder.buildPartial().isInitialized());
+
+    builder = TestOptimizedForSize.newBuilder();
+    builder.setExtension(TestOptimizedForSize.testExtension2,
+        TestRequiredOptimizedForSize.newBuilder().setX(10).buildPartial());
+    assertTrue(builder.isInitialized());
+    assertTrue(builder.buildPartial().isInitialized());
   }
 }

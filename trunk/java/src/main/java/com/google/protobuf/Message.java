@@ -400,9 +400,25 @@ public interface Message {
     /**
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
+     * {@link #mergeFrom(CodedInputStream)}.
+     */
+    public Builder mergeFrom(byte[] data, int off, int len) throws InvalidProtocolBufferException;
+
+    /**
+     * Parse {@code data} as a message of this type and merge it with the
+     * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
      */
     Builder mergeFrom(byte[] data,
+                      ExtensionRegistry extensionRegistry)
+                      throws InvalidProtocolBufferException;
+
+    /**
+     * Parse {@code data} as a message of this type and merge it with the
+     * message being built.  This is just a small wrapper around
+     * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     */
+    Builder mergeFrom(byte[] data, int off, int len,
                       ExtensionRegistry extensionRegistry)
                       throws InvalidProtocolBufferException;
 

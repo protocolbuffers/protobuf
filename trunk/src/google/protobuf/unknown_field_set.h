@@ -75,6 +75,9 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   // Merge the contents of some other UnknownFieldSet with this one.
   void MergeFrom(const UnknownFieldSet& other);
 
+  // Swaps the contents of some other UnknownFieldSet with this one.
+  inline void Swap(UnknownFieldSet* x);
+
   // Returns the number of fields present in the UnknownFieldSet.
   inline int field_count() const;
   // Get a field in the set, where 0 <= index < field_count().  The fields
@@ -102,6 +105,13 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
     return ParseFromArray(data.data(), data.size());
   }
 
+  // Computes (an estimate of) the total number of bytes currently used for
+  // storing the unknown fields in memory. Does NOT include
+  // sizeof(*this) in the calculation.
+  int SpaceUsedExcludingSelf() const;
+  // Version of SpaceUsed() including sizeof(*this).
+  int SpaceUsed() const;
+
  private:
   // "Active" fields are ones which have been added since the last time Clear()
   // was called.  Inactive fields are objects we are keeping around incase
@@ -114,10 +124,12 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
     // the same field number they were used for originally because this makes
     // it more likely that the previously-allocated memory will have the right
     // layout.
-    map<int, UnknownField*> fields_;
+    typedef map<int, UnknownField*> FieldMap;
+    FieldMap fields_;
 
     // Contains the fields from fields_ that are currently active.
-    vector<UnknownField*> active_fields_;
+    typedef vector<UnknownField*> FieldVector;
+    FieldVector active_fields_;
   };
 
   // We want an UnknownFieldSet to use no more space than a single pointer
@@ -203,6 +215,10 @@ class LIBPROTOBUF_EXPORT UnknownField {
   inline RepeatedPtrField<string         >* mutable_length_delimited();
   inline RepeatedPtrField<UnknownFieldSet>* mutable_group           ();
 
+  // Returns (an estimate of) the total number of bytes used to represent the
+  // unknown field.
+  int SpaceUsed() const;
+
  private:
   friend class UnknownFieldSet;
   UnknownField(int number);
@@ -224,6 +240,10 @@ class LIBPROTOBUF_EXPORT UnknownField {
 
 inline bool UnknownFieldSet::empty() const {
   return internal_ == NULL || internal_->active_fields_.empty();
+}
+
+inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
+  std::swap(internal_, x->internal_);
 }
 
 inline int UnknownFieldSet::field_count() const {

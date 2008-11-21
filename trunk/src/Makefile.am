@@ -68,6 +68,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/stubs/substitute.h                           \
   google/protobuf/stubs/strutil.cc                             \
   google/protobuf/stubs/strutil.h                              \
+  google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor.pb.cc                             \
   google/protobuf/descriptor_database.cc                       \
@@ -209,6 +210,7 @@ protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/strutil_unittest.cc                    \
+  google/protobuf/stubs/structurally_valid_unittest.cc         \
   google/protobuf/descriptor_database_unittest.cc              \
   google/protobuf/descriptor_unittest.cc                       \
   google/protobuf/dynamic_message_unittest.cc                  \

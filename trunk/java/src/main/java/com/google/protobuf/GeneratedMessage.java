@@ -87,6 +87,33 @@ public abstract class GeneratedMessage extends AbstractMessage {
     }
     return result;
   }
+  
+  public boolean isInitialized() {
+    for (FieldDescriptor field : getDescriptorForType().getFields()) {
+      // Check that all required fields are present.
+      if (field.isRequired()) {
+        if (!hasField(field)) {
+          return false;
+        }
+      }
+      // Check that embedded messages are initialized.
+      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+        if (field.isRepeated()) {
+          for (Message element : (List<Message>) getField(field)) {
+            if (!element.isInitialized()) {
+              return false;
+            }
+          }
+        } else {
+          if (hasField(field) && !((Message) getField(field)).isInitialized()) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
 
   public Map<FieldDescriptor, Object> getAllFields() {
     return Collections.unmodifiableMap(getAllFieldsMutable());
@@ -369,6 +396,10 @@ public abstract class GeneratedMessage extends AbstractMessage {
     /** Called by subclasses to check if all extensions are initialized. */
     protected boolean extensionsAreInitialized() {
       return extensions.isInitialized();
+    }
+    
+    public boolean isInitialized() {
+      return super.isInitialized() && extensionsAreInitialized();
     }
 
     /**

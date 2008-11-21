@@ -507,7 +507,8 @@ const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
       type_info->has_bits_offset,
       type_info->unknown_fields_offset,
       type_info->extensions_offset,
-      type_info->pool));
+      type_info->pool,
+      type_info->size));
 
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

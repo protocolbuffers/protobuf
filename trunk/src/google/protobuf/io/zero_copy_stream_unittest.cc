@@ -156,7 +156,9 @@ int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
 
     if (out_size <= in_size) {
       memcpy(out, in, out_size);
-      input->BackUp(in_size - out_size);
+      if (in_size > out_size) {
+        input->BackUp(in_size - out_size);
+      }
       return size;  // Copied all of it.
     }
 

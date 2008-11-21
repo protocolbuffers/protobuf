@@ -111,6 +111,11 @@ GenerateMergingCode(io::Printer* printer) const {
 }
 
 void EnumFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
+}
+
+void EnumFieldGenerator::
 GenerateInitializer(io::Printer* printer) const {
   printer->Print(variables_, ",\n$name$_($default$)");
 }
@@ -198,6 +203,11 @@ GenerateClearingCode(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.MergeFrom(from.$name$_);\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_.Swap(&other->$name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::

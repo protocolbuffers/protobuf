@@ -55,6 +55,7 @@ class EnumFieldGenerator : public FieldGenerator {
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateInitializer(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
@@ -78,6 +79,7 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateInitializer(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;

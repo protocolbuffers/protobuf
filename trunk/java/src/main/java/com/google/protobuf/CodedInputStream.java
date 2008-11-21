@@ -59,7 +59,14 @@ public final class CodedInputStream {
    * Create a new CodedInputStream wrapping the given byte array.
    */
   public static CodedInputStream newInstance(byte[] buf) {
-    return new CodedInputStream(buf);
+    return newInstance(buf, 0, buf.length);
+  }
+
+  /**
+   * Create a new CodedInputStream wrapping the given byte array slice.
+   */
+  public static CodedInputStream newInstance(byte[] buf, int off, int len) {
+    return new CodedInputStream(buf, off, len);
   }
 
   // -----------------------------------------------------------------
@@ -454,7 +461,7 @@ public final class CodedInputStream {
   private byte[] buffer;
   private int bufferSize;
   private int bufferSizeAfterLimit = 0;
-  private int bufferPos = 0;
+  private int bufferPos;
   private InputStream input;
   private int lastTag = 0;
 
@@ -479,15 +486,17 @@ public final class CodedInputStream {
   private static final int DEFAULT_SIZE_LIMIT = 64 << 20;  // 64MB
   private static final int BUFFER_SIZE = 4096;
 
-  private CodedInputStream(byte[] buffer) {
+  private CodedInputStream(byte[] buffer, int off, int len) {
     this.buffer = buffer;
-    this.bufferSize = buffer.length;
+    this.bufferSize = off + len;
+    this.bufferPos = off;
     this.input = null;
   }
 
   private CodedInputStream(InputStream input) {
     this.buffer = new byte[BUFFER_SIZE];
     this.bufferSize = 0;
+    this.bufferPos = 0;
     this.input = input;
   }
 

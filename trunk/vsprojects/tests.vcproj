@@ -287,6 +287,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\stubs\structurally_valid_unittest.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\io\coded_stream_unittest.cc"
 				>
 			</File>

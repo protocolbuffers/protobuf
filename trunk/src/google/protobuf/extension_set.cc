@@ -40,6 +40,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/generated_message_reflection.h>
 
 namespace google {
 namespace protobuf {
@@ -515,6 +516,13 @@ void ExtensionSet::MergeFrom(const ExtensionSet& other) {
   }
 }
 
+void ExtensionSet::Swap(ExtensionSet* x) {
+  extensions_.swap(x->extensions_);
+  std::swap(extendee_, x->extendee_);
+  std::swap(descriptor_pool_, x->descriptor_pool_);
+  std::swap(message_factory_, x->message_factory_);
+}
+
 bool ExtensionSet::IsInitialized() const {
   // Extensions are never requried.  However, we need to check that all
   // embedded messages are initialized.
@@ -572,6 +580,18 @@ int ExtensionSet::ByteSize(const Message& message) const {
     total_size += iter->second.ByteSize(message);
   }
 
+  return total_size;
+}
+
+int ExtensionSet::SpaceUsedExcludingSelf() const {
+  int total_size =
+      extensions_.size() * sizeof(map<int, Extension>::value_type);
+  for (map<int, Extension>::const_iterator iter = extensions_.begin(),
+       end = extensions_.end();
+       iter != end;
+       ++iter) {
+    total_size += iter->second.SpaceUsedExcludingSelf();
+  }
   return total_size;
 }
 
@@ -710,6 +730,44 @@ void ExtensionSet::Extension::Free() {
         break;
     }
   }
+}
+
+int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
+  int total_size = 0;
+  if (descriptor->is_repeated()) {
+    switch (descriptor->cpp_type()) {
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
+      case FieldDescriptor::CPPTYPE_##UPPERCASE:                   \
+        total_size += sizeof(*repeated_##LOWERCASE##_value) +      \
+            repeated_##LOWERCASE##_value->SpaceUsedExcludingSelf();\
+        break
+
+      HANDLE_TYPE(  INT32,   int32);
+      HANDLE_TYPE(  INT64,   int64);
+      HANDLE_TYPE( UINT32,  uint32);
+      HANDLE_TYPE( UINT64,  uint64);
+      HANDLE_TYPE(  FLOAT,   float);
+      HANDLE_TYPE( DOUBLE,  double);
+      HANDLE_TYPE(   BOOL,    bool);
+      HANDLE_TYPE(   ENUM,    enum);
+      HANDLE_TYPE( STRING,  string);
+      HANDLE_TYPE(MESSAGE, message);
+    }
+  } else {
+    switch (descriptor->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        total_size += sizeof(*string_value) +
+                      StringSpaceUsedExcludingSelf(*string_value);
+        break;
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        total_size += message_value->SpaceUsed();
+        break;
+      default:
+        // No extra storage costs for primitive types.
+        break;
+    }
+  }
+  return total_size;
 }
 
 }  // namespace internal

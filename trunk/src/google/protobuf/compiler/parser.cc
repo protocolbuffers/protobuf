@@ -215,6 +215,11 @@ bool Parser::ConsumeString(string* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     io::Tokenizer::ParseString(input_->current().text, output);
     input_->Next();
+    // Allow C++ like concatenation of adjacent string tokens.
+    while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+      io::Tokenizer::ParseStringAppend(input_->current().text, output);
+      input_->Next();
+    }
     return true;
   } else {
     AddError(error);
@@ -864,10 +869,21 @@ bool Parser::ParseEnumConstant(EnumValueDescriptorProto* enum_value) {
   if (is_negative) number *= -1;
   enum_value->set_number(number);
 
-  // TODO(kenton):  Options for enum values?
+  DO(ParseEnumConstantOptions(enum_value));
 
   DO(Consume(";"));
 
+  return true;
+}
+
+bool Parser::ParseEnumConstantOptions(EnumValueDescriptorProto* value) {
+  if (!TryConsume("[")) return true;
+
+  do {
+    DO(ParseOptionAssignment(value->mutable_options()));
+  } while (TryConsume(","));
+
+  DO(Consume("]"));
   return true;
 }
 

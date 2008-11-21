@@ -236,6 +236,83 @@ TEST(GeneratedMessageTest, CopyFrom) {
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
+TEST(GeneratedMessageTest, SwapWithEmpty) {
+  unittest::TestAllTypes message1, message2;
+  TestUtil::SetAllFields(&message1);
+
+  TestUtil::ExpectAllFieldsSet(message1);
+  TestUtil::ExpectClear(message2);
+  message1.Swap(&message2);
+  TestUtil::ExpectAllFieldsSet(message2);
+  TestUtil::ExpectClear(message1);
+}
+
+TEST(GeneratedMessageTest, SwapWithSelf) {
+  unittest::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+  message.Swap(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+}
+
+TEST(GeneratedMessageTest, SwapWithOther) {
+  unittest::TestAllTypes message1, message2;
+
+  message1.set_optional_int32(123);
+  message1.set_optional_string("abc");
+  message1.mutable_optional_nested_message()->set_bb(1);
+  message1.set_optional_nested_enum(unittest::TestAllTypes::FOO);
+  message1.add_repeated_int32(1);
+  message1.add_repeated_int32(2);
+  message1.add_repeated_string("a");
+  message1.add_repeated_string("b");
+  message1.add_repeated_nested_message()->set_bb(7);
+  message1.add_repeated_nested_message()->set_bb(8);
+  message1.add_repeated_nested_enum(unittest::TestAllTypes::FOO);
+  message1.add_repeated_nested_enum(unittest::TestAllTypes::BAR);
+
+  message2.set_optional_int32(456);
+  message2.set_optional_string("def");
+  message2.mutable_optional_nested_message()->set_bb(2);
+  message2.set_optional_nested_enum(unittest::TestAllTypes::BAR);
+  message2.add_repeated_int32(3);
+  message2.add_repeated_string("c");
+  message2.add_repeated_nested_message()->set_bb(9);
+  message2.add_repeated_nested_enum(unittest::TestAllTypes::BAZ);
+
+  message1.Swap(&message2);
+
+  EXPECT_EQ(456, message1.optional_int32());
+  EXPECT_EQ("def", message1.optional_string());
+  EXPECT_EQ(2, message1.optional_nested_message().bb());
+  EXPECT_EQ(unittest::TestAllTypes::BAR, message1.optional_nested_enum());
+  ASSERT_EQ(1, message1.repeated_int32_size());
+  EXPECT_EQ(3, message1.repeated_int32(0));
+  ASSERT_EQ(1, message1.repeated_string_size());
+  EXPECT_EQ("c", message1.repeated_string(0));
+  ASSERT_EQ(1, message1.repeated_nested_message_size());
+  EXPECT_EQ(9, message1.repeated_nested_message(0).bb());
+  ASSERT_EQ(1, message1.repeated_nested_enum_size());
+  EXPECT_EQ(unittest::TestAllTypes::BAZ, message1.repeated_nested_enum(0));
+
+  EXPECT_EQ(123, message2.optional_int32());
+  EXPECT_EQ("abc", message2.optional_string());
+  EXPECT_EQ(1, message2.optional_nested_message().bb());
+  EXPECT_EQ(unittest::TestAllTypes::FOO, message2.optional_nested_enum());
+  ASSERT_EQ(2, message2.repeated_int32_size());
+  EXPECT_EQ(1, message2.repeated_int32(0));
+  EXPECT_EQ(2, message2.repeated_int32(1));
+  ASSERT_EQ(2, message2.repeated_string_size());
+  EXPECT_EQ("a", message2.repeated_string(0));
+  EXPECT_EQ("b", message2.repeated_string(1));
+  ASSERT_EQ(2, message2.repeated_nested_message_size());
+  EXPECT_EQ(7, message2.repeated_nested_message(0).bb());
+  EXPECT_EQ(8, message2.repeated_nested_message(1).bb());
+  ASSERT_EQ(2, message2.repeated_nested_enum_size());
+  EXPECT_EQ(unittest::TestAllTypes::FOO, message2.repeated_nested_enum(0));
+  EXPECT_EQ(unittest::TestAllTypes::BAR, message2.repeated_nested_enum(1));
+}
+
 TEST(GeneratedMessageTest, CopyConstructor) {
   unittest::TestAllTypes message1;
   TestUtil::SetAllFields(&message1);
@@ -490,6 +567,45 @@ TEST(GeneratedMessageTest, TestEmbedOptimizedForSize) {
   ASSERT_TRUE(message2.ParseFromString(data));
   EXPECT_EQ(1, message2.optional_message().i());
   EXPECT_EQ(2, message2.repeated_message(0).msg().c());
+}
+
+TEST(GeneratedMessageTest, TestSpaceUsed) {
+  unittest::TestAllTypes message1;
+  // sizeof provides a lower bound on SpaceUsed().
+  EXPECT_LE(sizeof(unittest::TestAllTypes), message1.SpaceUsed());
+  const int empty_message_size = message1.SpaceUsed();
+
+  // Setting primitive types shouldn't affect the space used.
+  message1.set_optional_int32(123);
+  message1.set_optional_int64(12345);
+  message1.set_optional_uint32(123);
+  message1.set_optional_uint64(12345);
+  EXPECT_EQ(empty_message_size, message1.SpaceUsed());
+
+  // On some STL implementations, setting the string to a small value should
+  // only increase SpaceUsed() by the size of a string object, though this is
+  // not true everywhere.
+  message1.set_optional_string("abc");
+  EXPECT_LE(empty_message_size + sizeof(string), message1.SpaceUsed());
+
+  // Setting a string to a value larger than the string object itself should
+  // increase SpaceUsed(), because it cannot store the value internally.
+  message1.set_optional_string(string(sizeof(string) + 1, 'x'));
+  int min_expected_increase = message1.optional_string().capacity() +
+      sizeof(string);
+  EXPECT_LE(empty_message_size + min_expected_increase,
+            message1.SpaceUsed());
+
+  int previous_size = message1.SpaceUsed();
+  // Adding an optional message should increase the size by the size of the
+  // nested message type. NestedMessage is simple enough (1 int field) that it
+  // is equal to sizeof(NestedMessage)
+  message1.mutable_optional_nested_message();
+  ASSERT_EQ(sizeof(unittest::TestAllTypes::NestedMessage),
+            message1.optional_nested_message().SpaceUsed());
+  EXPECT_EQ(previous_size +
+            sizeof(unittest::TestAllTypes::NestedMessage),
+            message1.SpaceUsed());
 }
 
 // ===================================================================

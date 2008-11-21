@@ -126,6 +126,8 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const FileDescriptorSet& default_instance();
+  void Swap(FileDescriptorSet* other);
+  
   // implements Message ----------------------------------------------
   
   FileDescriptorSet* New() const;
@@ -209,6 +211,8 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const FileDescriptorProto& default_instance();
+  void Swap(FileDescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   FileDescriptorProto* New() const;
@@ -363,6 +367,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const DescriptorProto_ExtensionRange& default_instance();
+  void Swap(DescriptorProto_ExtensionRange* other);
+  
   // implements Message ----------------------------------------------
   
   DescriptorProto_ExtensionRange* New() const;
@@ -450,6 +456,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const DescriptorProto& default_instance();
+  void Swap(DescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   DescriptorProto* New() const;
@@ -592,6 +600,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const FieldDescriptorProto& default_instance();
+  void Swap(FieldDescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   FieldDescriptorProto* New() const;
@@ -780,6 +790,8 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const EnumDescriptorProto& default_instance();
+  void Swap(EnumDescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   EnumDescriptorProto* New() const;
@@ -880,6 +892,8 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const EnumValueDescriptorProto& default_instance();
+  void Swap(EnumValueDescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   EnumValueDescriptorProto* New() const;
@@ -977,6 +991,8 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const ServiceDescriptorProto& default_instance();
+  void Swap(ServiceDescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   ServiceDescriptorProto* New() const;
@@ -1077,6 +1093,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const MethodDescriptorProto& default_instance();
+  void Swap(MethodDescriptorProto* other);
+  
   // implements Message ----------------------------------------------
   
   MethodDescriptorProto* New() const;
@@ -1187,6 +1205,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const FileOptions& default_instance();
+  void Swap(FileOptions* other);
+  
   // implements Message ----------------------------------------------
   
   FileOptions* New() const;
@@ -1401,6 +1421,8 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const MessageOptions& default_instance();
+  void Swap(MessageOptions* other);
+  
   // implements Message ----------------------------------------------
   
   MessageOptions* New() const;
@@ -1573,6 +1595,8 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const FieldOptions& default_instance();
+  void Swap(FieldOptions* other);
+  
   // implements Message ----------------------------------------------
   
   FieldOptions* New() const;
@@ -1770,6 +1794,8 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const EnumOptions& default_instance();
+  void Swap(EnumOptions* other);
+  
   // implements Message ----------------------------------------------
   
   EnumOptions* New() const;
@@ -1935,6 +1961,8 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const EnumValueOptions& default_instance();
+  void Swap(EnumValueOptions* other);
+  
   // implements Message ----------------------------------------------
   
   EnumValueOptions* New() const;
@@ -2100,6 +2128,8 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const ServiceOptions& default_instance();
+  void Swap(ServiceOptions* other);
+  
   // implements Message ----------------------------------------------
   
   ServiceOptions* New() const;
@@ -2265,6 +2295,8 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const MethodOptions& default_instance();
+  void Swap(MethodOptions* other);
+  
   // implements Message ----------------------------------------------
   
   MethodOptions* New() const;
@@ -2430,6 +2462,8 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const UninterpretedOption_NamePart& default_instance();
+  void Swap(UninterpretedOption_NamePart* other);
+  
   // implements Message ----------------------------------------------
   
   UninterpretedOption_NamePart* New() const;
@@ -2520,6 +2554,8 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   
   static const ::google::protobuf::Descriptor* descriptor();
   static const UninterpretedOption& default_instance();
+  void Swap(UninterpretedOption* other);
+  
   // implements Message ----------------------------------------------
   
   UninterpretedOption* New() const;
