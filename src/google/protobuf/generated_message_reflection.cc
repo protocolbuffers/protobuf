@@ -46,6 +46,18 @@ namespace internal {
 
 namespace { const string kEmptyString; }
 
+int StringSpaceUsedExcludingSelf(const string& str) {
+  const void* start = &str;
+  const void* end = &str + 1;
+
+  if (start <= str.data() && str.data() <= end) {
+    // The string's data is stored inside the string object itself.
+    return 0;
+  } else {
+    return str.capacity();
+  }
+}
+
 // ===================================================================
 // Helpers for reporting usage errors (e.g. trying to use GetInt32() on
 // a string field).
@@ -147,13 +159,15 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     int has_bits_offset,
     int unknown_fields_offset,
     int extensions_offset,
-    const DescriptorPool* descriptor_pool)
+    const DescriptorPool* descriptor_pool,
+    int object_size)
   : descriptor_       (descriptor),
     default_instance_ (default_instance),
     offsets_          (offsets),
     has_bits_offset_  (has_bits_offset),
     unknown_fields_offset_(unknown_fields_offset),
     extensions_offset_(extensions_offset),
+    object_size_      (object_size),
     descriptor_pool_  ((descriptor_pool == NULL) ?
                          DescriptorPool::generated_pool() :
                          descriptor_pool) {
@@ -171,6 +185,71 @@ UnknownFieldSet* GeneratedMessageReflection::MutableUnknownFields(
     Message* message) const {
   void* ptr = reinterpret_cast<uint8*>(message) + unknown_fields_offset_;
   return reinterpret_cast<UnknownFieldSet*>(ptr);
+}
+
+int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
+  // object_size_ already includes the in-memory representation of each field
+  // in the message, so we only need to account for additional memory used by
+  // the fields.
+  int total_size = object_size_;
+
+  total_size += GetUnknownFields(message).SpaceUsedExcludingSelf();
+
+  if (extensions_offset_ != -1) {
+    total_size += GetExtensionSet(message).SpaceUsedExcludingSelf();
+  }
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+
+    if (field->is_repeated()) {
+      total_size += GetRaw<GenericRepeatedField>(message, field)
+                      .GenericSpaceUsedExcludingSelf();
+    } else {
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_INT32 :
+        case FieldDescriptor::CPPTYPE_INT64 :
+        case FieldDescriptor::CPPTYPE_UINT32:
+        case FieldDescriptor::CPPTYPE_UINT64:
+        case FieldDescriptor::CPPTYPE_DOUBLE:
+        case FieldDescriptor::CPPTYPE_FLOAT :
+        case FieldDescriptor::CPPTYPE_BOOL  :
+        case FieldDescriptor::CPPTYPE_ENUM  :
+          // Field is inline, so we've already counted it.
+          break;
+
+        case FieldDescriptor::CPPTYPE_STRING: {
+            const string* ptr = GetField<const string*>(message, field);
+
+            // Initially, the string points to the default value stored in
+            // the prototype. Only count the string if it has been changed
+            // from the default value.
+            const string* default_ptr = DefaultRaw<const string*>(field);
+
+            if (ptr != default_ptr) {
+              // string fields are represented by just a pointer, so also
+              // include sizeof(string) as well.
+              total_size += sizeof(*ptr) + StringSpaceUsedExcludingSelf(*ptr);
+            }
+          break;
+        }
+
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          if (&message == default_instance_) {
+            // For singular fields, the prototype just stores a pointer to the
+            // external type's prototype, so there is no extra memory usage.
+          } else {
+            const Message* sub_message = GetRaw<const Message*>(message, field);
+            if (sub_message != NULL) {
+              total_size += sub_message->SpaceUsed();
+            }
+          }
+          break;
+      }
+    }
+  }
+
+  return total_size;
 }
 
 // -------------------------------------------------------------------
@@ -764,6 +843,7 @@ inline Type* GeneratedMessageReflection::AddField(
     MutableRaw<GenericRepeatedField>(message, field);
   return reinterpret_cast<Type*>(repeated->GenericAdd());
 }
+
 
 }  // namespace internal
 }  // namespace protobuf

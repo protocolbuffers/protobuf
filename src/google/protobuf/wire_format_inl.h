@@ -36,8 +36,15 @@
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_INL_H__
 
 #include <string>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/coded_stream.h>
+
+
+// Do UTF-8 validation on string type in Debug build only
+#ifndef NDEBUG
+#define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+#endif
 
 
 namespace google {
@@ -122,12 +129,18 @@ inline bool WireFormat::ReadEnum(io::CodedInputStream* input, int* value) {
 }
 
 inline bool WireFormat::ReadString(io::CodedInputStream* input, string* value) {
-  // WARNING:  In wire_format.cc, both strings and bytes are handled by
-  //   ReadString() to avoid code duplication.  If the implementations become
-  //   different, you will need to update that usage.
+  // String is for UTF-8 text only
   uint32 length;
   if (!input->ReadVarint32(&length)) return false;
-  return input->ReadString(value, length);
+  if (!input->ReadString(value, length)) return false;
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  if (!IsStructurallyValidUTF8(value->data(), length)) {
+    GOOGLE_LOG(ERROR) << "Encountered string containing invalid UTF-8 data while "
+               "parsing protocol buffer. Strings must contain only UTF-8; "
+               "use the 'bytes' type for raw bytes.";
+  }
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  return true;
 }
 inline bool WireFormat::ReadBytes(io::CodedInputStream* input, string* value) {
   uint32 length;
@@ -270,9 +283,14 @@ inline bool WireFormat::WriteEnum(int field_number, int value,
 
 inline bool WireFormat::WriteString(int field_number, const string& value,
                                     io::CodedOutputStream* output) {
-  // WARNING:  In wire_format.cc, both strings and bytes are handled by
-  //   WriteString() to avoid code duplication.  If the implementations become
-  //   different, you will need to update that usage.
+  // String is for UTF-8 text only
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  if (!IsStructurallyValidUTF8(value.data(), value.size())) {
+    GOOGLE_LOG(ERROR) << "Encountered string containing invalid UTF-8 data while "
+               "serializing protocol buffer. Strings must contain only UTF-8; "
+               "use the 'bytes' type for raw bytes.";
+  }
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   return WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output) &&
          output->WriteVarint32(value.size()) &&
          output->WriteString(value);

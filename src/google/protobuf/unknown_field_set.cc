@@ -130,6 +130,30 @@ UnknownField* UnknownFieldSet::AddField(int number) {
   return field;
 }
 
+int UnknownFieldSet::SpaceUsedExcludingSelf() const {
+  int total_size = 0;
+  if (internal_ != NULL) {
+    total_size += sizeof(*internal_);
+    total_size += internal_->active_fields_.capacity() *
+                  sizeof(Internal::FieldVector::value_type);
+    total_size += internal_->fields_.size() *
+        sizeof(Internal::FieldMap::value_type);
+
+    // Account for the UnknownField objects themselves.
+    for (Internal::FieldMap::const_iterator it = internal_->fields_.begin(),
+         end = internal_->fields_.end();
+         it != end;
+         ++it) {
+      total_size += it->second->SpaceUsed();
+    }
+  }
+  return total_size;
+}
+
+int UnknownFieldSet::SpaceUsed() const {
+  return sizeof(*this) + SpaceUsedExcludingSelf();
+}
+
 UnknownField::UnknownField(int number)
   : number_(number),
     index_(-1) {
@@ -152,6 +176,16 @@ void UnknownField::MergeFrom(const UnknownField& other) {
   fixed64_         .MergeFrom(other.fixed64_         );
   length_delimited_.MergeFrom(other.length_delimited_);
   group_           .MergeFrom(other.group_           );
+}
+
+int UnknownField::SpaceUsed() const {
+  int total_size = sizeof(*this);
+  total_size += varint_.SpaceUsedExcludingSelf();
+  total_size += fixed32_.SpaceUsedExcludingSelf();
+  total_size += fixed64_.SpaceUsedExcludingSelf();
+  total_size += length_delimited_.SpaceUsedExcludingSelf();
+  total_size += group_.SpaceUsedExcludingSelf();
+  return total_size;
 }
 
 }  // namespace protobuf

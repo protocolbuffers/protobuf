@@ -77,6 +77,7 @@ public abstract class AbstractMessage implements Message {
     return true;
   }
 
+  @Override
   public final String toString() {
     return TextFormat.printToString(this);
   }
@@ -199,6 +200,7 @@ public abstract class AbstractMessage implements Message {
   public static abstract class Builder<BuilderType extends Builder>
       implements Message.Builder {
     // The compiler produces an error if this is not declared explicitly.
+    @Override
     public abstract BuilderType clone();
 
     public BuilderType clear() {
@@ -307,8 +309,13 @@ public abstract class AbstractMessage implements Message {
 
     public BuilderType mergeFrom(byte[] data)
         throws InvalidProtocolBufferException {
+      return mergeFrom(data, 0, data.length);
+    }
+
+    public BuilderType mergeFrom(byte[] data, int off, int len)
+        throws InvalidProtocolBufferException {
       try {
-        CodedInputStream input = CodedInputStream.newInstance(data);
+        CodedInputStream input = CodedInputStream.newInstance(data, off, len);
         mergeFrom(input);
         input.checkLastTagWas(0);
         return (BuilderType) this;
@@ -322,10 +329,18 @@ public abstract class AbstractMessage implements Message {
     }
 
     public BuilderType mergeFrom(
-        byte[] data, ExtensionRegistry extensionRegistry)
+        byte[] data,
+        ExtensionRegistry extensionRegistry)
+        throws InvalidProtocolBufferException {
+      return mergeFrom(data, 0, data.length, extensionRegistry);
+    }
+
+    public BuilderType mergeFrom(
+        byte[] data, int off, int len,
+        ExtensionRegistry extensionRegistry)
         throws InvalidProtocolBufferException {
       try {
-        CodedInputStream input = CodedInputStream.newInstance(data);
+        CodedInputStream input = CodedInputStream.newInstance(data, off, len);
         mergeFrom(input, extensionRegistry);
         input.checkLastTagWas(0);
         return (BuilderType) this;

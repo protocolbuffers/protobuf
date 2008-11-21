@@ -416,7 +416,8 @@ GenerateClassDefinition(io::Printer* printer) {
     "}\n"
     "\n"
     "static const ::google::protobuf::Descriptor* descriptor();\n"
-    "static const $classname$& default_instance();"
+    "static const $classname$& default_instance();\n"
+    "void Swap($classname$* other);\n"
     "\n"
     "// implements Message ----------------------------------------------\n"
     "\n"
@@ -617,7 +618,8 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
       "    -1,\n");
   }
   printer->Print(vars,
-    "    ::google::protobuf::DescriptorPool::generated_pool());\n");
+    "    ::google::protobuf::DescriptorPool::generated_pool(),\n"
+    "    sizeof($classname$));\n");
 
   // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
@@ -691,6 +693,9 @@ GenerateClassMethods(io::Printer* printer) {
     printer->Print("\n");
 
     GenerateCopyFrom(printer);
+    printer->Print("\n");
+
+    GenerateSwap(printer);
     printer->Print("\n");
 
     GenerateIsInitialized(printer);
@@ -947,6 +952,37 @@ GenerateClear(io::Printer* printer) {
 }
 
 void MessageGenerator::
+GenerateSwap(io::Printer* printer) {
+  // Generate the Swap member function.
+  printer->Print("void $classname$::Swap($classname$* other) {\n",
+                 "classname", classname_);
+  printer->Indent();
+  printer->Print("if (other != this) {\n");
+  printer->Indent();
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    field_generators_.get(field).GenerateSwappingCode(printer);
+  }
+
+  for (int i = 0; i < (descriptor_->field_count() + 31) / 32; ++i) {
+    printer->Print("std::swap(_has_bits_[$i$], other->_has_bits_[$i$]);\n",
+                   "i", SimpleItoa(i));
+  }
+
+  printer->Print("_unknown_fields_.Swap(&other->_unknown_fields_);\n");
+  printer->Print("std::swap(_cached_size_, other->_cached_size_);\n");
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print("_extensions_.Swap(&other->_extensions_);\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void MessageGenerator::
 GenerateMergeFrom(io::Printer* printer) {
   // Generate the generalized MergeFrom (aka that which takes in the Message
   // base class as a parameter).
@@ -956,22 +992,20 @@ GenerateMergeFrom(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
-  if (descriptor_->field_count() > 0) {
-    // Cast the message to the proper type. If we find that the message is
-    // *not* of the proper type, we can still call Merge via the reflection
-    // system, as the GOOGLE_CHECK above ensured that we have the same descriptor
-    // for each message.
-    printer->Print(
-      "const $classname$* source =\n"
-      "  ::google::protobuf::internal::dynamic_cast_if_available<const $classname$*>(\n"
-      "    &from);\n"
-      "if (source == NULL) {\n"
-      "  ::google::protobuf::internal::ReflectionOps::Merge(from, this);\n"
-      "} else {\n"
-      "  MergeFrom(*source);\n"
-      "}\n",
-      "classname", classname_);
-  }
+  // Cast the message to the proper type. If we find that the message is
+  // *not* of the proper type, we can still call Merge via the reflection
+  // system, as the GOOGLE_CHECK above ensured that we have the same descriptor
+  // for each message.
+  printer->Print(
+    "const $classname$* source =\n"
+    "  ::google::protobuf::internal::dynamic_cast_if_available<const $classname$*>(\n"
+    "    &from);\n"
+    "if (source == NULL) {\n"
+    "  ::google::protobuf::internal::ReflectionOps::Merge(from, this);\n"
+    "} else {\n"
+    "  MergeFrom(*source);\n"
+    "}\n",
+    "classname", classname_);
 
   printer->Outdent();
   printer->Print("}\n\n");
@@ -1199,7 +1233,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     for (int i = 0; i < descriptor_->extension_range_count(); i++) {
       const Descriptor::ExtensionRange* range =
         descriptor_->extension_range(i);
-      if (i > 0) printer->Print(" &&\n    ");
+      if (i > 0) printer->Print(" ||\n    ");
 
       uint32 start_tag = WireFormat::MakeTag(
         range->start, static_cast<WireFormat::WireType>(0));

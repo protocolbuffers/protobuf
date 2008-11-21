@@ -70,6 +70,7 @@ EXTRA_DIST =                                                                 \
   java/pom.xml                                                               \
   java/README.txt                                                            \
   python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/containers.py                              \
   python/google/protobuf/internal/decoder.py                                 \
   python/google/protobuf/internal/decoder_test.py                            \
   python/google/protobuf/internal/descriptor_test.py                         \

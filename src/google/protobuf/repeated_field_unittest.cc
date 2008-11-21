@@ -69,6 +69,7 @@ TEST(RepeatedField, Small) {
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), 5);
   EXPECT_EQ(field.Get(1), 23);
+  EXPECT_EQ(field.SpaceUsedExcludingSelf(), 0);
 
   field.RemoveLast();
 
@@ -78,6 +79,7 @@ TEST(RepeatedField, Small) {
   field.Clear();
 
   EXPECT_EQ(field.size(), 0);
+  EXPECT_EQ(field.SpaceUsedExcludingSelf(), 0);
 }
 
 // Test operations on a RepeatedField which is large enough to allocate a
@@ -94,6 +96,9 @@ TEST(RepeatedField, Large) {
   for (int i = 0; i < 16; i++) {
     EXPECT_EQ(field.Get(i), i * i);
   }
+
+  int expected_usage = 16 * sizeof(int);
+  EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
 }
 
 // Test swapping between various types of RepeatedFields.
@@ -278,6 +283,9 @@ TEST(RepeatedPtrField, Large) {
     EXPECT_EQ(field.Get(i).size(), 1);
     EXPECT_EQ(field.Get(i)[0], 'a' + i);
   }
+
+  int min_expected_usage = 16 * sizeof(string);
+  EXPECT_GE(field.SpaceUsedExcludingSelf(), min_expected_usage);
 }
 
 TEST(RepeatedPtrField, SwapSmallSmall) {

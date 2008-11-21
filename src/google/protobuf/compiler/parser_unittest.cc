@@ -305,7 +305,9 @@ TEST_F(ParseMessageTest, FieldDefaults) {
     "  required double foo = 1 [default=-11.5];\n"
     "  required double foo = 1 [default= 12  ];\n"
     "  required string foo = 1 [default='13\\001'];\n"
+    "  required string foo = 1 [default='a' \"b\" \n \"c\"];\n"
     "  required bytes  foo = 1 [default='14\\002'];\n"
+    "  required bytes  foo = 1 [default='a' \"b\" \n 'c'];\n"
     "  required bool   foo = 1 [default=true ];\n"
     "  required Foo    foo = 1 [default=FOO  ];\n"
 
@@ -334,7 +336,9 @@ TEST_F(ParseMessageTest, FieldDefaults) {
     "  field { type:TYPE_DOUBLE  default_value:\"-11.5\"     "ETC" }"
     "  field { type:TYPE_DOUBLE  default_value:\"12\"        "ETC" }"
     "  field { type:TYPE_STRING  default_value:\"13\\001\"   "ETC" }"
+    "  field { type:TYPE_STRING  default_value:\"abc\"       "ETC" }"
     "  field { type:TYPE_BYTES   default_value:\"14\\\\002\" "ETC" }"
+    "  field { type:TYPE_BYTES   default_value:\"abc\"       "ETC" }"
     "  field { type:TYPE_BOOL    default_value:\"true\"      "ETC" }"
     "  field { type_name:\"Foo\" default_value:\"FOO\"       "ETC" }"
 
@@ -531,6 +535,40 @@ TEST_F(ParseEnumTest, Values) {
     "  value { name:\"FOO\" number:13 }"
     "  value { name:\"BAR\" number:-10 }"
     "  value { name:\"BAZ\" number:500 }"
+    "}");
+}
+
+TEST_F(ParseEnumTest, ValueOptions) {
+  ExpectParsesTo(
+    "enum TestEnum {\n"
+    "  FOO = 13;\n"
+    "  BAR = -10 [ (something.text) = 'abc' ];\n"
+    "  BAZ = 500 [ (something.text) = 'def', other = 1 ];\n"
+    "}\n",
+
+    "enum_type {"
+    "  name: \"TestEnum\""
+    "  value { name: \"FOO\" number: 13 }"
+    "  value { name: \"BAR\" number: -10 "
+    "    options { "
+    "      uninterpreted_option { "
+    "        name { name_part: \"something.text\" is_extension: true } "
+    "        string_value: \"abc\" "
+    "      } "
+    "    } "
+    "  } "
+    "  value { name: \"BAZ\" number: 500 "
+    "    options { "
+    "      uninterpreted_option { "
+    "        name { name_part: \"something.text\" is_extension: true } "
+    "        string_value: \"def\" "
+    "      } "
+    "      uninterpreted_option { "
+    "        name { name_part: \"other\" is_extension: false } "
+    "        positive_int_value: 1 "
+    "      } "
+    "    } "
+    "  } "
     "}");
 }
 

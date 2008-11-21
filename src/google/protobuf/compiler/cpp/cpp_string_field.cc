@@ -163,12 +163,12 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "inline ::std::string* $classname$::mutable_$name$() {\n"
     "  _set_bit($index$);\n"
     "  if ($name$_ == &_default_$name$_) {\n");
-  if (descriptor_->has_default_value()) {
-    printer->Print(variables_,
-      "    $name$_ = new ::std::string(_default_$name$_);\n");
-  } else {
+  if (descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
       "    $name$_ = new ::std::string;\n");
+  } else {
+    printer->Print(variables_,
+      "    $name$_ = new ::std::string(_default_$name$_);\n");
   }
   printer->Print(variables_,
     "  }\n"
@@ -178,26 +178,26 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
 
 void StringFieldGenerator::
 GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
-  if (descriptor_->has_default_value()) {
-    printer->Print(variables_,
-      "const ::std::string $classname$::_default_$name$_($default$);");
-  } else {
+  if (descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
       "const ::std::string $classname$::_default_$name$_;");
+  } else {
+    printer->Print(variables_,
+      "const ::std::string $classname$::_default_$name$_($default$);");
   }
 }
 
 void StringFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  if (descriptor_->has_default_value()) {
+  if (descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
       "if ($name$_ != &_default_$name$_) {\n"
-      "  $name$_->assign(_default_$name$_);\n"
+      "  $name$_->clear();\n"
       "}\n");
   } else {
     printer->Print(variables_,
       "if ($name$_ != &_default_$name$_) {\n"
-      "  $name$_->clear();\n"
+      "  $name$_->assign(_default_$name$_);\n"
       "}\n");
   }
 }
@@ -205,6 +205,11 @@ GenerateClearingCode(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_, "set_$name$(from.$name$());\n");
+}
+
+void StringFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
 }
 
 void StringFieldGenerator::
@@ -347,6 +352,11 @@ GenerateClearingCode(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.MergeFrom(from.$name$_);\n");
+}
+
+void RepeatedStringFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_.Swap(&other->$name$_);\n");
 }
 
 void RepeatedStringFieldGenerator::

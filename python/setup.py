@@ -108,6 +108,7 @@ if __name__ == '__main__':
         test_suite = 'setup.MakeTestSuite',
         # Must list modules explicitly so that we don't install tests.
         py_modules = [
+          'google.protobuf.internal.containers',
           'google.protobuf.internal.decoder',
           'google.protobuf.internal.encoder',
           'google.protobuf.internal.input_stream',

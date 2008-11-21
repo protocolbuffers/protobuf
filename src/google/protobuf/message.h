@@ -95,7 +95,7 @@
 //     foo->ParseFromString(data);
 //
 //     // Use the reflection interface to examine the contents.
-//     Reflection* reflection = foo->GetReflection();
+//     const Reflection* reflection = foo->GetReflection();
 //     assert(reflection->GetString(foo, text_field) == "Hello World!");
 //     assert(reflection->CountField(foo, numbers_field) == 3);
 //     assert(reflection->GetInt32(foo, numbers_field, 0) == 1);
@@ -315,6 +315,16 @@ class LIBPROTOBUF_EXPORT Message {
   bool SerializePartialToOstream(ostream* output) const;
 
 
+  // Make a string encoding the message. Is equivalent to calling
+  // SerializeToString() on a string and using that.  Returns the empty
+  // string if SerializeToString() would have returned an error.
+  // Note: If you intend to generate many such strings, you may
+  // reduce heap fragmentation by instead re-using the same string
+  // object with calls to SerializeToString().
+  string SerializeAsString() const;
+  // Like SerializeAsString(), but allows missing required fields.
+  string SerializePartialAsString() const;
+
   // Like SerializeToString(), but appends to the data to the string's existing
   // contents.  All required fields must be set.
   bool AppendToString(string* output) const;
@@ -325,6 +335,11 @@ class LIBPROTOBUF_EXPORT Message {
   // ByteSize() on all embedded messages.  If a subclass does not override
   // this, it MUST override SetCachedSize().
   virtual int ByteSize() const;
+
+  // Computes (an estimate of) the total number of bytes currently used for
+  // storing the message in memory.  The default implementation calls the
+  // Reflection object's SpaceUsed() method.
+  virtual int SpaceUsed() const;
 
   // Serializes the message without recomputing the size.  The message must
   // not have changed since the last call to ByteSize(); if it has, the results
@@ -431,6 +446,9 @@ class LIBPROTOBUF_EXPORT Reflection {
   // contains fields which were seen when the Message was parsed but were not
   // recognized according to the Message's definition.
   virtual UnknownFieldSet* MutableUnknownFields(Message* message) const = 0;
+
+  // Estimate the amount of memory used by the message object.
+  virtual int SpaceUsed(const Message& message) const = 0;
 
   // Check if the given non-repeated field is set.
   virtual bool HasField(const Message& message,

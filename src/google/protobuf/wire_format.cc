@@ -648,14 +648,23 @@ bool WireFormat::SerializeFieldWithCachedSizes(
 
       // Handle strings separately so that we can get string references
       // instead of copying.
-      case FieldDescriptor::TYPE_STRING:
-      case FieldDescriptor::TYPE_BYTES: {
+      case FieldDescriptor::TYPE_STRING: {
           string scratch;
           const string& value = field->is_repeated() ?
             message_reflection->GetRepeatedStringReference(
               message, field, j, &scratch) :
             message_reflection->GetStringReference(message, field, &scratch);
           if (!WriteString(field->number(), value, output)) return false;
+        break;
+      }
+
+      case FieldDescriptor::TYPE_BYTES: {
+          string scratch;
+          const string& value = field->is_repeated() ?
+            message_reflection->GetRepeatedStringReference(
+              message, field, j, &scratch) :
+            message_reflection->GetStringReference(message, field, &scratch);
+          if (!WriteBytes(field->number(), value, output)) return false;
         break;
       }
     }

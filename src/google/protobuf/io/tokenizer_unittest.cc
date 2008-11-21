@@ -584,6 +584,15 @@ TEST_F(TokenizerTest, ParseString) {
 #endif  // GTEST_HAS_DEATH_TEST
 }
 
+TEST_F(TokenizerTest, ParseStringAppend) {
+  // Check that ParseString and ParseStringAppend differ.
+  string output("stuff+");
+  Tokenizer::ParseStringAppend("'hello'", &output);
+  EXPECT_EQ("stuff+hello", output);
+  Tokenizer::ParseString("'hello'", &output);
+  EXPECT_EQ("hello", output);
+}
+
 // -------------------------------------------------------------------
 
 // Each case parses some input text, ignoring the tokens produced, and

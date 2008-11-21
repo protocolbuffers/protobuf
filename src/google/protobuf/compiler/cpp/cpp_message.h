@@ -115,6 +115,7 @@ class MessageGenerator {
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
   void GenerateCopyFrom(io::Printer* printer);
+  void GenerateSwap(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer);
 
   // Helpers for GenerateSerializeWithCachedSizes().

@@ -236,6 +236,10 @@ class LIBPROTOBUF_EXPORT Parser {
   // Parse a single enum value within an enum block.
   bool ParseEnumConstant(EnumValueDescriptorProto* enum_value);
 
+  // Parse enum constant options, i.e. the list in square brackets at the end
+  // of the enum constant value definition.
+  bool ParseEnumConstantOptions(EnumValueDescriptorProto* value);
+
   // Parse a single method within a service definition.
   bool ParseServiceMethod(MethodDescriptorProto* method);
 

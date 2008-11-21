@@ -175,6 +175,11 @@ GenerateMergingCode(io::Printer* printer) const {
 }
 
 void PrimitiveFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
+}
+
+void PrimitiveFieldGenerator::
 GenerateInitializer(io::Printer* printer) const {
   printer->Print(variables_, ",\n$name$_($default$)");
 }
@@ -264,6 +269,11 @@ GenerateClearingCode(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.MergeFrom(from.$name$_);\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_.Swap(&other->$name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

@@ -87,9 +87,13 @@ class LIBPROTOBUF_EXPORT GenericRepeatedField {
   virtual void* GenericAdd() = 0;
   virtual void GenericClear() = 0;
   virtual int GenericSize() const = 0;
+  virtual int GenericSpaceUsedExcludingSelf() const = 0;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GenericRepeatedField);
 };
+
+// We need this (from generated_message_reflection.cc).
+int StringSpaceUsedExcludingSelf(const string& str);
 
 }  // namespace internal
 
@@ -140,6 +144,10 @@ class RepeatedField : public internal::GenericRepeatedField {
   iterator end();
   const_iterator end() const;
 
+  // Returns the number of bytes used by the repeated field, excluding
+  // sizeof(*this)
+  int SpaceUsedExcludingSelf() const;
+
  private:  // See GenericRepeatedField for why this is private.
   // implements GenericRepeatedField ---------------------------------
   const void* GenericGet(int index) const;
@@ -147,6 +155,7 @@ class RepeatedField : public internal::GenericRepeatedField {
   void* GenericAdd();
   void GenericClear();
   int GenericSize() const;
+  int GenericSpaceUsedExcludingSelf() const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedField);
@@ -214,6 +223,10 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   iterator end();
   const_iterator end() const;
 
+  // Returns (an estimate of) the number of bytes used by the repeated field,
+  // excluding sizeof(*this).
+  int SpaceUsedExcludingSelf() const;
+
   // Advanced memory management --------------------------------------
   // When hardcore memory management becomes necessary -- as it often
   // does here at Google -- the following methods may be useful.
@@ -254,8 +267,13 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   void* GenericAdd();
   void GenericClear();
   int GenericSize() const;
+  int GenericSpaceUsedExcludingSelf() const;
 
  private:
+  // Returns (an estimate of) the number of bytes used by an individual
+  // element.
+  int ElementSpaceUsed(Element* element) const;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrField);
 
   static const int kInitialSize = 4;
@@ -398,6 +416,10 @@ RepeatedField<Element>::end() const {
   return elements_ + current_size_;
 }
 
+template <typename Element>
+inline int RepeatedField<Element>::SpaceUsedExcludingSelf() const {
+  return (elements_ != initial_space_) ? total_size_ * sizeof(elements_[0]) : 0;
+}
 
 template <typename Element>
 const void* RepeatedField<Element>::GenericGet(int index) const {
@@ -424,6 +446,11 @@ void RepeatedField<Element>::GenericClear() {
 template <typename Element>
 int RepeatedField<Element>::GenericSize() const {
   return size();
+}
+
+template <typename Element>
+int RepeatedField<Element>::GenericSpaceUsedExcludingSelf() const {
+  return SpaceUsedExcludingSelf();
 }
 
 template <typename Element>
@@ -595,6 +622,26 @@ void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
   }
 }
 
+template <typename Element>
+inline int RepeatedPtrField<Element>::SpaceUsedExcludingSelf() const {
+  int allocated_bytes =
+      (elements_ != initial_space_) ? total_size_ * sizeof(elements_[0]) : 0;
+  for (int i = 0; i < allocated_size_; ++i) {
+    allocated_bytes += ElementSpaceUsed(elements_[i]);
+  }
+  return allocated_bytes;
+}
+
+template <typename Element>
+inline int RepeatedPtrField<Element>::ElementSpaceUsed(Element* e) const {
+  return e->SpaceUsed();
+}
+
+template <>
+inline int RepeatedPtrField<string>::ElementSpaceUsed(string* s) const {
+  return sizeof(*s) + internal::StringSpaceUsedExcludingSelf(*s);
+}
+
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
@@ -663,6 +710,11 @@ void RepeatedPtrField<Element>::GenericClear() {
 template <typename Element>
 int RepeatedPtrField<Element>::GenericSize() const {
   return size();
+}
+
+template <typename Element>
+int RepeatedPtrField<Element>::GenericSpaceUsedExcludingSelf() const {
+  return SpaceUsedExcludingSelf();
 }
 
 

@@ -222,6 +222,30 @@ TEST_F(UnknownFieldSetTest, CopyFrom) {
   EXPECT_EQ(empty_message_.DebugString(), message.DebugString());
 }
 
+TEST_F(UnknownFieldSetTest, Swap) {
+  unittest::TestEmptyMessage other_message;
+  ASSERT_TRUE(other_message.ParseFromString(GetBizarroData()));
+
+  EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
+  EXPECT_GT(other_message.unknown_fields().field_count(), 0);
+  const string debug_string = empty_message_.DebugString();
+  const string other_debug_string = other_message.DebugString();
+  EXPECT_NE(debug_string, other_debug_string);
+
+  empty_message_.Swap(&other_message);
+  EXPECT_EQ(debug_string, other_message.DebugString());
+  EXPECT_EQ(other_debug_string, empty_message_.DebugString());
+}
+
+TEST_F(UnknownFieldSetTest, SwapWithSelf) {
+  const string debug_string = empty_message_.DebugString();
+  EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
+
+  empty_message_.Swap(&empty_message_);
+  EXPECT_GT(empty_message_.unknown_fields().field_count(), 0);
+  EXPECT_EQ(debug_string, empty_message_.DebugString());
+}
+
 TEST_F(UnknownFieldSetTest, MergeFrom) {
   unittest::TestEmptyMessage source, destination;
 
@@ -424,6 +448,72 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
     EXPECT_EQ(4, repeated_unknown_field.varint(0));
     EXPECT_EQ(6, repeated_unknown_field.varint(1));
   }
+}
+
+TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
+  {
+    // Make sure an unknown field set has zero space used until a field is
+    // actually added.
+    unittest::TestEmptyMessage empty_message;
+    const int empty_message_size = empty_message.SpaceUsed();
+    UnknownFieldSet* unknown_fields = empty_message.mutable_unknown_fields();
+    EXPECT_EQ(empty_message_size, empty_message.SpaceUsed());
+    unknown_fields->AddField(1)->add_varint(0);
+    EXPECT_LT(empty_message_size, empty_message.SpaceUsed());
+  }
+  {
+    // Test varints.
+    UnknownFieldSet unknown_fields;
+    UnknownField* field = unknown_fields.AddField(1);
+    const int base_size = unknown_fields.SpaceUsedExcludingSelf();
+    for (int i = 0; i < 16; ++i) {
+      field->add_varint(i);
+    }
+    // Should just defer computation to the RepeatedField.
+    int expected_size = base_size + field->varint().SpaceUsedExcludingSelf();
+    EXPECT_EQ(expected_size, unknown_fields.SpaceUsedExcludingSelf());
+  }
+  {
+    // Test fixed32s.
+    UnknownFieldSet unknown_fields;
+    UnknownField* field = unknown_fields.AddField(1);
+    const int base_size = unknown_fields.SpaceUsedExcludingSelf();
+    for (int i = 0; i < 16; ++i) {
+      field->add_fixed32(i);
+    }
+    int expected_size = base_size + field->fixed32().SpaceUsedExcludingSelf();
+    EXPECT_EQ(expected_size, unknown_fields.SpaceUsedExcludingSelf());
+  }
+  {
+    // Test fixed64s.
+    UnknownFieldSet unknown_fields;
+    UnknownField* field = unknown_fields.AddField(1);
+    const int base_size = unknown_fields.SpaceUsedExcludingSelf();
+    for (int i = 0; i < 16; ++i) {
+      field->add_fixed64(i);
+    }
+    int expected_size = base_size + field->fixed64().SpaceUsedExcludingSelf();
+    EXPECT_EQ(expected_size, unknown_fields.SpaceUsedExcludingSelf());
+  }
+  {
+    // Test length-delimited types.
+    UnknownFieldSet unknown_fields;
+    UnknownField* field = unknown_fields.AddField(1);
+    const int base_size = unknown_fields.SpaceUsedExcludingSelf();
+    for (int i = 0; i < 16; ++i) {
+      field->add_length_delimited()->assign("my length delimited string");
+    }
+    int expected_size = base_size +
+        field->length_delimited().SpaceUsedExcludingSelf();
+    EXPECT_EQ(expected_size, unknown_fields.SpaceUsedExcludingSelf());
+  }
+}
+
+TEST_F(UnknownFieldSetTest, SpaceUsed) {
+  UnknownFieldSet unknown_fields;
+  const int expected_size = sizeof(unknown_fields) +
+      unknown_fields.SpaceUsedExcludingSelf();
+  EXPECT_EQ(expected_size, unknown_fields.SpaceUsed());
 }
 
 }  // namespace

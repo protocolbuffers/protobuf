@@ -199,6 +199,30 @@ TEST(WireFormatTest, SerializeFieldsAndExtensions) {
   TestUtil::ExpectAllFieldsAndExtensionsInOrder(generated_data);
 }
 
+TEST(WireFormatTest, ParseMultipleExtensionRanges) {
+  // Make sure we can parse a message that contains multiple extensions ranges.
+  unittest::TestFieldOrderings source;
+  string data;
+
+  TestUtil::SetAllFieldsAndExtensions(&source);
+  source.SerializeToString(&data);
+
+  {
+    unittest::TestFieldOrderings dest;
+    EXPECT_TRUE(dest.ParseFromString(data));
+    EXPECT_EQ(source.DebugString(), dest.DebugString());
+  }
+
+  // Also test using reflection-based parsing.
+  {
+    unittest::TestFieldOrderings dest;
+    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::CodedInputStream coded_input(&raw_input);
+    EXPECT_TRUE(WireFormat::ParseAndMergePartial(&coded_input, &dest));
+    EXPECT_EQ(source.DebugString(), dest.DebugString());
+  }
+}
+
 const int kUnknownTypeId = 1550055;
 
 TEST(WireFormatTest, SerializeMessageSet) {
@@ -421,7 +445,7 @@ class WireFormatInvalidInputTest : public testing::Test {
       io::StringOutputStream raw_output(&result);
       io::CodedOutputStream output(&raw_output);
 
-      EXPECT_TRUE(WireFormat::WriteString(
+      EXPECT_TRUE(WireFormat::WriteBytes(
         field->number(), string(bytes, size), &output));
     }
 
@@ -539,6 +563,130 @@ TEST_F(WireFormatInvalidInputTest, InvalidStringInUnknownGroup) {
   io::CodedInputStream coded_input(&raw_input);
   UnknownFieldSet unknown_fields;
   EXPECT_FALSE(WireFormat::SkipMessage(&coded_input, &unknown_fields));
+}
+
+// Test differences between string and bytes.
+// Value of a string type must be valid UTF-8 string.  When UTF-8
+// validation is enabled (GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED):
+// WriteInvalidUTF8String:  see error message.
+// ReadInvalidUTF8String:  see error message.
+// WriteValidUTF8String: fine.
+// ReadValidUTF8String:  fine.
+// WriteAnyBytes: fine.
+// ReadAnyBytes: fine.
+const char * kInvalidUTF8String = "Invalid UTF-8: \xA0\xB0\xC0\xD0";
+const char * kValidUTF8String = "Valid UTF-8: \x01\x02\u8C37\u6B4C";
+
+template<typename T>
+bool WriteMessage(const char *value, T *message, string *wire_buffer) {
+  message->set_data(value);
+  wire_buffer->clear();
+  message->AppendToString(wire_buffer);
+  return (wire_buffer->size() > 0);
+}
+
+template<typename T>
+bool ReadMessage(const string &wire_buffer, T *message) {
+  return message->ParseFromArray(wire_buffer.data(), wire_buffer.size());
+}
+
+TEST(Utf8ValidationTest, WriteInvalidUTF8String) {
+  string wire_buffer;
+  protobuf_unittest::OneString input;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
+    errors = log.GetMessages(ERROR);
+  }
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  ASSERT_EQ(1, errors.size());
+  EXPECT_EQ("Encountered string containing invalid UTF-8 data while "
+            "serializing protocol buffer. Strings must contain only UTF-8; "
+            "use the 'bytes' type for raw bytes.",
+            errors[0]);
+
+#else
+  ASSERT_EQ(0, errors.size());
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+}
+
+TEST(Utf8ValidationTest, ReadInvalidUTF8String) {
+  string wire_buffer;
+  protobuf_unittest::OneString input;
+  WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
+  protobuf_unittest::OneString output;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    ReadMessage(wire_buffer, &output);
+    errors = log.GetMessages(ERROR);
+  }
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  ASSERT_EQ(1, errors.size());
+  EXPECT_EQ("Encountered string containing invalid UTF-8 data while "
+            "parsing protocol buffer. Strings must contain only UTF-8; "
+            "use the 'bytes' type for raw bytes.",
+            errors[0]);
+
+#else
+  ASSERT_EQ(0, errors.size());
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+}
+
+TEST(Utf8ValidationTest, WriteValidUTF8String) {
+  string wire_buffer;
+  protobuf_unittest::OneString input;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    WriteMessage(kValidUTF8String, &input, &wire_buffer);
+    errors = log.GetMessages(ERROR);
+  }
+  ASSERT_EQ(0, errors.size());
+}
+
+TEST(Utf8ValidationTest, ReadValidUTF8String) {
+  string wire_buffer;
+  protobuf_unittest::OneString input;
+  WriteMessage(kValidUTF8String, &input, &wire_buffer);
+  protobuf_unittest::OneString output;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    ReadMessage(wire_buffer, &output);
+    errors = log.GetMessages(ERROR);
+  }
+  ASSERT_EQ(0, errors.size());
+  EXPECT_EQ(input.data(), output.data());
+}
+
+// Bytes: anything can pass as bytes, use invalid UTF-8 string to test
+TEST(Utf8ValidationTest, WriteArbitraryBytes) {
+  string wire_buffer;
+  protobuf_unittest::OneBytes input;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
+    errors = log.GetMessages(ERROR);
+  }
+  ASSERT_EQ(0, errors.size());
+}
+
+TEST(Utf8ValidationTest, ReadArbitraryBytes) {
+  string wire_buffer;
+  protobuf_unittest::OneBytes input;
+  WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
+  protobuf_unittest::OneBytes output;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    ReadMessage(wire_buffer, &output);
+    errors = log.GetMessages(ERROR);
+  }
+  ASSERT_EQ(0, errors.size());
+  EXPECT_EQ(input.data(), output.data());
 }
 
 }  // namespace

@@ -135,6 +135,47 @@ public class WireFormatTest extends TestCase {
     assertFieldsInOrder(dynamic_data);
   }
 
+  private ExtensionRegistry getTestFieldOrderingsRegistry() {
+    ExtensionRegistry result = ExtensionRegistry.newInstance();
+    result.add(UnittestProto.myExtensionInt);
+    result.add(UnittestProto.myExtensionString);
+    return result;
+  }
+
+  public void testParseMultipleExtensionRanges() throws Exception {
+    // Make sure we can parse a message that contains multiple extensions
+    // ranges.
+    TestFieldOrderings source =
+      TestFieldOrderings.newBuilder()
+        .setMyInt(1)
+        .setMyString("foo")
+        .setMyFloat(1.0F)
+        .setExtension(UnittestProto.myExtensionInt, 23)
+        .setExtension(UnittestProto.myExtensionString, "bar")
+        .build();
+    TestFieldOrderings dest =
+      TestFieldOrderings.parseFrom(source.toByteString(),
+                                   getTestFieldOrderingsRegistry());
+    assertEquals(source, dest);
+  }
+
+  public void testParseMultipleExtensionRangesDynamic() throws Exception {
+    // Same as above except with DynamicMessage.
+    Descriptors.Descriptor descriptor = TestFieldOrderings.getDescriptor();
+    DynamicMessage source =
+      DynamicMessage.newBuilder(TestFieldOrderings.getDescriptor())
+        .setField(descriptor.findFieldByName("my_int"), 1L)
+        .setField(descriptor.findFieldByName("my_string"), "foo")
+        .setField(descriptor.findFieldByName("my_float"), 1.0F)
+        .setField(UnittestProto.myExtensionInt.getDescriptor(), 23)
+        .setField(UnittestProto.myExtensionString.getDescriptor(), "bar")
+        .build();
+    DynamicMessage dest =
+      DynamicMessage.parseFrom(descriptor, source.toByteString(),
+                               getTestFieldOrderingsRegistry());
+    assertEquals(source, dest);
+  }
+
   private static final int UNKNOWN_TYPE_ID = 1550055;
   private static final int TYPE_ID_1 =
     TestMessageSetExtension1.getDescriptor().getExtensions().get(0).getNumber();

@@ -87,6 +87,13 @@ class FieldGenerator {
   // GenerateMergeFrom method.
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
 
+  // Generate lines of code (statements, not declarations) which swaps
+  // this field and the corresponding field of another message, which
+  // is stored in the generated code variable "other". This is used to
+  // define the Swap method. Details of usage can be found in
+  // message.cc under the GenerateSwap method.
+  virtual void GenerateSwappingCode(io::Printer* printer) const = 0;
+
   // Generate any initializers needed for the private members declared by
   // GeneratePrivateMembers().  These go into the message class's
   // constructor's initializer list.  For each initializer, this method

@@ -452,6 +452,15 @@ message TestExtremeDefaultValues {
   optional string utf8_string = 6 [default = "\341\210\264"];
 }
 
+// Test String and Bytes: string is for valid UTF-8 strings
+message OneString {
+  optional string data = 1;
+}
+
+message OneBytes {
+  optional bytes data = 1;
+}
+
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}

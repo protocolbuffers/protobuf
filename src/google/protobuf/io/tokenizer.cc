@@ -623,19 +623,17 @@ double Tokenizer::ParseFloat(const string& text) {
   return result;
 }
 
-void Tokenizer::ParseString(const string& text, string* output) {
-  output->clear();
-
+void Tokenizer::ParseStringAppend(const string& text, string* output) {
   // Reminder:  text[0] is always the quote character.  (If text is
   //   empty, it's invalid, so we'll just return.)
   if (text.empty()) {
     GOOGLE_LOG(DFATAL)
-      << " ParseString::ParseString() passed text that could not have been"
-         " tokenized as a string: " << CEscape(text);
+      << " Tokenizer::ParseStringAppend() passed text that could not"
+         " have been tokenized as a string: " << CEscape(text);
     return;
   }
 
-  output->reserve(text.size());
+  output->reserve(output->size() + text.size());
 
   // Loop through the string copying characters to "output" and
   // interpreting escape sequences.  Note that any invalid escape

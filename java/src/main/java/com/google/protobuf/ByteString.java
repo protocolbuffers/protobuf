@@ -35,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 /**
  * Immutable array of bytes.
@@ -151,6 +152,15 @@ public final class ByteString {
     byte[] copy = new byte[size];
     System.arraycopy(this.bytes, 0, copy, 0, size);
     return copy;
+  }
+
+  /**
+   * Constructs a new read-only {@code java.nio.ByteBuffer} with the
+   * same backing byte array.
+   */
+  public ByteBuffer asReadOnlyByteBuffer() {
+    ByteBuffer byteBuffer = ByteBuffer.wrap(this.bytes);
+    return byteBuffer.asReadOnlyBuffer();
   }
 
   /**

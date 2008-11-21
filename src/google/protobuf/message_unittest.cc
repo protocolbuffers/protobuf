@@ -91,6 +91,8 @@ TEST(MessageTest, SerializeHelpers) {
   string temp = stream.str();
   EXPECT_TRUE(temp == str1);
 
+  EXPECT_TRUE(message.SerializeAsString() == str1);
+
 }
 
 TEST(MessageTest, ParseFromFileDescriptor) {

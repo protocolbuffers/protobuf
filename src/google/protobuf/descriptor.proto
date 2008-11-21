@@ -252,6 +252,7 @@ message FileOptions {
   }
   optional OptimizeMode optimize_for = 9 [default=CODE_SIZE];
 
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

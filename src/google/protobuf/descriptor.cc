@@ -1656,6 +1656,10 @@ class DescriptorBuilder {
   //   dependencies.
   Symbol FindSymbol(const string& name);
 
+  // Like FindSymbol() but does not require that the symbol is in one of the
+  // file's declared dependencies.
+  Symbol FindSymbolNotEnforcingDeps(const string& name);
+
   // Like FindSymbol(), but looks up the name relative to some other symbol
   // name.  This first searches siblings of relative_to, then siblings of its
   // parents, etc.  For example, LookupSymbol("foo.bar", "baz.qux.corge") makes
@@ -2016,7 +2020,7 @@ bool DescriptorBuilder::IsInPackage(const FileDescriptor* file,
             file->package()[package_name.size()] == '.');
 }
 
-Symbol DescriptorBuilder::FindSymbol(const string& name) {
+Symbol DescriptorBuilder::FindSymbolNotEnforcingDeps(const string& name) {
   Symbol result;
 
   // We need to search our pool and all its underlays.
@@ -2034,6 +2038,12 @@ Symbol DescriptorBuilder::FindSymbol(const string& name) {
     if (pool->underlay_ == NULL) return kNullSymbol;
     pool = pool->underlay_;
   }
+
+  return result;
+}
+
+Symbol DescriptorBuilder::FindSymbol(const string& name) {
+  Symbol result = FindSymbolNotEnforcingDeps(name);
 
   if (!pool_->enforce_dependencies_) {
     // Hack for CompilerUpgrader.
@@ -3315,7 +3325,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   // Note that we use DescriptorBuilder::FindSymbol(), not
   // DescriptorPool::FindMessageTypeByName() because we're already holding the
   // pool's mutex, and the latter method locks it again.
-  Symbol symbol = builder_->FindSymbol(options->GetDescriptor()->full_name());
+  Symbol symbol = builder_->FindSymbolNotEnforcingDeps(
+    options->GetDescriptor()->full_name());
   if (!symbol.IsNull() && symbol.type == Symbol::MESSAGE) {
     options_descriptor = symbol.descriptor;
   } else {
@@ -3362,11 +3373,14 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
       debug_msg_name += name_part;
       // Search for the field's descriptor as a regular field in the builder's
       // pool. First we must qualify it by its message name. Note that we use
-      // DescriptorBuilder::FindSymbol(), not DescriptorPool::FindFieldByName()
-      // because we're already holding the pool's mutex, and the latter method
-      // locks it again.
+      // DescriptorBuilder::FindSymbolNotEnforcingDeps(), not
+      // DescriptorPool::FindFieldByName() because we're already holding the
+      // pool's mutex, and the latter method locks it again.  We must not
+      // enforce dependencies here because we did not enforce dependencies
+      // when looking up |descriptor|, and we need the two to match.
       string fully_qualified_name = descriptor->full_name() + "." + name_part;
-      Symbol symbol = builder_->FindSymbol(fully_qualified_name);
+      Symbol symbol =
+        builder_->FindSymbolNotEnforcingDeps(fully_qualified_name);
       if (!symbol.IsNull() && symbol.type == Symbol::FIELD) {
         field = symbol.field_descriptor;
       } else {
@@ -3378,7 +3392,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
       }
     }
 
-    if (!field) {
+    if (field == NULL) {
       return AddNameError("Option \"" + debug_msg_name + "\" unknown.");
     } else if (field->containing_type() != descriptor) {
       // This can only happen if, due to some insane misconfiguration of the
@@ -3670,10 +3684,11 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         fully_qualified_name += value_name;
 
         // Search for the enum value's descriptor in the builder's pool. Note
-        // that we use DescriptorBuilder::LookupSymbol(), not
+        // that we use DescriptorBuilder::FindSymbolNotEnforcingDeps(), not
         // DescriptorPool::FindEnumValueByName() because we're already holding
         // the pool's mutex, and the latter method locks it again.
-        Symbol symbol = builder_->FindSymbol(fully_qualified_name);
+        Symbol symbol =
+          builder_->FindSymbolNotEnforcingDeps(fully_qualified_name);
         if (!symbol.IsNull() && symbol.type == Symbol::ENUM_VALUE) {
           if (symbol.enum_value_descriptor->type() != enum_type) {
             return AddValueError("Enum type \"" + enum_type->full_name() +

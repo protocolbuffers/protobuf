@@ -139,6 +139,9 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // result is undefined (possibly an assert failure).
   static void ParseString(const string& text, string* output);
 
+  // Identical to ParseString, but appends to output.
+  static void ParseStringAppend(const string& text, string* output);
+
   // Parses a TYPE_INTEGER token.  Returns false if the result would be
   // greater than max_value.  Otherwise, returns true and sets *output to the
   // result.  If the text is not from a Token of type TYPE_INTEGER originally
@@ -281,6 +284,11 @@ class LIBPROTOBUF_EXPORT Tokenizer {
 // inline methods ====================================================
 inline const Tokenizer::Token& Tokenizer::current() {
   return current_;
+}
+
+inline void Tokenizer::ParseString(const string& text, string* output) {
+  output->clear();
+  ParseStringAppend(text, output);
 }
 
 }  // namespace io

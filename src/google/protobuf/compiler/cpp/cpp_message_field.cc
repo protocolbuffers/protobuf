@@ -111,6 +111,11 @@ GenerateMergingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
+}
+
+void MessageFieldGenerator::
 GenerateInitializer(io::Printer* printer) const {
   printer->Print(variables_, ",\n$name$_(NULL)");
 }
@@ -199,6 +204,11 @@ GenerateClearingCode(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.MergeFrom(from.$name$_);\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_.Swap(&other->$name$_);\n");
 }
 
 void RepeatedMessageFieldGenerator::
