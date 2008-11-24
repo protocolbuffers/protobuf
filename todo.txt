@@ -2,7 +2,6 @@ Current task list (not in order)
 
 Diff stuff
 
-- Refactor IsInitialized
 - Performance framework
 - Optionally remove dependencies to core and csharp options
 - Remove multifile support

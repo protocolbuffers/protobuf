@@ -84,20 +84,14 @@ namespace Google.ProtocolBuffers {
 
     public override bool IsInitialized {
       get {
-       /* if (!DescriptorForType.HasRequiredFields) {
-          return true;
-        }*/
-        // Check that all required fields are present.
         foreach (FieldDescriptor field in DescriptorForType.Fields) {
+          // Check that all required fields are present.
           if (field.IsRequired && !HasField(field)) {
             return false;
           }
-        }
-
-        // Check that embedded messages are initialized.
-        // This code is similar to that in AbstractMessage, but we don't
-        // fetch all the field values - just the ones we need to.
-        foreach (FieldDescriptor field in DescriptorForType.Fields) {
+          // Check that embedded messages are initialized.
+          // This code is similar to that in AbstractMessage, but we don't
+          // fetch all the field values - just the ones we need to.
           if (field.MappedType == MappedType.Message) {
             if (field.IsRepeated) {
               // We know it's an IList<T>, but not the exact type - so
