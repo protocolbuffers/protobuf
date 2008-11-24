@@ -80,6 +80,7 @@
       <arg file="${protos-dir}/google/protobuf/unittest_import.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_mset.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_optimize_for.proto" />
+      <arg file="${protos-dir}/tutorial/addressbook.proto" />
     </exec>
     
     <exec program="${tools-protogen}"
@@ -105,6 +106,12 @@
         <include name="UnitTestImportProtoFile.cs" />
         <include name="UnitTestMessageSetProtoFile.cs" />
         <include name="UnitTestOptimizeForProtoFile.cs" />
+      </fileset>
+    </copy>
+    
+    <copy todir="${src}/AddressBook">
+      <fileset basedir="${tmp-dir}">
+        <include name="AddressBookProtos.cs" />
       </fileset>
     </copy>
   </target>

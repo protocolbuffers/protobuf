@@ -1,9 +1,8 @@
 Current task list (not in order)
 
-Diff stuff
-
 - Performance framework
-- Optionally remove dependencies to core and csharp options
+- Optionally remove dependencies to core and csharp options (2.0.3
+  will remove core dependency)
 - Remove multifile support
 - Mono support
 - Docs
