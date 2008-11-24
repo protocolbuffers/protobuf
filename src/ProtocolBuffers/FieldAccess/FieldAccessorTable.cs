@@ -54,6 +54,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
    /// <summary>
     /// Constructs a FieldAccessorTable for a particular message class.
     /// Only one FieldAccessorTable should be constructed per class.
+    /// The property names should all actually correspond with the field descriptor's
+    /// CSharpOptions.PropertyName property, but bootstrapping issues currently
+    /// prevent us from using that. This may be addressed at a future time, in which case
+    /// we can keep this constructor for backwards compatibility, just ignoring the parameter.
+    /// TODO(jonskeet): Make it so.
     /// </summary>
     /// <param name="descriptor">The type's descriptor</param>
     /// <param name="propertyNames">The Pascal-case names of all the field-based properties in the message.</param>

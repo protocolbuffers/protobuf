@@ -51,7 +51,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
           FullClassName, identifier);
       writer.Print("        new string[] { ");
       foreach (FieldDescriptor field in Descriptor.Fields) {
-        writer.Write("\"{0}\", ", NameHelpers.UnderscoresToPascalCase(GetFieldName(field)));
+        writer.Write("\"{0}\", ", field.CSharpOptions.PropertyName);
       }
       writer.WriteLine("});");
 
@@ -415,7 +415,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // "has" fields into a single bitfield.
       foreach (FieldDescriptor field in Descriptor.Fields) {
         if (field.IsRequired) {
-          writer.WriteLine("if (!has{0}) return false;", NameHelpers.UnderscoresToPascalCase(field.Name));
+          writer.WriteLine("if (!has{0}) return false;", field.CSharpOptions.PropertyName);
         }
       }
   

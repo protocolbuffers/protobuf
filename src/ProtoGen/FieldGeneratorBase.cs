@@ -79,10 +79,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
-    protected string CapitalizedName {
-      get { return NameHelpers.UnderscoresToPascalCase(GetFieldName(Descriptor)); }
-    }
-
     protected string Name {
       get { return NameHelpers.UnderscoresToCamelCase(GetFieldName(Descriptor)); }
     }

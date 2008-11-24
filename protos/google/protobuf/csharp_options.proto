@@ -22,9 +22,8 @@ extend FieldOptions {
 
 message CSharpFieldOptions {
   // Provides the ability to override the name of the property
-  // generated for this field. This does not currently work with
-  // messages optimised for reflection, and is only applied to the
-  // actual property rather than associated methods. (Careful
-  // consideration needed here...)
+  // generated for this field. This is applied to all properties
+  // and methods to do with this field, including HasFoo, FooCount,
+  // FooList etc.
   optional string property_name = 1;
 }

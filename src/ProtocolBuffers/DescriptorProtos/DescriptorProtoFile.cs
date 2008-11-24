@@ -185,7 +185,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         = internal__static_google_protobuf_UninterpretedOption__Descriptor.NestedTypes[0];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder> internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder>(internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor,
-            new string[] { "NamePart", "IsExtension", });
+            new string[] { "NamePart_", "IsExtension", });
     #endregion
   }
   #region Messages
@@ -5517,10 +5517,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
         
-        private bool hasNamePart;
+        private bool hasNamePart_;
         private string namePart_ = "";
-        public bool HasNamePart {
-          get { return hasNamePart; }
+        public bool HasNamePart_ {
+          get { return hasNamePart_; }
         }
         public string NamePart_ {
           get { return namePart_; }
@@ -5537,14 +5537,14 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         
         public override bool IsInitialized {
           get {
-            if (!hasNamePart) return false;
+            if (!hasNamePart_) return false;
             if (!hasIsExtension) return false;
             return true;
           }
         }
         
         public override void WriteTo(pb::CodedOutputStream output) {
-          if (HasNamePart) {
+          if (HasNamePart_) {
             output.WriteString(1, NamePart_);
           }
           if (HasIsExtension) {
@@ -5560,7 +5560,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasNamePart) {
+            if (HasNamePart_) {
               size += pb::CodedOutputStream.ComputeStringSize(1, NamePart_);
             }
             if (HasIsExtension) {
@@ -5648,7 +5648,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           
           public override Builder MergeFrom(NamePart other) {
             if (other == NamePart.DefaultInstance) return this;
-            if (other.HasNamePart) {
+            if (other.HasNamePart_) {
               NamePart_ = other.NamePart_;
             }
             if (other.HasIsExtension) {
@@ -5691,20 +5691,20 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           
-          public bool HasNamePart {
-            get { return result.HasNamePart; }
+          public bool HasNamePart_ {
+            get { return result.HasNamePart_; }
           }
           public string NamePart_ {
             get { return result.NamePart_; }
-            set { SetNamePart(value); }
+            set { SetNamePart_(value); }
           }
-          public Builder SetNamePart(string value) {
-            result.hasNamePart = true;
+          public Builder SetNamePart_(string value) {
+            result.hasNamePart_ = true;
             result.namePart_ = value;
             return this;
           }
-          public Builder ClearNamePart() {
-            result.hasNamePart = false;
+          public Builder ClearNamePart_() {
+            result.hasNamePart_ = false;
             result.namePart_ = "";
             return this;
           }

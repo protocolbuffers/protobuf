@@ -55,11 +55,9 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     internal SinglePrimitiveAccessor(string name) {
-
-      string propertyName = name == typeof(TMessage).Name ? name + "_" : name;
-      PropertyInfo messageProperty = typeof(TMessage).GetProperty(propertyName);
-      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name); // FIXME!
-      if (builderProperty == null) builderProperty = typeof(TBuilder).GetProperty(propertyName); // FIXME!
+      PropertyInfo messageProperty = typeof(TMessage).GetProperty(name);
+      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name);
+      if (builderProperty == null) builderProperty = typeof(TBuilder).GetProperty(name);
       PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
       MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, Type.EmptyTypes);
       if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null) {
