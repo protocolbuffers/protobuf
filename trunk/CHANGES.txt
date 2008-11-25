@@ -1,3 +1,53 @@
+2008-11-25 version 2.0.3:
+
+  protoc
+  * Enum values may now have custom options, using syntax similar to field
+    options.
+  * Fixed bug where .proto files which use custom options but don't actually
+    define them (i.e. they import another .proto file defining the options)
+    had to explicitly import descriptor.proto.
+  * Adjacent string literals in .proto files will now be concatenated, like in
+    C.
+
+  C++
+  * Generated message classes now have a Swap() method which efficiently swaps
+    the contents of two objects.
+  * All message classes now have a SpaceUsed() method which returns an estimate
+    of the number of bytes of allocated memory currently owned by the object.
+    This is particularly useful when you are reusing a single message object
+    to improve performance but want to make sure it doesn't bloat up too large.
+  * New method Message::SerializeAsString() returns a string containing the
+    serialized data.  May be more convenient than calling
+    SerializeToString(string*).
+  * In debug mode, log error messages when string-type fields are found to
+    contain bytes that are not valid UTF-8.
+  * Fixed bug where a message with multiple extension ranges couldn't parse
+    extensions.
+  * Fixed bug where MergeFrom(const Message&) didn't do anything if invoked on
+    a message that contained no fields (but possibly contained extensions).
+  * Fixed ShortDebugString() to not be O(n^2).  Durr.
+  * Fixed crash in TextFormat parsing if the first token in the input caused a
+    tokenization error.
+  * Fixed obscure bugs in zero_copy_stream_impl.cc.
+  * Added support for HP C++ on Tru64.
+  * Only build tests on "make check", not "make".
+  * Fixed alignment issue that caused crashes when using DynamicMessage on
+    64-bit Sparc machines.
+  * Simplify template usage to work with MSVC 2003.
+  * Work around GCC 4.3.x x86_64 compiler bug that caused crashes on startup.
+    (This affected Fedora 9 in particular.)
+
+  Java
+  * New overload of mergeFrom() which parses a slice of a byte array instead
+    of the whole thing.
+  * New method ByteString.asReadOnlyByteBuffer() does what it sounds like.
+  * Improved performance of isInitialized() when optimizing for code size.
+
+  Python
+  * Corrected ListFields() signature in Message base class to match what
+    subclasses actually implement.
+  * Some minor refactoring.
+
 2008-09-29 version 2.0.2:
 
   General
