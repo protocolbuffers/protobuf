@@ -7,6 +7,7 @@ AC_PREREQ(2.59)
 # * java/pom.xml
 # * python/setup.py
 # * src/google/protobuf/stubs/common.h
+# * src/Makefile.am (Update -version-info for LDFLAGS if needed)
 AC_INIT([protobuf],[2.0.3-SNAPSHOT],[protobuf@googlegroups.com])
 
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
