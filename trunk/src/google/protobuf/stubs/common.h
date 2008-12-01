@@ -87,20 +87,20 @@ namespace internal {
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 2000002
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 2000003
 
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 2000002;
+static const int kMinHeaderVersionForLibrary = 2000003;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 2000002
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 2000003
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 2000002;
+static const int kMinHeaderVersionForProtoc = 2000003;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
