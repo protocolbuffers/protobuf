@@ -153,7 +153,7 @@ class GeneratedProtocolMessageType(type):
     _AddMessageMethods(descriptor, cls)
     _AddPrivateHelperMethods(cls)
     superclass = super(GeneratedProtocolMessageType, cls)
-    superclass.__init__(cls, name, bases, dictionary)
+    superclass.__init__(name, bases, dictionary)
 
 
 # Stateless helpers for GeneratedProtocolMessageType below.
