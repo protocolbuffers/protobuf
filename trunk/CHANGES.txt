@@ -8,6 +8,11 @@
     had to explicitly import descriptor.proto.
   * Adjacent string literals in .proto files will now be concatenated, like in
     C.
+  * If an input file is a Windows absolute path (e.g. "C:\foo\bar.proto") and
+    the import path only contains "." (or contains "." but does not contain
+    the file), protoc incorrectly thought that the file was under ".", because
+    it thought that the path was relative (since it didn't start with a slash).
+    This has been fixed.
 
   C++
   * Generated message classes now have a Swap() method which efficiently swaps
@@ -47,6 +52,8 @@
   * Corrected ListFields() signature in Message base class to match what
     subclasses actually implement.
   * Some minor refactoring.
+  * Don't pass self as first argument to superclass constructor (no longer
+    allowed in Python 2.6).
 
 2008-09-29 version 2.0.2:
 
