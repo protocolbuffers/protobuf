@@ -1554,6 +1554,9 @@ TEST(CustomOptions, OptionLocations) {
             field->options().GetExtension(protobuf_unittest::field_opt2));
   EXPECT_EQ(-789,
             enm->options().GetExtension(protobuf_unittest::enum_opt1));
+  EXPECT_EQ(123,
+            enm->value(1)->options().GetExtension(
+              protobuf_unittest::enum_value_opt1));
   EXPECT_EQ(GOOGLE_LONGLONG(-9876543210),
             service->options().GetExtension(protobuf_unittest::service_opt1));
   EXPECT_EQ(protobuf_unittest::METHODOPT1_VAL2,
