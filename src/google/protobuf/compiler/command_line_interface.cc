@@ -93,7 +93,8 @@ static const char* kPathSeparator = ":";
 #endif
 
 // Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".
+// with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
+// copy in importer.cc?
 static bool IsWindowsAbsolutePath(const string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
   return text.size() >= 3 && text[1] == ':' &&

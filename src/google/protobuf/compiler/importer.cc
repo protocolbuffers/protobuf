@@ -61,6 +61,20 @@ namespace compiler {
 #endif
 #endif
 
+// Returns true if the text looks like a Windows-style absolute path, starting
+// with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
+// copy in command_line_interface.cc?
+static bool IsWindowsAbsolutePath(const string& text) {
+#if defined(_WIN32) || defined(__CYGWIN__)
+  return text.size() >= 3 && text[1] == ':' &&
+         isalpha(text[0]) &&
+         (text[2] == '/' || text[2] == '\\') &&
+         text.find_last_of(':') == 1;
+#else
+  return false;
+#endif
+}
+
 MultiFileErrorCollector::~MultiFileErrorCollector() {}
 
 // This class serves two purposes:
@@ -276,7 +290,8 @@ static bool ApplyMapping(const string& filename,
       // We do not allow the file name to use "..".
       return false;
     }
-    if (HasPrefixString(filename, "/")) {
+    if (HasPrefixString(filename, "/") ||
+        IsWindowsAbsolutePath(filename)) {
       // This is an absolute path, so it isn't matched by the empty string.
       return false;
     }

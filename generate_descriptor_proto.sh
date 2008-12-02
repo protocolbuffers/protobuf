@@ -22,6 +22,6 @@ __EOF__
   exit 1
 fi
 
-pushd src
+cd src
 make protoc && ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. google/protobuf/descriptor.proto
-popd
+cd ..
