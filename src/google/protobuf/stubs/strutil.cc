@@ -35,6 +35,7 @@
 #include <float.h>    // FLT_DIG and DBL_DIG
 #include <limits>
 #include <limits.h>
+#include <stdio.h>
 
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.

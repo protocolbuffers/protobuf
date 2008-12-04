@@ -34,6 +34,7 @@
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <locale.h>
 
 namespace google {
 namespace protobuf {
