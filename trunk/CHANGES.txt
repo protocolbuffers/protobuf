@@ -41,6 +41,7 @@
   * Simplify template usage to work with MSVC 2003.
   * Work around GCC 4.3.x x86_64 compiler bug that caused crashes on startup.
     (This affected Fedora 9 in particular.)
+  * Now works on "Solaris 10 using recent Sun Studio".
 
   Java
   * New overload of mergeFrom() which parses a slice of a byte array instead
