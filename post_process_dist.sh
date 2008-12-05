@@ -1,0 +1,60 @@
+#! /bin/sh
+
+# This script takes the result of "make dist" and:
+# 1) Unpacks it.
+# 2) Ensures all contents are user-writable.  Some version control systems
+#    keep code read-only until you explicitly ask to edit it, and the normal
+#    "make dist" process does not correct for this, so the result is that
+#    the entire dist is still marked read-only when unpacked, which is
+#    annoying.  So, we fix it.
+# 3) Convert MSVC project files to MSVC 2005, so that anyone who has version
+#    2005 *or* 2008 can open them.  (In version control, we keep things in
+#    MSVC 2008 format since that's what we use in development.)
+# 4) Uses the result to create .tar.gz, .tar.bz2, and .zip versions and
+#    deposites them in the "dist" directory.  In the .zip version, all
+#    non-testdata .txt files are converted to Windows-style line endings.
+# 5) Cleans up after itself.
+
+if [ "$1" == "" ]; then
+  echo "USAGE:  $1 DISTFILE" >&2
+  exit 1
+fi
+
+if [ ! -e $1 ]; then
+  echo $1": File not found." >&2
+  exit 1
+fi
+
+set -ex
+
+BASENAME=`basename $1 .tar.gz`
+
+# Create a directory called "dist", copy the tarball there and unpack it.
+mkdir dist
+cp $1 dist
+cd dist
+tar zxvf $BASENAME.tar.gz
+rm $BASENAME.tar.gz
+
+# Set the entire contents to be user-writable.
+chmod -R u+w $BASENAME
+
+# Convert the MSVC projects to MSVC 2005 format.
+cd $BASENAME/vsprojects
+./convert2008to2005.sh
+cd ..
+
+# Build the dist again in .tar.gz and .tar.bz2 formats.
+./configure
+make dist-gzip
+make dist-bzip2
+
+# Convert all text files to use DOS-style line endings, then build a .zip
+# distribution.
+todos *.txt */*.txt
+make dist-zip
+
+# Clean up.
+mv $BASENAME.tar.gz $BASENAME.tar.bz2 $BASENAME.zip ..
+cd ..
+rm -rf $BASENAME
