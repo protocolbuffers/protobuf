@@ -472,10 +472,6 @@ namespace Google.ProtocolBuffers {
       internal bool MergeFieldFrom(CodedInputStream input, 
           ExtensionRegistry extensionRegistry, IBuilder builder, uint tag) {
 
-        if (DescriptorProtoFile.Bootstrapping) {
-          return MergeFieldFrom(tag, input);
-        }
-
         MessageDescriptor type = builder.DescriptorForType;
         if (type.Options.MessageSetWireFormat && tag == WireFormat.MessageSetTag.ItemStart) {
           MergeMessageSetExtensionFromCodedStream(input, extensionRegistry, builder);

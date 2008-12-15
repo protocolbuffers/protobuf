@@ -35,20 +35,6 @@
 // IDescriptorProto
 namespace Google.ProtocolBuffers.DescriptorProtos {
 
-  // TODO(jonskeet): Find a better way of fixing this. It's needed in order to
-  // cope with unknown fields during initialization.
-  public partial class DescriptorProtoFile {
-    private static readonly bool initialized = false;
-
-    internal static bool Bootstrapping {
-      get { return !initialized; }
-    }
-
-    static DescriptorProtoFile() {
-      initialized = true;
-    }
-  }
-
   public partial class DescriptorProto : IDescriptorProto<MessageOptions> { }
   public partial class EnumDescriptorProto : IDescriptorProto<EnumOptions> { }
   public partial class EnumValueDescriptorProto : IDescriptorProto<EnumValueOptions> { }
