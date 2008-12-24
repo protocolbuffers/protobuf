@@ -1,3 +1,9 @@
+version 2.0.4:
+
+  Python
+  * Added slicing support for repeated scalar fields. Added slice retrieval and
+    removal of repeated composite fields.
+
 2008-11-25 version 2.0.3:
 
   protoc

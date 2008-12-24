@@ -94,16 +94,20 @@ class RepeatedScalarFieldContainer(BaseContainer):
     super(RepeatedScalarFieldContainer, self).__init__(message_listener)
     self._type_checker = type_checker
 
-  def append(self, elem):
-    """Appends a scalar to the list. Similar to list.append()."""
-    self._type_checker.CheckValue(elem)
-    self._values.append(elem)
+  def append(self, value):
+    """Appends an item to the list. Similar to list.append()."""
+    self.insert(len(self._values), value)
+
+  def insert(self, key, value):
+    """Inserts the item at the specified position. Similar to list.insert()."""
+    self._type_checker.CheckValue(value)
+    self._values.insert(key, value)
     self._message_listener.ByteSizeDirty()
     if len(self._values) == 1:
       self._message_listener.TransitionToNonempty()
 
   def remove(self, elem):
-    """Removes a scalar from the list. Similar to list.remove()."""
+    """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)
     self._message_listener.ByteSizeDirty()
 
@@ -115,6 +119,27 @@ class RepeatedScalarFieldContainer(BaseContainer):
     self._message_listener.ByteSizeDirty()
     self._type_checker.CheckValue(value)
     self._values[key] = value
+
+  def __getslice__(self, start, stop):
+    """Retrieves the subset of items from between the specified indices."""
+    return self._values[start:stop]
+
+  def __setslice__(self, start, stop, values):
+    """Sets the subset of items from between the specified indices."""
+    for value in values:
+      self._type_checker.CheckValue(value)
+    self._values[start:stop] = list(values)
+    self._message_listener.ByteSizeDirty()
+
+  def __delitem__(self, key):
+    """Deletes the item at the specified position."""
+    del self._values[key]
+    self._message_listener.ByteSizeDirty()
+
+  def __delslice__(self, start, stop):
+    """Deletes the subset of items from between the specified indices."""
+    del self._values[start:stop]
+    self._message_listener.ByteSizeDirty()
 
   def __eq__(self, other):
     """Compares the current instance with another one."""
@@ -154,7 +179,6 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     self._message_descriptor = message_descriptor
 
   def add(self):
-    """Adds a new element to the list and returns it."""
     new_element = self._message_descriptor._concrete_class()
     new_element._SetListener(self._message_listener)
     self._values.append(new_element)
@@ -162,10 +186,19 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     self._message_listener.TransitionToNonempty()
     return new_element
 
+  def __getslice__(self, start, stop):
+    """Retrieves the subset of items from between the specified indices."""
+    return self._values[start:stop]
+
   def __delitem__(self, key):
-    """Deletes the element on the specified position."""
-    self._message_listener.ByteSizeDirty()
+    """Deletes the item at the specified position."""
     del self._values[key]
+    self._message_listener.ByteSizeDirty()
+
+  def __delslice__(self, start, stop):
+    """Deletes the subset of items from between the specified indices."""
+    del self._values[start:stop]
+    self._message_listener.ByteSizeDirty()
 
   def __eq__(self, other):
     """Compares the current instance with another one."""
@@ -175,5 +208,3 @@ class RepeatedCompositeFieldContainer(BaseContainer):
       raise TypeError('Can only compare repeated composite fields against '
                       'other repeated composite fields.')
     return self._values == other._values
-
-  # TODO(robinson): Implement, document, and test slicing support.

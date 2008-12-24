@@ -56,7 +56,12 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import decoder
 
 
-class RefectionTest(unittest.TestCase):
+class ReflectionTest(unittest.TestCase):
+
+  def assertIs(self, values, others):
+    self.assertEqual(len(values), len(others))
+    for i in range(len(values)):
+      self.assertTrue(values[i] is others[i])
 
   def testSimpleHasBits(self):
     # Test a scalar.
@@ -411,14 +416,17 @@ class RefectionTest(unittest.TestCase):
 
     self.assertTrue(not proto.repeated_int32)
     self.assertEqual(0, len(proto.repeated_int32))
-    proto.repeated_int32.append(5);
-    proto.repeated_int32.append(10);
+    proto.repeated_int32.append(5)
+    proto.repeated_int32.append(10)
+    proto.repeated_int32.append(15)
     self.assertTrue(proto.repeated_int32)
-    self.assertEqual(2, len(proto.repeated_int32))
+    self.assertEqual(3, len(proto.repeated_int32))
 
-    self.assertEqual([5, 10], proto.repeated_int32)
+    self.assertEqual([5, 10, 15], proto.repeated_int32)
+
+    # Test single retrieval.
     self.assertEqual(5, proto.repeated_int32[0])
-    self.assertEqual(10, proto.repeated_int32[-1])
+    self.assertEqual(15, proto.repeated_int32[-1])
     # Test out-of-bounds indices.
     self.assertRaises(IndexError, proto.repeated_int32.__getitem__, 1234)
     self.assertRaises(IndexError, proto.repeated_int32.__getitem__, -1234)
@@ -426,11 +434,36 @@ class RefectionTest(unittest.TestCase):
     self.assertRaises(TypeError, proto.repeated_int32.__getitem__, 'foo')
     self.assertRaises(TypeError, proto.repeated_int32.__getitem__, None)
 
+    # Test single assignment.
+    proto.repeated_int32[1] = 20
+    self.assertEqual([5, 20, 15], proto.repeated_int32)
+
+    # Test insertion.
+    proto.repeated_int32.insert(1, 25)
+    self.assertEqual([5, 25, 20, 15], proto.repeated_int32)
+
+    # Test slice retrieval.
+    proto.repeated_int32.append(30)
+    self.assertEqual([25, 20, 15], proto.repeated_int32[1:4])
+    self.assertEqual([5, 25, 20, 15, 30], proto.repeated_int32[:])
+
+    # Test slice assignment.
+    proto.repeated_int32[1:4] = [35, 40, 45]
+    self.assertEqual([5, 35, 40, 45, 30], proto.repeated_int32)
+
     # Test that we can use the field as an iterator.
     result = []
     for i in proto.repeated_int32:
       result.append(i)
-    self.assertEqual([5, 10], result)
+    self.assertEqual([5, 35, 40, 45, 30], result)
+
+    # Test single deletion.
+    del proto.repeated_int32[2]
+    self.assertEqual([5, 35, 45, 30], proto.repeated_int32)
+
+    # Test slice deletion.
+    del proto.repeated_int32[2:]
+    self.assertEqual([5, 35], proto.repeated_int32)
 
     # Test clearing.
     proto.ClearField('repeated_int32')
@@ -474,8 +507,7 @@ class RefectionTest(unittest.TestCase):
     m1 = proto.repeated_nested_message.add()
     self.assertTrue(proto.repeated_nested_message)
     self.assertEqual(2, len(proto.repeated_nested_message))
-    self.assertTrue(m0 is proto.repeated_nested_message[0])
-    self.assertTrue(m1 is proto.repeated_nested_message[1])
+    self.assertIs([m0, m1], proto.repeated_nested_message)
     self.assertTrue(isinstance(m0, unittest_pb2.TestAllTypes.NestedMessage))
 
     # Test out-of-bounds indices.
@@ -490,18 +522,26 @@ class RefectionTest(unittest.TestCase):
     self.assertRaises(TypeError, proto.repeated_nested_message.__getitem__,
                       None)
 
+    # Test slice retrieval.
+    m2 = proto.repeated_nested_message.add()
+    m3 = proto.repeated_nested_message.add()
+    m4 = proto.repeated_nested_message.add()
+    self.assertIs([m1, m2, m3], proto.repeated_nested_message[1:4])
+    self.assertIs([m0, m1, m2, m3, m4], proto.repeated_nested_message[:])
+
     # Test that we can use the field as an iterator.
     result = []
     for i in proto.repeated_nested_message:
       result.append(i)
-    self.assertEqual(2, len(result))
-    self.assertTrue(m0 is result[0])
-    self.assertTrue(m1 is result[1])
+    self.assertIs([m0, m1, m2, m3, m4], result)
 
-    # Test item deletion.
-    del proto.repeated_nested_message[0]
-    self.assertEqual(1, len(proto.repeated_nested_message))
-    self.assertTrue(m1 is proto.repeated_nested_message[0])
+    # Test single deletion.
+    del proto.repeated_nested_message[2]
+    self.assertIs([m0, m1, m3, m4], proto.repeated_nested_message)
+
+    # Test slice deletion.
+    del proto.repeated_nested_message[2:]
+    self.assertIs([m0, m1], proto.repeated_nested_message)
 
     # Test clearing.
     proto.ClearField('repeated_nested_message')
