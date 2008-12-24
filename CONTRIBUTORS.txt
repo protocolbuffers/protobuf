@@ -53,3 +53,5 @@ Non-Google patch contributors:
     * Tru64 support.
   Monty Taylor <monty.taylor@gmail.com>
     * Solaris 10 + Sun Studio fix.
+  Alek Storm <alek.storm@gmail.com>
+    * Slicing support for repeated scalar fields for the Python API.
