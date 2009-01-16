@@ -15,6 +15,7 @@
   
   <property name="src"
             value="${project::get-base-directory()}/src" />
+
   
   <property name="tools-protoc" 
             value="${project::get-base-directory()}/lib/protoc.exe"
@@ -25,6 +26,11 @@
             value="${path::combine(project::get-base-directory(), 'dist')}"
             overwrite="false" />            
 
+  <!-- Directory to find test data -->
+  <property name="testdata-dir"
+            value="${path::combine(project::get-base-directory(), 'testdata')}"
+            overwrite="false" />
+            
   <!-- Base directory to find protos (core, C# options, tests) -->
   <property name="protos-dir"
             value="${path::combine(project::get-base-directory(), 'protos')}"
@@ -37,13 +43,16 @@
   
   <!-- Which version of protogen to use when regenerating source -->
   <property name="tools-protogen-config"
-            value="Debug"
+            value="${build-configuration}"
             overwrite="false" />
   
   <property name="tools-protogen" 
             value="${src}/ProtoGen/bin/${tools-protogen-config}/protogen.exe" 
             overwrite="false"/>
-  
+
+  <property name="tools-protobench" value="${src}/ProtoBench/bin/${build-configuration}/protobench.exe" 
+            overwrite="false"/>
+
   <target name="clean-build"
           description="Rebuilds all source and binaries, including distribution">
 
@@ -96,6 +105,7 @@
       <arg value="--proto_path=${protos-dir}" />
       <arg value="--descriptor_set_out=compiled.pb" />
       <arg file="${protos-dir}/google/protobuf/benchmark.proto" />
+      <arg file="${protos-dir}/google/protobuf/benchmark_speed.proto" />
       <arg file="${protos-dir}/google/protobuf/descriptor.proto" />
       <arg file="${protos-dir}/google/protobuf/csharp_options.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest.proto" />
@@ -142,10 +152,11 @@
     <copy todir="${src}/ProtoBench">
       <fileset basedir="${tmp-dir}">
         <include name="BenchmarkProtoFile.cs" />
+        <include name="BenchmarkSpeedProtoFile.cs" />
       </fileset>
     </copy>
   </target>
-      
+
   <target name="build"
           description="Builds all C# code">
     <msbuild project="${src}/ProtocolBuffers.sln">
@@ -165,7 +176,17 @@
   
   <target name="perf-test"
           description="Runs all performance tests">
-    <fail message="Performance tests not implemented yet" />
+    <exec program="${tools-protobench}"
+          workingdir="${testdata-dir}">
+      <arg value="Google.ProtocolBuffers.BenchmarkProtos.Message1,ProtoBench" />
+      <arg value="benchmark_message1.dat" />
+      <arg value="Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage1,ProtoBench" />
+      <arg value="benchmark_message1.dat" />
+      <arg value="Google.ProtocolBuffers.BenchmarkProtos.Message3,ProtoBench" />
+      <arg value="benchmark_message3.dat" />
+      <arg value="Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3,ProtoBench" />
+      <arg value="benchmark_message3.dat" />
+    </exec>    
   </target>
   
   <target name="dist" 

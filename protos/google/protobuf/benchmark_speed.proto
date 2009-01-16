@@ -1,10 +1,12 @@
 import "google/protobuf/csharp_options.proto";
 option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.BenchmarkProtos";
-option (google.protobuf.csharp_file_options).umbrella_classname = "BenchmarkProtoFile";
+option (google.protobuf.csharp_file_options).umbrella_classname = "BenchmarkSpeedProtoFile";
 
 package proto2.benchmark.v2_api;
 
-message Message1 {
+option optimize_for = SPEED;
+
+message SpeedMessage1 {
   required string field1 = 1;
   optional string field9 = 9;
   optional string field18 = 18;
@@ -39,7 +41,7 @@ message Message1 {
   optional int32 field23 = 23 [default=0];
   optional bool field24 = 24 [default=false];
   optional int32 field25 = 25 [default=0];
-  optional Message2 field15 = 15;
+  optional SpeedMessage2 field15 = 15;
   optional bool field78 = 78;
   optional int32 field67 = 67 [default=0];
   optional int32 field68 = 68;
@@ -48,7 +50,7 @@ message Message1 {
   optional int32 field131 = 131 [default=0];
 }
 
-message Message2 {
+message SpeedMessage2 {
   optional int32 field1 = 1 [default=0];
   optional int32 field2 = 2 [default=0];
   optional int32 field3 = 3 [default=0];
@@ -71,7 +73,7 @@ message Message2 {
   optional uint64 field300 = 300;
 }
 
-message Message3 {
+message SpeedMessage3 {
   optional string field1 = 1;
   optional int64 field3 = 3;
   optional int64 field4 = 4;
@@ -111,7 +113,7 @@ message Message3 {
     repeated int32 field73 = 73;
     optional int32 field20 = 20 [default=0];
     optional string field24 = 24;
-    optional Message4 field31 = 31;
+    optional SpeedMessage4 field31 = 31;
   }
   repeated string field128 = 128;
   optional int64 field131 = 131;
@@ -122,7 +124,7 @@ message Message3 {
   optional bool field206 = 206 [default=false];
 }
 
-message Message4 {
+message SpeedMessage4 {
   optional float field1 = 1;
   optional float field2 = 2;
   optional float field3 = 3 [default=0.0];
