@@ -16,15 +16,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         global::System.Convert.FromBase64String(
         "CiVnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0LnByb3RvEhhwcm90" + 
         "b2J1Zl91bml0dGVzdF9pbXBvcnQaJGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBf" + 
-        "b3B0aW9ucy5wcm90bxogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJv" + 
-        "dG8iGgoNSW1wb3J0TWVzc2FnZRIJCgFkGAEgASgFKjwKCkltcG9ydEVudW0S" + 
-        "DgoKSU1QT1JUX0ZPTxAHEg4KCklNUE9SVF9CQVIQCBIOCgpJTVBPUlRfQkFa" + 
-        "EAlCWwoYY29tLmdvb2dsZS5wcm90b2J1Zi50ZXN0SAHCPjwKIUdvb2dsZS5Q" + 
-        "cm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIXVW5pdFRlc3RJbXBvcnRQcm90" + 
-        "b0ZpbGU="),
+        "b3B0aW9ucy5wcm90byIaCg1JbXBvcnRNZXNzYWdlEgkKAWQYASABKAUqPAoK" + 
+        "SW1wb3J0RW51bRIOCgpJTVBPUlRfRk9PEAcSDgoKSU1QT1JUX0JBUhAIEg4K" + 
+        "CklNUE9SVF9CQVoQCUJbChhjb20uZ29vZ2xlLnByb3RvYnVmLnRlc3RIAcI+" + 
+        "PAohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEhdVbml0VGVz" + 
+        "dEltcG9ydFByb3RvRmlsZQ=="),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
-          global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
         });
     #endregion
     

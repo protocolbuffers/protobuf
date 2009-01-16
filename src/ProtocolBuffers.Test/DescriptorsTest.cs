@@ -54,9 +54,9 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual("UnittestProto", file.Options.JavaOuterClassname);
       Assert.AreEqual("google/protobuf/unittest.proto", file.Proto.Name);
 
-// TODO(jonskeet): Either change to expect 3 dependencies, or don't emit them.
-//      Assert.AreEqual(1, file.Dependencies.Count);
-      Assert.AreEqual(UnitTestImportProtoFile.Descriptor, file.Dependencies[2]);
+// TODO(jonskeet): Either change to expect 2 dependencies, or don't emit them.
+//      Assert.AreEqual(2, file.Dependencies.Count);
+      Assert.AreEqual(UnitTestImportProtoFile.Descriptor, file.Dependencies[1]);
 
       MessageDescriptor messageType = TestAllTypes.Descriptor;
       Assert.AreEqual(messageType, file.MessageTypes[0]);

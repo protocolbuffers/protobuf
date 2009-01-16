@@ -1,7 +1,6 @@
 // Additional options required for C# generation. File from copyright
 // line onwards is as per original distribution.
 import "google/protobuf/csharp_options.proto";
-import "google/protobuf/descriptor.proto";
 option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
 option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestProtoFile";
 

@@ -44,6 +44,29 @@
             value="${src}/ProtoGen/bin/${tools-protogen-config}/protogen.exe" 
             overwrite="false"/>
   
+  <target name="clean-build"
+          description="Rebuilds all source and binaries, including distribution">
+
+  <!-- 
+    - Use call instead of dependencies to make it clear what's going on: we
+    - need to call some targets multiple times.
+    -->
+    <call target="clean" />
+    <call target="build" />
+    <call target="generate-source" />
+    <call target="copy-generated-source" />
+    <!-- Now we've got fresh source, build again -->
+    <call target="clean" />
+    <call target="build" />
+    <!-- 
+      - In particularly insane situations we should possibly do another
+      - round of generating source and building, but it gets silly.
+      -->
+    
+    <call target="test" />
+    <call target="dist" />
+  </target>
+  
   <target name="clean" 
           description="Removes built binaries (of all configurations) and the source generation directory">
     <delete>
