@@ -58,6 +58,7 @@
     <Compile Include="MessageStreamIteratorTest.cs" />
     <Compile Include="MessageStreamWriterTest.cs" />
     <Compile Include="MessageTest.cs" />
+    <Compile Include="MessageUtilTest.cs" />
     <Compile Include="NameHelpersTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />

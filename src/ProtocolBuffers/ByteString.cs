@@ -184,7 +184,7 @@ namespace Google.ProtocolBuffers {
         output = CodedOutputStream.CreateInstance(buffer);
       }
 
-      public ByteString Build() {
+      internal ByteString Build() {
         output.CheckNoSpaceLeft();
 
         // We can be confident that the CodedOutputStream will not modify the
@@ -193,7 +193,7 @@ namespace Google.ProtocolBuffers {
         return new ByteString(buffer);
       }
 
-      public CodedOutputStream CodedOutput {
+      internal CodedOutputStream CodedOutput {
         get {
           return output;
         }

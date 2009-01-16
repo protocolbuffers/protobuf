@@ -23,8 +23,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
         Generator generator = Generator.CreateGenerator(options);
         generator.Generate();
-
-
         return 0;
       } catch (Exception e) {
         Console.Error.WriteLine("Error: {0}", e.Message);

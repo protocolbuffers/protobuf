@@ -72,6 +72,7 @@
           workingdir="${tmp-dir}">
       <arg value="--proto_path=${protos-dir}" />
       <arg value="--descriptor_set_out=compiled.pb" />
+      <arg file="${protos-dir}/google/protobuf/benchmark.proto" />
       <arg file="${protos-dir}/google/protobuf/descriptor.proto" />
       <arg file="${protos-dir}/google/protobuf/csharp_options.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest.proto" />
@@ -114,6 +115,12 @@
         <include name="AddressBookProtos.cs" />
       </fileset>
     </copy>
+
+    <copy todir="${src}/ProtoBench">
+      <fileset basedir="${tmp-dir}">
+        <include name="BenchmarkProtoFile.cs" />
+      </fileset>
+    </copy>
   </target>
       
   <target name="build"
@@ -147,6 +154,9 @@
       <fileset basedir="${src}">
         <include name="ProtocolBuffers/bin/${build-configuration}/Google.ProtocolBuffers.dll" />
         <include name="ProtoGen/bin/${build-configuration}/ProtoGen.exe" />
+        <include name="ProtoMunge/bin/${build-configuration}/ProtoMunge.exe" />
+        <include name="ProtoDump/bin/${build-configuration}/ProtoDump.exe" />
+        <include name="ProtoBench/bin/${build-configuration}/ProtoBench.exe" />
       </fileset>
     </copy>
     

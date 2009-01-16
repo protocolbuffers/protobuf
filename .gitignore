@@ -6,10 +6,16 @@ src/ProtocolBuffers/bin/
 src/ProtocolBuffers/obj/
 src/ProtocolBuffers.Test/bin/
 src/ProtocolBuffers.Test/obj/
+src/ProtoBench/bin/
+src/ProtoBench/obj/
+src/ProtoDump/bin/
+src/ProtoDump/obj/
 src/ProtoGen/bin/
 src/ProtoGen/obj/
 src/ProtoGen.Test/bin/
 src/ProtoGen.Test/obj/
+src/ProtoMunge/bin/
+src/ProtoMunge/obj/
 tmp/
 dist/
 *.user

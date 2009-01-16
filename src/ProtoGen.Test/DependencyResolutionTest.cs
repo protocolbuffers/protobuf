@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
+using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 using NUnit.Framework;
-using Google.ProtocolBuffers.DescriptorProtos;
-using Google.ProtocolBuffers.ProtoGen;
 
 namespace Google.ProtocolBuffers.ProtoGen {
   /// <summary>
