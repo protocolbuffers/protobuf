@@ -88,8 +88,9 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Gets an element of a repeated field. For value type fields 
-    /// including enums, the boxed value is returned. For embedded
-    /// message fields, the sub-message is returned.
+    /// excluding enums, the boxed value is returned. For embedded
+    /// message fields, the sub-message is returned. For enums, the
+    /// relevant EnumValueDescriptor is returned.
     /// </summary>
     /// <exception cref="ArgumentException">the field is not a repeated field,
     /// or it's not a field of this type</exception>

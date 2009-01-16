@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
-using Google.ProtocolBuffers;
 
-namespace ProtoDump {
+namespace Google.ProtocolBuffers.ProtoDump
+{
   /// <summary>
   /// Small utility to load a binary message and dump it in text form
   /// </summary>

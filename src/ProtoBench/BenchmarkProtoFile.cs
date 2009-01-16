@@ -4,7 +4,7 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-namespace Google.ProtocolBuffers.BenchmarkProtos {
+namespace Google.ProtocolBuffers.ProtoBench {
   
   public static partial class BenchmarkProtoFile {
   
@@ -70,9 +70,9 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         "Eg4KBmZpZWxkMhgCIAEoAhIRCgZmaWVsZDMYAyABKAI6ATASDgoGZmllbGQ0" + 
         "GAQgASgIEg4KBmZpZWxkNRgFIAEoCBIUCgZmaWVsZDYYBiABKAg6BHRydWUS" + 
         "FQoGZmllbGQ3GAcgASgIOgVmYWxzZRIOCgZmaWVsZDgYCCABKAISDgoGZmll" + 
-        "bGQ5GAkgASgIEg8KB2ZpZWxkMTAYCiABKAISDwoHZmllbGQxMRgLIAEoA0I/" + 
-        "wj48CiZHb29nbGUuUHJvdG9jb2xCdWZmZXJzLkJlbmNobWFya1Byb3RvcxIS" + 
-        "QmVuY2htYXJrUHJvdG9GaWxl"),
+        "bGQ5GAkgASgIEg8KB2ZpZWxkMTAYCiABKAISDwoHZmllbGQxMRgLIAEoA0I6" + 
+        "wj43CiFHb29nbGUuUHJvdG9jb2xCdWZmZXJzLlByb3RvQmVuY2gSEkJlbmNo" + 
+        "bWFya1Byb3RvRmlsZQ=="),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
         });
@@ -81,28 +81,28 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     #region Static variables
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_Message1__Descriptor
         = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message1, global::Google.ProtocolBuffers.BenchmarkProtos.Message1.Builder> internal__static_proto2_benchmark_v2_api_Message1__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message1, global::Google.ProtocolBuffers.BenchmarkProtos.Message1.Builder>(internal__static_proto2_benchmark_v2_api_Message1__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message1, global::Google.ProtocolBuffers.ProtoBench.Message1.Builder> internal__static_proto2_benchmark_v2_api_Message1__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message1, global::Google.ProtocolBuffers.ProtoBench.Message1.Builder>(internal__static_proto2_benchmark_v2_api_Message1__Descriptor,
             new string[] { "Field1", "Field9", "Field18", "Field80", "Field81", "Field2", "Field3", "Field280", "Field6", "Field22", "Field4", "Field5", "Field59", "Field7", "Field16", "Field130", "Field12", "Field17", "Field13", "Field14", "Field104", "Field100", "Field101", "Field102", "Field103", "Field29", "Field30", "Field60", "Field271", "Field272", "Field150", "Field23", "Field24", "Field25", "Field15", "Field78", "Field67", "Field68", "Field128", "Field129", "Field131", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_Message2__Descriptor
         = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message2, global::Google.ProtocolBuffers.BenchmarkProtos.Message2.Builder> internal__static_proto2_benchmark_v2_api_Message2__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message2, global::Google.ProtocolBuffers.BenchmarkProtos.Message2.Builder>(internal__static_proto2_benchmark_v2_api_Message2__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message2, global::Google.ProtocolBuffers.ProtoBench.Message2.Builder> internal__static_proto2_benchmark_v2_api_Message2__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message2, global::Google.ProtocolBuffers.ProtoBench.Message2.Builder>(internal__static_proto2_benchmark_v2_api_Message2__Descriptor,
             new string[] { "Field1", "Field2", "Field3", "Field15", "Field12", "Field13", "Field14", "Field16", "Field19", "Field20", "Field28", "Field21", "Field22", "Field23", "Field206", "Field203", "Field204", "Field205", "Field207", "Field300", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_Message3__Descriptor
         = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message3, global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Builder> internal__static_proto2_benchmark_v2_api_Message3__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message3, global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Builder>(internal__static_proto2_benchmark_v2_api_Message3__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message3, global::Google.ProtocolBuffers.ProtoBench.Message3.Builder> internal__static_proto2_benchmark_v2_api_Message3__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message3, global::Google.ProtocolBuffers.ProtoBench.Message3.Builder>(internal__static_proto2_benchmark_v2_api_Message3__Descriptor,
             new string[] { "Field1", "Field3", "Field4", "Field30", "Field75", "Field6", "Field2", "Field21", "Field71", "Field25", "Field109", "Field210", "Field211", "Field212", "Field213", "Field216", "Field217", "Field218", "Field220", "Field221", "Field222", "Field63", "Group1", "Field128", "Field131", "Field127", "Field129", "Field130", "Field205", "Field206", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_Message3_Group1__Descriptor
         = internal__static_proto2_benchmark_v2_api_Message3__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1, global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1.Builder> internal__static_proto2_benchmark_v2_api_Message3_Group1__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1, global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1.Builder>(internal__static_proto2_benchmark_v2_api_Message3_Group1__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1, global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1.Builder> internal__static_proto2_benchmark_v2_api_Message3_Group1__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1, global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1.Builder>(internal__static_proto2_benchmark_v2_api_Message3_Group1__Descriptor,
             new string[] { "Field11", "Field26", "Field12", "Field13", "Field14", "Field15", "Field5", "Field27", "Field28", "Field29", "Field16", "Field22", "Field73", "Field20", "Field24", "Field31", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_Message4__Descriptor
         = Descriptor.MessageTypes[3];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message4, global::Google.ProtocolBuffers.BenchmarkProtos.Message4.Builder> internal__static_proto2_benchmark_v2_api_Message4__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.Message4, global::Google.ProtocolBuffers.BenchmarkProtos.Message4.Builder>(internal__static_proto2_benchmark_v2_api_Message4__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message4, global::Google.ProtocolBuffers.ProtoBench.Message4.Builder> internal__static_proto2_benchmark_v2_api_Message4__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.Message4, global::Google.ProtocolBuffers.ProtoBench.Message4.Builder>(internal__static_proto2_benchmark_v2_api_Message4__Descriptor,
             new string[] { "Field1", "Field2", "Field3", "Field4", "Field5", "Field6", "Field7", "Field8", "Field9", "Field10", "Field11", });
     #endregion
   }
@@ -122,11 +122,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message1__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message1__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<Message1, Message1.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message1__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message1__FieldAccessorTable; }
     }
     
     private bool hasField1;
@@ -438,11 +438,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     private bool hasField15;
-    private global::Google.ProtocolBuffers.BenchmarkProtos.Message2 field15_ = global::Google.ProtocolBuffers.BenchmarkProtos.Message2.DefaultInstance;
+    private global::Google.ProtocolBuffers.ProtoBench.Message2 field15_ = global::Google.ProtocolBuffers.ProtoBench.Message2.DefaultInstance;
     public bool HasField15 {
       get { return hasField15; }
     }
-    public global::Google.ProtocolBuffers.BenchmarkProtos.Message2 Field15 {
+    public global::Google.ProtocolBuffers.ProtoBench.Message2 Field15 {
       get { return field15_; }
     }
     
@@ -1190,24 +1190,24 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       public bool HasField15 {
        get { return result.HasField15; }
       }
-      public global::Google.ProtocolBuffers.BenchmarkProtos.Message2 Field15 {
+      public global::Google.ProtocolBuffers.ProtoBench.Message2 Field15 {
         get { return result.Field15; }
         set { SetField15(value); }
       }
-      public Builder SetField15(global::Google.ProtocolBuffers.BenchmarkProtos.Message2 value) {
+      public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.Message2 value) {
         result.hasField15 = true;
         result.field15_ = value;
         return this;
       }
-      public Builder SetField15(global::Google.ProtocolBuffers.BenchmarkProtos.Message2.Builder builderForValue) {
+      public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.Message2.Builder builderForValue) {
         result.hasField15 = true;
         result.field15_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeField15(global::Google.ProtocolBuffers.BenchmarkProtos.Message2 value) {
+      public Builder MergeField15(global::Google.ProtocolBuffers.ProtoBench.Message2 value) {
         if (result.HasField15 &&
-            result.field15_ != global::Google.ProtocolBuffers.BenchmarkProtos.Message2.DefaultInstance) {
-            result.field15_ = global::Google.ProtocolBuffers.BenchmarkProtos.Message2.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
+            result.field15_ != global::Google.ProtocolBuffers.ProtoBench.Message2.DefaultInstance) {
+            result.field15_ = global::Google.ProtocolBuffers.ProtoBench.Message2.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
         } else {
           result.field15_ = value;
         }
@@ -1216,7 +1216,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       }
       public Builder ClearField15() {
         result.hasField15 = false;
-        result.field15_ = global::Google.ProtocolBuffers.BenchmarkProtos.Message2.DefaultInstance;
+        result.field15_ = global::Google.ProtocolBuffers.ProtoBench.Message2.DefaultInstance;
         return this;
       }
       
@@ -1345,11 +1345,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message2__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message2__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<Message2, Message2.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message2__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message2__FieldAccessorTable; }
     }
     
     private bool hasField1;
@@ -1975,11 +1975,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<Message3, Message3.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3__FieldAccessorTable; }
     }
     
     #region Nested types
@@ -1999,11 +1999,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         }
         
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3_Group1__Descriptor; }
+          get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3_Group1__Descriptor; }
         }
         
         protected override pb::FieldAccess.FieldAccessorTable<Group1, Group1.Builder> InternalFieldAccessors {
-          get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3_Group1__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message3_Group1__FieldAccessorTable; }
         }
         
         private bool hasField11;
@@ -2148,11 +2148,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         }
         
         private bool hasField31;
-        private global::Google.ProtocolBuffers.BenchmarkProtos.Message4 field31_ = global::Google.ProtocolBuffers.BenchmarkProtos.Message4.DefaultInstance;
+        private global::Google.ProtocolBuffers.ProtoBench.Message4 field31_ = global::Google.ProtocolBuffers.ProtoBench.Message4.DefaultInstance;
         public bool HasField31 {
           get { return hasField31; }
         }
-        public global::Google.ProtocolBuffers.BenchmarkProtos.Message4 Field31 {
+        public global::Google.ProtocolBuffers.ProtoBench.Message4 Field31 {
           get { return field31_; }
         }
         
@@ -2522,24 +2522,24 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
           public bool HasField31 {
            get { return result.HasField31; }
           }
-          public global::Google.ProtocolBuffers.BenchmarkProtos.Message4 Field31 {
+          public global::Google.ProtocolBuffers.ProtoBench.Message4 Field31 {
             get { return result.Field31; }
             set { SetField31(value); }
           }
-          public Builder SetField31(global::Google.ProtocolBuffers.BenchmarkProtos.Message4 value) {
+          public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.Message4 value) {
             result.hasField31 = true;
             result.field31_ = value;
             return this;
           }
-          public Builder SetField31(global::Google.ProtocolBuffers.BenchmarkProtos.Message4.Builder builderForValue) {
+          public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.Message4.Builder builderForValue) {
             result.hasField31 = true;
             result.field31_ = builderForValue.Build();
             return this;
           }
-          public Builder MergeField31(global::Google.ProtocolBuffers.BenchmarkProtos.Message4 value) {
+          public Builder MergeField31(global::Google.ProtocolBuffers.ProtoBench.Message4 value) {
             if (result.HasField31 &&
-                result.field31_ != global::Google.ProtocolBuffers.BenchmarkProtos.Message4.DefaultInstance) {
-                result.field31_ = global::Google.ProtocolBuffers.BenchmarkProtos.Message4.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
+                result.field31_ != global::Google.ProtocolBuffers.ProtoBench.Message4.DefaultInstance) {
+                result.field31_ = global::Google.ProtocolBuffers.ProtoBench.Message4.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
             } else {
               result.field31_ = value;
             }
@@ -2548,7 +2548,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
           }
           public Builder ClearField31() {
             result.hasField31 = false;
-            result.field31_ = global::Google.ProtocolBuffers.BenchmarkProtos.Message4.DefaultInstance;
+            result.field31_ = global::Google.ProtocolBuffers.ProtoBench.Message4.DefaultInstance;
             return this;
           }
         }
@@ -2755,14 +2755,14 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       get { return field63_; }
     }
     
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1> group1_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1>();
-    public scg::IList<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1> Group1List {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1> group1_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1>();
+    public scg::IList<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1> Group1List {
       get { return group1_; }
     }
     public int Group1Count {
       get { return group1_.Count; }
     }
-    public global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1 GetGroup1(int index) {
+    public global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1 GetGroup1(int index) {
       return group1_[index];
     }
     
@@ -3301,32 +3301,32 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1> Group1List {
+      public scg::IList<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1> Group1List {
         get { return result.group1_; }
       }
       public int Group1Count {
         get { return result.Group1Count; }
       }
-      public global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1 GetGroup1(int index) {
+      public global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1 GetGroup1(int index) {
         return result.GetGroup1(index);
       }
-      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1 value) {
+      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1 value) {
         result.group1_[index] = value;
         return this;
       }
-      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1.Builder builderForValue) {
+      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1.Builder builderForValue) {
         result.group1_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddGroup1(global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1 value) {
+      public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1 value) {
         result.group1_.Add(value);
         return this;
       }
-      public Builder AddGroup1(global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1.Builder builderForValue) {
+      public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1.Builder builderForValue) {
         result.group1_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeGroup1(scg::IEnumerable<global::Google.ProtocolBuffers.BenchmarkProtos.Message3.Types.Group1> values) {
+      public Builder AddRangeGroup1(scg::IEnumerable<global::Google.ProtocolBuffers.ProtoBench.Message3.Types.Group1> values) {
         base.AddRange(values, result.group1_);
         return this;
       }
@@ -3502,11 +3502,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message4__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message4__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<Message4, Message4.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message4__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkProtoFile.internal__static_proto2_benchmark_v2_api_Message4__FieldAccessorTable; }
     }
     
     private bool hasField1;

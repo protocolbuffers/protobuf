@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoMunge
@@ -143,7 +142,7 @@ namespace Google.ProtocolBuffers.ProtoMunge
             return BitConverter.ToInt32(data, 0);
           }
         case FieldType.Enum:
-          return MungeEnum(fieldDescriptor, (int) value);
+          return MungeEnum(fieldDescriptor, (EnumValueDescriptor) value);
         default:
           // TODO(jonskeet): Different exception?
           throw new ArgumentException("Invalid field descriptor");
@@ -207,16 +206,16 @@ namespace Google.ProtocolBuffers.ProtoMunge
       return min + (ulong)(range * rng.NextDouble());
     }
 
-    private static object MungeEnum(FieldDescriptor fieldDescriptor, int original) {
+    private static object MungeEnum(FieldDescriptor fieldDescriptor, EnumValueDescriptor original) {
       // Find all the values which get encoded to the same size as the current value, and pick one at random
-      int originalSize = CodedOutputStream.ComputeRawVarint32Size((uint)original);
+      int originalSize = CodedOutputStream.ComputeRawVarint32Size((uint)original.Number);
       List<EnumValueDescriptor> sameSizeValues = new List<EnumValueDescriptor> ();
       foreach (EnumValueDescriptor candidate in fieldDescriptor.EnumType.Values) {
         if (CodedOutputStream.ComputeRawVarint32Size((uint)candidate.Number) == originalSize) {
           sameSizeValues.Add(candidate);
         }
       }
-      return sameSizeValues[rng.Next(sameSizeValues.Count)].Number;
+      return sameSizeValues[rng.Next(sameSizeValues.Count)];
     }
 
     private static object MungeByteString(ByteString byteString) {

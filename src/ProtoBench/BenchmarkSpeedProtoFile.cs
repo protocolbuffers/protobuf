@@ -4,7 +4,7 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-namespace Google.ProtocolBuffers.BenchmarkProtos {
+namespace Google.ProtocolBuffers.ProtoBench {
   
   public static partial class BenchmarkSpeedProtoFile {
   
@@ -71,9 +71,9 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         "ZmllbGQyGAIgASgCEhEKBmZpZWxkMxgDIAEoAjoBMBIOCgZmaWVsZDQYBCAB" + 
         "KAgSDgoGZmllbGQ1GAUgASgIEhQKBmZpZWxkNhgGIAEoCDoEdHJ1ZRIVCgZm" + 
         "aWVsZDcYByABKAg6BWZhbHNlEg4KBmZpZWxkOBgIIAEoAhIOCgZmaWVsZDkY" + 
-        "CSABKAgSDwoHZmllbGQxMBgKIAEoAhIPCgdmaWVsZDExGAsgASgDQkZIAcI+" + 
-        "QQomR29vZ2xlLlByb3RvY29sQnVmZmVycy5CZW5jaG1hcmtQcm90b3MSF0Jl" + 
-        "bmNobWFya1NwZWVkUHJvdG9GaWxl"),
+        "CSABKAgSDwoHZmllbGQxMBgKIAEoAhIPCgdmaWVsZDExGAsgASgDQkFIAcI+" + 
+        "PAohR29vZ2xlLlByb3RvY29sQnVmZmVycy5Qcm90b0JlbmNoEhdCZW5jaG1h" + 
+        "cmtTcGVlZFByb3RvRmlsZQ=="),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
         });
@@ -82,28 +82,28 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     #region Static variables
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_SpeedMessage1__Descriptor
         = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage1, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage1.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage1__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage1, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage1.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage1__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage1, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage1.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage1__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage1, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage1.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage1__Descriptor,
             new string[] { "Field1", "Field9", "Field18", "Field80", "Field81", "Field2", "Field3", "Field280", "Field6", "Field22", "Field4", "Field5", "Field59", "Field7", "Field16", "Field130", "Field12", "Field17", "Field13", "Field14", "Field104", "Field100", "Field101", "Field102", "Field103", "Field29", "Field30", "Field60", "Field271", "Field272", "Field150", "Field23", "Field24", "Field25", "Field15", "Field78", "Field67", "Field68", "Field128", "Field129", "Field131", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_SpeedMessage2__Descriptor
         = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage2__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage2__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage2__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage2__Descriptor,
             new string[] { "Field1", "Field2", "Field3", "Field15", "Field12", "Field13", "Field14", "Field16", "Field19", "Field20", "Field28", "Field21", "Field22", "Field23", "Field206", "Field203", "Field204", "Field205", "Field207", "Field300", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_SpeedMessage3__Descriptor
         = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage3__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage3__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage3__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage3__Descriptor,
             new string[] { "Field1", "Field3", "Field4", "Field30", "Field75", "Field6", "Field2", "Field21", "Field71", "Field25", "Field109", "Field210", "Field211", "Field212", "Field213", "Field216", "Field217", "Field218", "Field220", "Field221", "Field222", "Field63", "Group1", "Field128", "Field131", "Field127", "Field129", "Field130", "Field205", "Field206", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__Descriptor
         = internal__static_proto2_benchmark_v2_api_SpeedMessage3__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__Descriptor,
             new string[] { "Field11", "Field26", "Field12", "Field13", "Field14", "Field15", "Field5", "Field27", "Field28", "Field29", "Field16", "Field22", "Field73", "Field20", "Field24", "Field31", });
     internal static readonly pbd::MessageDescriptor internal__static_proto2_benchmark_v2_api_SpeedMessage4__Descriptor
         = Descriptor.MessageTypes[3];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage4__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage4__Descriptor,
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.Builder> internal__static_proto2_benchmark_v2_api_SpeedMessage4__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.Builder>(internal__static_proto2_benchmark_v2_api_SpeedMessage4__Descriptor,
             new string[] { "Field1", "Field2", "Field3", "Field4", "Field5", "Field6", "Field7", "Field8", "Field9", "Field10", "Field11", });
     #endregion
   }
@@ -123,11 +123,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage1__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage1__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage1, SpeedMessage1.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage1__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage1__FieldAccessorTable; }
     }
     
     private bool hasField1;
@@ -439,11 +439,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     private bool hasField15;
-    private global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2 field15_ = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.DefaultInstance;
+    private global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 field15_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.DefaultInstance;
     public bool HasField15 {
       get { return hasField15; }
     }
-    public global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2 Field15 {
+    public global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 Field15 {
       get { return field15_; }
     }
     
@@ -1042,7 +1042,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
               break;
             }
             case 122: {
-              global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.Builder subBuilder = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.CreateBuilder();
+              global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.Builder subBuilder = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.CreateBuilder();
               if (HasField15) {
                 subBuilder.MergeFrom(Field15);
               }
@@ -1794,24 +1794,24 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       public bool HasField15 {
        get { return result.HasField15; }
       }
-      public global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2 Field15 {
+      public global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 Field15 {
         get { return result.Field15; }
         set { SetField15(value); }
       }
-      public Builder SetField15(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2 value) {
+      public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 value) {
         result.hasField15 = true;
         result.field15_ = value;
         return this;
       }
-      public Builder SetField15(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.Builder builderForValue) {
+      public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.Builder builderForValue) {
         result.hasField15 = true;
         result.field15_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeField15(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2 value) {
+      public Builder MergeField15(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 value) {
         if (result.HasField15 &&
-            result.field15_ != global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.DefaultInstance) {
-            result.field15_ = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
+            result.field15_ != global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.DefaultInstance) {
+            result.field15_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
         } else {
           result.field15_ = value;
         }
@@ -1820,7 +1820,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       }
       public Builder ClearField15() {
         result.hasField15 = false;
-        result.field15_ = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage2.DefaultInstance;
+        result.field15_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.DefaultInstance;
         return this;
       }
       
@@ -1949,11 +1949,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage2__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage2__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage2, SpeedMessage2.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage2__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage2__FieldAccessorTable; }
     }
     
     private bool hasField1;
@@ -2901,11 +2901,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage3, SpeedMessage3.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3__FieldAccessorTable; }
     }
     
     #region Nested types
@@ -2925,11 +2925,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         }
         
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__Descriptor; }
+          get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__Descriptor; }
         }
         
         protected override pb::FieldAccess.FieldAccessorTable<Group1, Group1.Builder> InternalFieldAccessors {
-          get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage3_Group1__FieldAccessorTable; }
         }
         
         private bool hasField11;
@@ -3074,11 +3074,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         }
         
         private bool hasField31;
-        private global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4 field31_ = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.DefaultInstance;
+        private global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 field31_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.DefaultInstance;
         public bool HasField31 {
           get { return hasField31; }
         }
-        public global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4 Field31 {
+        public global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 Field31 {
           get { return field31_; }
         }
         
@@ -3411,7 +3411,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
                   break;
                 }
                 case 250: {
-                  global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.Builder subBuilder = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.CreateBuilder();
+                  global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.Builder subBuilder = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.CreateBuilder();
                   if (HasField31) {
                     subBuilder.MergeFrom(Field31);
                   }
@@ -3725,24 +3725,24 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
           public bool HasField31 {
            get { return result.HasField31; }
           }
-          public global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4 Field31 {
+          public global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 Field31 {
             get { return result.Field31; }
             set { SetField31(value); }
           }
-          public Builder SetField31(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4 value) {
+          public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 value) {
             result.hasField31 = true;
             result.field31_ = value;
             return this;
           }
-          public Builder SetField31(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.Builder builderForValue) {
+          public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.Builder builderForValue) {
             result.hasField31 = true;
             result.field31_ = builderForValue.Build();
             return this;
           }
-          public Builder MergeField31(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4 value) {
+          public Builder MergeField31(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 value) {
             if (result.HasField31 &&
-                result.field31_ != global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.DefaultInstance) {
-                result.field31_ = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
+                result.field31_ != global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.DefaultInstance) {
+                result.field31_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
             } else {
               result.field31_ = value;
             }
@@ -3751,7 +3751,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
           }
           public Builder ClearField31() {
             result.hasField31 = false;
-            result.field31_ = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage4.DefaultInstance;
+            result.field31_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.DefaultInstance;
             return this;
           }
         }
@@ -3958,14 +3958,14 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       get { return field63_; }
     }
     
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1> group1_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1>();
-    public scg::IList<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1> Group1List {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1> group1_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1>();
+    public scg::IList<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1> Group1List {
       get { return group1_; }
     }
     public int Group1Count {
       get { return group1_.Count; }
     }
-    public global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1 GetGroup1(int index) {
+    public global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 GetGroup1(int index) {
       return group1_[index];
     }
     
@@ -4060,7 +4060,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
       if (HasField6) {
         output.WriteString(6, Field6);
       }
-      foreach (global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1 element in Group1List) {
+      foreach (global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 element in Group1List) {
         output.WriteGroup(10, element);
       }
       if (HasField21) {
@@ -4211,7 +4211,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         if (HasField63) {
           size += pb::CodedOutputStream.ComputeInt32Size(63, Field63);
         }
-        foreach (global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1 element in Group1List) {
+        foreach (global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 element in Group1List) {
           size += pb::CodedOutputStream.ComputeGroupSize(10, element);
         }
         foreach (string element in Field128List) {
@@ -4456,7 +4456,7 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
               break;
             }
             case 83: {
-              global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1.Builder subBuilder = global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1.CreateBuilder();
+              global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder subBuilder = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.CreateBuilder();
               input.ReadGroup(10, subBuilder, extensionRegistry);
               AddGroup1(subBuilder.BuildPartial());
               break;
@@ -4958,32 +4958,32 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1> Group1List {
+      public scg::IList<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1> Group1List {
         get { return result.group1_; }
       }
       public int Group1Count {
         get { return result.Group1Count; }
       }
-      public global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1 GetGroup1(int index) {
+      public global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 GetGroup1(int index) {
         return result.GetGroup1(index);
       }
-      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1 value) {
+      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 value) {
         result.group1_[index] = value;
         return this;
       }
-      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1.Builder builderForValue) {
+      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder builderForValue) {
         result.group1_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddGroup1(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1 value) {
+      public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 value) {
         result.group1_.Add(value);
         return this;
       }
-      public Builder AddGroup1(global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1.Builder builderForValue) {
+      public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder builderForValue) {
         result.group1_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeGroup1(scg::IEnumerable<global::Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3.Types.Group1> values) {
+      public Builder AddRangeGroup1(scg::IEnumerable<global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1> values) {
         base.AddRange(values, result.group1_);
         return this;
       }
@@ -5159,11 +5159,11 @@ namespace Google.ProtocolBuffers.BenchmarkProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage4__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage4__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage4, SpeedMessage4.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.BenchmarkProtos.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage4__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.BenchmarkSpeedProtoFile.internal__static_proto2_benchmark_v2_api_SpeedMessage4__FieldAccessorTable; }
     }
     
     private bool hasField1;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using Google.ProtocolBuffers;
 
-namespace ProtoBench {
+namespace Google.ProtocolBuffers.ProtoBench
+{
   /// <summary>
   /// Simple benchmarking of arbitrary messages.
   /// </summary>
@@ -52,21 +52,22 @@ namespace ProtoBench {
         Benchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
         Benchmark("Serialize to byte array", inputData.Length, () => sampleMessage.ToByteArray());
         Benchmark("Serialize to memory stream", inputData.Length, () => sampleMessage.WriteTo(new MemoryStream()));
-        Benchmark("Deserialize from byte string", inputData.Length, () =>
-          defaultMessage.WeakCreateBuilderForType()
-              .WeakMergeFrom(inputString)
-              .WeakBuild()
+        Benchmark("Deserialize from byte string", inputData.Length,
+          () => defaultMessage.WeakCreateBuilderForType()
+                              .WeakMergeFrom(inputString)
+                              .WeakBuild()
         );
-        Benchmark("Deserialize from byte array", inputData.Length, () =>
-          defaultMessage.WeakCreateBuilderForType()
-              .WeakMergeFrom(CodedInputStream.CreateInstance(inputData))
-              .WeakBuild()
+        Benchmark("Deserialize from byte array", inputData.Length, 
+          () => defaultMessage.WeakCreateBuilderForType()
+                              .WeakMergeFrom(CodedInputStream.CreateInstance(inputData))
+                              .WeakBuild()
         );
-        Benchmark("Deserialize from memory stream", inputData.Length, () =>
+        Benchmark("Deserialize from memory stream", inputData.Length, () => {
+          inputStream.Position = 0;
           defaultMessage.WeakCreateBuilderForType()
-              .WeakMergeFrom(CodedInputStream.CreateInstance(inputStream))
-              .WeakBuild()
-        );
+            .WeakMergeFrom(CodedInputStream.CreateInstance(inputStream))
+            .WeakBuild();
+        });
         return true;
       } catch (Exception e) {
         Console.Error.WriteLine("Error: {0}", e.Message);
@@ -92,8 +93,8 @@ namespace ProtoBench {
       iterations = (int) ((TargetTime.Ticks / (double)elapsed.Ticks) * iterations);
       elapsed = TimeAction(action, iterations);
       Console.WriteLine("{0}: {1} iterations in {2:f3}s; {3:f3}MB/s",
-        name, iterations, elapsed.TotalSeconds,
-        (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024));
+                        name, iterations, elapsed.TotalSeconds,
+                        (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024));
     }
 
     private static TimeSpan TimeAction(Action action, int iterations) {

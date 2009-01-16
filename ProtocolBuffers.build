@@ -178,13 +178,13 @@
           description="Runs all performance tests">
     <exec program="${tools-protobench}"
           workingdir="${testdata-dir}">
-      <arg value="Google.ProtocolBuffers.BenchmarkProtos.Message1,ProtoBench" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.Message1,ProtoBench" />
       <arg value="benchmark_message1.dat" />
-      <arg value="Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage1,ProtoBench" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.SpeedMessage1,ProtoBench" />
       <arg value="benchmark_message1.dat" />
-      <arg value="Google.ProtocolBuffers.BenchmarkProtos.Message3,ProtoBench" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.Message3,ProtoBench" />
       <arg value="benchmark_message3.dat" />
-      <arg value="Google.ProtocolBuffers.BenchmarkProtos.SpeedMessage3,ProtoBench" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.SpeedMessage3,ProtoBench" />
       <arg value="benchmark_message3.dat" />
     </exec>    
   </target>
