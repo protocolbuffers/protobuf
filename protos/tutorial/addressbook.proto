@@ -1,7 +1,6 @@
 package tutorial;
  
 import "google/protobuf/csharp_options.proto";
-import "google/protobuf/descriptor.proto";
 
 option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.Examples.AddressBook";
 option (google.protobuf.csharp_file_options).umbrella_classname = "AddressBookProtos";

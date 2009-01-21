@@ -15,19 +15,17 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
         global::System.Convert.FromBase64String(
         "Chp0dXRvcmlhbC9hZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaJGdvb2ds" + 
-        "ZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90bxogZ29vZ2xlL3Byb3Rv" + 
-        "YnVmL2Rlc2NyaXB0b3IucHJvdG8i2gEKBlBlcnNvbhIMCgRuYW1lGAEgAigJ" + 
-        "EgoKAmlkGAIgAigFEg0KBWVtYWlsGAMgASgJEisKBXBob25lGAQgAygLMhwu" + 
-        "dHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyGk0KC1Bob25lTnVtYmVyEg4K" + 
-        "Bm51bWJlchgBIAIoCRIuCgR0eXBlGAIgASgOMhoudHV0b3JpYWwuUGVyc29u" + 
-        "LlBob25lVHlwZToESE9NRSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAASCAoE" + 
-        "SE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZXJzb24YASAD" + 
-        "KAsyEC50dXRvcmlhbC5QZXJzb25CRUgBwj5ACitHb29nbGUuUHJvdG9jb2xC" + 
-        "dWZmZXJzLkV4YW1wbGVzLkFkZHJlc3NCb29rEhFBZGRyZXNzQm9va1Byb3Rv" + 
-        "cw=="),
+        "ZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byLaAQoGUGVyc29uEgwK" + 
+        "BG5hbWUYASACKAkSCgoCaWQYAiACKAUSDQoFZW1haWwYAyABKAkSKwoFcGhv" + 
+        "bmUYBCADKAsyHC50dXRvcmlhbC5QZXJzb24uUGhvbmVOdW1iZXIaTQoLUGhv" + 
+        "bmVOdW1iZXISDgoGbnVtYmVyGAEgAigJEi4KBHR5cGUYAiABKA4yGi50dXRv" + 
+        "cmlhbC5QZXJzb24uUGhvbmVUeXBlOgRIT01FIisKCVBob25lVHlwZRIKCgZN" + 
+        "T0JJTEUQABIICgRIT01FEAESCAoEV09SSxACIi8KC0FkZHJlc3NCb29rEiAK" + 
+        "BnBlcnNvbhgBIAMoCzIQLnR1dG9yaWFsLlBlcnNvbkJFSAHCPkAKK0dvb2ds" + 
+        "ZS5Qcm90b2NvbEJ1ZmZlcnMuRXhhbXBsZXMuQWRkcmVzc0Jvb2sSEUFkZHJl" + 
+        "c3NCb29rUHJvdG9z"),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
-          global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
         });
     #endregion
     
