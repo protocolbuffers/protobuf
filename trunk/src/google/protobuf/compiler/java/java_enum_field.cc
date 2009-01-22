@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/wire_format_inl.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -64,6 +65,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["type"] = type;
   (*variables)["default"] = type + "." + default_value->name();
+  (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+  (*variables)["tag_size"] = SimpleItoa(
+      internal::WireFormat::TagSize(descriptor->number(), descriptor->type()));
 }
 
 }  // namespace
@@ -97,6 +101,9 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  return result.get$capitalized_name$();\n"
     "}\n"
     "public Builder set$capitalized_name$($type$ value) {\n"
+    "  if (value == null) {\n"
+    "    throw new NullPointerException();\n"
+    "  }\n"
     "  result.has$capitalized_name$ = true;\n"
     "  result.$name$_ = value;\n"
     "  return this;\n"
@@ -176,6 +183,12 @@ GenerateMembers(io::Printer* printer) const {
     "public $type$ get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
     "}\n");
+
+  if (descriptor_->options().packed() &&
+      descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
+    printer->Print(variables_,
+      "private int $name$MemoizedSerializedSize;\n");
+  }
 }
 
 void RepeatedEnumFieldGenerator::
@@ -195,10 +208,16 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  return result.get$capitalized_name$(index);\n"
     "}\n"
     "public Builder set$capitalized_name$(int index, $type$ value) {\n"
+    "  if (value == null) {\n"
+    "    throw new NullPointerException();\n"
+    "  }\n"
     "  result.$name$_.set(index, value);\n"
     "  return this;\n"
     "}\n"
     "public Builder add$capitalized_name$($type$ value) {\n"
+    "  if (value == null) {\n"
+    "    throw new NullPointerException();\n"
+    "  }\n"
     "  if (result.$name$_.isEmpty()) {\n"
     "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
     "  }\n"
@@ -241,6 +260,16 @@ GenerateBuildingCode(io::Printer* printer) const {
 
 void RepeatedEnumFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
+  // If packed, set up the while loop
+  if (descriptor_->options().packed()) {
+    printer->Print(variables_,
+      "int length = input.readRawVarint32();\n"
+      "int oldLimit = input.pushLimit(length);\n"
+      "while(input.getBytesUntilLimit() > 0) {\n");
+    printer->Indent();
+  }
+
+  // Read and store the enum
   printer->Print(variables_,
     "int rawValue = input.readEnum();\n"
     "$type$ value = $type$.valueOf(rawValue);\n"
@@ -249,23 +278,68 @@ GenerateParsingCode(io::Printer* printer) const {
     "} else {\n"
     "  add$capitalized_name$(value);\n"
     "}\n");
+
+  if (descriptor_->options().packed()) {
+    printer->Outdent();
+    printer->Print(variables_,
+      "}\n"
+      "input.popLimit(oldLimit);\n");
+  }
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\n"
-    "  output.writeEnum($number$, element.getNumber());\n"
-    "}\n");
+  if (descriptor_->options().packed()) {
+    printer->Print(variables_,
+      "if (get$capitalized_name$List().size() > 0) {\n"
+      "  output.writeRawVarint32($tag$);\n"
+      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
+      "}\n"
+      "for ($type$ element : get$capitalized_name$List()) {\n"
+      "  output.writeEnumNoTag(element.getNumber());\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "for ($type$ element : get$capitalized_name$List()) {\n"
+      "  output.writeEnum($number$, element.getNumber());\n"
+      "}\n");
+  }
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
+    "{\n"
+    "  int dataSize = 0;\n");
+  printer->Indent();
+
+  printer->Print(variables_,
     "for ($type$ element : get$capitalized_name$List()) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeEnumSize($number$, element.getNumber());\n"
+    "  dataSize += com.google.protobuf.CodedOutputStream\n"
+    "    .computeEnumSizeNoTag(element.getNumber());\n"
     "}\n");
+  printer->Print(
+    "size += dataSize;\n");
+  if (descriptor_->options().packed()) {
+    printer->Print(variables_,
+      "if (!get$capitalized_name$List().isEmpty()) {"
+      "  size += $tag_size$;\n"
+      "  size += com.google.protobuf.CodedOutputStream\n"
+      "    .computeRawVarint32Size(dataSize);\n"
+      "}");
+  } else {
+    printer->Print(variables_,
+      "size += $tag_size$ * get$capitalized_name$List().size();\n");
+  }
+
+  // cache the data size for packed fields.
+  if (descriptor_->options().packed()) {
+    printer->Print(variables_,
+      "$name$MemoizedSerializedSize = dataSize;\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 string RepeatedEnumFieldGenerator::GetBoxedType() const {

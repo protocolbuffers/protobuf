@@ -96,6 +96,16 @@ public final class WireFormat {
       "There is no way to get here, but the compiler thinks otherwise.");
   }
 
+  /** Given a field descriptor, returns the wire type. This differs from
+   * getWireFormatForFieldType for packed repeated fields. */
+  static int getWireFormatForField(Descriptors.FieldDescriptor descriptor) {
+    if (descriptor.getOptions().getPacked()) {
+      return WIRETYPE_LENGTH_DELIMITED;
+    } else {
+      return getWireFormatForFieldType(descriptor.getType());
+    }
+  }
+
   // Field numbers for feilds in MessageSet wire format.
   static final int MESSAGE_SET_ITEM    = 1;
   static final int MESSAGE_SET_TYPE_ID = 2;

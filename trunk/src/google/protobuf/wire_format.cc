@@ -369,93 +369,155 @@ bool WireFormat::ParseAndMergeField(
   const Reflection* message_reflection = message->GetReflection();
 
   if (field == NULL ||
-      GetTagWireType(tag) != WireTypeForFieldType(field->type())) {
+      GetTagWireType(tag) != WireTypeForField(field)) {
     // We don't recognize this field.  Either the field number is unknown
     // or the wire type doesn't match.  Put it in our unknown field set.
     return SkipField(input, tag,
                      message_reflection->MutableUnknownFields(message));
   }
 
-  switch (field->type()) {
-#define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE, CPPTYPE_METHOD)         \
-    case FieldDescriptor::TYPE_##TYPE: {                                \
-      CPPTYPE value;                                                    \
-      if (!Read##TYPE_METHOD(input, &value)) return false;              \
-      if (field->is_repeated()) {                                       \
-        message_reflection->Add##CPPTYPE_METHOD(message, field, value); \
-      } else {                                                          \
-        message_reflection->Set##CPPTYPE_METHOD(message, field, value); \
-      }                                                                 \
-      break;                                                            \
+  if (field->options().packed()) {
+    uint32 length;
+    if (!input->ReadVarint32(&length)) return false;
+    io::CodedInputStream::Limit limit = input->PushLimit(length);
+
+    switch (field->type()) {
+#define HANDLE_PACKED_TYPE(TYPE, TYPE_METHOD, CPPTYPE, CPPTYPE_METHOD)    \
+      case FieldDescriptor::TYPE_##TYPE: {                                \
+        while (input->BytesUntilLimit() > 0) {                            \
+          CPPTYPE value;                                                  \
+          if (!Read##TYPE_METHOD(input, &value)) return false;            \
+          message_reflection->Add##CPPTYPE_METHOD(message, field, value); \
+        }                                                                 \
+        break;                                                            \
+      }
+
+      HANDLE_PACKED_TYPE( INT32,  Int32,  int32,  Int32)
+      HANDLE_PACKED_TYPE( INT64,  Int64,  int64,  Int64)
+      HANDLE_PACKED_TYPE(SINT32, SInt32,  int32,  Int32)
+      HANDLE_PACKED_TYPE(SINT64, SInt64,  int64,  Int64)
+      HANDLE_PACKED_TYPE(UINT32, UInt32, uint32, UInt32)
+      HANDLE_PACKED_TYPE(UINT64, UInt64, uint64, UInt64)
+
+      HANDLE_PACKED_TYPE( FIXED32,  Fixed32, uint32, UInt32)
+      HANDLE_PACKED_TYPE( FIXED64,  Fixed64, uint64, UInt64)
+      HANDLE_PACKED_TYPE(SFIXED32, SFixed32,  int32,  Int32)
+      HANDLE_PACKED_TYPE(SFIXED64, SFixed64,  int64,  Int64)
+
+      HANDLE_PACKED_TYPE(FLOAT , Float , float , Float )
+      HANDLE_PACKED_TYPE(DOUBLE, Double, double, Double)
+
+      HANDLE_PACKED_TYPE(BOOL, Bool, bool, Bool)
+#undef HANDLE_PACKED_TYPE
+
+      case FieldDescriptor::TYPE_ENUM: {
+        while (input->BytesUntilLimit() > 0) {
+          int value;
+          if (!ReadEnum(input, &value)) return false;
+          const EnumValueDescriptor* enum_value =
+              field->enum_type()->FindValueByNumber(value);
+          if (enum_value != NULL) {
+            message_reflection->AddEnum(message, field, enum_value);
+          }
+        }
+
+        break;
+      }
+
+      case FieldDescriptor::TYPE_STRING:
+      case FieldDescriptor::TYPE_GROUP:
+      case FieldDescriptor::TYPE_MESSAGE:
+      case FieldDescriptor::TYPE_BYTES:
+        // Can't have packed fields of these types: these should be caught by
+        // the protocol compiler.
+        return false;
+        break;
     }
 
-    HANDLE_TYPE( INT32,  Int32,  int32,  Int32)
-    HANDLE_TYPE( INT64,  Int64,  int64,  Int64)
-    HANDLE_TYPE(SINT32, SInt32,  int32,  Int32)
-    HANDLE_TYPE(SINT64, SInt64,  int64,  Int64)
-    HANDLE_TYPE(UINT32, UInt32, uint32, UInt32)
-    HANDLE_TYPE(UINT64, UInt64, uint64, UInt64)
+    input->PopLimit(limit);
+  } else {
+    switch (field->type()) {
+#define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE, CPPTYPE_METHOD)           \
+      case FieldDescriptor::TYPE_##TYPE: {                                \
+        CPPTYPE value;                                                    \
+        if (!Read##TYPE_METHOD(input, &value)) return false;              \
+        if (field->is_repeated()) {                                       \
+          message_reflection->Add##CPPTYPE_METHOD(message, field, value); \
+        } else {                                                          \
+          message_reflection->Set##CPPTYPE_METHOD(message, field, value); \
+        }                                                                 \
+        break;                                                            \
+      }
 
-    HANDLE_TYPE( FIXED32,  Fixed32, uint32, UInt32)
-    HANDLE_TYPE( FIXED64,  Fixed64, uint64, UInt64)
-    HANDLE_TYPE(SFIXED32, SFixed32,  int32,  Int32)
-    HANDLE_TYPE(SFIXED64, SFixed64,  int64,  Int64)
+      HANDLE_TYPE( INT32,  Int32,  int32,  Int32)
+      HANDLE_TYPE( INT64,  Int64,  int64,  Int64)
+      HANDLE_TYPE(SINT32, SInt32,  int32,  Int32)
+      HANDLE_TYPE(SINT64, SInt64,  int64,  Int64)
+      HANDLE_TYPE(UINT32, UInt32, uint32, UInt32)
+      HANDLE_TYPE(UINT64, UInt64, uint64, UInt64)
 
-    HANDLE_TYPE(FLOAT , Float , float , Float )
-    HANDLE_TYPE(DOUBLE, Double, double, Double)
+      HANDLE_TYPE( FIXED32,  Fixed32, uint32, UInt32)
+      HANDLE_TYPE( FIXED64,  Fixed64, uint64, UInt64)
+      HANDLE_TYPE(SFIXED32, SFixed32,  int32,  Int32)
+      HANDLE_TYPE(SFIXED64, SFixed64,  int64,  Int64)
 
-    HANDLE_TYPE(BOOL, Bool, bool, Bool)
+      HANDLE_TYPE(FLOAT , Float , float , Float )
+      HANDLE_TYPE(DOUBLE, Double, double, Double)
 
-    HANDLE_TYPE(STRING, String, string, String)
-    HANDLE_TYPE(BYTES, Bytes, string, String)
+      HANDLE_TYPE(BOOL, Bool, bool, Bool)
+
+      HANDLE_TYPE(STRING, String, string, String)
+      HANDLE_TYPE(BYTES, Bytes, string, String)
 
 #undef HANDLE_TYPE
 
-    case FieldDescriptor::TYPE_ENUM: {
-      int value;
-      if (!ReadEnum(input, &value)) return false;
-      const EnumValueDescriptor* enum_value =
-        field->enum_type()->FindValueByNumber(value);
-      if (enum_value != NULL) {
-        if (field->is_repeated()) {
-          message_reflection->AddEnum(message, field, enum_value);
+      case FieldDescriptor::TYPE_ENUM: {
+        int value;
+        if (!ReadEnum(input, &value)) return false;
+        const EnumValueDescriptor* enum_value =
+          field->enum_type()->FindValueByNumber(value);
+        if (enum_value != NULL) {
+          if (field->is_repeated()) {
+            message_reflection->AddEnum(message, field, enum_value);
+          } else {
+            message_reflection->SetEnum(message, field, enum_value);
+          }
         } else {
-          message_reflection->SetEnum(message, field, enum_value);
+          // The enum value is not one of the known values.  Add it to the
+          // UnknownFieldSet.
+          int64 sign_extended_value = static_cast<int64>(value);
+          message_reflection->MutableUnknownFields(message)
+                            ->AddField(GetTagFieldNumber(tag))
+                            ->add_varint(sign_extended_value);
         }
-      } else {
-        // The enum value is not one of the known values.  Add it to the
-        // UnknownFieldSet.
-        int64 sign_extended_value = static_cast<int64>(value);
-        message_reflection->MutableUnknownFields(message)
-                          ->AddField(GetTagFieldNumber(tag))
-                          ->add_varint(sign_extended_value);
-      }
-      break;
-    }
-
-
-    case FieldDescriptor::TYPE_GROUP: {
-      Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = message_reflection->AddMessage(message, field);
-      } else {
-        sub_message = message_reflection->MutableMessage(message, field);
+        break;
       }
 
-      if (!ReadGroup(GetTagFieldNumber(tag), input, sub_message)) return false;
-      break;
-    }
 
-    case FieldDescriptor::TYPE_MESSAGE: {
-      Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = message_reflection->AddMessage(message, field);
-      } else {
-        sub_message = message_reflection->MutableMessage(message, field);
+      case FieldDescriptor::TYPE_GROUP: {
+        Message* sub_message;
+        if (field->is_repeated()) {
+          sub_message = message_reflection->AddMessage(message, field);
+        } else {
+          sub_message = message_reflection->MutableMessage(message, field);
+        }
+
+        if (!ReadGroup(GetTagFieldNumber(tag), input, sub_message))
+          return false;
+        break;
       }
 
-      if (!ReadMessage(input, sub_message)) return false;
-      break;
+      case FieldDescriptor::TYPE_MESSAGE: {
+        Message* sub_message;
+        if (field->is_repeated()) {
+          sub_message = message_reflection->AddMessage(message, field);
+        } else {
+          sub_message = message_reflection->MutableMessage(message, field);
+        }
+
+        if (!ReadMessage(input, sub_message)) return false;
+        break;
+      }
     }
   }
 
@@ -602,8 +664,53 @@ bool WireFormat::SerializeFieldWithCachedSizes(
     count = 1;
   }
 
+  const bool is_packed = field->options().packed();
+  if (is_packed && count > 0) {
+    if (!WriteTag(field->number(), WIRETYPE_LENGTH_DELIMITED, output))
+      return false;
+    const int data_size = FieldDataOnlyByteSize(field, message);
+    if (!output->WriteVarint32(data_size)) return false;
+  }
+
   for (int j = 0; j < count; j++) {
     switch (field->type()) {
+#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
+      case FieldDescriptor::TYPE_##TYPE: {                                     \
+        const CPPTYPE value = field->is_repeated() ?                           \
+                              message_reflection->GetRepeated##CPPTYPE_METHOD( \
+                                message, field, j) :                           \
+                              message_reflection->Get##CPPTYPE_METHOD(         \
+                                message, field);                               \
+        if (is_packed) {                                                       \
+          if (!Write##TYPE_METHOD##NoTag(value, output)) {                     \
+            return false;                                                      \
+          }                                                                    \
+        } else {                                                               \
+          if (!Write##TYPE_METHOD(field->number(), value, output)) {           \
+            return false;                                                      \
+          }                                                                    \
+        }                                                                      \
+        break;                                                                 \
+      }
+
+      HANDLE_PRIMITIVE_TYPE( INT32,  int32,  Int32,  Int32)
+      HANDLE_PRIMITIVE_TYPE( INT64,  int64,  Int64,  Int64)
+      HANDLE_PRIMITIVE_TYPE(SINT32,  int32, SInt32,  Int32)
+      HANDLE_PRIMITIVE_TYPE(SINT64,  int64, SInt64,  Int64)
+      HANDLE_PRIMITIVE_TYPE(UINT32, uint32, UInt32, UInt32)
+      HANDLE_PRIMITIVE_TYPE(UINT64, uint64, UInt64, UInt64)
+
+      HANDLE_PRIMITIVE_TYPE( FIXED32, uint32,  Fixed32, UInt32)
+      HANDLE_PRIMITIVE_TYPE( FIXED64, uint64,  Fixed64, UInt64)
+      HANDLE_PRIMITIVE_TYPE(SFIXED32,  int32, SFixed32,  Int32)
+      HANDLE_PRIMITIVE_TYPE(SFIXED64,  int64, SFixed64,  Int64)
+
+      HANDLE_PRIMITIVE_TYPE(FLOAT , float , Float , Float )
+      HANDLE_PRIMITIVE_TYPE(DOUBLE, double, Double, Double)
+
+      HANDLE_PRIMITIVE_TYPE(BOOL, bool, Bool, Bool)
+#undef HANDLE_PRIMITIVE_TYPE
+
 #define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                       \
       case FieldDescriptor::TYPE_##TYPE:                                     \
         if (!Write##TYPE_METHOD(                                             \
@@ -617,23 +724,6 @@ bool WireFormat::SerializeFieldWithCachedSizes(
         }                                                                    \
         break;
 
-      HANDLE_TYPE( INT32,  Int32,  Int32)
-      HANDLE_TYPE( INT64,  Int64,  Int64)
-      HANDLE_TYPE(SINT32, SInt32,  Int32)
-      HANDLE_TYPE(SINT64, SInt64,  Int64)
-      HANDLE_TYPE(UINT32, UInt32, UInt32)
-      HANDLE_TYPE(UINT64, UInt64, UInt64)
-
-      HANDLE_TYPE( FIXED32,  Fixed32, UInt32)
-      HANDLE_TYPE( FIXED64,  Fixed64, UInt64)
-      HANDLE_TYPE(SFIXED32, SFixed32,  Int32)
-      HANDLE_TYPE(SFIXED64, SFixed64,  Int64)
-
-      HANDLE_TYPE(FLOAT , Float , Float )
-      HANDLE_TYPE(DOUBLE, Double, Double)
-
-      HANDLE_TYPE(BOOL, Bool, Bool)
-
       HANDLE_TYPE(GROUP  , Group  , Message)
       HANDLE_TYPE(MESSAGE, Message, Message)
 #undef HANDLE_TYPE
@@ -642,7 +732,12 @@ bool WireFormat::SerializeFieldWithCachedSizes(
         const EnumValueDescriptor* value = field->is_repeated() ?
           message_reflection->GetRepeatedEnum(message, field, j) :
           message_reflection->GetEnum(message, field);
-        if (!WriteEnum(field->number(), value->number(), output)) return false;
+        if (is_packed) {
+          if (!WriteEnumNoTag(value->number(), output)) return false;
+        } else {
+          if (!WriteEnum(field->number(), value->number(), output))
+            return false;
+        }
         break;
       }
 
@@ -736,36 +831,60 @@ int WireFormat::FieldByteSize(
     return MessageSetItemByteSize(field, message);
   }
 
-  int our_size = 0;
-
   int count = 0;
-
   if (field->is_repeated()) {
     count = message_reflection->FieldSize(message, field);
   } else if (message_reflection->HasField(message, field)) {
     count = 1;
   }
 
-  our_size += count * TagSize(field->number(), field->type());
+  const int data_size = FieldDataOnlyByteSize(field, message);
+  int our_size = data_size;
+  if (field->options().packed()) {
+    if (data_size > 0) {
+      // Packed fields get serialized like a string, not their native type.
+      // Technically this doesn't really matter; the size only changes if it's
+      // a GROUP
+      our_size += TagSize(field->number(), FieldDescriptor::TYPE_STRING);
+      our_size += io::CodedOutputStream::VarintSize32(data_size);
+    }
+  } else {
+    our_size += count * TagSize(field->number(), field->type());
+  }
+  return our_size;
+}
 
+int WireFormat::FieldDataOnlyByteSize(
+    const FieldDescriptor* field,
+    const Message& message) {
+  const Reflection* message_reflection = message.GetReflection();
+
+  int count = 0;
+  if (field->is_repeated()) {
+    count = message_reflection->FieldSize(message, field);
+  } else if (message_reflection->HasField(message, field)) {
+    count = 1;
+  }
+
+  int data_size = 0;
   switch (field->type()) {
 #define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                     \
     case FieldDescriptor::TYPE_##TYPE:                                     \
       if (field->is_repeated()) {                                          \
         for (int j = 0; j < count; j++) {                                  \
-          our_size += TYPE_METHOD##Size(                                   \
+          data_size += TYPE_METHOD##Size(                                  \
             message_reflection->GetRepeated##CPPTYPE_METHOD(               \
               message, field, j));                                         \
         }                                                                  \
       } else {                                                             \
-        our_size += TYPE_METHOD##Size(                                     \
+        data_size += TYPE_METHOD##Size(                                    \
           message_reflection->Get##CPPTYPE_METHOD(message, field));        \
       }                                                                    \
       break;
 
 #define HANDLE_FIXED_TYPE(TYPE, TYPE_METHOD)                               \
     case FieldDescriptor::TYPE_##TYPE:                                     \
-      our_size += count * k##TYPE_METHOD##Size;                            \
+      data_size += count * k##TYPE_METHOD##Size;                           \
       break;
 
     HANDLE_TYPE( INT32,  Int32,  Int32)
@@ -793,11 +912,11 @@ int WireFormat::FieldByteSize(
     case FieldDescriptor::TYPE_ENUM: {
       if (field->is_repeated()) {
         for (int j = 0; j < count; j++) {
-          our_size += EnumSize(
+          data_size += EnumSize(
             message_reflection->GetRepeatedEnum(message, field, j)->number());
         }
       } else {
-        our_size += EnumSize(
+        data_size += EnumSize(
           message_reflection->GetEnum(message, field)->number());
       }
       break;
@@ -813,13 +932,12 @@ int WireFormat::FieldByteSize(
             message_reflection->GetRepeatedStringReference(
               message, field, j, &scratch) :
             message_reflection->GetStringReference(message, field, &scratch);
-          our_size += StringSize(value);
+          data_size += StringSize(value);
         }
       break;
     }
   }
-
-  return our_size;
+  return data_size;
 }
 
 int WireFormat::MessageSetItemByteSize(

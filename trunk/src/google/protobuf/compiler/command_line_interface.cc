@@ -751,7 +751,8 @@ bool CommandLineInterface::GenerateOutput(
   if (!output_directive.generator->Generate(
       parsed_file, output_directive.parameter, &output_directory, &error)) {
     // Generator returned an error.
-    cerr << output_directive.name << ": " << error << endl;
+    cerr << parsed_file->name() << ": " << output_directive.name << ": "
+         << error << endl;
     return false;
   }
 

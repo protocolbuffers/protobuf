@@ -156,6 +156,19 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // Looks up a field by name.  Returns NULL if no such field exists.
   const FieldDescriptor* FindFieldByName(const string& name) const;
 
+  // Looks up a field by lowercased name (as returned by lowercase_name()).
+  // This lookup may be ambiguous if multiple field names differ only by case,
+  // in which case the field returned is chosen arbitrarily from the matches.
+  const FieldDescriptor* FindFieldByLowercaseName(
+      const string& lowercase_name) const;
+
+  // Looks up a field by camel-case name (as returned by camelcase_name()).
+  // This lookup may be ambiguous if multiple field names differ in a way that
+  // leads them to have identical camel-case names, in which case the field
+  // returned is chosen arbitrarily from the matches.
+  const FieldDescriptor* FindFieldByCamelcaseName(
+      const string& camelcase_name) const;
+
   // Nested type stuff -----------------------------------------------
 
   // The number of nested types in this message type.
@@ -212,6 +225,14 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // Looks up a named extension (which extends some *other* message type)
   // defined within this message type's scope.
   const FieldDescriptor* FindExtensionByName(const string& name) const;
+
+  // Similar to FindFieldByLowercaseName(), but finds extensions defined within
+  // this message type's scope.
+  const FieldDescriptor* FindExtensionByLowercaseName(const string& name) const;
+
+  // Similar to FindFieldByCamelcaseName(), but finds extensions defined within
+  // this message type's scope.
+  const FieldDescriptor* FindExtensionByCamelcaseName(const string& name) const;
 
  private:
   typedef MessageOptions OptionsType;
@@ -336,6 +357,25 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   bool is_extension() const;         // Is this an extension field?
   int number() const;                // Declared tag number.
 
+  // Same as name() except converted to lower-case.  This (and especially the
+  // FindFieldByLowercaseName() method) can be useful when parsing formats
+  // which prefer to use lowercase naming style.  (Although, technically
+  // field names should be lowercased anyway according to the protobuf style
+  // guide, so this only makes a difference when dealing with old .proto files
+  // which do not follow the guide.)
+  const string& lowercase_name() const;
+
+  // Same as name() except converted to camel-case.  In this conversion, any
+  // time an underscore appears in the name, it is removed and the next
+  // letter is capitalized.  Furthermore, the first letter of the name is
+  // lower-cased.  Examples:
+  //   FooBar -> fooBar
+  //   foo_bar -> fooBar
+  //   fooBar -> fooBar
+  // This (and especially the FindFieldByCamelcaseName() method) can be useful
+  // when parsing formats which prefer to use camel-case naming style.
+  const string& camelcase_name() const;
+
   Type type() const;                 // Declared type of this field.
   CppType cpp_type() const;          // C++ type of this field.
   Label label() const;               // optional/required/repeated
@@ -431,6 +471,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
 
   const string* name_;
   const string* full_name_;
+  const string* lowercase_name_;
+  const string* camelcase_name_;
   const FileDescriptor* file_;
   int number_;
   Type type_;
@@ -773,6 +815,12 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   const ServiceDescriptor* FindServiceByName(const string& name) const;
   // Find a top-level extension definition by name.  Returns NULL if not found.
   const FieldDescriptor* FindExtensionByName(const string& name) const;
+  // Similar to FindExtensionByName(), but searches by lowercased-name.  See
+  // Descriptor::FindFieldByLowercaseName().
+  const FieldDescriptor* FindExtensionByLowercaseName(const string& name) const;
+  // Similar to FindExtensionByName(), but searches by camelcased-name.  See
+  // Descriptor::FindFieldByCamelcaseName().
+  const FieldDescriptor* FindExtensionByCamelcaseName(const string& name) const;
 
   // See Descriptor::CopyTo().
   void CopyTo(FileDescriptorProto* proto) const;
@@ -1084,6 +1132,8 @@ PROTOBUF_DEFINE_OPTIONS_ACCESSOR(Descriptor, MessageOptions);
 
 PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, name)
 PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, full_name)
+PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, lowercase_name)
+PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, camelcase_name)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, is_extension, bool)

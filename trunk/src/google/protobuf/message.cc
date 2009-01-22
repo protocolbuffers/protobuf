@@ -145,24 +145,42 @@ bool Message::ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input) {
          decoder.ConsumedEntireMessage();
 }
 
+bool Message::ParseFromBoundedZeroCopyStream(
+    io::ZeroCopyInputStream* input, int size) {
+  io::CodedInputStream decoder(input);
+  decoder.PushLimit(size);
+  return ParseFromCodedStream(&decoder) &&
+         decoder.ConsumedEntireMessage() &&
+         decoder.BytesUntilLimit() == 0;
+}
+
+bool Message::ParsePartialFromBoundedZeroCopyStream(
+    io::ZeroCopyInputStream* input, int size) {
+  io::CodedInputStream decoder(input);
+  decoder.PushLimit(size);
+  return ParsePartialFromCodedStream(&decoder) &&
+         decoder.ConsumedEntireMessage() &&
+         decoder.BytesUntilLimit() == 0;
+}
+
 bool Message::ParseFromString(const string& data) {
   io::ArrayInputStream input(data.data(), data.size());
-  return ParseFromZeroCopyStream(&input);
+  return ParseFromBoundedZeroCopyStream(&input, data.size());
 }
 
 bool Message::ParsePartialFromString(const string& data) {
   io::ArrayInputStream input(data.data(), data.size());
-  return ParsePartialFromZeroCopyStream(&input);
+  return ParsePartialFromBoundedZeroCopyStream(&input, data.size());
 }
 
 bool Message::ParseFromArray(const void* data, int size) {
   io::ArrayInputStream input(data, size);
-  return ParseFromZeroCopyStream(&input);
+  return ParseFromBoundedZeroCopyStream(&input, size);
 }
 
 bool Message::ParsePartialFromArray(const void* data, int size) {
   io::ArrayInputStream input(data, size);
-  return ParsePartialFromZeroCopyStream(&input);
+  return ParsePartialFromBoundedZeroCopyStream(&input, size);
 }
 
 bool Message::ParseFromFileDescriptor(int file_descriptor) {

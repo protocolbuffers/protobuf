@@ -857,6 +857,19 @@ public final class Descriptors {
           "Field numbers must be positive integers.");
       }
 
+      // Only repeated primitive fields may be packed.
+      if (proto.getOptions().getPacked()) {
+        if (proto.getLabel() != FieldDescriptorProto.Label.LABEL_REPEATED ||
+            proto.getType() == FieldDescriptorProto.Type.TYPE_STRING ||
+            proto.getType() == FieldDescriptorProto.Type.TYPE_GROUP ||
+            proto.getType() == FieldDescriptorProto.Type.TYPE_MESSAGE ||
+            proto.getType() == FieldDescriptorProto.Type.TYPE_BYTES) {
+          throw new DescriptorValidationException(this,
+            "[packed = true] can only be specified for repeated primitive " +
+            "fields.");
+        }
+      }
+
       if (isExtension) {
         if (!proto.hasExtendee()) {
           throw new DescriptorValidationException(this,

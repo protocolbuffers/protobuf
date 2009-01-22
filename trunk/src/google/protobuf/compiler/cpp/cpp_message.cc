@@ -41,7 +41,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/wire_format.h>
+#include <google/protobuf/wire_format_inl.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace google {
@@ -1169,10 +1169,9 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
         "    goto handle_uninterpreted;\n"
         "  }\n",
         "number", SimpleItoa(field->number()),
-        "wiretype", kWireTypeNames[
-          WireFormat::WireTypeForFieldType(field->type())]);
+        "wiretype", kWireTypeNames[WireFormat::WireTypeForField(field)]);
 
-      if (i > 0 || field->is_repeated()) {
+      if (i > 0 || (field->is_repeated() && !field->options().packed())) {
         printer->Print(
           " parse_$name$:\n",
           "name", field->name());
@@ -1184,7 +1183,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
       // switch() is slow since it can't be predicted well.  Insert some if()s
       // here that attempt to predict the next tag.
-      if (field->is_repeated()) {
+      if (field->is_repeated() && !field->options().packed()) {
         // Expect repeats of this field.
         printer->Print(
           "if (input->ExpectTag($tag$)) goto parse_$name$;\n",
@@ -1283,22 +1282,20 @@ void MessageGenerator::GenerateSerializeOneField(
     io::Printer* printer, const FieldDescriptor* field) {
   PrintFieldComment(printer, field);
 
-  if (field->is_repeated()) {
-    printer->Print(
-      "for (int i = 0; i < $name$_.size(); i++) {\n",
-      "name", FieldName(field));
-  } else {
+  if (!field->is_repeated()) {
     printer->Print(
       "if (_has_bit($index$)) {\n",
       "index", SimpleItoa(field->index()));
+    printer->Indent();
   }
-
-  printer->Indent();
 
   field_generators_.get(field).GenerateSerializeWithCachedSizes(printer);
 
-  printer->Outdent();
-  printer->Print("}\n\n");
+  if (!field->is_repeated()) {
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+  printer->Print("\n");
 }
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(

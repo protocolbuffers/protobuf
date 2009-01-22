@@ -41,7 +41,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/wire_format.h>
+#include <google/protobuf/wire_format_inl.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace google {
@@ -500,6 +500,7 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
     "public static Builder newBuilder($classname$ prototype) {\n"
     "  return new Builder().mergeFrom(prototype);\n"
     "}\n"
+    "public Builder toBuilder() { return newBuilder(this); }\n"
     "\n",
     "classname", ClassName(descriptor_));
 
@@ -634,6 +635,13 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     }
 
     printer->Outdent();
+
+    // if message type has extensions
+    if (descriptor_->extension_range_count() > 0) {
+      printer->Print(
+        "  this.mergeExtensionFields(other);\n");
+    }
+
     printer->Print(
       "  this.mergeUnknownFields(other.getUnknownFields());\n"
       "  return this;\n"
@@ -692,7 +700,7 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = sorted_fields[i];
     uint32 tag = WireFormat::MakeTag(field->number(),
-      WireFormat::WireTypeForFieldType(field->type()));
+      WireFormat::WireTypeForField(field));
 
     printer->Print(
       "case $tag$: {\n",

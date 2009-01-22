@@ -516,6 +516,92 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   EXPECT_EQ(expected_size, unknown_fields.SpaceUsed());
 }
 
+TEST_F(UnknownFieldSetTest, Empty) {
+  UnknownFieldSet unknown_fields;
+  EXPECT_TRUE(unknown_fields.empty());
+  unknown_fields.AddField(6)->add_varint(123);
+  EXPECT_FALSE(unknown_fields.empty());
+  unknown_fields.Clear();
+  EXPECT_TRUE(unknown_fields.empty());
+}
+
+TEST_F(UnknownFieldSetTest, FieldEmpty) {
+  UnknownFieldSet unknown_fields;
+  UnknownField* field = unknown_fields.AddField(1);
+
+  EXPECT_TRUE(field->empty());
+
+  field->add_varint(1);
+  EXPECT_FALSE(field->empty());
+  field->Clear();
+  EXPECT_TRUE(field->empty());
+
+  field->add_fixed32(1);
+  EXPECT_FALSE(field->empty());
+  field->Clear();
+  EXPECT_TRUE(field->empty());
+
+  field->add_fixed64(1);
+  EXPECT_FALSE(field->empty());
+  field->Clear();
+  EXPECT_TRUE(field->empty());
+
+  field->add_length_delimited("foo");
+  EXPECT_FALSE(field->empty());
+  field->Clear();
+  EXPECT_TRUE(field->empty());
+
+  field->add_group();
+  EXPECT_FALSE(field->empty());
+  field->Clear();
+  EXPECT_TRUE(field->empty());
+}
+
+TEST_F(UnknownFieldSetTest, Iterator) {
+  UnknownFieldSet unknown_fields;
+  EXPECT_TRUE(unknown_fields.begin() == unknown_fields.end());
+
+  // Populate the UnknownFieldSet with some inactive fields by adding some
+  // fields and then clearing.
+  unknown_fields.AddField(6);
+  unknown_fields.AddField(4);
+  unknown_fields.Clear();
+
+  // Add a bunch of "active" fields.
+  UnknownField* a = unknown_fields.AddField(5);
+  unknown_fields.AddField(3);
+  unknown_fields.AddField(9);
+  unknown_fields.AddField(1);
+  UnknownField* b = unknown_fields.AddField(2);
+
+  // Only make some of them non-empty.
+  a->add_varint(1);
+  b->add_length_delimited("foo");
+
+  // Iterate!
+  {
+    UnknownFieldSet::iterator iter = unknown_fields.begin();
+    ASSERT_TRUE(iter != unknown_fields.end());
+    EXPECT_EQ(b, &*iter);
+    ++iter;
+    ASSERT_TRUE(iter != unknown_fields.end());
+    EXPECT_EQ(a, &*iter);
+    ++iter;
+    EXPECT_TRUE(iter == unknown_fields.end());
+  }
+
+  {
+    UnknownFieldSet::const_iterator iter = unknown_fields.begin();
+    ASSERT_TRUE(iter != unknown_fields.end());
+    EXPECT_EQ(b, &*iter);
+    ++iter;
+    ASSERT_TRUE(iter != unknown_fields.end());
+    EXPECT_EQ(a, &*iter);
+    ++iter;
+    EXPECT_TRUE(iter == unknown_fields.end());
+  }
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google

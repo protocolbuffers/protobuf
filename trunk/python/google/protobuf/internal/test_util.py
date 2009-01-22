@@ -366,3 +366,51 @@ def GoldenFile(filename):
     'Could not find golden files.  This test must be run from within the '
     'protobuf source package so that it can read test data files from the '
     'C++ source tree.')
+
+
+def SetAllPackedFields(message):
+  """Sets every field in the message to a unique value.
+
+  Args:
+    message: A unittest_pb2.TestPackedTypes instance.
+  """
+  message.packed_int32.extend([101, 102])
+  message.packed_int64.extend([103, 104])
+  message.packed_uint32.extend([105, 106])
+  message.packed_uint64.extend([107, 108])
+  message.packed_sint32.extend([109, 110])
+  message.packed_sint64.extend([111, 112])
+  message.packed_fixed32.extend([113, 114])
+  message.packed_fixed64.extend([115, 116])
+  message.packed_sfixed32.extend([117, 118])
+  message.packed_sfixed64.extend([119, 120])
+  message.packed_float.extend([121.0, 122.0])
+  message.packed_double.extend([122.0, 123.0])
+  message.packed_bool.extend([True, False])
+  message.packed_enum.extend([unittest_pb2.FOREIGN_FOO,
+                              unittest_pb2.FOREIGN_BAR])
+
+
+def SetAllPackedExtensions(message):
+  """Sets every extension in the message to a unique value.
+
+  Args:
+    message: A unittest_pb2.TestPackedExtensions instance.
+  """
+  extensions = message.Extensions
+  pb2 = unittest_pb2
+
+  extensions[pb2.packed_int32_extension].append(101)
+  extensions[pb2.packed_int64_extension].append(102)
+  extensions[pb2.packed_uint32_extension].append(103)
+  extensions[pb2.packed_uint64_extension].append(104)
+  extensions[pb2.packed_sint32_extension].append(105)
+  extensions[pb2.packed_sint64_extension].append(106)
+  extensions[pb2.packed_fixed32_extension].append(107)
+  extensions[pb2.packed_fixed64_extension].append(108)
+  extensions[pb2.packed_sfixed32_extension].append(109)
+  extensions[pb2.packed_sfixed64_extension].append(110)
+  extensions[pb2.packed_float_extension].append(111.0)
+  extensions[pb2.packed_double_extension].append(112.0)
+  extensions[pb2.packed_bool_extension].append(True)
+  extensions[pb2.packed_enum_extension].append(pb2.FOREIGN_BAZ)

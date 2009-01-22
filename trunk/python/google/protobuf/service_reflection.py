@@ -142,23 +142,16 @@ class _ServiceBuilder(object):
     # instance to the method that does the real CallMethod work.
     def _WrapCallMethod(srvc, method_descriptor,
                         rpc_controller, request, callback):
-      self._CallMethod(srvc, method_descriptor,
+      return self._CallMethod(srvc, method_descriptor,
                        rpc_controller, request, callback)
     self.cls = cls
     cls.CallMethod = _WrapCallMethod
-    cls.GetDescriptor = self._GetDescriptor
+    cls.GetDescriptor = staticmethod(lambda: self.descriptor)
+    cls.GetDescriptor.__doc__ = "Returns the service descriptor."
     cls.GetRequestClass = self._GetRequestClass
     cls.GetResponseClass = self._GetResponseClass
     for method in self.descriptor.methods:
       setattr(cls, method.name, self._GenerateNonImplementedMethod(method))
-
-  def _GetDescriptor(self):
-    """Retrieves the service descriptor.
-
-    Returns:
-      The descriptor of the service (of type ServiceDescriptor).
-    """
-    return self.descriptor
 
   def _CallMethod(self, srvc, method_descriptor,
                   rpc_controller, request, callback):
@@ -175,7 +168,7 @@ class _ServiceBuilder(object):
       raise RuntimeError(
           'CallMethod() given method descriptor for wrong service type.')
     method = getattr(srvc, method_descriptor.name)
-    method(rpc_controller, request, callback)
+    return method(rpc_controller, request, callback)
 
   def _GetRequestClass(self, method_descriptor):
     """Returns the class of the request protocol message.
@@ -270,8 +263,8 @@ class _ServiceStubBuilder(object):
       setattr(cls, method.name, self._GenerateStubMethod(method))
 
   def _GenerateStubMethod(self, method):
-    return lambda inst, rpc_controller, request, callback: self._StubMethod(
-        inst, method, rpc_controller, request, callback)
+    return (lambda inst, rpc_controller, request, callback=None:
+        self._StubMethod(inst, method, rpc_controller, request, callback))
 
   def _StubMethod(self, stub, method_descriptor,
                   rpc_controller, request, callback):
@@ -283,7 +276,9 @@ class _ServiceStubBuilder(object):
       rpc_controller: Rpc controller to execute the method.
       request: Request protocol message.
       callback: A callback to execute when the method finishes.
+    Returns:
+      Response message (in case of blocking call).
     """
-    stub.rpc_channel.CallMethod(
+    return stub.rpc_channel.CallMethod(
         method_descriptor, rpc_controller, request,
         method_descriptor.output_type._concrete_class, callback)

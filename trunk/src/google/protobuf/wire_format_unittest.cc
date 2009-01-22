@@ -90,6 +90,40 @@ TEST(WireFormatTest, ParseExtensions) {
   TestUtil::ExpectAllExtensionsSet(dest);
 }
 
+TEST(WireFormatTest, ParsePacked) {
+  unittest::TestPackedTypes source, dest;
+  string data;
+
+  // Serialize using the generated code.
+  TestUtil::SetPackedFields(&source);
+  source.SerializeToString(&data);
+
+  // Parse using WireFormat.
+  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::CodedInputStream input(&raw_input);
+  WireFormat::ParseAndMergePartial(&input, &dest);
+
+  // Check.
+  TestUtil::ExpectPackedFieldsSet(dest);
+}
+
+TEST(WireFormatTest, ParsePackedExtensions) {
+  unittest::TestPackedExtensions source, dest;
+  string data;
+
+  // Serialize using the generated code.
+  TestUtil::SetPackedExtensions(&source);
+  source.SerializeToString(&data);
+
+  // Parse using WireFormat.
+  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::CodedInputStream input(&raw_input);
+  WireFormat::ParseAndMergePartial(&input, &dest);
+
+  // Check.
+  TestUtil::ExpectPackedExtensionsSet(dest);
+}
+
 TEST(WireFormatTest, ByteSize) {
   unittest::TestAllTypes message;
   TestUtil::SetAllFields(&message);
@@ -103,6 +137,27 @@ TEST(WireFormatTest, ByteSize) {
 TEST(WireFormatTest, ByteSizeExtensions) {
   unittest::TestAllExtensions message;
   TestUtil::SetAllExtensions(&message);
+
+  EXPECT_EQ(message.ByteSize(),
+            WireFormat::ByteSize(message));
+  message.Clear();
+  EXPECT_EQ(0, message.ByteSize());
+  EXPECT_EQ(0, WireFormat::ByteSize(message));
+}
+
+TEST(WireFormatTest, ByteSizePacked) {
+  unittest::TestPackedTypes message;
+  TestUtil::SetPackedFields(&message);
+
+  EXPECT_EQ(message.ByteSize(), WireFormat::ByteSize(message));
+  message.Clear();
+  EXPECT_EQ(0, message.ByteSize());
+  EXPECT_EQ(0, WireFormat::ByteSize(message));
+}
+
+TEST(WireFormatTest, ByteSizePackedExtensions) {
+  unittest::TestPackedExtensions message;
+  TestUtil::SetPackedExtensions(&message);
 
   EXPECT_EQ(message.ByteSize(),
             WireFormat::ByteSize(message));

@@ -53,7 +53,8 @@
 namespace google {
 namespace protobuf {
 
-namespace GOOGLE_ANONYMOUS_NAMESPACE{
+// Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
+namespace descriptor_unittest {
 
 // Some helpers to make assembling descriptors faster.
 DescriptorProto* AddMessage(FileDescriptorProto* file, const string& name) {
@@ -627,6 +628,188 @@ TEST_F(DescriptorTest, FieldEnumType) {
   EXPECT_TRUE(qux_->enum_type() == NULL);
 
   EXPECT_EQ(enum_, bar_->enum_type());
+}
+
+// ===================================================================
+
+class StylizedFieldNamesTest : public testing::Test {
+ protected:
+  void SetUp() {
+    FileDescriptorProto file;
+    file.set_name("foo.proto");
+
+    AddExtensionRange(AddMessage(&file, "ExtendableMessage"), 1, 1000);
+
+    DescriptorProto* message = AddMessage(&file, "TestMessage");
+    AddField(message, "foo_foo", 1,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message, "FooBar", 2,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message, "fooBaz", 3,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message, "fooFoo", 4,  // Camel-case conflict with foo_foo.
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message, "foobar", 5,  // Lower-case conflict with FooBar.
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+
+    AddNestedExtension(message, "ExtendableMessage", "bar_foo", 1,
+                       FieldDescriptorProto::LABEL_OPTIONAL,
+                       FieldDescriptorProto::TYPE_INT32);
+    AddNestedExtension(message, "ExtendableMessage", "BarBar", 2,
+                       FieldDescriptorProto::LABEL_OPTIONAL,
+                       FieldDescriptorProto::TYPE_INT32);
+    AddNestedExtension(message, "ExtendableMessage", "BarBaz", 3,
+                       FieldDescriptorProto::LABEL_OPTIONAL,
+                       FieldDescriptorProto::TYPE_INT32);
+    AddNestedExtension(message, "ExtendableMessage", "barFoo", 4,  // Conflict
+                       FieldDescriptorProto::LABEL_OPTIONAL,
+                       FieldDescriptorProto::TYPE_INT32);
+    AddNestedExtension(message, "ExtendableMessage", "barbar", 5,  // Conflict
+                       FieldDescriptorProto::LABEL_OPTIONAL,
+                       FieldDescriptorProto::TYPE_INT32);
+
+    AddExtension(&file, "ExtendableMessage", "baz_foo", 11,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    AddExtension(&file, "ExtendableMessage", "BazBar", 12,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    AddExtension(&file, "ExtendableMessage", "BazBaz", 13,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    AddExtension(&file, "ExtendableMessage", "bazFoo", 14,  // Conflict
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    AddExtension(&file, "ExtendableMessage", "bazbar", 15,  // Conflict
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+
+    file_ = pool_.BuildFile(file);
+    ASSERT_TRUE(file_ != NULL);
+    ASSERT_EQ(2, file_->message_type_count());
+    message_ = file_->message_type(1);
+    ASSERT_EQ("TestMessage", message_->name());
+    ASSERT_EQ(5, message_->field_count());
+    ASSERT_EQ(5, message_->extension_count());
+    ASSERT_EQ(5, file_->extension_count());
+  }
+
+  DescriptorPool pool_;
+  const FileDescriptor* file_;
+  const Descriptor* message_;
+};
+
+TEST_F(StylizedFieldNamesTest, LowercaseName) {
+  EXPECT_EQ("foo_foo", message_->field(0)->lowercase_name());
+  EXPECT_EQ("foobar" , message_->field(1)->lowercase_name());
+  EXPECT_EQ("foobaz" , message_->field(2)->lowercase_name());
+  EXPECT_EQ("foofoo" , message_->field(3)->lowercase_name());
+  EXPECT_EQ("foobar" , message_->field(4)->lowercase_name());
+
+  EXPECT_EQ("bar_foo", message_->extension(0)->lowercase_name());
+  EXPECT_EQ("barbar" , message_->extension(1)->lowercase_name());
+  EXPECT_EQ("barbaz" , message_->extension(2)->lowercase_name());
+  EXPECT_EQ("barfoo" , message_->extension(3)->lowercase_name());
+  EXPECT_EQ("barbar" , message_->extension(4)->lowercase_name());
+
+  EXPECT_EQ("baz_foo", file_->extension(0)->lowercase_name());
+  EXPECT_EQ("bazbar" , file_->extension(1)->lowercase_name());
+  EXPECT_EQ("bazbaz" , file_->extension(2)->lowercase_name());
+  EXPECT_EQ("bazfoo" , file_->extension(3)->lowercase_name());
+  EXPECT_EQ("bazbar" , file_->extension(4)->lowercase_name());
+}
+
+TEST_F(StylizedFieldNamesTest, CamelcaseName) {
+  EXPECT_EQ("fooFoo", message_->field(0)->camelcase_name());
+  EXPECT_EQ("fooBar", message_->field(1)->camelcase_name());
+  EXPECT_EQ("fooBaz", message_->field(2)->camelcase_name());
+  EXPECT_EQ("fooFoo", message_->field(3)->camelcase_name());
+  EXPECT_EQ("foobar", message_->field(4)->camelcase_name());
+
+  EXPECT_EQ("barFoo", message_->extension(0)->camelcase_name());
+  EXPECT_EQ("barBar", message_->extension(1)->camelcase_name());
+  EXPECT_EQ("barBaz", message_->extension(2)->camelcase_name());
+  EXPECT_EQ("barFoo", message_->extension(3)->camelcase_name());
+  EXPECT_EQ("barbar", message_->extension(4)->camelcase_name());
+
+  EXPECT_EQ("bazFoo", file_->extension(0)->camelcase_name());
+  EXPECT_EQ("bazBar", file_->extension(1)->camelcase_name());
+  EXPECT_EQ("bazBaz", file_->extension(2)->camelcase_name());
+  EXPECT_EQ("bazFoo", file_->extension(3)->camelcase_name());
+  EXPECT_EQ("bazbar", file_->extension(4)->camelcase_name());
+}
+
+TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
+  EXPECT_EQ(message_->field(0),
+            message_->FindFieldByLowercaseName("foo_foo"));
+  EXPECT_EQ(message_->field(1),
+            message_->FindFieldByLowercaseName("foobar"));
+  EXPECT_EQ(message_->field(2),
+            message_->FindFieldByLowercaseName("foobaz"));
+  EXPECT_TRUE(message_->FindFieldByLowercaseName("FooBar") == NULL);
+  EXPECT_TRUE(message_->FindFieldByLowercaseName("fooBaz") == NULL);
+  EXPECT_TRUE(message_->FindFieldByLowercaseName("bar_foo") == NULL);
+  EXPECT_TRUE(message_->FindFieldByLowercaseName("nosuchfield") == NULL);
+
+  EXPECT_EQ(message_->extension(0),
+            message_->FindExtensionByLowercaseName("bar_foo"));
+  EXPECT_EQ(message_->extension(1),
+            message_->FindExtensionByLowercaseName("barbar"));
+  EXPECT_EQ(message_->extension(2),
+            message_->FindExtensionByLowercaseName("barbaz"));
+  EXPECT_TRUE(message_->FindExtensionByLowercaseName("BarBar") == NULL);
+  EXPECT_TRUE(message_->FindExtensionByLowercaseName("barBaz") == NULL);
+  EXPECT_TRUE(message_->FindExtensionByLowercaseName("foo_foo") == NULL);
+  EXPECT_TRUE(message_->FindExtensionByLowercaseName("nosuchfield") == NULL);
+
+  EXPECT_EQ(file_->extension(0),
+            file_->FindExtensionByLowercaseName("baz_foo"));
+  EXPECT_EQ(file_->extension(1),
+            file_->FindExtensionByLowercaseName("bazbar"));
+  EXPECT_EQ(file_->extension(2),
+            file_->FindExtensionByLowercaseName("bazbaz"));
+  EXPECT_TRUE(file_->FindExtensionByLowercaseName("BazBar") == NULL);
+  EXPECT_TRUE(file_->FindExtensionByLowercaseName("bazBaz") == NULL);
+  EXPECT_TRUE(file_->FindExtensionByLowercaseName("nosuchfield") == NULL);
+}
+
+TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
+  EXPECT_EQ(message_->field(0),
+            message_->FindFieldByCamelcaseName("fooFoo"));
+  EXPECT_EQ(message_->field(1),
+            message_->FindFieldByCamelcaseName("fooBar"));
+  EXPECT_EQ(message_->field(2),
+            message_->FindFieldByCamelcaseName("fooBaz"));
+  EXPECT_TRUE(message_->FindFieldByCamelcaseName("foo_foo") == NULL);
+  EXPECT_TRUE(message_->FindFieldByCamelcaseName("FooBar") == NULL);
+  EXPECT_TRUE(message_->FindFieldByCamelcaseName("barFoo") == NULL);
+  EXPECT_TRUE(message_->FindFieldByCamelcaseName("nosuchfield") == NULL);
+
+  EXPECT_EQ(message_->extension(0),
+            message_->FindExtensionByCamelcaseName("barFoo"));
+  EXPECT_EQ(message_->extension(1),
+            message_->FindExtensionByCamelcaseName("barBar"));
+  EXPECT_EQ(message_->extension(2),
+            message_->FindExtensionByCamelcaseName("barBaz"));
+  EXPECT_TRUE(message_->FindExtensionByCamelcaseName("bar_foo") == NULL);
+  EXPECT_TRUE(message_->FindExtensionByCamelcaseName("BarBar") == NULL);
+  EXPECT_TRUE(message_->FindExtensionByCamelcaseName("fooFoo") == NULL);
+  EXPECT_TRUE(message_->FindExtensionByCamelcaseName("nosuchfield") == NULL);
+
+  EXPECT_EQ(file_->extension(0),
+            file_->FindExtensionByCamelcaseName("bazFoo"));
+  EXPECT_EQ(file_->extension(1),
+            file_->FindExtensionByCamelcaseName("bazBar"));
+  EXPECT_EQ(file_->extension(2),
+            file_->FindExtensionByCamelcaseName("bazBaz"));
+  EXPECT_TRUE(file_->FindExtensionByCamelcaseName("baz_foo") == NULL);
+  EXPECT_TRUE(file_->FindExtensionByCamelcaseName("BazBar") == NULL);
+  EXPECT_TRUE(file_->FindExtensionByCamelcaseName("nosuchfield") == NULL);
 }
 
 // ===================================================================
@@ -2457,6 +2640,36 @@ TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
     "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message type.\n");
 }
 
+TEST_F(ValidationErrorTest, IllegalPackedField) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {\n"
+    "  name: \"Foo\""
+    "  field { name:\"packed_string\" number:1 label:LABEL_REPEATED "
+    "          type:TYPE_STRING "
+    "          options { uninterpreted_option {"
+    "            name { name_part: \"packed\" is_extension: false }"
+    "            identifier_value: \"true\" }}}\n"
+    "  field { name:\"packed_message\" number:3 label:LABEL_REPEATED "
+    "          type_name: \"Foo\""
+    "          options { uninterpreted_option {"
+    "            name { name_part: \"packed\" is_extension: false }"
+    "            identifier_value: \"true\" }}}\n"
+    "  field { name:\"optional_int32\" number: 4 label: LABEL_OPTIONAL "
+    "          type:TYPE_INT32 "
+    "          options { uninterpreted_option {"
+    "            name { name_part: \"packed\" is_extension: false }"
+    "            identifier_value: \"true\" }}}\n"
+    "}",
+
+    "foo.proto: Foo.packed_string: TYPE: [packed = true] can only be "
+        "specified for repeated primitive fields.\n"
+    "foo.proto: Foo.packed_message: TYPE: [packed = true] can only be "
+        "specified for repeated primitive fields.\n"
+    "foo.proto: Foo.optional_int32: TYPE: [packed = true] can only be "
+        "specified for repeated primitive fields.\n"
+        );
+}
 
 TEST_F(ValidationErrorTest, OptionWrongType) {
   BuildFileWithErrors(
@@ -3255,6 +3468,34 @@ TEST_F(DatabaseBackedPoolTest, DoesntReloadKnownBadFiles) {
   EXPECT_EQ("", error_collector.text_);
 }
 
-}  // anonymous namespace
+TEST_F(DatabaseBackedPoolTest, DoesntFallbackOnWrongType) {
+  // If a lookup finds a symbol of the wrong type (e.g. we pass a type name
+  // to FindFieldByName()), we should fail fast, without checking the fallback
+  // database.
+  CallCountingDatabase call_counter(&database_);
+  DescriptorPool pool(&call_counter);
+
+  const FileDescriptor* file = pool.FindFileByName("foo.proto");
+  ASSERT_TRUE(file != NULL);
+  const Descriptor* foo = pool.FindMessageTypeByName("Foo");
+  ASSERT_TRUE(foo != NULL);
+  const EnumDescriptor* test_enum = pool.FindEnumTypeByName("TestEnum");
+  ASSERT_TRUE(test_enum != NULL);
+
+  EXPECT_NE(0, call_counter.call_count_);
+  call_counter.Clear();
+
+  EXPECT_TRUE(pool.FindMessageTypeByName("TestEnum") == NULL);
+  EXPECT_TRUE(pool.FindFieldByName("Foo") == NULL);
+  EXPECT_TRUE(pool.FindExtensionByName("Foo") == NULL);
+  EXPECT_TRUE(pool.FindEnumTypeByName("Foo") == NULL);
+  EXPECT_TRUE(pool.FindEnumValueByName("Foo") == NULL);
+  EXPECT_TRUE(pool.FindServiceByName("Foo") == NULL);
+  EXPECT_TRUE(pool.FindMethodByName("Foo") == NULL);
+
+  EXPECT_EQ(0, call_counter.call_count_);
+}
+
+}  // namespace descriptor_unittest
 }  // namespace protobuf
 }  // namespace google

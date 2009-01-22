@@ -253,6 +253,7 @@ message FileOptions {
   optional OptimizeMode optimize_for = 9 [default=CODE_SIZE];
 
 
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -299,6 +300,11 @@ message FieldOptions {
 
     STRING_PIECE = 2;
   }
+  // The packed option can be enabled for repeated primitive fields to enable
+  // a more efficient representation on the wire. Rather than repeatedly
+  // writing the tag and type for each element, the entire array is encoded as
+  // a single length-delimited blob.
+  optional bool packed = 2;
 
   // EXPERIMENTAL.  DO NOT USE.
   // For "map" fields, the name of the field in the enclosed type that

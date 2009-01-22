@@ -163,13 +163,20 @@ class LIBPROTOBUF_EXPORT WireFormat {
   static inline WireType WireTypeForFieldType(FieldDescriptor::Type type) {
     return kWireTypeForFieldType[type];
   }
+  // This is different from WireTypeForFieldType(field->type()) in the case of
+  // packed repeated fields.
+  static inline WireType WireTypeForField(const FieldDescriptor* field);
 
   // Number of bits in a tag which identify the wire type.
   static const int kTagTypeBits = 3;
   // Mask for those bits.
   static const uint32 kTagTypeMask = (1 << kTagTypeBits) - 1;
 
-  // Helper functions for encoding and decoding tags.  (Inlined below.)
+  // Helper functions for encoding and decoding tags.  (Inlined below and in
+  // _inl.h)
+  //
+  // This is different from MakeTag(field->number(), field->type()) in the case
+  // of packed repeated fields.
   static uint32 MakeTag(const FieldDescriptor* field);
   static uint32 MakeTag(int field_number, WireType type);
   static WireType GetTagWireType(uint32 tag);
@@ -258,9 +265,26 @@ class LIBPROTOBUF_EXPORT WireFormat {
   template<typename MessageType>
   static inline bool ReadMessageNoVirtual(input, MessageType* value);
 
-  // Write a tag.  The Write*() functions automatically include the tag, so
-  // normally there's no need to call this.
+  // Write a tag.  The Write*() functions typically include the tag, so
+  // normally there's no need to call this unless using the Write*NoTag()
+  // variants.
   static inline bool WriteTag(field_number, WireType type, output) INL;
+
+  // Write fields, without tags.
+  static inline bool WriteInt32NoTag   (int32 value, output) INL;
+  static inline bool WriteInt64NoTag   (int64 value, output) INL;
+  static inline bool WriteUInt32NoTag  (uint32 value, output) INL;
+  static inline bool WriteUInt64NoTag  (uint64 value, output) INL;
+  static inline bool WriteSInt32NoTag  (int32 value, output) INL;
+  static inline bool WriteSInt64NoTag  (int64 value, output) INL;
+  static inline bool WriteFixed32NoTag (uint32 value, output) INL;
+  static inline bool WriteFixed64NoTag (uint64 value, output) INL;
+  static inline bool WriteSFixed32NoTag(int32 value, output) INL;
+  static inline bool WriteSFixed64NoTag(int64 value, output) INL;
+  static inline bool WriteFloatNoTag   (float value, output) INL;
+  static inline bool WriteDoubleNoTag  (double value, output) INL;
+  static inline bool WriteBoolNoTag    (bool value, output) INL;
+  static inline bool WriteEnumNoTag    (int value, output) INL;
 
   // Write fields, including tags.
   static inline bool WriteInt32   (field_number,  int32 value, output) INL;
@@ -355,6 +379,14 @@ class LIBPROTOBUF_EXPORT WireFormat {
       const FieldDescriptor* field,
       const Message& message);
 
+  // Computes the byte size of a field, excluding tags. For packed fields, it
+  // only includes the size of the raw data, and not the size of the total
+  // length, but for other length-delimited types, the size of the length is
+  // included.
+  static int FieldDataOnlyByteSize(
+      const FieldDescriptor* field,        // Cannot be NULL
+      const Message& message);
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };
 
@@ -367,10 +399,6 @@ class LIBPROTOBUF_EXPORT WireFormat {
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(FIELD_NUMBER, TYPE)             \
   static_cast<uint32>(                                              \
     ((FIELD_NUMBER) << ::google::protobuf::internal::WireFormat::kTagTypeBits) | (TYPE))
-
-inline uint32 WireFormat::MakeTag(const FieldDescriptor* field) {
-  return MakeTag(field->number(), WireTypeForFieldType(field->type()));
-}
 
 inline uint32 WireFormat::MakeTag(int field_number, WireType type) {
   return GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(field_number, type);

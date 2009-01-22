@@ -1,8 +1,41 @@
-version 2.0.4:
+????-??-?? version 2.0.4:
+
+  General
+  * Repeated fields of primitive types (types other that string, group, and
+    nested messages) may now use the option [packed = true] to get a more
+    efficient encoding.  In the new encoding, the entire list is written
+    as a single byte blob using the "length-delimited" wire type.  Within
+    this blob, the individual values are encoded the same way they would
+    be normally except without a tag before each value (thus, they are
+    tightly "packed").
+
+  C++
+  * UnknownFieldSet now supports STL-like iteration.
+  * Message interface has method ParseFromBoundedZeroCopyStream() which parses
+    a limited number of bytes from an input stream rather than parsing until
+    EOF.
+
+  Java
+  * Fixed bug where Message.mergeFrom(Message) failed to merge extensions.
+  * Message interface has new method toBuilder() which is equivalent to
+    newBuilderForType().mergeFrom(this).
+  * All enums now implement the ProtocolMessageEnum interface.
+  * Setting a field to null now throws NullPointerException.
+  * Fixed tendency for TextFormat's parsing to overflow the stack when
+    parsing large string values.  The underlying problem is with Java's
+    regex implementation (which unfortunately uses recursive backtracking
+    rather than building an NFA).  Worked around by making use of possesive
+    quantifiers.
 
   Python
   * Added slicing support for repeated scalar fields. Added slice retrieval and
     removal of repeated composite fields.
+  * Updated RPC interfaces to allow for blocking operation.  A client may
+    now pass None for a callback when making an RPC, in which case the
+    call will block until the response is received, and the response
+    object will be returned directly to the caller.  This interface change
+    cannot be used in practice until RPC implementations are updated to
+    implement it.
 
 2008-11-25 version 2.0.3:
 

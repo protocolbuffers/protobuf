@@ -232,6 +232,14 @@ class LIBPROTOBUF_EXPORT Message {
   // Like ParseFromZeroCopyStream(), but accepts messages that are missing
   // required fields.
   bool ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input);
+  // Read a protocol buffer from the given zero-copy input stream, expecting
+  // the message to be exactly "size" bytes long.  If successful, exactly
+  // this many bytes will have been consumed from the input.
+  bool ParseFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
+  // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
+  // missing required fields.
+  bool ParsePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
+                                             int size);
   // Parse a protocol buffer contained in a string.
   bool ParseFromString(const string& data);
   // Like ParseFromString(), but accepts messages that are missing

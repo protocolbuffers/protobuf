@@ -216,6 +216,23 @@ TYPE_TO_SERIALIZE_METHOD = {
     }
 
 
+TYPE_TO_NOTAG_SERIALIZE_METHOD = {
+    _FieldDescriptor.TYPE_DOUBLE: _Encoder.AppendDoubleNoTag,
+    _FieldDescriptor.TYPE_FLOAT: _Encoder.AppendFloatNoTag,
+    _FieldDescriptor.TYPE_INT64: _Encoder.AppendInt64NoTag,
+    _FieldDescriptor.TYPE_UINT64: _Encoder.AppendUInt64NoTag,
+    _FieldDescriptor.TYPE_INT32: _Encoder.AppendInt32NoTag,
+    _FieldDescriptor.TYPE_FIXED64: _Encoder.AppendFixed64NoTag,
+    _FieldDescriptor.TYPE_FIXED32: _Encoder.AppendFixed32NoTag,
+    _FieldDescriptor.TYPE_BOOL: _Encoder.AppendBoolNoTag,
+    _FieldDescriptor.TYPE_UINT32: _Encoder.AppendUInt32NoTag,
+    _FieldDescriptor.TYPE_ENUM: _Encoder.AppendEnumNoTag,
+    _FieldDescriptor.TYPE_SFIXED32: _Encoder.AppendSFixed32NoTag,
+    _FieldDescriptor.TYPE_SFIXED64: _Encoder.AppendSFixed64NoTag,
+    _FieldDescriptor.TYPE_SINT32: _Encoder.AppendSInt32NoTag,
+    _FieldDescriptor.TYPE_SINT64: _Encoder.AppendSInt64NoTag,
+    }
+
 # Maps from field type to expected wiretype.
 FIELD_TYPE_TO_WIRE_TYPE = {
     _FieldDescriptor.TYPE_DOUBLE: wire_format.WIRETYPE_FIXED64,

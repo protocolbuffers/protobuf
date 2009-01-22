@@ -154,6 +154,46 @@ int UnknownFieldSet::SpaceUsed() const {
   return sizeof(*this) + SpaceUsedExcludingSelf();
 }
 
+UnknownFieldSet::Internal::FieldMap UnknownFieldSet::kEmptyMap;
+const UnknownFieldSet::iterator UnknownFieldSet::kEmptyIterator(
+  kEmptyMap.end(), &kEmptyMap);
+const UnknownFieldSet::const_iterator UnknownFieldSet::kEmptyConstIterator(
+  kEmptyMap.end(), &kEmptyMap);
+
+void UnknownFieldSet::iterator::AdvanceToNonEmpty() {
+  while (inner_iterator_ != inner_map_->end() &&
+         (inner_iterator_->second->index() == -1 ||
+          inner_iterator_->second->empty())) {
+    ++inner_iterator_;
+  }
+}
+
+void UnknownFieldSet::const_iterator::AdvanceToNonEmpty() {
+  while (inner_iterator_ != inner_map_->end() &&
+         (inner_iterator_->second->index() == -1 ||
+          inner_iterator_->second->empty())) {
+    ++inner_iterator_;
+  }
+}
+
+UnknownFieldSet::iterator UnknownFieldSet::begin() {
+  if (internal_ == NULL) return kEmptyIterator;
+
+  UnknownFieldSet::iterator result(internal_->fields_.begin(),
+                                   &internal_->fields_);
+  result.AdvanceToNonEmpty();
+  return result;
+}
+
+UnknownFieldSet::const_iterator UnknownFieldSet::begin() const {
+  if (internal_ == NULL) return kEmptyIterator;
+
+  UnknownFieldSet::const_iterator result(internal_->fields_.begin(),
+                                         &internal_->fields_);
+  result.AdvanceToNonEmpty();
+  return result;
+}
+
 UnknownField::UnknownField(int number)
   : number_(number),
     index_(-1) {

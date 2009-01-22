@@ -54,6 +54,14 @@ message TestConflictingSymbolNames {
   optional int32 total_size = 6;
   optional int32 tag = 7;
 
+  enum TestEnum { FOO = 1; }
+  message Data1 { repeated int32 data = 1; }
+  message Data2 { repeated TestEnum data = 1; }
+  message Data3 { repeated string data = 1; }
+  message Data4 { repeated Data4 data = 1; }
+  message Data5 { repeated string data = 1 [ctype=STRING_PIECE]; }
+  message Data6 { repeated string data = 1 [ctype=CORD]; }
+
   optional int32 source = 8;
   optional int32 value = 9;
   optional int32 file = 10;

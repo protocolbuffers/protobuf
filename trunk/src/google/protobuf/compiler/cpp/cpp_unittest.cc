@@ -225,7 +225,6 @@ TEST(GeneratedMessageTest, ClearOneField) {
 
 TEST(GeneratedMessageTest, CopyFrom) {
   unittest::TestAllTypes message1, message2;
-  string data;
 
   TestUtil::SetAllFields(&message1);
   message2.CopyFrom(message1);
@@ -413,6 +412,13 @@ TEST(GeneratedMessageTest, Serialization) {
   EXPECT_TRUE(message2.ParseFromString(data));
   TestUtil::ExpectAllFieldsSet(message2);
 
+
+  unittest::TestPackedTypes packed_message1, packed_message2;
+  string packed_data;
+  TestUtil::SetPackedFields(&packed_message1);
+  packed_message1.SerializeToString(&packed_data);
+  EXPECT_TRUE(packed_message2.ParseFromString(packed_data));
+  TestUtil::ExpectPackedFieldsSet(packed_message2);
 }
 
 

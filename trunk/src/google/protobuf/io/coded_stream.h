@@ -149,6 +149,15 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // occurs.
   bool Skip(int count);
 
+  // Sets *data to point directly at the unread part of the CodedInputStream's
+  // underlying buffer, and *size to the size of that buffer, but does not
+  // advance the stream's current position.  This will always either produce
+  // a non-empty buffer or return false.  If the caller consumes any of
+  // this data, it should then call Skip() to skip over the consumed bytes.
+  // This may be useful for implementing external fast parsing routines for
+  // types of data not covered by the CodedInputStream interface.
+  bool GetDirectBufferPointer(const void** data, int* size);
+
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
@@ -381,6 +390,21 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // ZeroCopyOutputStream immediately after the last byte written.
   ~CodedOutputStream();
 
+  // Skips a number of bytes, leaving the bytes unmodified in the underlying
+  // buffer.  Returns false if an underlying write error occurs.  This is
+  // mainly useful with GetDirectBufferPointer().
+  bool Skip(int count);
+
+  // Sets *data to point directly at the unwritten part of the
+  // CodedOutputStream's underlying buffer, and *size to the size of that
+  // buffer, but does not advance the stream's current position.  This will
+  // always either produce a non-empty buffer or return false.  If the caller
+  // writes any data to this buffer, it should then call Skip() to skip over
+  // the consumed bytes.  This may be useful for implementing external fast
+  // serialization routines for types of data not covered by the
+  // CodedOutputStream interface.
+  bool GetDirectBufferPointer(void** data, int* size);
+
   // Write raw bytes, copying them from the given buffer.
   bool WriteRaw(const void* buffer, int size);
 
@@ -518,7 +542,7 @@ inline bool CodedInputStream::ExpectAtEnd() {
 
 inline bool CodedOutputStream::WriteVarint32(uint32 value) {
   if (value < 0x80 && buffer_size_ > 0) {
-    *buffer_ = value;
+    *buffer_ = static_cast<uint8>(value);
     Advance(1);
     return true;
   } else {
@@ -537,7 +561,7 @@ inline bool CodedOutputStream::WriteVarint32SignExtended(int32 value) {
 inline bool CodedOutputStream::WriteTag(uint32 value) {
   if (value < (1 << 7)) {
     if (buffer_size_ != 0) {
-      buffer_[0] = value;
+      buffer_[0] = static_cast<uint8>(value);
       Advance(1);
       return true;
     }

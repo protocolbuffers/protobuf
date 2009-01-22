@@ -28,17 +28,105 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Note:  This file contains many lines over 80 characters.  It even contains
-// many lines over 100 characters, which fails a presubmit test.  However,
-// given the extremely repetitive nature of the file, I (kenton) feel that
-// having similar components of each statement line up is more important than
-// avoiding horizontal scrolling.  So, I am bypassing the presubmit check.
-
 package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.TestAllTypes;
+
+// The static imports are to avoid 100+ char lines.  The following is roughly equivalent to
+// import static protobuf_unittest.UnittestProto.*;
+import static protobuf_unittest.UnittestProto.defaultInt32Extension;
+import static protobuf_unittest.UnittestProto.defaultInt64Extension;
+import static protobuf_unittest.UnittestProto.defaultUint32Extension;
+import static protobuf_unittest.UnittestProto.defaultUint64Extension;
+import static protobuf_unittest.UnittestProto.defaultSint32Extension;
+import static protobuf_unittest.UnittestProto.defaultSint64Extension;
+import static protobuf_unittest.UnittestProto.defaultFixed32Extension;
+import static protobuf_unittest.UnittestProto.defaultFixed64Extension;
+import static protobuf_unittest.UnittestProto.defaultSfixed32Extension;
+import static protobuf_unittest.UnittestProto.defaultSfixed64Extension;
+import static protobuf_unittest.UnittestProto.defaultFloatExtension;
+import static protobuf_unittest.UnittestProto.defaultDoubleExtension;
+import static protobuf_unittest.UnittestProto.defaultBoolExtension;
+import static protobuf_unittest.UnittestProto.defaultStringExtension;
+import static protobuf_unittest.UnittestProto.defaultBytesExtension;
+import static protobuf_unittest.UnittestProto.defaultNestedEnumExtension;
+import static protobuf_unittest.UnittestProto.defaultForeignEnumExtension;
+import static protobuf_unittest.UnittestProto.defaultImportEnumExtension;
+import static protobuf_unittest.UnittestProto.defaultStringPieceExtension;
+import static protobuf_unittest.UnittestProto.defaultCordExtension;
+
+import static protobuf_unittest.UnittestProto.optionalInt32Extension;
+import static protobuf_unittest.UnittestProto.optionalInt64Extension;
+import static protobuf_unittest.UnittestProto.optionalUint32Extension;
+import static protobuf_unittest.UnittestProto.optionalUint64Extension;
+import static protobuf_unittest.UnittestProto.optionalSint32Extension;
+import static protobuf_unittest.UnittestProto.optionalSint64Extension;
+import static protobuf_unittest.UnittestProto.optionalFixed32Extension;
+import static protobuf_unittest.UnittestProto.optionalFixed64Extension;
+import static protobuf_unittest.UnittestProto.optionalSfixed32Extension;
+import static protobuf_unittest.UnittestProto.optionalSfixed64Extension;
+import static protobuf_unittest.UnittestProto.optionalFloatExtension;
+import static protobuf_unittest.UnittestProto.optionalDoubleExtension;
+import static protobuf_unittest.UnittestProto.optionalBoolExtension;
+import static protobuf_unittest.UnittestProto.optionalStringExtension;
+import static protobuf_unittest.UnittestProto.optionalBytesExtension;
+import static protobuf_unittest.UnittestProto.optionalGroupExtension;
+import static protobuf_unittest.UnittestProto.optionalNestedMessageExtension;
+import static protobuf_unittest.UnittestProto.optionalForeignMessageExtension;
+import static protobuf_unittest.UnittestProto.optionalImportMessageExtension;
+import static protobuf_unittest.UnittestProto.optionalNestedEnumExtension;
+import static protobuf_unittest.UnittestProto.optionalForeignEnumExtension;
+import static protobuf_unittest.UnittestProto.optionalImportEnumExtension;
+import static protobuf_unittest.UnittestProto.optionalStringPieceExtension;
+import static protobuf_unittest.UnittestProto.optionalCordExtension;
+
+import static protobuf_unittest.UnittestProto.repeatedInt32Extension;
+import static protobuf_unittest.UnittestProto.repeatedInt64Extension;
+import static protobuf_unittest.UnittestProto.repeatedUint32Extension;
+import static protobuf_unittest.UnittestProto.repeatedUint64Extension;
+import static protobuf_unittest.UnittestProto.repeatedSint32Extension;
+import static protobuf_unittest.UnittestProto.repeatedSint64Extension;
+import static protobuf_unittest.UnittestProto.repeatedFixed32Extension;
+import static protobuf_unittest.UnittestProto.repeatedFixed64Extension;
+import static protobuf_unittest.UnittestProto.repeatedSfixed32Extension;
+import static protobuf_unittest.UnittestProto.repeatedSfixed64Extension;
+import static protobuf_unittest.UnittestProto.repeatedFloatExtension;
+import static protobuf_unittest.UnittestProto.repeatedDoubleExtension;
+import static protobuf_unittest.UnittestProto.repeatedBoolExtension;
+import static protobuf_unittest.UnittestProto.repeatedStringExtension;
+import static protobuf_unittest.UnittestProto.repeatedBytesExtension;
+import static protobuf_unittest.UnittestProto.repeatedGroupExtension;
+import static protobuf_unittest.UnittestProto.repeatedNestedMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedForeignMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedImportMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedNestedEnumExtension;
+import static protobuf_unittest.UnittestProto.repeatedForeignEnumExtension;
+import static protobuf_unittest.UnittestProto.repeatedImportEnumExtension;
+import static protobuf_unittest.UnittestProto.repeatedStringPieceExtension;
+import static protobuf_unittest.UnittestProto.repeatedCordExtension;
+
+import static protobuf_unittest.UnittestProto.OptionalGroup_extension;
+import static protobuf_unittest.UnittestProto.RepeatedGroup_extension;
+
+import static protobuf_unittest.UnittestProto.packedInt32Extension;
+import static protobuf_unittest.UnittestProto.packedInt64Extension;
+import static protobuf_unittest.UnittestProto.packedUint32Extension;
+import static protobuf_unittest.UnittestProto.packedUint64Extension;
+import static protobuf_unittest.UnittestProto.packedSint32Extension;
+import static protobuf_unittest.UnittestProto.packedSint64Extension;
+import static protobuf_unittest.UnittestProto.packedFixed32Extension;
+import static protobuf_unittest.UnittestProto.packedFixed64Extension;
+import static protobuf_unittest.UnittestProto.packedSfixed32Extension;
+import static protobuf_unittest.UnittestProto.packedSfixed64Extension;
+import static protobuf_unittest.UnittestProto.packedFloatExtension;
+import static protobuf_unittest.UnittestProto.packedDoubleExtension;
+import static protobuf_unittest.UnittestProto.packedBoolExtension;
+import static protobuf_unittest.UnittestProto.packedEnumExtension;
+
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestPackedExtensions;
+import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import com.google.protobuf.test.UnittestImport.ImportMessage;
@@ -63,7 +151,7 @@ class TestUtil {
   private TestUtil() {}
 
   /** Helper to convert a String to ByteString. */
-  private static ByteString toBytes(String str) {
+  static ByteString toBytes(String str) {
     try {
       return ByteString.copyFrom(str.getBytes("UTF-8"));
     } catch(java.io.UnsupportedEncodingException e) {
@@ -88,6 +176,18 @@ class TestUtil {
   public static TestAllExtensions getAllExtensionsSet() {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
     setAllExtensions(builder);
+    return builder.build();
+  }
+
+  public static TestPackedTypes getPackedSet() {
+    TestPackedTypes.Builder builder = TestPackedTypes.newBuilder();
+    setPackedFields(builder);
+    return builder.build();
+  }
+
+  public static TestPackedExtensions getPackedExtensionsSet() {
+    TestPackedExtensions.Builder builder = TestPackedExtensions.newBuilder();
+    setPackedExtensions(builder);
     return builder.build();
   }
 
@@ -770,141 +870,129 @@ class TestUtil {
    * {@code assertAllExtensionsSet()}.
    */
   public static void setAllExtensions(TestAllExtensions.Builder message) {
-    message.setExtension(UnittestProto.optionalInt32Extension   , 101);
-    message.setExtension(UnittestProto.optionalInt64Extension   , 102L);
-    message.setExtension(UnittestProto.optionalUint32Extension  , 103);
-    message.setExtension(UnittestProto.optionalUint64Extension  , 104L);
-    message.setExtension(UnittestProto.optionalSint32Extension  , 105);
-    message.setExtension(UnittestProto.optionalSint64Extension  , 106L);
-    message.setExtension(UnittestProto.optionalFixed32Extension , 107);
-    message.setExtension(UnittestProto.optionalFixed64Extension , 108L);
-    message.setExtension(UnittestProto.optionalSfixed32Extension, 109);
-    message.setExtension(UnittestProto.optionalSfixed64Extension, 110L);
-    message.setExtension(UnittestProto.optionalFloatExtension   , 111F);
-    message.setExtension(UnittestProto.optionalDoubleExtension  , 112D);
-    message.setExtension(UnittestProto.optionalBoolExtension    , true);
-    message.setExtension(UnittestProto.optionalStringExtension  , "115");
-    message.setExtension(UnittestProto.optionalBytesExtension   , toBytes("116"));
+    message.setExtension(optionalInt32Extension   , 101);
+    message.setExtension(optionalInt64Extension   , 102L);
+    message.setExtension(optionalUint32Extension  , 103);
+    message.setExtension(optionalUint64Extension  , 104L);
+    message.setExtension(optionalSint32Extension  , 105);
+    message.setExtension(optionalSint64Extension  , 106L);
+    message.setExtension(optionalFixed32Extension , 107);
+    message.setExtension(optionalFixed64Extension , 108L);
+    message.setExtension(optionalSfixed32Extension, 109);
+    message.setExtension(optionalSfixed64Extension, 110L);
+    message.setExtension(optionalFloatExtension   , 111F);
+    message.setExtension(optionalDoubleExtension  , 112D);
+    message.setExtension(optionalBoolExtension    , true);
+    message.setExtension(optionalStringExtension  , "115");
+    message.setExtension(optionalBytesExtension   , toBytes("116"));
 
-    message.setExtension(UnittestProto.optionalGroupExtension,
-      UnittestProto.OptionalGroup_extension.newBuilder().setA(117).build());
-    message.setExtension(UnittestProto.optionalNestedMessageExtension,
+    message.setExtension(optionalGroupExtension,
+      OptionalGroup_extension.newBuilder().setA(117).build());
+    message.setExtension(optionalNestedMessageExtension,
       TestAllTypes.NestedMessage.newBuilder().setBb(118).build());
-    message.setExtension(UnittestProto.optionalForeignMessageExtension,
+    message.setExtension(optionalForeignMessageExtension,
       ForeignMessage.newBuilder().setC(119).build());
-    message.setExtension(UnittestProto.optionalImportMessageExtension,
+    message.setExtension(optionalImportMessageExtension,
       ImportMessage.newBuilder().setD(120).build());
 
-    message.setExtension(UnittestProto.optionalNestedEnumExtension,
-                         TestAllTypes.NestedEnum.BAZ);
-    message.setExtension(UnittestProto.optionalForeignEnumExtension,
-                         ForeignEnum.FOREIGN_BAZ);
-    message.setExtension(UnittestProto.optionalImportEnumExtension,
-                         ImportEnum.IMPORT_BAZ);
+    message.setExtension(optionalNestedEnumExtension, TestAllTypes.NestedEnum.BAZ);
+    message.setExtension(optionalForeignEnumExtension, ForeignEnum.FOREIGN_BAZ);
+    message.setExtension(optionalImportEnumExtension, ImportEnum.IMPORT_BAZ);
 
-    message.setExtension(UnittestProto.optionalStringPieceExtension, "124");
-    message.setExtension(UnittestProto.optionalCordExtension, "125");
+    message.setExtension(optionalStringPieceExtension, "124");
+    message.setExtension(optionalCordExtension, "125");
 
     // -----------------------------------------------------------------
 
-    message.addExtension(UnittestProto.repeatedInt32Extension   , 201);
-    message.addExtension(UnittestProto.repeatedInt64Extension   , 202L);
-    message.addExtension(UnittestProto.repeatedUint32Extension  , 203);
-    message.addExtension(UnittestProto.repeatedUint64Extension  , 204L);
-    message.addExtension(UnittestProto.repeatedSint32Extension  , 205);
-    message.addExtension(UnittestProto.repeatedSint64Extension  , 206L);
-    message.addExtension(UnittestProto.repeatedFixed32Extension , 207);
-    message.addExtension(UnittestProto.repeatedFixed64Extension , 208L);
-    message.addExtension(UnittestProto.repeatedSfixed32Extension, 209);
-    message.addExtension(UnittestProto.repeatedSfixed64Extension, 210L);
-    message.addExtension(UnittestProto.repeatedFloatExtension   , 211F);
-    message.addExtension(UnittestProto.repeatedDoubleExtension  , 212D);
-    message.addExtension(UnittestProto.repeatedBoolExtension    , true);
-    message.addExtension(UnittestProto.repeatedStringExtension  , "215");
-    message.addExtension(UnittestProto.repeatedBytesExtension   , toBytes("216"));
+    message.addExtension(repeatedInt32Extension   , 201);
+    message.addExtension(repeatedInt64Extension   , 202L);
+    message.addExtension(repeatedUint32Extension  , 203);
+    message.addExtension(repeatedUint64Extension  , 204L);
+    message.addExtension(repeatedSint32Extension  , 205);
+    message.addExtension(repeatedSint64Extension  , 206L);
+    message.addExtension(repeatedFixed32Extension , 207);
+    message.addExtension(repeatedFixed64Extension , 208L);
+    message.addExtension(repeatedSfixed32Extension, 209);
+    message.addExtension(repeatedSfixed64Extension, 210L);
+    message.addExtension(repeatedFloatExtension   , 211F);
+    message.addExtension(repeatedDoubleExtension  , 212D);
+    message.addExtension(repeatedBoolExtension    , true);
+    message.addExtension(repeatedStringExtension  , "215");
+    message.addExtension(repeatedBytesExtension   , toBytes("216"));
 
-    message.addExtension(UnittestProto.repeatedGroupExtension,
-      UnittestProto.RepeatedGroup_extension.newBuilder().setA(217).build());
-    message.addExtension(UnittestProto.repeatedNestedMessageExtension,
+    message.addExtension(repeatedGroupExtension,
+      RepeatedGroup_extension.newBuilder().setA(217).build());
+    message.addExtension(repeatedNestedMessageExtension,
       TestAllTypes.NestedMessage.newBuilder().setBb(218).build());
-    message.addExtension(UnittestProto.repeatedForeignMessageExtension,
+    message.addExtension(repeatedForeignMessageExtension,
       ForeignMessage.newBuilder().setC(219).build());
-    message.addExtension(UnittestProto.repeatedImportMessageExtension,
+    message.addExtension(repeatedImportMessageExtension,
       ImportMessage.newBuilder().setD(220).build());
 
-    message.addExtension(UnittestProto.repeatedNestedEnumExtension,
-                         TestAllTypes.NestedEnum.BAR);
-    message.addExtension(UnittestProto.repeatedForeignEnumExtension,
-                         ForeignEnum.FOREIGN_BAR);
-    message.addExtension(UnittestProto.repeatedImportEnumExtension,
-                         ImportEnum.IMPORT_BAR);
+    message.addExtension(repeatedNestedEnumExtension, TestAllTypes.NestedEnum.BAR);
+    message.addExtension(repeatedForeignEnumExtension, ForeignEnum.FOREIGN_BAR);
+    message.addExtension(repeatedImportEnumExtension, ImportEnum.IMPORT_BAR);
 
-    message.addExtension(UnittestProto.repeatedStringPieceExtension, "224");
-    message.addExtension(UnittestProto.repeatedCordExtension, "225");
+    message.addExtension(repeatedStringPieceExtension, "224");
+    message.addExtension(repeatedCordExtension, "225");
 
     // Add a second one of each field.
-    message.addExtension(UnittestProto.repeatedInt32Extension   , 301);
-    message.addExtension(UnittestProto.repeatedInt64Extension   , 302L);
-    message.addExtension(UnittestProto.repeatedUint32Extension  , 303);
-    message.addExtension(UnittestProto.repeatedUint64Extension  , 304L);
-    message.addExtension(UnittestProto.repeatedSint32Extension  , 305);
-    message.addExtension(UnittestProto.repeatedSint64Extension  , 306L);
-    message.addExtension(UnittestProto.repeatedFixed32Extension , 307);
-    message.addExtension(UnittestProto.repeatedFixed64Extension , 308L);
-    message.addExtension(UnittestProto.repeatedSfixed32Extension, 309);
-    message.addExtension(UnittestProto.repeatedSfixed64Extension, 310L);
-    message.addExtension(UnittestProto.repeatedFloatExtension   , 311F);
-    message.addExtension(UnittestProto.repeatedDoubleExtension  , 312D);
-    message.addExtension(UnittestProto.repeatedBoolExtension    , false);
-    message.addExtension(UnittestProto.repeatedStringExtension  , "315");
-    message.addExtension(UnittestProto.repeatedBytesExtension   , toBytes("316"));
+    message.addExtension(repeatedInt32Extension   , 301);
+    message.addExtension(repeatedInt64Extension   , 302L);
+    message.addExtension(repeatedUint32Extension  , 303);
+    message.addExtension(repeatedUint64Extension  , 304L);
+    message.addExtension(repeatedSint32Extension  , 305);
+    message.addExtension(repeatedSint64Extension  , 306L);
+    message.addExtension(repeatedFixed32Extension , 307);
+    message.addExtension(repeatedFixed64Extension , 308L);
+    message.addExtension(repeatedSfixed32Extension, 309);
+    message.addExtension(repeatedSfixed64Extension, 310L);
+    message.addExtension(repeatedFloatExtension   , 311F);
+    message.addExtension(repeatedDoubleExtension  , 312D);
+    message.addExtension(repeatedBoolExtension    , false);
+    message.addExtension(repeatedStringExtension  , "315");
+    message.addExtension(repeatedBytesExtension   , toBytes("316"));
 
-    message.addExtension(UnittestProto.repeatedGroupExtension,
-      UnittestProto.RepeatedGroup_extension.newBuilder().setA(317).build());
-    message.addExtension(UnittestProto.repeatedNestedMessageExtension,
+    message.addExtension(repeatedGroupExtension,
+      RepeatedGroup_extension.newBuilder().setA(317).build());
+    message.addExtension(repeatedNestedMessageExtension,
       TestAllTypes.NestedMessage.newBuilder().setBb(318).build());
-    message.addExtension(UnittestProto.repeatedForeignMessageExtension,
+    message.addExtension(repeatedForeignMessageExtension,
       ForeignMessage.newBuilder().setC(319).build());
-    message.addExtension(UnittestProto.repeatedImportMessageExtension,
+    message.addExtension(repeatedImportMessageExtension,
       ImportMessage.newBuilder().setD(320).build());
 
-    message.addExtension(UnittestProto.repeatedNestedEnumExtension,
-                         TestAllTypes.NestedEnum.BAZ);
-    message.addExtension(UnittestProto.repeatedForeignEnumExtension,
-                         ForeignEnum.FOREIGN_BAZ);
-    message.addExtension(UnittestProto.repeatedImportEnumExtension,
-                         ImportEnum.IMPORT_BAZ);
+    message.addExtension(repeatedNestedEnumExtension, TestAllTypes.NestedEnum.BAZ);
+    message.addExtension(repeatedForeignEnumExtension, ForeignEnum.FOREIGN_BAZ);
+    message.addExtension(repeatedImportEnumExtension, ImportEnum.IMPORT_BAZ);
 
-    message.addExtension(UnittestProto.repeatedStringPieceExtension, "324");
-    message.addExtension(UnittestProto.repeatedCordExtension, "325");
+    message.addExtension(repeatedStringPieceExtension, "324");
+    message.addExtension(repeatedCordExtension, "325");
 
     // -----------------------------------------------------------------
 
-    message.setExtension(UnittestProto.defaultInt32Extension   , 401);
-    message.setExtension(UnittestProto.defaultInt64Extension   , 402L);
-    message.setExtension(UnittestProto.defaultUint32Extension  , 403);
-    message.setExtension(UnittestProto.defaultUint64Extension  , 404L);
-    message.setExtension(UnittestProto.defaultSint32Extension  , 405);
-    message.setExtension(UnittestProto.defaultSint64Extension  , 406L);
-    message.setExtension(UnittestProto.defaultFixed32Extension , 407);
-    message.setExtension(UnittestProto.defaultFixed64Extension , 408L);
-    message.setExtension(UnittestProto.defaultSfixed32Extension, 409);
-    message.setExtension(UnittestProto.defaultSfixed64Extension, 410L);
-    message.setExtension(UnittestProto.defaultFloatExtension   , 411F);
-    message.setExtension(UnittestProto.defaultDoubleExtension  , 412D);
-    message.setExtension(UnittestProto.defaultBoolExtension    , false);
-    message.setExtension(UnittestProto.defaultStringExtension  , "415");
-    message.setExtension(UnittestProto.defaultBytesExtension   , toBytes("416"));
+    message.setExtension(defaultInt32Extension   , 401);
+    message.setExtension(defaultInt64Extension   , 402L);
+    message.setExtension(defaultUint32Extension  , 403);
+    message.setExtension(defaultUint64Extension  , 404L);
+    message.setExtension(defaultSint32Extension  , 405);
+    message.setExtension(defaultSint64Extension  , 406L);
+    message.setExtension(defaultFixed32Extension , 407);
+    message.setExtension(defaultFixed64Extension , 408L);
+    message.setExtension(defaultSfixed32Extension, 409);
+    message.setExtension(defaultSfixed64Extension, 410L);
+    message.setExtension(defaultFloatExtension   , 411F);
+    message.setExtension(defaultDoubleExtension  , 412D);
+    message.setExtension(defaultBoolExtension    , false);
+    message.setExtension(defaultStringExtension  , "415");
+    message.setExtension(defaultBytesExtension   , toBytes("416"));
 
-    message.setExtension(UnittestProto.defaultNestedEnumExtension,
-                         TestAllTypes.NestedEnum.FOO);
-    message.setExtension(UnittestProto.defaultForeignEnumExtension,
-                         ForeignEnum.FOREIGN_FOO);
-    message.setExtension(UnittestProto.defaultImportEnumExtension,
-                         ImportEnum.IMPORT_FOO);
+    message.setExtension(defaultNestedEnumExtension, TestAllTypes.NestedEnum.FOO);
+    message.setExtension(defaultForeignEnumExtension, ForeignEnum.FOREIGN_FOO);
+    message.setExtension(defaultImportEnumExtension, ImportEnum.IMPORT_FOO);
 
-    message.setExtension(UnittestProto.defaultStringPieceExtension, "424");
-    message.setExtension(UnittestProto.defaultCordExtension, "425");
+    message.setExtension(defaultStringPieceExtension, "424");
+    message.setExtension(defaultCordExtension, "425");
   }
 
   // -------------------------------------------------------------------
@@ -915,40 +1003,37 @@ class TestUtil {
    */
   public static void modifyRepeatedExtensions(
       TestAllExtensions.Builder message) {
-    message.setExtension(UnittestProto.repeatedInt32Extension   , 1, 501);
-    message.setExtension(UnittestProto.repeatedInt64Extension   , 1, 502L);
-    message.setExtension(UnittestProto.repeatedUint32Extension  , 1, 503);
-    message.setExtension(UnittestProto.repeatedUint64Extension  , 1, 504L);
-    message.setExtension(UnittestProto.repeatedSint32Extension  , 1, 505);
-    message.setExtension(UnittestProto.repeatedSint64Extension  , 1, 506L);
-    message.setExtension(UnittestProto.repeatedFixed32Extension , 1, 507);
-    message.setExtension(UnittestProto.repeatedFixed64Extension , 1, 508L);
-    message.setExtension(UnittestProto.repeatedSfixed32Extension, 1, 509);
-    message.setExtension(UnittestProto.repeatedSfixed64Extension, 1, 510L);
-    message.setExtension(UnittestProto.repeatedFloatExtension   , 1, 511F);
-    message.setExtension(UnittestProto.repeatedDoubleExtension  , 1, 512D);
-    message.setExtension(UnittestProto.repeatedBoolExtension    , 1, true);
-    message.setExtension(UnittestProto.repeatedStringExtension  , 1, "515");
-    message.setExtension(UnittestProto.repeatedBytesExtension   , 1, toBytes("516"));
+    message.setExtension(repeatedInt32Extension   , 1, 501);
+    message.setExtension(repeatedInt64Extension   , 1, 502L);
+    message.setExtension(repeatedUint32Extension  , 1, 503);
+    message.setExtension(repeatedUint64Extension  , 1, 504L);
+    message.setExtension(repeatedSint32Extension  , 1, 505);
+    message.setExtension(repeatedSint64Extension  , 1, 506L);
+    message.setExtension(repeatedFixed32Extension , 1, 507);
+    message.setExtension(repeatedFixed64Extension , 1, 508L);
+    message.setExtension(repeatedSfixed32Extension, 1, 509);
+    message.setExtension(repeatedSfixed64Extension, 1, 510L);
+    message.setExtension(repeatedFloatExtension   , 1, 511F);
+    message.setExtension(repeatedDoubleExtension  , 1, 512D);
+    message.setExtension(repeatedBoolExtension    , 1, true);
+    message.setExtension(repeatedStringExtension  , 1, "515");
+    message.setExtension(repeatedBytesExtension   , 1, toBytes("516"));
 
-    message.setExtension(UnittestProto.repeatedGroupExtension, 1,
-      UnittestProto.RepeatedGroup_extension.newBuilder().setA(517).build());
-    message.setExtension(UnittestProto.repeatedNestedMessageExtension, 1,
+    message.setExtension(repeatedGroupExtension, 1,
+      RepeatedGroup_extension.newBuilder().setA(517).build());
+    message.setExtension(repeatedNestedMessageExtension, 1,
       TestAllTypes.NestedMessage.newBuilder().setBb(518).build());
-    message.setExtension(UnittestProto.repeatedForeignMessageExtension, 1,
+    message.setExtension(repeatedForeignMessageExtension, 1,
       ForeignMessage.newBuilder().setC(519).build());
-    message.setExtension(UnittestProto.repeatedImportMessageExtension, 1,
+    message.setExtension(repeatedImportMessageExtension, 1,
       ImportMessage.newBuilder().setD(520).build());
 
-    message.setExtension(UnittestProto.repeatedNestedEnumExtension , 1,
-                         TestAllTypes.NestedEnum.FOO);
-    message.setExtension(UnittestProto.repeatedForeignEnumExtension, 1,
-                         ForeignEnum.FOREIGN_FOO);
-    message.setExtension(UnittestProto.repeatedImportEnumExtension , 1,
-                         ImportEnum.IMPORT_FOO);
+    message.setExtension(repeatedNestedEnumExtension , 1, TestAllTypes.NestedEnum.FOO);
+    message.setExtension(repeatedForeignEnumExtension, 1, ForeignEnum.FOREIGN_FOO);
+    message.setExtension(repeatedImportEnumExtension , 1, ImportEnum.IMPORT_FOO);
 
-    message.setExtension(UnittestProto.repeatedStringPieceExtension, 1, "524");
-    message.setExtension(UnittestProto.repeatedCordExtension, 1, "525");
+    message.setExtension(repeatedStringPieceExtension, 1, "524");
+    message.setExtension(repeatedCordExtension, 1, "525");
   }
 
   // -------------------------------------------------------------------
@@ -958,211 +1043,211 @@ class TestUtil {
    * {@code message} are set to the values assigned by {@code setAllExtensions}.
    */
   public static void assertAllExtensionsSet(TestAllExtensions message) {
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalInt32Extension   ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalInt64Extension   ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalUint32Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalUint64Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalSint32Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalSint64Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalFixed32Extension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalFixed64Extension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalSfixed32Extension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalSfixed64Extension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalFloatExtension   ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalDoubleExtension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalBoolExtension    ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalStringExtension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalBytesExtension   ));
+    Assert.assertTrue(message.hasExtension(optionalInt32Extension   ));
+    Assert.assertTrue(message.hasExtension(optionalInt64Extension   ));
+    Assert.assertTrue(message.hasExtension(optionalUint32Extension  ));
+    Assert.assertTrue(message.hasExtension(optionalUint64Extension  ));
+    Assert.assertTrue(message.hasExtension(optionalSint32Extension  ));
+    Assert.assertTrue(message.hasExtension(optionalSint64Extension  ));
+    Assert.assertTrue(message.hasExtension(optionalFixed32Extension ));
+    Assert.assertTrue(message.hasExtension(optionalFixed64Extension ));
+    Assert.assertTrue(message.hasExtension(optionalSfixed32Extension));
+    Assert.assertTrue(message.hasExtension(optionalSfixed64Extension));
+    Assert.assertTrue(message.hasExtension(optionalFloatExtension   ));
+    Assert.assertTrue(message.hasExtension(optionalDoubleExtension  ));
+    Assert.assertTrue(message.hasExtension(optionalBoolExtension    ));
+    Assert.assertTrue(message.hasExtension(optionalStringExtension  ));
+    Assert.assertTrue(message.hasExtension(optionalBytesExtension   ));
 
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalGroupExtension         ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalNestedMessageExtension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalForeignMessageExtension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalImportMessageExtension ));
+    Assert.assertTrue(message.hasExtension(optionalGroupExtension         ));
+    Assert.assertTrue(message.hasExtension(optionalNestedMessageExtension ));
+    Assert.assertTrue(message.hasExtension(optionalForeignMessageExtension));
+    Assert.assertTrue(message.hasExtension(optionalImportMessageExtension ));
 
-    Assert.assertTrue(message.getExtension(UnittestProto.optionalGroupExtension         ).hasA());
-    Assert.assertTrue(message.getExtension(UnittestProto.optionalNestedMessageExtension ).hasBb());
-    Assert.assertTrue(message.getExtension(UnittestProto.optionalForeignMessageExtension).hasC());
-    Assert.assertTrue(message.getExtension(UnittestProto.optionalImportMessageExtension ).hasD());
+    Assert.assertTrue(message.getExtension(optionalGroupExtension         ).hasA());
+    Assert.assertTrue(message.getExtension(optionalNestedMessageExtension ).hasBb());
+    Assert.assertTrue(message.getExtension(optionalForeignMessageExtension).hasC());
+    Assert.assertTrue(message.getExtension(optionalImportMessageExtension ).hasD());
 
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalNestedEnumExtension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalForeignEnumExtension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalImportEnumExtension ));
+    Assert.assertTrue(message.hasExtension(optionalNestedEnumExtension ));
+    Assert.assertTrue(message.hasExtension(optionalForeignEnumExtension));
+    Assert.assertTrue(message.hasExtension(optionalImportEnumExtension ));
 
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalStringPieceExtension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.optionalCordExtension));
+    Assert.assertTrue(message.hasExtension(optionalStringPieceExtension));
+    Assert.assertTrue(message.hasExtension(optionalCordExtension));
 
-    assertEqualsExactType(101  , message.getExtension(UnittestProto.optionalInt32Extension   ));
-    assertEqualsExactType(102L , message.getExtension(UnittestProto.optionalInt64Extension   ));
-    assertEqualsExactType(103  , message.getExtension(UnittestProto.optionalUint32Extension  ));
-    assertEqualsExactType(104L , message.getExtension(UnittestProto.optionalUint64Extension  ));
-    assertEqualsExactType(105  , message.getExtension(UnittestProto.optionalSint32Extension  ));
-    assertEqualsExactType(106L , message.getExtension(UnittestProto.optionalSint64Extension  ));
-    assertEqualsExactType(107  , message.getExtension(UnittestProto.optionalFixed32Extension ));
-    assertEqualsExactType(108L , message.getExtension(UnittestProto.optionalFixed64Extension ));
-    assertEqualsExactType(109  , message.getExtension(UnittestProto.optionalSfixed32Extension));
-    assertEqualsExactType(110L , message.getExtension(UnittestProto.optionalSfixed64Extension));
-    assertEqualsExactType(111F , message.getExtension(UnittestProto.optionalFloatExtension   ));
-    assertEqualsExactType(112D , message.getExtension(UnittestProto.optionalDoubleExtension  ));
-    assertEqualsExactType(true , message.getExtension(UnittestProto.optionalBoolExtension    ));
-    assertEqualsExactType("115", message.getExtension(UnittestProto.optionalStringExtension  ));
-    assertEqualsExactType(toBytes("116"), message.getExtension(UnittestProto.optionalBytesExtension));
+    assertEqualsExactType(101  , message.getExtension(optionalInt32Extension   ));
+    assertEqualsExactType(102L , message.getExtension(optionalInt64Extension   ));
+    assertEqualsExactType(103  , message.getExtension(optionalUint32Extension  ));
+    assertEqualsExactType(104L , message.getExtension(optionalUint64Extension  ));
+    assertEqualsExactType(105  , message.getExtension(optionalSint32Extension  ));
+    assertEqualsExactType(106L , message.getExtension(optionalSint64Extension  ));
+    assertEqualsExactType(107  , message.getExtension(optionalFixed32Extension ));
+    assertEqualsExactType(108L , message.getExtension(optionalFixed64Extension ));
+    assertEqualsExactType(109  , message.getExtension(optionalSfixed32Extension));
+    assertEqualsExactType(110L , message.getExtension(optionalSfixed64Extension));
+    assertEqualsExactType(111F , message.getExtension(optionalFloatExtension   ));
+    assertEqualsExactType(112D , message.getExtension(optionalDoubleExtension  ));
+    assertEqualsExactType(true , message.getExtension(optionalBoolExtension    ));
+    assertEqualsExactType("115", message.getExtension(optionalStringExtension  ));
+    assertEqualsExactType(toBytes("116"), message.getExtension(optionalBytesExtension));
 
-    assertEqualsExactType(117, message.getExtension(UnittestProto.optionalGroupExtension         ).getA());
-    assertEqualsExactType(118, message.getExtension(UnittestProto.optionalNestedMessageExtension ).getBb());
-    assertEqualsExactType(119, message.getExtension(UnittestProto.optionalForeignMessageExtension).getC());
-    assertEqualsExactType(120, message.getExtension(UnittestProto.optionalImportMessageExtension ).getD());
+    assertEqualsExactType(117, message.getExtension(optionalGroupExtension         ).getA());
+    assertEqualsExactType(118, message.getExtension(optionalNestedMessageExtension ).getBb());
+    assertEqualsExactType(119, message.getExtension(optionalForeignMessageExtension).getC());
+    assertEqualsExactType(120, message.getExtension(optionalImportMessageExtension ).getD());
 
     assertEqualsExactType(TestAllTypes.NestedEnum.BAZ,
-      message.getExtension(UnittestProto.optionalNestedEnumExtension));
+      message.getExtension(optionalNestedEnumExtension));
     assertEqualsExactType(ForeignEnum.FOREIGN_BAZ,
-      message.getExtension(UnittestProto.optionalForeignEnumExtension));
+      message.getExtension(optionalForeignEnumExtension));
     assertEqualsExactType(ImportEnum.IMPORT_BAZ,
-      message.getExtension(UnittestProto.optionalImportEnumExtension));
+      message.getExtension(optionalImportEnumExtension));
 
-    assertEqualsExactType("124", message.getExtension(UnittestProto.optionalStringPieceExtension));
-    assertEqualsExactType("125", message.getExtension(UnittestProto.optionalCordExtension));
+    assertEqualsExactType("124", message.getExtension(optionalStringPieceExtension));
+    assertEqualsExactType("125", message.getExtension(optionalCordExtension));
 
     // -----------------------------------------------------------------
 
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedInt32Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedInt64Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedUint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedUint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedFixed32Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedFixed64Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSfixed32Extension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSfixed64Extension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedFloatExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedDoubleExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedBoolExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedStringExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedBytesExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedInt32Extension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedInt64Extension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedUint32Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedUint64Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSint32Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSint64Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed32Extension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed64Extension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed32Extension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed64Extension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedFloatExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedDoubleExtension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedBoolExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedStringExtension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedBytesExtension   ));
 
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedGroupExtension         ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedNestedMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedForeignMessageExtension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedImportMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedNestedEnumExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedForeignEnumExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedImportEnumExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedGroupExtension         ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedImportMessageExtension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedImportEnumExtension    ));
 
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedStringPieceExtension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedCordExtension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedStringPieceExtension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedCordExtension));
 
-    assertEqualsExactType(201  , message.getExtension(UnittestProto.repeatedInt32Extension   , 0));
-    assertEqualsExactType(202L , message.getExtension(UnittestProto.repeatedInt64Extension   , 0));
-    assertEqualsExactType(203  , message.getExtension(UnittestProto.repeatedUint32Extension  , 0));
-    assertEqualsExactType(204L , message.getExtension(UnittestProto.repeatedUint64Extension  , 0));
-    assertEqualsExactType(205  , message.getExtension(UnittestProto.repeatedSint32Extension  , 0));
-    assertEqualsExactType(206L , message.getExtension(UnittestProto.repeatedSint64Extension  , 0));
-    assertEqualsExactType(207  , message.getExtension(UnittestProto.repeatedFixed32Extension , 0));
-    assertEqualsExactType(208L , message.getExtension(UnittestProto.repeatedFixed64Extension , 0));
-    assertEqualsExactType(209  , message.getExtension(UnittestProto.repeatedSfixed32Extension, 0));
-    assertEqualsExactType(210L , message.getExtension(UnittestProto.repeatedSfixed64Extension, 0));
-    assertEqualsExactType(211F , message.getExtension(UnittestProto.repeatedFloatExtension   , 0));
-    assertEqualsExactType(212D , message.getExtension(UnittestProto.repeatedDoubleExtension  , 0));
-    assertEqualsExactType(true , message.getExtension(UnittestProto.repeatedBoolExtension    , 0));
-    assertEqualsExactType("215", message.getExtension(UnittestProto.repeatedStringExtension  , 0));
-    assertEqualsExactType(toBytes("216"), message.getExtension(UnittestProto.repeatedBytesExtension, 0));
+    assertEqualsExactType(201  , message.getExtension(repeatedInt32Extension   , 0));
+    assertEqualsExactType(202L , message.getExtension(repeatedInt64Extension   , 0));
+    assertEqualsExactType(203  , message.getExtension(repeatedUint32Extension  , 0));
+    assertEqualsExactType(204L , message.getExtension(repeatedUint64Extension  , 0));
+    assertEqualsExactType(205  , message.getExtension(repeatedSint32Extension  , 0));
+    assertEqualsExactType(206L , message.getExtension(repeatedSint64Extension  , 0));
+    assertEqualsExactType(207  , message.getExtension(repeatedFixed32Extension , 0));
+    assertEqualsExactType(208L , message.getExtension(repeatedFixed64Extension , 0));
+    assertEqualsExactType(209  , message.getExtension(repeatedSfixed32Extension, 0));
+    assertEqualsExactType(210L , message.getExtension(repeatedSfixed64Extension, 0));
+    assertEqualsExactType(211F , message.getExtension(repeatedFloatExtension   , 0));
+    assertEqualsExactType(212D , message.getExtension(repeatedDoubleExtension  , 0));
+    assertEqualsExactType(true , message.getExtension(repeatedBoolExtension    , 0));
+    assertEqualsExactType("215", message.getExtension(repeatedStringExtension  , 0));
+    assertEqualsExactType(toBytes("216"), message.getExtension(repeatedBytesExtension, 0));
 
-    assertEqualsExactType(217, message.getExtension(UnittestProto.repeatedGroupExtension         , 0).getA());
-    assertEqualsExactType(218, message.getExtension(UnittestProto.repeatedNestedMessageExtension , 0).getBb());
-    assertEqualsExactType(219, message.getExtension(UnittestProto.repeatedForeignMessageExtension, 0).getC());
-    assertEqualsExactType(220, message.getExtension(UnittestProto.repeatedImportMessageExtension , 0).getD());
+    assertEqualsExactType(217, message.getExtension(repeatedGroupExtension         , 0).getA());
+    assertEqualsExactType(218, message.getExtension(repeatedNestedMessageExtension , 0).getBb());
+    assertEqualsExactType(219, message.getExtension(repeatedForeignMessageExtension, 0).getC());
+    assertEqualsExactType(220, message.getExtension(repeatedImportMessageExtension , 0).getD());
 
     assertEqualsExactType(TestAllTypes.NestedEnum.BAR,
-      message.getExtension(UnittestProto.repeatedNestedEnumExtension, 0));
+      message.getExtension(repeatedNestedEnumExtension, 0));
     assertEqualsExactType(ForeignEnum.FOREIGN_BAR,
-      message.getExtension(UnittestProto.repeatedForeignEnumExtension, 0));
+      message.getExtension(repeatedForeignEnumExtension, 0));
     assertEqualsExactType(ImportEnum.IMPORT_BAR,
-      message.getExtension(UnittestProto.repeatedImportEnumExtension, 0));
+      message.getExtension(repeatedImportEnumExtension, 0));
 
-    assertEqualsExactType("224", message.getExtension(UnittestProto.repeatedStringPieceExtension, 0));
-    assertEqualsExactType("225", message.getExtension(UnittestProto.repeatedCordExtension, 0));
+    assertEqualsExactType("224", message.getExtension(repeatedStringPieceExtension, 0));
+    assertEqualsExactType("225", message.getExtension(repeatedCordExtension, 0));
 
-    assertEqualsExactType(301  , message.getExtension(UnittestProto.repeatedInt32Extension   , 1));
-    assertEqualsExactType(302L , message.getExtension(UnittestProto.repeatedInt64Extension   , 1));
-    assertEqualsExactType(303  , message.getExtension(UnittestProto.repeatedUint32Extension  , 1));
-    assertEqualsExactType(304L , message.getExtension(UnittestProto.repeatedUint64Extension  , 1));
-    assertEqualsExactType(305  , message.getExtension(UnittestProto.repeatedSint32Extension  , 1));
-    assertEqualsExactType(306L , message.getExtension(UnittestProto.repeatedSint64Extension  , 1));
-    assertEqualsExactType(307  , message.getExtension(UnittestProto.repeatedFixed32Extension , 1));
-    assertEqualsExactType(308L , message.getExtension(UnittestProto.repeatedFixed64Extension , 1));
-    assertEqualsExactType(309  , message.getExtension(UnittestProto.repeatedSfixed32Extension, 1));
-    assertEqualsExactType(310L , message.getExtension(UnittestProto.repeatedSfixed64Extension, 1));
-    assertEqualsExactType(311F , message.getExtension(UnittestProto.repeatedFloatExtension   , 1));
-    assertEqualsExactType(312D , message.getExtension(UnittestProto.repeatedDoubleExtension  , 1));
-    assertEqualsExactType(false, message.getExtension(UnittestProto.repeatedBoolExtension    , 1));
-    assertEqualsExactType("315", message.getExtension(UnittestProto.repeatedStringExtension  , 1));
-    assertEqualsExactType(toBytes("316"), message.getExtension(UnittestProto.repeatedBytesExtension, 1));
+    assertEqualsExactType(301  , message.getExtension(repeatedInt32Extension   , 1));
+    assertEqualsExactType(302L , message.getExtension(repeatedInt64Extension   , 1));
+    assertEqualsExactType(303  , message.getExtension(repeatedUint32Extension  , 1));
+    assertEqualsExactType(304L , message.getExtension(repeatedUint64Extension  , 1));
+    assertEqualsExactType(305  , message.getExtension(repeatedSint32Extension  , 1));
+    assertEqualsExactType(306L , message.getExtension(repeatedSint64Extension  , 1));
+    assertEqualsExactType(307  , message.getExtension(repeatedFixed32Extension , 1));
+    assertEqualsExactType(308L , message.getExtension(repeatedFixed64Extension , 1));
+    assertEqualsExactType(309  , message.getExtension(repeatedSfixed32Extension, 1));
+    assertEqualsExactType(310L , message.getExtension(repeatedSfixed64Extension, 1));
+    assertEqualsExactType(311F , message.getExtension(repeatedFloatExtension   , 1));
+    assertEqualsExactType(312D , message.getExtension(repeatedDoubleExtension  , 1));
+    assertEqualsExactType(false, message.getExtension(repeatedBoolExtension    , 1));
+    assertEqualsExactType("315", message.getExtension(repeatedStringExtension  , 1));
+    assertEqualsExactType(toBytes("316"), message.getExtension(repeatedBytesExtension, 1));
 
-    assertEqualsExactType(317, message.getExtension(UnittestProto.repeatedGroupExtension         , 1).getA());
-    assertEqualsExactType(318, message.getExtension(UnittestProto.repeatedNestedMessageExtension , 1).getBb());
-    assertEqualsExactType(319, message.getExtension(UnittestProto.repeatedForeignMessageExtension, 1).getC());
-    assertEqualsExactType(320, message.getExtension(UnittestProto.repeatedImportMessageExtension , 1).getD());
+    assertEqualsExactType(317, message.getExtension(repeatedGroupExtension         , 1).getA());
+    assertEqualsExactType(318, message.getExtension(repeatedNestedMessageExtension , 1).getBb());
+    assertEqualsExactType(319, message.getExtension(repeatedForeignMessageExtension, 1).getC());
+    assertEqualsExactType(320, message.getExtension(repeatedImportMessageExtension , 1).getD());
 
     assertEqualsExactType(TestAllTypes.NestedEnum.BAZ,
-      message.getExtension(UnittestProto.repeatedNestedEnumExtension, 1));
+      message.getExtension(repeatedNestedEnumExtension, 1));
     assertEqualsExactType(ForeignEnum.FOREIGN_BAZ,
-      message.getExtension(UnittestProto.repeatedForeignEnumExtension, 1));
+      message.getExtension(repeatedForeignEnumExtension, 1));
     assertEqualsExactType(ImportEnum.IMPORT_BAZ,
-      message.getExtension(UnittestProto.repeatedImportEnumExtension, 1));
+      message.getExtension(repeatedImportEnumExtension, 1));
 
-    assertEqualsExactType("324", message.getExtension(UnittestProto.repeatedStringPieceExtension, 1));
-    assertEqualsExactType("325", message.getExtension(UnittestProto.repeatedCordExtension, 1));
+    assertEqualsExactType("324", message.getExtension(repeatedStringPieceExtension, 1));
+    assertEqualsExactType("325", message.getExtension(repeatedCordExtension, 1));
 
     // -----------------------------------------------------------------
 
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultInt32Extension   ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultInt64Extension   ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultUint32Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultUint64Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultSint32Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultSint64Extension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultFixed32Extension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultFixed64Extension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultSfixed32Extension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultSfixed64Extension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultFloatExtension   ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultDoubleExtension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultBoolExtension    ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultStringExtension  ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultBytesExtension   ));
+    Assert.assertTrue(message.hasExtension(defaultInt32Extension   ));
+    Assert.assertTrue(message.hasExtension(defaultInt64Extension   ));
+    Assert.assertTrue(message.hasExtension(defaultUint32Extension  ));
+    Assert.assertTrue(message.hasExtension(defaultUint64Extension  ));
+    Assert.assertTrue(message.hasExtension(defaultSint32Extension  ));
+    Assert.assertTrue(message.hasExtension(defaultSint64Extension  ));
+    Assert.assertTrue(message.hasExtension(defaultFixed32Extension ));
+    Assert.assertTrue(message.hasExtension(defaultFixed64Extension ));
+    Assert.assertTrue(message.hasExtension(defaultSfixed32Extension));
+    Assert.assertTrue(message.hasExtension(defaultSfixed64Extension));
+    Assert.assertTrue(message.hasExtension(defaultFloatExtension   ));
+    Assert.assertTrue(message.hasExtension(defaultDoubleExtension  ));
+    Assert.assertTrue(message.hasExtension(defaultBoolExtension    ));
+    Assert.assertTrue(message.hasExtension(defaultStringExtension  ));
+    Assert.assertTrue(message.hasExtension(defaultBytesExtension   ));
 
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultNestedEnumExtension ));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultForeignEnumExtension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultImportEnumExtension ));
+    Assert.assertTrue(message.hasExtension(defaultNestedEnumExtension ));
+    Assert.assertTrue(message.hasExtension(defaultForeignEnumExtension));
+    Assert.assertTrue(message.hasExtension(defaultImportEnumExtension ));
 
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultStringPieceExtension));
-    Assert.assertTrue(message.hasExtension(UnittestProto.defaultCordExtension));
+    Assert.assertTrue(message.hasExtension(defaultStringPieceExtension));
+    Assert.assertTrue(message.hasExtension(defaultCordExtension));
 
-    assertEqualsExactType(401  , message.getExtension(UnittestProto.defaultInt32Extension   ));
-    assertEqualsExactType(402L , message.getExtension(UnittestProto.defaultInt64Extension   ));
-    assertEqualsExactType(403  , message.getExtension(UnittestProto.defaultUint32Extension  ));
-    assertEqualsExactType(404L , message.getExtension(UnittestProto.defaultUint64Extension  ));
-    assertEqualsExactType(405  , message.getExtension(UnittestProto.defaultSint32Extension  ));
-    assertEqualsExactType(406L , message.getExtension(UnittestProto.defaultSint64Extension  ));
-    assertEqualsExactType(407  , message.getExtension(UnittestProto.defaultFixed32Extension ));
-    assertEqualsExactType(408L , message.getExtension(UnittestProto.defaultFixed64Extension ));
-    assertEqualsExactType(409  , message.getExtension(UnittestProto.defaultSfixed32Extension));
-    assertEqualsExactType(410L , message.getExtension(UnittestProto.defaultSfixed64Extension));
-    assertEqualsExactType(411F , message.getExtension(UnittestProto.defaultFloatExtension   ));
-    assertEqualsExactType(412D , message.getExtension(UnittestProto.defaultDoubleExtension  ));
-    assertEqualsExactType(false, message.getExtension(UnittestProto.defaultBoolExtension    ));
-    assertEqualsExactType("415", message.getExtension(UnittestProto.defaultStringExtension  ));
-    assertEqualsExactType(toBytes("416"), message.getExtension(UnittestProto.defaultBytesExtension));
+    assertEqualsExactType(401  , message.getExtension(defaultInt32Extension   ));
+    assertEqualsExactType(402L , message.getExtension(defaultInt64Extension   ));
+    assertEqualsExactType(403  , message.getExtension(defaultUint32Extension  ));
+    assertEqualsExactType(404L , message.getExtension(defaultUint64Extension  ));
+    assertEqualsExactType(405  , message.getExtension(defaultSint32Extension  ));
+    assertEqualsExactType(406L , message.getExtension(defaultSint64Extension  ));
+    assertEqualsExactType(407  , message.getExtension(defaultFixed32Extension ));
+    assertEqualsExactType(408L , message.getExtension(defaultFixed64Extension ));
+    assertEqualsExactType(409  , message.getExtension(defaultSfixed32Extension));
+    assertEqualsExactType(410L , message.getExtension(defaultSfixed64Extension));
+    assertEqualsExactType(411F , message.getExtension(defaultFloatExtension   ));
+    assertEqualsExactType(412D , message.getExtension(defaultDoubleExtension  ));
+    assertEqualsExactType(false, message.getExtension(defaultBoolExtension    ));
+    assertEqualsExactType("415", message.getExtension(defaultStringExtension  ));
+    assertEqualsExactType(toBytes("416"), message.getExtension(defaultBytesExtension));
 
     assertEqualsExactType(TestAllTypes.NestedEnum.FOO,
-      message.getExtension(UnittestProto.defaultNestedEnumExtension ));
+      message.getExtension(defaultNestedEnumExtension ));
     assertEqualsExactType(ForeignEnum.FOREIGN_FOO,
-      message.getExtension(UnittestProto.defaultForeignEnumExtension));
+      message.getExtension(defaultForeignEnumExtension));
     assertEqualsExactType(ImportEnum.IMPORT_FOO,
-      message.getExtension(UnittestProto.defaultImportEnumExtension));
+      message.getExtension(defaultImportEnumExtension));
 
-    assertEqualsExactType("424", message.getExtension(UnittestProto.defaultStringPieceExtension));
-    assertEqualsExactType("425", message.getExtension(UnittestProto.defaultCordExtension));
+    assertEqualsExactType("424", message.getExtension(defaultStringPieceExtension));
+    assertEqualsExactType("425", message.getExtension(defaultCordExtension));
   }
 
   // -------------------------------------------------------------------
@@ -1174,151 +1259,151 @@ class TestUtil {
    */
   public static void assertExtensionsClear(TestAllExtensions message) {
     // hasBlah() should initially be false for all optional fields.
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalInt32Extension   ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalInt64Extension   ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalUint32Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalUint64Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalSint32Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalSint64Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalFixed32Extension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalFixed64Extension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalSfixed32Extension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalSfixed64Extension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalFloatExtension   ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalDoubleExtension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalBoolExtension    ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalStringExtension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalBytesExtension   ));
+    Assert.assertFalse(message.hasExtension(optionalInt32Extension   ));
+    Assert.assertFalse(message.hasExtension(optionalInt64Extension   ));
+    Assert.assertFalse(message.hasExtension(optionalUint32Extension  ));
+    Assert.assertFalse(message.hasExtension(optionalUint64Extension  ));
+    Assert.assertFalse(message.hasExtension(optionalSint32Extension  ));
+    Assert.assertFalse(message.hasExtension(optionalSint64Extension  ));
+    Assert.assertFalse(message.hasExtension(optionalFixed32Extension ));
+    Assert.assertFalse(message.hasExtension(optionalFixed64Extension ));
+    Assert.assertFalse(message.hasExtension(optionalSfixed32Extension));
+    Assert.assertFalse(message.hasExtension(optionalSfixed64Extension));
+    Assert.assertFalse(message.hasExtension(optionalFloatExtension   ));
+    Assert.assertFalse(message.hasExtension(optionalDoubleExtension  ));
+    Assert.assertFalse(message.hasExtension(optionalBoolExtension    ));
+    Assert.assertFalse(message.hasExtension(optionalStringExtension  ));
+    Assert.assertFalse(message.hasExtension(optionalBytesExtension   ));
 
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalGroupExtension         ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalNestedMessageExtension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalForeignMessageExtension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalImportMessageExtension ));
+    Assert.assertFalse(message.hasExtension(optionalGroupExtension         ));
+    Assert.assertFalse(message.hasExtension(optionalNestedMessageExtension ));
+    Assert.assertFalse(message.hasExtension(optionalForeignMessageExtension));
+    Assert.assertFalse(message.hasExtension(optionalImportMessageExtension ));
 
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalNestedEnumExtension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalForeignEnumExtension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalImportEnumExtension ));
+    Assert.assertFalse(message.hasExtension(optionalNestedEnumExtension ));
+    Assert.assertFalse(message.hasExtension(optionalForeignEnumExtension));
+    Assert.assertFalse(message.hasExtension(optionalImportEnumExtension ));
 
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalStringPieceExtension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.optionalCordExtension));
+    Assert.assertFalse(message.hasExtension(optionalStringPieceExtension));
+    Assert.assertFalse(message.hasExtension(optionalCordExtension));
 
     // Optional fields without defaults are set to zero or something like it.
-    assertEqualsExactType(0    , message.getExtension(UnittestProto.optionalInt32Extension   ));
-    assertEqualsExactType(0L   , message.getExtension(UnittestProto.optionalInt64Extension   ));
-    assertEqualsExactType(0    , message.getExtension(UnittestProto.optionalUint32Extension  ));
-    assertEqualsExactType(0L   , message.getExtension(UnittestProto.optionalUint64Extension  ));
-    assertEqualsExactType(0    , message.getExtension(UnittestProto.optionalSint32Extension  ));
-    assertEqualsExactType(0L   , message.getExtension(UnittestProto.optionalSint64Extension  ));
-    assertEqualsExactType(0    , message.getExtension(UnittestProto.optionalFixed32Extension ));
-    assertEqualsExactType(0L   , message.getExtension(UnittestProto.optionalFixed64Extension ));
-    assertEqualsExactType(0    , message.getExtension(UnittestProto.optionalSfixed32Extension));
-    assertEqualsExactType(0L   , message.getExtension(UnittestProto.optionalSfixed64Extension));
-    assertEqualsExactType(0F   , message.getExtension(UnittestProto.optionalFloatExtension   ));
-    assertEqualsExactType(0D   , message.getExtension(UnittestProto.optionalDoubleExtension  ));
-    assertEqualsExactType(false, message.getExtension(UnittestProto.optionalBoolExtension    ));
-    assertEqualsExactType(""   , message.getExtension(UnittestProto.optionalStringExtension  ));
-    assertEqualsExactType(ByteString.EMPTY, message.getExtension(UnittestProto.optionalBytesExtension));
+    assertEqualsExactType(0    , message.getExtension(optionalInt32Extension   ));
+    assertEqualsExactType(0L   , message.getExtension(optionalInt64Extension   ));
+    assertEqualsExactType(0    , message.getExtension(optionalUint32Extension  ));
+    assertEqualsExactType(0L   , message.getExtension(optionalUint64Extension  ));
+    assertEqualsExactType(0    , message.getExtension(optionalSint32Extension  ));
+    assertEqualsExactType(0L   , message.getExtension(optionalSint64Extension  ));
+    assertEqualsExactType(0    , message.getExtension(optionalFixed32Extension ));
+    assertEqualsExactType(0L   , message.getExtension(optionalFixed64Extension ));
+    assertEqualsExactType(0    , message.getExtension(optionalSfixed32Extension));
+    assertEqualsExactType(0L   , message.getExtension(optionalSfixed64Extension));
+    assertEqualsExactType(0F   , message.getExtension(optionalFloatExtension   ));
+    assertEqualsExactType(0D   , message.getExtension(optionalDoubleExtension  ));
+    assertEqualsExactType(false, message.getExtension(optionalBoolExtension    ));
+    assertEqualsExactType(""   , message.getExtension(optionalStringExtension  ));
+    assertEqualsExactType(ByteString.EMPTY, message.getExtension(optionalBytesExtension));
 
     // Embedded messages should also be clear.
-    Assert.assertFalse(message.getExtension(UnittestProto.optionalGroupExtension         ).hasA());
-    Assert.assertFalse(message.getExtension(UnittestProto.optionalNestedMessageExtension ).hasBb());
-    Assert.assertFalse(message.getExtension(UnittestProto.optionalForeignMessageExtension).hasC());
-    Assert.assertFalse(message.getExtension(UnittestProto.optionalImportMessageExtension ).hasD());
+    Assert.assertFalse(message.getExtension(optionalGroupExtension         ).hasA());
+    Assert.assertFalse(message.getExtension(optionalNestedMessageExtension ).hasBb());
+    Assert.assertFalse(message.getExtension(optionalForeignMessageExtension).hasC());
+    Assert.assertFalse(message.getExtension(optionalImportMessageExtension ).hasD());
 
-    assertEqualsExactType(0, message.getExtension(UnittestProto.optionalGroupExtension         ).getA());
-    assertEqualsExactType(0, message.getExtension(UnittestProto.optionalNestedMessageExtension ).getBb());
-    assertEqualsExactType(0, message.getExtension(UnittestProto.optionalForeignMessageExtension).getC());
-    assertEqualsExactType(0, message.getExtension(UnittestProto.optionalImportMessageExtension ).getD());
+    assertEqualsExactType(0, message.getExtension(optionalGroupExtension         ).getA());
+    assertEqualsExactType(0, message.getExtension(optionalNestedMessageExtension ).getBb());
+    assertEqualsExactType(0, message.getExtension(optionalForeignMessageExtension).getC());
+    assertEqualsExactType(0, message.getExtension(optionalImportMessageExtension ).getD());
 
     // Enums without defaults are set to the first value in the enum.
     assertEqualsExactType(TestAllTypes.NestedEnum.FOO,
-      message.getExtension(UnittestProto.optionalNestedEnumExtension ));
+      message.getExtension(optionalNestedEnumExtension ));
     assertEqualsExactType(ForeignEnum.FOREIGN_FOO,
-      message.getExtension(UnittestProto.optionalForeignEnumExtension));
+      message.getExtension(optionalForeignEnumExtension));
     assertEqualsExactType(ImportEnum.IMPORT_FOO,
-      message.getExtension(UnittestProto.optionalImportEnumExtension));
+      message.getExtension(optionalImportEnumExtension));
 
-    assertEqualsExactType("", message.getExtension(UnittestProto.optionalStringPieceExtension));
-    assertEqualsExactType("", message.getExtension(UnittestProto.optionalCordExtension));
+    assertEqualsExactType("", message.getExtension(optionalStringPieceExtension));
+    assertEqualsExactType("", message.getExtension(optionalCordExtension));
 
     // Repeated fields are empty.
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedInt32Extension   ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedInt64Extension   ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedUint32Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedUint64Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedSint32Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedSint64Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedFixed32Extension ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedFixed64Extension ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedSfixed32Extension));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedSfixed64Extension));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedFloatExtension   ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedDoubleExtension  ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedBoolExtension    ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedStringExtension  ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedBytesExtension   ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedInt32Extension   ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedInt64Extension   ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedUint32Extension  ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedUint64Extension  ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedSint32Extension  ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedSint64Extension  ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedFixed32Extension ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedFixed64Extension ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedSfixed32Extension));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedSfixed64Extension));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedFloatExtension   ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedDoubleExtension  ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedBoolExtension    ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedStringExtension  ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedBytesExtension   ));
 
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedGroupExtension         ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedNestedMessageExtension ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedForeignMessageExtension));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedImportMessageExtension ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedNestedEnumExtension    ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedForeignEnumExtension   ));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedImportEnumExtension    ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedGroupExtension         ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedNestedMessageExtension ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedForeignMessageExtension));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedImportMessageExtension ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedNestedEnumExtension    ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedForeignEnumExtension   ));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedImportEnumExtension    ));
 
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedStringPieceExtension));
-    Assert.assertEquals(0, message.getExtensionCount(UnittestProto.repeatedCordExtension));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedStringPieceExtension));
+    Assert.assertEquals(0, message.getExtensionCount(repeatedCordExtension));
 
     // hasBlah() should also be false for all default fields.
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultInt32Extension   ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultInt64Extension   ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultUint32Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultUint64Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultSint32Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultSint64Extension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultFixed32Extension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultFixed64Extension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultSfixed32Extension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultSfixed64Extension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultFloatExtension   ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultDoubleExtension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultBoolExtension    ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultStringExtension  ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultBytesExtension   ));
+    Assert.assertFalse(message.hasExtension(defaultInt32Extension   ));
+    Assert.assertFalse(message.hasExtension(defaultInt64Extension   ));
+    Assert.assertFalse(message.hasExtension(defaultUint32Extension  ));
+    Assert.assertFalse(message.hasExtension(defaultUint64Extension  ));
+    Assert.assertFalse(message.hasExtension(defaultSint32Extension  ));
+    Assert.assertFalse(message.hasExtension(defaultSint64Extension  ));
+    Assert.assertFalse(message.hasExtension(defaultFixed32Extension ));
+    Assert.assertFalse(message.hasExtension(defaultFixed64Extension ));
+    Assert.assertFalse(message.hasExtension(defaultSfixed32Extension));
+    Assert.assertFalse(message.hasExtension(defaultSfixed64Extension));
+    Assert.assertFalse(message.hasExtension(defaultFloatExtension   ));
+    Assert.assertFalse(message.hasExtension(defaultDoubleExtension  ));
+    Assert.assertFalse(message.hasExtension(defaultBoolExtension    ));
+    Assert.assertFalse(message.hasExtension(defaultStringExtension  ));
+    Assert.assertFalse(message.hasExtension(defaultBytesExtension   ));
 
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultNestedEnumExtension ));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultForeignEnumExtension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultImportEnumExtension ));
+    Assert.assertFalse(message.hasExtension(defaultNestedEnumExtension ));
+    Assert.assertFalse(message.hasExtension(defaultForeignEnumExtension));
+    Assert.assertFalse(message.hasExtension(defaultImportEnumExtension ));
 
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultStringPieceExtension));
-    Assert.assertFalse(message.hasExtension(UnittestProto.defaultCordExtension));
+    Assert.assertFalse(message.hasExtension(defaultStringPieceExtension));
+    Assert.assertFalse(message.hasExtension(defaultCordExtension));
 
     // Fields with defaults have their default values (duh).
-    assertEqualsExactType( 41    , message.getExtension(UnittestProto.defaultInt32Extension   ));
-    assertEqualsExactType( 42L   , message.getExtension(UnittestProto.defaultInt64Extension   ));
-    assertEqualsExactType( 43    , message.getExtension(UnittestProto.defaultUint32Extension  ));
-    assertEqualsExactType( 44L   , message.getExtension(UnittestProto.defaultUint64Extension  ));
-    assertEqualsExactType(-45    , message.getExtension(UnittestProto.defaultSint32Extension  ));
-    assertEqualsExactType( 46L   , message.getExtension(UnittestProto.defaultSint64Extension  ));
-    assertEqualsExactType( 47    , message.getExtension(UnittestProto.defaultFixed32Extension ));
-    assertEqualsExactType( 48L   , message.getExtension(UnittestProto.defaultFixed64Extension ));
-    assertEqualsExactType( 49    , message.getExtension(UnittestProto.defaultSfixed32Extension));
-    assertEqualsExactType(-50L   , message.getExtension(UnittestProto.defaultSfixed64Extension));
-    assertEqualsExactType( 51.5F , message.getExtension(UnittestProto.defaultFloatExtension   ));
-    assertEqualsExactType( 52e3D , message.getExtension(UnittestProto.defaultDoubleExtension  ));
-    assertEqualsExactType(true   , message.getExtension(UnittestProto.defaultBoolExtension    ));
-    assertEqualsExactType("hello", message.getExtension(UnittestProto.defaultStringExtension  ));
-    assertEqualsExactType(toBytes("world"), message.getExtension(UnittestProto.defaultBytesExtension));
+    assertEqualsExactType( 41    , message.getExtension(defaultInt32Extension   ));
+    assertEqualsExactType( 42L   , message.getExtension(defaultInt64Extension   ));
+    assertEqualsExactType( 43    , message.getExtension(defaultUint32Extension  ));
+    assertEqualsExactType( 44L   , message.getExtension(defaultUint64Extension  ));
+    assertEqualsExactType(-45    , message.getExtension(defaultSint32Extension  ));
+    assertEqualsExactType( 46L   , message.getExtension(defaultSint64Extension  ));
+    assertEqualsExactType( 47    , message.getExtension(defaultFixed32Extension ));
+    assertEqualsExactType( 48L   , message.getExtension(defaultFixed64Extension ));
+    assertEqualsExactType( 49    , message.getExtension(defaultSfixed32Extension));
+    assertEqualsExactType(-50L   , message.getExtension(defaultSfixed64Extension));
+    assertEqualsExactType( 51.5F , message.getExtension(defaultFloatExtension   ));
+    assertEqualsExactType( 52e3D , message.getExtension(defaultDoubleExtension  ));
+    assertEqualsExactType(true   , message.getExtension(defaultBoolExtension    ));
+    assertEqualsExactType("hello", message.getExtension(defaultStringExtension  ));
+    assertEqualsExactType(toBytes("world"), message.getExtension(defaultBytesExtension));
 
     assertEqualsExactType(TestAllTypes.NestedEnum.BAR,
-      message.getExtension(UnittestProto.defaultNestedEnumExtension ));
+      message.getExtension(defaultNestedEnumExtension ));
     assertEqualsExactType(ForeignEnum.FOREIGN_BAR,
-      message.getExtension(UnittestProto.defaultForeignEnumExtension));
+      message.getExtension(defaultForeignEnumExtension));
     assertEqualsExactType(ImportEnum.IMPORT_BAR,
-      message.getExtension(UnittestProto.defaultImportEnumExtension));
+      message.getExtension(defaultImportEnumExtension));
 
-    assertEqualsExactType("abc", message.getExtension(UnittestProto.defaultStringPieceExtension));
-    assertEqualsExactType("123", message.getExtension(UnittestProto.defaultCordExtension));
+    assertEqualsExactType("abc", message.getExtension(defaultStringPieceExtension));
+    assertEqualsExactType("123", message.getExtension(defaultCordExtension));
   }
 
   // -------------------------------------------------------------------
@@ -1333,96 +1418,260 @@ class TestUtil {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedInt32Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedInt64Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedUint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedUint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedFixed32Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedFixed64Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSfixed32Extension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedSfixed64Extension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedFloatExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedDoubleExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedBoolExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedStringExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedBytesExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedInt32Extension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedInt64Extension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedUint32Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedUint64Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSint32Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSint64Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed32Extension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed64Extension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed32Extension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed64Extension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedFloatExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedDoubleExtension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedBoolExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedStringExtension  ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedBytesExtension   ));
 
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedGroupExtension         ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedNestedMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedForeignMessageExtension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedImportMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedNestedEnumExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedForeignEnumExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedImportEnumExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedGroupExtension         ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedImportMessageExtension ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedImportEnumExtension    ));
 
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedStringPieceExtension));
-    Assert.assertEquals(2, message.getExtensionCount(UnittestProto.repeatedCordExtension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedStringPieceExtension));
+    Assert.assertEquals(2, message.getExtensionCount(repeatedCordExtension));
 
-    assertEqualsExactType(201  , message.getExtension(UnittestProto.repeatedInt32Extension   , 0));
-    assertEqualsExactType(202L , message.getExtension(UnittestProto.repeatedInt64Extension   , 0));
-    assertEqualsExactType(203  , message.getExtension(UnittestProto.repeatedUint32Extension  , 0));
-    assertEqualsExactType(204L , message.getExtension(UnittestProto.repeatedUint64Extension  , 0));
-    assertEqualsExactType(205  , message.getExtension(UnittestProto.repeatedSint32Extension  , 0));
-    assertEqualsExactType(206L , message.getExtension(UnittestProto.repeatedSint64Extension  , 0));
-    assertEqualsExactType(207  , message.getExtension(UnittestProto.repeatedFixed32Extension , 0));
-    assertEqualsExactType(208L , message.getExtension(UnittestProto.repeatedFixed64Extension , 0));
-    assertEqualsExactType(209  , message.getExtension(UnittestProto.repeatedSfixed32Extension, 0));
-    assertEqualsExactType(210L , message.getExtension(UnittestProto.repeatedSfixed64Extension, 0));
-    assertEqualsExactType(211F , message.getExtension(UnittestProto.repeatedFloatExtension   , 0));
-    assertEqualsExactType(212D , message.getExtension(UnittestProto.repeatedDoubleExtension  , 0));
-    assertEqualsExactType(true , message.getExtension(UnittestProto.repeatedBoolExtension    , 0));
-    assertEqualsExactType("215", message.getExtension(UnittestProto.repeatedStringExtension  , 0));
-    assertEqualsExactType(toBytes("216"), message.getExtension(UnittestProto.repeatedBytesExtension, 0));
+    assertEqualsExactType(201  , message.getExtension(repeatedInt32Extension   , 0));
+    assertEqualsExactType(202L , message.getExtension(repeatedInt64Extension   , 0));
+    assertEqualsExactType(203  , message.getExtension(repeatedUint32Extension  , 0));
+    assertEqualsExactType(204L , message.getExtension(repeatedUint64Extension  , 0));
+    assertEqualsExactType(205  , message.getExtension(repeatedSint32Extension  , 0));
+    assertEqualsExactType(206L , message.getExtension(repeatedSint64Extension  , 0));
+    assertEqualsExactType(207  , message.getExtension(repeatedFixed32Extension , 0));
+    assertEqualsExactType(208L , message.getExtension(repeatedFixed64Extension , 0));
+    assertEqualsExactType(209  , message.getExtension(repeatedSfixed32Extension, 0));
+    assertEqualsExactType(210L , message.getExtension(repeatedSfixed64Extension, 0));
+    assertEqualsExactType(211F , message.getExtension(repeatedFloatExtension   , 0));
+    assertEqualsExactType(212D , message.getExtension(repeatedDoubleExtension  , 0));
+    assertEqualsExactType(true , message.getExtension(repeatedBoolExtension    , 0));
+    assertEqualsExactType("215", message.getExtension(repeatedStringExtension  , 0));
+    assertEqualsExactType(toBytes("216"), message.getExtension(repeatedBytesExtension, 0));
 
-    assertEqualsExactType(217, message.getExtension(UnittestProto.repeatedGroupExtension         , 0).getA());
-    assertEqualsExactType(218, message.getExtension(UnittestProto.repeatedNestedMessageExtension , 0).getBb());
-    assertEqualsExactType(219, message.getExtension(UnittestProto.repeatedForeignMessageExtension, 0).getC());
-    assertEqualsExactType(220, message.getExtension(UnittestProto.repeatedImportMessageExtension , 0).getD());
+    assertEqualsExactType(217, message.getExtension(repeatedGroupExtension         , 0).getA());
+    assertEqualsExactType(218, message.getExtension(repeatedNestedMessageExtension , 0).getBb());
+    assertEqualsExactType(219, message.getExtension(repeatedForeignMessageExtension, 0).getC());
+    assertEqualsExactType(220, message.getExtension(repeatedImportMessageExtension , 0).getD());
 
     assertEqualsExactType(TestAllTypes.NestedEnum.BAR,
-      message.getExtension(UnittestProto.repeatedNestedEnumExtension, 0));
+      message.getExtension(repeatedNestedEnumExtension, 0));
     assertEqualsExactType(ForeignEnum.FOREIGN_BAR,
-      message.getExtension(UnittestProto.repeatedForeignEnumExtension, 0));
+      message.getExtension(repeatedForeignEnumExtension, 0));
     assertEqualsExactType(ImportEnum.IMPORT_BAR,
-      message.getExtension(UnittestProto.repeatedImportEnumExtension, 0));
+      message.getExtension(repeatedImportEnumExtension, 0));
 
-    assertEqualsExactType("224", message.getExtension(UnittestProto.repeatedStringPieceExtension, 0));
-    assertEqualsExactType("225", message.getExtension(UnittestProto.repeatedCordExtension, 0));
+    assertEqualsExactType("224", message.getExtension(repeatedStringPieceExtension, 0));
+    assertEqualsExactType("225", message.getExtension(repeatedCordExtension, 0));
 
     // Actually verify the second (modified) elements now.
-    assertEqualsExactType(501  , message.getExtension(UnittestProto.repeatedInt32Extension   , 1));
-    assertEqualsExactType(502L , message.getExtension(UnittestProto.repeatedInt64Extension   , 1));
-    assertEqualsExactType(503  , message.getExtension(UnittestProto.repeatedUint32Extension  , 1));
-    assertEqualsExactType(504L , message.getExtension(UnittestProto.repeatedUint64Extension  , 1));
-    assertEqualsExactType(505  , message.getExtension(UnittestProto.repeatedSint32Extension  , 1));
-    assertEqualsExactType(506L , message.getExtension(UnittestProto.repeatedSint64Extension  , 1));
-    assertEqualsExactType(507  , message.getExtension(UnittestProto.repeatedFixed32Extension , 1));
-    assertEqualsExactType(508L , message.getExtension(UnittestProto.repeatedFixed64Extension , 1));
-    assertEqualsExactType(509  , message.getExtension(UnittestProto.repeatedSfixed32Extension, 1));
-    assertEqualsExactType(510L , message.getExtension(UnittestProto.repeatedSfixed64Extension, 1));
-    assertEqualsExactType(511F , message.getExtension(UnittestProto.repeatedFloatExtension   , 1));
-    assertEqualsExactType(512D , message.getExtension(UnittestProto.repeatedDoubleExtension  , 1));
-    assertEqualsExactType(true , message.getExtension(UnittestProto.repeatedBoolExtension    , 1));
-    assertEqualsExactType("515", message.getExtension(UnittestProto.repeatedStringExtension  , 1));
-    assertEqualsExactType(toBytes("516"), message.getExtension(UnittestProto.repeatedBytesExtension, 1));
+    assertEqualsExactType(501  , message.getExtension(repeatedInt32Extension   , 1));
+    assertEqualsExactType(502L , message.getExtension(repeatedInt64Extension   , 1));
+    assertEqualsExactType(503  , message.getExtension(repeatedUint32Extension  , 1));
+    assertEqualsExactType(504L , message.getExtension(repeatedUint64Extension  , 1));
+    assertEqualsExactType(505  , message.getExtension(repeatedSint32Extension  , 1));
+    assertEqualsExactType(506L , message.getExtension(repeatedSint64Extension  , 1));
+    assertEqualsExactType(507  , message.getExtension(repeatedFixed32Extension , 1));
+    assertEqualsExactType(508L , message.getExtension(repeatedFixed64Extension , 1));
+    assertEqualsExactType(509  , message.getExtension(repeatedSfixed32Extension, 1));
+    assertEqualsExactType(510L , message.getExtension(repeatedSfixed64Extension, 1));
+    assertEqualsExactType(511F , message.getExtension(repeatedFloatExtension   , 1));
+    assertEqualsExactType(512D , message.getExtension(repeatedDoubleExtension  , 1));
+    assertEqualsExactType(true , message.getExtension(repeatedBoolExtension    , 1));
+    assertEqualsExactType("515", message.getExtension(repeatedStringExtension  , 1));
+    assertEqualsExactType(toBytes("516"), message.getExtension(repeatedBytesExtension, 1));
 
-    assertEqualsExactType(517, message.getExtension(UnittestProto.repeatedGroupExtension         , 1).getA());
-    assertEqualsExactType(518, message.getExtension(UnittestProto.repeatedNestedMessageExtension , 1).getBb());
-    assertEqualsExactType(519, message.getExtension(UnittestProto.repeatedForeignMessageExtension, 1).getC());
-    assertEqualsExactType(520, message.getExtension(UnittestProto.repeatedImportMessageExtension , 1).getD());
+    assertEqualsExactType(517, message.getExtension(repeatedGroupExtension         , 1).getA());
+    assertEqualsExactType(518, message.getExtension(repeatedNestedMessageExtension , 1).getBb());
+    assertEqualsExactType(519, message.getExtension(repeatedForeignMessageExtension, 1).getC());
+    assertEqualsExactType(520, message.getExtension(repeatedImportMessageExtension , 1).getD());
 
     assertEqualsExactType(TestAllTypes.NestedEnum.FOO,
-      message.getExtension(UnittestProto.repeatedNestedEnumExtension, 1));
+      message.getExtension(repeatedNestedEnumExtension, 1));
     assertEqualsExactType(ForeignEnum.FOREIGN_FOO,
-      message.getExtension(UnittestProto.repeatedForeignEnumExtension, 1));
+      message.getExtension(repeatedForeignEnumExtension, 1));
     assertEqualsExactType(ImportEnum.IMPORT_FOO,
-      message.getExtension(UnittestProto.repeatedImportEnumExtension, 1));
+      message.getExtension(repeatedImportEnumExtension, 1));
 
-    assertEqualsExactType("524", message.getExtension(UnittestProto.repeatedStringPieceExtension, 1));
-    assertEqualsExactType("525", message.getExtension(UnittestProto.repeatedCordExtension, 1));
+    assertEqualsExactType("524", message.getExtension(repeatedStringPieceExtension, 1));
+    assertEqualsExactType("525", message.getExtension(repeatedCordExtension, 1));
   }
+
+  /**
+   * Set every field of {@code message} to a unique value.
+   */
+  public static void setPackedFields(TestPackedTypes.Builder message) {
+    message.addPackedInt32   (601);
+    message.addPackedInt64   (602);
+    message.addPackedUint32  (603);
+    message.addPackedUint64  (604);
+    message.addPackedSint32  (605);
+    message.addPackedSint64  (606);
+    message.addPackedFixed32 (607);
+    message.addPackedFixed64 (608);
+    message.addPackedSfixed32(609);
+    message.addPackedSfixed64(610);
+    message.addPackedFloat   (611);
+    message.addPackedDouble  (612);
+    message.addPackedBool    (true);
+    message.addPackedEnum    (ForeignEnum.FOREIGN_BAR);
+    // Add a second one of each field.
+    message.addPackedInt32   (701);
+    message.addPackedInt64   (702);
+    message.addPackedUint32  (703);
+    message.addPackedUint64  (704);
+    message.addPackedSint32  (705);
+    message.addPackedSint64  (706);
+    message.addPackedFixed32 (707);
+    message.addPackedFixed64 (708);
+    message.addPackedSfixed32(709);
+    message.addPackedSfixed64(710);
+    message.addPackedFloat   (711);
+    message.addPackedDouble  (712);
+    message.addPackedBool    (false);
+    message.addPackedEnum    (ForeignEnum.FOREIGN_BAZ);
+  }
+
+  /**
+   * Assert (using {@code junit.framework.Assert}} that all fields of
+   * {@code message} are set to the values assigned by {@code setPackedFields}.
+   */
+  public static void assertPackedFieldsSet(TestPackedTypes message) {
+    Assert.assertEquals(2, message.getPackedInt32Count   ());
+    Assert.assertEquals(2, message.getPackedInt64Count   ());
+    Assert.assertEquals(2, message.getPackedUint32Count  ());
+    Assert.assertEquals(2, message.getPackedUint64Count  ());
+    Assert.assertEquals(2, message.getPackedSint32Count  ());
+    Assert.assertEquals(2, message.getPackedSint64Count  ());
+    Assert.assertEquals(2, message.getPackedFixed32Count ());
+    Assert.assertEquals(2, message.getPackedFixed64Count ());
+    Assert.assertEquals(2, message.getPackedSfixed32Count());
+    Assert.assertEquals(2, message.getPackedSfixed64Count());
+    Assert.assertEquals(2, message.getPackedFloatCount   ());
+    Assert.assertEquals(2, message.getPackedDoubleCount  ());
+    Assert.assertEquals(2, message.getPackedBoolCount    ());
+    Assert.assertEquals(2, message.getPackedEnumCount   ());
+    Assert.assertEquals(601  , message.getPackedInt32   (0));
+    Assert.assertEquals(602  , message.getPackedInt64   (0));
+    Assert.assertEquals(603  , message.getPackedUint32  (0));
+    Assert.assertEquals(604  , message.getPackedUint64  (0));
+    Assert.assertEquals(605  , message.getPackedSint32  (0));
+    Assert.assertEquals(606  , message.getPackedSint64  (0));
+    Assert.assertEquals(607  , message.getPackedFixed32 (0));
+    Assert.assertEquals(608  , message.getPackedFixed64 (0));
+    Assert.assertEquals(609  , message.getPackedSfixed32(0));
+    Assert.assertEquals(610  , message.getPackedSfixed64(0));
+    Assert.assertEquals(611  , message.getPackedFloat   (0), 0.0);
+    Assert.assertEquals(612  , message.getPackedDouble  (0), 0.0);
+    Assert.assertEquals(true , message.getPackedBool    (0));
+    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getPackedEnum(0));
+    Assert.assertEquals(701  , message.getPackedInt32   (1));
+    Assert.assertEquals(702  , message.getPackedInt64   (1));
+    Assert.assertEquals(703  , message.getPackedUint32  (1));
+    Assert.assertEquals(704  , message.getPackedUint64  (1));
+    Assert.assertEquals(705  , message.getPackedSint32  (1));
+    Assert.assertEquals(706  , message.getPackedSint64  (1));
+    Assert.assertEquals(707  , message.getPackedFixed32 (1));
+    Assert.assertEquals(708  , message.getPackedFixed64 (1));
+    Assert.assertEquals(709  , message.getPackedSfixed32(1));
+    Assert.assertEquals(710  , message.getPackedSfixed64(1));
+    Assert.assertEquals(711  , message.getPackedFloat   (1), 0.0);
+    Assert.assertEquals(712  , message.getPackedDouble  (1), 0.0);
+    Assert.assertEquals(false, message.getPackedBool    (1));
+    Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getPackedEnum(1));
+  }
+
+  public static void setPackedExtensions(TestPackedExtensions.Builder message) {
+    message.addExtension(packedInt32Extension   , 601);
+    message.addExtension(packedInt64Extension   , 602L);
+    message.addExtension(packedUint32Extension  , 603);
+    message.addExtension(packedUint64Extension  , 604L);
+    message.addExtension(packedSint32Extension  , 605);
+    message.addExtension(packedSint64Extension  , 606L);
+    message.addExtension(packedFixed32Extension , 607);
+    message.addExtension(packedFixed64Extension , 608L);
+    message.addExtension(packedSfixed32Extension, 609);
+    message.addExtension(packedSfixed64Extension, 610L);
+    message.addExtension(packedFloatExtension   , 611F);
+    message.addExtension(packedDoubleExtension  , 612D);
+    message.addExtension(packedBoolExtension    , true);
+    message.addExtension(packedEnumExtension, ForeignEnum.FOREIGN_BAR);
+    // Add a second one of each field.
+    message.addExtension(packedInt32Extension   , 701);
+    message.addExtension(packedInt64Extension   , 702L);
+    message.addExtension(packedUint32Extension  , 703);
+    message.addExtension(packedUint64Extension  , 704L);
+    message.addExtension(packedSint32Extension  , 705);
+    message.addExtension(packedSint64Extension  , 706L);
+    message.addExtension(packedFixed32Extension , 707);
+    message.addExtension(packedFixed64Extension , 708L);
+    message.addExtension(packedSfixed32Extension, 709);
+    message.addExtension(packedSfixed64Extension, 710L);
+    message.addExtension(packedFloatExtension   , 711F);
+    message.addExtension(packedDoubleExtension  , 712D);
+    message.addExtension(packedBoolExtension    , false);
+    message.addExtension(packedEnumExtension, ForeignEnum.FOREIGN_BAZ);
+  }
+
+  public static void assertPackedExtensionsSet(TestPackedExtensions message) {
+    Assert.assertEquals(2, message.getExtensionCount(packedInt32Extension   ));
+    Assert.assertEquals(2, message.getExtensionCount(packedInt64Extension   ));
+    Assert.assertEquals(2, message.getExtensionCount(packedUint32Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(packedUint64Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(packedSint32Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(packedSint64Extension  ));
+    Assert.assertEquals(2, message.getExtensionCount(packedFixed32Extension ));
+    Assert.assertEquals(2, message.getExtensionCount(packedFixed64Extension ));
+    Assert.assertEquals(2, message.getExtensionCount(packedSfixed32Extension));
+    Assert.assertEquals(2, message.getExtensionCount(packedSfixed64Extension));
+    Assert.assertEquals(2, message.getExtensionCount(packedFloatExtension   ));
+    Assert.assertEquals(2, message.getExtensionCount(packedDoubleExtension  ));
+    Assert.assertEquals(2, message.getExtensionCount(packedBoolExtension    ));
+    Assert.assertEquals(2, message.getExtensionCount(packedEnumExtension));
+    assertEqualsExactType(601  , message.getExtension(packedInt32Extension   , 0));
+    assertEqualsExactType(602L , message.getExtension(packedInt64Extension   , 0));
+    assertEqualsExactType(603  , message.getExtension(packedUint32Extension  , 0));
+    assertEqualsExactType(604L , message.getExtension(packedUint64Extension  , 0));
+    assertEqualsExactType(605  , message.getExtension(packedSint32Extension  , 0));
+    assertEqualsExactType(606L , message.getExtension(packedSint64Extension  , 0));
+    assertEqualsExactType(607  , message.getExtension(packedFixed32Extension , 0));
+    assertEqualsExactType(608L , message.getExtension(packedFixed64Extension , 0));
+    assertEqualsExactType(609  , message.getExtension(packedSfixed32Extension, 0));
+    assertEqualsExactType(610L , message.getExtension(packedSfixed64Extension, 0));
+    assertEqualsExactType(611F , message.getExtension(packedFloatExtension   , 0));
+    assertEqualsExactType(612D , message.getExtension(packedDoubleExtension  , 0));
+    assertEqualsExactType(true , message.getExtension(packedBoolExtension    , 0));
+    assertEqualsExactType(ForeignEnum.FOREIGN_BAR,
+                          message.getExtension(packedEnumExtension, 0));
+    assertEqualsExactType(701  , message.getExtension(packedInt32Extension   , 1));
+    assertEqualsExactType(702L , message.getExtension(packedInt64Extension   , 1));
+    assertEqualsExactType(703  , message.getExtension(packedUint32Extension  , 1));
+    assertEqualsExactType(704L , message.getExtension(packedUint64Extension  , 1));
+    assertEqualsExactType(705  , message.getExtension(packedSint32Extension  , 1));
+    assertEqualsExactType(706L , message.getExtension(packedSint64Extension  , 1));
+    assertEqualsExactType(707  , message.getExtension(packedFixed32Extension , 1));
+    assertEqualsExactType(708L , message.getExtension(packedFixed64Extension , 1));
+    assertEqualsExactType(709  , message.getExtension(packedSfixed32Extension, 1));
+    assertEqualsExactType(710L , message.getExtension(packedSfixed64Extension, 1));
+    assertEqualsExactType(711F , message.getExtension(packedFloatExtension   , 1));
+    assertEqualsExactType(712D , message.getExtension(packedDoubleExtension  , 1));
+    assertEqualsExactType(false, message.getExtension(packedBoolExtension    , 1));
+    assertEqualsExactType(ForeignEnum.FOREIGN_BAZ,
+                          message.getExtension(packedEnumExtension, 1));
+  }
+
 
   // ===================================================================
 
@@ -1487,7 +1736,7 @@ class TestUtil {
       this.importFile = file.getDependencies().get(0);
 
       Descriptors.Descriptor testAllTypes;
-      if (extensionRegistry == null) {
+      if (baseDescriptor.getName() == "TestAllTypes") {
         testAllTypes = baseDescriptor;
       } else {
         testAllTypes = file.findMessageTypeByName("TestAllTypes");
@@ -1495,10 +1744,13 @@ class TestUtil {
       }
 
       if (extensionRegistry == null) {
+        // Use testAllTypes, rather than baseDescriptor, to allow
+        // initialization using TestPackedTypes descriptors. These objects
+        // won't be used by the methods for packed fields.
         this.optionalGroup =
-          baseDescriptor.findNestedTypeByName("OptionalGroup");
+          testAllTypes.findNestedTypeByName("OptionalGroup");
         this.repeatedGroup =
-          baseDescriptor.findNestedTypeByName("RepeatedGroup");
+          testAllTypes.findNestedTypeByName("RepeatedGroup");
       } else {
         this.optionalGroup =
           file.findMessageTypeByName("OptionalGroup_extension");
@@ -2279,6 +2531,191 @@ class TestUtil {
       Assert.assertEquals("524", message.getRepeatedField(f("repeated_string_piece"), 1));
       Assert.assertEquals("525", message.getRepeatedField(f("repeated_cord"), 1));
     }
+
+    public void setPackedFieldsViaReflection(Message.Builder message) {
+      message.addRepeatedField(f("packed_int32"   ), 601 );
+      message.addRepeatedField(f("packed_int64"   ), 602L);
+      message.addRepeatedField(f("packed_uint32"  ), 603 );
+      message.addRepeatedField(f("packed_uint64"  ), 604L);
+      message.addRepeatedField(f("packed_sint32"  ), 605 );
+      message.addRepeatedField(f("packed_sint64"  ), 606L);
+      message.addRepeatedField(f("packed_fixed32" ), 607 );
+      message.addRepeatedField(f("packed_fixed64" ), 608L);
+      message.addRepeatedField(f("packed_sfixed32"), 609 );
+      message.addRepeatedField(f("packed_sfixed64"), 610L);
+      message.addRepeatedField(f("packed_float"   ), 611F);
+      message.addRepeatedField(f("packed_double"  ), 612D);
+      message.addRepeatedField(f("packed_bool"    ), true);
+      message.addRepeatedField(f("packed_enum" ),  foreignBar);
+      // Add a second one of each field.
+      message.addRepeatedField(f("packed_int32"   ), 701 );
+      message.addRepeatedField(f("packed_int64"   ), 702L);
+      message.addRepeatedField(f("packed_uint32"  ), 703 );
+      message.addRepeatedField(f("packed_uint64"  ), 704L);
+      message.addRepeatedField(f("packed_sint32"  ), 705 );
+      message.addRepeatedField(f("packed_sint64"  ), 706L);
+      message.addRepeatedField(f("packed_fixed32" ), 707 );
+      message.addRepeatedField(f("packed_fixed64" ), 708L);
+      message.addRepeatedField(f("packed_sfixed32"), 709 );
+      message.addRepeatedField(f("packed_sfixed64"), 710L);
+      message.addRepeatedField(f("packed_float"   ), 711F);
+      message.addRepeatedField(f("packed_double"  ), 712D);
+      message.addRepeatedField(f("packed_bool"    ), false);
+      message.addRepeatedField(f("packed_enum" ),  foreignBaz);
+    }
+
+    public void assertPackedFieldsSetViaReflection(Message message) {
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_int32"   )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_int64"   )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_uint32"  )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_uint64"  )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sint32"  )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sint64"  )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_fixed32" )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_fixed64" )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sfixed32")));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sfixed64")));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_float"   )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_double"  )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_bool"    )));
+      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_enum"   )));
+      Assert.assertEquals(601  , message.getRepeatedField(f("packed_int32"   ), 0));
+      Assert.assertEquals(602L , message.getRepeatedField(f("packed_int64"   ), 0));
+      Assert.assertEquals(603  , message.getRepeatedField(f("packed_uint32"  ), 0));
+      Assert.assertEquals(604L , message.getRepeatedField(f("packed_uint64"  ), 0));
+      Assert.assertEquals(605  , message.getRepeatedField(f("packed_sint32"  ), 0));
+      Assert.assertEquals(606L , message.getRepeatedField(f("packed_sint64"  ), 0));
+      Assert.assertEquals(607  , message.getRepeatedField(f("packed_fixed32" ), 0));
+      Assert.assertEquals(608L , message.getRepeatedField(f("packed_fixed64" ), 0));
+      Assert.assertEquals(609  , message.getRepeatedField(f("packed_sfixed32"), 0));
+      Assert.assertEquals(610L , message.getRepeatedField(f("packed_sfixed64"), 0));
+      Assert.assertEquals(611F , message.getRepeatedField(f("packed_float"   ), 0));
+      Assert.assertEquals(612D , message.getRepeatedField(f("packed_double"  ), 0));
+      Assert.assertEquals(true , message.getRepeatedField(f("packed_bool"    ), 0));
+      Assert.assertEquals(foreignBar, message.getRepeatedField(f("packed_enum" ),0));
+      Assert.assertEquals(701  , message.getRepeatedField(f("packed_int32"   ), 1));
+      Assert.assertEquals(702L , message.getRepeatedField(f("packed_int64"   ), 1));
+      Assert.assertEquals(703  , message.getRepeatedField(f("packed_uint32"  ), 1));
+      Assert.assertEquals(704L , message.getRepeatedField(f("packed_uint64"  ), 1));
+      Assert.assertEquals(705  , message.getRepeatedField(f("packed_sint32"  ), 1));
+      Assert.assertEquals(706L , message.getRepeatedField(f("packed_sint64"  ), 1));
+      Assert.assertEquals(707  , message.getRepeatedField(f("packed_fixed32" ), 1));
+      Assert.assertEquals(708L , message.getRepeatedField(f("packed_fixed64" ), 1));
+      Assert.assertEquals(709  , message.getRepeatedField(f("packed_sfixed32"), 1));
+      Assert.assertEquals(710L , message.getRepeatedField(f("packed_sfixed64"), 1));
+      Assert.assertEquals(711F , message.getRepeatedField(f("packed_float"   ), 1));
+      Assert.assertEquals(712D , message.getRepeatedField(f("packed_double"  ), 1));
+      Assert.assertEquals(false, message.getRepeatedField(f("packed_bool"    ), 1));
+      Assert.assertEquals(foreignBaz, message.getRepeatedField(f("packed_enum" ),1));
+    }
+
+    /**
+     * Verifies that the reflection setters for the given.Builder object throw a
+     * NullPointerException if they are passed a null value.  Uses Assert to throw an
+     * appropriate assertion failure, if the condition is not verified.
+     */
+    public void assertReflectionSettersRejectNull(Message.Builder builder)
+        throws Exception {
+      try {
+        builder.setField(f("optional_string"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.setField(f("optional_bytes"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.setField(f("optional_nested_enum"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.setField(f("optional_nested_message"),
+                         (TestAllTypes.NestedMessage) null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.setField(f("optional_nested_message"),
+                         (TestAllTypes.NestedMessage.Builder) null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+
+      try {
+        builder.addRepeatedField(f("repeated_string"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.addRepeatedField(f("repeated_bytes"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.addRepeatedField(f("repeated_nested_enum"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+      try {
+        builder.addRepeatedField(f("repeated_nested_message"), null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+    }
+
+    /**
+     * Verifies that the reflection repeated setters for the given Builder object throw a
+     * NullPointerException if they are passed a null value.  Uses Assert to throw an appropriate
+     * assertion failure, if the condition is not verified.
+     */
+    public void assertReflectionRepeatedSettersRejectNull(Message.Builder builder)
+        throws Exception {
+      builder.addRepeatedField(f("repeated_string"), "one");
+      try {
+        builder.setRepeatedField(f("repeated_string"), 0, null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+
+      builder.addRepeatedField(f("repeated_bytes"), toBytes("one"));
+      try {
+        builder.setRepeatedField(f("repeated_bytes"), 0, null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+
+      builder.addRepeatedField(f("repeated_nested_enum"), nestedBaz);
+      try {
+        builder.setRepeatedField(f("repeated_nested_enum"), 0, null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+
+      builder.addRepeatedField(
+          f("repeated_nested_message"),
+          TestAllTypes.NestedMessage.newBuilder().setBb(218).build());
+      try {
+        builder.setRepeatedField(f("repeated_nested_message"), 0, null);
+        Assert.fail("Exception was not thrown");
+      } catch (NullPointerException e) {
+        // We expect this exception.
+      }
+    }
   }
 
   /**
@@ -2344,4 +2781,21 @@ class TestUtil {
     return goldenMessage;
   }
   private static ByteString goldenMessage = null;
+
+  /**
+   * Get the bytes of the "golden packed fields message".  This is a serialized
+   * TestPackedTypes with all fields set as they would be by
+   * {@link setPackedFields(TestPackedTypes.Builder)}, but it is loaded from a
+   * file on disk rather than generated dynamically.  The file is actually
+   * generated by C++ code, so testing against it verifies compatibility with
+   * C++.
+   */
+  public static ByteString getGoldenPackedFieldsMessage() {
+    if (goldenPackedFieldsMessage == null) {
+      goldenPackedFieldsMessage =
+          readBytesFromFile("golden_packed_fields_message");
+    }
+    return goldenPackedFieldsMessage;
+  }
+  private static ByteString goldenPackedFieldsMessage = null;
 }

@@ -160,6 +160,7 @@ EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
   solaris/libstdc++.la                                         \
   google/protobuf/testdata/golden_message                      \
+  google/protobuf/testdata/golden_packed_fields_message        \
   google/protobuf/testdata/text_format_unittest_data.txt       \
   google/protobuf/testdata/text_format_unittest_extensions_data.txt  \
   google/protobuf/package_info.h                               \

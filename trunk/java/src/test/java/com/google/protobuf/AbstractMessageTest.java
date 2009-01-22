@@ -34,6 +34,7 @@ import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
@@ -90,6 +91,9 @@ public class AbstractMessageTest extends TestCase {
     }
     public Builder newBuilderForType() {
       return new Builder(wrappedMessage.newBuilderForType());
+    }
+    public Builder toBuilder() {
+      return new Builder(wrappedMessage.toBuilder());
     }
 
     static class Builder extends AbstractMessage.Builder<Builder> {
@@ -213,6 +217,25 @@ public class AbstractMessageTest extends TestCase {
     AbstractMessageWrapper message =
       builder.mergeFrom(TestUtil.getAllSet().toByteString()).build();
     TestUtil.assertAllFieldsSet((TestAllTypes) message.wrappedMessage);
+  }
+
+  public void testPackedSerialization() throws Exception {
+    Message abstractMessage =
+        new AbstractMessageWrapper(TestUtil.getPackedSet());
+
+    TestUtil.assertPackedFieldsSet(
+      TestPackedTypes.parseFrom(abstractMessage.toByteString()));
+
+    assertEquals(TestUtil.getPackedSet().toByteString(),
+                 abstractMessage.toByteString());
+  }
+
+  public void testPackedParsing() throws Exception {
+    AbstractMessageWrapper.Builder builder =
+      new AbstractMessageWrapper.Builder(TestPackedTypes.newBuilder());
+    AbstractMessageWrapper message =
+      builder.mergeFrom(TestUtil.getPackedSet().toByteString()).build();
+    TestUtil.assertPackedFieldsSet((TestPackedTypes) message.wrappedMessage);
   }
 
   public void testOptimizedForSize() throws Exception {

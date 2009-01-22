@@ -61,6 +61,8 @@ class DynamicMessageTest : public testing::Test {
   const Message* prototype_;
   const Descriptor* extensions_descriptor_;
   const Message* extensions_prototype_;
+  const Descriptor* packed_descriptor_;
+  const Message* packed_prototype_;
 
   DynamicMessageTest(): factory_(&pool_) {}
 
@@ -87,6 +89,11 @@ class DynamicMessageTest : public testing::Test {
       pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
     ASSERT_TRUE(extensions_descriptor_ != NULL);
     extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
+
+    packed_descriptor_ =
+      pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
+    ASSERT_TRUE(packed_descriptor_ != NULL);
+    packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
   }
 };
 
@@ -125,6 +132,15 @@ TEST_F(DynamicMessageTest, Extensions) {
 
   reflection_tester.SetAllFieldsViaReflection(message.get());
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+}
+
+TEST_F(DynamicMessageTest, PackedFields) {
+  // Check that packed fields work properly.
+  scoped_ptr<Message> message(packed_prototype_->New());
+  TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
+
+  reflection_tester.SetPackedFieldsViaReflection(message.get());
+  reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
 }
 
 TEST_F(DynamicMessageTest, SpaceUsed) {
