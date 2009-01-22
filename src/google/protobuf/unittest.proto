@@ -461,6 +461,46 @@ message OneBytes {
   optional bytes data = 1;
 }
 
+// Test messages for packed fields
+
+message TestPackedTypes {
+  repeated    int32 packed_int32    =  90 [packed = true];
+  repeated    int64 packed_int64    =  91 [packed = true];
+  repeated   uint32 packed_uint32   =  92 [packed = true];
+  repeated   uint64 packed_uint64   =  93 [packed = true];
+  repeated   sint32 packed_sint32   =  94 [packed = true];
+  repeated   sint64 packed_sint64   =  95 [packed = true];
+  repeated  fixed32 packed_fixed32  =  96 [packed = true];
+  repeated  fixed64 packed_fixed64  =  97 [packed = true];
+  repeated sfixed32 packed_sfixed32 =  98 [packed = true];
+  repeated sfixed64 packed_sfixed64 =  99 [packed = true];
+  repeated    float packed_float    = 100 [packed = true];
+  repeated   double packed_double   = 101 [packed = true];
+  repeated     bool packed_bool     = 102 [packed = true];
+  repeated ForeignEnum packed_enum  = 103 [packed = true];
+}
+
+message TestPackedExtensions {
+  extensions 1 to max;
+}
+
+extend TestPackedExtensions {
+  repeated    int32 packed_int32_extension    =  90 [packed = true];
+  repeated    int64 packed_int64_extension    =  91 [packed = true];
+  repeated   uint32 packed_uint32_extension   =  92 [packed = true];
+  repeated   uint64 packed_uint64_extension   =  93 [packed = true];
+  repeated   sint32 packed_sint32_extension   =  94 [packed = true];
+  repeated   sint64 packed_sint64_extension   =  95 [packed = true];
+  repeated  fixed32 packed_fixed32_extension  =  96 [packed = true];
+  repeated  fixed64 packed_fixed64_extension  =  97 [packed = true];
+  repeated sfixed32 packed_sfixed32_extension =  98 [packed = true];
+  repeated sfixed64 packed_sfixed64_extension =  99 [packed = true];
+  repeated    float packed_float_extension    = 100 [packed = true];
+  repeated   double packed_double_extension   = 101 [packed = true];
+  repeated     bool packed_bool_extension     = 102 [packed = true];
+  repeated ForeignEnum packed_enum_extension  = 103 [packed = true];
+}
+
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}

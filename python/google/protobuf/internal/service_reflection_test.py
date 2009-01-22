@@ -74,7 +74,7 @@ class FooUnitTest(unittest.TestCase):
 
     rpc_controller.failure_message = None
 
-    service_descriptor = unittest_pb2.TestService.DESCRIPTOR
+    service_descriptor = unittest_pb2.TestService.GetDescriptor()
     srvc.CallMethod(service_descriptor.methods[1], rpc_controller,
                     unittest_pb2.BarRequest(), MyCallback)
     self.assertEqual('Method Bar not implemented.',
@@ -117,6 +117,10 @@ class FooUnitTest(unittest.TestCase):
     stub = unittest_pb2.TestService_Stub(channel)
     rpc_controller = 'controller'
     request = 'request'
+
+    # GetDescriptor now static, still works as instance method for compatability
+    self.assertEqual(unittest_pb2.TestService_Stub.GetDescriptor(),
+                     stub.GetDescriptor())
 
     # Invoke method.
     stub.Foo(rpc_controller, request, MyCallback)

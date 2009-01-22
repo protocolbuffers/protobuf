@@ -301,8 +301,9 @@ void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescr
     MessageOptions_descriptor_, MessageOptions::default_instance_);
   FieldOptions_descriptor_ = file->message_type(10);
   FieldOptions::default_instance_ = new FieldOptions();
-  static const int FieldOptions_offsets_[3] = {
+  static const int FieldOptions_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, ctype_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, packed_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, experimental_map_key_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, uninterpreted_option_),
   };
@@ -519,30 +520,30 @@ void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "\n\016MessageOptions\022&\n\027message_set_wire_for"
     "mat\030\001 \001(\010:\005false\022C\n\024uninterpreted_option"
     "\030\347\007 \003(\0132$.google.protobuf.UninterpretedO"
-    "ption*\t\010\350\007\020\200\200\200\200\002\"\325\001\n\014FieldOptions\0222\n\005cty"
+    "ption*\t\010\350\007\020\200\200\200\200\002\"\345\001\n\014FieldOptions\0222\n\005cty"
     "pe\030\001 \001(\0162#.google.protobuf.FieldOptions."
-    "CType\022\034\n\024experimental_map_key\030\t \001(\t\022C\n\024u"
-    "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
-    "obuf.UninterpretedOption\"#\n\005CType\022\010\n\004COR"
-    "D\020\001\022\020\n\014STRING_PIECE\020\002*\t\010\350\007\020\200\200\200\200\002\"]\n\013Enum"
-    "Options\022C\n\024uninterpreted_option\030\347\007 \003(\0132$"
-    ".google.protobuf.UninterpretedOption*\t\010\350"
-    "\007\020\200\200\200\200\002\"b\n\020EnumValueOptions\022C\n\024uninterpr"
-    "eted_option\030\347\007 \003(\0132$.google.protobuf.Uni"
-    "nterpretedOption*\t\010\350\007\020\200\200\200\200\002\"`\n\016ServiceOp"
-    "tions\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.g"
-    "oogle.protobuf.UninterpretedOption*\t\010\350\007\020"
-    "\200\200\200\200\002\"_\n\rMethodOptions\022C\n\024uninterpreted_"
-    "option\030\347\007 \003(\0132$.google.protobuf.Uninterp"
-    "retedOption*\t\010\350\007\020\200\200\200\200\002\"\205\002\n\023Uninterpreted"
-    "Option\022;\n\004name\030\002 \003(\0132-.google.protobuf.U"
-    "ninterpretedOption.NamePart\022\030\n\020identifie"
-    "r_value\030\003 \001(\t\022\032\n\022positive_int_value\030\004 \001("
-    "\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014double_"
-    "value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\0323\n\010Nam"
-    "ePart\022\021\n\tname_part\030\001 \002(\t\022\024\n\014is_extension"
-    "\030\002 \002(\010B)\n\023com.google.protobufB\020Descripto"
-    "rProtosH\001", 3449,
+    "CType\022\016\n\006packed\030\002 \001(\010\022\034\n\024experimental_ma"
+    "p_key\030\t \001(\t\022C\n\024uninterpreted_option\030\347\007 \003"
+    "(\0132$.google.protobuf.UninterpretedOption"
+    "\"#\n\005CType\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002*\t\010"
+    "\350\007\020\200\200\200\200\002\"]\n\013EnumOptions\022C\n\024uninterpreted"
+    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
+    "pretedOption*\t\010\350\007\020\200\200\200\200\002\"b\n\020EnumValueOpti"
+    "ons\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.goo"
+    "gle.protobuf.UninterpretedOption*\t\010\350\007\020\200\200"
+    "\200\200\002\"`\n\016ServiceOptions\022C\n\024uninterpreted_o"
+    "ption\030\347\007 \003(\0132$.google.protobuf.Uninterpr"
+    "etedOption*\t\010\350\007\020\200\200\200\200\002\"_\n\rMethodOptions\022C"
+    "\n\024uninterpreted_option\030\347\007 \003(\0132$.google.p"
+    "rotobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\205"
+    "\002\n\023UninterpretedOption\022;\n\004name\030\002 \003(\0132-.g"
+    "oogle.protobuf.UninterpretedOption.NameP"
+    "art\022\030\n\020identifier_value\030\003 \001(\t\022\032\n\022positiv"
+    "e_int_value\030\004 \001(\004\022\032\n\022negative_int_value\030"
+    "\005 \001(\003\022\024\n\014double_value\030\006 \001(\001\022\024\n\014string_va"
+    "lue\030\007 \001(\014\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t"
+    "\022\024\n\014is_extension\030\002 \002(\010B)\n\023com.google.pro"
+    "tobufB\020DescriptorProtosH\001", 3465,
   &protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors);
 }
 
@@ -639,7 +640,7 @@ bool FileDescriptorSet::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  for (int i = 0; i < file_.size(); i++) {
+  for (int i = 0; i < this->file_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(1, this->file(i), output));
   }
   
@@ -655,8 +656,8 @@ int FileDescriptorSet::ByteSize() const {
   int total_size = 0;
   
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  total_size += 1 * file_size();
-  for (int i = 0; i < file_size(); i++) {
+  total_size += 1 * this->file_size();
+  for (int i = 0; i < this->file_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->file(i));
@@ -954,27 +955,27 @@ bool FileDescriptorProto::SerializeWithCachedSizes(
   }
   
   // repeated string dependency = 3;
-  for (int i = 0; i < dependency_.size(); i++) {
+  for (int i = 0; i < this->dependency_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteString(3, this->dependency(i), output));
   }
   
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  for (int i = 0; i < message_type_.size(); i++) {
+  for (int i = 0; i < this->message_type_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(4, this->message_type(i), output));
   }
   
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  for (int i = 0; i < enum_type_.size(); i++) {
+  for (int i = 0; i < this->enum_type_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(5, this->enum_type(i), output));
   }
   
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  for (int i = 0; i < service_.size(); i++) {
+  for (int i = 0; i < this->service_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(6, this->service(i), output));
   }
   
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  for (int i = 0; i < extension_.size(); i++) {
+  for (int i = 0; i < this->extension_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(7, this->extension(i), output));
   }
   
@@ -1016,39 +1017,39 @@ int FileDescriptorProto::ByteSize() const {
     
   }
   // repeated string dependency = 3;
-  total_size += 1 * dependency_size();
-  for (int i = 0; i < dependency_size(); i++) {
+  total_size += 1 * this->dependency_size();
+  for (int i = 0; i < this->dependency_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormat::StringSize(
       this->dependency(i));
   }
   
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  total_size += 1 * message_type_size();
-  for (int i = 0; i < message_type_size(); i++) {
+  total_size += 1 * this->message_type_size();
+  for (int i = 0; i < this->message_type_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->message_type(i));
   }
   
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  total_size += 1 * enum_type_size();
-  for (int i = 0; i < enum_type_size(); i++) {
+  total_size += 1 * this->enum_type_size();
+  for (int i = 0; i < this->enum_type_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->enum_type(i));
   }
   
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  total_size += 1 * service_size();
-  for (int i = 0; i < service_size(); i++) {
+  total_size += 1 * this->service_size();
+  for (int i = 0; i < this->service_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->service(i));
   }
   
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  total_size += 1 * extension_size();
-  for (int i = 0; i < extension_size(); i++) {
+  total_size += 1 * this->extension_size();
+  for (int i = 0; i < this->extension_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->extension(i));
@@ -1564,27 +1565,27 @@ bool DescriptorProto::SerializeWithCachedSizes(
   }
   
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  for (int i = 0; i < field_.size(); i++) {
+  for (int i = 0; i < this->field_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->field(i), output));
   }
   
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  for (int i = 0; i < nested_type_.size(); i++) {
+  for (int i = 0; i < this->nested_type_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->nested_type(i), output));
   }
   
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  for (int i = 0; i < enum_type_.size(); i++) {
+  for (int i = 0; i < this->enum_type_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(4, this->enum_type(i), output));
   }
   
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  for (int i = 0; i < extension_range_.size(); i++) {
+  for (int i = 0; i < this->extension_range_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(5, this->extension_range(i), output));
   }
   
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  for (int i = 0; i < extension_.size(); i++) {
+  for (int i = 0; i < this->extension_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(6, this->extension(i), output));
   }
   
@@ -1620,40 +1621,40 @@ int DescriptorProto::ByteSize() const {
     
   }
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  total_size += 1 * field_size();
-  for (int i = 0; i < field_size(); i++) {
+  total_size += 1 * this->field_size();
+  for (int i = 0; i < this->field_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->field(i));
   }
   
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  total_size += 1 * extension_size();
-  for (int i = 0; i < extension_size(); i++) {
+  total_size += 1 * this->extension_size();
+  for (int i = 0; i < this->extension_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->extension(i));
   }
   
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  total_size += 1 * nested_type_size();
-  for (int i = 0; i < nested_type_size(); i++) {
+  total_size += 1 * this->nested_type_size();
+  for (int i = 0; i < this->nested_type_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->nested_type(i));
   }
   
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  total_size += 1 * enum_type_size();
-  for (int i = 0; i < enum_type_size(); i++) {
+  total_size += 1 * this->enum_type_size();
+  for (int i = 0; i < this->enum_type_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->enum_type(i));
   }
   
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  total_size += 1 * extension_range_size();
-  for (int i = 0; i < extension_range_size(); i++) {
+  total_size += 1 * this->extension_range_size();
+  for (int i = 0; i < this->extension_range_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->extension_range(i));
@@ -2407,7 +2408,7 @@ bool EnumDescriptorProto::SerializeWithCachedSizes(
   }
   
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  for (int i = 0; i < value_.size(); i++) {
+  for (int i = 0; i < this->value_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->value(i), output));
   }
   
@@ -2443,8 +2444,8 @@ int EnumDescriptorProto::ByteSize() const {
     
   }
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  total_size += 1 * value_size();
-  for (int i = 0; i < value_size(); i++) {
+  total_size += 1 * this->value_size();
+  for (int i = 0; i < this->value_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->value(i));
@@ -2919,7 +2920,7 @@ bool ServiceDescriptorProto::SerializeWithCachedSizes(
   }
   
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  for (int i = 0; i < method_.size(); i++) {
+  for (int i = 0; i < this->method_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->method(i), output));
   }
   
@@ -2955,8 +2956,8 @@ int ServiceDescriptorProto::ByteSize() const {
     
   }
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  total_size += 1 * method_size();
-  for (int i = 0; i < method_size(); i++) {
+  total_size += 1 * this->method_size();
+  for (int i = 0; i < this->method_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->method(i));
@@ -3561,7 +3562,7 @@ bool FileOptions::SerializeWithCachedSizes(
   }
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -3606,8 +3607,8 @@ int FileOptions::ByteSize() const {
     
   }
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -3821,7 +3822,7 @@ bool MessageOptions::SerializeWithCachedSizes(
   }
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -3848,8 +3849,8 @@ int MessageOptions::ByteSize() const {
     
   }
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -3954,6 +3955,7 @@ const FieldOptions_CType FieldOptions::CType_MIN;
 const FieldOptions_CType FieldOptions::CType_MAX;
 #endif  // _MSC_VER
 
+
 const ::std::string FieldOptions::_default_experimental_map_key_;
 
 FieldOptions::FieldOptions()
@@ -3963,6 +3965,7 @@ FieldOptions::FieldOptions()
                  ::google::protobuf::MessageFactory::generated_factory()),
     _cached_size_(0),
     ctype_(1),
+    packed_(false),
     experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -3976,6 +3979,7 @@ FieldOptions::FieldOptions(const FieldOptions& from)
                  ::google::protobuf::MessageFactory::generated_factory()),
     _cached_size_(0),
     ctype_(1),
+    packed_(false),
     experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
@@ -4009,7 +4013,8 @@ void FieldOptions::Clear() {
   _extensions_.Clear();
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     ctype_ = 1;
-    if (_has_bit(1)) {
+    packed_ = false;
+    if (_has_bit(2)) {
       if (experimental_map_key_ != &_default_experimental_map_key_) {
         experimental_map_key_->clear();
       }
@@ -4039,6 +4044,20 @@ bool FieldOptions::MergePartialFromCodedStream(
         } else {
           mutable_unknown_fields()->AddField(1)->add_varint(value);
         }
+        if (input->ExpectTag(16)) goto parse_packed;
+        break;
+      }
+      
+      // optional bool packed = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
+          goto handle_uninterpreted;
+        }
+       parse_packed:
+        DO_(::google::protobuf::internal::WireFormat::ReadBool(
+              input, &packed_));
+        _set_bit(1);
         if (input->ExpectTag(74)) goto parse_experimental_map_key;
         break;
       }
@@ -4097,13 +4116,18 @@ bool FieldOptions::SerializeWithCachedSizes(
     DO_(::google::protobuf::internal::WireFormat::WriteEnum(1, this->ctype(), output));
   }
   
-  // optional string experimental_map_key = 9;
+  // optional bool packed = 2;
   if (_has_bit(1)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBool(2, this->packed(), output));
+  }
+  
+  // optional string experimental_map_key = 9;
+  if (_has_bit(2)) {
     DO_(::google::protobuf::internal::WireFormat::WriteString(9, this->experimental_map_key(), output));
   }
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -4129,6 +4153,11 @@ int FieldOptions::ByteSize() const {
         ::google::protobuf::internal::WireFormat::EnumSize(this->ctype());
     }
     
+    // optional bool packed = 2;
+    if (has_packed()) {
+      total_size += 1 + 1;
+    }
+    
     // optional string experimental_map_key = 9;
     if (has_experimental_map_key()) {
       total_size += 1 +
@@ -4137,8 +4166,8 @@ int FieldOptions::ByteSize() const {
     
   }
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -4175,6 +4204,9 @@ void FieldOptions::MergeFrom(const FieldOptions& from) {
       set_ctype(from.ctype());
     }
     if (from._has_bit(1)) {
+      set_packed(from.packed());
+    }
+    if (from._has_bit(2)) {
       set_experimental_map_key(from.experimental_map_key());
     }
   }
@@ -4197,6 +4229,7 @@ void FieldOptions::CopyFrom(const FieldOptions& from) {
 void FieldOptions::Swap(FieldOptions* other) {
   if (other != this) {
     std::swap(ctype_, other->ctype_);
+    std::swap(packed_, other->packed_);
     std::swap(experimental_map_key_, other->experimental_map_key_);
     uninterpreted_option_.Swap(&other->uninterpreted_option_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -4320,7 +4353,7 @@ bool EnumOptions::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -4340,8 +4373,8 @@ int EnumOptions::ByteSize() const {
   int total_size = 0;
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -4513,7 +4546,7 @@ bool EnumValueOptions::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -4533,8 +4566,8 @@ int EnumValueOptions::ByteSize() const {
   int total_size = 0;
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -4706,7 +4739,7 @@ bool ServiceOptions::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -4726,8 +4759,8 @@ int ServiceOptions::ByteSize() const {
   int total_size = 0;
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -4899,7 +4932,7 @@ bool MethodOptions::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  for (int i = 0; i < uninterpreted_option_.size(); i++) {
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(999, this->uninterpreted_option(i), output));
   }
   
@@ -4919,8 +4952,8 @@ int MethodOptions::ByteSize() const {
   int total_size = 0;
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  total_size += 2 * uninterpreted_option_size();
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
+  total_size += 2 * this->uninterpreted_option_size();
+  for (int i = 0; i < this->uninterpreted_option_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->uninterpreted_option(i));
@@ -5398,7 +5431,7 @@ bool UninterpretedOption::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  for (int i = 0; i < name_.size(); i++) {
+  for (int i = 0; i < this->name_size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->name(i), output));
   }
   
@@ -5472,8 +5505,8 @@ int UninterpretedOption::ByteSize() const {
     
   }
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  total_size += 1 * name_size();
-  for (int i = 0; i < name_size(); i++) {
+  total_size += 1 * this->name_size();
+  for (int i = 0; i < this->name_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
         this->name(i));

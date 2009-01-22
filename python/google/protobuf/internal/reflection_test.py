@@ -229,8 +229,8 @@ class ReflectionTest(unittest.TestCase):
     proto.repeated_fixed32.append(1)
     proto.repeated_int32.append(5)
     proto.repeated_int32.append(11)
-    proto.repeated_string.append('foo')
-    proto.repeated_string.append('bar')
+    proto.repeated_string.extend(['foo', 'bar'])
+    proto.repeated_string.extend([])
     proto.repeated_string.append('baz')
     proto.optional_int32 = 21
     self.assertEqual(
@@ -757,6 +757,16 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(KeyError, extendee_proto.HasExtension,
                       unittest_pb2.repeated_string_extension)
 
+  def testStaticParseFrom(self):
+    proto1 = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(proto1)
+
+    string1 = proto1.SerializeToString()
+    proto2 = unittest_pb2.TestAllTypes.FromString(string1)
+
+    # Messages should be equal.
+    self.assertEqual(proto2, proto1)
+
   def testMergeFromSingularField(self):
     # Test merge with just a singular field.
     proto1 = unittest_pb2.TestAllTypes()
@@ -1209,6 +1219,8 @@ class ByteSizeTest(unittest.TestCase):
   def setUp(self):
     self.proto = unittest_pb2.TestAllTypes()
     self.extended_proto = more_extensions_pb2.ExtendedMessage()
+    self.packed_proto = unittest_pb2.TestPackedTypes()
+    self.packed_extended_proto = unittest_pb2.TestPackedExtensions()
 
   def Size(self):
     return self.proto.ByteSize()
@@ -1288,6 +1300,11 @@ class ByteSizeTest(unittest.TestCase):
   def testRepeatedScalars(self):
     self.proto.repeated_int32.append(10)  # 1 byte.
     self.proto.repeated_int32.append(128)  # 2 bytes.
+    # Also need 2 bytes for each entry for tag.
+    self.assertEqual(1 + 2 + 2*2, self.Size())
+
+  def testRepeatedScalarsExtend(self):
+    self.proto.repeated_int32.extend([10, 128])  # 3 bytes.
     # Also need 2 bytes for each entry for tag.
     self.assertEqual(1 + 2 + 2*2, self.Size())
 
@@ -1442,6 +1459,33 @@ class ByteSizeTest(unittest.TestCase):
     self.assertEqual(4, self.extended_proto.ByteSize())
     self.extended_proto.ClearExtension(extension)
     self.assertEqual(0, self.extended_proto.ByteSize())
+
+  def testPackedRepeatedScalars(self):
+    self.assertEqual(0, self.packed_proto.ByteSize())
+
+    self.packed_proto.packed_int32.append(10)   # 1 byte.
+    self.packed_proto.packed_int32.append(128)  # 2 bytes.
+    # The tag is 2 bytes (the field number is 90), and the varint
+    # storing the length is 1 byte.
+    int_size = 1 + 2 + 3
+    self.assertEqual(int_size, self.packed_proto.ByteSize())
+
+    self.packed_proto.packed_double.append(4.2)   # 8 bytes
+    self.packed_proto.packed_double.append(3.25)  # 8 bytes
+    # 2 more tag bytes, 1 more length byte.
+    double_size = 8 + 8 + 3
+    self.assertEqual(int_size+double_size, self.packed_proto.ByteSize())
+
+    self.packed_proto.ClearField('packed_int32')
+    self.assertEqual(double_size, self.packed_proto.ByteSize())
+
+  def testPackedExtensions(self):
+    self.assertEqual(0, self.packed_extended_proto.ByteSize())
+    extension = self.packed_extended_proto.Extensions[
+        unittest_pb2.packed_fixed32_extension]
+    extension.extend([1, 2, 3, 4])   # 16 bytes
+    # Tag is 3 bytes.
+    self.assertEqual(19, self.packed_extended_proto.ByteSize())
 
 
 # TODO(robinson): We need cross-language serialization consistency tests.
@@ -1686,6 +1730,63 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(2, proto2.b)
     self.assertEqual(3, proto2.c)
 
+  def testSerializedAllPackedFields(self):
+    first_proto = unittest_pb2.TestPackedTypes()
+    second_proto = unittest_pb2.TestPackedTypes()
+    test_util.SetAllPackedFields(first_proto)
+    serialized = first_proto.SerializeToString()
+    self.assertEqual(first_proto.ByteSize(), len(serialized))
+    second_proto.MergeFromString(serialized)
+    self.assertEqual(first_proto, second_proto)
+
+  def testSerializeAllPackedExtensions(self):
+    first_proto = unittest_pb2.TestPackedExtensions()
+    second_proto = unittest_pb2.TestPackedExtensions()
+    test_util.SetAllPackedExtensions(first_proto)
+    serialized = first_proto.SerializeToString()
+    second_proto.MergeFromString(serialized)
+    self.assertEqual(first_proto, second_proto)
+
+  def testMergePackedFromStringWhenSomeFieldsAlreadySet(self):
+    first_proto = unittest_pb2.TestPackedTypes()
+    first_proto.packed_int32.extend([1, 2])
+    first_proto.packed_double.append(3.0)
+    serialized = first_proto.SerializeToString()
+
+    second_proto = unittest_pb2.TestPackedTypes()
+    second_proto.packed_int32.append(3)
+    second_proto.packed_double.extend([1.0, 2.0])
+    second_proto.packed_sint32.append(4)
+
+    second_proto.MergeFromString(serialized)
+    self.assertEqual([3, 1, 2], second_proto.packed_int32)
+    self.assertEqual([1.0, 2.0, 3.0], second_proto.packed_double)
+    self.assertEqual([4], second_proto.packed_sint32)
+
+  def testPackedFieldsWireFormat(self):
+    proto = unittest_pb2.TestPackedTypes()
+    proto.packed_int32.extend([1, 2, 150, 3])  # 1 + 1 + 2 + 1 bytes
+    proto.packed_double.extend([1.0, 1000.0])  # 8 + 8 bytes
+    proto.packed_float.append(2.0)             # 4 bytes, will be before double
+    serialized = proto.SerializeToString()
+    self.assertEqual(proto.ByteSize(), len(serialized))
+    d = decoder.Decoder(serialized)
+    ReadTag = d.ReadFieldNumberAndWireType
+    self.assertEqual((90, wire_format.WIRETYPE_LENGTH_DELIMITED), ReadTag())
+    self.assertEqual(1+1+1+2, d.ReadInt32())
+    self.assertEqual(1, d.ReadInt32())
+    self.assertEqual(2, d.ReadInt32())
+    self.assertEqual(150, d.ReadInt32())
+    self.assertEqual(3, d.ReadInt32())
+    self.assertEqual((100, wire_format.WIRETYPE_LENGTH_DELIMITED), ReadTag())
+    self.assertEqual(4, d.ReadInt32())
+    self.assertEqual(2.0, d.ReadFloat())
+    self.assertEqual((101, wire_format.WIRETYPE_LENGTH_DELIMITED), ReadTag())
+    self.assertEqual(8+8, d.ReadInt32())
+    self.assertEqual(1.0, d.ReadDouble())
+    self.assertEqual(1000.0, d.ReadDouble())
+    self.assertTrue(d.EndOfStream())
+
 
 class OptionsTest(unittest.TestCase):
 
@@ -1696,6 +1797,21 @@ class OptionsTest(unittest.TestCase):
     proto = unittest_pb2.TestAllTypes()
     self.assertEqual(False,
                      proto.DESCRIPTOR.GetOptions().message_set_wire_format)
+
+  def testPackedOptions(self):
+    proto = unittest_pb2.TestAllTypes()
+    proto.optional_int32 = 1
+    proto.optional_double = 3.0
+    for field_descriptor, _ in proto.ListFields():
+      self.assertEqual(False, field_descriptor.GetOptions().packed)
+
+    proto = unittest_pb2.TestPackedTypes()
+    proto.packed_int32.append(1)
+    proto.packed_double.append(3.0)
+    for field_descriptor, _ in proto.ListFields():
+      self.assertEqual(True, field_descriptor.GetOptions().packed)
+      self.assertEqual(reflection._FieldDescriptor.LABEL_REPEATED,
+                       field_descriptor.label)
 
 
 class UtilityTest(unittest.TestCase):

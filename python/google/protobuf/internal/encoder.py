@@ -58,88 +58,160 @@ class Encoder(object):
     """Returns all values encoded in this object as a string."""
     return self._stream.ToString()
 
-  # All the Append*() methods below first append a tag+type pair to the buffer
-  # before appending the specified value.
-
-  def AppendInt32(self, field_number, value):
+  # Append*NoTag methods.  These are necessary for serializing packed
+  # repeated fields.  The Append*() methods call these methods to do
+  # the actual serialization.
+  def AppendInt32NoTag(self, value):
     """Appends a 32-bit integer to our buffer, varint-encoded."""
-    self._AppendTag(field_number, wire_format.WIRETYPE_VARINT)
     self._stream.AppendVarint32(value)
 
-  def AppendInt64(self, field_number, value):
+  def AppendInt64NoTag(self, value):
     """Appends a 64-bit integer to our buffer, varint-encoded."""
-    self._AppendTag(field_number, wire_format.WIRETYPE_VARINT)
     self._stream.AppendVarint64(value)
 
-  def AppendUInt32(self, field_number, unsigned_value):
+  def AppendUInt32NoTag(self, unsigned_value):
     """Appends an unsigned 32-bit integer to our buffer, varint-encoded."""
-    self._AppendTag(field_number, wire_format.WIRETYPE_VARINT)
     self._stream.AppendVarUInt32(unsigned_value)
 
-  def AppendUInt64(self, field_number, unsigned_value):
+  def AppendUInt64NoTag(self, unsigned_value):
     """Appends an unsigned 64-bit integer to our buffer, varint-encoded."""
-    self._AppendTag(field_number, wire_format.WIRETYPE_VARINT)
     self._stream.AppendVarUInt64(unsigned_value)
 
-  def AppendSInt32(self, field_number, value):
+  def AppendSInt32NoTag(self, value):
     """Appends a 32-bit integer to our buffer, zigzag-encoded and then
     varint-encoded.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_VARINT)
     zigzag_value = wire_format.ZigZagEncode(value)
     self._stream.AppendVarUInt32(zigzag_value)
 
-  def AppendSInt64(self, field_number, value):
+  def AppendSInt64NoTag(self, value):
     """Appends a 64-bit integer to our buffer, zigzag-encoded and then
     varint-encoded.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_VARINT)
     zigzag_value = wire_format.ZigZagEncode(value)
     self._stream.AppendVarUInt64(zigzag_value)
 
-  def AppendFixed32(self, field_number, unsigned_value):
+  def AppendFixed32NoTag(self, unsigned_value):
     """Appends an unsigned 32-bit integer to our buffer, in little-endian
     byte-order.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_FIXED32)
     self._stream.AppendLittleEndian32(unsigned_value)
 
-  def AppendFixed64(self, field_number, unsigned_value):
+  def AppendFixed64NoTag(self, unsigned_value):
     """Appends an unsigned 64-bit integer to our buffer, in little-endian
     byte-order.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_FIXED64)
     self._stream.AppendLittleEndian64(unsigned_value)
 
-  def AppendSFixed32(self, field_number, value):
+  def AppendSFixed32NoTag(self, value):
     """Appends a signed 32-bit integer to our buffer, in little-endian
     byte-order.
     """
     sign = (value & 0x80000000) and -1 or 0
     if value >> 32 != sign:
       raise message.EncodeError('SFixed32 out of range: %d' % value)
-    self._AppendTag(field_number, wire_format.WIRETYPE_FIXED32)
     self._stream.AppendLittleEndian32(value & 0xffffffff)
 
-  def AppendSFixed64(self, field_number, value):
+  def AppendSFixed64NoTag(self, value):
     """Appends a signed 64-bit integer to our buffer, in little-endian
     byte-order.
     """
     sign = (value & 0x8000000000000000) and -1 or 0
     if value >> 64 != sign:
       raise message.EncodeError('SFixed64 out of range: %d' % value)
-    self._AppendTag(field_number, wire_format.WIRETYPE_FIXED64)
     self._stream.AppendLittleEndian64(value & 0xffffffffffffffff)
+
+  def AppendFloatNoTag(self, value):
+    """Appends a floating-point number to our buffer."""
+    self._stream.AppendRawBytes(struct.pack('f', value))
+
+  def AppendDoubleNoTag(self, value):
+    """Appends a double-precision floating-point number to our buffer."""
+    self._stream.AppendRawBytes(struct.pack('d', value))
+
+  def AppendBoolNoTag(self, value):
+    """Appends a boolean to our buffer."""
+    self.AppendInt32NoTag(value)
+
+  def AppendEnumNoTag(self, value):
+    """Appends an enum value to our buffer."""
+    self.AppendInt32NoTag(value)
+
+
+  # All the Append*() methods below first append a tag+type pair to the buffer
+  # before appending the specified value.
+
+  def AppendInt32(self, field_number, value):
+    """Appends a 32-bit integer to our buffer, varint-encoded."""
+    self.AppendTag(field_number, wire_format.WIRETYPE_VARINT)
+    self.AppendInt32NoTag(value)
+
+  def AppendInt64(self, field_number, value):
+    """Appends a 64-bit integer to our buffer, varint-encoded."""
+    self.AppendTag(field_number, wire_format.WIRETYPE_VARINT)
+    self.AppendInt64NoTag(value)
+
+  def AppendUInt32(self, field_number, unsigned_value):
+    """Appends an unsigned 32-bit integer to our buffer, varint-encoded."""
+    self.AppendTag(field_number, wire_format.WIRETYPE_VARINT)
+    self.AppendUInt32NoTag(unsigned_value)
+
+  def AppendUInt64(self, field_number, unsigned_value):
+    """Appends an unsigned 64-bit integer to our buffer, varint-encoded."""
+    self.AppendTag(field_number, wire_format.WIRETYPE_VARINT)
+    self.AppendUInt64NoTag(unsigned_value)
+
+  def AppendSInt32(self, field_number, value):
+    """Appends a 32-bit integer to our buffer, zigzag-encoded and then
+    varint-encoded.
+    """
+    self.AppendTag(field_number, wire_format.WIRETYPE_VARINT)
+    self.AppendSInt32NoTag(value)
+
+  def AppendSInt64(self, field_number, value):
+    """Appends a 64-bit integer to our buffer, zigzag-encoded and then
+    varint-encoded.
+    """
+    self.AppendTag(field_number, wire_format.WIRETYPE_VARINT)
+    self.AppendSInt64NoTag(value)
+
+  def AppendFixed32(self, field_number, unsigned_value):
+    """Appends an unsigned 32-bit integer to our buffer, in little-endian
+    byte-order.
+    """
+    self.AppendTag(field_number, wire_format.WIRETYPE_FIXED32)
+    self.AppendFixed32NoTag(unsigned_value)
+
+  def AppendFixed64(self, field_number, unsigned_value):
+    """Appends an unsigned 64-bit integer to our buffer, in little-endian
+    byte-order.
+    """
+    self.AppendTag(field_number, wire_format.WIRETYPE_FIXED64)
+    self.AppendFixed64NoTag(unsigned_value)
+
+  def AppendSFixed32(self, field_number, value):
+    """Appends a signed 32-bit integer to our buffer, in little-endian
+    byte-order.
+    """
+    self.AppendTag(field_number, wire_format.WIRETYPE_FIXED32)
+    self.AppendSFixed32NoTag(value)
+
+  def AppendSFixed64(self, field_number, value):
+    """Appends a signed 64-bit integer to our buffer, in little-endian
+    byte-order.
+    """
+    self.AppendTag(field_number, wire_format.WIRETYPE_FIXED64)
+    self.AppendSFixed64NoTag(value)
 
   def AppendFloat(self, field_number, value):
     """Appends a floating-point number to our buffer."""
-    self._AppendTag(field_number, wire_format.WIRETYPE_FIXED32)
-    self._stream.AppendRawBytes(struct.pack('f', value))
+    self.AppendTag(field_number, wire_format.WIRETYPE_FIXED32)
+    self.AppendFloatNoTag(value)
 
   def AppendDouble(self, field_number, value):
     """Appends a double-precision floating-point number to our buffer."""
-    self._AppendTag(field_number, wire_format.WIRETYPE_FIXED64)
-    self._stream.AppendRawBytes(struct.pack('d', value))
+    self.AppendTag(field_number, wire_format.WIRETYPE_FIXED64)
+    self.AppendDoubleNoTag(value)
 
   def AppendBool(self, field_number, value):
     """Appends a boolean to our buffer."""
@@ -159,7 +231,7 @@ class Encoder(object):
     """Appends a length-prefixed sequence of bytes to our buffer, with the
     length varint-encoded.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
+    self.AppendTag(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
     self._stream.AppendVarUInt32(len(value))
     self._stream.AppendRawBytes(value)
 
@@ -174,14 +246,14 @@ class Encoder(object):
   def AppendGroup(self, field_number, group):
     """Appends a group to our buffer.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_START_GROUP)
+    self.AppendTag(field_number, wire_format.WIRETYPE_START_GROUP)
     self._stream.AppendRawBytes(group.SerializeToString())
-    self._AppendTag(field_number, wire_format.WIRETYPE_END_GROUP)
+    self.AppendTag(field_number, wire_format.WIRETYPE_END_GROUP)
 
   def AppendMessage(self, field_number, msg):
     """Appends a nested message to our buffer.
     """
-    self._AppendTag(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
+    self.AppendTag(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
     self._stream.AppendVarUInt32(msg.ByteSize())
     self._stream.AppendRawBytes(msg.SerializeToString())
 
@@ -196,11 +268,11 @@ class Encoder(object):
         }
       }
     """
-    self._AppendTag(1, wire_format.WIRETYPE_START_GROUP)
+    self.AppendTag(1, wire_format.WIRETYPE_START_GROUP)
     self.AppendInt32(2, field_number)
     self.AppendMessage(3, msg)
-    self._AppendTag(1, wire_format.WIRETYPE_END_GROUP)
+    self.AppendTag(1, wire_format.WIRETYPE_END_GROUP)
 
-  def _AppendTag(self, field_number, wire_type):
+  def AppendTag(self, field_number, wire_type):
     """Appends a tag containing field number and wire type information."""
     self._stream.AppendVarUInt32(wire_format.PackTag(field_number, wire_type))

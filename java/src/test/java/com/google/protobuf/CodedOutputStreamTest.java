@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestPackedTypes;
 
 import junit.framework.TestCase;
 
@@ -289,5 +290,15 @@ public class CodedOutputStreamTest extends TestCase {
       output.flush();
       assertEqualBytes(rawBytes, rawOutput.toByteArray());
     }
+  }
+
+  /** Tests writing a whole message with every packed field type. Ensures the
+   * wire format of packed fields is compatible with C++. */
+  public void testWriteWholePackedFieldsMessage() throws Exception {
+    TestPackedTypes message = TestUtil.getPackedSet();
+
+    byte[] rawBytes = message.toByteArray();
+    assertEqualBytes(TestUtil.getGoldenPackedFieldsMessage().toByteArray(),
+                     rawBytes);
   }
 }

@@ -195,6 +195,12 @@ public interface Message {
   Builder newBuilderForType();
 
   /**
+   * Constructs a builder initialized with the current message.  Use this to
+   * derive a new message from the current one.
+   */
+  Builder toBuilder();
+
+  /**
    * Abstract interface implemented by Protocol Message builders.
    */
   public static interface Builder extends Cloneable {

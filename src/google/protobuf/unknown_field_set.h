@@ -70,6 +70,13 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   void Clear();
 
   // Is this set empty?
+  //
+  // Note that this is equivalent to field_count() == 0 but is NOT necessarily
+  // equivalent to begin() == end().  The iterator class skips fields which are
+  // themselves empty, so if field_count() is non-zero but field(i)->empty() is
+  // true for all i, then begin() will be equal to end() but empty() will return
+  // false.  This inconsistency almost never occurs in practice because typical
+  // code does not add empty fields to an UnknownFieldSet.
   inline bool empty() const;
 
   // Merge the contents of some other UnknownFieldSet with this one.
@@ -77,6 +84,117 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
 
   // Swaps the contents of some other UnknownFieldSet with this one.
   inline void Swap(UnknownFieldSet* x);
+
+  // Find a field by field number.  Returns NULL if not found.
+  const UnknownField* FindFieldByNumber(int number) const;
+
+  // Add a field by field number.  If the field number already exists, returns
+  // the existing UnknownField.
+  UnknownField* AddField(int number);
+
+  // Computes (an estimate of) the total number of bytes currently used for
+  // storing the unknown fields in memory. Does NOT include
+  // sizeof(*this) in the calculation.
+  int SpaceUsedExcludingSelf() const;
+
+  // Version of SpaceUsed() including sizeof(*this).
+  int SpaceUsed() const;
+
+  // STL-style iteration ---------------------------------------------
+  // These iterate over the non-empty UnknownFields in order by field
+  // number.  All iterators are invalidated whenever the UnknownFieldSet
+  // is modified.
+
+  class const_iterator;
+
+  class LIBPROTOBUF_EXPORT iterator {
+   public:
+    iterator() {}
+
+    bool operator==(const iterator& other) {
+      return inner_iterator_ == other.inner_iterator_;
+    }
+    bool operator!=(const iterator& other) {
+      return inner_iterator_ != other.inner_iterator_;
+    }
+
+    UnknownField& operator*() { return *inner_iterator_->second; }
+    UnknownField* operator->() { return inner_iterator_->second; }
+    iterator& operator++() {
+      ++inner_iterator_;
+      AdvanceToNonEmpty();
+      return *this;
+    }
+    iterator operator++(int) {
+      iterator copy(*this);
+      ++*this;
+      return copy;
+    }
+
+   private:
+    friend class UnknownFieldSet;
+    friend class LIBPROTOBUF_EXPORT UnknownFieldSet::const_iterator;
+    iterator(map<int, UnknownField*>::iterator inner_iterator,
+             map<int, UnknownField*>* inner_map)
+      : inner_iterator_(inner_iterator), inner_map_(inner_map) {}
+
+    void AdvanceToNonEmpty();
+
+    map<int, UnknownField*>::iterator inner_iterator_;
+    map<int, UnknownField*>* inner_map_;
+  };
+
+  class LIBPROTOBUF_EXPORT const_iterator {
+   public:
+    const_iterator() {}
+    const_iterator(const iterator& other)
+      : inner_iterator_(other.inner_iterator_), inner_map_(other.inner_map_) {}
+
+    bool operator==(const const_iterator& other) {
+      return inner_iterator_ == other.inner_iterator_;
+    }
+    bool operator!=(const const_iterator& other) {
+      return inner_iterator_ != other.inner_iterator_;
+    }
+
+    UnknownField& operator*() { return *inner_iterator_->second; }
+    UnknownField* operator->() { return inner_iterator_->second; }
+    const_iterator& operator++() {
+      ++inner_iterator_;
+      AdvanceToNonEmpty();
+      return *this;
+    }
+    const_iterator operator++(int) {
+      const_iterator copy(*this);
+      ++*this;
+      return copy;
+    }
+
+   private:
+    friend class UnknownFieldSet;
+    const_iterator(map<int, UnknownField*>::const_iterator inner_iterator,
+                   const map<int, UnknownField*>* inner_map)
+      : inner_iterator_(inner_iterator), inner_map_(inner_map) {}
+
+    void AdvanceToNonEmpty();
+
+    map<int, UnknownField*>::const_iterator inner_iterator_;
+    const map<int, UnknownField*>* inner_map_;
+  };
+
+  iterator begin();
+  iterator end() {
+    return internal_ == NULL ? kEmptyIterator :
+      iterator(internal_->fields_.end(), &internal_->fields_);
+  }
+  const_iterator begin() const;
+  const_iterator end() const {
+    return internal_ == NULL ? kEmptyConstIterator :
+      const_iterator(internal_->fields_.end(), &internal_->fields_);
+  }
+
+  // Old-style iteration ---------------------------------------------
+  // New code should use begin() and end() rather than these methods.
 
   // Returns the number of fields present in the UnknownFieldSet.
   inline int field_count() const;
@@ -86,13 +204,6 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   // Get a mutable pointer to a field in the set, where
   // 0 <= index < field_count().  The fields appear in arbitrary order.
   inline UnknownField* mutable_field(int index);
-
-  // Find a field by field number.  Returns NULL if not found.
-  const UnknownField* FindFieldByNumber(int number) const;
-
-  // Add a field by field number.  If the field number already exists, returns
-  // the existing UnknownField.
-  UnknownField* AddField(int number);
 
   // Parsing helpers -------------------------------------------------
   // These work exactly like the similarly-named methods of Message.
@@ -104,13 +215,6 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   inline bool ParseFromString(const string& data) {
     return ParseFromArray(data.data(), data.size());
   }
-
-  // Computes (an estimate of) the total number of bytes currently used for
-  // storing the unknown fields in memory. Does NOT include
-  // sizeof(*this) in the calculation.
-  int SpaceUsedExcludingSelf() const;
-  // Version of SpaceUsed() including sizeof(*this).
-  int SpaceUsed() const;
 
  private:
   // "Active" fields are ones which have been added since the last time Clear()
@@ -139,6 +243,11 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   // Don't keep more inactive fields than this.
   static const int kMaxInactiveFields = 100;
 
+  // Used by begin() and end() when internal_ is NULL.
+  static Internal::FieldMap kEmptyMap;
+  static const iterator kEmptyIterator;
+  static const const_iterator kEmptyConstIterator;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
 
@@ -159,6 +268,9 @@ class LIBPROTOBUF_EXPORT UnknownField {
 
   // Clears all fields.
   void Clear();
+
+  // Is this field empty?  (I.e. all of the *_size() methods return zero.)
+  inline bool empty() const;
 
   // Merge the contents of some other UnknownField with this one.  For each
   // wire type, the values are simply concatenated.
@@ -256,6 +368,14 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
   return internal_->active_fields_[index];
 }
 
+inline bool UnknownField::empty() const {
+  return varint_.size() == 0 &&
+         fixed32_.size() == 0 &&
+         fixed64_.size() == 0 &&
+         length_delimited_.size() == 0 &&
+         group_.size() == 0;
+}
+
 inline int UnknownField::number() const { return number_; }
 inline int UnknownField::index () const { return index_; }
 
@@ -322,8 +442,8 @@ inline UnknownFieldSet* UnknownField::add_group() {
 }
 
 inline void UnknownField::clear_varint () { varint_.Clear(); }
-inline void UnknownField::clear_fixed32() { varint_.Clear(); }
-inline void UnknownField::clear_fixed64() { varint_.Clear(); }
+inline void UnknownField::clear_fixed32() { fixed32_.Clear(); }
+inline void UnknownField::clear_fixed64() { fixed64_.Clear(); }
 inline void UnknownField::clear_length_delimited() {
   length_delimited_.Clear();
 }

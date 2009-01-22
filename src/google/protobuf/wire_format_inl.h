@@ -38,6 +38,8 @@
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/wire_format.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 
 
@@ -50,6 +52,19 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+inline WireFormat::WireType WireFormat::WireTypeForField(
+    const FieldDescriptor* field) {
+  if (field->options().packed()) {
+    return WIRETYPE_LENGTH_DELIMITED;
+  } else {
+    return WireTypeForFieldType(field->type());
+  }
+}
+
+inline uint32 WireFormat::MakeTag(const FieldDescriptor* field) {
+  return MakeTag(field->number(), WireTypeForField(field));
+}
 
 inline bool WireFormat::ReadInt32(io::CodedInputStream* input, int32* value) {
   uint32 temp;
@@ -210,75 +225,132 @@ inline bool WireFormat::WriteTag(int field_number, WireType type,
   return output->WriteTag(MakeTag(field_number, type));
 }
 
+inline bool WireFormat::WriteInt32NoTag(int32 value,
+                                        io::CodedOutputStream* output) {
+  return output->WriteVarint32SignExtended(value);
+}
+inline bool WireFormat::WriteInt64NoTag(int64 value,
+                                        io::CodedOutputStream* output) {
+  return output->WriteVarint64(static_cast<uint64>(value));
+}
+inline bool WireFormat::WriteUInt32NoTag(uint32 value,
+                                         io::CodedOutputStream* output) {
+  return output->WriteVarint32(value);
+}
+inline bool WireFormat::WriteUInt64NoTag(uint64 value,
+                                         io::CodedOutputStream* output) {
+  return output->WriteVarint64(value);
+}
+inline bool WireFormat::WriteSInt32NoTag(int32 value,
+                                         io::CodedOutputStream* output) {
+  return output->WriteVarint32(ZigZagEncode32(value));
+}
+inline bool WireFormat::WriteSInt64NoTag(int64 value,
+                                         io::CodedOutputStream* output) {
+  return output->WriteVarint64(ZigZagEncode64(value));
+}
+inline bool WireFormat::WriteFixed32NoTag(uint32 value,
+                                          io::CodedOutputStream* output) {
+  return output->WriteLittleEndian32(value);
+}
+inline bool WireFormat::WriteFixed64NoTag(uint64 value,
+                                          io::CodedOutputStream* output) {
+  return output->WriteLittleEndian64(value);
+}
+inline bool WireFormat::WriteSFixed32NoTag(int32 value,
+                                           io::CodedOutputStream* output) {
+  return output->WriteLittleEndian32(static_cast<uint32>(value));
+}
+inline bool WireFormat::WriteSFixed64NoTag(int64 value,
+                                           io::CodedOutputStream* output) {
+  return output->WriteLittleEndian64(static_cast<uint64>(value));
+}
+inline bool WireFormat::WriteFloatNoTag(float value,
+                                        io::CodedOutputStream* output) {
+  return output->WriteLittleEndian32(EncodeFloat(value));
+}
+inline bool WireFormat::WriteDoubleNoTag(double value,
+                                         io::CodedOutputStream* output) {
+  return output->WriteLittleEndian64(EncodeDouble(value));
+}
+inline bool WireFormat::WriteBoolNoTag(bool value,
+                                       io::CodedOutputStream* output) {
+  return output->WriteVarint32(value ? 1 : 0);
+}
+inline bool WireFormat::WriteEnumNoTag(int value,
+                                       io::CodedOutputStream* output) {
+  return output->WriteVarint32SignExtended(value);
+}
+
 inline bool WireFormat::WriteInt32(int field_number, int32 value,
                                    io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint32SignExtended(value);
+         WriteInt32NoTag(value, output);
 }
 inline bool WireFormat::WriteInt64(int field_number, int64 value,
                                    io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint64(static_cast<uint64>(value));
+         WriteInt64NoTag(value, output);
 }
 inline bool WireFormat::WriteUInt32(int field_number, uint32 value,
                                     io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint32(value);
+         WriteUInt32NoTag(value, output);
 }
 inline bool WireFormat::WriteUInt64(int field_number, uint64 value,
                                     io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint64(value);
+         WriteUInt64NoTag(value, output);
 }
 inline bool WireFormat::WriteSInt32(int field_number, int32 value,
                                     io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint32(ZigZagEncode32(value));
+         WriteSInt32NoTag(value, output);
 }
 inline bool WireFormat::WriteSInt64(int field_number, int64 value,
                                     io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint64(ZigZagEncode64(value));
+         WriteSInt64NoTag(value, output);
 }
 inline bool WireFormat::WriteFixed32(int field_number, uint32 value,
                                      io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_FIXED32, output) &&
-         output->WriteLittleEndian32(value);
+         WriteFixed32NoTag(value, output);
 }
 inline bool WireFormat::WriteFixed64(int field_number, uint64 value,
                                      io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_FIXED64, output) &&
-         output->WriteLittleEndian64(value);
+         WriteFixed64NoTag(value, output);
 }
 inline bool WireFormat::WriteSFixed32(int field_number, int32 value,
                                       io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_FIXED32, output) &&
-         output->WriteLittleEndian32(static_cast<uint32>(value));
+         WriteSFixed32NoTag(value, output);
 }
 inline bool WireFormat::WriteSFixed64(int field_number, int64 value,
                                       io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_FIXED64, output) &&
-         output->WriteLittleEndian64(static_cast<uint64>(value));
+         WriteSFixed64NoTag(value, output);
 }
 inline bool WireFormat::WriteFloat(int field_number, float value,
                                    io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_FIXED32, output) &&
-         output->WriteLittleEndian32(EncodeFloat(value));
+         WriteFloatNoTag(value, output);
 }
 inline bool WireFormat::WriteDouble(int field_number, double value,
                                     io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_FIXED64, output) &&
-         output->WriteLittleEndian64(EncodeDouble(value));
+         WriteDoubleNoTag(value, output);
 }
 inline bool WireFormat::WriteBool(int field_number, bool value,
                                   io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint32(value ? 1 : 0);
+         WriteBoolNoTag(value, output);
 }
 inline bool WireFormat::WriteEnum(int field_number, int value,
                                   io::CodedOutputStream* output) {
   return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         output->WriteVarint32SignExtended(value);
+         WriteEnumNoTag(value, output);
 }
 
 inline bool WireFormat::WriteString(int field_number, const string& value,

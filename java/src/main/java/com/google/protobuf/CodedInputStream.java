@@ -193,7 +193,7 @@ public final class CodedInputStream {
   /** Read a {@code string} field value from the stream. */
   public String readString() throws IOException {
     int size = readRawVarint32();
-    if (size < bufferSize - bufferPos && size > 0) {
+    if (size <= (bufferSize - bufferPos) && size > 0) {
       // Fast path:  We already have the bytes in a contiguous buffer, so
       //   just copy directly from it.
       String result = new String(buffer, bufferPos, size, "UTF-8");
@@ -581,6 +581,19 @@ public final class CodedInputStream {
   public void popLimit(int oldLimit) {
     currentLimit = oldLimit;
     recomputeBufferSizeAfterLimit();
+  }
+
+  /**
+   * Returns the number of bytes to be read before the current limit.
+   * If no limit is set, returns -1.
+   */
+  public int getBytesUntilLimit() {
+    if (currentLimit == Integer.MAX_VALUE) {
+      return -1;
+    }
+
+    int currentAbsolutePosition = totalBytesRetired + bufferPos;
+    return currentLimit - currentAbsolutePosition;
   }
 
   /**

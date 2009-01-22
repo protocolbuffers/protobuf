@@ -45,6 +45,7 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/GeneratedMessage.java               \
   java/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java \
   java/src/main/java/com/google/protobuf/Message.java                        \
+  java/src/main/java/com/google/protobuf/ProtocolMessageEnum.java            \
   java/src/main/java/com/google/protobuf/RpcCallback.java                    \
   java/src/main/java/com/google/protobuf/RpcChannel.java                     \
   java/src/main/java/com/google/protobuf/RpcController.java                  \

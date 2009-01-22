@@ -211,6 +211,10 @@ public final class DynamicMessage extends AbstractMessage {
     return new Builder(type);
   }
 
+  public Builder toBuilder() {
+    return newBuilderForType().mergeFrom(this);
+  }
+
   /** Verifies that the field is a field of this message. */
   private void verifyContainingType(FieldDescriptor field) {
     if (field.getContainingType() != type) {
@@ -251,6 +255,7 @@ public final class DynamicMessage extends AbstractMessage {
       }
 
       fields.mergeFrom(other);
+      mergeUnknownFields(other.getUnknownFields());
       return this;
     }
 

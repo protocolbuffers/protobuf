@@ -232,15 +232,17 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "DO_(::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
-      "$number$, this->$name$(i), output));\n");
+    "for (int i = 0; i < this->$name$_size(); i++) {\n"
+    "  DO_(::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
+        "$number$, this->$name$(i), output));\n"
+    "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
-    "total_size += $tag_size$ * $name$_size();\n"
-    "for (int i = 0; i < $name$_size(); i++) {\n"
+    "total_size += $tag_size$ * this->$name$_size();\n"
+    "for (int i = 0; i < this->$name$_size(); i++) {\n"
     "  total_size +=\n"
     "    ::google::protobuf::internal::WireFormat::$declared_type$SizeNoVirtual(\n"
     "      this->$name$(i));\n"

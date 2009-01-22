@@ -107,6 +107,19 @@ TEST(MessageTest, ParseFromFileDescriptor) {
   EXPECT_GE(close(file), 0);
 }
 
+TEST(MessageTest, ParsePackedFromFileDescriptor) {
+  string filename =
+      TestSourceDir() +
+      "/google/protobuf/testdata/golden_packed_fields_message";
+  int file = open(filename.c_str(), O_RDONLY | O_BINARY);
+
+  unittest::TestPackedTypes message;
+  EXPECT_TRUE(message.ParseFromFileDescriptor(file));
+  TestUtil::ExpectPackedFieldsSet(message);
+
+  EXPECT_GE(close(file), 0);
+}
+
 TEST(MessageTest, ParseHelpers) {
   // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
@@ -133,6 +146,25 @@ TEST(MessageTest, ParseHelpers) {
     EXPECT_TRUE(message.ParseFromIstream(&stream));
     EXPECT_TRUE(stream.eof());
     TestUtil::ExpectAllFieldsSet(message);
+  }
+
+  {
+    // Test ParseFromBoundedZeroCopyStream.
+    string data_with_junk(data);
+    data_with_junk.append("some junk on the end");
+    io::ArrayInputStream stream(data_with_junk.data(), data_with_junk.size());
+    protobuf_unittest::TestAllTypes message;
+    EXPECT_TRUE(message.ParseFromBoundedZeroCopyStream(&stream, data.size()));
+    TestUtil::ExpectAllFieldsSet(message);
+  }
+
+  {
+    // Test that ParseFromBoundedZeroCopyStream fails (but doesn't crash) if
+    // EOF is reached before the expected number of bytes.
+    io::ArrayInputStream stream(data.data(), data.size());
+    protobuf_unittest::TestAllTypes message;
+    EXPECT_FALSE(
+      message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
   }
 }
 

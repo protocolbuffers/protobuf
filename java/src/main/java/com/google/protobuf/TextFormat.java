@@ -397,13 +397,15 @@ public final class TextFormat {
     private int previousLine = 0;
     private int previousColumn = 0;
 
+    // We use possesive quantifiers (*+ and ++) because otherwise the Java
+    // regex matcher has stack overflows on large inputs.
     private static Pattern WHITESPACE =
-      Pattern.compile("(\\s|(#.*$))+", Pattern.MULTILINE);
+      Pattern.compile("(\\s|(#.*$))++", Pattern.MULTILINE);
     private static Pattern TOKEN = Pattern.compile(
-      "[a-zA-Z_][0-9a-zA-Z_+-]*|" +                 // an identifier
-      "[0-9+-][0-9a-zA-Z_.+-]*|" +                  // a number
-      "\"([^\"\n\\\\]|\\\\.)*(\"|\\\\?$)|" +        // a double-quoted string
-      "\'([^\"\n\\\\]|\\\\.)*(\'|\\\\?$)",          // a single-quoted string
+      "[a-zA-Z_][0-9a-zA-Z_+-]*+|" +                // an identifier
+      "[0-9+-][0-9a-zA-Z_.+-]*+|" +                 // a number
+      "\"([^\"\n\\\\]|\\\\.)*+(\"|\\\\?$)|" +       // a double-quoted string
+      "\'([^\"\n\\\\]|\\\\.)*+(\'|\\\\?$)",         // a single-quoted string
       Pattern.MULTILINE);
 
     private static Pattern DOUBLE_INFINITY = Pattern.compile(

@@ -106,6 +106,19 @@ class RepeatedScalarFieldContainer(BaseContainer):
     if len(self._values) == 1:
       self._message_listener.TransitionToNonempty()
 
+  def extend(self, elem_seq):
+    """Extends by appending the given sequence. Similar to list.extend()."""
+    if not elem_seq:
+      return
+
+    orig_empty = len(self._values) == 0
+    for elem in elem_seq:
+      self._type_checker.CheckValue(elem)
+    self._values.extend(elem_seq)
+    self._message_listener.ByteSizeDirty()
+    if orig_empty:
+      self._message_listener.TransitionToNonempty()
+
   def remove(self, elem):
     """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)

@@ -207,6 +207,14 @@ bool CodedInputStream::Skip(int count) {
   return input_->Skip(count);
 }
 
+bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
+  if (buffer_size_ == 0 && !Refresh()) return false;
+
+  *data = buffer_;
+  *size = buffer_size_;
+  return true;
+}
+
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
   while (buffer_size_ < size) {
     // Reading past end of buffer.  Copy what we have, then refresh.
@@ -513,6 +521,26 @@ CodedOutputStream::~CodedOutputStream() {
   if (buffer_size_ > 0) {
     output_->BackUp(buffer_size_);
   }
+}
+
+bool CodedOutputStream::Skip(int count) {
+  if (count < 0) return false;
+
+  while (count > buffer_size_) {
+    count -= buffer_size_;
+    if (!Refresh()) return false;
+  }
+
+  Advance(count);
+  return true;
+}
+
+bool CodedOutputStream::GetDirectBufferPointer(void** data, int* size) {
+  if (buffer_size_ == 0 && !Refresh()) return false;
+
+  *data = buffer_;
+  *size = buffer_size_;
+  return true;
 }
 
 bool CodedOutputStream::WriteRaw(const void* data, int size) {

@@ -351,8 +351,7 @@ final class FieldSet {
           setField(field, entry.getValue());
         } else {
           setField(field,
-            existingValue.newBuilderForType()
-              .mergeFrom(existingValue)
+            existingValue.toBuilder()
               .mergeFrom((Message)entry.getValue())
               .build());
         }
@@ -384,8 +383,7 @@ final class FieldSet {
           setField(field, value);
         } else {
           setField(field,
-            existingValue.newBuilderForType()
-              .mergeFrom(existingValue)
+            existingValue.toBuilder()
               .mergeFrom((Message)value)
               .build());
         }
@@ -463,60 +461,83 @@ final class FieldSet {
     }
 
     if (field == null ||
-        wireType != WireFormat.getWireFormatForFieldType(field.getType())) {
+        wireType != WireFormat.getWireFormatForField(field)) {
       // Unknown field or wrong wire type.  Skip.
       return unknownFields.mergeFieldFrom(tag, input);
     } else {
-      Object value;
-      switch (field.getType()) {
-        case GROUP: {
-          Message.Builder subBuilder;
-          if (defaultInstance != null) {
-            subBuilder = defaultInstance.newBuilderForType();
-          } else {
-            subBuilder = builder.newBuilderForField(field);
+      if (field.getOptions().getPacked()) {
+        int length = input.readRawVarint32();
+        int limit = input.pushLimit(length);
+        if (field.getType() == FieldDescriptor.Type.ENUM) {
+          while (input.getBytesUntilLimit() > 0) {
+            int rawValue = input.readEnum();
+            Object value = field.getEnumType().findValueByNumber(rawValue);
+            if (value == null) {
+              // If the number isn't recognized as a valid value for this
+              // enum, drop it (don't even add it to unknownFields).
+              return true;
+            }
+            builder.addRepeatedField(field, value);
           }
-          if (!field.isRepeated()) {
-            subBuilder.mergeFrom((Message) builder.getField(field));
+        } else {
+          while (input.getBytesUntilLimit() > 0) {
+            Object value = input.readPrimitiveField(field.getType());
+            builder.addRepeatedField(field, value);
           }
-          input.readGroup(field.getNumber(), subBuilder, extensionRegistry);
-          value = subBuilder.build();
-          break;
         }
-        case MESSAGE: {
-          Message.Builder subBuilder;
-          if (defaultInstance != null) {
-            subBuilder = defaultInstance.newBuilderForType();
-          } else {
-            subBuilder = builder.newBuilderForField(field);
-          }
-          if (!field.isRepeated()) {
-            subBuilder.mergeFrom((Message) builder.getField(field));
-          }
-          input.readMessage(subBuilder, extensionRegistry);
-          value = subBuilder.build();
-          break;
-        }
-        case ENUM: {
-          int rawValue = input.readEnum();
-          value = field.getEnumType().findValueByNumber(rawValue);
-          // If the number isn't recognized as a valid value for this enum,
-          // drop it.
-          if (value == null) {
-            unknownFields.mergeVarintField(fieldNumber, rawValue);
-            return true;
-          }
-          break;
-        }
-        default:
-          value = input.readPrimitiveField(field.getType());
-          break;
-      }
-
-      if (field.isRepeated()) {
-        builder.addRepeatedField(field, value);
+        input.popLimit(limit);
       } else {
-        builder.setField(field, value);
+        Object value;
+        switch (field.getType()) {
+          case GROUP: {
+            Message.Builder subBuilder;
+            if (defaultInstance != null) {
+              subBuilder = defaultInstance.newBuilderForType();
+            } else {
+              subBuilder = builder.newBuilderForField(field);
+            }
+            if (!field.isRepeated()) {
+              subBuilder.mergeFrom((Message) builder.getField(field));
+            }
+            input.readGroup(field.getNumber(), subBuilder, extensionRegistry);
+            value = subBuilder.build();
+            break;
+          }
+          case MESSAGE: {
+            Message.Builder subBuilder;
+            if (defaultInstance != null) {
+              subBuilder = defaultInstance.newBuilderForType();
+            } else {
+              subBuilder = builder.newBuilderForField(field);
+            }
+            if (!field.isRepeated()) {
+              subBuilder.mergeFrom((Message) builder.getField(field));
+            }
+            input.readMessage(subBuilder, extensionRegistry);
+            value = subBuilder.build();
+            break;
+          }
+          case ENUM: {
+            int rawValue = input.readEnum();
+            value = field.getEnumType().findValueByNumber(rawValue);
+            // If the number isn't recognized as a valid value for this enum,
+            // drop it.
+            if (value == null) {
+              unknownFields.mergeVarintField(fieldNumber, rawValue);
+              return true;
+            }
+            break;
+          }
+          default:
+            value = input.readPrimitiveField(field.getType());
+            break;
+        }
+
+        if (field.isRepeated()) {
+          builder.addRepeatedField(field, value);
+        } else {
+          builder.setField(field, value);
+        }
       }
     }
 
@@ -636,8 +657,24 @@ final class FieldSet {
       output.writeMessageSetExtension(field.getNumber(), (Message)value);
     } else {
       if (field.isRepeated()) {
-        for (Object element : (List)value) {
-          output.writeField(field.getType(), field.getNumber(), element);
+        List valueList = (List)value;
+        if (field.getOptions().getPacked()) {
+          output.writeTag(field.getNumber(),
+                          WireFormat.WIRETYPE_LENGTH_DELIMITED);
+          // Compute the total data size so the length can be written.
+          int dataSize = 0;
+          for (Object element : valueList) {
+            dataSize += output.computeFieldSizeNoTag(field.getType(), element);
+          }
+          output.writeRawVarint32(dataSize);
+          // Write the data itself, without any tags.
+          for (Object element : valueList) {
+            output.writeFieldNoTag(field.getType(), element);
+          }
+        } else {
+          for (Object element : valueList) {
+            output.writeField(field.getType(), field.getNumber(), element);
+          }
         }
       } else {
         output.writeField(field.getType(), field.getNumber(), value);
@@ -658,12 +695,23 @@ final class FieldSet {
       if (field.isExtension() &&
           field.getContainingType().getOptions().getMessageSetWireFormat()) {
         size += CodedOutputStream.computeMessageSetExtensionSize(
-          field.getNumber(), (Message)value);
+          field.getNumber(), (Message) value);
       } else {
         if (field.isRepeated()) {
-          for (Object element : (List)value) {
-            size += CodedOutputStream.computeFieldSize(
-              field.getType(), field.getNumber(), element);
+          if (field.getOptions().getPacked()) {
+            int dataSize = 0;
+            for (Object element : (List)value) {
+              dataSize += CodedOutputStream.computeFieldSizeNoTag(
+                  field.getType(), element);
+            }
+            size += dataSize +
+                CodedOutputStream.computeTagSize(field.getNumber()) +
+                CodedOutputStream.computeRawVarint32Size(dataSize);
+          } else {
+            for (Object element : (List)value) {
+              size += CodedOutputStream.computeFieldSize(
+                  field.getType(), field.getNumber(), element);
+            }
           }
         } else {
           size += CodedOutputStream.computeFieldSize(

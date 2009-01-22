@@ -86,8 +86,25 @@ public abstract class AbstractMessage implements Message {
     for (Map.Entry<FieldDescriptor, Object> entry : getAllFields().entrySet()) {
       FieldDescriptor field = entry.getKey();
       if (field.isRepeated()) {
-        for (Object element : (List) entry.getValue()) {
-          output.writeField(field.getType(), field.getNumber(), element);
+        List valueList = (List) entry.getValue();
+        if (field.getOptions().getPacked()) {
+
+          output.writeTag(field.getNumber(),
+                          WireFormat.WIRETYPE_LENGTH_DELIMITED);
+          int dataSize = 0;
+          for (Object element : valueList) {
+            dataSize += CodedOutputStream.computeFieldSizeNoTag(
+                field.getType(), element);
+          }
+          output.writeRawVarint32(dataSize);
+
+          for (Object element : valueList) {
+            output.writeFieldNoTag(field.getType(), element);
+          }
+        } else {
+          for (Object element : valueList) {
+            output.writeField(field.getType(), field.getNumber(), element);
+          }
         }
       } else {
         output.writeField(field.getType(), field.getNumber(), entry.getValue());
@@ -145,9 +162,21 @@ public abstract class AbstractMessage implements Message {
     for (Map.Entry<FieldDescriptor, Object> entry : getAllFields().entrySet()) {
       FieldDescriptor field = entry.getKey();
       if (field.isRepeated()) {
-        for (Object element : (List) entry.getValue()) {
-          size += CodedOutputStream.computeFieldSize(
-            field.getType(), field.getNumber(), element);
+        List valueList = (List) entry.getValue();
+        if (field.getOptions().getPacked()) {
+          int dataSize = 0;
+          for (Object element : valueList) {
+            dataSize += CodedOutputStream.computeFieldSizeNoTag(
+                field.getType(), element);
+          }
+          size += dataSize;
+          size += CodedOutputStream.computeTagSize(field.getNumber());
+          size += CodedOutputStream.computeRawVarint32Size(dataSize);
+        } else {
+          for (Object element : valueList) {
+            size += CodedOutputStream.computeFieldSize(
+                field.getType(), field.getNumber(), element);
+          }
         }
       } else {
         size += CodedOutputStream.computeFieldSize(
@@ -165,7 +194,7 @@ public abstract class AbstractMessage implements Message {
     memoizedSize = size;
     return size;
   }
-  
+
   @Override
   public boolean equals(Object other) {
     if (other == this) {
@@ -180,7 +209,7 @@ public abstract class AbstractMessage implements Message {
     }
     return getAllFields().equals(otherMessage.getAllFields());
   }
-  
+
   @Override
   public int hashCode() {
     int hash = 41;

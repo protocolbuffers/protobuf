@@ -59,7 +59,8 @@ class EncoderTest(unittest.TestCase):
   def AppendScalarTestHelper(self, test_name, encoder_method,
                              expected_stream_method_name,
                              wire_type, field_value,
-                             expected_value=None, expected_length=None):
+                             expected_value=None, expected_length=None,
+                             is_tag_test=True):
     """Helper for testAppendScalars.
 
     Calls one of the Encoder methods, and ensures that the Encoder
@@ -67,9 +68,10 @@ class EncoderTest(unittest.TestCase):
 
     Args:
       test_name: Name of this test, used only for logging.
-      encoder_method: Callable on self.encoder, which should
-        accept |field_value| as an argument.  This is the Encoder
-        method we're testing.
+      encoder_method: Callable on self.encoder. This is the Encoder
+        method we're testing.  If is_tag_test=True, the encoder method
+        accepts a field_number and field_value. if is_tag_test=False,
+        the encoder method accepts a field_value.
       expected_stream_method_name: (string) Name of the OutputStream
         method we expect Encoder to call to actually put the value
         on the wire.
@@ -83,6 +85,9 @@ class EncoderTest(unittest.TestCase):
       expected_length: The length we expect Encoder to pass to the
         AppendVarUInt32 method. If None we expect the length of the
         field_value.
+      is_tag_test: A Boolean.  If True (the default), we append the
+        the packed field number and wire_type to the stream before
+        the field value.
     """
     if expected_value is None:
       expected_value = field_value
@@ -93,14 +98,16 @@ class EncoderTest(unittest.TestCase):
         test_name, encoder_method, field_value,
         expected_stream_method_name, expected_value))
 
-    field_number = 10
-    # Should first append the field number and type information.
-    self.mock_stream.AppendVarUInt32(self.PackTag(field_number, wire_type))
-    # If we're length-delimited, we should then append the length.
-    if wire_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
-      if expected_length is None:
-        expected_length = len(field_value)
-      self.mock_stream.AppendVarUInt32(expected_length)
+    if is_tag_test:
+      field_number = 10
+      # Should first append the field number and type information.
+      self.mock_stream.AppendVarUInt32(self.PackTag(field_number, wire_type))
+      # If we're length-delimited, we should then append the length.
+      if wire_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
+        if expected_length is None:
+          expected_length = len(field_value)
+        self.mock_stream.AppendVarUInt32(expected_length)
+
     # Should then append the value itself.
     # We have to use names instead of methods to work around some
     # mox weirdness.  (ResetAll() is overzealous).
@@ -109,7 +116,10 @@ class EncoderTest(unittest.TestCase):
     expected_stream_method(expected_value)
 
     self.mox.ReplayAll()
-    encoder_method(field_number, field_value)
+    if is_tag_test:
+      encoder_method(field_number, field_value)
+    else:
+      encoder_method(field_value)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -159,6 +169,40 @@ class EncoderTest(unittest.TestCase):
     self.assert_(len(scalar_tests) >= len(set(t[1] for t in scalar_tests)))
     for args in scalar_tests:
       self.AppendScalarTestHelper(*args)
+
+  def testAppendScalarsWithoutTags(self):
+    scalar_no_tag_tests = [
+        ['int32', self.encoder.AppendInt32NoTag, 'AppendVarint32', None, 0],
+        ['int64', self.encoder.AppendInt64NoTag, 'AppendVarint64', None, 0],
+        ['uint32', self.encoder.AppendUInt32NoTag, 'AppendVarUInt32', None, 0],
+        ['uint64', self.encoder.AppendUInt64NoTag, 'AppendVarUInt64', None, 0],
+        ['fixed32', self.encoder.AppendFixed32NoTag,
+         'AppendLittleEndian32', None, 0],
+        ['fixed64', self.encoder.AppendFixed64NoTag,
+         'AppendLittleEndian64', None, 0],
+        ['sfixed32', self.encoder.AppendSFixed32NoTag,
+         'AppendLittleEndian32', None, 0],
+        ['sfixed64', self.encoder.AppendSFixed64NoTag,
+         'AppendLittleEndian64', None, 0],
+        ['float', self.encoder.AppendFloatNoTag,
+         'AppendRawBytes', None, 0.0, struct.pack('f', 0.0)],
+        ['double', self.encoder.AppendDoubleNoTag,
+         'AppendRawBytes', None, 0.0, struct.pack('d', 0.0)],
+        ['bool', self.encoder.AppendBoolNoTag, 'AppendVarint32', None, 0],
+        ['enum', self.encoder.AppendEnumNoTag, 'AppendVarint32', None, 0],
+        ['sint32', self.encoder.AppendSInt32NoTag,
+         'AppendVarUInt32', None, -1, 1],
+        ['sint64', self.encoder.AppendSInt64NoTag,
+         'AppendVarUInt64', None, -1, 1],
+    ]
+
+    self.assertEqual(len(scalar_no_tag_tests),
+                     len(set(t[0] for t in scalar_no_tag_tests)))
+    self.assert_(len(scalar_no_tag_tests) >=
+                 len(set(t[1] for t in scalar_no_tag_tests)))
+    for args in scalar_no_tag_tests:
+      # For no tag tests, the wire_type is not used, so we put in None.
+      self.AppendScalarTestHelper(is_tag_test=False, *args)
 
   def testAppendGroup(self):
     field_number = 23

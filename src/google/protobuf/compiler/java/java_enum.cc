@@ -71,7 +71,8 @@ void EnumGenerator::Generate(io::Printer* printer) {
     descriptor_->containing_type() == NULL &&
     descriptor_->file()->options().java_multiple_files();
   printer->Print(
-    "public $static$ enum $classname$ {\n",
+    "public $static$ enum $classname$\n"
+    "    implements com.google.protobuf.ProtocolMessageEnum {\n",
     "static", is_own_file ? "" : "static",
     "classname", descriptor_->name());
   printer->Indent();

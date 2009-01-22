@@ -179,6 +179,19 @@ TEST(ExtensionSetTest, Serialization) {
   TestUtil::ExpectAllFieldsSet(destination);
 }
 
+TEST(ExtensionSetTest, PackedSerialization) {
+  // Serialize as TestPackedExtensions and parse as TestPackedTypes to insure
+  // wire compatibility of extensions.
+  unittest::TestPackedExtensions source;
+  unittest::TestPackedTypes destination;
+  string data;
+
+  TestUtil::SetPackedExtensions(&source);
+  source.SerializeToString(&data);
+  EXPECT_TRUE(destination.ParseFromString(data));
+  TestUtil::ExpectPackedFieldsSet(destination);
+}
+
 TEST(ExtensionSetTest, Parsing) {
   // Serialize as TestAllTypes and parse as TestAllExtensions.
   unittest::TestAllTypes source;
@@ -189,6 +202,18 @@ TEST(ExtensionSetTest, Parsing) {
   source.SerializeToString(&data);
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectAllExtensionsSet(destination);
+}
+
+TEST(ExtensionSetTest, PackedParsing) {
+  // Serialize as TestPackedTypes and parse as TestPackedExtensions.
+  unittest::TestPackedTypes source;
+  unittest::TestPackedExtensions destination;
+  string data;
+
+  TestUtil::SetPackedFields(&source);
+  source.SerializeToString(&data);
+  EXPECT_TRUE(destination.ParseFromString(data));
+  TestUtil::ExpectPackedExtensionsSet(destination);
 }
 
 TEST(ExtensionSetTest, IsInitialized) {

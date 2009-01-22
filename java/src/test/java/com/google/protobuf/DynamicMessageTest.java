@@ -32,8 +32,10 @@ package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestPackedTypes;
 
 import junit.framework.TestCase;
+import java.util.Arrays;
 
 /**
  * Unit test for {@link DynamicMessage}.  See also {@link MessageTest}, which
@@ -48,6 +50,8 @@ public class DynamicMessageTest extends TestCase {
   TestUtil.ReflectionTester extensionsReflectionTester =
     new TestUtil.ReflectionTester(TestAllExtensions.getDescriptor(),
                                   TestUtil.getExtensionRegistry());
+  TestUtil.ReflectionTester packedReflectionTester =
+    new TestUtil.ReflectionTester(TestPackedTypes.getDescriptor(), null);
 
   public void testDynamicMessageAccessors() throws Exception {
     Message.Builder builder =
@@ -55,6 +59,12 @@ public class DynamicMessageTest extends TestCase {
     reflectionTester.setAllFieldsViaReflection(builder);
     Message message = builder.build();
     reflectionTester.assertAllFieldsSetViaReflection(message);
+  }
+
+  public void testDynamicMessageSettersRejectNull() throws Exception {
+    Message.Builder builder =
+      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    reflectionTester.assertReflectionSettersRejectNull(builder);
   }
 
   public void testDynamicMessageExtensionAccessors() throws Exception {
@@ -68,6 +78,12 @@ public class DynamicMessageTest extends TestCase {
     extensionsReflectionTester.assertAllFieldsSetViaReflection(message);
   }
 
+  public void testDynamicMessageExtensionSettersRejectNull() throws Exception {
+    Message.Builder builder =
+      DynamicMessage.newBuilder(TestAllExtensions.getDescriptor());
+    extensionsReflectionTester.assertReflectionSettersRejectNull(builder);
+  }
+
   public void testDynamicMessageRepeatedSetters() throws Exception {
     Message.Builder builder =
       DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
@@ -75,6 +91,12 @@ public class DynamicMessageTest extends TestCase {
     reflectionTester.modifyRepeatedFieldsViaReflection(builder);
     Message message = builder.build();
     reflectionTester.assertRepeatedFieldsModifiedViaReflection(message);
+  }
+
+  public void testDynamicMessageRepeatedSettersRejectNull() throws Exception {
+    Message.Builder builder =
+      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    reflectionTester.assertReflectionRepeatedSettersRejectNull(builder);
   }
 
   public void testDynamicMessageDefaults() throws Exception {
@@ -123,6 +145,33 @@ public class DynamicMessageTest extends TestCase {
     reflectionTester.assertAllFieldsSetViaReflection(message2);
   }
 
+  public void testDynamicMessagePackedSerialization() throws Exception {
+    Message.Builder builder =
+        DynamicMessage.newBuilder(TestPackedTypes.getDescriptor());
+    packedReflectionTester.setPackedFieldsViaReflection(builder);
+    Message message = builder.build();
+
+    ByteString rawBytes = message.toByteString();
+    TestPackedTypes message2 = TestPackedTypes.parseFrom(rawBytes);
+
+    TestUtil.assertPackedFieldsSet(message2);
+
+    // In fact, the serialized forms should be exactly the same, byte-for-byte.
+    assertEquals(TestUtil.getPackedSet().toByteString(), rawBytes);
+  }
+
+  public void testDynamicMessagePackedParsing() throws Exception {
+    TestPackedTypes.Builder builder = TestPackedTypes.newBuilder();
+    TestUtil.setPackedFields(builder);
+    TestPackedTypes message = builder.build();
+
+    ByteString rawBytes = message.toByteString();
+
+    Message message2 =
+      DynamicMessage.parseFrom(TestPackedTypes.getDescriptor(), rawBytes);
+    packedReflectionTester.assertPackedFieldsSetViaReflection(message2);
+  }
+
   public void testDynamicMessageCopy() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestUtil.setAllFields(builder);
@@ -130,5 +179,24 @@ public class DynamicMessageTest extends TestCase {
 
     DynamicMessage copy = DynamicMessage.newBuilder(message).build();
     reflectionTester.assertAllFieldsSetViaReflection(copy);
+  }
+
+  public void testToBuilder() throws Exception {
+    DynamicMessage.Builder builder =
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    reflectionTester.setAllFieldsViaReflection(builder);
+    int unknownFieldNum = 9;
+    long unknownFieldVal = 90;
+    builder.setUnknownFields(UnknownFieldSet.newBuilder()
+        .addField(unknownFieldNum,
+            UnknownFieldSet.Field.newBuilder()
+                .addVarint(unknownFieldVal).build())
+        .build());
+    DynamicMessage message = builder.build();
+
+    DynamicMessage derived = message.toBuilder().build();
+    reflectionTester.assertAllFieldsSetViaReflection(derived);
+    assertEquals(Arrays.asList(unknownFieldVal),
+        derived.getUnknownFields().getField(unknownFieldNum).getVarintList());
   }
 }

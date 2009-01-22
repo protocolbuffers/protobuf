@@ -122,6 +122,35 @@ namespace {
 
 const string kEmptyString;
 
+string ToCamelCase(const string& input) {
+  bool capitalize_next = false;
+  string result;
+  result.reserve(input.size());
+
+  for (int i = 0; i < input.size(); i++) {
+    if (input[i] == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      // Note:  I distrust ctype.h due to locales.
+      if ('a' <= input[i] && input[i] <= 'z') {
+        result.push_back(input[i] - 'a' + 'A');
+      } else {
+        result.push_back(input[i]);
+      }
+      capitalize_next = false;
+    } else {
+      result.push_back(input[i]);
+    }
+  }
+
+  // Lower-case the first letter.
+  if (!result.empty() && 'A' <= result[0] && result[0] <= 'Z') {
+    result[0] = result[0] - 'A' + 'a';
+  }
+
+  return result;
+}
+
 // A DescriptorPool contains a bunch of hash_maps to implement the
 // various Find*By*() methods.  Since hashtable lookups are O(1), it's
 // most efficient to construct a fixed set of large hash_maps used by
@@ -253,6 +282,9 @@ typedef hash_map<PointerStringPair, Symbol,
 typedef hash_map<const char*, const FileDescriptor*,
                  hash<const char*>, CStringEqual>
   FilesByNameMap;
+typedef hash_map<PointerStringPair, const FieldDescriptor*,
+                 PointerStringPairHash, PointerStringPairEqual>
+  FieldsByNameMap;
 typedef hash_map<DescriptorIntPair, const FieldDescriptor*,
                  PointerIntegerPairHash<DescriptorIntPair> >
   FieldsByNumberMap;
@@ -296,21 +328,29 @@ class DescriptorPool::Tables {
   // Finding items.
 
   // Find symbols.  These return a null Symbol (symbol.IsNull() is true)
-  // if not found.  FindSymbolOfType() additionally returns null if the
-  // symbol is not of the given type.
+  // if not found.
   inline Symbol FindSymbol(const string& key) const;
-  inline Symbol FindSymbolOfType(const string& key,
-                                 const Symbol::Type type) const;
   inline Symbol FindNestedSymbol(const void* parent,
                                  const string& name) const;
   inline Symbol FindNestedSymbolOfType(const void* parent,
                                        const string& name,
                                        const Symbol::Type type) const;
 
+  // This implements the body of DescriptorPool::Find*ByName().  It should
+  // really be a private method of DescriptorPool, but that would require
+  // declaring Symbol in descriptor.h, which would drag all kinds of other
+  // stuff into the header.  Yay C++.
+  Symbol FindByNameHelper(
+    const DescriptorPool* pool, const string& name) const;
+
   // These return NULL if not found.
   inline const FileDescriptor* FindFile(const string& key) const;
   inline const FieldDescriptor* FindFieldByNumber(
     const Descriptor* parent, int number) const;
+  inline const FieldDescriptor* FindFieldByLowercaseName(
+    const void* parent, const string& lowercase_name) const;
+  inline const FieldDescriptor* FindFieldByCamelcaseName(
+    const void* parent, const string& camelcase_name) const;
   inline const EnumValueDescriptor* FindEnumValueByNumber(
     const EnumDescriptor* parent, int number) const;
 
@@ -329,6 +369,10 @@ class DescriptorPool::Tables {
   bool AddFile(const FileDescriptor* file);
   bool AddFieldByNumber(const FieldDescriptor* field);
   bool AddEnumValueByNumber(const EnumValueDescriptor* value);
+
+  // Adds the field to the lowercase_name and camelcase_name maps.  Never
+  // fails because we allow duplicates; the first field by the name wins.
+  void AddFieldByStylizedNames(const FieldDescriptor* field);
 
   // Like AddSymbol(), but only adds to symbols_by_parent_, not
   // symbols_by_name_.  Used for enum values, which need to be registered
@@ -364,6 +408,8 @@ class DescriptorPool::Tables {
   SymbolsByNameMap      symbols_by_name_;
   SymbolsByParentMap    symbols_by_parent_;
   FilesByNameMap        files_by_name_;
+  FieldsByNameMap       fields_by_lowercase_name_;
+  FieldsByNameMap       fields_by_camelcase_name_;
   FieldsByNumberMap     fields_by_number_;       // Includes extensions.
   EnumValuesByNumberMap enum_values_by_number_;
 
@@ -373,6 +419,8 @@ class DescriptorPool::Tables {
   vector<const char*      > symbols_after_checkpoint_;
   vector<PointerStringPair> symbols_by_parent_after_checkpoint_;
   vector<const char*      > files_after_checkpoint_;
+  vector<PointerStringPair> field_lowercase_names_after_checkpoint_;
+  vector<PointerStringPair> field_camelcase_names_after_checkpoint_;
   vector<DescriptorIntPair> field_numbers_after_checkpoint_;
   vector<EnumIntPair      > enum_numbers_after_checkpoint_;
 
@@ -404,6 +452,8 @@ void DescriptorPool::Tables::Checkpoint() {
   symbols_after_checkpoint_.clear();
   symbols_by_parent_after_checkpoint_.clear();
   files_after_checkpoint_.clear();
+  field_lowercase_names_after_checkpoint_.clear();
+  field_camelcase_names_after_checkpoint_.clear();
   field_numbers_after_checkpoint_.clear();
   enum_numbers_after_checkpoint_.clear();
 }
@@ -418,6 +468,12 @@ void DescriptorPool::Tables::Rollback() {
   for (int i = 0; i < files_after_checkpoint_.size(); i++) {
     files_by_name_.erase(files_after_checkpoint_[i]);
   }
+  for (int i = 0; i < field_lowercase_names_after_checkpoint_.size(); i++) {
+    fields_by_lowercase_name_.erase(field_lowercase_names_after_checkpoint_[i]);
+  }
+  for (int i = 0; i < field_camelcase_names_after_checkpoint_.size(); i++) {
+    fields_by_camelcase_name_.erase(field_camelcase_names_after_checkpoint_[i]);
+  }
   for (int i = 0; i < field_numbers_after_checkpoint_.size(); i++) {
     fields_by_number_.erase(field_numbers_after_checkpoint_[i]);
   }
@@ -428,6 +484,8 @@ void DescriptorPool::Tables::Rollback() {
   symbols_after_checkpoint_.clear();
   symbols_by_parent_after_checkpoint_.clear();
   files_after_checkpoint_.clear();
+  field_lowercase_names_after_checkpoint_.clear();
+  field_camelcase_names_after_checkpoint_.clear();
   field_numbers_after_checkpoint_.clear();
   enum_numbers_after_checkpoint_.clear();
 
@@ -455,13 +513,6 @@ inline Symbol DescriptorPool::Tables::FindSymbol(const string& key) const {
   }
 }
 
-inline Symbol DescriptorPool::Tables::FindSymbolOfType(
-    const string& key, const Symbol::Type type) const {
-  Symbol result = FindSymbol(key);
-  if (result.type != type) return kNullSymbol;
-  return result;
-}
-
 inline Symbol DescriptorPool::Tables::FindNestedSymbol(
     const void* parent, const string& name) const {
   const Symbol* result =
@@ -480,6 +531,27 @@ inline Symbol DescriptorPool::Tables::FindNestedSymbolOfType(
   return result;
 }
 
+Symbol DescriptorPool::Tables::FindByNameHelper(
+    const DescriptorPool* pool, const string& name) const {
+  MutexLockMaybe lock(pool->mutex_);
+  Symbol result = FindSymbol(name);
+
+  if (result.IsNull() && pool->underlay_ != NULL) {
+    // Symbol not found; check the underlay.
+    result =
+      pool->underlay_->tables_->FindByNameHelper(pool->underlay_, name);
+  }
+
+  if (result.IsNull()) {
+    // Symbol still not found, so check fallback database.
+    if (pool->TryFindSymbolInFallbackDatabase(name)) {
+      result = FindSymbol(name);
+    }
+  }
+
+  return result;
+}
+
 inline const FileDescriptor* DescriptorPool::Tables::FindFile(
     const string& key) const {
   return FindPtrOrNull(files_by_name_, key.c_str());
@@ -488,6 +560,18 @@ inline const FileDescriptor* DescriptorPool::Tables::FindFile(
 inline const FieldDescriptor* DescriptorPool::Tables::FindFieldByNumber(
     const Descriptor* parent, int number) const {
   return FindPtrOrNull(fields_by_number_, make_pair(parent, number));
+}
+
+inline const FieldDescriptor* DescriptorPool::Tables::FindFieldByLowercaseName(
+    const void* parent, const string& lowercase_name) const {
+  return FindPtrOrNull(fields_by_lowercase_name_,
+                       PointerStringPair(parent, lowercase_name.c_str()));
+}
+
+inline const FieldDescriptor* DescriptorPool::Tables::FindFieldByCamelcaseName(
+    const void* parent, const string& camelcase_name) const {
+  return FindPtrOrNull(fields_by_camelcase_name_,
+                       PointerStringPair(parent, camelcase_name.c_str()));
 }
 
 inline const EnumValueDescriptor* DescriptorPool::Tables::FindEnumValueByNumber(
@@ -534,6 +618,30 @@ bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
     return true;
   } else {
     return false;
+  }
+}
+
+void DescriptorPool::Tables::AddFieldByStylizedNames(
+    const FieldDescriptor* field) {
+  const void* parent;
+  if (field->is_extension()) {
+    if (field->extension_scope() == NULL) {
+      parent = field->file();
+    } else {
+      parent = field->extension_scope();
+    }
+  } else {
+    parent = field->containing_type();
+  }
+
+  PointerStringPair lowercase_key(parent, field->lowercase_name().c_str());
+  if (InsertIfNotPresent(&fields_by_lowercase_name_, lowercase_key, field)) {
+    field_lowercase_names_after_checkpoint_.push_back(lowercase_key);
+  }
+
+  PointerStringPair camelcase_key(parent, field->camelcase_name().c_str());
+  if (InsertIfNotPresent(&fields_by_camelcase_name_, camelcase_key, field)) {
+    field_camelcase_names_after_checkpoint_.push_back(camelcase_key);
   }
 }
 
@@ -689,122 +797,55 @@ const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
 
 const Descriptor* DescriptorPool::FindMessageTypeByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::MESSAGE);
-  if (!result.IsNull()) return result.descriptor;
-  if (underlay_ != NULL) {
-    const Descriptor* result = underlay_->FindMessageTypeByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::MESSAGE);
-    if (!result.IsNull()) return result.descriptor;
-  }
-  return NULL;
+  Symbol result = tables_->FindByNameHelper(this, name);
+  return (result.type == Symbol::MESSAGE) ? result.descriptor : NULL;
 }
 
 const FieldDescriptor* DescriptorPool::FindFieldByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::FIELD);
-  if (!result.IsNull() && !result.field_descriptor->is_extension()) {
+  Symbol result = tables_->FindByNameHelper(this, name);
+  if (result.type == Symbol::FIELD &&
+      !result.field_descriptor->is_extension()) {
     return result.field_descriptor;
+  } else {
+    return NULL;
   }
-  if (underlay_ != NULL) {
-    const FieldDescriptor* result = underlay_->FindFieldByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::FIELD);
-    if (!result.IsNull() && !result.field_descriptor->is_extension()) {
-      return result.field_descriptor;
-    }
-  }
-  return NULL;
 }
 
 const FieldDescriptor* DescriptorPool::FindExtensionByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::FIELD);
-  if (!result.IsNull() && result.field_descriptor->is_extension()) {
+  Symbol result = tables_->FindByNameHelper(this, name);
+  if (result.type == Symbol::FIELD &&
+      result.field_descriptor->is_extension()) {
     return result.field_descriptor;
+  } else {
+    return NULL;
   }
-  if (underlay_ != NULL) {
-    const FieldDescriptor* result = underlay_->FindExtensionByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::FIELD);
-    if (!result.IsNull() && result.field_descriptor->is_extension()) {
-      return result.field_descriptor;
-    }
-  }
-  return NULL;
 }
 
 const EnumDescriptor* DescriptorPool::FindEnumTypeByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::ENUM);
-  if (!result.IsNull()) return result.enum_descriptor;
-  if (underlay_ != NULL) {
-    const EnumDescriptor* result = underlay_->FindEnumTypeByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::ENUM);
-    if (!result.IsNull()) return result.enum_descriptor;
-  }
-  return NULL;
+  Symbol result = tables_->FindByNameHelper(this, name);
+  return (result.type == Symbol::ENUM) ? result.enum_descriptor : NULL;
 }
 
 const EnumValueDescriptor* DescriptorPool::FindEnumValueByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::ENUM_VALUE);
-  if (!result.IsNull()) return result.enum_value_descriptor;
-  if (underlay_ != NULL) {
-    const EnumValueDescriptor* result = underlay_->FindEnumValueByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::ENUM_VALUE);
-    if (!result.IsNull()) return result.enum_value_descriptor;
-  }
-  return NULL;
+  Symbol result = tables_->FindByNameHelper(this, name);
+  return (result.type == Symbol::ENUM_VALUE) ?
+    result.enum_value_descriptor : NULL;
 }
 
 const ServiceDescriptor* DescriptorPool::FindServiceByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::SERVICE);
-  if (!result.IsNull()) return result.service_descriptor;
-  if (underlay_ != NULL) {
-    const ServiceDescriptor* result = underlay_->FindServiceByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::SERVICE);
-    if (!result.IsNull()) return result.service_descriptor;
-  }
-  return NULL;
+  Symbol result = tables_->FindByNameHelper(this, name);
+  return (result.type == Symbol::SERVICE) ? result.service_descriptor : NULL;
 }
 
 const MethodDescriptor* DescriptorPool::FindMethodByName(
     const string& name) const {
-  MutexLockMaybe lock(mutex_);
-  Symbol result = tables_->FindSymbolOfType(name, Symbol::METHOD);
-  if (!result.IsNull()) return result.method_descriptor;
-  if (underlay_ != NULL) {
-    const MethodDescriptor* result = underlay_->FindMethodByName(name);
-    if (result != NULL) return result;
-  }
-  if (TryFindSymbolInFallbackDatabase(name)) {
-    Symbol result = tables_->FindSymbolOfType(name, Symbol::METHOD);
-    if (!result.IsNull()) return result.method_descriptor;
-  }
-  return NULL;
+  Symbol result = tables_->FindByNameHelper(this, name);
+  return (result.type == Symbol::METHOD) ? result.method_descriptor : NULL;
 }
 
 const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
@@ -844,6 +885,30 @@ Descriptor::FindFieldByNumber(int key) const {
 }
 
 const FieldDescriptor*
+Descriptor::FindFieldByLowercaseName(const string& key) const {
+  MutexLockMaybe lock(file()->pool()->mutex_);
+  const FieldDescriptor* result =
+    file()->pool()->tables_->FindFieldByLowercaseName(this, key);
+  if (result == NULL || result->is_extension()) {
+    return NULL;
+  } else {
+    return result;
+  }
+}
+
+const FieldDescriptor*
+Descriptor::FindFieldByCamelcaseName(const string& key) const {
+  MutexLockMaybe lock(file()->pool()->mutex_);
+  const FieldDescriptor* result =
+    file()->pool()->tables_->FindFieldByCamelcaseName(this, key);
+  if (result == NULL || result->is_extension()) {
+    return NULL;
+  } else {
+    return result;
+  }
+}
+
+const FieldDescriptor*
 Descriptor::FindFieldByName(const string& key) const {
   MutexLockMaybe lock(file()->pool()->mutex_);
   Symbol result =
@@ -864,6 +929,30 @@ Descriptor::FindExtensionByName(const string& key) const {
     return result.field_descriptor;
   } else {
     return NULL;
+  }
+}
+
+const FieldDescriptor*
+Descriptor::FindExtensionByLowercaseName(const string& key) const {
+  MutexLockMaybe lock(file()->pool()->mutex_);
+  const FieldDescriptor* result =
+    file()->pool()->tables_->FindFieldByLowercaseName(this, key);
+  if (result == NULL || !result->is_extension()) {
+    return NULL;
+  } else {
+    return result;
+  }
+}
+
+const FieldDescriptor*
+Descriptor::FindExtensionByCamelcaseName(const string& key) const {
+  MutexLockMaybe lock(file()->pool()->mutex_);
+  const FieldDescriptor* result =
+    file()->pool()->tables_->FindFieldByCamelcaseName(this, key);
+  if (result == NULL || !result->is_extension()) {
+    return NULL;
+  } else {
+    return result;
   }
 }
 
@@ -992,6 +1081,30 @@ FileDescriptor::FindExtensionByName(const string& key) const {
     return result.field_descriptor;
   } else {
     return NULL;
+  }
+}
+
+const FieldDescriptor*
+FileDescriptor::FindExtensionByLowercaseName(const string& key) const {
+  MutexLockMaybe lock(pool()->mutex_);
+  const FieldDescriptor* result =
+    pool()->tables_->FindFieldByLowercaseName(this, key);
+  if (result == NULL || !result->is_extension()) {
+    return NULL;
+  } else {
+    return result;
+  }
+}
+
+const FieldDescriptor*
+FileDescriptor::FindExtensionByCamelcaseName(const string& key) const {
+  MutexLockMaybe lock(pool()->mutex_);
+  const FieldDescriptor* result =
+    pool()->tables_->FindFieldByCamelcaseName(this, key);
+  if (result == NULL || !result->is_extension()) {
+    return NULL;
+  } else {
+    return result;
   }
 }
 
@@ -2504,6 +2617,22 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->number_       = proto.number();
   result->is_extension_ = is_extension;
 
+  // If .proto files follow the style guide then the name should already be
+  // lower-cased.  If that's the case we can just reuse the string we already
+  // allocated rather than allocate a new one.
+  string lowercase_name(proto.name());
+  LowerString(&lowercase_name);
+  if (lowercase_name == proto.name()) {
+    result->lowercase_name_ = result->name_;
+  } else {
+    result->lowercase_name_ = tables_->AllocateString(lowercase_name);
+  }
+
+  // Don't bother with the above optimization for camel-case names since
+  // .proto files that follow the guide shouldn't be using names in this
+  // format, so the optimization wouldn't help much.
+  result->camelcase_name_ = tables_->AllocateString(ToCamelCase(proto.name()));
+
   // Some compilers do not allow static_cast directly between two enum types,
   // so we must cast to int first.
   result->type_  = static_cast<FieldDescriptor::Type>(
@@ -3042,6 +3171,9 @@ void DescriptorBuilder::CrossLinkField(
                                    conflicting_field->name()));
     }
   }
+
+  // Add the field to the lowercase-name and camelcase-name tables.
+  tables_->AddFieldByStylizedNames(field);
 }
 
 void DescriptorBuilder::CrossLinkEnum(
@@ -3134,6 +3266,20 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
     const FieldDescriptorProto& proto) {
   if (field->options().has_experimental_map_key()) {
     ValidateMapKey(field, proto);
+  }
+
+  // Only repeated primitive fields may be packed.
+  if (field->options().packed()) {
+    if (!field->is_repeated() ||
+        field->type() == FieldDescriptor::TYPE_STRING ||
+        field->type() == FieldDescriptor::TYPE_GROUP ||
+        field->type() == FieldDescriptor::TYPE_MESSAGE ||
+        field->type() == FieldDescriptor::TYPE_BYTES) {
+      AddError(
+        field->full_name(), proto,
+        DescriptorPool::ErrorCollector::TYPE,
+        "[packed = true] can only be specified for repeated primitive fields.");
+    }
   }
 
   // Note:  Default instance may not yet be initialized here, so we have to
