@@ -69,13 +69,14 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     private int previousColumn = 0;
 
-    private static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(\\s|(#.*$))+", 
+    // Note: atomic groups used to mimic possessive quantifiers in Java in both of these regexes
+    private static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(?>(\\s|(#.*$))+)", 
         RegexOptions.Compiled | RegexOptions.Multiline);
     private static readonly Regex TokenPattern = new Regex(
-      "\\G[a-zA-Z_][0-9a-zA-Z_+-]*|" +              // an identifier
-      "\\G[0-9+-][0-9a-zA-Z_.+-]*|" +                  // a number
-      "\\G\"([^\"\\\n\\\\]|\\\\.)*(\"|\\\\?$)|" +    // a double-quoted string
-      "\\G\'([^\"\\\n\\\\]|\\\\.)*(\'|\\\\?$)",      // a single-quoted string
+      "\\G[a-zA-Z_](?>[0-9a-zA-Z_+-]*)|" +              // an identifier
+      "\\G[0-9+-](?>[0-9a-zA-Z_.+-]*)|" +                  // a number
+      "\\G\"(?>([^\"\\\n\\\\]|\\\\.)*)(\"|\\\\?$)|" +    // a double-quoted string
+      "\\G\'(?>([^\"\\\n\\\\]|\\\\.)*)(\'|\\\\?$)",      // a single-quoted string
       RegexOptions.Compiled | RegexOptions.Multiline);
 
     private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
