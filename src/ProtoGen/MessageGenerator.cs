@@ -351,6 +351,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
         foreach (FieldDescriptor field in Descriptor.Fields) {
           SourceGenerators.CreateFieldGenerator(field).GenerateMergingCode(writer);
         }
+        // if message type has extensions
+        if (Descriptor.Proto.ExtensionRangeCount > 0) {
+          writer.WriteLine("  this.MergeExtensionFields(other);");
+        }
         writer.WriteLine("this.MergeUnknownFields(other.UnknownFields);");
         writer.WriteLine("return this;");
         writer.Outdent();

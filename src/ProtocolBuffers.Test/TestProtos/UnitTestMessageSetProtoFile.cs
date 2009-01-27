@@ -194,6 +194,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestMessageSet other) {
         if (other == TestMessageSet.DefaultInstance) return this;
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }

@@ -284,15 +284,12 @@ namespace Google.ProtocolBuffers {
           throw new ArgumentException("MergeFrom(IMessage) can only merge messages of the same type.");
         }
         fields.MergeFrom(other);
+        MergeUnknownFields(other.UnknownFields);
         return this;
       }
 
       public override Builder MergeFrom(DynamicMessage other) {
-        if (other.DescriptorForType != type) {
-          throw new ArgumentException("MergeFrom(IMessage) can only merge messages of the same type.");
-        }
-        fields.MergeFrom(other);
-        return this;
+        return MergeFrom((IMessage)other);
       }
 
       public override DynamicMessage Build() {

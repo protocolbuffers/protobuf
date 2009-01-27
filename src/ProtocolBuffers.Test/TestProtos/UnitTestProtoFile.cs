@@ -4884,6 +4884,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestAllExtensions other) {
         if (other == TestAllExtensions.DefaultInstance) return this;
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -7597,6 +7598,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestEmptyMessageWithExtensions other) {
         if (other == TestEmptyMessageWithExtensions.DefaultInstance) return this;
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -10714,6 +10716,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (other.HasMyFloat) {
           MyFloat = other.MyFloat;
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }

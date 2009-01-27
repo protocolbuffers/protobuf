@@ -159,12 +159,16 @@ namespace Google.ProtocolBuffers {
     public override TBuilder AddRepeatedField(FieldDescriptor field, object value) {
       if (field.IsExtension) {
         ExtendableMessage<TMessage, TBuilder> message = MessageBeingBuilt;
-        message.VerifyContainingType(field); 
+        message.VerifyContainingType(field);
         message.Extensions.AddRepeatedField(field, value);
         return ThisBuilder;
       } else {
         return base.AddRepeatedField(field, value);
       }
+    }
+
+    protected void MergeExtensionFields(ExtendableMessage<TMessage, TBuilder> other) {
+      MessageBeingBuilt.Extensions.MergeFrom(other.Extensions);
     }
   }
 }

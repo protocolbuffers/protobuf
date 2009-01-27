@@ -313,7 +313,6 @@ namespace Google.ProtocolBuffers {
           .GetExtensionCount(UnitTestProtoFile.RepeatedInt32Extension));
     }
 
-    /* Reinstate this test in the commit where it's fixed...
     [Test]
     public void ExtensionMergeFrom() {
       TestAllExtensions original = TestAllExtensions.CreateBuilder()
@@ -322,8 +321,7 @@ namespace Google.ProtocolBuffers {
           TestAllExtensions.CreateBuilder().MergeFrom(original).Build();
       Assert.IsTrue((merged.HasExtension(UnitTestProtoFile.OptionalInt32Extension)));
       Assert.AreEqual(1, (int)merged.GetExtension(UnitTestProtoFile.OptionalInt32Extension));
-    }
-    */
+    }    
 
     /* Removed multiple files option for the moment
     [Test]

@@ -3936,6 +3936,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -4273,6 +4274,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -4565,6 +4567,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -4839,6 +4842,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -5063,6 +5067,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -5287,6 +5292,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -5511,6 +5517,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
+          this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
