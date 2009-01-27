@@ -219,16 +219,19 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public String ReadString() {
       int size = (int) ReadRawVarint32();
-      if (size < bufferSize - bufferPos && size > 0) {
+      // No need to read any data for an empty string.
+      if (size == 0) {
+        return "";
+      }
+      if (size <= bufferSize - bufferPos) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
         String result = Encoding.UTF8.GetString(buffer, bufferPos, size);
         bufferPos += size;
         return result;
-      } else {
-        // Slow path:  Build a byte array first then copy it.
-        return Encoding.UTF8.GetString(ReadRawBytes(size));
       }
+      // Slow path:  Build a byte array first then copy it.
+      return Encoding.UTF8.GetString(ReadRawBytes(size));
     }
 
     /// <summary>
