@@ -29,6 +29,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("  set {{ Set{0}(value); }}", PropertyName);
       writer.WriteLine("}");
       writer.WriteLine("public Builder Set{0}({1} value) {{", PropertyName, TypeName);
+      AddNullCheck(writer);
       writer.WriteLine("  result.has{0} = true;", PropertyName);
       writer.WriteLine("  result.{0}_ = value;", Name);
       writer.WriteLine("  return this;");

@@ -810,5 +810,37 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual("524", message[f("repeated_string_piece"), 1]);
       Assert.AreEqual("525", message[f("repeated_cord"), 1]);
     }
+
+    /// <summary>
+    /// Verifies that the reflection setters for the given Builder object throw an
+    /// ArgumentNullException if they are passed a null value. 
+    /// </summary>
+    public void AssertReflectionSettersRejectNull(IBuilder builder) {
+      TestUtil.AssertArgumentNullException(() => builder[f("optional_string")] = null);
+      TestUtil.AssertArgumentNullException(() => builder[f("optional_bytes")] = null);
+      TestUtil.AssertArgumentNullException(() => builder[f("optional_nested_enum")] = null);
+      TestUtil.AssertArgumentNullException(() => builder[f("optional_nested_message")] = null);
+      TestUtil.AssertArgumentNullException(() => builder[f("optional_nested_message")] = null);
+      TestUtil.AssertArgumentNullException(() => builder.WeakAddRepeatedField(f("repeated_string"), null));
+      TestUtil.AssertArgumentNullException(() => builder.WeakAddRepeatedField(f("repeated_bytes"), null));
+      TestUtil.AssertArgumentNullException(() => builder.WeakAddRepeatedField(f("repeated_nested_enum"), null));
+      TestUtil.AssertArgumentNullException(() => builder.WeakAddRepeatedField(f("repeated_nested_message"), null));
+    }
+
+    /// <summary>
+    /// Verifies that the reflection repeated setters for the given Builder object throw an
+    /// ArgumentNullException if they are passed a null value.
+    /// </summary>
+    public void AssertReflectionRepeatedSettersRejectNull(IBuilder builder) {
+      builder.WeakAddRepeatedField(f("repeated_string"), "one");
+      TestUtil.AssertArgumentNullException(() => builder.SetRepeatedField(f("repeated_string"), 0, null));
+      builder.WeakAddRepeatedField(f("repeated_bytes"), TestUtil.ToBytes("one"));
+      TestUtil.AssertArgumentNullException(() => builder.SetRepeatedField(f("repeated_bytes"), 0, null));
+      builder.WeakAddRepeatedField(f("repeated_nested_enum"), nestedBaz);
+      TestUtil.AssertArgumentNullException(() => builder.SetRepeatedField(f("repeated_nested_enum"), 0, null));
+      builder.WeakAddRepeatedField(f("repeated_nested_message"),
+          new TestAllTypes.Types.NestedMessage.Builder { Bb = 218 }.Build());
+      TestUtil.AssertArgumentNullException(() => builder.SetRepeatedField(f("repeated_nested_message"), 0, null));
+    }
   }
 }

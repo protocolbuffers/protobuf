@@ -286,6 +286,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             set { SetNumber(value); }
           }
           public Builder SetNumber(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasNumber = true;
             result.number_ = value;
             return this;
@@ -553,6 +554,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -589,6 +591,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         set { SetEmail(value); }
       }
       public Builder SetEmail(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasEmail = true;
         result.email_ = value;
         return this;
@@ -609,18 +612,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         return result.GetPhone(index);
       }
       public Builder SetPhone(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.phone_[index] = value;
         return this;
       }
       public Builder SetPhone(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.phone_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddPhone(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.phone_.Add(value);
         return this;
       }
       public Builder AddPhone(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.phone_.Add(builderForValue.Build());
         return this;
       }
@@ -825,18 +832,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         return result.GetPerson(index);
       }
       public Builder SetPerson(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.person_[index] = value;
         return this;
       }
       public Builder SetPerson(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.person_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddPerson(global::Google.ProtocolBuffers.Examples.AddressBook.Person value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.person_.Add(value);
         return this;
       }
       public Builder AddPerson(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.person_.Add(builderForValue.Build());
         return this;
       }

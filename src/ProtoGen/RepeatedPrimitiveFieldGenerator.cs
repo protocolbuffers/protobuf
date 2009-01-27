@@ -38,10 +38,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("  return result.Get{0}(index);", PropertyName);
       writer.WriteLine("}");
       writer.WriteLine("public Builder Set{0}(int index, {1} value) {{", PropertyName, TypeName);
+      AddNullCheck(writer);
       writer.WriteLine("  result.{0}_[index] = value;", Name);
       writer.WriteLine("  return this;");
       writer.WriteLine("}");
       writer.WriteLine("public Builder Add{0}({1} value) {{", PropertyName, TypeName);
+      AddNullCheck(writer);
       writer.WriteLine("  result.{0}_.Add(value);", Name, TypeName);
       writer.WriteLine("  return this;");
       writer.WriteLine("}");

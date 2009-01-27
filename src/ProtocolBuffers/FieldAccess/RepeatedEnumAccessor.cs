@@ -66,10 +66,12 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public override void AddRepeated(TBuilder builder, object value) {
-      base.AddRepeated(builder, ((EnumValueDescriptor) value).Number);
+      ThrowHelper.ThrowIfNull(value, "value");
+      base.AddRepeated(builder, ((EnumValueDescriptor)value).Number);
     }
 
     public override void SetRepeated(TBuilder builder, int index, object value) {
+      ThrowHelper.ThrowIfNull(value, "value");
       base.SetRepeated(builder, index, ((EnumValueDescriptor) value).Number);
     }
   }

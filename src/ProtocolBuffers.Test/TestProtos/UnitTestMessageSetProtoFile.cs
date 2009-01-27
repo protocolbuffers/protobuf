@@ -410,16 +410,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetMessageSet(value); }
       }
       public Builder SetMessageSet(global::Google.ProtocolBuffers.TestProtos.TestMessageSet value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasMessageSet = true;
         result.messageSet_ = value;
         return this;
       }
       public Builder SetMessageSet(global::Google.ProtocolBuffers.TestProtos.TestMessageSet.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasMessageSet = true;
         result.messageSet_ = builderForValue.Build();
         return this;
       }
       public Builder MergeMessageSet(global::Google.ProtocolBuffers.TestProtos.TestMessageSet value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasMessageSet &&
             result.messageSet_ != global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance) {
             result.messageSet_ = global::Google.ProtocolBuffers.TestProtos.TestMessageSet.CreateBuilder(result.messageSet_).MergeFrom(value).BuildPartial();
@@ -813,6 +816,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetStr(value); }
       }
       public Builder SetStr(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasStr = true;
         result.str_ = value;
         return this;
@@ -1071,6 +1075,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             set { SetMessage(value); }
           }
           public Builder SetMessage(pb::ByteString value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasMessage = true;
             result.message_ = value;
             return this;
@@ -1251,18 +1256,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetItem(index);
       }
       public Builder SetItem(int index, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.item_[index] = value;
         return this;
       }
       public Builder SetItem(int index, global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.item_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddItem(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.item_.Add(value);
         return this;
       }
       public Builder AddItem(global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.item_.Add(builderForValue.Build());
         return this;
       }

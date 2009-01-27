@@ -1,6 +1,6 @@
 using System;
-using Google.ProtocolBuffers.Descriptors;
 using System.Globalization;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
   internal abstract class FieldGeneratorBase : SourceGeneratorBase<FieldDescriptor> {
@@ -85,6 +85,45 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
     protected int Number {
       get { return Descriptor.FieldNumber; }
+    }
+
+    protected void AddNullCheck(TextGenerator writer) {
+      AddNullCheck(writer, "value");
+    }
+
+    protected void AddNullCheck(TextGenerator writer, string name) {
+      if (IsNullableType) {
+        writer.WriteLine("  pb::ThrowHelper.ThrowIfNull({0}, \"{0}\");", name);
+      }
+    }
+
+    protected bool IsNullableType {
+      get {
+        switch (Descriptor.FieldType) {
+          case FieldType.Float:
+          case FieldType.Double:
+          case FieldType.Int32:
+          case FieldType.Int64:
+          case FieldType.SInt32:
+          case FieldType.SInt64:
+          case FieldType.SFixed32:
+          case FieldType.SFixed64:
+          case FieldType.UInt32:
+          case FieldType.UInt64:
+          case FieldType.Fixed32:
+          case FieldType.Fixed64:
+          case FieldType.Bool:
+          case FieldType.Enum:
+            return false;
+          case FieldType.Bytes:
+          case FieldType.String:
+          case FieldType.Message:
+          case FieldType.Group:
+            return true;
+          default:
+            throw new InvalidOperationException("Invalid field descriptor type");
+        }
+      }
     }
 
     protected string TypeName {

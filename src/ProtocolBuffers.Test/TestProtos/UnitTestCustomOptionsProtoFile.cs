@@ -397,6 +397,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetField1(value); }
       }
       public Builder SetField1(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField1 = true;
         result.field1_ = value;
         return this;
@@ -1593,16 +1594,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetBar(value); }
       }
       public Builder SetBar(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasBar = true;
         result.bar_ = value;
         return this;
       }
       public Builder SetBar(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasBar = true;
         result.bar_ = builderForValue.Build();
         return this;
       }
       public Builder MergeBar(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasBar &&
             result.bar_ != global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.DefaultInstance) {
             result.bar_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.CreateBuilder(result.bar_).MergeFrom(value).BuildPartial();
@@ -1644,16 +1648,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetFred(value); }
       }
       public Builder SetFred(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasFred = true;
         result.fred_ = value;
         return this;
       }
       public Builder SetFred(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasFred = true;
         result.fred_ = builderForValue.Build();
         return this;
       }
       public Builder MergeFred(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasFred &&
             result.fred_ != global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.DefaultInstance) {
             result.fred_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.CreateBuilder(result.fred_).MergeFrom(value).BuildPartial();
@@ -1925,16 +1932,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetComplexOptionType5(value); }
       }
       public Builder SetComplexOptionType5(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasComplexOptionType5 = true;
         result.complexOptionType5_ = value;
         return this;
       }
       public Builder SetComplexOptionType5(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasComplexOptionType5 = true;
         result.complexOptionType5_ = builderForValue.Build();
         return this;
       }
       public Builder MergeComplexOptionType5(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasComplexOptionType5 &&
             result.complexOptionType5_ != global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.DefaultInstance) {
             result.complexOptionType5_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.CreateBuilder(result.complexOptionType5_).MergeFrom(value).BuildPartial();

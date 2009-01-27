@@ -104,6 +104,7 @@
     <Compile Include="TextFormat.cs" />
     <Compile Include="TextGenerator.cs" />
     <Compile Include="TextTokenizer.cs" />
+    <Compile Include="ThrowHelper.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="UnknownField.cs" />
     <Compile Include="UnknownFieldSet.cs" />

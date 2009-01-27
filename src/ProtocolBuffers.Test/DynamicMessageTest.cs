@@ -54,15 +54,27 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void DynamicMessageSettersRejectNull() {
+      IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
+      reflectionTester.AssertReflectionSettersRejectNull(builder);
+	  }
+
+    [Test]
     public void DynamicMessageExtensionAccessors() {
-    // We don't need to extensively test DynamicMessage's handling of
-    // extensions because, frankly, it doesn't do anything special with them.
-    // It treats them just like any other fields.
-    IBuilder builder = DynamicMessage.CreateBuilder(TestAllExtensions.Descriptor);
-    extensionsReflectionTester.SetAllFieldsViaReflection(builder);
-    IMessage message = builder.WeakBuild();
-    extensionsReflectionTester.AssertAllFieldsSetViaReflection(message);
-  }
+      // We don't need to extensively test DynamicMessage's handling of
+      // extensions because, frankly, it doesn't do anything special with them.
+      // It treats them just like any other fields.
+      IBuilder builder = DynamicMessage.CreateBuilder(TestAllExtensions.Descriptor);
+      extensionsReflectionTester.SetAllFieldsViaReflection(builder);
+      IMessage message = builder.WeakBuild();
+      extensionsReflectionTester.AssertAllFieldsSetViaReflection(message);
+    }
+
+    [Test]
+    public void DynamicMessageExtensionSettersRejectNull() {
+      IBuilder builder = DynamicMessage.CreateBuilder(TestAllExtensions.Descriptor);
+      extensionsReflectionTester.AssertReflectionSettersRejectNull(builder);
+	  }
 
     [Test]
     public void DynamicMessageRepeatedSetters() {
@@ -71,6 +83,12 @@ namespace Google.ProtocolBuffers {
       reflectionTester.ModifyRepeatedFieldsViaReflection(builder);
       IMessage message = builder.WeakBuild();
       reflectionTester.AssertRepeatedFieldsModifiedViaReflection(message);
+    }
+
+    [Test]
+    public void DynamicMessageRepeatedSettersRejectNull() {
+      IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
+      reflectionTester.AssertReflectionRepeatedSettersRejectNull(builder);
     }
 
     [Test]

@@ -189,16 +189,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetMsg(value); }
       }
       public Builder SetMsg(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasMsg = true;
         result.msg_ = value;
         return this;
       }
       public Builder SetMsg(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasMsg = true;
         result.msg_ = builderForValue.Build();
         return this;
       }
       public Builder MergeMsg(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasMsg &&
             result.msg_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
             result.msg_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.msg_).MergeFrom(value).BuildPartial();
@@ -438,16 +441,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetO(value); }
       }
       public Builder SetO(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasO = true;
         result.o_ = value;
         return this;
       }
       public Builder SetO(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasO = true;
         result.o_ = builderForValue.Build();
         return this;
       }
       public Builder MergeO(global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasO &&
             result.o_ != global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance) {
             result.o_ = global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.CreateBuilder(result.o_).MergeFrom(value).BuildPartial();

@@ -413,7 +413,9 @@ namespace Google.ProtocolBuffers {
     /// element type, not whether it's a list.
     /// </remarks>
     /// <exception cref="ArgumentException">The value is not of the right type.</exception>
+    /// <exception cref="ArgumentNullException">The value is null.</exception>
     private static void VerifyType(FieldDescriptor field, object value) {
+      ThrowHelper.ThrowIfNull(value, "value");
       bool isValid = false;
       switch (field.MappedType) {
         case MappedType.Int32:       isValid = value is int;    break;

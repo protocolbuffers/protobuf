@@ -192,6 +192,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetNamespace(value); }
       }
       public Builder SetNamespace(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasNamespace = true;
         result.namespace_ = value;
         return this;
@@ -210,6 +211,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetUmbrellaClassname(value); }
       }
       public Builder SetUmbrellaClassname(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasUmbrellaClassname = true;
         result.umbrellaClassname_ = value;
         return this;
@@ -381,6 +383,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetPropertyName(value); }
       }
       public Builder SetPropertyName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasPropertyName = true;
         result.propertyName_ = value;
         return this;

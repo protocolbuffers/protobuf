@@ -122,10 +122,12 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public virtual void SetRepeated(TBuilder builder, int index, object value) {
-      setElementMethod.Invoke(builder, new object[] {index, value} );
+      ThrowHelper.ThrowIfNull(value, "value");
+      setElementMethod.Invoke(builder, new object[] { index, value });
     }
 
     public virtual void AddRepeated(TBuilder builder, object value) {
+      ThrowHelper.ThrowIfNull(value, "value");
       addValueDelegate(builder, value);
     }
 

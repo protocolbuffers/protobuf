@@ -3255,6 +3255,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalString(value); }
       }
       public Builder SetOptionalString(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalString = true;
         result.optionalString_ = value;
         return this;
@@ -3273,6 +3274,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalBytes(value); }
       }
       public Builder SetOptionalBytes(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalBytes = true;
         result.optionalBytes_ = value;
         return this;
@@ -3291,16 +3293,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalGroup(value); }
       }
       public Builder SetOptionalGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalGroup = true;
         result.optionalGroup_ = value;
         return this;
       }
       public Builder SetOptionalGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalGroup = true;
         result.optionalGroup_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalGroup &&
             result.optionalGroup_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.DefaultInstance) {
             result.optionalGroup_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.CreateBuilder(result.optionalGroup_).MergeFrom(value).BuildPartial();
@@ -3324,16 +3329,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalNestedMessage(value); }
       }
       public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalNestedMessage = true;
         result.optionalNestedMessage_ = value;
         return this;
       }
       public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalNestedMessage = true;
         result.optionalNestedMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalNestedMessage &&
             result.optionalNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
             result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.optionalNestedMessage_).MergeFrom(value).BuildPartial();
@@ -3357,16 +3365,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalForeignMessage(value); }
       }
       public Builder SetOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalForeignMessage = true;
         result.optionalForeignMessage_ = value;
         return this;
       }
       public Builder SetOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalForeignMessage = true;
         result.optionalForeignMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalForeignMessage &&
             result.optionalForeignMessage_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
             result.optionalForeignMessage_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.optionalForeignMessage_).MergeFrom(value).BuildPartial();
@@ -3390,16 +3401,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalImportMessage(value); }
       }
       public Builder SetOptionalImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalImportMessage = true;
         result.optionalImportMessage_ = value;
         return this;
       }
       public Builder SetOptionalImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalImportMessage = true;
         result.optionalImportMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalImportMessage &&
             result.optionalImportMessage_ != global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance) {
             result.optionalImportMessage_ = global::Google.ProtocolBuffers.TestProtos.ImportMessage.CreateBuilder(result.optionalImportMessage_).MergeFrom(value).BuildPartial();
@@ -3477,6 +3491,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalStringPiece(value); }
       }
       public Builder SetOptionalStringPiece(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalStringPiece = true;
         result.optionalStringPiece_ = value;
         return this;
@@ -3495,6 +3510,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalCord(value); }
       }
       public Builder SetOptionalCord(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalCord = true;
         result.optionalCord_ = value;
         return this;
@@ -3853,10 +3869,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedString(index);
       }
       public Builder SetRepeatedString(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedString_[index] = value;
         return this;
       }
       public Builder AddRepeatedString(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedString_.Add(value);
         return this;
       }
@@ -3879,10 +3897,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedBytes(index);
       }
       public Builder SetRepeatedBytes(int index, pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedBytes_[index] = value;
         return this;
       }
       public Builder AddRepeatedBytes(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedBytes_.Add(value);
         return this;
       }
@@ -3905,18 +3925,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedGroup(index);
       }
       public Builder SetRepeatedGroup(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedGroup_[index] = value;
         return this;
       }
       public Builder SetRepeatedGroup(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedGroup_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedGroup_.Add(value);
         return this;
       }
       public Builder AddRepeatedGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedGroup_.Add(builderForValue.Build());
         return this;
       }
@@ -3939,18 +3963,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedNestedMessage(index);
       }
       public Builder SetRepeatedNestedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedNestedMessage_[index] = value;
         return this;
       }
       public Builder SetRepeatedNestedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedNestedMessage_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedNestedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedNestedMessage_.Add(builderForValue.Build());
         return this;
       }
@@ -3973,18 +4001,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedForeignMessage(index);
       }
       public Builder SetRepeatedForeignMessage(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedForeignMessage_[index] = value;
         return this;
       }
       public Builder SetRepeatedForeignMessage(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedForeignMessage_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedForeignMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedForeignMessage_.Add(builderForValue.Build());
         return this;
       }
@@ -4007,18 +4039,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedImportMessage(index);
       }
       public Builder SetRepeatedImportMessage(int index, global::Google.ProtocolBuffers.TestProtos.ImportMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedImportMessage_[index] = value;
         return this;
       }
       public Builder SetRepeatedImportMessage(int index, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedImportMessage_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedImportMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedImportMessage_.Add(builderForValue.Build());
         return this;
       }
@@ -4119,10 +4155,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedStringPiece(index);
       }
       public Builder SetRepeatedStringPiece(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedStringPiece_[index] = value;
         return this;
       }
       public Builder AddRepeatedStringPiece(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedStringPiece_.Add(value);
         return this;
       }
@@ -4145,10 +4183,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedCord(index);
       }
       public Builder SetRepeatedCord(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedCord_[index] = value;
         return this;
       }
       public Builder AddRepeatedCord(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedCord_.Add(value);
         return this;
       }
@@ -4403,6 +4443,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetDefaultString(value); }
       }
       public Builder SetDefaultString(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasDefaultString = true;
         result.defaultString_ = value;
         return this;
@@ -4421,6 +4462,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetDefaultBytes(value); }
       }
       public Builder SetDefaultBytes(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasDefaultBytes = true;
         result.defaultBytes_ = value;
         return this;
@@ -4493,6 +4535,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetDefaultStringPiece(value); }
       }
       public Builder SetDefaultStringPiece(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasDefaultStringPiece = true;
         result.defaultStringPiece_ = value;
         return this;
@@ -4511,6 +4554,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetDefaultCord(value); }
       }
       public Builder SetDefaultCord(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasDefaultCord = true;
         result.defaultCord_ = value;
         return this;
@@ -6975,16 +7019,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalMessage(value); }
       }
       public Builder SetOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalMessage = true;
         result.optionalMessage_ = value;
         return this;
       }
       public Builder SetOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalMessage = true;
         result.optionalMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalMessage &&
             result.optionalMessage_ != global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance) {
             result.optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestRequired.CreateBuilder(result.optionalMessage_).MergeFrom(value).BuildPartial();
@@ -7010,18 +7057,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedMessage(index);
       }
       public Builder SetRepeatedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestRequired value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedMessage_[index] = value;
         return this;
       }
       public Builder SetRepeatedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedMessage_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedMessage_.Add(builderForValue.Build());
         return this;
       }
@@ -7239,16 +7290,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetForeignNested(value); }
       }
       public Builder SetForeignNested(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasForeignNested = true;
         result.foreignNested_ = value;
         return this;
       }
       public Builder SetForeignNested(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasForeignNested = true;
         result.foreignNested_ = builderForValue.Build();
         return this;
       }
       public Builder MergeForeignNested(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasForeignNested &&
             result.foreignNested_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
             result.foreignNested_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.foreignNested_).MergeFrom(value).BuildPartial();
@@ -8013,16 +8067,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetA(value); }
       }
       public Builder SetA(global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasA = true;
         result.a_ = value;
         return this;
       }
       public Builder SetA(global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasA = true;
         result.a_ = builderForValue.Build();
         return this;
       }
       public Builder MergeA(global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasA &&
             result.a_ != global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.DefaultInstance) {
             result.a_ = global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.CreateBuilder(result.a_).MergeFrom(value).BuildPartial();
@@ -8243,16 +8300,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetBb(value); }
       }
       public Builder SetBb(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasBb = true;
         result.bb_ = value;
         return this;
       }
       public Builder SetBb(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasBb = true;
         result.bb_ = builderForValue.Build();
         return this;
       }
       public Builder MergeBb(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasBb &&
             result.bb_ != global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.DefaultInstance) {
             result.bb_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.CreateBuilder(result.bb_).MergeFrom(value).BuildPartial();
@@ -8477,16 +8537,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetA(value); }
       }
       public Builder SetA(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasA = true;
         result.a_ = value;
         return this;
       }
       public Builder SetA(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasA = true;
         result.a_ = builderForValue.Build();
         return this;
       }
       public Builder MergeA(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasA &&
             result.a_ != global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.DefaultInstance) {
             result.a_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.CreateBuilder(result.a_).MergeFrom(value).BuildPartial();
@@ -9163,16 +9226,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetFoo(value); }
       }
       public Builder SetFoo(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasFoo = true;
         result.foo_ = value;
         return this;
       }
       public Builder SetFoo(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasFoo = true;
         result.foo_ = builderForValue.Build();
         return this;
       }
       public Builder MergeFoo(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasFoo &&
             result.foo_ != global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.DefaultInstance) {
             result.foo_ = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.CreateBuilder(result.foo_).MergeFrom(value).BuildPartial();
@@ -9196,16 +9262,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetBar(value); }
       }
       public Builder SetBar(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasBar = true;
         result.bar_ = value;
         return this;
       }
       public Builder SetBar(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasBar = true;
         result.bar_ = builderForValue.Build();
         return this;
       }
       public Builder MergeBar(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasBar &&
             result.bar_ != global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.DefaultInstance) {
             result.bar_ = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.CreateBuilder(result.bar_).MergeFrom(value).BuildPartial();
@@ -9485,18 +9554,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             return result.GetNestedmessageRepeatedForeignmessage(index);
           }
           public Builder SetNestedmessageRepeatedForeignmessage(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.nestedmessageRepeatedForeignmessage_[index] = value;
             return this;
           }
           public Builder SetNestedmessageRepeatedForeignmessage(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+            pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
             result.nestedmessageRepeatedForeignmessage_[index] = builderForValue.Build();
             return this;
           }
           public Builder AddNestedmessageRepeatedForeignmessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.nestedmessageRepeatedForeignmessage_.Add(value);
             return this;
           }
           public Builder AddNestedmessageRepeatedForeignmessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+            pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
             result.nestedmessageRepeatedForeignmessage_.Add(builderForValue.Build());
             return this;
           }
@@ -9677,16 +9750,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalNestedMessage(value); }
       }
       public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalNestedMessage = true;
         result.optionalNestedMessage_ = value;
         return this;
       }
       public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalNestedMessage = true;
         result.optionalNestedMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalNestedMessage &&
             result.optionalNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance) {
             result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.CreateBuilder(result.optionalNestedMessage_).MergeFrom(value).BuildPartial();
@@ -10179,6 +10255,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetStringField(value); }
       }
       public Builder SetStringField(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasStringField = true;
         result.stringField_ = value;
         return this;
@@ -10215,16 +10292,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetMessageField(value); }
       }
       public Builder SetMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasMessageField = true;
         result.messageField_ = value;
         return this;
       }
       public Builder SetMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasMessageField = true;
         result.messageField_ = builderForValue.Build();
         return this;
       }
       public Builder MergeMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasMessageField &&
             result.messageField_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
             result.messageField_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.messageField_).MergeFrom(value).BuildPartial();
@@ -10248,6 +10328,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetStringPieceField(value); }
       }
       public Builder SetStringPieceField(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasStringPieceField = true;
         result.stringPieceField_ = value;
         return this;
@@ -10266,6 +10347,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetCordField(value); }
       }
       public Builder SetCordField(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasCordField = true;
         result.cordField_ = value;
         return this;
@@ -10312,10 +10394,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedStringField(index);
       }
       public Builder SetRepeatedStringField(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedStringField_[index] = value;
         return this;
       }
       public Builder AddRepeatedStringField(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedStringField_.Add(value);
         return this;
       }
@@ -10364,18 +10448,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedMessageField(index);
       }
       public Builder SetRepeatedMessageField(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedMessageField_[index] = value;
         return this;
       }
       public Builder SetRepeatedMessageField(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedMessageField_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedMessageField_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedMessageField_.Add(builderForValue.Build());
         return this;
       }
@@ -10398,10 +10486,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedStringPieceField(index);
       }
       public Builder SetRepeatedStringPieceField(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedStringPieceField_[index] = value;
         return this;
       }
       public Builder AddRepeatedStringPieceField(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedStringPieceField_.Add(value);
         return this;
       }
@@ -10424,10 +10514,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedCordField(index);
       }
       public Builder SetRepeatedCordField(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedCordField_[index] = value;
         return this;
       }
       public Builder AddRepeatedCordField(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedCordField_.Add(value);
         return this;
       }
@@ -10671,6 +10763,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetMyString(value); }
       }
       public Builder SetMyString(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasMyString = true;
         result.myString_ = value;
         return this;
@@ -11009,6 +11102,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetEscapedBytes(value); }
       }
       public Builder SetEscapedBytes(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasEscapedBytes = true;
         result.escapedBytes_ = value;
         return this;
@@ -11099,6 +11193,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetUtf8String(value); }
       }
       public Builder SetUtf8String(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasUtf8String = true;
         result.utf8String_ = value;
         return this;

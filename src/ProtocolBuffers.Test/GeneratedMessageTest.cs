@@ -103,7 +103,20 @@ namespace Google.ProtocolBuffers {
       TestAllTypes message = builder.Build();
       TestUtil.AssertAllFieldsSet(message);
     }
-    
+
+    [Test]
+    public void SettersRejectNull() {
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      TestUtil.AssertArgumentNullException(() => builder.SetOptionalString(null));
+      TestUtil.AssertArgumentNullException(() => builder.SetOptionalBytes(null));
+      TestUtil.AssertArgumentNullException(() => builder.SetOptionalNestedMessage((TestAllTypes.Types.NestedMessage)null));
+      TestUtil.AssertArgumentNullException(() => builder.SetOptionalNestedMessage((TestAllTypes.Types.NestedMessage.Builder)null));
+      TestUtil.AssertArgumentNullException(() => builder.AddRepeatedString(null));
+      TestUtil.AssertArgumentNullException(() => builder.AddRepeatedBytes(null));
+      TestUtil.AssertArgumentNullException(() => builder.AddRepeatedNestedMessage((TestAllTypes.Types.NestedMessage)null));
+      TestUtil.AssertArgumentNullException(() => builder.AddRepeatedNestedMessage((TestAllTypes.Types.NestedMessage.Builder)null));
+    }
+
     [Test]
     public void RepeatedSetters() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -128,6 +141,18 @@ namespace Google.ProtocolBuffers {
       TestUtil.AssertEqual(message.RepeatedForeignEnumList, new ForeignEnum[] {ForeignEnum.FOREIGN_BAZ});
       Assert.AreEqual(1, message.RepeatedForeignMessageCount);
       Assert.AreEqual(12, message.GetRepeatedForeignMessage(0).C);
+    }
+
+    [Test]
+    public void RepeatedAppendRejectsNull() {
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+
+      ForeignMessage foreignMessage = ForeignMessage.CreateBuilder().SetC(12).Build();
+      TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedForeignMessage(new[] { foreignMessage, null }));
+      TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedForeignMessage(null));
+      TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedForeignEnum(null));
+      TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedString(new[] { "one", null }));
+      TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedBytes(new[] { TestUtil.ToBytes("one"), null }));
     }
 
     [Test]
@@ -182,12 +207,23 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void ReflectionSettersRejectNull() {
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      reflectionTester.AssertReflectionSettersRejectNull(builder);
+    }
+    [Test]
     public void ReflectionRepeatedSetters() {
       TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
       reflectionTester.SetAllFieldsViaReflection(builder);
       reflectionTester.ModifyRepeatedFieldsViaReflection(builder);
       TestAllTypes message = builder.Build();
       TestUtil.AssertRepeatedFieldsModified(message);
+    }
+
+    [Test]
+    public void TestReflectionRepeatedSettersRejectNull() {
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      reflectionTester.AssertReflectionRepeatedSettersRejectNull(builder);
     }
 
     [Test]
@@ -238,12 +274,24 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void ExtensionReflectionSettersRejectNull() {
+      TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
+      extensionsReflectionTester.AssertReflectionSettersRejectNull(builder);
+    }
+
+    [Test]
     public void ExtensionReflectionRepeatedSetters() {
       TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
       extensionsReflectionTester.SetAllFieldsViaReflection(builder);
       extensionsReflectionTester.ModifyRepeatedFieldsViaReflection(builder);
       TestAllExtensions message = builder.Build();
       TestUtil.AssertRepeatedExtensionsModified(message);
+    }
+
+    [Test]
+    public void ExtensionReflectionRepeatedSettersRejectNull() {
+      TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
+      extensionsReflectionTester.AssertReflectionRepeatedSettersRejectNull(builder);
     }
 
     [Test]
@@ -264,6 +312,18 @@ namespace Google.ProtocolBuffers {
           .ClearExtension(UnitTestProtoFile.RepeatedInt32Extension)
           .GetExtensionCount(UnitTestProtoFile.RepeatedInt32Extension));
     }
+
+    /* Reinstate this test in the commit where it's fixed...
+    [Test]
+    public void ExtensionMergeFrom() {
+      TestAllExtensions original = TestAllExtensions.CreateBuilder()
+          .SetExtension(UnitTestProtoFile.OptionalInt32Extension, 1).Build();
+      TestAllExtensions merged =
+          TestAllExtensions.CreateBuilder().MergeFrom(original).Build();
+      Assert.IsTrue((merged.HasExtension(UnitTestProtoFile.OptionalInt32Extension)));
+      Assert.AreEqual(1, (int)merged.GetExtension(UnitTestProtoFile.OptionalInt32Extension));
+    }
+    */
 
     /* Removed multiple files option for the moment
     [Test]

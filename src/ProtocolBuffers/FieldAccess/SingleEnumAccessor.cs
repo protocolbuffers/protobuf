@@ -63,6 +63,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// from an EnumValueDescriptor parameter.
     /// </summary>
     public override void SetValue(TBuilder builder, object value) {
+      ThrowHelper.ThrowIfNull(value, "value");
       EnumValueDescriptor valueDescriptor = (EnumValueDescriptor) value;
       base.SetValue(builder, valueDescriptor.Number);
     }

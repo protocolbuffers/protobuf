@@ -1383,5 +1383,14 @@ namespace Google.ProtocolBuffers {
       }
       return bytes;
     }
+
+    internal static void AssertArgumentNullException(Action action) {
+      try {
+        action();
+        Assert.Fail("Exception was not thrown");
+      } catch (ArgumentNullException) {
+        // We expect this exception.
+      }
+    }
   }
 }

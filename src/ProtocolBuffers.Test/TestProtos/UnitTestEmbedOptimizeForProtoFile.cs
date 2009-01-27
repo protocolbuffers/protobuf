@@ -256,16 +256,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetOptionalMessage(value); }
       }
       public Builder SetOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptionalMessage = true;
         result.optionalMessage_ = value;
         return this;
       }
       public Builder SetOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptionalMessage = true;
         result.optionalMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptionalMessage &&
             result.optionalMessage_ != global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance) {
             result.optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.CreateBuilder(result.optionalMessage_).MergeFrom(value).BuildPartial();
@@ -291,18 +294,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetRepeatedMessage(index);
       }
       public Builder SetRepeatedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedMessage_[index] = value;
         return this;
       }
       public Builder SetRepeatedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedMessage_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.repeatedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.repeatedMessage_.Add(builderForValue.Build());
         return this;
       }

@@ -1179,6 +1179,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField1(value); }
       }
       public Builder SetField1(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField1 = true;
         result.field1_ = value;
         return this;
@@ -1197,6 +1198,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField9(value); }
       }
       public Builder SetField9(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField9 = true;
         result.field9_ = value;
         return this;
@@ -1215,6 +1217,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField18(value); }
       }
       public Builder SetField18(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField18 = true;
         result.field18_ = value;
         return this;
@@ -1359,6 +1362,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField4(value); }
       }
       public Builder SetField4(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField4 = true;
         result.field4_ = value;
         return this;
@@ -1421,6 +1425,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField7(value); }
       }
       public Builder SetField7(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField7 = true;
         result.field7_ = value;
         return this;
@@ -1601,6 +1606,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField102(value); }
       }
       public Builder SetField102(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField102 = true;
         result.field102_ = value;
         return this;
@@ -1619,6 +1625,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField103(value); }
       }
       public Builder SetField103(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField103 = true;
         result.field103_ = value;
         return this;
@@ -1799,16 +1806,19 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField15(value); }
       }
       public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField15 = true;
         result.field15_ = value;
         return this;
       }
       public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasField15 = true;
         result.field15_ = builderForValue.Build();
         return this;
       }
       public Builder MergeField15(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasField15 &&
             result.field15_ != global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.DefaultInstance) {
             result.field15_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage2.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
@@ -1904,6 +1914,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField129(value); }
       }
       public Builder SetField129(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField129 = true;
         result.field129_ = value;
         return this;
@@ -2586,6 +2597,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField15(value); }
       }
       public Builder SetField15(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField15 = true;
         result.field15_ = value;
         return this;
@@ -2838,6 +2850,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField205(value); }
       }
       public Builder SetField205(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField205 = true;
         result.field205_ = value;
         return this;
@@ -3472,6 +3485,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField12(value); }
           }
           public Builder SetField12(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField12 = true;
             result.field12_ = value;
             return this;
@@ -3490,6 +3504,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField13(value); }
           }
           public Builder SetField13(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField13 = true;
             result.field13_ = value;
             return this;
@@ -3510,10 +3525,12 @@ namespace Google.ProtocolBuffers.ProtoBench {
             return result.GetField14(index);
           }
           public Builder SetField14(int index, string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.field14_[index] = value;
             return this;
           }
           public Builder AddField14(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.field14_.Add(value);
             return this;
           }
@@ -3570,6 +3587,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField27(value); }
           }
           public Builder SetField27(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField27 = true;
             result.field27_ = value;
             return this;
@@ -3606,6 +3624,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField29(value); }
           }
           public Builder SetField29(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField29 = true;
             result.field29_ = value;
             return this;
@@ -3624,6 +3643,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField16(value); }
           }
           public Builder SetField16(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField16 = true;
             result.field16_ = value;
             return this;
@@ -3644,10 +3664,12 @@ namespace Google.ProtocolBuffers.ProtoBench {
             return result.GetField22(index);
           }
           public Builder SetField22(int index, string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.field22_[index] = value;
             return this;
           }
           public Builder AddField22(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.field22_.Add(value);
             return this;
           }
@@ -3712,6 +3734,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField24(value); }
           }
           public Builder SetField24(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField24 = true;
             result.field24_ = value;
             return this;
@@ -3730,16 +3753,19 @@ namespace Google.ProtocolBuffers.ProtoBench {
             set { SetField31(value); }
           }
           public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasField31 = true;
             result.field31_ = value;
             return this;
           }
           public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.Builder builderForValue) {
+            pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
             result.hasField31 = true;
             result.field31_ = builderForValue.Build();
             return this;
           }
           public Builder MergeField31(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4 value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             if (result.HasField31 &&
                 result.field31_ != global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.DefaultInstance) {
                 result.field31_ = global::Google.ProtocolBuffers.ProtoBench.SpeedMessage4.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
@@ -4570,6 +4596,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField1(value); }
       }
       public Builder SetField1(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField1 = true;
         result.field1_ = value;
         return this;
@@ -4660,6 +4687,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField6(value); }
       }
       public Builder SetField6(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField6 = true;
         result.field6_ = value;
         return this;
@@ -4678,6 +4706,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
         set { SetField2(value); }
       }
       public Builder SetField2(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasField2 = true;
         result.field2_ = value;
         return this;
@@ -4968,18 +4997,22 @@ namespace Google.ProtocolBuffers.ProtoBench {
         return result.GetGroup1(index);
       }
       public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.group1_[index] = value;
         return this;
       }
       public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.group1_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.group1_.Add(value);
         return this;
       }
       public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.group1_.Add(builderForValue.Build());
         return this;
       }
@@ -5002,10 +5035,12 @@ namespace Google.ProtocolBuffers.ProtoBench {
         return result.GetField128(index);
       }
       public Builder SetField128(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.field128_[index] = value;
         return this;
       }
       public Builder AddField128(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.field128_.Add(value);
         return this;
       }
@@ -5046,10 +5081,12 @@ namespace Google.ProtocolBuffers.ProtoBench {
         return result.GetField127(index);
       }
       public Builder SetField127(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.field127_[index] = value;
         return this;
       }
       public Builder AddField127(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.field127_.Add(value);
         return this;
       }

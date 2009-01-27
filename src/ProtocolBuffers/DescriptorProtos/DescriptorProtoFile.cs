@@ -379,18 +379,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetFile(index);
       }
       public Builder SetFile(int index, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.file_[index] = value;
         return this;
       }
       public Builder SetFile(int index, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.file_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddFile(global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.file_.Add(value);
         return this;
       }
       public Builder AddFile(global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.file_.Add(builderForValue.Build());
         return this;
       }
@@ -782,6 +786,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -800,6 +805,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetPackage(value); }
       }
       public Builder SetPackage(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasPackage = true;
         result.package_ = value;
         return this;
@@ -820,10 +826,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetDependency(index);
       }
       public Builder SetDependency(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.dependency_[index] = value;
         return this;
       }
       public Builder AddDependency(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.dependency_.Add(value);
         return this;
       }
@@ -846,18 +854,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetMessageType(index);
       }
       public Builder SetMessageType(int index, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.messageType_[index] = value;
         return this;
       }
       public Builder SetMessageType(int index, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.messageType_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddMessageType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.messageType_.Add(value);
         return this;
       }
       public Builder AddMessageType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.messageType_.Add(builderForValue.Build());
         return this;
       }
@@ -880,18 +892,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetEnumType(index);
       }
       public Builder SetEnumType(int index, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.enumType_[index] = value;
         return this;
       }
       public Builder SetEnumType(int index, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.enumType_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.enumType_.Add(value);
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.enumType_.Add(builderForValue.Build());
         return this;
       }
@@ -914,18 +930,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetService(index);
       }
       public Builder SetService(int index, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.service_[index] = value;
         return this;
       }
       public Builder SetService(int index, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.service_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddService(global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.service_.Add(value);
         return this;
       }
       public Builder AddService(global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.service_.Add(builderForValue.Build());
         return this;
       }
@@ -948,18 +968,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetExtension(index);
       }
       public Builder SetExtension(int index, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.extension_[index] = value;
         return this;
       }
       public Builder SetExtension(int index, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.extension_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.extension_.Add(value);
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.extension_.Add(builderForValue.Build());
         return this;
       }
@@ -980,16 +1004,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -1601,6 +1628,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -1621,18 +1649,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetField(index);
       }
       public Builder SetField(int index, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.field_[index] = value;
         return this;
       }
       public Builder SetField(int index, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.field_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddField(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.field_.Add(value);
         return this;
       }
       public Builder AddField(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.field_.Add(builderForValue.Build());
         return this;
       }
@@ -1655,18 +1687,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetExtension(index);
       }
       public Builder SetExtension(int index, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.extension_[index] = value;
         return this;
       }
       public Builder SetExtension(int index, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.extension_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.extension_.Add(value);
         return this;
       }
       public Builder AddExtension(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.extension_.Add(builderForValue.Build());
         return this;
       }
@@ -1689,18 +1725,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetNestedType(index);
       }
       public Builder SetNestedType(int index, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.nestedType_[index] = value;
         return this;
       }
       public Builder SetNestedType(int index, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.nestedType_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddNestedType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.nestedType_.Add(value);
         return this;
       }
       public Builder AddNestedType(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.nestedType_.Add(builderForValue.Build());
         return this;
       }
@@ -1723,18 +1763,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetEnumType(index);
       }
       public Builder SetEnumType(int index, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.enumType_[index] = value;
         return this;
       }
       public Builder SetEnumType(int index, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.enumType_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.enumType_.Add(value);
         return this;
       }
       public Builder AddEnumType(global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.enumType_.Add(builderForValue.Build());
         return this;
       }
@@ -1757,18 +1801,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetExtensionRange(index);
       }
       public Builder SetExtensionRange(int index, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.extensionRange_[index] = value;
         return this;
       }
       public Builder SetExtensionRange(int index, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.extensionRange_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddExtensionRange(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.extensionRange_.Add(value);
         return this;
       }
       public Builder AddExtensionRange(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.extensionRange_.Add(builderForValue.Build());
         return this;
       }
@@ -1789,16 +1837,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -2200,6 +2251,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -2272,6 +2324,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetTypeName(value); }
       }
       public Builder SetTypeName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasTypeName = true;
         result.typeName_ = value;
         return this;
@@ -2290,6 +2343,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetExtendee(value); }
       }
       public Builder SetExtendee(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasExtendee = true;
         result.extendee_ = value;
         return this;
@@ -2308,6 +2362,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetDefaultValue(value); }
       }
       public Builder SetDefaultValue(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasDefaultValue = true;
         result.defaultValue_ = value;
         return this;
@@ -2326,16 +2381,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -2593,6 +2651,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -2613,18 +2672,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetValue(index);
       }
       public Builder SetValue(int index, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.value_[index] = value;
         return this;
       }
       public Builder SetValue(int index, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.value_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddValue(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.value_.Add(value);
         return this;
       }
       public Builder AddValue(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.value_.Add(builderForValue.Build());
         return this;
       }
@@ -2645,16 +2708,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -2904,6 +2970,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -2940,16 +3007,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -3207,6 +3277,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -3227,18 +3298,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetMethod(index);
       }
       public Builder SetMethod(int index, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.method_[index] = value;
         return this;
       }
       public Builder SetMethod(int index, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.method_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddMethod(global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.method_.Add(value);
         return this;
       }
       public Builder AddMethod(global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.method_.Add(builderForValue.Build());
         return this;
       }
@@ -3259,16 +3334,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -3540,6 +3618,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetName(value); }
       }
       public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasName = true;
         result.name_ = value;
         return this;
@@ -3558,6 +3637,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetInputType(value); }
       }
       public Builder SetInputType(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasInputType = true;
         result.inputType_ = value;
         return this;
@@ -3576,6 +3656,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOutputType(value); }
       }
       public Builder SetOutputType(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOutputType = true;
         result.outputType_ = value;
         return this;
@@ -3594,16 +3675,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetOptions(value); }
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasOptions = true;
         result.options_ = value;
         return this;
       }
       public Builder SetOptions(global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.hasOptions = true;
         result.options_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptions(global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         if (result.HasOptions &&
             result.options_ != global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance) {
             result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.CreateBuilder(result.options_).MergeFrom(value).BuildPartial();
@@ -3916,6 +4000,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetJavaPackage(value); }
       }
       public Builder SetJavaPackage(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasJavaPackage = true;
         result.javaPackage_ = value;
         return this;
@@ -3934,6 +4019,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetJavaOuterClassname(value); }
       }
       public Builder SetJavaOuterClassname(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasJavaOuterClassname = true;
         result.javaOuterClassname_ = value;
         return this;
@@ -3990,18 +4076,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -4250,18 +4340,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -4545,6 +4639,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetExperimentalMapKey(value); }
       }
       public Builder SetExperimentalMapKey(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasExperimentalMapKey = true;
         result.experimentalMapKey_ = value;
         return this;
@@ -4565,18 +4660,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -4785,18 +4884,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -5005,18 +5108,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -5225,18 +5332,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -5445,18 +5556,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetUninterpretedOption(index);
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_[index] = value;
         return this;
       }
       public Builder SetUninterpretedOption(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.uninterpretedOption_.Add(value);
         return this;
       }
       public Builder AddUninterpretedOption(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.uninterpretedOption_.Add(builderForValue.Build());
         return this;
       }
@@ -5699,6 +5814,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             set { SetNamePart_(value); }
           }
           public Builder SetNamePart_(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
             result.hasNamePart_ = true;
             result.namePart_ = value;
             return this;
@@ -6010,18 +6126,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return result.GetName(index);
       }
       public Builder SetName(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.name_[index] = value;
         return this;
       }
       public Builder SetName(int index, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.name_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddName(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.name_.Add(value);
         return this;
       }
       public Builder AddName(global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         result.name_.Add(builderForValue.Build());
         return this;
       }
@@ -6042,6 +6162,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetIdentifierValue(value); }
       }
       public Builder SetIdentifierValue(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasIdentifierValue = true;
         result.identifierValue_ = value;
         return this;
@@ -6114,6 +6235,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         set { SetStringValue(value); }
       }
       public Builder SetStringValue(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
         result.hasStringValue = true;
         result.stringValue_ = value;
         return this;

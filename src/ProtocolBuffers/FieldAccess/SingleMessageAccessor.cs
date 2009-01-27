@@ -60,7 +60,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     /// which may already be of the right type or may be a dynamic message.
     /// </summary>
     private object CoerceType(object value) {
-
+      ThrowHelper.ThrowIfNull(value, "value");
       // If it's already of the right type, we're done
       if (ClrType.IsInstanceOfType(value)) {
         return value;
