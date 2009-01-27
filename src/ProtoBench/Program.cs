@@ -48,7 +48,6 @@ namespace Google.ProtocolBuffers.ProtoBench
         MemoryStream inputStream = new MemoryStream(inputData);
         ByteString inputString = ByteString.CopyFrom(inputData);
         IMessage sampleMessage = defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString).WeakBuild();
-        sampleMessage.ToByteString();
         Benchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
         Benchmark("Serialize to byte array", inputData.Length, () => sampleMessage.ToByteArray());
         Benchmark("Serialize to memory stream", inputData.Length, () => sampleMessage.WriteTo(new MemoryStream()));
