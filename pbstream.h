@@ -1,5 +1,5 @@
 /*
- * pbstream - a small and simple implementation of Protocol Buffers.
+ * pbstream - a stream-oriented implementation of protocol buffers.
  *
  * Copyright (c) 2008 Joshua Haberman.  See LICENSE for details.
  */
