@@ -102,14 +102,14 @@ bool get_64_le(char **buf, char *end, uint64_t *out_value)
   return PBSTREAM_STATUS_OK;
 }
 
-int32_t zigzag_decode_32(uint64_t src)
+int32_t zigzag_decode_32(uint64_t n)
 {
-  return 0;  /* TODO */
+  return (n >> 1) ^ -(int32_t)(n & 1);
 }
 
-int64_t zigzag_decode_64(uint64_t src)
+int64_t zigzag_decode_64(uint64_t n)
 {
-  return 0;  /* TODO */
+  return (n >> 1) ^ (int64_t)(n & 1);
 }
 
 /* Parses the next field-number/wire-value pair from the stream of bytes
