@@ -748,6 +748,7 @@ public class ProtoBuf {
         case ProtoBufType.TYPE_MESSAGE:
         case ProtoBufType.TYPE_TEXT:
         case ProtoBufType.TYPE_BYTES:
+        case ProtoBufType.TYPE_STRING:
           return;
       }
     } else if (object instanceof ProtoBuf) {
