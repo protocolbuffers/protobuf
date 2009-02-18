@@ -46,6 +46,19 @@ namespace Google.ProtocolBuffers {
   /// </para>
   /// </summary>
   public static class WireFormat {
+
+#region Fixed sizes.
+    // TODO(jonskeet): Move these somewhere else. They're messy. Consider making FieldType a smarter kind of enum
+    internal const int Fixed32Size = 4;
+    internal const int Fixed64Size = 8;
+    internal const int SFixed32Size = 4;
+    internal const int SFixed64Size = 8;
+    internal const int FloatSize = 4;
+    internal const int DoubleSize = 8;
+    internal const int BoolSize = 1;
+#endregion
+
+
     public enum WireType : uint {
       Varint = 0,
       Fixed64 = 1,
@@ -91,6 +104,18 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public static uint MakeTag(int fieldNumber, WireType wireType) {
       return (uint) (fieldNumber << TagTypeBits) | (uint) wireType;
+    }
+
+    public static uint MakeTag(FieldDescriptor field) {
+      return MakeTag(field.FieldNumber, GetWireType(field));
+    }
+
+    /// <summary>
+    /// Returns the wire type for the given field descriptor. This differs
+    /// from GetWireType(FieldType) for packed repeated fields.
+    /// </summary>
+    internal static WireType GetWireType(FieldDescriptor descriptor) {
+      return descriptor.IsPacked ? WireType.LengthDelimited : GetWireType(descriptor.FieldType);
     }
 
     /// <summary>

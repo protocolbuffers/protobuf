@@ -38,11 +38,13 @@ namespace Google.ProtocolBuffers {
 
     private ReflectionTester reflectionTester;
     private ReflectionTester extensionsReflectionTester;
+    private ReflectionTester packedReflectionTester;
 
     [SetUp]
     public void SetUp() {
       reflectionTester = ReflectionTester.CreateTestAllTypesInstance();
       extensionsReflectionTester = ReflectionTester.CreateTestAllExtensionsInstance();
+      packedReflectionTester = ReflectionTester.CreateTestPackedTypesInstance();
     }
 
     [Test]
@@ -134,6 +136,33 @@ namespace Google.ProtocolBuffers {
       IMessage message2 = DynamicMessage.ParseFrom(TestAllTypes.Descriptor, rawBytes);
       reflectionTester.AssertAllFieldsSetViaReflection(message2);
     }
+
+    [Test]
+      public void DynamicMessagePackedSerialization() {
+    IBuilder builder = DynamicMessage.CreateBuilder(TestPackedTypes.Descriptor);
+    packedReflectionTester.SetPackedFieldsViaReflection(builder);
+    IMessage message = builder.WeakBuild();
+
+    ByteString rawBytes = message.ToByteString();
+    TestPackedTypes message2 = TestPackedTypes.ParseFrom(rawBytes);
+
+    TestUtil.AssertPackedFieldsSet(message2);
+
+    // In fact, the serialized forms should be exactly the same, byte-for-byte.
+    Assert.AreEqual(TestUtil.GetPackedSet().ToByteString(), rawBytes);
+    }
+
+    [Test]
+  public void testDynamicMessagePackedParsing() {
+    TestPackedTypes.Builder builder = TestPackedTypes.CreateBuilder();
+    TestUtil.SetPackedFields(builder);
+    TestPackedTypes message = builder.Build();
+
+    ByteString rawBytes = message.ToByteString();
+
+    IMessage message2 = DynamicMessage.ParseFrom(TestPackedTypes.Descriptor, rawBytes);
+    packedReflectionTester.AssertPackedFieldsSetViaReflection(message2);
+  }
 
     [Test]
     public void DynamicMessageCopy() {

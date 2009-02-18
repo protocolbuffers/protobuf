@@ -97,6 +97,45 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
+    /// <summary>
+    /// For encodings with fixed sizes, returns that size in bytes.  Otherwise
+    /// returns -1. TODO(jonskeet): Make this less ugly.
+    /// </summary>
+    protected int FixedSize {
+      get {
+        switch (Descriptor.FieldType) {
+          case FieldType.UInt32:
+          case FieldType.UInt64:
+          case FieldType.Int32:
+          case FieldType.Int64:
+          case FieldType.SInt32:
+          case FieldType.SInt64:
+          case FieldType.Enum:
+          case FieldType.Bytes:
+          case FieldType.String:
+          case FieldType.Message:
+          case FieldType.Group:
+            return -1;
+          case FieldType.Float:
+            return WireFormat.FloatSize;
+          case FieldType.SFixed32:
+            return WireFormat.SFixed32Size;
+          case FieldType.Fixed32:
+            return WireFormat.Fixed32Size;
+          case FieldType.Double:
+            return WireFormat.DoubleSize;
+          case FieldType.SFixed64:
+            return WireFormat.SFixed64Size;
+          case FieldType.Fixed64:
+            return WireFormat.Fixed64Size;
+          case FieldType.Bool:
+            return WireFormat.BoolSize;
+          default:
+            throw new InvalidOperationException("Invalid field descriptor type");
+        }
+      }
+    }
+
     protected bool IsNullableType {
       get {
         switch (Descriptor.FieldType) {

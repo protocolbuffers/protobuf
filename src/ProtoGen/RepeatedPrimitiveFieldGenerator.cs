@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
@@ -11,6 +12,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void GenerateMembers(TextGenerator writer) {
+      if (Descriptor.IsPacked && Descriptor.File.Options.OptimizeFor == FileOptions.Types.OptimizeMode.SPEED) {
+        writer.WriteLine("private int {0}MemoizedSerializedSize;", Name);
+      }
       writer.WriteLine("private pbc::PopsicleList<{0}> {1}_ = new pbc::PopsicleList<{0}>();", TypeName, Name);
       writer.WriteLine("public scg::IList<{0}> {1}List {{", TypeName, PropertyName);
       writer.WriteLine("  get {{ return pbc::Lists.AsReadOnly({0}_); }}", Name);
@@ -68,18 +72,60 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void GenerateParsingCode(TextGenerator writer) {
-      writer.WriteLine("Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("int length = input.ReadInt32();");
+        writer.WriteLine("int limit = input.PushLimit(length);");
+        writer.WriteLine("while (!input.ReachedLimit) {");
+        writer.WriteLine("  Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
+        writer.WriteLine("}");
+        writer.WriteLine("input.PopLimit(limit);");
+      } else {
+        writer.WriteLine("Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
+      }
     }
 
     public void GenerateSerializationCode(TextGenerator writer) {
-      writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
-      writer.WriteLine("  output.Write{0}({1}, element);", CapitalizedTypeName, Number);
+      writer.WriteLine("if ({0}_.Count > 0) {{", Name);
+      writer.Indent();
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("output.WriteRawVarint32({0});", WireFormat.MakeTag(Descriptor));
+        writer.WriteLine("output.WriteRawVarint32((uint) {0}MemoizedSerializedSize);", Name);
+        writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
+        writer.WriteLine("  output.Write{0}NoTag(element);", CapitalizedTypeName);
+        writer.WriteLine("}");
+      } else {
+        writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
+        writer.WriteLine("  output.Write{0}({1}, element);", CapitalizedTypeName, Number);
+        writer.WriteLine("}");
+      }
+      writer.Outdent();
       writer.WriteLine("}");
     }
 
     public void GenerateSerializedSizeCode(TextGenerator writer) {
-      writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
-      writer.WriteLine("  size += pb::CodedOutputStream.Compute{0}Size({1}, element);", CapitalizedTypeName, Number);
+      writer.WriteLine("{");
+      writer.Indent();
+      writer.WriteLine("int dataSize = 0;");
+      if (FixedSize == -1) {
+        writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
+        writer.WriteLine("  dataSize += pb::CodedOutputStream.Compute{0}SizeNoTag(element);", CapitalizedTypeName, Number);
+        writer.WriteLine("}");
+      } else {
+        writer.WriteLine("dataSize = {0} * {1}_.Count;", FixedSize, Name);
+      }
+      writer.WriteLine("size += dataSize;");
+      int tagSize = CodedOutputStream.ComputeTagSize(Descriptor.FieldNumber);
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("size += {0};", tagSize);
+        writer.WriteLine("size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);");
+      } else {
+        writer.WriteLine("size += {0} * {1}_.Count;", tagSize, Name);
+      }
+      // cache the data size for packed fields.
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("{0}MemoizedSerializedSize = dataSize;", Name);
+      }
+      writer.Outdent();
       writer.WriteLine("}");
     }
   }

@@ -609,6 +609,20 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
+    /// Returns whether or not all the data before the limit has been read.
+    /// </summary>
+    /// <returns></returns>
+    public bool ReachedLimit {
+      get {
+        if (currentLimit == int.MaxValue) {
+          return false;
+        }
+        int currentAbsolutePosition = totalBytesRetired + bufferPos;
+        return currentAbsolutePosition >= currentLimit;
+      }
+    }
+    
+    /// <summary>
     /// Called when buffer is empty to read more bytes from the
     /// input.  If <paramref name="mustSucceed"/> is true, RefillBuffer() gurantees that
     /// either there will be at least one byte in the buffer when it returns

@@ -74,6 +74,20 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void PackedSerialization() {
+      IMessage abstractMessage = new AbstractMessageWrapper(TestUtil.GetPackedSet());
+      TestUtil.AssertPackedFieldsSet(TestPackedTypes.ParseFrom(abstractMessage.ToByteString()));
+      Assert.AreEqual(TestUtil.GetPackedSet().ToByteString(), abstractMessage.ToByteString());
+    }
+
+    [Test]
+    public void PackedParsing() {
+      AbstractMessageWrapper.Builder builder = new AbstractMessageWrapper.Builder(TestPackedTypes.CreateBuilder());
+      AbstractMessageWrapper message = builder.MergeFrom(TestUtil.GetPackedSet().ToByteString()).Build();
+      TestUtil.AssertPackedFieldsSet((TestPackedTypes)message.WrappedMessage);
+    }
+
+    [Test]
     public void OptimizedForSize() {
       // We're mostly only Checking that this class was compiled successfully.
       TestOptimizedForSize message = TestOptimizedForSize.CreateBuilder().SetI(1).Build();

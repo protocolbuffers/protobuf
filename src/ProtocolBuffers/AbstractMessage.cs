@@ -110,8 +110,21 @@ namespace Google.ProtocolBuffers {
         if (field.IsRepeated) {
           // We know it's an IList<T>, but not the exact type - so
           // IEnumerable is the best we can do. (C# generics aren't covariant yet.)
-          foreach (object element in (IEnumerable)entry.Value) {
-            output.WriteField(field.FieldType, field.FieldNumber, element);
+          IEnumerable valueList = (IEnumerable) entry.Value;
+          if (field.IsPacked) {
+            output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
+            int dataSize = 0;
+            foreach (object element in valueList) {
+              dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
+            }
+            output.WriteRawVarint32((uint)dataSize);
+            foreach (object element in valueList) {
+              output.WriteFieldNoTag(field.FieldType, element);
+            }
+          } else {
+            foreach (object element in valueList) {
+              output.WriteField(field.FieldType, field.FieldNumber, element);
+            }
           }
         } else {
           output.WriteField(field.FieldType, field.FieldNumber, entry.Value);
@@ -136,8 +149,19 @@ namespace Google.ProtocolBuffers {
         foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
           FieldDescriptor field = entry.Key;
           if (field.IsRepeated) {
-            foreach (object element in (IEnumerable) entry.Value) {
-              size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, element);
+            IEnumerable valueList = (IEnumerable) entry.Value;
+            if (field.IsPacked) {
+              int dataSize = 0;
+              foreach (object element in valueList) {
+                dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
+              }
+              size += dataSize;
+              size += CodedOutputStream.ComputeTagSize(field.FieldNumber);
+              size += CodedOutputStream.ComputeRawVarint32Size((uint)dataSize);
+            } else {
+              foreach (object element in valueList) {
+                size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, element);
+              }
             }
           } else {
             size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, entry.Value);

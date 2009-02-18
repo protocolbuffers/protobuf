@@ -1,10 +1,14 @@
 Current task list (not in order)
 
-- Performance framework
-- Optionally remove dependencies to core and csharp options (2.0.3
-  will remove core dependency)
+- Optionally remove dependencies to csharp options
 - Remove multifile support
 - Mono support
 - Docs
 - Clean up protogen code
 - Add flags to protogen
+- Avoid using reflection for messages which don't need it (is this
+  possible?)
+- Add RegisterAllExtensions
+- Add ToBuilder changes from Google's r92
+- Silverlight changes (as per email to Jon)
+

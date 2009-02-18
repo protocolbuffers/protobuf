@@ -70,27 +70,27 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         "AioJCOgHEICAgIACIogBCg5NZXNzYWdlT3B0aW9ucxImChdtZXNzYWdlX3Nl" + 
         "dF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9v" + 
         "cHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRP" + 
-        "cHRpb24qCQjoBxCAgICAAiLVAQoMRmllbGRPcHRpb25zEjIKBWN0eXBlGAEg" + 
-        "ASgOMiMuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5DVHlwZRIcChRl" + 
-        "eHBlcmltZW50YWxfbWFwX2tleRgJIAEoCRJDChR1bmludGVycHJldGVkX29w" + 
-        "dGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9w" + 
-        "dGlvbiIjCgVDVHlwZRIICgRDT1JEEAESEAoMU1RSSU5HX1BJRUNFEAIqCQjo" + 
-        "BxCAgICAAiJdCgtFbnVtT3B0aW9ucxJDChR1bmludGVycHJldGVkX29wdGlv" + 
-        "bhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlv" + 
-        "bioJCOgHEICAgIACImIKEEVudW1WYWx1ZU9wdGlvbnMSQwoUdW5pbnRlcnBy" + 
-        "ZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJw" + 
-        "cmV0ZWRPcHRpb24qCQjoBxCAgICAAiJgCg5TZXJ2aWNlT3B0aW9ucxJDChR1" + 
-        "bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYu" + 
-        "VW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIl8KDU1ldGhvZE9wdGlv" + 
-        "bnMSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnBy" + 
-        "b3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKFAgoTVW5p" + 
-        "bnRlcnByZXRlZE9wdGlvbhI7CgRuYW1lGAIgAygLMi0uZ29vZ2xlLnByb3Rv" + 
-        "YnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24uTmFtZVBhcnQSGAoQaWRlbnRpZmll" + 
-        "cl92YWx1ZRgDIAEoCRIaChJwb3NpdGl2ZV9pbnRfdmFsdWUYBCABKAQSGgoS" + 
-        "bmVnYXRpdmVfaW50X3ZhbHVlGAUgASgDEhQKDGRvdWJsZV92YWx1ZRgGIAEo" + 
-        "ARIUCgxzdHJpbmdfdmFsdWUYByABKAwaMwoITmFtZVBhcnQSEQoJbmFtZV9w" + 
-        "YXJ0GAEgAigJEhQKDGlzX2V4dGVuc2lvbhgCIAIoCEIpChNjb20uZ29vZ2xl" + 
-        "LnByb3RvYnVmQhBEZXNjcmlwdG9yUHJvdG9zSAE="),
+        "cHRpb24qCQjoBxCAgICAAiLlAQoMRmllbGRPcHRpb25zEjIKBWN0eXBlGAEg" + 
+        "ASgOMiMuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5DVHlwZRIOCgZw" + 
+        "YWNrZWQYAiABKAgSHAoUZXhwZXJpbWVudGFsX21hcF9rZXkYCSABKAkSQwoU" + 
+        "dW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVm" + 
+        "LlVuaW50ZXJwcmV0ZWRPcHRpb24iIwoFQ1R5cGUSCAoEQ09SRBABEhAKDFNU" + 
+        "UklOR19QSUVDRRACKgkI6AcQgICAgAIiXQoLRW51bU9wdGlvbnMSQwoUdW5p" + 
+        "bnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVu" + 
+        "aW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiJiChBFbnVtVmFsdWVPcHRp" + 
+        "b25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5w" + 
+        "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiYAoOU2Vy" + 
+        "dmljZU9wdGlvbnMSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQu" + 
+        "Z29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICA" + 
+        "AiJfCg1NZXRob2RPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH" + 
+        "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI" + 
+        "6AcQgICAgAIihQIKE1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoEbmFtZRgCIAMo" + 
+        "CzItLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uLk5hbWVQ" + 
+        "YXJ0EhgKEGlkZW50aWZpZXJfdmFsdWUYAyABKAkSGgoScG9zaXRpdmVfaW50" + 
+        "X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgFIAEoAxIUCgxk" + 
+        "b3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcgASgMGjMKCE5h" + 
+        "bWVQYXJ0EhEKCW5hbWVfcGFydBgBIAIoCRIUCgxpc19leHRlbnNpb24YAiAC" + 
+        "KAhCKQoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRvclByb3Rvc0gB"),
         new pbd::FileDescriptor[] {
         });
     #endregion
@@ -155,7 +155,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         = Descriptor.MessageTypes[10];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder> internal__static_google_protobuf_FieldOptions__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder>(internal__static_google_protobuf_FieldOptions__Descriptor,
-            new string[] { "Ctype", "ExperimentalMapKey", "UninterpretedOption", });
+            new string[] { "Ctype", "Packed", "ExperimentalMapKey", "UninterpretedOption", });
     internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_EnumOptions__Descriptor
         = Descriptor.MessageTypes[11];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Builder> internal__static_google_protobuf_EnumOptions__FieldAccessorTable
@@ -541,8 +541,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       if (HasPackage) {
         output.WriteString(2, Package);
       }
-      foreach (string element in DependencyList) {
-        output.WriteString(3, element);
+      if (dependency_.Count > 0) {
+        foreach (string element in dependency_) {
+          output.WriteString(3, element);
+        }
       }
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in MessageTypeList) {
         output.WriteMessage(4, element);
@@ -575,8 +577,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (HasPackage) {
           size += pb::CodedOutputStream.ComputeStringSize(2, Package);
         }
-        foreach (string element in DependencyList) {
-          size += pb::CodedOutputStream.ComputeStringSize(3, element);
+        {
+          int dataSize = 0;
+          foreach (string element in DependencyList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 1 * dependency_.Count;
         }
         foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in MessageTypeList) {
           size += pb::CodedOutputStream.ComputeMessageSize(4, element);
@@ -4413,6 +4420,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return ctype_; }
     }
     
+    private bool hasPacked;
+    private bool packed_ = false;
+    public bool HasPacked {
+      get { return hasPacked; }
+    }
+    public bool Packed {
+      get { return packed_; }
+    }
+    
     private bool hasExperimentalMapKey;
     private string experimentalMapKey_ = "";
     public bool HasExperimentalMapKey {
@@ -4448,6 +4464,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       if (HasCtype) {
         output.WriteEnum(1, (int) Ctype);
       }
+      if (HasPacked) {
+        output.WriteBool(2, Packed);
+      }
       if (HasExperimentalMapKey) {
         output.WriteString(9, ExperimentalMapKey);
       }
@@ -4467,6 +4486,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         size = 0;
         if (HasCtype) {
           size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Ctype);
+        }
+        if (HasPacked) {
+          size += pb::CodedOutputStream.ComputeBoolSize(2, Packed);
         }
         if (HasExperimentalMapKey) {
           size += pb::CodedOutputStream.ComputeStringSize(9, ExperimentalMapKey);
@@ -4561,6 +4583,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasCtype) {
           Ctype = other.Ctype;
         }
+        if (other.HasPacked) {
+          Packed = other.Packed;
+        }
         if (other.HasExperimentalMapKey) {
           ExperimentalMapKey = other.ExperimentalMapKey;
         }
@@ -4601,6 +4626,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               }
               break;
             }
+            case 16: {
+              Packed = input.ReadBool();
+              break;
+            }
             case 74: {
               ExperimentalMapKey = input.ReadString();
               break;
@@ -4631,6 +4660,24 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearCtype() {
         result.hasCtype = false;
         result.ctype_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Types.CType.CORD;
+        return this;
+      }
+      
+      public bool HasPacked {
+        get { return result.HasPacked; }
+      }
+      public bool Packed {
+        get { return result.Packed; }
+        set { SetPacked(value); }
+      }
+      public Builder SetPacked(bool value) {
+        result.hasPacked = true;
+        result.packed_ = value;
+        return this;
+      }
+      public Builder ClearPacked() {
+        result.hasPacked = false;
+        result.packed_ = false;
         return this;
       }
       

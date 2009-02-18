@@ -298,6 +298,156 @@ namespace Google.ProtocolBuffers {
       }
     }
 
+    public void WriteFieldNoTag(FieldType fieldType, object value) {
+      switch (fieldType) {
+        case FieldType.Double: WriteDoubleNoTag((double)value); break;
+        case FieldType.Float: WriteFloatNoTag((float)value); break;
+        case FieldType.Int64: WriteInt64NoTag((long)value); break;
+        case FieldType.UInt64: WriteUInt64NoTag((ulong)value); break;
+        case FieldType.Int32: WriteInt32NoTag((int)value); break;
+        case FieldType.Fixed64: WriteFixed64NoTag((ulong)value); break;
+        case FieldType.Fixed32: WriteFixed32NoTag((uint)value); break;
+        case FieldType.Bool: WriteBoolNoTag((bool)value); break;
+        case FieldType.String: WriteStringNoTag((string)value); break;
+        case FieldType.Group: WriteGroupNoTag((IMessage)value); break;
+        case FieldType.Message: WriteMessageNoTag((IMessage)value); break;
+        case FieldType.Bytes: WriteBytesNoTag((ByteString)value); break;
+        case FieldType.UInt32: WriteUInt32NoTag((uint)value); break;
+        case FieldType.SFixed32: WriteSFixed32NoTag((int)value); break;
+        case FieldType.SFixed64: WriteSFixed64NoTag((long)value); break;
+        case FieldType.SInt32: WriteSInt32NoTag((int)value); break;
+        case FieldType.SInt64: WriteSInt64NoTag((long)value); break;
+        case FieldType.Enum: WriteEnumNoTag(((EnumValueDescriptor)value).Number);
+          break;
+      }
+    }
+    #endregion
+
+    #region Writing of values without tags
+    /// <summary>
+    /// Writes a double field value, including tag, to the stream.
+    /// </summary>
+    public void WriteDoubleNoTag(double value) {
+      WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
+    }
+
+    /// <summary>
+    /// Writes a float field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteFloatNoTag(float value) {
+      // TODO(jonskeet): Test this on different endiannesses
+      byte[] rawBytes = BitConverter.GetBytes(value);
+      uint asInteger = BitConverter.ToUInt32(rawBytes, 0);
+      WriteRawLittleEndian32(asInteger);
+    }
+
+    /// <summary>
+    /// Writes a uint64 field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteUInt64NoTag(ulong value) {
+      WriteRawVarint64(value);
+    }
+
+    /// <summary>
+    /// Writes an int64 field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteInt64NoTag(long value) {
+      WriteRawVarint64((ulong)value);
+    }
+
+    /// <summary>
+    /// Writes an int32 field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteInt32NoTag(int value) {
+      if (value >= 0) {
+        WriteRawVarint32((uint)value);
+      } else {
+        // Must sign-extend.
+        WriteRawVarint64((ulong)value);
+      }
+    }
+
+    /// <summary>
+    /// Writes a fixed64 field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteFixed64NoTag(ulong value) {
+      WriteRawLittleEndian64(value);
+    }
+
+    /// <summary>
+    /// Writes a fixed32 field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteFixed32NoTag(uint value) {
+      WriteRawLittleEndian32(value);
+    }
+
+    /// <summary>
+    /// Writes a bool field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteBoolNoTag(bool value) {
+      WriteRawByte(value ? (byte)1 : (byte)0);
+    }
+
+    /// <summary>
+    /// Writes a string field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteStringNoTag(string value) {
+      // Optimise the case where we have enough space to write
+      // the string directly to the buffer, which should be common.
+      int length = Encoding.UTF8.GetByteCount(value);
+      WriteRawVarint32((uint)length);
+      if (limit - position >= length) {
+        Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, position);
+        position += length;
+      } else {
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
+        WriteRawBytes(bytes);
+      }
+    }
+
+    /// <summary>
+    /// Writes a group field value, without a tag, to the stream.
+    /// </summary>
+    public void WriteGroupNoTag(IMessage value) {
+      value.WriteTo(this);
+    }
+
+    public void WriteMessageNoTag(IMessage value) {
+      WriteRawVarint32((uint)value.SerializedSize);
+      value.WriteTo(this);
+    }
+
+    public void WriteBytesNoTag(ByteString value) {
+      // TODO(jonskeet): Optimise this! (No need to copy the bytes twice.)
+      byte[] bytes = value.ToByteArray();
+      WriteRawVarint32((uint)bytes.Length);
+      WriteRawBytes(bytes);
+    }
+
+    public void WriteUInt32NoTag(uint value) {
+      WriteRawVarint32(value);
+    }
+
+    public void WriteEnumNoTag(int value) {
+      WriteRawVarint32((uint)value);
+    }
+
+    public void WriteSFixed32NoTag(int value) {
+      WriteRawLittleEndian32((uint)value);
+    }
+
+    public void WriteSFixed64NoTag(long value) {
+      WriteRawLittleEndian64((ulong)value);
+    }
+
+    public void WriteSInt32NoTag(int value) {
+      WriteRawVarint32(EncodeZigZag32(value));
+    }
+
+    public void WriteSInt64NoTag(long value) {
+      WriteRawVarint64(EncodeZigZag64(value));
+    }
+
     #endregion
 
     #region Underlying writing primitives
@@ -583,8 +733,7 @@ namespace Google.ProtocolBuffers {
     /// sint32 field, including the tag.
     /// </summary>
     public static int ComputeSInt32Size(int fieldNumber, int value) {
-      return ComputeTagSize(fieldNumber) +
-             ComputeRawVarint32Size(EncodeZigZag32(value));
+      return ComputeTagSize(fieldNumber) + ComputeRawVarint32Size(EncodeZigZag32(value));
     }
 
     /// <summary>
@@ -592,8 +741,169 @@ namespace Google.ProtocolBuffers {
     /// sint64 field, including the tag.
     /// </summary>
     public static int ComputeSInt64Size(int fieldNumber, long value) {
-      return ComputeTagSize(fieldNumber) +
-             ComputeRawVarint64Size(EncodeZigZag64(value));
+      return ComputeTagSize(fieldNumber) + ComputeRawVarint64Size(EncodeZigZag64(value));
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// double field, including the tag.
+    /// </summary>
+    public static int ComputeDoubleSizeNoTag(double value) {
+      return LittleEndian64Size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// float field, including the tag.
+    /// </summary>
+    public static int ComputeFloatSizeNoTag(float value) {
+      return LittleEndian32Size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// uint64 field, including the tag.
+    /// </summary>
+    public static int ComputeUInt64SizeNoTag(ulong value) {
+      return ComputeRawVarint64Size(value);
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// int64 field, including the tag.
+    /// </summary>
+    public static int ComputeInt64SizeNoTag(long value) {
+      return ComputeRawVarint64Size((ulong)value);
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// int32 field, including the tag.
+    /// </summary>
+    public static int ComputeInt32SizeNoTag(int value) {
+      if (value >= 0) {
+        return ComputeRawVarint32Size((uint)value);
+      } else {
+        // Must sign-extend.
+        return 10;
+      }
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// fixed64 field, including the tag.
+    /// </summary>
+    public static int ComputeFixed64SizeNoTag(ulong value) {
+      return LittleEndian64Size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// fixed32 field, including the tag.
+    /// </summary>
+    public static int ComputeFixed32SizeNoTag(uint value) {
+      return LittleEndian32Size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// bool field, including the tag.
+    /// </summary>
+    public static int ComputeBoolSizeNoTag(bool value) {
+      return 1;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// string field, including the tag.
+    /// </summary>
+    public static int ComputeStringSizeNoTag(String value) {
+      int byteArraySize = Encoding.UTF8.GetByteCount(value);
+      return ComputeRawVarint32Size((uint)byteArraySize) +
+             byteArraySize;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// group field, including the tag.
+    /// </summary>
+    public static int ComputeGroupSizeNoTag(IMessage value) {
+      return value.SerializedSize;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// group field represented by an UnknownFieldSet, including the tag.
+    /// </summary>
+    public static int ComputeUnknownGroupSizeNoTag(UnknownFieldSet value) {
+      return value.SerializedSize;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// embedded message field, including the tag.
+    /// </summary>
+    public static int ComputeMessageSizeNoTag(IMessage value) {
+      int size = value.SerializedSize;
+      return ComputeRawVarint32Size((uint)size) + size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// bytes field, including the tag.
+    /// </summary>
+    public static int ComputeBytesSizeNoTag(ByteString value) {
+      return ComputeRawVarint32Size((uint)value.Length) +
+             value.Length;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// uint32 field, including the tag.
+    /// </summary>
+    public static int ComputeUInt32SizeNoTag(uint value) {
+      return ComputeRawVarint32Size(value);
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// enum field, including the tag. The caller is responsible for
+    /// converting the enum value to its numeric value.
+    /// </summary>
+    public static int ComputeEnumSizeNoTag(int value) {
+      return ComputeRawVarint32Size((uint)value);
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// sfixed32 field, including the tag.
+    /// </summary>
+    public static int ComputeSFixed32SizeNoTag(int value) {
+      return LittleEndian32Size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// sfixed64 field, including the tag.
+    /// </summary>
+    public static int ComputeSFixed64SizeNoTag(long value) {
+      return LittleEndian64Size;
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// sint32 field, including the tag.
+    /// </summary>
+    public static int ComputeSInt32SizeNoTag(int value) {
+      return ComputeRawVarint32Size(EncodeZigZag32(value));
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode an
+    /// sint64 field, including the tag.
+    /// </summary>
+    public static int ComputeSInt64SizeNoTag(long value) {
+      return ComputeRawVarint64Size(EncodeZigZag64(value));
     }
 
     /*
@@ -650,18 +960,10 @@ namespace Google.ProtocolBuffers {
       return 10;
     }
 
-
-    /*
-     * Compute the number of bytes that would be needed to encode a
-     * field of arbitrary type, including tag, to the stream.
-     *
-     * @param type   The field's type.
-     * @param number The field's number.
-     * @param value  Object representing the field's value.  Must be of the exact
-     *               type which would be returned by
-     *               {@link Message#getField(FieldDescriptor)} for
-     *               this field.
-     */
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// field of arbitrary type, including the tag, to the stream.
+    /// </summary>
     public static int ComputeFieldSize(FieldType fieldType, int fieldNumber, Object value) {
       switch (fieldType) {
         case FieldType.Double: return ComputeDoubleSize(fieldNumber, (double)value);
@@ -682,6 +984,35 @@ namespace Google.ProtocolBuffers {
         case FieldType.SInt32: return ComputeSInt32Size(fieldNumber, (int)value);
         case FieldType.SInt64: return ComputeSInt64Size(fieldNumber, (long)value);
         case FieldType.Enum: return ComputeEnumSize(fieldNumber, ((EnumValueDescriptor)value).Number);
+        default:
+          throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
+      }
+    }
+
+    /// <summary>
+    /// Compute the number of bytes that would be needed to encode a
+    /// field of arbitrary type, excluding the tag, to the stream.
+    /// </summary>
+    public static int ComputeFieldSizeNoTag(FieldType fieldType, Object value) {
+      switch (fieldType) {
+        case FieldType.Double: return ComputeDoubleSizeNoTag((double)value);
+        case FieldType.Float: return ComputeFloatSizeNoTag((float)value);
+        case FieldType.Int64: return ComputeInt64SizeNoTag((long)value);
+        case FieldType.UInt64: return ComputeUInt64SizeNoTag((ulong)value);
+        case FieldType.Int32: return ComputeInt32SizeNoTag((int)value);
+        case FieldType.Fixed64: return ComputeFixed64SizeNoTag((ulong)value);
+        case FieldType.Fixed32: return ComputeFixed32SizeNoTag((uint)value);
+        case FieldType.Bool: return ComputeBoolSizeNoTag((bool)value);
+        case FieldType.String: return ComputeStringSizeNoTag((string)value);
+        case FieldType.Group: return ComputeGroupSizeNoTag((IMessage)value);
+        case FieldType.Message: return ComputeMessageSizeNoTag((IMessage)value);
+        case FieldType.Bytes: return ComputeBytesSizeNoTag((ByteString)value);
+        case FieldType.UInt32: return ComputeUInt32SizeNoTag((uint)value);
+        case FieldType.SFixed32: return ComputeSFixed32SizeNoTag((int)value);
+        case FieldType.SFixed64: return ComputeSFixed64SizeNoTag((long)value);
+        case FieldType.SInt32: return ComputeSInt32SizeNoTag((int)value);
+        case FieldType.SInt64: return ComputeSInt64SizeNoTag((long)value);
+        case FieldType.Enum: return ComputeEnumSizeNoTag(((EnumValueDescriptor)value).Number);
         default:
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }

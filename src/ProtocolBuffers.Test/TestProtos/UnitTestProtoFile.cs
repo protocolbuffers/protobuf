@@ -139,153 +139,189 @@ namespace Google.ProtocolBuffers.TestProtos {
         "Z2VfdWludDMyGAIgASgNOgo0Mjk0OTY3Mjk1EioKDGxhcmdlX3VpbnQ2NBgD" + 
         "IAEoBDoUMTg0NDY3NDQwNzM3MDk1NTE2MTUSIAoLc21hbGxfaW50MzIYBCAB" + 
         "KAU6Cy0yMTQ3NDgzNjQ3EikKC3NtYWxsX2ludDY0GAUgASgDOhQtOTIyMzM3" + 
-        "MjAzNjg1NDc3NTgwNxIYCgt1dGY4X3N0cmluZxgGIAEoCToD4Yi0IgwKCkZv" + 
-        "b1JlcXVlc3QiDQoLRm9vUmVzcG9uc2UiDAoKQmFyUmVxdWVzdCINCgtCYXJS" + 
-        "ZXNwb25zZSpACgtGb3JlaWduRW51bRIPCgtGT1JFSUdOX0ZPTxAEEg8KC0ZP" + 
-        "UkVJR05fQkFSEAUSDwoLRk9SRUlHTl9CQVoQBipHChRUZXN0RW51bVdpdGhE" + 
-        "dXBWYWx1ZRIICgRGT08xEAESCAoEQkFSMRACEgcKA0JBWhADEggKBEZPTzIQ" + 
-        "ARIICgRCQVIyEAIqiQEKDlRlc3RTcGFyc2VFbnVtEgwKCFNQQVJTRV9BEHsS" + 
-        "DgoIU1BBUlNFX0IQpucDEg8KCFNQQVJTRV9DELKxgAYSFQoIU1BBUlNFX0QQ" + 
-        "8f//////////ARIVCghTUEFSU0VfRRC03vz///////8BEgwKCFNQQVJTRV9G" + 
-        "EAASDAoIU1BBUlNFX0cQAjKZAQoLVGVzdFNlcnZpY2USRAoDRm9vEh0ucHJv" + 
-        "dG9idWZfdW5pdHRlc3QuRm9vUmVxdWVzdBoeLnByb3RvYnVmX3VuaXR0ZXN0" + 
-        "LkZvb1Jlc3BvbnNlEkQKA0JhchIdLnByb3RvYnVmX3VuaXR0ZXN0LkJhclJl" + 
-        "cXVlc3QaHi5wcm90b2J1Zl91bml0dGVzdC5CYXJSZXNwb25zZTpGChhvcHRp" + 
-        "b25hbF9pbnQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
-        "QWxsRXh0ZW5zaW9ucxgBIAEoBTpGChhvcHRpb25hbF9pbnQ2NF9leHRlbnNp" + 
-        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgCIAEo" + 
-        "AzpHChlvcHRpb25hbF91aW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYAyABKA06RwoZb3B0aW9uYWxfdWlu" + 
-        "dDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRl" + 
-        "bnNpb25zGAQgASgEOkcKGW9wdGlvbmFsX3NpbnQzMl9leHRlbnNpb24SJC5w" + 
-        "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgFIAEoETpHChlv" + 
-        "cHRpb25hbF9zaW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
-        "VGVzdEFsbEV4dGVuc2lvbnMYBiABKBI6SAoab3B0aW9uYWxfZml4ZWQzMl9l" + 
-        "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
-        "cxgHIAEoBzpIChpvcHRpb25hbF9maXhlZDY0X2V4dGVuc2lvbhIkLnByb3Rv" + 
-        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAggASgGOkkKG29wdGlv" + 
-        "bmFsX3NmaXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RBbGxFeHRlbnNpb25zGAkgASgPOkkKG29wdGlvbmFsX3NmaXhlZDY0X2V4" + 
-        "dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25z" + 
-        "GAogASgQOkYKGG9wdGlvbmFsX2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
-        "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAsgASgCOkcKGW9wdGlvbmFs" + 
-        "X2RvdWJsZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
-        "RXh0ZW5zaW9ucxgMIAEoATpFChdvcHRpb25hbF9ib29sX2V4dGVuc2lvbhIk" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGA0gASgIOkcK" + 
-        "GW9wdGlvbmFsX3N0cmluZ19leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
-        "dC5UZXN0QWxsRXh0ZW5zaW9ucxgOIAEoCTpGChhvcHRpb25hbF9ieXRlc19l" + 
-        "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
-        "cxgPIAEoDDpxChdvcHRpb25hbGdyb3VwX2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
-        "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBAgASgKMioucHJvdG9idWZf" + 
-        "dW5pdHRlc3QuT3B0aW9uYWxHcm91cF9leHRlbnNpb246fgohb3B0aW9uYWxf" + 
-        "bmVzdGVkX21lc3NhZ2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
-        "VGVzdEFsbEV4dGVuc2lvbnMYEiABKAsyLS5wcm90b2J1Zl91bml0dGVzdC5U" + 
-        "ZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZTpzCiJvcHRpb25hbF9mb3JlaWdu" + 
-        "X21lc3NhZ2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
-        "bEV4dGVuc2lvbnMYEyABKAsyIS5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWdu" + 
-        "TWVzc2FnZTp4CiFvcHRpb25hbF9pbXBvcnRfbWVzc2FnZV9leHRlbnNpb24S" + 
-        "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgUIAEoCzIn" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydC5JbXBvcnRNZXNzYWdlOngKHm9w" + 
-        "dGlvbmFsX25lc3RlZF9lbnVtX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0" + 
-        "ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBUgASgOMioucHJvdG9idWZfdW5pdHRl" + 
-        "c3QuVGVzdEFsbFR5cGVzLk5lc3RlZEVudW06bQofb3B0aW9uYWxfZm9yZWln" + 
-        "bl9lbnVtX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-        "eHRlbnNpb25zGBYgASgOMh4ucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVu" + 
-        "dW06cgoeb3B0aW9uYWxfaW1wb3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9i" + 
-        "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYFyABKA4yJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0RW51bTpRCh9vcHRpb25hbF9zdHJp" + 
-        "bmdfcGllY2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
-        "bEV4dGVuc2lvbnMYGCABKAlCAggCOkkKF29wdGlvbmFsX2NvcmRfZXh0ZW5z" + 
-        "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYGSAB" + 
-        "KAlCAggBOkYKGHJlcGVhdGVkX2ludDMyX2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
-        "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGB8gAygFOkYKGHJlcGVhdGVk" + 
-        "X2ludDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-        "eHRlbnNpb25zGCAgAygDOkcKGXJlcGVhdGVkX3VpbnQzMl9leHRlbnNpb24S" + 
-        "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxghIAMoDTpH" + 
-        "ChlyZXBlYXRlZF91aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRl" + 
-        "c3QuVGVzdEFsbEV4dGVuc2lvbnMYIiADKAQ6RwoZcmVwZWF0ZWRfc2ludDMy" + 
-        "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
-        "b25zGCMgAygROkcKGXJlcGVhdGVkX3NpbnQ2NF9leHRlbnNpb24SJC5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgkIAMoEjpIChpyZXBl" + 
-        "YXRlZF9maXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RBbGxFeHRlbnNpb25zGCUgAygHOkgKGnJlcGVhdGVkX2ZpeGVkNjRfZXh0" + 
-        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-        "JiADKAY6SQobcmVwZWF0ZWRfc2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9i" + 
-        "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYJyADKA86SQobcmVwZWF0" + 
-        "ZWRfc2ZpeGVkNjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-        "dEFsbEV4dGVuc2lvbnMYKCADKBA6RgoYcmVwZWF0ZWRfZmxvYXRfZXh0ZW5z" + 
-        "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYKSAD" + 
-        "KAI6RwoZcmVwZWF0ZWRfZG91YmxlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCogAygBOkUKF3JlcGVhdGVkX2Jv" + 
-        "b2xfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-        "c2lvbnMYKyADKAg6RwoZcmVwZWF0ZWRfc3RyaW5nX2V4dGVuc2lvbhIkLnBy" + 
-        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCwgAygJOkYKGHJl" + 
-        "cGVhdGVkX2J5dGVzX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RBbGxFeHRlbnNpb25zGC0gAygMOnEKF3JlcGVhdGVkZ3JvdXBfZXh0ZW5z" + 
-        "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYLiAD" + 
-        "KAoyKi5wcm90b2J1Zl91bml0dGVzdC5SZXBlYXRlZEdyb3VwX2V4dGVuc2lv" + 
-        "bjp+CiFyZXBlYXRlZF9uZXN0ZWRfbWVzc2FnZV9leHRlbnNpb24SJC5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgwIAMoCzItLnByb3Rv" + 
-        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlOnMKInJl" + 
-        "cGVhdGVkX2ZvcmVpZ25fbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1Zl91" + 
-        "bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgxIAMoCzIhLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LkZvcmVpZ25NZXNzYWdlOngKIXJlcGVhdGVkX2ltcG9ydF9tZXNz" + 
-        "YWdlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRl" + 
-        "bnNpb25zGDIgAygLMicucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9y" + 
-        "dE1lc3NhZ2U6eAoecmVwZWF0ZWRfbmVzdGVkX2VudW1fZXh0ZW5zaW9uEiQu" + 
-        "cHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYMyADKA4yKi5w" + 
-        "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkRW51bTptCh9y" + 
-        "ZXBlYXRlZF9mb3JlaWduX2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNCADKA4yHi5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5Gb3JlaWduRW51bTpyCh5yZXBlYXRlZF9pbXBvcnRfZW51bV9leHRl" + 
-        "bnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxg1" + 
-        "IAMoDjIkLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydC5JbXBvcnRFbnVtOlEK" + 
-        "H3JlcGVhdGVkX3N0cmluZ19waWVjZV9leHRlbnNpb24SJC5wcm90b2J1Zl91" + 
-        "bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxg2IAMoCUICCAI6SQoXcmVwZWF0" + 
-        "ZWRfY29yZF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
-        "RXh0ZW5zaW9ucxg3IAMoCUICCAE6SQoXZGVmYXVsdF9pbnQzMl9leHRlbnNp" + 
-        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxg9IAEo" + 
-        "BToCNDE6SQoXZGVmYXVsdF9pbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91" + 
-        "bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxg+IAEoAzoCNDI6SgoYZGVmYXVs" + 
-        "dF91aW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
-        "bEV4dGVuc2lvbnMYPyABKA06AjQzOkoKGGRlZmF1bHRfdWludDY0X2V4dGVu" + 
-        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEAg" + 
-        "ASgEOgI0NDpLChhkZWZhdWx0X3NpbnQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhBIAEoEToDLTQ1OkoKGGRl" + 
-        "ZmF1bHRfc2ludDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RBbGxFeHRlbnNpb25zGEIgASgSOgI0NjpLChlkZWZhdWx0X2ZpeGVkMzJf" + 
+        "MjAzNjg1NDc3NTgwNxIYCgt1dGY4X3N0cmluZxgGIAEoCToD4Yi0IqoDCg9U" + 
+        "ZXN0UGFja2VkVHlwZXMSGAoMcGFja2VkX2ludDMyGFogAygFQgIQARIYCgxw" + 
+        "YWNrZWRfaW50NjQYWyADKANCAhABEhkKDXBhY2tlZF91aW50MzIYXCADKA1C" + 
+        "AhABEhkKDXBhY2tlZF91aW50NjQYXSADKARCAhABEhkKDXBhY2tlZF9zaW50" + 
+        "MzIYXiADKBFCAhABEhkKDXBhY2tlZF9zaW50NjQYXyADKBJCAhABEhoKDnBh" + 
+        "Y2tlZF9maXhlZDMyGGAgAygHQgIQARIaCg5wYWNrZWRfZml4ZWQ2NBhhIAMo" + 
+        "BkICEAESGwoPcGFja2VkX3NmaXhlZDMyGGIgAygPQgIQARIbCg9wYWNrZWRf" + 
+        "c2ZpeGVkNjQYYyADKBBCAhABEhgKDHBhY2tlZF9mbG9hdBhkIAMoAkICEAES" + 
+        "GQoNcGFja2VkX2RvdWJsZRhlIAMoAUICEAESFwoLcGFja2VkX2Jvb2wYZiAD" + 
+        "KAhCAhABEjcKC3BhY2tlZF9lbnVtGGcgAygOMh4ucHJvdG9idWZfdW5pdHRl" + 
+        "c3QuRm9yZWlnbkVudW1CAhABIiAKFFRlc3RQYWNrZWRFeHRlbnNpb25zKggI" + 
+        "ARCAgICAAiIMCgpGb29SZXF1ZXN0Ig0KC0Zvb1Jlc3BvbnNlIgwKCkJhclJl" + 
+        "cXVlc3QiDQoLQmFyUmVzcG9uc2UqQAoLRm9yZWlnbkVudW0SDwoLRk9SRUlH" + 
+        "Tl9GT08QBBIPCgtGT1JFSUdOX0JBUhAFEg8KC0ZPUkVJR05fQkFaEAYqRwoU" + 
+        "VGVzdEVudW1XaXRoRHVwVmFsdWUSCAoERk9PMRABEggKBEJBUjEQAhIHCgNC" + 
+        "QVoQAxIICgRGT08yEAESCAoEQkFSMhACKokBCg5UZXN0U3BhcnNlRW51bRIM" + 
+        "CghTUEFSU0VfQRB7Eg4KCFNQQVJTRV9CEKbnAxIPCghTUEFSU0VfQxCysYAG" + 
+        "EhUKCFNQQVJTRV9EEPH//////////wESFQoIU1BBUlNFX0UQtN78////////" + 
+        "ARIMCghTUEFSU0VfRhAAEgwKCFNQQVJTRV9HEAIymQEKC1Rlc3RTZXJ2aWNl" + 
+        "EkQKA0ZvbxIdLnByb3RvYnVmX3VuaXR0ZXN0LkZvb1JlcXVlc3QaHi5wcm90" + 
+        "b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXISHS5wcm90b2J1Zl91" + 
+        "bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5pdHRlc3QuQmFyUmVz" + 
+        "cG9uc2U6RgoYb3B0aW9uYWxfaW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
+        "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYASABKAU6RgoYb3B0aW9uYWxf" + 
+        "aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
+        "dGVuc2lvbnMYAiABKAM6RwoZb3B0aW9uYWxfdWludDMyX2V4dGVuc2lvbhIk" + 
+        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAMgASgNOkcK" + 
+        "GW9wdGlvbmFsX3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
+        "dC5UZXN0QWxsRXh0ZW5zaW9ucxgEIAEoBDpHChlvcHRpb25hbF9zaW50MzJf" + 
         "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
-        "bnMYQyABKAc6AjQ3OksKGWRlZmF1bHRfZml4ZWQ2NF9leHRlbnNpb24SJC5w" + 
-        "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhEIAEoBjoCNDg6" + 
-        "TAoaZGVmYXVsdF9zZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhFIAEoDzoCNDk6TQoaZGVmYXVsdF9z" + 
-        "Zml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
-        "RXh0ZW5zaW9ucxhGIAEoEDoDLTUwOksKF2RlZmF1bHRfZmxvYXRfZXh0ZW5z" + 
-        "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRyAB" + 
-        "KAI6BDUxLjU6TQoYZGVmYXVsdF9kb3VibGVfZXh0ZW5zaW9uEiQucHJvdG9i" + 
-        "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYSCABKAE6BTUyMDAwOkoK" + 
-        "FmRlZmF1bHRfYm9vbF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
-        "ZXN0QWxsRXh0ZW5zaW9ucxhJIAEoCDoEdHJ1ZTpNChhkZWZhdWx0X3N0cmlu" + 
-        "Z19leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5z" + 
-        "aW9ucxhKIAEoCToFaGVsbG86TAoXZGVmYXVsdF9ieXRlc19leHRlbnNpb24S" + 
-        "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhLIAEoDDoF" + 
-        "d29ybGQ6fAodZGVmYXVsdF9uZXN0ZWRfZW51bV9leHRlbnNpb24SJC5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhRIAEoDjIqLnByb3Rv" + 
-        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOgNCQVI6eQoe" + 
-        "ZGVmYXVsdF9mb3JlaWduX2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYUiABKA4yHi5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5Gb3JlaWduRW51bToLRk9SRUlHTl9CQVI6fQodZGVmYXVsdF9pbXBv" + 
-        "cnRfZW51bV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
-        "RXh0ZW5zaW9ucxhTIAEoDjIkLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydC5J" + 
-        "bXBvcnRFbnVtOgpJTVBPUlRfQkFSOlUKHmRlZmF1bHRfc3RyaW5nX3BpZWNl" + 
+        "bnMYBSABKBE6RwoZb3B0aW9uYWxfc2ludDY0X2V4dGVuc2lvbhIkLnByb3Rv" + 
+        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAYgASgSOkgKGm9wdGlv" + 
+        "bmFsX2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+        "dEFsbEV4dGVuc2lvbnMYByABKAc6SAoab3B0aW9uYWxfZml4ZWQ2NF9leHRl" + 
+        "bnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgI" + 
+        "IAEoBjpJChtvcHRpb25hbF9zZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
+        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgJIAEoDzpJChtvcHRpb25h" + 
+        "bF9zZml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
+        "QWxsRXh0ZW5zaW9ucxgKIAEoEDpGChhvcHRpb25hbF9mbG9hdF9leHRlbnNp" + 
+        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgLIAEo" + 
+        "AjpHChlvcHRpb25hbF9kb3VibGVfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDCABKAE6RQoXb3B0aW9uYWxfYm9v" + 
+        "bF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5z" + 
+        "aW9ucxgNIAEoCDpHChlvcHRpb25hbF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJv" + 
+        "dG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDiABKAk6RgoYb3B0" + 
+        "aW9uYWxfYnl0ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+        "dEFsbEV4dGVuc2lvbnMYDyABKAw6cQoXb3B0aW9uYWxncm91cF9leHRlbnNp" + 
+        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgQIAEo" + 
+        "CjIqLnByb3RvYnVmX3VuaXR0ZXN0Lk9wdGlvbmFsR3JvdXBfZXh0ZW5zaW9u" + 
+        "On4KIW9wdGlvbmFsX25lc3RlZF9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3Rv" + 
+        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBIgASgLMi0ucHJvdG9i" + 
+        "dWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2U6cwoib3B0" + 
+        "aW9uYWxfZm9yZWlnbl9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBMgASgLMiEucHJvdG9idWZfdW5p" + 
+        "dHRlc3QuRm9yZWlnbk1lc3NhZ2U6eAohb3B0aW9uYWxfaW1wb3J0X21lc3Nh" + 
+        "Z2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+        "c2lvbnMYFCABKAsyJy5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0" + 
+        "TWVzc2FnZTp4Ch5vcHRpb25hbF9uZXN0ZWRfZW51bV9leHRlbnNpb24SJC5w" + 
+        "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgVIAEoDjIqLnBy" + 
+        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOm0KH29w" + 
+        "dGlvbmFsX2ZvcmVpZ25fZW51bV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+        "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgWIAEoDjIeLnByb3RvYnVmX3VuaXR0" + 
+        "ZXN0LkZvcmVpZ25FbnVtOnIKHm9wdGlvbmFsX2ltcG9ydF9lbnVtX2V4dGVu" + 
+        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBcg" + 
+        "ASgOMiQucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydEVudW06UQof" + 
+        "b3B0aW9uYWxfc3RyaW5nX3BpZWNlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBggASgJQgIIAjpJChdvcHRpb25h" + 
+        "bF9jb3JkX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+        "eHRlbnNpb25zGBkgASgJQgIIATpGChhyZXBlYXRlZF9pbnQzMl9leHRlbnNp" + 
+        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgfIAMo" + 
+        "BTpGChhyZXBlYXRlZF9pbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+        "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxggIAMoAzpHChlyZXBlYXRlZF91aW50" + 
+        "MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+        "c2lvbnMYISADKA06RwoZcmVwZWF0ZWRfdWludDY0X2V4dGVuc2lvbhIkLnBy" + 
+        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCIgAygEOkcKGXJl" + 
+        "cGVhdGVkX3NpbnQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
+        "ZXN0QWxsRXh0ZW5zaW9ucxgjIAMoETpHChlyZXBlYXRlZF9zaW50NjRfZXh0" + 
+        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
+        "JCADKBI6SAoacmVwZWF0ZWRfZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
+        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxglIAMoBzpIChpyZXBlYXRl" + 
+        "ZF9maXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
+        "bGxFeHRlbnNpb25zGCYgAygGOkkKG3JlcGVhdGVkX3NmaXhlZDMyX2V4dGVu" + 
+        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCcg" + 
+        "AygPOkkKG3JlcGVhdGVkX3NmaXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
+        "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCggAygQOkYKGHJlcGVhdGVk" + 
+        "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+        "eHRlbnNpb25zGCkgAygCOkcKGXJlcGVhdGVkX2RvdWJsZV9leHRlbnNpb24S" + 
+        "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgqIAMoATpF" + 
+        "ChdyZXBlYXRlZF9ib29sX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0" + 
+        "LlRlc3RBbGxFeHRlbnNpb25zGCsgAygIOkcKGXJlcGVhdGVkX3N0cmluZ19l" + 
+        "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
+        "cxgsIAMoCTpGChhyZXBlYXRlZF9ieXRlc19leHRlbnNpb24SJC5wcm90b2J1" + 
+        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgtIAMoDDpxChdyZXBlYXRl" + 
+        "ZGdyb3VwX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+        "eHRlbnNpb25zGC4gAygKMioucHJvdG9idWZfdW5pdHRlc3QuUmVwZWF0ZWRH" + 
+        "cm91cF9leHRlbnNpb246fgohcmVwZWF0ZWRfbmVzdGVkX21lc3NhZ2VfZXh0" + 
+        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
+        "MCADKAsyLS5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
+        "TWVzc2FnZTpzCiJyZXBlYXRlZF9mb3JlaWduX21lc3NhZ2VfZXh0ZW5zaW9u" + 
+        "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYMSADKAsy" + 
+        "IS5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduTWVzc2FnZTp4CiFyZXBlYXRl" + 
+        "ZF9pbXBvcnRfbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
+        "dC5UZXN0QWxsRXh0ZW5zaW9ucxgyIAMoCzInLnByb3RvYnVmX3VuaXR0ZXN0" + 
+        "X2ltcG9ydC5JbXBvcnRNZXNzYWdlOngKHnJlcGVhdGVkX25lc3RlZF9lbnVt" + 
         "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
-        "b25zGFQgASgJOgNhYmNCAggCOk0KFmRlZmF1bHRfY29yZF9leHRlbnNpb24S" + 
-        "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhVIAEoCToD" + 
-        "MTIzQgIIATpCChNteV9leHRlbnNpb25fc3RyaW5nEiUucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEZpZWxkT3JkZXJpbmdzGDIgASgJOj8KEG15X2V4dGVuc2lv" + 
-        "bl9pbnQSJS5wcm90b2J1Zl91bml0dGVzdC5UZXN0RmllbGRPcmRlcmluZ3MY" + 
-        "BSABKAVCSkINVW5pdHRlc3RQcm90b0gBwj42CiFHb29nbGUuUHJvdG9jb2xC" + 
-        "dWZmZXJzLlRlc3RQcm90b3MSEVVuaXRUZXN0UHJvdG9GaWxl"),
+        "b25zGDMgAygOMioucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5l" + 
+        "c3RlZEVudW06bQofcmVwZWF0ZWRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
+        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDQgAygOMh4u" + 
+        "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06cgoecmVwZWF0ZWRfaW1w" + 
+        "b3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
+        "bEV4dGVuc2lvbnMYNSADKA4yJC5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQu" + 
+        "SW1wb3J0RW51bTpRCh9yZXBlYXRlZF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9u" + 
+        "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNiADKAlC" + 
+        "AggCOkkKF3JlcGVhdGVkX2NvcmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNyADKAlCAggBOkkKF2RlZmF1bHRf" + 
+        "aW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
+        "dGVuc2lvbnMYPSABKAU6AjQxOkkKF2RlZmF1bHRfaW50NjRfZXh0ZW5zaW9u" + 
+        "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYPiABKAM6" + 
+        "AjQyOkoKGGRlZmF1bHRfdWludDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGD8gASgNOgI0MzpKChhkZWZhdWx0" + 
+        "X3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
+        "RXh0ZW5zaW9ucxhAIAEoBDoCNDQ6SwoYZGVmYXVsdF9zaW50MzJfZXh0ZW5z" + 
+        "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYQSAB" + 
+        "KBE6Ay00NTpKChhkZWZhdWx0X3NpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1" + 
+        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhCIAEoEjoCNDY6SwoZZGVm" + 
+        "YXVsdF9maXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
+        "c3RBbGxFeHRlbnNpb25zGEMgASgHOgI0NzpLChlkZWZhdWx0X2ZpeGVkNjRf" + 
+        "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
+        "bnMYRCABKAY6AjQ4OkwKGmRlZmF1bHRfc2ZpeGVkMzJfZXh0ZW5zaW9uEiQu" + 
+        "cHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRSABKA86AjQ5" + 
+        "Ok0KGmRlZmF1bHRfc2ZpeGVkNjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRiABKBA6Ay01MDpLChdkZWZhdWx0" + 
+        "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+        "eHRlbnNpb25zGEcgASgCOgQ1MS41Ok0KGGRlZmF1bHRfZG91YmxlX2V4dGVu" + 
+        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEgg" + 
+        "ASgBOgU1MjAwMDpKChZkZWZhdWx0X2Jvb2xfZXh0ZW5zaW9uEiQucHJvdG9i" + 
+        "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYSSABKAg6BHRydWU6TQoY" + 
+        "ZGVmYXVsdF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
+        "VGVzdEFsbEV4dGVuc2lvbnMYSiABKAk6BWhlbGxvOkwKF2RlZmF1bHRfYnl0" + 
+        "ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+        "c2lvbnMYSyABKAw6BXdvcmxkOnwKHWRlZmF1bHRfbmVzdGVkX2VudW1fZXh0" + 
+        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
+        "USABKA4yKi5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
+        "RW51bToDQkFSOnkKHmRlZmF1bHRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
+        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGFIgASgOMh4u" + 
+        "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06C0ZPUkVJR05fQkFSOn0K" + 
+        "HWRlZmF1bHRfaW1wb3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYUyABKA4yJC5wcm90b2J1Zl91bml0" + 
+        "dGVzdF9pbXBvcnQuSW1wb3J0RW51bToKSU1QT1JUX0JBUjpVCh5kZWZhdWx0" + 
+        "X3N0cmluZ19waWVjZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
+        "ZXN0QWxsRXh0ZW5zaW9ucxhUIAEoCToDYWJjQgIIAjpNChZkZWZhdWx0X2Nv" + 
+        "cmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+        "c2lvbnMYVSABKAk6AzEyM0ICCAE6QgoTbXlfZXh0ZW5zaW9uX3N0cmluZxIl" + 
+        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVsZE9yZGVyaW5ncxgyIAEoCTo/" + 
+        "ChBteV9leHRlbnNpb25faW50EiUucHJvdG9idWZfdW5pdHRlc3QuVGVzdEZp" + 
+        "ZWxkT3JkZXJpbmdzGAUgASgFOksKFnBhY2tlZF9pbnQzMl9leHRlbnNpb24S" + 
+        "Jy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhaIAMo" + 
+        "BUICEAE6SwoWcGFja2VkX2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
+        "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGFsgAygDQgIQATpMChdwYWNr" + 
+        "ZWRfdWludDMyX2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQ" + 
+        "YWNrZWRFeHRlbnNpb25zGFwgAygNQgIQATpMChdwYWNrZWRfdWludDY0X2V4" + 
+        "dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNp" + 
+        "b25zGF0gAygEQgIQATpMChdwYWNrZWRfc2ludDMyX2V4dGVuc2lvbhInLnBy" + 
+        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF4gAygRQgIQ" + 
+        "ATpMChdwYWNrZWRfc2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0" + 
+        "ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF8gAygSQgIQATpNChhwYWNrZWRf" + 
+        "Zml4ZWQzMl9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFj" + 
+        "a2VkRXh0ZW5zaW9ucxhgIAMoB0ICEAE6TQoYcGFja2VkX2ZpeGVkNjRfZXh0" + 
+        "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
+        "bnMYYSADKAZCAhABOk4KGXBhY2tlZF9zZml4ZWQzMl9leHRlbnNpb24SJy5w" + 
+        "cm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhiIAMoD0IC" + 
+        "EAE6TgoZcGFja2VkX3NmaXhlZDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
+        "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGMgAygQQgIQATpLChZwYWNr" + 
+        "ZWRfZmxvYXRfZXh0ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBh" + 
+        "Y2tlZEV4dGVuc2lvbnMYZCADKAJCAhABOkwKF3BhY2tlZF9kb3VibGVfZXh0" + 
+        "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
+        "bnMYZSADKAFCAhABOkoKFXBhY2tlZF9ib29sX2V4dGVuc2lvbhInLnByb3Rv" + 
+        "YnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGYgAygIQgIQATpq" + 
+        "ChVwYWNrZWRfZW51bV9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5U" + 
+        "ZXN0UGFja2VkRXh0ZW5zaW9ucxhnIAMoDjIeLnByb3RvYnVmX3VuaXR0ZXN0" + 
+        "LkZvcmVpZ25FbnVtQgIQAUJKQg1Vbml0dGVzdFByb3RvSAHCPjYKIUdvb2ds" + 
+        "ZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIRVW5pdFRlc3RQcm90b0Zp" + 
+        "bGU="),
         new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.Descriptor, 
@@ -457,6 +493,48 @@ namespace Google.ProtocolBuffers.TestProtos {
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[68]);
     public static readonly pb::GeneratedExtensionBase<int> MyExtensionInt =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[69]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<int>> PackedInt32Extension =
+        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[70]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<long>> PackedInt64Extension =
+        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[71]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<uint>> PackedUint32Extension =
+        pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[72]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<ulong>> PackedUint64Extension =
+        pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[73]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<int>> PackedSint32Extension =
+        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[74]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<long>> PackedSint64Extension =
+        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[75]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<uint>> PackedFixed32Extension =
+        pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[76]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<ulong>> PackedFixed64Extension =
+        pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[77]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<int>> PackedSfixed32Extension =
+        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[78]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<long>> PackedSfixed64Extension =
+        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[79]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<float>> PackedFloatExtension =
+        pb::GeneratedRepeatExtension<float>.CreateInstance(Descriptor.Extensions[80]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<double>> PackedDoubleExtension =
+        pb::GeneratedRepeatExtension<double>.CreateInstance(Descriptor.Extensions[81]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<bool>> PackedBoolExtension =
+        pb::GeneratedRepeatExtension<bool>.CreateInstance(Descriptor.Extensions[82]);
+    public static readonly
+        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> PackedEnumExtension =
+        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[83]);
     #endregion
     
     #region Static variables
@@ -585,23 +663,33 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder> internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder>(internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor,
             new string[] { "EscapedBytes", "LargeUint32", "LargeUint64", "SmallInt32", "SmallInt64", "Utf8String", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_FooRequest__Descriptor
+    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedTypes__Descriptor
         = Descriptor.MessageTypes[19];
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder> internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder>(internal__static_protobuf_unittest_TestPackedTypes__Descriptor,
+            new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", });
+    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedExtensions__Descriptor
+        = Descriptor.MessageTypes[20];
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder> internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable
+        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder>(internal__static_protobuf_unittest_TestPackedExtensions__Descriptor,
+            new string[] { });
+    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_FooRequest__Descriptor
+        = Descriptor.MessageTypes[21];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder> internal__static_protobuf_unittest_FooRequest__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder>(internal__static_protobuf_unittest_FooRequest__Descriptor,
             new string[] { });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_FooResponse__Descriptor
-        = Descriptor.MessageTypes[20];
+        = Descriptor.MessageTypes[22];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder> internal__static_protobuf_unittest_FooResponse__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder>(internal__static_protobuf_unittest_FooResponse__Descriptor,
             new string[] { });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_BarRequest__Descriptor
-        = Descriptor.MessageTypes[21];
+        = Descriptor.MessageTypes[23];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder> internal__static_protobuf_unittest_BarRequest__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder>(internal__static_protobuf_unittest_BarRequest__Descriptor,
             new string[] { });
     internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_BarResponse__Descriptor
-        = Descriptor.MessageTypes[22];
+        = Descriptor.MessageTypes[24];
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder> internal__static_protobuf_unittest_BarResponse__FieldAccessorTable
         = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder>(internal__static_protobuf_unittest_BarResponse__Descriptor,
             new string[] { });
@@ -1983,50 +2071,80 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (HasOptionalCord) {
         output.WriteString(25, OptionalCord);
       }
-      foreach (int element in RepeatedInt32List) {
-        output.WriteInt32(31, element);
+      if (repeatedInt32_.Count > 0) {
+        foreach (int element in repeatedInt32_) {
+          output.WriteInt32(31, element);
+        }
       }
-      foreach (long element in RepeatedInt64List) {
-        output.WriteInt64(32, element);
+      if (repeatedInt64_.Count > 0) {
+        foreach (long element in repeatedInt64_) {
+          output.WriteInt64(32, element);
+        }
       }
-      foreach (uint element in RepeatedUint32List) {
-        output.WriteUInt32(33, element);
+      if (repeatedUint32_.Count > 0) {
+        foreach (uint element in repeatedUint32_) {
+          output.WriteUInt32(33, element);
+        }
       }
-      foreach (ulong element in RepeatedUint64List) {
-        output.WriteUInt64(34, element);
+      if (repeatedUint64_.Count > 0) {
+        foreach (ulong element in repeatedUint64_) {
+          output.WriteUInt64(34, element);
+        }
       }
-      foreach (int element in RepeatedSint32List) {
-        output.WriteSInt32(35, element);
+      if (repeatedSint32_.Count > 0) {
+        foreach (int element in repeatedSint32_) {
+          output.WriteSInt32(35, element);
+        }
       }
-      foreach (long element in RepeatedSint64List) {
-        output.WriteSInt64(36, element);
+      if (repeatedSint64_.Count > 0) {
+        foreach (long element in repeatedSint64_) {
+          output.WriteSInt64(36, element);
+        }
       }
-      foreach (uint element in RepeatedFixed32List) {
-        output.WriteFixed32(37, element);
+      if (repeatedFixed32_.Count > 0) {
+        foreach (uint element in repeatedFixed32_) {
+          output.WriteFixed32(37, element);
+        }
       }
-      foreach (ulong element in RepeatedFixed64List) {
-        output.WriteFixed64(38, element);
+      if (repeatedFixed64_.Count > 0) {
+        foreach (ulong element in repeatedFixed64_) {
+          output.WriteFixed64(38, element);
+        }
       }
-      foreach (int element in RepeatedSfixed32List) {
-        output.WriteSFixed32(39, element);
+      if (repeatedSfixed32_.Count > 0) {
+        foreach (int element in repeatedSfixed32_) {
+          output.WriteSFixed32(39, element);
+        }
       }
-      foreach (long element in RepeatedSfixed64List) {
-        output.WriteSFixed64(40, element);
+      if (repeatedSfixed64_.Count > 0) {
+        foreach (long element in repeatedSfixed64_) {
+          output.WriteSFixed64(40, element);
+        }
       }
-      foreach (float element in RepeatedFloatList) {
-        output.WriteFloat(41, element);
+      if (repeatedFloat_.Count > 0) {
+        foreach (float element in repeatedFloat_) {
+          output.WriteFloat(41, element);
+        }
       }
-      foreach (double element in RepeatedDoubleList) {
-        output.WriteDouble(42, element);
+      if (repeatedDouble_.Count > 0) {
+        foreach (double element in repeatedDouble_) {
+          output.WriteDouble(42, element);
+        }
       }
-      foreach (bool element in RepeatedBoolList) {
-        output.WriteBool(43, element);
+      if (repeatedBool_.Count > 0) {
+        foreach (bool element in repeatedBool_) {
+          output.WriteBool(43, element);
+        }
       }
-      foreach (string element in RepeatedStringList) {
-        output.WriteString(44, element);
+      if (repeatedString_.Count > 0) {
+        foreach (string element in repeatedString_) {
+          output.WriteString(44, element);
+        }
       }
-      foreach (pb::ByteString element in RepeatedBytesList) {
-        output.WriteBytes(45, element);
+      if (repeatedBytes_.Count > 0) {
+        foreach (pb::ByteString element in repeatedBytes_) {
+          output.WriteBytes(45, element);
+        }
       }
       foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup element in RepeatedGroupList) {
         output.WriteGroup(46, element);
@@ -2040,20 +2158,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       foreach (global::Google.ProtocolBuffers.TestProtos.ImportMessage element in RepeatedImportMessageList) {
         output.WriteMessage(50, element);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum element in RepeatedNestedEnumList) {
-        output.WriteEnum(51, (int) element);
+      if (repeatedNestedEnum_.Count > 0) {
+        foreach (int element in repeatedNestedEnum_) {
+          output.WriteEnum(51, element);
+        }
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in RepeatedForeignEnumList) {
-        output.WriteEnum(52, (int) element);
+      if (repeatedForeignEnum_.Count > 0) {
+        foreach (int element in repeatedForeignEnum_) {
+          output.WriteEnum(52, element);
+        }
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ImportEnum element in RepeatedImportEnumList) {
-        output.WriteEnum(53, (int) element);
+      if (repeatedImportEnum_.Count > 0) {
+        foreach (int element in repeatedImportEnum_) {
+          output.WriteEnum(53, element);
+        }
       }
-      foreach (string element in RepeatedStringPieceList) {
-        output.WriteString(54, element);
+      if (repeatedStringPiece_.Count > 0) {
+        foreach (string element in repeatedStringPiece_) {
+          output.WriteString(54, element);
+        }
       }
-      foreach (string element in RepeatedCordList) {
-        output.WriteString(55, element);
+      if (repeatedCord_.Count > 0) {
+        foreach (string element in repeatedCord_) {
+          output.WriteString(55, element);
+        }
       }
       if (HasDefaultInt32) {
         output.WriteInt32(61, DefaultInt32);
@@ -2197,50 +2325,111 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (HasOptionalCord) {
           size += pb::CodedOutputStream.ComputeStringSize(25, OptionalCord);
         }
-        foreach (int element in RepeatedInt32List) {
-          size += pb::CodedOutputStream.ComputeInt32Size(31, element);
+        {
+          int dataSize = 0;
+          foreach (int element in RepeatedInt32List) {
+            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedInt32_.Count;
         }
-        foreach (long element in RepeatedInt64List) {
-          size += pb::CodedOutputStream.ComputeInt64Size(32, element);
+        {
+          int dataSize = 0;
+          foreach (long element in RepeatedInt64List) {
+            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedInt64_.Count;
         }
-        foreach (uint element in RepeatedUint32List) {
-          size += pb::CodedOutputStream.ComputeUInt32Size(33, element);
+        {
+          int dataSize = 0;
+          foreach (uint element in RepeatedUint32List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedUint32_.Count;
         }
-        foreach (ulong element in RepeatedUint64List) {
-          size += pb::CodedOutputStream.ComputeUInt64Size(34, element);
+        {
+          int dataSize = 0;
+          foreach (ulong element in RepeatedUint64List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedUint64_.Count;
         }
-        foreach (int element in RepeatedSint32List) {
-          size += pb::CodedOutputStream.ComputeSInt32Size(35, element);
+        {
+          int dataSize = 0;
+          foreach (int element in RepeatedSint32List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedSint32_.Count;
         }
-        foreach (long element in RepeatedSint64List) {
-          size += pb::CodedOutputStream.ComputeSInt64Size(36, element);
+        {
+          int dataSize = 0;
+          foreach (long element in RepeatedSint64List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedSint64_.Count;
         }
-        foreach (uint element in RepeatedFixed32List) {
-          size += pb::CodedOutputStream.ComputeFixed32Size(37, element);
+        {
+          int dataSize = 0;
+          dataSize = 4 * repeatedFixed32_.Count;
+          size += dataSize;
+          size += 2 * repeatedFixed32_.Count;
         }
-        foreach (ulong element in RepeatedFixed64List) {
-          size += pb::CodedOutputStream.ComputeFixed64Size(38, element);
+        {
+          int dataSize = 0;
+          dataSize = 8 * repeatedFixed64_.Count;
+          size += dataSize;
+          size += 2 * repeatedFixed64_.Count;
         }
-        foreach (int element in RepeatedSfixed32List) {
-          size += pb::CodedOutputStream.ComputeSFixed32Size(39, element);
+        {
+          int dataSize = 0;
+          dataSize = 4 * repeatedSfixed32_.Count;
+          size += dataSize;
+          size += 2 * repeatedSfixed32_.Count;
         }
-        foreach (long element in RepeatedSfixed64List) {
-          size += pb::CodedOutputStream.ComputeSFixed64Size(40, element);
+        {
+          int dataSize = 0;
+          dataSize = 8 * repeatedSfixed64_.Count;
+          size += dataSize;
+          size += 2 * repeatedSfixed64_.Count;
         }
-        foreach (float element in RepeatedFloatList) {
-          size += pb::CodedOutputStream.ComputeFloatSize(41, element);
+        {
+          int dataSize = 0;
+          dataSize = 4 * repeatedFloat_.Count;
+          size += dataSize;
+          size += 2 * repeatedFloat_.Count;
         }
-        foreach (double element in RepeatedDoubleList) {
-          size += pb::CodedOutputStream.ComputeDoubleSize(42, element);
+        {
+          int dataSize = 0;
+          dataSize = 8 * repeatedDouble_.Count;
+          size += dataSize;
+          size += 2 * repeatedDouble_.Count;
         }
-        foreach (bool element in RepeatedBoolList) {
-          size += pb::CodedOutputStream.ComputeBoolSize(43, element);
+        {
+          int dataSize = 0;
+          dataSize = 1 * repeatedBool_.Count;
+          size += dataSize;
+          size += 2 * repeatedBool_.Count;
         }
-        foreach (string element in RepeatedStringList) {
-          size += pb::CodedOutputStream.ComputeStringSize(44, element);
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedStringList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedString_.Count;
         }
-        foreach (pb::ByteString element in RepeatedBytesList) {
-          size += pb::CodedOutputStream.ComputeBytesSize(45, element);
+        {
+          int dataSize = 0;
+          foreach (pb::ByteString element in RepeatedBytesList) {
+            dataSize += pb::CodedOutputStream.ComputeBytesSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedBytes_.Count;
         }
         foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup element in RepeatedGroupList) {
           size += pb::CodedOutputStream.ComputeGroupSize(46, element);
@@ -2254,20 +2443,51 @@ namespace Google.ProtocolBuffers.TestProtos {
         foreach (global::Google.ProtocolBuffers.TestProtos.ImportMessage element in RepeatedImportMessageList) {
           size += pb::CodedOutputStream.ComputeMessageSize(50, element);
         }
-        foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum element in RepeatedNestedEnumList) {
-          size += pb::CodedOutputStream.ComputeEnumSize(51, (int) element);
+        {
+          int dataSize = 0;
+          if (repeatedNestedEnum_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum element in repeatedNestedEnum_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 2 * repeatedNestedEnum_.Count;
+          }
         }
-        foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in RepeatedForeignEnumList) {
-          size += pb::CodedOutputStream.ComputeEnumSize(52, (int) element);
+        {
+          int dataSize = 0;
+          if (repeatedForeignEnum_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in repeatedForeignEnum_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 2 * repeatedForeignEnum_.Count;
+          }
         }
-        foreach (global::Google.ProtocolBuffers.TestProtos.ImportEnum element in RepeatedImportEnumList) {
-          size += pb::CodedOutputStream.ComputeEnumSize(53, (int) element);
+        {
+          int dataSize = 0;
+          if (repeatedImportEnum_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.ImportEnum element in repeatedImportEnum_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 2 * repeatedImportEnum_.Count;
+          }
         }
-        foreach (string element in RepeatedStringPieceList) {
-          size += pb::CodedOutputStream.ComputeStringSize(54, element);
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedStringPieceList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedStringPiece_.Count;
         }
-        foreach (string element in RepeatedCordList) {
-          size += pb::CodedOutputStream.ComputeStringSize(55, element);
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedCordList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedCord_.Count;
         }
         if (HasDefaultInt32) {
           size += pb::CodedOutputStream.ComputeInt32Size(61, DefaultInt32);
@@ -9369,8 +9589,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::CodedOutputStream output) {
-          foreach (int element in NestedmessageRepeatedInt32List) {
-            output.WriteInt32(1, element);
+          if (nestedmessageRepeatedInt32_.Count > 0) {
+            foreach (int element in nestedmessageRepeatedInt32_) {
+              output.WriteInt32(1, element);
+            }
           }
           foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in NestedmessageRepeatedForeignmessageList) {
             output.WriteMessage(2, element);
@@ -9385,8 +9607,13 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            foreach (int element in NestedmessageRepeatedInt32List) {
-              size += pb::CodedOutputStream.ComputeInt32Size(1, element);
+            {
+              int dataSize = 0;
+              foreach (int element in NestedmessageRepeatedInt32List) {
+                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+              }
+              size += dataSize;
+              size += 1 * nestedmessageRepeatedInt32_.Count;
             }
             foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in NestedmessageRepeatedForeignmessageList) {
               size += pb::CodedOutputStream.ComputeMessageSize(2, element);
@@ -9949,23 +10176,33 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (HasCordField) {
         output.WriteString(6, CordField);
       }
-      foreach (int element in RepeatedPrimitiveFieldList) {
-        output.WriteInt32(7, element);
+      if (repeatedPrimitiveField_.Count > 0) {
+        foreach (int element in repeatedPrimitiveField_) {
+          output.WriteInt32(7, element);
+        }
       }
-      foreach (string element in RepeatedStringFieldList) {
-        output.WriteString(8, element);
+      if (repeatedStringField_.Count > 0) {
+        foreach (string element in repeatedStringField_) {
+          output.WriteString(8, element);
+        }
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in RepeatedEnumFieldList) {
-        output.WriteEnum(9, (int) element);
+      if (repeatedEnumField_.Count > 0) {
+        foreach (int element in repeatedEnumField_) {
+          output.WriteEnum(9, element);
+        }
       }
       foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in RepeatedMessageFieldList) {
         output.WriteMessage(10, element);
       }
-      foreach (string element in RepeatedStringPieceFieldList) {
-        output.WriteString(11, element);
+      if (repeatedStringPieceField_.Count > 0) {
+        foreach (string element in repeatedStringPieceField_) {
+          output.WriteString(11, element);
+        }
       }
-      foreach (string element in RepeatedCordFieldList) {
-        output.WriteString(12, element);
+      if (repeatedCordField_.Count > 0) {
+        foreach (string element in repeatedCordField_) {
+          output.WriteString(12, element);
+        }
       }
       UnknownFields.WriteTo(output);
     }
@@ -9995,23 +10232,50 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (HasCordField) {
           size += pb::CodedOutputStream.ComputeStringSize(6, CordField);
         }
-        foreach (int element in RepeatedPrimitiveFieldList) {
-          size += pb::CodedOutputStream.ComputeInt32Size(7, element);
+        {
+          int dataSize = 0;
+          foreach (int element in RepeatedPrimitiveFieldList) {
+            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 1 * repeatedPrimitiveField_.Count;
         }
-        foreach (string element in RepeatedStringFieldList) {
-          size += pb::CodedOutputStream.ComputeStringSize(8, element);
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedStringFieldList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 1 * repeatedStringField_.Count;
         }
-        foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in RepeatedEnumFieldList) {
-          size += pb::CodedOutputStream.ComputeEnumSize(9, (int) element);
+        {
+          int dataSize = 0;
+          if (repeatedEnumField_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in repeatedEnumField_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 1 * repeatedEnumField_.Count;
+          }
         }
         foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in RepeatedMessageFieldList) {
           size += pb::CodedOutputStream.ComputeMessageSize(10, element);
         }
-        foreach (string element in RepeatedStringPieceFieldList) {
-          size += pb::CodedOutputStream.ComputeStringSize(11, element);
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedStringPieceFieldList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 1 * repeatedStringPieceField_.Count;
         }
-        foreach (string element in RepeatedCordFieldList) {
-          size += pb::CodedOutputStream.ComputeStringSize(12, element);
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedCordFieldList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 1 * repeatedCordField_.Count;
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -11206,6 +11470,1260 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.utf8String_ = (string) global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Descriptor.Fields[5].DefaultValue;
         return this;
       }
+    }
+  }
+  
+  public sealed partial class TestPackedTypes : pb::GeneratedMessage<TestPackedTypes, TestPackedTypes.Builder> {
+    private static readonly TestPackedTypes defaultInstance = new Builder().BuildPartial();
+    public static TestPackedTypes DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestPackedTypes DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestPackedTypes ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestPackedTypes__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestPackedTypes, TestPackedTypes.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable; }
+    }
+    
+    private int packedInt32MemoizedSerializedSize;
+    private pbc::PopsicleList<int> packedInt32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> PackedInt32List {
+      get { return pbc::Lists.AsReadOnly(packedInt32_); }
+    }
+    public int PackedInt32Count {
+      get { return packedInt32_.Count; }
+    }
+    public int GetPackedInt32(int index) {
+      return packedInt32_[index];
+    }
+    
+    private int packedInt64MemoizedSerializedSize;
+    private pbc::PopsicleList<long> packedInt64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> PackedInt64List {
+      get { return pbc::Lists.AsReadOnly(packedInt64_); }
+    }
+    public int PackedInt64Count {
+      get { return packedInt64_.Count; }
+    }
+    public long GetPackedInt64(int index) {
+      return packedInt64_[index];
+    }
+    
+    private int packedUint32MemoizedSerializedSize;
+    private pbc::PopsicleList<uint> packedUint32_ = new pbc::PopsicleList<uint>();
+    public scg::IList<uint> PackedUint32List {
+      get { return pbc::Lists.AsReadOnly(packedUint32_); }
+    }
+    public int PackedUint32Count {
+      get { return packedUint32_.Count; }
+    }
+    public uint GetPackedUint32(int index) {
+      return packedUint32_[index];
+    }
+    
+    private int packedUint64MemoizedSerializedSize;
+    private pbc::PopsicleList<ulong> packedUint64_ = new pbc::PopsicleList<ulong>();
+    public scg::IList<ulong> PackedUint64List {
+      get { return pbc::Lists.AsReadOnly(packedUint64_); }
+    }
+    public int PackedUint64Count {
+      get { return packedUint64_.Count; }
+    }
+    public ulong GetPackedUint64(int index) {
+      return packedUint64_[index];
+    }
+    
+    private int packedSint32MemoizedSerializedSize;
+    private pbc::PopsicleList<int> packedSint32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> PackedSint32List {
+      get { return pbc::Lists.AsReadOnly(packedSint32_); }
+    }
+    public int PackedSint32Count {
+      get { return packedSint32_.Count; }
+    }
+    public int GetPackedSint32(int index) {
+      return packedSint32_[index];
+    }
+    
+    private int packedSint64MemoizedSerializedSize;
+    private pbc::PopsicleList<long> packedSint64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> PackedSint64List {
+      get { return pbc::Lists.AsReadOnly(packedSint64_); }
+    }
+    public int PackedSint64Count {
+      get { return packedSint64_.Count; }
+    }
+    public long GetPackedSint64(int index) {
+      return packedSint64_[index];
+    }
+    
+    private int packedFixed32MemoizedSerializedSize;
+    private pbc::PopsicleList<uint> packedFixed32_ = new pbc::PopsicleList<uint>();
+    public scg::IList<uint> PackedFixed32List {
+      get { return pbc::Lists.AsReadOnly(packedFixed32_); }
+    }
+    public int PackedFixed32Count {
+      get { return packedFixed32_.Count; }
+    }
+    public uint GetPackedFixed32(int index) {
+      return packedFixed32_[index];
+    }
+    
+    private int packedFixed64MemoizedSerializedSize;
+    private pbc::PopsicleList<ulong> packedFixed64_ = new pbc::PopsicleList<ulong>();
+    public scg::IList<ulong> PackedFixed64List {
+      get { return pbc::Lists.AsReadOnly(packedFixed64_); }
+    }
+    public int PackedFixed64Count {
+      get { return packedFixed64_.Count; }
+    }
+    public ulong GetPackedFixed64(int index) {
+      return packedFixed64_[index];
+    }
+    
+    private int packedSfixed32MemoizedSerializedSize;
+    private pbc::PopsicleList<int> packedSfixed32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> PackedSfixed32List {
+      get { return pbc::Lists.AsReadOnly(packedSfixed32_); }
+    }
+    public int PackedSfixed32Count {
+      get { return packedSfixed32_.Count; }
+    }
+    public int GetPackedSfixed32(int index) {
+      return packedSfixed32_[index];
+    }
+    
+    private int packedSfixed64MemoizedSerializedSize;
+    private pbc::PopsicleList<long> packedSfixed64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> PackedSfixed64List {
+      get { return pbc::Lists.AsReadOnly(packedSfixed64_); }
+    }
+    public int PackedSfixed64Count {
+      get { return packedSfixed64_.Count; }
+    }
+    public long GetPackedSfixed64(int index) {
+      return packedSfixed64_[index];
+    }
+    
+    private int packedFloatMemoizedSerializedSize;
+    private pbc::PopsicleList<float> packedFloat_ = new pbc::PopsicleList<float>();
+    public scg::IList<float> PackedFloatList {
+      get { return pbc::Lists.AsReadOnly(packedFloat_); }
+    }
+    public int PackedFloatCount {
+      get { return packedFloat_.Count; }
+    }
+    public float GetPackedFloat(int index) {
+      return packedFloat_[index];
+    }
+    
+    private int packedDoubleMemoizedSerializedSize;
+    private pbc::PopsicleList<double> packedDouble_ = new pbc::PopsicleList<double>();
+    public scg::IList<double> PackedDoubleList {
+      get { return pbc::Lists.AsReadOnly(packedDouble_); }
+    }
+    public int PackedDoubleCount {
+      get { return packedDouble_.Count; }
+    }
+    public double GetPackedDouble(int index) {
+      return packedDouble_[index];
+    }
+    
+    private int packedBoolMemoizedSerializedSize;
+    private pbc::PopsicleList<bool> packedBool_ = new pbc::PopsicleList<bool>();
+    public scg::IList<bool> PackedBoolList {
+      get { return pbc::Lists.AsReadOnly(packedBool_); }
+    }
+    public int PackedBoolCount {
+      get { return packedBool_.Count; }
+    }
+    public bool GetPackedBool(int index) {
+      return packedBool_[index];
+    }
+    
+    private int packedEnumMemoizedSerializedSize;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> packedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> PackedEnumList {
+      get { return pbc::Lists.AsReadOnly(packedEnum_); }
+    }
+    public int PackedEnumCount {
+      get { return packedEnum_.Count; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.ForeignEnum GetPackedEnum(int index) {
+      return packedEnum_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (packedInt32_.Count > 0) {
+        output.WriteRawVarint32(722);
+        output.WriteRawVarint32((uint) packedInt32MemoizedSerializedSize);
+        foreach (int element in packedInt32_) {
+          output.WriteInt32NoTag(element);
+        }
+      }
+      if (packedInt64_.Count > 0) {
+        output.WriteRawVarint32(730);
+        output.WriteRawVarint32((uint) packedInt64MemoizedSerializedSize);
+        foreach (long element in packedInt64_) {
+          output.WriteInt64NoTag(element);
+        }
+      }
+      if (packedUint32_.Count > 0) {
+        output.WriteRawVarint32(738);
+        output.WriteRawVarint32((uint) packedUint32MemoizedSerializedSize);
+        foreach (uint element in packedUint32_) {
+          output.WriteUInt32NoTag(element);
+        }
+      }
+      if (packedUint64_.Count > 0) {
+        output.WriteRawVarint32(746);
+        output.WriteRawVarint32((uint) packedUint64MemoizedSerializedSize);
+        foreach (ulong element in packedUint64_) {
+          output.WriteUInt64NoTag(element);
+        }
+      }
+      if (packedSint32_.Count > 0) {
+        output.WriteRawVarint32(754);
+        output.WriteRawVarint32((uint) packedSint32MemoizedSerializedSize);
+        foreach (int element in packedSint32_) {
+          output.WriteSInt32NoTag(element);
+        }
+      }
+      if (packedSint64_.Count > 0) {
+        output.WriteRawVarint32(762);
+        output.WriteRawVarint32((uint) packedSint64MemoizedSerializedSize);
+        foreach (long element in packedSint64_) {
+          output.WriteSInt64NoTag(element);
+        }
+      }
+      if (packedFixed32_.Count > 0) {
+        output.WriteRawVarint32(770);
+        output.WriteRawVarint32((uint) packedFixed32MemoizedSerializedSize);
+        foreach (uint element in packedFixed32_) {
+          output.WriteFixed32NoTag(element);
+        }
+      }
+      if (packedFixed64_.Count > 0) {
+        output.WriteRawVarint32(778);
+        output.WriteRawVarint32((uint) packedFixed64MemoizedSerializedSize);
+        foreach (ulong element in packedFixed64_) {
+          output.WriteFixed64NoTag(element);
+        }
+      }
+      if (packedSfixed32_.Count > 0) {
+        output.WriteRawVarint32(786);
+        output.WriteRawVarint32((uint) packedSfixed32MemoizedSerializedSize);
+        foreach (int element in packedSfixed32_) {
+          output.WriteSFixed32NoTag(element);
+        }
+      }
+      if (packedSfixed64_.Count > 0) {
+        output.WriteRawVarint32(794);
+        output.WriteRawVarint32((uint) packedSfixed64MemoizedSerializedSize);
+        foreach (long element in packedSfixed64_) {
+          output.WriteSFixed64NoTag(element);
+        }
+      }
+      if (packedFloat_.Count > 0) {
+        output.WriteRawVarint32(802);
+        output.WriteRawVarint32((uint) packedFloatMemoizedSerializedSize);
+        foreach (float element in packedFloat_) {
+          output.WriteFloatNoTag(element);
+        }
+      }
+      if (packedDouble_.Count > 0) {
+        output.WriteRawVarint32(810);
+        output.WriteRawVarint32((uint) packedDoubleMemoizedSerializedSize);
+        foreach (double element in packedDouble_) {
+          output.WriteDoubleNoTag(element);
+        }
+      }
+      if (packedBool_.Count > 0) {
+        output.WriteRawVarint32(818);
+        output.WriteRawVarint32((uint) packedBoolMemoizedSerializedSize);
+        foreach (bool element in packedBool_) {
+          output.WriteBoolNoTag(element);
+        }
+      }
+      if (packedEnum_.Count > 0) {
+        output.WriteRawVarint32(826);
+        output.WriteRawVarint32((uint) packedEnumMemoizedSerializedSize);
+        foreach (int element in packedEnum_) {
+          output.WriteEnumNoTag(element);
+        }
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        {
+          int dataSize = 0;
+          foreach (int element in PackedInt32List) {
+            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedInt32MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in PackedInt64List) {
+            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedInt64MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          foreach (uint element in PackedUint32List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedUint32MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          foreach (ulong element in PackedUint64List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedUint64MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          foreach (int element in PackedSint32List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedSint32MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in PackedSint64List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedSint64MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * packedFixed32_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedFixed32MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * packedFixed64_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedFixed64MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * packedSfixed32_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedSfixed32MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * packedSfixed64_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedSfixed64MemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * packedFloat_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedFloatMemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * packedDouble_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedDoubleMemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 1 * packedBool_.Count;
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          packedBoolMemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
+          if (packedEnum_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in packedEnum_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 2;
+            size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+          }
+          packedEnumMemoizedSerializedSize = dataSize;
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestPackedTypes ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestPackedTypes ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestPackedTypes prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestPackedTypes, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestPackedTypes result = new TestPackedTypes();
+      
+      protected override TestPackedTypes MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestPackedTypes();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return TestPackedTypes.Descriptor; }
+      }
+      
+      public override TestPackedTypes DefaultInstanceForType {
+        get { return TestPackedTypes.DefaultInstance; }
+      }
+      
+      public override TestPackedTypes BuildPartial() {
+        result.packedInt32_.MakeReadOnly();
+        result.packedInt64_.MakeReadOnly();
+        result.packedUint32_.MakeReadOnly();
+        result.packedUint64_.MakeReadOnly();
+        result.packedSint32_.MakeReadOnly();
+        result.packedSint64_.MakeReadOnly();
+        result.packedFixed32_.MakeReadOnly();
+        result.packedFixed64_.MakeReadOnly();
+        result.packedSfixed32_.MakeReadOnly();
+        result.packedSfixed64_.MakeReadOnly();
+        result.packedFloat_.MakeReadOnly();
+        result.packedDouble_.MakeReadOnly();
+        result.packedBool_.MakeReadOnly();
+        result.packedEnum_.MakeReadOnly();
+        TestPackedTypes returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestPackedTypes) {
+          return MergeFrom((TestPackedTypes) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestPackedTypes other) {
+        if (other == TestPackedTypes.DefaultInstance) return this;
+        if (other.packedInt32_.Count != 0) {
+          base.AddRange(other.packedInt32_, result.packedInt32_);
+        }
+        if (other.packedInt64_.Count != 0) {
+          base.AddRange(other.packedInt64_, result.packedInt64_);
+        }
+        if (other.packedUint32_.Count != 0) {
+          base.AddRange(other.packedUint32_, result.packedUint32_);
+        }
+        if (other.packedUint64_.Count != 0) {
+          base.AddRange(other.packedUint64_, result.packedUint64_);
+        }
+        if (other.packedSint32_.Count != 0) {
+          base.AddRange(other.packedSint32_, result.packedSint32_);
+        }
+        if (other.packedSint64_.Count != 0) {
+          base.AddRange(other.packedSint64_, result.packedSint64_);
+        }
+        if (other.packedFixed32_.Count != 0) {
+          base.AddRange(other.packedFixed32_, result.packedFixed32_);
+        }
+        if (other.packedFixed64_.Count != 0) {
+          base.AddRange(other.packedFixed64_, result.packedFixed64_);
+        }
+        if (other.packedSfixed32_.Count != 0) {
+          base.AddRange(other.packedSfixed32_, result.packedSfixed32_);
+        }
+        if (other.packedSfixed64_.Count != 0) {
+          base.AddRange(other.packedSfixed64_, result.packedSfixed64_);
+        }
+        if (other.packedFloat_.Count != 0) {
+          base.AddRange(other.packedFloat_, result.packedFloat_);
+        }
+        if (other.packedDouble_.Count != 0) {
+          base.AddRange(other.packedDouble_, result.packedDouble_);
+        }
+        if (other.packedBool_.Count != 0) {
+          base.AddRange(other.packedBool_, result.packedBool_);
+        }
+        if (other.packedEnum_.Count != 0) {
+          base.AddRange(other.packedEnum_, result.packedEnum_);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              this.UnknownFields = unknownFields.Build();
+              return this;
+            }
+            default: {
+              if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                this.UnknownFields = unknownFields.Build();
+                return this;
+              }
+              break;
+            }
+            case 722: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedInt32(input.ReadInt32());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 730: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedInt64(input.ReadInt64());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 738: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedUint32(input.ReadUInt32());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 746: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedUint64(input.ReadUInt64());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 754: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedSint32(input.ReadSInt32());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 762: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedSint64(input.ReadSInt64());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 770: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedFixed32(input.ReadFixed32());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 778: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedFixed64(input.ReadFixed64());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 786: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedSfixed32(input.ReadSFixed32());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 794: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedSfixed64(input.ReadSFixed64());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 802: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedFloat(input.ReadFloat());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 810: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedDouble(input.ReadDouble());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 818: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedBool(input.ReadBool());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+            case 826: {
+              int length = input.ReadInt32();
+              int oldLimit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                int rawValue = input.ReadEnum();
+                if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+                  unknownFields.MergeVarintField(103, (ulong) rawValue);
+                } else {
+                  AddPackedEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue);
+                }
+              }
+              input.PopLimit(oldLimit);
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public scg::IList<int> PackedInt32List {
+        get { return result.packedInt32_; }
+      }
+      public int PackedInt32Count {
+        get { return result.PackedInt32Count; }
+      }
+      public int GetPackedInt32(int index) {
+        return result.GetPackedInt32(index);
+      }
+      public Builder SetPackedInt32(int index, int value) {
+        result.packedInt32_[index] = value;
+        return this;
+      }
+      public Builder AddPackedInt32(int value) {
+        result.packedInt32_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedInt32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.packedInt32_);
+        return this;
+      }
+      public Builder ClearPackedInt32() {
+        result.packedInt32_.Clear();
+        return this;
+      }
+      
+      public scg::IList<long> PackedInt64List {
+        get { return result.packedInt64_; }
+      }
+      public int PackedInt64Count {
+        get { return result.PackedInt64Count; }
+      }
+      public long GetPackedInt64(int index) {
+        return result.GetPackedInt64(index);
+      }
+      public Builder SetPackedInt64(int index, long value) {
+        result.packedInt64_[index] = value;
+        return this;
+      }
+      public Builder AddPackedInt64(long value) {
+        result.packedInt64_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedInt64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.packedInt64_);
+        return this;
+      }
+      public Builder ClearPackedInt64() {
+        result.packedInt64_.Clear();
+        return this;
+      }
+      
+      public scg::IList<uint> PackedUint32List {
+        get { return result.packedUint32_; }
+      }
+      public int PackedUint32Count {
+        get { return result.PackedUint32Count; }
+      }
+      public uint GetPackedUint32(int index) {
+        return result.GetPackedUint32(index);
+      }
+      public Builder SetPackedUint32(int index, uint value) {
+        result.packedUint32_[index] = value;
+        return this;
+      }
+      public Builder AddPackedUint32(uint value) {
+        result.packedUint32_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedUint32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.packedUint32_);
+        return this;
+      }
+      public Builder ClearPackedUint32() {
+        result.packedUint32_.Clear();
+        return this;
+      }
+      
+      public scg::IList<ulong> PackedUint64List {
+        get { return result.packedUint64_; }
+      }
+      public int PackedUint64Count {
+        get { return result.PackedUint64Count; }
+      }
+      public ulong GetPackedUint64(int index) {
+        return result.GetPackedUint64(index);
+      }
+      public Builder SetPackedUint64(int index, ulong value) {
+        result.packedUint64_[index] = value;
+        return this;
+      }
+      public Builder AddPackedUint64(ulong value) {
+        result.packedUint64_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedUint64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.packedUint64_);
+        return this;
+      }
+      public Builder ClearPackedUint64() {
+        result.packedUint64_.Clear();
+        return this;
+      }
+      
+      public scg::IList<int> PackedSint32List {
+        get { return result.packedSint32_; }
+      }
+      public int PackedSint32Count {
+        get { return result.PackedSint32Count; }
+      }
+      public int GetPackedSint32(int index) {
+        return result.GetPackedSint32(index);
+      }
+      public Builder SetPackedSint32(int index, int value) {
+        result.packedSint32_[index] = value;
+        return this;
+      }
+      public Builder AddPackedSint32(int value) {
+        result.packedSint32_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedSint32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.packedSint32_);
+        return this;
+      }
+      public Builder ClearPackedSint32() {
+        result.packedSint32_.Clear();
+        return this;
+      }
+      
+      public scg::IList<long> PackedSint64List {
+        get { return result.packedSint64_; }
+      }
+      public int PackedSint64Count {
+        get { return result.PackedSint64Count; }
+      }
+      public long GetPackedSint64(int index) {
+        return result.GetPackedSint64(index);
+      }
+      public Builder SetPackedSint64(int index, long value) {
+        result.packedSint64_[index] = value;
+        return this;
+      }
+      public Builder AddPackedSint64(long value) {
+        result.packedSint64_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedSint64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.packedSint64_);
+        return this;
+      }
+      public Builder ClearPackedSint64() {
+        result.packedSint64_.Clear();
+        return this;
+      }
+      
+      public scg::IList<uint> PackedFixed32List {
+        get { return result.packedFixed32_; }
+      }
+      public int PackedFixed32Count {
+        get { return result.PackedFixed32Count; }
+      }
+      public uint GetPackedFixed32(int index) {
+        return result.GetPackedFixed32(index);
+      }
+      public Builder SetPackedFixed32(int index, uint value) {
+        result.packedFixed32_[index] = value;
+        return this;
+      }
+      public Builder AddPackedFixed32(uint value) {
+        result.packedFixed32_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedFixed32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.packedFixed32_);
+        return this;
+      }
+      public Builder ClearPackedFixed32() {
+        result.packedFixed32_.Clear();
+        return this;
+      }
+      
+      public scg::IList<ulong> PackedFixed64List {
+        get { return result.packedFixed64_; }
+      }
+      public int PackedFixed64Count {
+        get { return result.PackedFixed64Count; }
+      }
+      public ulong GetPackedFixed64(int index) {
+        return result.GetPackedFixed64(index);
+      }
+      public Builder SetPackedFixed64(int index, ulong value) {
+        result.packedFixed64_[index] = value;
+        return this;
+      }
+      public Builder AddPackedFixed64(ulong value) {
+        result.packedFixed64_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedFixed64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.packedFixed64_);
+        return this;
+      }
+      public Builder ClearPackedFixed64() {
+        result.packedFixed64_.Clear();
+        return this;
+      }
+      
+      public scg::IList<int> PackedSfixed32List {
+        get { return result.packedSfixed32_; }
+      }
+      public int PackedSfixed32Count {
+        get { return result.PackedSfixed32Count; }
+      }
+      public int GetPackedSfixed32(int index) {
+        return result.GetPackedSfixed32(index);
+      }
+      public Builder SetPackedSfixed32(int index, int value) {
+        result.packedSfixed32_[index] = value;
+        return this;
+      }
+      public Builder AddPackedSfixed32(int value) {
+        result.packedSfixed32_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedSfixed32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.packedSfixed32_);
+        return this;
+      }
+      public Builder ClearPackedSfixed32() {
+        result.packedSfixed32_.Clear();
+        return this;
+      }
+      
+      public scg::IList<long> PackedSfixed64List {
+        get { return result.packedSfixed64_; }
+      }
+      public int PackedSfixed64Count {
+        get { return result.PackedSfixed64Count; }
+      }
+      public long GetPackedSfixed64(int index) {
+        return result.GetPackedSfixed64(index);
+      }
+      public Builder SetPackedSfixed64(int index, long value) {
+        result.packedSfixed64_[index] = value;
+        return this;
+      }
+      public Builder AddPackedSfixed64(long value) {
+        result.packedSfixed64_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedSfixed64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.packedSfixed64_);
+        return this;
+      }
+      public Builder ClearPackedSfixed64() {
+        result.packedSfixed64_.Clear();
+        return this;
+      }
+      
+      public scg::IList<float> PackedFloatList {
+        get { return result.packedFloat_; }
+      }
+      public int PackedFloatCount {
+        get { return result.PackedFloatCount; }
+      }
+      public float GetPackedFloat(int index) {
+        return result.GetPackedFloat(index);
+      }
+      public Builder SetPackedFloat(int index, float value) {
+        result.packedFloat_[index] = value;
+        return this;
+      }
+      public Builder AddPackedFloat(float value) {
+        result.packedFloat_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedFloat(scg::IEnumerable<float> values) {
+        base.AddRange(values, result.packedFloat_);
+        return this;
+      }
+      public Builder ClearPackedFloat() {
+        result.packedFloat_.Clear();
+        return this;
+      }
+      
+      public scg::IList<double> PackedDoubleList {
+        get { return result.packedDouble_; }
+      }
+      public int PackedDoubleCount {
+        get { return result.PackedDoubleCount; }
+      }
+      public double GetPackedDouble(int index) {
+        return result.GetPackedDouble(index);
+      }
+      public Builder SetPackedDouble(int index, double value) {
+        result.packedDouble_[index] = value;
+        return this;
+      }
+      public Builder AddPackedDouble(double value) {
+        result.packedDouble_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedDouble(scg::IEnumerable<double> values) {
+        base.AddRange(values, result.packedDouble_);
+        return this;
+      }
+      public Builder ClearPackedDouble() {
+        result.packedDouble_.Clear();
+        return this;
+      }
+      
+      public scg::IList<bool> PackedBoolList {
+        get { return result.packedBool_; }
+      }
+      public int PackedBoolCount {
+        get { return result.PackedBoolCount; }
+      }
+      public bool GetPackedBool(int index) {
+        return result.GetPackedBool(index);
+      }
+      public Builder SetPackedBool(int index, bool value) {
+        result.packedBool_[index] = value;
+        return this;
+      }
+      public Builder AddPackedBool(bool value) {
+        result.packedBool_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedBool(scg::IEnumerable<bool> values) {
+        base.AddRange(values, result.packedBool_);
+        return this;
+      }
+      public Builder ClearPackedBool() {
+        result.packedBool_.Clear();
+        return this;
+      }
+      
+      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> PackedEnumList {
+        get { return result.packedEnum_; }
+      }
+      public int PackedEnumCount {
+        get { return result.PackedEnumCount; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.ForeignEnum GetPackedEnum(int index) {
+        return result.GetPackedEnum(index);
+      }
+      public Builder SetPackedEnum(int index, global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+        result.packedEnum_[index] = value;
+        return this;
+      }
+      public Builder AddPackedEnum(global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+        result.packedEnum_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> values) {
+        base.AddRange(values, result.packedEnum_);
+        return this;
+      }
+      public Builder ClearPackedEnum() {
+        result.packedEnum_.Clear();
+        return this;
+      }
+    }
+  }
+  
+  public sealed partial class TestPackedExtensions : pb::ExtendableMessage<TestPackedExtensions, TestPackedExtensions.Builder> {
+    private static readonly TestPackedExtensions defaultInstance = new Builder().BuildPartial();
+    public static TestPackedExtensions DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestPackedExtensions DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestPackedExtensions ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestPackedExtensions__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestPackedExtensions, TestPackedExtensions.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (!ExtensionsAreInitialized) return false;
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      pb::ExtendableMessage<TestPackedExtensions, TestPackedExtensions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
+      extensionWriter.WriteUntil(536870912, output);
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += ExtensionsSerializedSize;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestPackedExtensions ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestPackedExtensions ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestPackedExtensions prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::ExtendableBuilder<TestPackedExtensions, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestPackedExtensions result = new TestPackedExtensions();
+      
+      protected override TestPackedExtensions MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestPackedExtensions();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return TestPackedExtensions.Descriptor; }
+      }
+      
+      public override TestPackedExtensions DefaultInstanceForType {
+        get { return TestPackedExtensions.DefaultInstance; }
+      }
+      
+      public override TestPackedExtensions BuildPartial() {
+        TestPackedExtensions returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestPackedExtensions) {
+          return MergeFrom((TestPackedExtensions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestPackedExtensions other) {
+        if (other == TestPackedExtensions.DefaultInstance) return this;
+          this.MergeExtensionFields(other);
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              this.UnknownFields = unknownFields.Build();
+              return this;
+            }
+            default: {
+              if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                this.UnknownFields = unknownFields.Build();
+                return this;
+              }
+              break;
+            }
+          }
+        }
+      }
+      
     }
   }
   

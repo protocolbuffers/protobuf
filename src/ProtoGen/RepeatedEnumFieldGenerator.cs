@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
@@ -11,6 +9,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void GenerateMembers(TextGenerator writer) {
+      if (Descriptor.IsPacked && Descriptor.File.Options.OptimizeFor == FileOptions.Types.OptimizeMode.SPEED) {
+        writer.WriteLine("private int {0}MemoizedSerializedSize;", Name);
+      }
       writer.WriteLine("private pbc::PopsicleList<{0}> {1}_ = new pbc::PopsicleList<{0}>();", TypeName, Name);
       writer.WriteLine("public scg::IList<{0}> {1}List {{", TypeName, PropertyName);
       writer.WriteLine("  get {{ return pbc::Lists.AsReadOnly({0}_); }}", Name);
@@ -66,6 +67,15 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void GenerateParsingCode(TextGenerator writer) {
+        // If packed, set up the while loop
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("int length = input.ReadInt32();");
+        writer.WriteLine("int oldLimit = input.PushLimit(length);");
+        writer.WriteLine("while (!input.ReachedLimit) {");
+        writer.Indent();
+      }
+
+      // Read and store the enum
       // TODO(jonskeet): Make a more efficient way of doing this
       writer.WriteLine("int rawValue = input.ReadEnum();");
       writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
@@ -73,17 +83,56 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("} else {");
       writer.WriteLine("  Add{0}(({1}) rawValue);", PropertyName, TypeName);
       writer.WriteLine("}");
+
+      if (Descriptor.IsPacked) {
+        writer.Outdent();
+        writer.WriteLine("}");
+        writer.WriteLine("input.PopLimit(oldLimit);");
+      }
     }
 
     public void GenerateSerializationCode(TextGenerator writer) {
-      writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
-      writer.WriteLine("  output.WriteEnum({0}, (int) element);", Number);
+      writer.WriteLine("if ({0}_.Count > 0) {{", Name);
+      writer.Indent();
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("output.WriteRawVarint32({0});", WireFormat.MakeTag(Descriptor));
+        writer.WriteLine("output.WriteRawVarint32((uint) {0}MemoizedSerializedSize);", Name);
+        writer.WriteLine("foreach (int element in {0}_) {{", Name);
+        writer.WriteLine("  output.WriteEnumNoTag(element);");
+        writer.WriteLine("}");
+      } else {
+        writer.WriteLine("foreach (int element in {0}_) {{", Name);
+        writer.WriteLine("  output.WriteEnum({0}, element);", Number);
+        writer.WriteLine("}");
+      }
+      writer.Outdent();
       writer.WriteLine("}");
     }
 
     public void GenerateSerializedSizeCode(TextGenerator writer) {
-      writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
-      writer.WriteLine("  size += pb::CodedOutputStream.ComputeEnumSize({0}, (int) element);", Number);
+      writer.WriteLine("{");
+      writer.Indent();
+      writer.WriteLine("int dataSize = 0;");
+      writer.WriteLine("if ({0}_.Count > 0) {{", Name);
+      writer.Indent();
+      writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
+      writer.WriteLine("  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);");
+      writer.WriteLine("}");
+      writer.WriteLine("size += dataSize;");
+      int tagSize = CodedOutputStream.ComputeTagSize(Descriptor.FieldNumber);
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("size += {0};", tagSize);
+        writer.WriteLine("size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);");
+      } else {
+        writer.WriteLine("size += {0} * {1}_.Count;", tagSize, Name);
+      }
+      writer.Outdent();
+      writer.WriteLine("}");
+      // cache the data size for packed fields.
+      if (Descriptor.IsPacked) {
+        writer.WriteLine("{0}MemoizedSerializedSize = dataSize;", Name);
+      }
+      writer.Outdent();
       writer.WriteLine("}");
     }
   }

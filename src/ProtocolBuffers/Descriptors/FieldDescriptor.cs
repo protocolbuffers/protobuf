@@ -176,6 +176,10 @@ namespace Google.ProtocolBuffers.Descriptors {
       get { return Proto.Label == FieldDescriptorProto.Types.Label.LABEL_REPEATED; }
     }
 
+    public bool IsPacked {
+      get { return Proto.Options.Packed; }
+    }
+
     /// <valule>
     /// Indicates whether or not the field had an explicitly-defined default value.
     /// </value>

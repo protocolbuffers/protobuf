@@ -391,7 +391,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("  break;");
       writer.WriteLine("}");
       foreach (FieldDescriptor field in sortedFields) {
-        uint tag = WireFormat.MakeTag(field.FieldNumber, WireFormat.GetWireType(field.FieldType));
+        uint tag = WireFormat.MakeTag(field);
         writer.WriteLine("case {0}: {{", tag);
         writer.Indent();
         SourceGenerators.CreateFieldGenerator(field).GenerateParsingCode(writer);

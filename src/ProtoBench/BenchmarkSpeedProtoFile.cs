@@ -523,8 +523,10 @@ namespace Google.ProtocolBuffers.ProtoBench {
       if (HasField4) {
         output.WriteString(4, Field4);
       }
-      foreach (ulong element in Field5List) {
-        output.WriteFixed64(5, element);
+      if (field5_.Count > 0) {
+        foreach (ulong element in field5_) {
+          output.WriteFixed64(5, element);
+        }
       }
       if (HasField6) {
         output.WriteInt32(6, Field6);
@@ -677,8 +679,11 @@ namespace Google.ProtocolBuffers.ProtoBench {
         if (HasField4) {
           size += pb::CodedOutputStream.ComputeStringSize(4, Field4);
         }
-        foreach (ulong element in Field5List) {
-          size += pb::CodedOutputStream.ComputeFixed64Size(5, element);
+        {
+          int dataSize = 0;
+          dataSize = 8 * field5_.Count;
+          size += dataSize;
+          size += 1 * field5_.Count;
         }
         if (HasField59) {
           size += pb::CodedOutputStream.ComputeBoolSize(59, Field59);
@@ -3116,8 +3121,10 @@ namespace Google.ProtocolBuffers.ProtoBench {
           if (HasField13) {
             output.WriteString(13, Field13);
           }
-          foreach (string element in Field14List) {
-            output.WriteString(14, element);
+          if (field14_.Count > 0) {
+            foreach (string element in field14_) {
+              output.WriteString(14, element);
+            }
           }
           if (HasField15) {
             output.WriteUInt64(15, Field15);
@@ -3128,8 +3135,10 @@ namespace Google.ProtocolBuffers.ProtoBench {
           if (HasField20) {
             output.WriteInt32(20, Field20);
           }
-          foreach (string element in Field22List) {
-            output.WriteString(22, element);
+          if (field22_.Count > 0) {
+            foreach (string element in field22_) {
+              output.WriteString(22, element);
+            }
           }
           if (HasField24) {
             output.WriteString(24, Field24);
@@ -3149,8 +3158,10 @@ namespace Google.ProtocolBuffers.ProtoBench {
           if (HasField31) {
             output.WriteMessage(31, Field31);
           }
-          foreach (int element in Field73List) {
-            output.WriteInt32(73, element);
+          if (field73_.Count > 0) {
+            foreach (int element in field73_) {
+              output.WriteInt32(73, element);
+            }
           }
           UnknownFields.WriteTo(output);
         }
@@ -3174,8 +3185,13 @@ namespace Google.ProtocolBuffers.ProtoBench {
             if (HasField13) {
               size += pb::CodedOutputStream.ComputeStringSize(13, Field13);
             }
-            foreach (string element in Field14List) {
-              size += pb::CodedOutputStream.ComputeStringSize(14, element);
+            {
+              int dataSize = 0;
+              foreach (string element in Field14List) {
+                dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+              }
+              size += dataSize;
+              size += 1 * field14_.Count;
             }
             if (HasField15) {
               size += pb::CodedOutputStream.ComputeUInt64Size(15, Field15);
@@ -3195,11 +3211,21 @@ namespace Google.ProtocolBuffers.ProtoBench {
             if (HasField16) {
               size += pb::CodedOutputStream.ComputeStringSize(16, Field16);
             }
-            foreach (string element in Field22List) {
-              size += pb::CodedOutputStream.ComputeStringSize(22, element);
+            {
+              int dataSize = 0;
+              foreach (string element in Field22List) {
+                dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+              }
+              size += dataSize;
+              size += 2 * field22_.Count;
             }
-            foreach (int element in Field73List) {
-              size += pb::CodedOutputStream.ComputeInt32Size(73, element);
+            {
+              int dataSize = 0;
+              foreach (int element in Field73List) {
+                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+              }
+              size += dataSize;
+              size += 2 * field73_.Count;
             }
             if (HasField20) {
               size += pb::CodedOutputStream.ComputeInt32Size(20, Field20);
@@ -4110,17 +4136,23 @@ namespace Google.ProtocolBuffers.ProtoBench {
       if (HasField109) {
         output.WriteInt32(109, Field109);
       }
-      foreach (string element in Field127List) {
-        output.WriteString(127, element);
+      if (field127_.Count > 0) {
+        foreach (string element in field127_) {
+          output.WriteString(127, element);
+        }
       }
-      foreach (string element in Field128List) {
-        output.WriteString(128, element);
+      if (field128_.Count > 0) {
+        foreach (string element in field128_) {
+          output.WriteString(128, element);
+        }
       }
       if (HasField129) {
         output.WriteInt32(129, Field129);
       }
-      foreach (long element in Field130List) {
-        output.WriteInt64(130, element);
+      if (field130_.Count > 0) {
+        foreach (long element in field130_) {
+          output.WriteInt64(130, element);
+        }
       }
       if (HasField131) {
         output.WriteInt64(131, Field131);
@@ -4240,20 +4272,35 @@ namespace Google.ProtocolBuffers.ProtoBench {
         foreach (global::Google.ProtocolBuffers.ProtoBench.SpeedMessage3.Types.Group1 element in Group1List) {
           size += pb::CodedOutputStream.ComputeGroupSize(10, element);
         }
-        foreach (string element in Field128List) {
-          size += pb::CodedOutputStream.ComputeStringSize(128, element);
+        {
+          int dataSize = 0;
+          foreach (string element in Field128List) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * field128_.Count;
         }
         if (HasField131) {
           size += pb::CodedOutputStream.ComputeInt64Size(131, Field131);
         }
-        foreach (string element in Field127List) {
-          size += pb::CodedOutputStream.ComputeStringSize(127, element);
+        {
+          int dataSize = 0;
+          foreach (string element in Field127List) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * field127_.Count;
         }
         if (HasField129) {
           size += pb::CodedOutputStream.ComputeInt32Size(129, Field129);
         }
-        foreach (long element in Field130List) {
-          size += pb::CodedOutputStream.ComputeInt64Size(130, element);
+        {
+          int dataSize = 0;
+          foreach (long element in Field130List) {
+            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * field130_.Count;
         }
         if (HasField205) {
           size += pb::CodedOutputStream.ComputeBoolSize(205, Field205);

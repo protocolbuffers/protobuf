@@ -63,11 +63,19 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void SerializationPacked() {
+      TestPackedTypes message = TestUtil.GetPackedSet();
+      ByteString rawBytes = message.ToByteString();
+      Assert.AreEqual(rawBytes.Length, message.SerializedSize);
+      TestPackedTypes message2 = TestPackedTypes.ParseFrom(rawBytes);
+      TestUtil.AssertPackedFieldsSet(message2);
+    }
+
+    [Test]
     public void SerializeExtensions() {
       // TestAllTypes and TestAllExtensions should have compatible wire formats,
-      // so if we serealize a TestAllExtensions then parse it as TestAllTypes
+      // so if we serialize a TestAllExtensions then parse it as TestAllTypes
       // it should work.
-
       TestAllExtensions message = TestUtil.GetAllExtensionsSet();
       ByteString rawBytes = message.ToByteString();
       Assert.AreEqual(rawBytes.Length, message.SerializedSize);
@@ -75,6 +83,19 @@ namespace Google.ProtocolBuffers {
       TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);
 
       TestUtil.AssertAllFieldsSet(message2);
+    }
+
+    [Test]
+    public void SerializePackedExtensions() {
+      // TestPackedTypes and TestPackedExtensions should have compatible wire
+      // formats; check that they serialize to the same string.
+      TestPackedExtensions message = TestUtil.GetPackedExtensionsSet();
+      ByteString rawBytes = message.ToByteString();
+
+      TestPackedTypes message2 = TestUtil.GetPackedSet();
+      ByteString rawBytes2 = message2.ToByteString();
+
+      Assert.AreEqual(rawBytes, rawBytes2);
     }
 
     [Test]
@@ -90,10 +111,21 @@ namespace Google.ProtocolBuffers {
       TestUtil.RegisterAllExtensions(registry);
       registry = registry.AsReadOnly();
 
-      TestAllExtensions message2 =
-        TestAllExtensions.ParseFrom(rawBytes, registry);
+      TestAllExtensions message2 = TestAllExtensions.ParseFrom(rawBytes, registry);
 
       TestUtil.AssertAllExtensionsSet(message2);
+    }
+
+    [Test]
+    public void ParsePackedExtensions() {
+      // Ensure that packed extensions can be properly parsed.
+      TestPackedExtensions message = TestUtil.GetPackedExtensionsSet();
+      ByteString rawBytes = message.ToByteString();
+
+      ExtensionRegistry registry = TestUtil.CreateExtensionRegistry();
+
+      TestPackedExtensions message2 = TestPackedExtensions.ParseFrom(rawBytes, registry);
+      TestUtil.AssertPackedExtensionsSet(message2);
     }
 
     [Test]

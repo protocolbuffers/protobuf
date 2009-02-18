@@ -497,50 +497,73 @@ namespace Google.ProtocolBuffers {
         }
 
         // Unknown field or wrong wire type. Skip.
-        if (field == null || wireType != WireFormat.GetWireType(field.FieldType)) {
+        if (field == null || wireType != WireFormat.GetWireType(field)) {
           return MergeFieldFrom(tag, input);
         }
 
-        object value;
-        switch (field.FieldType) {
-          case FieldType.Group:
-          case FieldType.Message: {
-              IBuilder subBuilder;
-              if (defaultFieldInstance != null) {
-                subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
-              } else {
-                subBuilder = builder.CreateBuilderForField(field);
-              }
-              if (!field.IsRepeated) {
-                subBuilder.WeakMergeFrom((IMessage)builder[field]);
-              }
-              if (field.FieldType == FieldType.Group) {
-                input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
-              } else {
-                input.ReadMessage(subBuilder, extensionRegistry);
-              }
-              value = subBuilder.WeakBuild();
-              break;
-            }
-          case FieldType.Enum: {
+        if (field.IsPacked) {
+          int length = (int)input.ReadRawVarint32();
+          int limit = input.PushLimit(length);
+          if (field.FieldType == FieldType.Enum) {
+            while (!input.ReachedLimit) {
               int rawValue = input.ReadEnum();
-              value = field.EnumType.FindValueByNumber(rawValue);
-              // If the number isn't recognized as a valid value for this enum,
-              // drop it.
+              object value = field.EnumType.FindValueByNumber(rawValue);
               if (value == null) {
-                MergeVarintField(fieldNumber, (ulong)rawValue);
+                // If the number isn't recognized as a valid value for this
+                // enum, drop it (don't even add it to unknownFields).
                 return true;
               }
-              break;
+              builder.WeakAddRepeatedField(field, value);
             }
-          default:
-            value = input.ReadPrimitiveField(field.FieldType);
-            break;
-        }
-        if (field.IsRepeated) {
-          builder.WeakAddRepeatedField(field, value);
+          } else {
+            while (!input.ReachedLimit) {
+              Object value = input.ReadPrimitiveField(field.FieldType);
+              builder.WeakAddRepeatedField(field, value);
+            }
+          }
+          input.PopLimit(limit);
         } else {
-          builder[field] = value;
+          object value;
+          switch (field.FieldType) {
+            case FieldType.Group:
+            case FieldType.Message: {
+                IBuilder subBuilder;
+                if (defaultFieldInstance != null) {
+                  subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
+                } else {
+                  subBuilder = builder.CreateBuilderForField(field);
+                }
+                if (!field.IsRepeated) {
+                  subBuilder.WeakMergeFrom((IMessage)builder[field]);
+                }
+                if (field.FieldType == FieldType.Group) {
+                  input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
+                } else {
+                  input.ReadMessage(subBuilder, extensionRegistry);
+                }
+                value = subBuilder.WeakBuild();
+                break;
+              }
+            case FieldType.Enum: {
+                int rawValue = input.ReadEnum();
+                value = field.EnumType.FindValueByNumber(rawValue);
+                // If the number isn't recognized as a valid value for this enum,
+                // drop it.
+                if (value == null) {
+                  MergeVarintField(fieldNumber, (ulong)rawValue);
+                  return true;
+                }
+                break;
+              }
+            default:
+              value = input.ReadPrimitiveField(field.FieldType);
+              break;
+          }
+          if (field.IsRepeated) {
+            builder.WeakAddRepeatedField(field, value);
+          } else {
+            builder[field] = value;
+          }
         }
         return true;
       }

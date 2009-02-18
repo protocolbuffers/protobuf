@@ -196,6 +196,18 @@ namespace Google.ProtocolBuffers {
       }
     }
 
+    /// <summary>
+    /// Tests writing a whole message with every packed field type. Ensures the
+    /// wire format of packed fields is compatible with C++.
+    /// </summary>
+    [Test]
+    public void WriteWholePackedFieldsMessage() {
+      TestPackedTypes message = TestUtil.GetPackedSet();
+
+      byte[] rawBytes = message.ToByteArray();
+      TestUtil.AssertEqualBytes(TestUtil.GetGoldenPackedFieldsMessage().ToByteArray(),
+                       rawBytes);
+    }
 
     [Test]
     public void EncodeZigZag32() {

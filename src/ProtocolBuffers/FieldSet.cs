@@ -368,8 +368,23 @@ namespace Google.ProtocolBuffers {
         output.WriteMessageSetExtension(field.FieldNumber, (IMessage) value);
       } else {
         if (field.IsRepeated) {
-          foreach (object element in (IEnumerable) value) {
-            output.WriteField(field.FieldType, field.FieldNumber, element);
+          IEnumerable valueList = (IEnumerable) value;
+          if (field.IsPacked) {
+            output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
+            // Compute the total data size so the length can be written.
+            int dataSize = 0;
+            foreach (object element in valueList) {
+              dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
+            }
+            output.WriteRawVarint32((uint)dataSize);
+            // Write the data itself, without any tags.
+            foreach (object element in valueList) {
+              output.WriteFieldNoTag(field.FieldType, element);
+            }
+          } else {
+            foreach (object element in valueList) {
+              output.WriteField(field.FieldType, field.FieldNumber, element);
+            }
           }
         } else {
           output.WriteField(field.FieldType, field.FieldNumber, value);
@@ -389,11 +404,20 @@ namespace Google.ProtocolBuffers {
           object value = entry.Value;
 
           if (field.IsExtension && field.ContainingType.Options.MessageSetWireFormat) {
-            size += CodedOutputStream.ComputeMessageSetExtensionSize(field.FieldNumber, (IMessage) value);
+            size += CodedOutputStream.ComputeMessageSetExtensionSize(field.FieldNumber, (IMessage)value);
           } else {
             if (field.IsRepeated) {
-              foreach (object element in (IEnumerable) value) {
-                size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, element);
+              IEnumerable valueList = (IEnumerable)value;
+              if (field.IsPacked) {
+                int dataSize = 0;
+                foreach (object element in valueList) {
+                  dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
+                }
+                size += dataSize + CodedOutputStream.ComputeTagSize(field.FieldNumber) + CodedOutputStream.ComputeRawVarint32Size((uint)dataSize);
+              } else {
+                foreach (object element in valueList) {
+                  size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, element);
+                }
               }
             } else {
               size += CodedOutputStream.ComputeFieldSize(field.FieldType, field.FieldNumber, value);
