@@ -1,4 +1,4 @@
-// Copyright 2007 The Android Open Source Project
+// Copyright 2007 Google Inc.
 // All Rights Reserved.
 
 package com.google.common.io.protocol;
@@ -9,7 +9,6 @@ import java.util.*;
  * This class can be used to create a memory model of a .proto file. Currently, 
  * it is assumed that tags ids are not large. This could be improved by storing 
  * a start offset, relaxing the assumption to a dense number space.
- * 
  */
 public class ProtoBufType {
   // Note: Values 0..15 are reserved for wire types!
@@ -120,5 +119,52 @@ public class ProtoBufType {
    */
   public String toString() {
     return typeName;
+  }
+  
+  /**
+   * {@inheritDoc}
+   * <p>Two ProtoBufTypes are equals if the fields types are the same.
+   */
+  public boolean equals(Object object) {
+    if (null == object) {
+      // trivial check
+      return false;
+    } else if (this == object) {
+      // trivial check
+      return true;
+    } else if (this.getClass() != object.getClass()) {
+      // different class
+      return false;
+    }
+    ProtoBufType other = (ProtoBufType) object;
+
+    return stringEquals(types, other.types);
+  }
+   
+  /**
+   * {@inheritDoc}
+   */
+  public int hashCode() {
+    if (types != null) {
+      return types.hashCode();
+    } else {
+      return super.hashCode();
+    }
+  }
+
+  public static boolean stringEquals(CharSequence a, CharSequence b) {
+    if (a == b) return true;
+    int length;
+    if (a != null && b != null && (length = a.length()) == b.length()) {
+      if (a instanceof String && b instanceof String) {
+        return a.equals(b);
+      } else {
+        for (int i = 0; i < length; i++) {
+          if (a.charAt(i) != b.charAt(i)) return false;
+        }
+        return true;
+      }
+    }
+    return false;
   }
 }
