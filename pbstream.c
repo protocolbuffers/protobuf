@@ -51,7 +51,13 @@ enum pbstream_status get_varint(char **buf, char *end, uint64_t *out_value)
    * that callers use a buffer that is overallocated by at least 9 bytes
    * (the maximum we can overrun before the bitpos check catches the problem). */
   for(; *b & 0x80 && bitpos < 64; bitpos += 7, b++)
-      *out_value |= (*b & 0x7F) << bitpos;
+      *out_value |= (uint64_t)(*b & 0x7F) << bitpos;
+
+  /* If bitpos is 63 (as it will be if this was a nine-byte varint) this will
+   * throw away the middle six bits of the final byte.  We don't bother warning
+   * about this. */
+  *out_value |= (uint64_t)(*b & 0x7F) << bitpos;
+  b++;
 
   if(unlikely(bitpos >= 64)) {
     return PBSTREAM_ERROR_UNTERMINATED_VARINT;
@@ -60,7 +66,6 @@ enum pbstream_status get_varint(char **buf, char *end, uint64_t *out_value)
     return PBSTREAM_STATUS_INCOMPLETE;
   }
 
-  *out_value |= (*b & 0x7F) << bitpos;
   *buf = b;
   return PBSTREAM_STATUS_OK;
 }
@@ -102,14 +107,14 @@ bool get_64_le(char **buf, char *end, uint64_t *out_value)
   return PBSTREAM_STATUS_OK;
 }
 
-int32_t zigzag_decode_32(uint64_t n)
+int32_t zigzag_decode_32(uint32_t n)
 {
   return (n >> 1) ^ -(int32_t)(n & 1);
 }
 
 int64_t zigzag_decode_64(uint64_t n)
 {
-  return (n >> 1) ^ (int64_t)(n & 1);
+  return (n >> 1) ^ -(int64_t)(n & 1);
 }
 
 /* Parses the next field-number/wire-value pair from the stream of bytes
