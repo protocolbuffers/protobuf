@@ -63,11 +63,11 @@ struct pbstream_value {
     uint64_t uint64;
     bool _bool;
     struct {
-      char *data;  /* This will be a pointer to the buffer of data the client provided. */
+      char *data;  /* points into the client's input buffer */
       int len;
     } string;
     struct {
-      char *data;  /* This will be a pointer to the buffer of data the client provided. */
+      char *data;  /* points into the client's input buffer */
       int len;
     } bytes;
     int32_t _enum;
@@ -81,7 +81,7 @@ struct pbstream_wire_value {
     uint64_t varint;
     uint64_t _64bit;
     struct {
-      char *data;  /* This will be a pointer to the buffer of data the client provided. */
+      char *data;  /* points into the client's input buffer */
       int len;
     } string;
     uint32_t _32bit;
@@ -129,23 +129,21 @@ struct pbstream_field_descriptor {
 
 /* A message as defined by the "message" construct in a .proto file. */
 struct pbstream_message_descriptor {
-  char *name;  /* does not include package name or parent message names. */
+  char *name;  /* does not include package name or parent message names */
   char *full_name;
-  int num_seen_fields;  /* How many fields we have to track "seen" information for. */
+  int num_seen_fields;  /* fields we have to track "seen" information for */
   DEFINE_DYNARRAY(fields, struct pbstream_field_descriptor);
   DEFINE_DYNARRAY(messages, struct pbstream_message_descriptor);
   DEFINE_DYNARRAY(enums, struct pbstream_enum_descriptor);
 };
 
-/* Callback for when a value is parsed that matches a field in the .proto file.
- * */
+/* Callback for when a regular value is parsed. */
 typedef void (*pbstream_value_callback_t)(
     struct pbstream_field_descriptor *field_descriptor,
-    struct pbstream_value            value,
+    struct pbstream_value *value,
     void *user_data);
 
-/* Callback for when a value is parsed for which no field was defined in the
- * .proto file. */
+/* Callback for when a value is parsed but wasn't in the .proto file. */
 typedef void (*pbstream_unknown_value_callback_t)(
     pbstream_field_number_t field_number,
     struct pbstream_wire_value *wire_value,
@@ -161,17 +159,27 @@ typedef void (*pbstream_end_message_callback_t)(void *user_data);
 
 /* Callback for when an error occurred. */
 enum pbstream_error {
-  PBSTREAM_ERROR_UNTERMINATED_VARINT,     /* A varint did not terminate before hitting 64 bits. Fatal. */
-  PBSTREAM_ERROR_MISSING_REQUIRED_FIELD,  /* A field marked "required" was not present. */
-  PBSTREAM_ERROR_DUPLICATE_FIELD,         /* An optional or required field appeared more than once. */
-  PBSTREAM_ERROR_MISMATCHED_TYPE,         /* A field was encoded with the wrong wire type. */
-  PBSTREAM_ERROR_BAD_SUBMESSAGE_END,      /* A submessage ended in the middle of data.  Indicates corruption. */
+  /* A varint did not terminate before hitting 64 bits. Fatal. */
+  PBSTREAM_ERROR_UNTERMINATED_VARINT,
+
+  /* A field marked "required" was not present. */
+  PBSTREAM_ERROR_MISSING_REQUIRED_FIELD,
+
+  /* An optional or required field appeared more than once. */
+  PBSTREAM_ERROR_DUPLICATE_FIELD,
+
+  /* A field was encoded with the wrong wire type. */
+  PBSTREAM_ERROR_MISMATCHED_TYPE,
+
+  /* A submessage ended in the middle of data.  Indicates corruption. */
+  PBSTREAM_ERROR_BAD_SUBMESSAGE_END,
 };
 /* The description is a static buffer which the client must not free.  The
  * offset is the location in the input where the error was detected (this
  * offset is relative to the beginning of the stream).  If is_fatal is true,
  * parsing cannot continue. */
-typedef void (*pbstream_error_callback_t)(enum pbstream_error error, char *description,
+typedef void (*pbstream_error_callback_t)(enum pbstream_error error,
+                                          char *description,
                                           int offset, bool is_fatal);
 
 struct pbstream_callbacks {
@@ -184,17 +192,13 @@ struct pbstream_callbacks {
 
 struct pbstream_parse_stack_frame {
   struct pbstream_message_descriptor *message_descriptor;
-  int end_offset;  /* We don't know this for the outermost frame, and set it to INT_MAX. */
+  int end_offset;  /* unknown for the top frame, so we set to INT_MAX */
 
-  /* For every field except repeated ones we track whether we have seen it or
-   * not.  This lets us detect three important conditions:
-   * 1. the field has a default, but we did not see it anywhere (action: emit the default)
-   * 2. the field is required, but we did not see it anywhere (action: error)
-   * 3. the field is required or optional, but we saw it more than once (action: error) */
+  /* Tracks whether we've seen non-repeated fields. */
   DEFINE_DYNARRAY(seen_fields, bool);
 };
 
-/* The stream parser keeps this as its state. */
+/* The stream parser's state. */
 struct pbstream_parse_state {
   struct pbstream_callbacks callbacks;
   int offset;
@@ -206,10 +210,11 @@ struct pbstream_parse_state {
 /* Call this once before parsing to initialize the data structures.
  * message_type can be NULL, in which case all fields will be reported as
  * unknown. */
-void pbstream_init_parser(struct pbstream_parse_state *state,
-                          struct pbstream_message_descriptor *message_descriptor,
-                          struct pbstream_callbacks *callbacks,
-                          void *user_data);
+void pbstream_init_parser(
+    struct pbstream_parse_state *state,
+    struct pbstream_message_descriptor *message_descriptor,
+    struct pbstream_callbacks *callbacks,
+    void *user_data);
 
 /* Call this to parse as much of buf as possible, calling callbacks as
  * appropriate.  buf need not be a complete pbstream.  Returns the number of
@@ -224,8 +229,8 @@ void pbstream_init_parser(struct pbstream_parse_state *state,
  * increase its buffer size. */
 enum pbstream_status {
   PBSTREAM_STATUS_OK = 0,
-  PBSTREAM_STATUS_INCOMPLETE = 1,  /* buffer ended in the middle of a field.  */
-  PBSTREAM_STATUS_ERROR = 2,       /* fatal error in the file, cannot recover. */
+  PBSTREAM_STATUS_INCOMPLETE = 1, /* buffer ended in the middle of a field  */
+  PBSTREAM_STATUS_ERROR = 2,      /* fatal error in the file, cannot recover */
 };
 
 enum pbstream_status pbstream_parse(struct pbstream_parse_state *state,

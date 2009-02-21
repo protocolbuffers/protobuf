@@ -1,7 +1,7 @@
 /*
  * pbstream - a stream-oriented implementation of protocol buffers.
  *
- * Copyright (c) 2008 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
 #include <limits.h>
@@ -48,8 +48,8 @@ enum pbstream_status get_varint(char **buf, char *end, uint64_t *out_value)
   char *b = *buf;
 
   /* Because we don't check for buffer overrun inside the loop, we require
-   * that callers use a buffer that is overallocated by at least 9 bytes
-   * (the maximum we can overrun before the bitpos check catches the problem). */
+   * that callers use a buffer that is overallocated by at least 9 bytes (the
+   * maximum we can overrun before the bitpos check catches the problem). */
   for(; *b & 0x80 && bitpos < 64; bitpos += 7, b++)
       *out_value |= (uint64_t)(*b & 0x7F) << bitpos;
 
@@ -59,13 +59,8 @@ enum pbstream_status get_varint(char **buf, char *end, uint64_t *out_value)
   *out_value |= (uint64_t)(*b & 0x7F) << bitpos;
   b++;
 
-  if(unlikely(bitpos >= 64)) {
-    return PBSTREAM_ERROR_UNTERMINATED_VARINT;
-  }
-  if(unlikely(b > end)) {
-    return PBSTREAM_STATUS_INCOMPLETE;
-  }
-
+  if(unlikely(bitpos >= 64)) return PBSTREAM_ERROR_UNTERMINATED_VARINT;
+  if(unlikely(b > end)) return PBSTREAM_STATUS_INCOMPLETE;
   *buf = b;
   return PBSTREAM_STATUS_OK;
 }
@@ -78,9 +73,7 @@ enum pbstream_status get_32_le(char **buf, char *end, uint32_t *out_value)
 {
   char *b = *buf;
   char *int32_end = b+4;
-  if(unlikely(int32_end > end))
-    return PBSTREAM_STATUS_INCOMPLETE;
-
+  if(unlikely(int32_end > end)) return PBSTREAM_STATUS_INCOMPLETE;
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   *out_value = *(uint32_t*)b;
 #else
@@ -94,9 +87,7 @@ bool get_64_le(char **buf, char *end, uint64_t *out_value)
 {
   char *b = *buf;
   char *int64_end = b+8;
-  if(unlikely(int64_end > end))
-    return PBSTREAM_STATUS_INCOMPLETE;
-
+  if(unlikely(int64_end > end)) return PBSTREAM_STATUS_INCOMPLETE;
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   *out_value = *(uint64_t*)buf;
 #else
@@ -126,10 +117,11 @@ int64_t zigzag_decode_64(uint64_t n)
  * requred in *need_more_bytes.  Updates *buf to point past the end of the
  * parsed data if the operation was successful.
  */
-enum pbstream_status pbstream_parse_wire_value(char **buf, char *end,
-                                               pbstream_field_number_t *field_number,
-                                               struct pbstream_wire_value *wire_value,
-                                               int *need_more_bytes)
+enum pbstream_status pbstream_parse_wire_value(
+    char **buf, char *end,
+    pbstream_field_number_t *field_number,
+    struct pbstream_wire_value *wire_value,
+    int *need_more_bytes)
 {
   char *b = *buf;  /* Our local buf pointer -- only update buf if we succeed. */
 
@@ -148,8 +140,7 @@ enum pbstream_status pbstream_parse_wire_value(char **buf, char *end,
   *field_number    = key >> 3;
   wire_value->type = key & 0x07;
 
-  switch(wire_value->type)
-  {
+  switch(wire_value->type) {
     case PBSTREAM_WIRE_TYPE_VARINT:
       DECODE(wire_value->v.varint, get_varint);
       break;
@@ -158,11 +149,10 @@ enum pbstream_status pbstream_parse_wire_value(char **buf, char *end,
       DECODE(wire_value->v._64bit, get_64_le);
       break;
 
-    case PBSTREAM_WIRE_TYPE_STRING:
-    {
+    case PBSTREAM_WIRE_TYPE_STRING: {
       uint64_t string_len;
       DECODE(string_len, get_varint);
-      if (string_len > INT_MAX) {
+      if (unlikely(string_len > INT_MAX)) {
         /* TODO: notice this and fail. */
       }
       wire_value->v.string.len = (int)string_len;
@@ -193,8 +183,8 @@ enum pbstream_status pbstream_parse_wire_value(char **buf, char *end,
  * already checked that the wire_value is of the correct type.  The pbstream
  * type must not be PBSTREAM_TYPE_MESSAGE.  This operation always succeeds. */
 void pbstream_translate_field(struct pbstream_wire_value *wire_value,
-                              enum pbstream_type         type,
-                              struct pbstream_value      *out_value)
+                              enum pbstream_type type,
+                              struct pbstream_value *out_value)
 {
   out_value->type = type;
   switch(type) {
@@ -286,7 +276,7 @@ void process_value(struct pbstream_parse_state *s,
 {
   /* Check that the wire type is appropriate for this .proto type. */
   if(unlikely(wire_value->type != expected_wire_type[field_descriptor->type])) {
-    /* Report the type mismatch error. */
+    /* Type mismatch. */
     if(s->callbacks.error_callback) {
       /* TODO: a nice formatted message. */
       s->callbacks.error_callback(PBSTREAM_ERROR_MISMATCHED_TYPE, NULL,
@@ -295,7 +285,8 @@ void process_value(struct pbstream_parse_state *s,
 
     /* Report the wire value we parsed as an unknown value. */
     if(s->callbacks.unknown_value_callback) {
-      s->callbacks.unknown_value_callback(field_descriptor->field_number, wire_value,
+      s->callbacks.unknown_value_callback(field_descriptor->field_number,
+                                          wire_value,
                                           s->user_data);
     }
     return;
@@ -304,7 +295,8 @@ void process_value(struct pbstream_parse_state *s,
   if(field_descriptor->type == PBSTREAM_TYPE_MESSAGE) {
     /* We're entering a sub-message. */
     if(s->callbacks.begin_message_callback) {
-      s->callbacks.begin_message_callback(field_descriptor->d.message, s->user_data);
+      s->callbacks.begin_message_callback(field_descriptor->d.message,
+                                          s->user_data);
     }
 
     /* Push and initialize a new stack frame. */
@@ -314,13 +306,12 @@ void process_value(struct pbstream_parse_state *s,
     frame->end_offset = 0;  /* TODO: set this correctly. */
     int num_seen_fields = frame->message_descriptor->num_seen_fields;
     INIT_DYNARRAY(frame->seen_fields, num_seen_fields, num_seen_fields);
-  }
-  else {
+  } else {
     /* This is a scalar value. */
     struct pbstream_value value;
     pbstream_translate_field(wire_value, field_descriptor->type, &value);
     if(s->callbacks.value_callback) {
-      s->callbacks.value_callback(field_descriptor, value, s->user_data);
+      s->callbacks.value_callback(field_descriptor, &value, s->user_data);
     }
   }
 }
@@ -329,8 +320,8 @@ struct pbstream_field_descriptor *find_field_descriptor_by_number(
     struct pbstream_message_descriptor* message_descriptor,
     pbstream_field_number_t field_number)
 {
-  /* Currently a linear search -- could be optimized to do a binary search,
-   * hash table lookup, or any other number of clever things you might imagine. */
+  /* Currently a linear search -- could be optimized to do a binary search, hash
+   * table lookup, or any other number of clever things you might imagine. */
   for (int i = 0; i < message_descriptor->fields_len; i++)
     if (message_descriptor->fields[i].field_number == field_number)
       return &message_descriptor->fields[i];
@@ -347,8 +338,8 @@ enum pbstream_status pbstream_parse_field(struct pbstream_parse_state *s,
                                           int *need_more_bytes)
 {
   struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
-  struct pbstream_message_descriptor *message_descriptor = frame->message_descriptor;
-
+  struct pbstream_message_descriptor *message_descriptor =
+      frame->message_descriptor;
   pbstream_field_number_t field_number;
   struct pbstream_wire_value wire_value;
   enum pbstream_status status;
@@ -358,7 +349,8 @@ enum pbstream_status pbstream_parse_field(struct pbstream_parse_state *s,
                                      need_more_bytes);
 
   if(unlikely(status != PBSTREAM_STATUS_OK)) {
-    if(status == PBSTREAM_ERROR_UNTERMINATED_VARINT && s->callbacks.error_callback) {
+    if(status == PBSTREAM_ERROR_UNTERMINATED_VARINT &&
+       s->callbacks.error_callback) {
       /* TODO: a nice formatted message. */
       s->callbacks.error_callback(PBSTREAM_ERROR_UNTERMINATED_VARINT, NULL,
                                   s->offset, true);
@@ -369,36 +361,33 @@ enum pbstream_status pbstream_parse_field(struct pbstream_parse_state *s,
 
   /* Find the corresponding field definition from the .proto file. */
   struct pbstream_field_descriptor *field_descriptor;
-  field_descriptor = find_field_descriptor_by_number(message_descriptor, field_number);
-
+  field_descriptor = find_field_descriptor_by_number(message_descriptor,
+                                                     field_number);
 
   if(likely(field_descriptor != NULL)) {
-    if(field_descriptor->seen_field_num > 0) {
-      /* Check that this field has not been seen before (unless it's a repeated field) */
-      if(frame->seen_fields[field_descriptor->seen_field_num] &&
-         field_descriptor->cardinality != PBSTREAM_CARDINALITY_REPEATED) {
-        if(s->callbacks.error_callback) {
+    if(field_descriptor->seen_field_num > 0) {  /* for non-repeated fields */
+      /* Check that this field has not been seen before. */
+      if(frame->seen_fields[field_descriptor->seen_field_num]) {
+        if(s->callbacks.error_callback)
           s->callbacks.error_callback(PBSTREAM_ERROR_DUPLICATE_FIELD, NULL,
                                       s->offset, false);
-        }
         return PBSTREAM_STATUS_ERROR;
       }
-
       /* Mark the field as seen. */
       frame->seen_fields[field_descriptor->seen_field_num] = true;
     }
     process_value(s, &wire_value, field_descriptor);
   } else {
     /* This field was not defined in the .proto file. */
-    if(s->callbacks.unknown_value_callback) {
-      s->callbacks.unknown_value_callback(field_number, &wire_value, s->user_data);
-    }
+    if(s->callbacks.unknown_value_callback)
+      s->callbacks.unknown_value_callback(field_number, &wire_value,
+                                          s->user_data);
   }
   return PBSTREAM_STATUS_OK;
 }
 
 /* Process actions associated with the end of a submessage.  This includes:
- * - emittin default values for all optional elements (either explicit
+ * - emitting default values for all optional elements (either explicit
  *   defaults or implicit defaults).
  * - emitting errors for any required fields that were not seen.
  * - calling the user's callback.
@@ -413,15 +402,13 @@ void process_submessage_end(struct pbstream_parse_state *s)
 
   /* Process the end of message by calling the user's callback and popping
    * our stack frame. */
-  if(s->callbacks.end_message_callback) {
+  if(s->callbacks.end_message_callback)
     s->callbacks.end_message_callback(s->user_data);
-  }
 
   /* Pop the stack frame associated with this submessage. */
   RESIZE_DYNARRAY(s->stack, s->stack_len-1);
 }
 
-/* The user-exposed parsing function -- see the header file for documentation. */
 enum pbstream_status pbstream_parse(struct pbstream_parse_state *s,
                                     char *buf_start, int buf_len,
                                     int *consumed_bytes, int *need_more_bytes)
@@ -434,9 +421,8 @@ enum pbstream_status pbstream_parse(struct pbstream_parse_state *s,
   while(buf < end) {
     /* Check for a submessage ending. */
     while(s->offset >= DYNARRAY_GET_TOP(s->stack)->end_offset) {
-      /* A submessage should end exactly at a field boundary.  If we find that
-       * the submessage length indicated an end in the middle of a field, that
-       * is an error that indicates data corruption, and we refuse to proceed. */
+      /* A submessage that doesn't end exactly on a field boundary indicates
+       * corruption. */
       if(unlikely(s->offset != DYNARRAY_GET_TOP(s->stack)->end_offset)) {
         if(s->callbacks.error_callback) {
           s->callbacks.error_callback(PBSTREAM_ERROR_BAD_SUBMESSAGE_END, NULL,
@@ -451,7 +437,6 @@ enum pbstream_status pbstream_parse(struct pbstream_parse_state *s,
     status = pbstream_parse_field(s, &buf, end, need_more_bytes);
     if(status != PBSTREAM_STATUS_OK)
       break;
-
     s->offset = buf_start_offset + (buf - buf_start);
   }
   return status;
