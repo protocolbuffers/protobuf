@@ -168,11 +168,9 @@ typedef enum pbstream_status {
   // A field was encoded with the wrong wire type.
   PBSTREAM_ERROR_MISMATCHED_TYPE,
 } pbstream_status_t;
-typedef void (*pbstream_error_callback_t)(pbstream_status_t error);
-
-struct pbstream_callbacks {
-  pbstream_error_callback_t error_callback;
-};
+struct pbstream_parse_state;
+typedef void (*pbstream_error_callback_t)(struct pbstream_parse_state *s,
+                                          pbstream_status_t error);
 
 struct pbstream_parse_stack_frame {
   struct pbstream_message_descriptor *message_descriptor;
@@ -184,7 +182,7 @@ struct pbstream_parse_stack_frame {
 
 /* The stream parser's state. */
 struct pbstream_parse_state {
-  struct pbstream_callbacks callbacks;
+  pbstream_error_callback_t error_callback;
   size_t offset;
   bool ignore_nonfatal_errors;
   void *user_data;
@@ -197,7 +195,6 @@ struct pbstream_parse_state {
 void pbstream_init_parser(
     struct pbstream_parse_state *state,
     struct pbstream_message_descriptor *message_descriptor,
-    struct pbstream_callbacks *callbacks,
     void *user_data);
 
 /* Call this to parse as much of buf as possible, calling callbacks as

@@ -243,14 +243,10 @@ static pbstream_status_t parse_unknown_value(
   return PBSTREAM_STATUS_OK;
 }
 
-#define CALLBACK(s, func, ...) do { \
-  if(s->callbacks.func) s->callbacks.func(__VA_ARGS__); \
-  } while (0)
-
 #define NONFATAL_ERROR(s, code) do { \
-  if(s->ignore_nonfatal_errors) CALLBACK(s, error_callback, code); \
-  else return code; \
-  } while (0)
+  if(s->ignore_nonfatal_errors) { \
+    if(s->error_callback) s->error_callback(s, code); \
+  } else return code; } while (0)
 
 static struct pbstream_field_descriptor *find_field_descriptor(
     struct pbstream_message_descriptor* md,
