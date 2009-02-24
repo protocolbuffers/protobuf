@@ -20,7 +20,7 @@
  * To avoid branches, none of these do bounds checking.  So we force clients
  * to overallocate their buffers by >=9 bytes. */
 
-static pbstream_status_t get_v_uint64_t(char **buf, char *end, uint64_t *val)
+static pbstream_status_t get_v_uint64_t(char **buf, uint64_t *val)
 {
   uint8_t* ptr = (uint8_t*)*buf;
   uint32_t b;
@@ -41,10 +41,10 @@ static pbstream_status_t get_v_uint64_t(char **buf, char *end, uint64_t *val)
 done:
   *buf = (char*)ptr;
   *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
-  return unlikely(*buf > end) ? PBSTREAM_STATUS_INCOMPLETE : PBSTREAM_STATUS_OK;
+  return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_v_uint32_t(char **buf, char *end, uint32_t *val)
+static pbstream_status_t get_v_uint32_t(char **buf, uint32_t *val)
 {
   uint8_t* ptr = (uint8_t*)*buf;
   uint32_t b;
@@ -60,10 +60,10 @@ static pbstream_status_t get_v_uint32_t(char **buf, char *end, uint32_t *val)
 done:
   *buf = (char*)ptr;
   *val = result;
-  return unlikely(*buf > end) ? PBSTREAM_STATUS_INCOMPLETE: PBSTREAM_STATUS_OK;
+  return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_f_uint32_t(char **buf, char *end, uint32_t *val)
+static pbstream_status_t get_f_uint32_t(char **buf, uint32_t *val)
 {
   uint8_t *b = (uint8_t*)*buf;
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -72,10 +72,10 @@ static pbstream_status_t get_f_uint32_t(char **buf, char *end, uint32_t *val)
   *val = b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
 #endif
   *buf = (char*)b + sizeof(uint32_t);
-  return unlikely(*buf > end) ? PBSTREAM_STATUS_INCOMPLETE : PBSTREAM_STATUS_OK;
+  return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_f_uint64_t(char **buf, char *end, uint64_t *val)
+static pbstream_status_t get_f_uint64_t(char **buf, uint64_t *val)
 {
   uint8_t *b = (uint8_t*)*buf;
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -85,7 +85,7 @@ static pbstream_status_t get_f_uint64_t(char **buf, char *end, uint64_t *val)
          (b[4] << 32) | (b[5] << 40) | (b[6] << 48) | (b[7] << 56);
 #endif
   *buf = (char*)b + sizeof(uint64_t);
-  return unlikely(*buf > end) ? PBSTREAM_STATUS_INCOMPLETE : PBSTREAM_STATUS_OK;
+  return PBSTREAM_STATUS_OK;
 }
 
 static int32_t zz_decode_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
@@ -110,11 +110,11 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
  *                              pbstream_value *dst) */
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
   static pbstream_status_t get_ ## type(struct pbstream_parse_state *s, \
-                                        char *buf, char *end, \
+                                        char *buf, \
                                         struct pbstream_value *d) { \
     wire_t tmp; \
     char *b = buf; \
-    CHECK(get_ ## v_or_f ## _ ## wire_t(&b, end, &tmp)); \
+    CHECK(get_ ## v_or_f ## _ ## wire_t(&b, &tmp)); \
     wvtov_ ## type(tmp, &d->v.member_name, s->offset); \
     s->offset += (b-buf); \
     return PBSTREAM_STATUS_OK; \
@@ -125,20 +125,20 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   GET(type, v_or_f, wire_t, val_t, member_name) \
   WVTOV(type, wire_t, val_t)
 
-T(DOUBLE,   f, uint64_t, double,   _double){ memcpy(d, &s, sizeof(double)); }
-T(FLOAT,    f, uint32_t, float,    _float) { memcpy(d, &s, sizeof(float));  }
-T(INT32,    v, uint32_t, int32_t,  int32)  { *d = (int32_t)s;               }
-T(INT64,    v, uint64_t, int64_t,  int64)  { *d = (int64_t)s;               }
-T(UINT32,   v, uint32_t, uint32_t, uint32) { *d = s;                        }
-T(UINT64,   v, uint64_t, uint64_t, uint64) { *d = s;                        }
-T(SINT32,   v, uint32_t, int32_t,  int32)  { *d = zz_decode_32(s);          }
-T(SINT64,   v, uint64_t, int64_t,  int64)  { *d = zz_decode_64(s);          }
-T(FIXED32,  f, uint32_t, uint32_t, uint32) { *d = s;                        }
-T(FIXED64,  f, uint64_t, uint64_t, uint64) { *d = s;                        }
-T(SFIXED32, f, uint32_t, int32_t,  int32)  { *d = (int32_t)s;               }
-T(SFIXED64, f, uint64_t, int64_t,  int64)  { *d = (int64_t)s;               }
-T(BOOL,     v, uint32_t, bool,     _bool)  { *d = (bool)s;                  }
-T(ENUM,     v, uint32_t, int32_t,  _enum)  { *d = (int32_t)s;               }
+T(DOUBLE,   f, uint64_t, double,   _double) { memcpy(d, &s, sizeof(double)); }
+T(FLOAT,    f, uint32_t, float,    _float)  { memcpy(d, &s, sizeof(float));  }
+T(INT32,    v, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
+T(INT64,    v, uint64_t, int64_t,  int64)   { *d = (int64_t)s;               }
+T(UINT32,   v, uint32_t, uint32_t, uint32)  { *d = s;                        }
+T(UINT64,   v, uint64_t, uint64_t, uint64)  { *d = s;                        }
+T(SINT32,   v, uint32_t, int32_t,  int32)   { *d = zz_decode_32(s);          }
+T(SINT64,   v, uint64_t, int64_t,  int64)   { *d = zz_decode_64(s);          }
+T(FIXED32,  f, uint32_t, uint32_t, uint32)  { *d = s;                        }
+T(FIXED64,  f, uint64_t, uint64_t, uint64)  { *d = s;                        }
+T(SFIXED32, f, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
+T(SFIXED64, f, uint64_t, int64_t,  int64)   { *d = (int64_t)s;               }
+T(BOOL,     v, uint32_t, bool,     _bool)   { *d = (bool)s;                  }
+T(ENUM,     v, uint32_t, int32_t,  _enum)   { *d = (int32_t)s;               }
 
 #define WVTOV_DELIMITED(type) \
   WVTOV(type, uint32_t, struct pbstream_delimited) { \
@@ -153,33 +153,30 @@ WVTOV_DELIMITED(MESSAGE);
 #undef T
 #undef T_DELIMITED
 
-static pbstream_status_t get_STRING(struct pbstream_parse_state *s,
-                                    char *buf, char *end,
+static pbstream_status_t get_STRING(struct pbstream_parse_state *s, char *buf,
                                     struct pbstream_value *d) {
   uint32_t tmp;
-  CHECK(get_v_uint32_t(&buf, end, &tmp));
+  CHECK(get_v_uint32_t(&buf, &tmp));
   wvtov_STRING(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip string */
   /* we leave UTF-8 validation to the client. */
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_BYTES(struct pbstream_parse_state *s,
-                                   char *buf, char *end,
+static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
                                    struct pbstream_value *d) {
   uint32_t tmp;
-  CHECK(get_v_uint32_t(&buf, end, &tmp));
+  CHECK(get_v_uint32_t(&buf, &tmp));
   wvtov_BYTES(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip bytes */
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s,
-                                     char *buf, char *end,
+static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
                                      struct pbstream_value *d) {
   /* We're entering a sub-message. */
   uint32_t tmp;
-  CHECK(get_v_uint32_t(&buf, end, &tmp));
+  CHECK(get_v_uint32_t(&buf, &tmp));
   wvtov_MESSAGE(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset;  /* skip past only the tag. */
   RESIZE_DYNARRAY(s->stack, s->stack_len+1);
@@ -193,8 +190,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s,
 
 struct pbstream_type_info {
   pbstream_wire_type_t expected_wire_type;
-  pbstream_status_t (*get)(struct pbstream_parse_state *s,
-                           char *buf, char *end,
+  pbstream_status_t (*get)(struct pbstream_parse_state *s, char *buf,
                            struct pbstream_value *d);
 };
 static struct pbstream_type_info type_info[] = {
@@ -217,20 +213,19 @@ static struct pbstream_type_info type_info[] = {
   {PBSTREAM_WIRE_TYPE_DELIMITED, get_MESSAGE}
 };
 
-static pbstream_status_t parse_tag(char **buf, char *end, struct pbstream_tag *tag)
+static pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
 {
   uint32_t tag_int;
-  CHECK(get_v_uint32_t(buf, end, &tag_int));
+  CHECK(get_v_uint32_t(buf, &tag_int));
   tag->wire_type    = tag_int & 0x07;
   tag->field_number = tag_int >> 3;
   return PBSTREAM_STATUS_OK;
 }
 
 static pbstream_status_t parse_unknown_value(
-    char **buf, char *end, int buf_offset,
-    struct pbstream_wire_value *wv)
+    char **buf, int buf_offset, struct pbstream_wire_value *wv)
 {
-#define DECODE(dest, func) CHECK(func(buf, end, &dest))
+#define DECODE(dest, func) CHECK(func(buf, &dest))
   switch(wv->type) {
     case PBSTREAM_WIRE_TYPE_VARINT:
       DECODE(wv->v.varint, get_v_uint64_t); break;
@@ -295,8 +290,7 @@ pbstream_status_t process_message_end(struct pbstream_parse_state *s)
 }
 
 /* Parses and processes the next value from buf (but not past end). */
-pbstream_status_t parse_field(struct pbstream_parse_state *s,
-                              char *buf, char *end,
+pbstream_status_t parse_field(struct pbstream_parse_state *s, char *buf,
                               pbstream_field_number_t *fieldnum,
                               struct pbstream_value *val,
                               struct pbstream_wire_value *wv)
@@ -310,7 +304,7 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s,
 
   if(unlikely(s->offset >= frame->end_offset)) return process_message_end(s);
 
-  CHECK(parse_tag(&b, end, &tag));
+  CHECK(parse_tag(&b, &tag));
   size_t val_offset = s->offset + (b-buf);
   fd = find_field_descriptor(md, tag.field_number);
   if(unlikely(!fd)) goto unknown_value;
@@ -329,12 +323,12 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s,
 
   *fieldnum = tag.field_number;
   val->field_descriptor = fd;
-  CHECK(info->get(s, b, end, val));
+  CHECK(info->get(s, b, val));
   return PBSTREAM_STATUS_OK;
 
 unknown_value:
   wv->type = tag.wire_type;
-  CHECK(parse_unknown_value(&b, end, val_offset, wv));
+  CHECK(parse_unknown_value(&b, val_offset, wv));
   s->offset += (b-buf);
   return PBSTREAM_STATUS_OK;
 }
