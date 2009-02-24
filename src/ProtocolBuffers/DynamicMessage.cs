@@ -74,7 +74,6 @@ namespace Google.ProtocolBuffers {
       Builder builder = CreateBuilder(type);
       Builder dynamicBuilder = builder.MergeFrom(input);
       return dynamicBuilder.BuildParsed();
-
     }
 
     /// <summary>
@@ -245,6 +244,10 @@ namespace Google.ProtocolBuffers {
 
     public override Builder CreateBuilderForType() {
       return new Builder(type);
+    }
+
+    public override Builder ToBuilder() {
+      return CreateBuilderForType().MergeFrom(this);
     }
 
     /// <summary>

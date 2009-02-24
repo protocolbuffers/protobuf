@@ -297,6 +297,10 @@ namespace Google.ProtocolBuffers {
         return new Builder(wrappedMessage.WeakCreateBuilderForType());
       }
 
+      public override Builder ToBuilder() {
+        return new Builder(wrappedMessage.WeakToBuilder());
+      }
+      
       internal class Builder : AbstractBuilder<AbstractMessageWrapper, Builder> {
         private readonly IBuilder wrappedBuilder;
 

@@ -168,10 +168,17 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Creates a builder for the type, but in a weakly typed manner. This
-    /// is typically implemented by strongly typed builders by just returning
+    /// is typically implemented by strongly typed messages by just returning
     /// the result of CreateBuilderForType.
     /// </summary>
     IBuilder WeakCreateBuilderForType();
+
+    /// <summary>
+    /// Creates a builder with the same contents as this message. This
+    /// is typically implemented by strongly typed messages by just returning
+    /// the result of ToBuilder.
+    /// </summary>
+    IBuilder WeakToBuilder();
 
     IMessage WeakDefaultInstanceForType { get; }
   }
@@ -198,6 +205,12 @@ namespace Google.ProtocolBuffers {
     /// Constructs a new builder for a message of the same type as this message.
     /// </summary>
     TBuilder CreateBuilderForType();
+    /// <summary>
+    /// Creates a builder with the same contents as this current instance.
+    /// This is typically implemented by strongly typed messages by just
+    /// returning the result of ToBuilder().
+    /// </summary>
+    TBuilder ToBuilder();
     #endregion
   }
 }

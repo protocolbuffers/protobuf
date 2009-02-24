@@ -385,5 +385,13 @@ namespace Google.ProtocolBuffers {
       Assert.IsTrue(builder.IsInitialized);
       Assert.IsTrue(builder.BuildPartial().IsInitialized);
     }
+
+    [Test]
+    public void ToBuilder() {
+      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+      TestUtil.SetAllFields(builder);
+      TestAllTypes message = builder.Build();
+      TestUtil.AssertAllFieldsSet(message.ToBuilder().Build());
+    }
   }
 }

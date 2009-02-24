@@ -129,6 +129,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(ImportMessage prototype) {
       return (Builder) new Builder().MergeFrom(prototype);

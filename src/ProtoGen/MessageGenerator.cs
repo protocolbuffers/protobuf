@@ -267,6 +267,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
     private void GenerateBuilder(TextGenerator writer) {
       writer.WriteLine("public static Builder CreateBuilder() { return new Builder(); }");
+      writer.WriteLine("public override Builder ToBuilder() { return CreateBuilder(this); }");
       writer.WriteLine("public override Builder CreateBuilderForType() { return new Builder(); }");
       writer.WriteLine("public static Builder CreateBuilder({0} prototype) {{", ClassName);
       writer.WriteLine("  return (Builder) new Builder().MergeFrom(prototype);");

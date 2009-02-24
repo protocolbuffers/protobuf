@@ -344,6 +344,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(TestMessageWithCustomOptions prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -453,6 +454,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(CustomOptionFooRequest prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -543,6 +545,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(CustomOptionFooResponse prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -643,6 +646,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(DummyMessageContainingEnum prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -733,6 +737,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(DummyMessageInvalidAsOptionType prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -823,6 +828,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(CustomOptionMinIntegerValues prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -913,6 +919,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(CustomOptionMaxIntegerValues prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1003,6 +1010,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(CustomOptionOtherValues prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1093,6 +1101,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(SettingRealsFromPositiveInts prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1183,6 +1192,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(SettingRealsFromNegativeInts prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1282,6 +1292,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(ComplexOptionType1 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1425,6 +1436,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
         public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(ComplexOptionType4 prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
@@ -1541,6 +1553,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(ComplexOptionType2 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1754,6 +1767,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
         public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(ComplexOptionType5 prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
@@ -1861,6 +1875,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(ComplexOptionType3 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -2014,6 +2029,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(ComplexOpt6 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -2122,6 +2138,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(VariousComplexOptions prototype) {
       return (Builder) new Builder().MergeFrom(prototype);

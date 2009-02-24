@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Google.ProtocolBuffers.TestProtos;
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
@@ -172,6 +173,27 @@ namespace Google.ProtocolBuffers {
 
       DynamicMessage copy = DynamicMessage.CreateBuilder(message).Build();
       reflectionTester.AssertAllFieldsSetViaReflection(copy);
+    }
+
+    [Test]
+    public void ToBuilder() {
+      DynamicMessage.Builder builder =
+          DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
+      reflectionTester.SetAllFieldsViaReflection(builder);
+      int unknownFieldNum = 9;
+      ulong unknownFieldVal = 90;
+      builder.SetUnknownFields(UnknownFieldSet.CreateBuilder()
+          .AddField(unknownFieldNum,
+              UnknownField.CreateBuilder().AddVarint(unknownFieldVal).Build())
+          .Build());
+      DynamicMessage message = builder.Build();
+
+      DynamicMessage derived = message.ToBuilder().Build();
+      reflectionTester.AssertAllFieldsSetViaReflection(derived);
+
+      IList<ulong> values = derived.UnknownFields.FieldDictionary[unknownFieldNum].VarintList;
+      Assert.AreEqual(1, values.Count);
+      Assert.AreEqual(unknownFieldVal, values[0]);
     }
   }
 }

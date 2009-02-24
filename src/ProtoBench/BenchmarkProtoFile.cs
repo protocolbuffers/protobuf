@@ -525,6 +525,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(Message1 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -1568,6 +1569,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(Message2 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -2194,6 +2196,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
         public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(Group1 prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
@@ -2886,6 +2889,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(Message3 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -3670,6 +3674,7 @@ namespace Google.ProtocolBuffers.ProtoBench {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(Message4 prototype) {
       return (Builder) new Builder().MergeFrom(prototype);

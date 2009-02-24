@@ -326,8 +326,7 @@ namespace Google.ProtocolBuffers {
           }
         } else if (field.MappedType == MappedType.Message && existingValue != null) {
           IMessage existingMessage = (IMessage)existingValue;
-          IMessage merged = existingMessage.WeakCreateBuilderForType()
-              .WeakMergeFrom(existingMessage)
+          IMessage merged = existingMessage.WeakToBuilder()
               .WeakMergeFrom((IMessage) entry.Value)
               .WeakBuild();
           this[field] = merged;

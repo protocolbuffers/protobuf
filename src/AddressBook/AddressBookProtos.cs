@@ -179,6 +179,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
         public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(PhoneNumber prototype) {
           return (Builder) new Builder().MergeFrom(prototype);
@@ -435,6 +436,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(Person prototype) {
       return (Builder) new Builder().MergeFrom(prototype);
@@ -732,6 +734,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
     public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(AddressBook prototype) {
       return (Builder) new Builder().MergeFrom(prototype);

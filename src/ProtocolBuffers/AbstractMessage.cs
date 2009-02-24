@@ -58,10 +58,15 @@ namespace Google.ProtocolBuffers {
     public abstract UnknownFieldSet UnknownFields { get; }
     public abstract TMessage DefaultInstanceForType { get; }
     public abstract TBuilder CreateBuilderForType();
+    public abstract TBuilder ToBuilder();
     #endregion
     
     public IBuilder WeakCreateBuilderForType() {
       return CreateBuilderForType();
+    }
+
+    public IBuilder WeakToBuilder() {
+      return ToBuilder();
     }
 
     public IMessage WeakDefaultInstanceForType {
