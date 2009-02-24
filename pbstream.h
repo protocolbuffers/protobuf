@@ -50,8 +50,9 @@ typedef enum pbstream_cardinality {
 typedef int32_t pbstream_field_number_t;
 
 /* A deserialized value as described in a .proto file. */
+struct pbstream_field_descriptor;
 struct pbstream_value {
-  pbstream_type_t type;
+  struct pbstream_field_descriptor *field_descriptor;
   union {
     double _double;
     float  _float;

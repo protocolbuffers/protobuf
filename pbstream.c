@@ -91,6 +91,9 @@ static pbstream_status_t get_f_uint64_t(char **buf, char *end, uint64_t *val)
 static int32_t zz_decode_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
 static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
+/* Functions for reading wire values and converting them to values.  These
+ * are generated with macros because they follow a higly consistent pattern. */
+
 #define CHECK(func) do { \
   pbstream_wire_type_t status = func; \
   if(status != PBSTREAM_STATUS_OK) return status; \
@@ -106,11 +109,14 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
  *   pbstream_status_t get_TYPE(char **buf, char *end, size_t offset,
  *                              pbstream_value *dst) */
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  static pbstream_status_t get_ ## type(char **buf, char *end, size_t offset, \
+  static pbstream_status_t get_ ## type(struct pbstream_parse_state *s, \
+                                        char *buf, char *end, \
                                         struct pbstream_value *d) { \
     wire_t tmp; \
-    CHECK(get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp)); \
-    wvtov_ ## type(tmp, &d->v.member_name, offset); \
+    char *b = buf; \
+    CHECK(get_ ## v_or_f ## _ ## wire_t(&b, end, &tmp)); \
+    wvtov_ ## type(tmp, &d->v.member_name, s->offset); \
+    s->offset += (b-buf); \
     return PBSTREAM_STATUS_OK; \
   }
 
@@ -134,22 +140,61 @@ T(SFIXED64, f, uint64_t, int64_t,  int64)  { *d = (int64_t)s;               }
 T(BOOL,     v, uint32_t, bool,     _bool)  { *d = (bool)s;                  }
 T(ENUM,     v, uint32_t, int32_t,  _enum)  { *d = (int32_t)s;               }
 
-#define T_DELIMITED(type) \
-  T(type, v, uint32_t, struct pbstream_delimited, delimited) { \
+#define WVTOV_DELIMITED(type) \
+  WVTOV(type, uint32_t, struct pbstream_delimited) { \
     d->offset = offset; \
     d->len = s; \
   }
-T_DELIMITED(STRING);  /* We leave UTF-8 validation to the client. */
-T_DELIMITED(BYTES);
-T_DELIMITED(MESSAGE);
+WVTOV_DELIMITED(STRING);
+WVTOV_DELIMITED(BYTES);
+WVTOV_DELIMITED(MESSAGE);
 #undef WVTOV
 #undef GET
 #undef T
 #undef T_DELIMITED
 
+static pbstream_status_t get_STRING(struct pbstream_parse_state *s,
+                                    char *buf, char *end,
+                                    struct pbstream_value *d) {
+  uint32_t tmp;
+  CHECK(get_v_uint32_t(&buf, end, &tmp));
+  wvtov_STRING(tmp, &d->v.delimited, s->offset);
+  s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip string */
+  /* we leave UTF-8 validation to the client. */
+  return PBSTREAM_STATUS_OK;
+}
+
+static pbstream_status_t get_BYTES(struct pbstream_parse_state *s,
+                                   char *buf, char *end,
+                                   struct pbstream_value *d) {
+  uint32_t tmp;
+  CHECK(get_v_uint32_t(&buf, end, &tmp));
+  wvtov_BYTES(tmp, &d->v.delimited, s->offset);
+  s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip bytes */
+  return PBSTREAM_STATUS_OK;
+}
+
+static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s,
+                                     char *buf, char *end,
+                                     struct pbstream_value *d) {
+  /* We're entering a sub-message. */
+  uint32_t tmp;
+  CHECK(get_v_uint32_t(&buf, end, &tmp));
+  wvtov_MESSAGE(tmp, &d->v.delimited, s->offset);
+  s->offset = d->v.delimited.offset;  /* skip past only the tag. */
+  RESIZE_DYNARRAY(s->stack, s->stack_len+1);
+  struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
+  frame->message_descriptor = d->field_descriptor->d.message;
+  frame->end_offset = d->v.delimited.offset + d->v.delimited.len;
+  int num_seen_fields = frame->message_descriptor->num_seen_fields;
+  INIT_DYNARRAY(frame->seen_fields, num_seen_fields, num_seen_fields);
+  return PBSTREAM_STATUS_OK;
+}
+
 struct pbstream_type_info {
   pbstream_wire_type_t expected_wire_type;
-  pbstream_status_t (*get)(char **buf, char *end, size_t offset,
+  pbstream_status_t (*get)(struct pbstream_parse_state *s,
+                           char *buf, char *end,
                            struct pbstream_value *d);
 };
 static struct pbstream_type_info type_info[] = {
@@ -228,7 +273,6 @@ static struct pbstream_field_descriptor *find_field_descriptor(
   return NULL;
 }
 
-/* Process actions associated with the end of a [sub-]message. */
 pbstream_status_t process_message_end(struct pbstream_parse_state *s)
 {
   struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
@@ -283,23 +327,9 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s,
     frame->seen_fields[fd->seen_field_num] = true;
   }
 
-  if(unlikely(fd->type == PBSTREAM_TYPE_MESSAGE)) {
-    /* We're entering a sub-message. */
-    CHECK(info->get(&b, end, val_offset, val));
-    RESIZE_DYNARRAY(s->stack, s->stack_len+1);
-    struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
-    frame->message_descriptor = fd->d.message;
-    frame->end_offset = val->v.delimited.offset + val->v.delimited.len;
-    s->offset = wv->v.delimited.offset;  /* skip past only the tag. */
-    int num_seen_fields = frame->message_descriptor->num_seen_fields;
-    INIT_DYNARRAY(frame->seen_fields, num_seen_fields, num_seen_fields);
-  } else {
-    /* This is a scalar value. */
-    *fieldnum = tag.field_number;
-    val->type = fd->type;
-    CHECK(info->get(&b, end, val_offset, val));
-    s->offset += (b-buf);
-  }
+  *fieldnum = tag.field_number;
+  val->field_descriptor = fd;
+  CHECK(info->get(s, b, end, val));
   return PBSTREAM_STATUS_OK;
 
 unknown_value:
