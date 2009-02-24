@@ -10,7 +10,7 @@
 #include "dynarray.h"
 
 /* A list of types as they can appear in a .proto file. */
-enum pbstream_type {
+typedef enum pbstream_type {
   PBSTREAM_TYPE_DOUBLE,
   PBSTREAM_TYPE_FLOAT,
   PBSTREAM_TYPE_INT32,
@@ -26,34 +26,32 @@ enum pbstream_type {
   PBSTREAM_TYPE_BOOL,
   PBSTREAM_TYPE_STRING,
   PBSTREAM_TYPE_BYTES,
-
   PBSTREAM_TYPE_ENUM,
-
   PBSTREAM_TYPE_MESSAGE
-};
+} pbstream_type_t;
 
 /* A list of types as they are encoded on-the-wire. */
-enum pbstream_wire_type {
+typedef enum pbstream_wire_type {
   PBSTREAM_WIRE_TYPE_VARINT      = 0,
   PBSTREAM_WIRE_TYPE_64BIT       = 1,
-  PBSTREAM_WIRE_TYPE_STRING      = 2,
+  PBSTREAM_WIRE_TYPE_DELIMITED   = 2,
   PBSTREAM_WIRE_TYPE_START_GROUP = 3,
   PBSTREAM_WIRE_TYPE_END_GROUP   = 4,
   PBSTREAM_WIRE_TYPE_32BIT       = 5,
-};
+} pbstream_wire_type_t;
 
 /* Each field must have a cardinality that is one of the following. */
-enum pbstream_cardinality {
+typedef enum pbstream_cardinality {
   PBSTREAM_CARDINALITY_OPTIONAL,  /* must appear 0 or 1 times */
   PBSTREAM_CARDINALITY_REQUIRED,  /* must appear exactly 1 time */
   PBSTREAM_CARDINALITY_REPEATED,  /* may appear 0 or more times */
-};
+} pbstream_cardinality_t;
 
 typedef int32_t pbstream_field_number_t;
 
 /* A deserialized value as described in a .proto file. */
 struct pbstream_value {
-  enum pbstream_type type;
+  pbstream_type_t type;
   union {
     double _double;
     float  _float;
@@ -62,28 +60,29 @@ struct pbstream_value {
     uint32_t uint32;
     uint64_t uint64;
     bool _bool;
-    struct {
-      char *data;  /* points into the client's input buffer */
+    struct pbstream_delimited {
+      size_t offset;  /* relative to the beginning of the stream. */
       int len;
-    } string;
-    struct {
-      char *data;  /* points into the client's input buffer */
-      int len;
-    } bytes;
+    } delimited;
     int32_t _enum;
   } v;
 };
 
+struct pbstream_tag {
+  pbstream_field_number_t field_number;
+  pbstream_wire_type_t wire_type;
+};
+
 /* A value as it is encoded on-the-wire */
 struct pbstream_wire_value {
-  enum pbstream_wire_type type;
+  pbstream_wire_type_t type;
   union {
     uint64_t varint;
     uint64_t _64bit;
     struct {
-      char *data;  /* points into the client's input buffer */
+      size_t offset;  /* relative to the beginning of the stream. */
       int len;
-    } string;
+    } delimited;
     uint32_t _32bit;
   } v;
 };
@@ -113,8 +112,8 @@ struct pbstream_enum_descriptor {
 struct pbstream_field_descriptor {
   pbstream_field_number_t field_number;
   char *name;
-  enum pbstream_type type;
-  enum pbstream_cardinality cardinality;
+  pbstream_type_t type;
+  pbstream_cardinality_t cardinality;
   struct pbstream_value *default_value;  /* NULL if none */
 
   /* Index into the "seen" list for the message.  -1 for repeated fields (for
@@ -137,57 +136,38 @@ struct pbstream_message_descriptor {
   DEFINE_DYNARRAY(enums, struct pbstream_enum_descriptor);
 };
 
-/* Callback for when a regular value is parsed. */
-typedef void (*pbstream_value_callback_t)(
-    struct pbstream_field_descriptor *field_descriptor,
-    struct pbstream_value *value,
-    void *user_data);
-
-/* Callback for when a value is parsed but wasn't in the .proto file. */
-typedef void (*pbstream_unknown_value_callback_t)(
-    pbstream_field_number_t field_number,
-    struct pbstream_wire_value *wire_value,
-    void *user_data);
-
-/* Callback for when a nested message is beginning. */
-typedef void (*pbstream_begin_message_callback_t)(
-    struct pbstream_message_descriptor *message_descriptor,
-    void *user_data);
-
-/* Callback for when a nested message is ending. */
-typedef void (*pbstream_end_message_callback_t)(void *user_data);
-
-/* Callback for when an error occurred. */
-enum pbstream_error {
-  /* A varint did not terminate before hitting 64 bits. Fatal. */
-  PBSTREAM_ERROR_UNTERMINATED_VARINT,
-
-  /* A field marked "required" was not present. */
-  PBSTREAM_ERROR_MISSING_REQUIRED_FIELD,
-
-  /* An optional or required field appeared more than once. */
-  PBSTREAM_ERROR_DUPLICATE_FIELD,
-
-  /* A field was encoded with the wrong wire type. */
-  PBSTREAM_ERROR_MISMATCHED_TYPE,
-
-  /* A submessage ended in the middle of data.  Indicates corruption. */
-  PBSTREAM_ERROR_BAD_SUBMESSAGE_END,
-};
-/* The description is a static buffer which the client must not free.  The
+/* Callback for when an error occurred.
+ * The description is a static buffer which the client must not free.  The
  * offset is the location in the input where the error was detected (this
  * offset is relative to the beginning of the stream).  If is_fatal is true,
  * parsing cannot continue. */
-typedef void (*pbstream_error_callback_t)(enum pbstream_error error,
-                                          char *description,
-                                          int offset, bool is_fatal);
+typedef enum pbstream_status {
+  PBSTREAM_STATUS_OK = 0,
+  PBSTREAM_STATUS_INCOMPLETE = 1, /* buffer ended in the middle of a field  */
+
+  /** FATAL ERRORS: these indicate corruption, and cannot be recovered. */
+
+  // A varint did not terminate before hitting 64 bits.
+  PBSTREAM_ERROR_UNTERMINATED_VARINT,
+
+  // A submessage ended in the middle of data.
+  PBSTREAM_ERROR_BAD_SUBMESSAGE_END,
+
+  /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
+
+  // A field marked "required" was not present. */
+  PBSTREAM_ERROR_MISSING_REQUIRED_FIELD,
+
+  // An optional or required field appeared more than once.
+  PBSTREAM_ERROR_DUPLICATE_FIELD,
+
+  // A field was encoded with the wrong wire type.
+  PBSTREAM_ERROR_MISMATCHED_TYPE,
+} pbstream_status_t;
+typedef void (*pbstream_error_callback_t)(pbstream_status_t error);
 
 struct pbstream_callbacks {
-  pbstream_value_callback_t          value_callback;
-  pbstream_unknown_value_callback_t  unknown_value_callback;
-  pbstream_begin_message_callback_t  begin_message_callback;
-  pbstream_end_message_callback_t    end_message_callback;
-  pbstream_error_callback_t          error_callback;
+  pbstream_error_callback_t error_callback;
 };
 
 struct pbstream_parse_stack_frame {
@@ -201,8 +181,8 @@ struct pbstream_parse_stack_frame {
 /* The stream parser's state. */
 struct pbstream_parse_state {
   struct pbstream_callbacks callbacks;
-  int offset;
-  bool fatal_error;
+  size_t offset;
+  bool ignore_nonfatal_errors;
   void *user_data;
   DEFINE_DYNARRAY(stack, struct pbstream_parse_stack_frame);
 };
@@ -227,12 +207,6 @@ void pbstream_init_parser(
  * thus parsing of the pbstream cannot proceed) unless need_more_bytes more
  * data is available upon the next call to parse.  The caller may need to
  * increase its buffer size. */
-enum pbstream_status {
-  PBSTREAM_STATUS_OK = 0,
-  PBSTREAM_STATUS_INCOMPLETE = 1, /* buffer ended in the middle of a field  */
-  PBSTREAM_STATUS_ERROR = 2,      /* fatal error in the file, cannot recover */
-};
 
-enum pbstream_status pbstream_parse(struct pbstream_parse_state *state,
-                                    char *buf, int buf_len,
-                                    int *consumed_bytes, int *need_more_bytes);
+pbstream_status_t pbstream_parse(struct pbstream_parse_state *state,
+                                 char *buf, int buf_len, int buf_offset);
