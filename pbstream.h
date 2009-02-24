@@ -63,7 +63,7 @@ struct pbstream_value {
     bool _bool;
     struct pbstream_delimited {
       size_t offset;  /* relative to the beginning of the stream. */
-      int len;
+      uint32_t len;
     } delimited;
     int32_t _enum;
   } v;
@@ -82,7 +82,7 @@ struct pbstream_wire_value {
     uint64_t _64bit;
     struct {
       size_t offset;  /* relative to the beginning of the stream. */
-      int len;
+      uint32_t len;
     } delimited;
     uint32_t _32bit;
   } v;
@@ -153,6 +153,9 @@ typedef enum pbstream_status {
 
   // A submessage ended in the middle of data.
   PBSTREAM_ERROR_BAD_SUBMESSAGE_END,
+
+  // Encountered a "group" on the wire (deprecated and unsupported).
+  PBSTREAM_ERROR_GROUP,
 
   /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
 

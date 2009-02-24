@@ -225,28 +225,22 @@ static pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
 static pbstream_status_t parse_unknown_value(
     char **buf, int buf_offset, struct pbstream_wire_value *wv)
 {
-#define DECODE(dest, func) CHECK(func(buf, &dest))
   switch(wv->type) {
     case PBSTREAM_WIRE_TYPE_VARINT:
-      DECODE(wv->v.varint, get_v_uint64_t); break;
+      CHECK(get_v_uint64_t(buf, &wv->v.varint)); break;
     case PBSTREAM_WIRE_TYPE_64BIT:
-      DECODE(wv->v._64bit, get_f_uint64_t); break;
+      CHECK(get_f_uint64_t(buf, &wv->v._64bit)); break;
     case PBSTREAM_WIRE_TYPE_32BIT:
-      DECODE(wv->v._32bit, get_f_uint32_t); break;
-    case PBSTREAM_WIRE_TYPE_DELIMITED: {
-      uint32_t len;
+      CHECK(get_f_uint32_t(buf, &wv->v._32bit)); break;
+    case PBSTREAM_WIRE_TYPE_DELIMITED:
       wv->v.delimited.offset = buf_offset;
-      DECODE(len, get_v_uint32_t);
-      wv->v.delimited.len = (size_t)len;
+      CHECK(get_v_uint32_t(buf, &wv->v.delimited.len));
       break;
-    }
     case PBSTREAM_WIRE_TYPE_START_GROUP:
     case PBSTREAM_WIRE_TYPE_END_GROUP:
-      /* TODO (though these are deprecated, so not high priority). */
-      break;
+      return PBSTREAM_ERROR_GROUP;  /* deprecated, no plans to support. */
   }
   return PBSTREAM_STATUS_OK;
-#undef DECODE
 }
 
 #define CALLBACK(s, func, ...) do { \
