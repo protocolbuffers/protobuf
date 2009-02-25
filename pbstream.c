@@ -4,6 +4,7 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include "pbstream.h"
 
@@ -181,10 +182,16 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
   CHECK(get_v_uint32_t(&buf, &tmp));
   wvtov_MESSAGE(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset;  /* skip past only the tag. */
-  RESIZE_DYNARRAY(s->stack, s->stack_len+1);
-  struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
-  frame->message_descriptor = d->field_descriptor->message;
-  frame->end_offset = d->v.delimited.offset + d->v.delimited.len;
+  if (unlikely(++s->top == s->limit)) {
+    /* Stack has grown beyond its limit, must reallocate. */
+    int cur_size = s->top - s->base;
+    int new_size = cur_size * 2;
+    s->base = realloc(s->base, new_size * sizeof(*s->top));
+    s->top = s->base + cur_size;
+    s->limit = s->base + new_size;
+  }
+  s->top->message_descriptor = d->field_descriptor->message;
+  s->top->end_offset = d->v.delimited.offset + d->v.delimited.len;
   return PBSTREAM_STATUS_OK;
 }
 
@@ -243,7 +250,7 @@ static pbstream_status_t parse_unknown_value(
   return PBSTREAM_STATUS_OK;
 }
 
-static struct pbstream_field_descriptor *find_field_descriptor(
+static struct pbstream_field_descriptor *find_field(
     struct pbstream_message_descriptor* md,
     pbstream_field_number_t field_number)
 {
@@ -257,30 +264,27 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s, char *buf,
                               struct pbstream_value *val,
                               struct pbstream_wire_value *wv)
 {
-  struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
-  struct pbstream_message_descriptor *md = frame->message_descriptor;
-  struct pbstream_tag tag;
-  struct pbstream_field_descriptor *fd;
-  struct pbstream_type_info *info;
-  pbstream_status_t unknown_value_status;
   char *b = buf;
-
-  if(unlikely(s->offset >= frame->end_offset)) {
+  /* Check for end-of-message at the current stack depth. */
+  if(unlikely(s->offset >= s->top->end_offset)) {
     /* If the end offset isn't an exact field boundary, the pb is corrupt. */
-    if(unlikely(s->offset != frame->end_offset))
+    if(unlikely(s->offset != s->top->end_offset))
       return PBSTREAM_ERROR_BAD_SUBMESSAGE_END;
-    RESIZE_DYNARRAY(s->stack, s->stack_len-1);
+    s->top--;
     return PBSTREAM_STATUS_SUBMESSAGE_END;
   }
 
+  struct pbstream_tag tag;
   CHECK(parse_tag(&b, &tag));
   size_t val_offset = s->offset + (b-buf);
-  fd = find_field_descriptor(md, tag.field_number);
+  struct pbstream_field_descriptor *fd = find_field(s->top->message_descriptor,
+                                                    tag.field_number);
+  pbstream_status_t unknown_value_status;
   if(unlikely(!fd)) {
     unknown_value_status = PBSTREAM_ERROR_UNKNOWN_VALUE;
     goto unknown_value;
   }
-  info = &type_info[fd->type];
+  struct pbstream_type_info *info = &type_info[fd->type];
   if(unlikely(tag.wire_type != info->expected_wire_type)) {
     unknown_value_status = PBSTREAM_ERROR_MISMATCHED_TYPE;
     goto unknown_value;

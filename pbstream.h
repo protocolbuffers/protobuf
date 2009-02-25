@@ -6,8 +6,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include "dynarray.h"
 
 /* A list of types as they can appear in a .proto file. */
 typedef enum pbstream_type {
@@ -136,7 +134,7 @@ struct pbstream_parse_stack_frame {
 struct pbstream_parse_state {
   size_t offset;
   void *user_data;
-  DEFINE_DYNARRAY(stack, struct pbstream_parse_stack_frame);
+  struct pbstream_parse_stack_frame *base, *top, *limit;
 };
 
 /* Call this once before parsing to initialize the data structures.
