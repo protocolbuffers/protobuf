@@ -127,7 +127,7 @@ struct pbstream_parse_state;
 
 struct pbstream_parse_stack_frame {
   struct pbstream_message_descriptor *message_descriptor;
-  int end_offset;  /* unknown for the top frame, so we set to INT_MAX */
+  size_t end_offset;  /* unknown for the top frame, so we set to SIZE_MAX */
 };
 
 /* The stream parser's state. */

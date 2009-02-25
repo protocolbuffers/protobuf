@@ -301,3 +301,18 @@ unknown_value:
   s->offset += (b-buf);
   return unknown_value_status;
 }
+
+void pbstream_init_parser(
+    struct pbstream_parse_state *state,
+    struct pbstream_message_descriptor *message_descriptor,
+    void *user_data)
+{
+  state->offset = 0;
+  state->user_data = user_data;
+  /* Initial stack of <300b most protobufs are unlikely to nest >20 deep. */
+  const int initial_stack = 20;
+  state->top = state->base = malloc(sizeof(*state->base) * initial_stack); 
+  state->limit = state->base + initial_stack;
+  state->top->message_descriptor = message_descriptor;
+  state->top->end_offset = SIZE_MAX;
+}
