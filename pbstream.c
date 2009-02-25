@@ -183,10 +183,8 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
   s->offset = d->v.delimited.offset;  /* skip past only the tag. */
   RESIZE_DYNARRAY(s->stack, s->stack_len+1);
   struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
-  frame->message_descriptor = d->field_descriptor->d.message;
+  frame->message_descriptor = d->field_descriptor->message;
   frame->end_offset = d->v.delimited.offset + d->v.delimited.len;
-  int num_seen_fields = frame->message_descriptor->num_seen_fields;
-  INIT_DYNARRAY(frame->seen_fields, num_seen_fields, num_seen_fields);
   return PBSTREAM_STATUS_OK;
 }
 
@@ -245,40 +243,12 @@ static pbstream_status_t parse_unknown_value(
   return PBSTREAM_STATUS_OK;
 }
 
-#define NONFATAL_ERROR(s, code) do { \
-  if(s->ignore_nonfatal_errors) { \
-    if(s->error_callback) s->error_callback(s, code); \
-  } else return code; } while (0)
-
 static struct pbstream_field_descriptor *find_field_descriptor(
     struct pbstream_message_descriptor* md,
     pbstream_field_number_t field_number)
 {
-  /* Likely will want to replace linear search with something better. */
-  for (int i = 0; i < md->fields_len; i++)
-    if (md->fields[i].field_number == field_number) return &md->fields[i];
+  /* TODO */
   return NULL;
-}
-
-pbstream_status_t process_message_end(struct pbstream_parse_state *s)
-{
-  struct pbstream_parse_stack_frame *frame = DYNARRAY_GET_TOP(s->stack);
-  /* A submessage that doesn't end exactly on a field boundary indicates
-   * corruption. */
-  if(unlikely(s->offset != frame->end_offset))
-    return PBSTREAM_ERROR_BAD_SUBMESSAGE_END;
-
-  /* Check required fields. */
-  struct pbstream_message_descriptor *md = frame->message_descriptor;
-  for(int i = 0; i < md->fields_len; i++) {
-    struct pbstream_field_descriptor *fd = &md->fields[i];
-    if(fd->seen_field_num && !frame->seen_fields[fd->seen_field_num] &&
-       fd->cardinality == PBSTREAM_CARDINALITY_REQUIRED) {
-      NONFATAL_ERROR(s, PBSTREAM_ERROR_MISSING_REQUIRED_FIELD);
-    }
-  }
-  RESIZE_DYNARRAY(s->stack, s->stack_len-1);
-  return PBSTREAM_STATUS_OK;
 }
 
 /* Parses and processes the next value from buf (but not past end). */
@@ -292,25 +262,28 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s, char *buf,
   struct pbstream_tag tag;
   struct pbstream_field_descriptor *fd;
   struct pbstream_type_info *info;
+  pbstream_status_t unknown_value_status;
   char *b = buf;
 
-  if(unlikely(s->offset >= frame->end_offset)) return process_message_end(s);
+  if(unlikely(s->offset >= frame->end_offset)) {
+    /* If the end offset isn't an exact field boundary, the pb is corrupt. */
+    if(unlikely(s->offset != frame->end_offset))
+      return PBSTREAM_ERROR_BAD_SUBMESSAGE_END;
+    RESIZE_DYNARRAY(s->stack, s->stack_len-1);
+    return PBSTREAM_STATUS_SUBMESSAGE_END;
+  }
 
   CHECK(parse_tag(&b, &tag));
   size_t val_offset = s->offset + (b-buf);
   fd = find_field_descriptor(md, tag.field_number);
-  if(unlikely(!fd)) goto unknown_value;
-  info = &type_info[fd->type];
-
-  /* Check type and cardinality. */
-  if(unlikely(tag.wire_type != info->expected_wire_type)) {
-    NONFATAL_ERROR(s, PBSTREAM_ERROR_MISMATCHED_TYPE);
+  if(unlikely(!fd)) {
+    unknown_value_status = PBSTREAM_ERROR_UNKNOWN_VALUE;
     goto unknown_value;
   }
-  if(fd->seen_field_num > 0) {
-    if(unlikely(frame->seen_fields[fd->seen_field_num]))
-      NONFATAL_ERROR(s, PBSTREAM_ERROR_DUPLICATE_FIELD);
-    frame->seen_fields[fd->seen_field_num] = true;
+  info = &type_info[fd->type];
+  if(unlikely(tag.wire_type != info->expected_wire_type)) {
+    unknown_value_status = PBSTREAM_ERROR_MISMATCHED_TYPE;
+    goto unknown_value;
   }
 
   *fieldnum = tag.field_number;
@@ -322,5 +295,5 @@ unknown_value:
   wv->type = tag.wire_type;
   CHECK(parse_unknown_value(&b, val_offset, wv));
   s->offset += (b-buf);
-  return PBSTREAM_STATUS_OK;
+  return unknown_value_status;
 }

@@ -40,13 +40,6 @@ typedef enum pbstream_wire_type {
   PBSTREAM_WIRE_TYPE_32BIT       = 5,
 } pbstream_wire_type_t;
 
-/* Each field must have a cardinality that is one of the following. */
-typedef enum pbstream_cardinality {
-  PBSTREAM_CARDINALITY_OPTIONAL,  /* must appear 0 or 1 times */
-  PBSTREAM_CARDINALITY_REQUIRED,  /* must appear exactly 1 time */
-  PBSTREAM_CARDINALITY_REPEATED,  /* may appear 0 or more times */
-} pbstream_cardinality_t;
-
 typedef int32_t pbstream_field_number_t;
 
 /* A deserialized value as described in a .proto file. */
@@ -88,53 +81,20 @@ struct pbstream_wire_value {
   } v;
 };
 
-/* The definition of an enum as defined in a pbstream.  For example:
- * Corpus {
- *   UNIVERSAL = 0;
- *   WEB = 1;
- *   IMAGES = 2;
- *   LOCAL = 3;
- *   NEWS = 4;
- * }
- */
-struct pbstream_enum_descriptor {
-  char *name;
-  struct enum_value {
-    char *name;
-    int value;
-  } value;
-  DEFINE_DYNARRAY(values, struct enum_value);
-};
-
 /* The definition of a field as defined in a pbstream (within a message).
  * For example:
  *   required int32 a = 1;
  */
 struct pbstream_field_descriptor {
   pbstream_field_number_t field_number;
-  char *name;
   pbstream_type_t type;
-  pbstream_cardinality_t cardinality;
-  struct pbstream_value *default_value;  /* NULL if none */
-
-  /* Index into the "seen" list for the message.  -1 for repeated fields (for
-   * which we have no need to track whether it's been seen). */
-  int seen_field_num;
-
-  union extra_data {
-    struct pbstream_enum_descriptor *_enum;
-    struct pbstream_message_descriptor *message;
-  } d;
+  struct pbstream_message_descriptor *message;  /* if type == MESSAGE */
 };
 
 /* A message as defined by the "message" construct in a .proto file. */
+typedef int pbstream_fieldset_t;  /* TODO */
 struct pbstream_message_descriptor {
-  char *name;  /* does not include package name or parent message names */
-  char *full_name;
-  int num_seen_fields;  /* fields we have to track "seen" information for */
-  DEFINE_DYNARRAY(fields, struct pbstream_field_descriptor);
-  DEFINE_DYNARRAY(messages, struct pbstream_message_descriptor);
-  DEFINE_DYNARRAY(enums, struct pbstream_enum_descriptor);
+  pbstream_fieldset_t fieldset;
 };
 
 /* Callback for when an error occurred.
@@ -144,47 +104,37 @@ struct pbstream_message_descriptor {
  * parsing cannot continue. */
 typedef enum pbstream_status {
   PBSTREAM_STATUS_OK = 0,
-  PBSTREAM_STATUS_INCOMPLETE = 1, /* buffer ended in the middle of a field  */
+  PBSTREAM_STATUS_SUBMESSAGE_END = 1,
 
   /** FATAL ERRORS: these indicate corruption, and cannot be recovered. */
 
   // A varint did not terminate before hitting 64 bits.
-  PBSTREAM_ERROR_UNTERMINATED_VARINT,
+  PBSTREAM_ERROR_UNTERMINATED_VARINT = -1,
 
   // A submessage ended in the middle of data.
-  PBSTREAM_ERROR_BAD_SUBMESSAGE_END,
+  PBSTREAM_ERROR_BAD_SUBMESSAGE_END = -2,
 
   // Encountered a "group" on the wire (deprecated and unsupported).
-  PBSTREAM_ERROR_GROUP,
+  PBSTREAM_ERROR_GROUP = -3,
 
   /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
 
-  // A field marked "required" was not present. */
-  PBSTREAM_ERROR_MISSING_REQUIRED_FIELD,
-
-  // An optional or required field appeared more than once.
-  PBSTREAM_ERROR_DUPLICATE_FIELD,
+  // A value was encountered that was not defined in the .proto file.
+  PBSTREAM_ERROR_UNKNOWN_VALUE = 2,
 
   // A field was encoded with the wrong wire type.
-  PBSTREAM_ERROR_MISMATCHED_TYPE,
+  PBSTREAM_ERROR_MISMATCHED_TYPE = 3,
 } pbstream_status_t;
 struct pbstream_parse_state;
-typedef void (*pbstream_error_callback_t)(struct pbstream_parse_state *s,
-                                          pbstream_status_t error);
 
 struct pbstream_parse_stack_frame {
   struct pbstream_message_descriptor *message_descriptor;
   int end_offset;  /* unknown for the top frame, so we set to INT_MAX */
-
-  /* Tracks whether we've seen non-repeated fields. */
-  DEFINE_DYNARRAY(seen_fields, bool);
 };
 
 /* The stream parser's state. */
 struct pbstream_parse_state {
-  pbstream_error_callback_t error_callback;
   size_t offset;
-  bool ignore_nonfatal_errors;
   void *user_data;
   DEFINE_DYNARRAY(stack, struct pbstream_parse_stack_frame);
 };
