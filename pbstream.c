@@ -26,6 +26,7 @@ static pbstream_status_t get_v_uint64_t(char **buf, uint64_t *val)
   uint32_t b;
   uint32_t part0 = 0, part1 = 0, part2 = 0;
 
+  /* From the original proto2 implementation. */
   b = *(ptr++); part0  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
   b = *(ptr++); part0 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
   b = *(ptr++); part0 |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
@@ -50,6 +51,7 @@ static pbstream_status_t get_v_uint32_t(char **buf, uint32_t *val)
   uint32_t b;
   uint32_t result;
 
+  /* From the original proto2 implementation. */
   b = *(ptr++); result  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
   b = *(ptr++); result |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
   b = *(ptr++); result |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
