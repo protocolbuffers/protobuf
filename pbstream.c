@@ -142,39 +142,24 @@ T(SFIXED32, f, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
 T(SFIXED64, f, uint64_t, int64_t,  int64)   { *d = (int64_t)s;               }
 T(BOOL,     v, uint32_t, bool,     _bool)   { *d = (bool)s;                  }
 T(ENUM,     v, uint32_t, int32_t,  _enum)   { *d = (int32_t)s;               }
-
-#define WVTOV_DELIMITED(type) \
-  WVTOV(type, uint32_t, struct pbstream_delimited) { \
-    d->offset = offset; \
-    d->len = s; \
-  }
-WVTOV_DELIMITED(STRING);
-WVTOV_DELIMITED(BYTES);
-WVTOV_DELIMITED(MESSAGE);
 #undef WVTOV
 #undef GET
 #undef T
-#undef T_DELIMITED
 
-static pbstream_status_t get_STRING(struct pbstream_parse_state *s, char *buf,
-                                    struct pbstream_value *d) {
-  uint32_t tmp;
-  char *b = buf;
-  CHECK(get_v_uint32_t(&b, &tmp));
-  s->offset += (b-buf);  /* advance past length varint. */
-  wvtov_STRING(tmp, &d->v.delimited, s->offset);
-  s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip string */
-  /* we leave UTF-8 validation to the client. */
-  return PBSTREAM_STATUS_OK;
+static void wvtov_delimited(uint32_t s, struct pbstream_delimited *d, size_t o)
+{
+  d->offset = o;
+  d->len = s;
 }
 
+/* Use BYTES version for both STRING and BYTES, leave UTF-8 checks to client. */
 static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
                                    struct pbstream_value *d) {
   uint32_t tmp;
   char *b = buf;
   CHECK(get_v_uint32_t(&b, &tmp));
   s->offset += (b-buf);  /* advance past length varint. */
-  wvtov_BYTES(tmp, &d->v.delimited, s->offset);
+  wvtov_delimited(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip bytes */
   return PBSTREAM_STATUS_OK;
 }
@@ -186,7 +171,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
   char *b = buf;
   CHECK(get_v_uint32_t(&b, &tmp));
   s->offset += (b-buf);  /* advance past length varint. */
-  wvtov_MESSAGE(tmp, &d->v.delimited, s->offset);
+  wvtov_delimited(tmp, &d->v.delimited, s->offset);
   /* Unlike STRING and BYTES, we *don't* advance past delimited here. */
   if (unlikely(++s->top == s->limit)) {
     /* Stack has grown beyond its limit, must reallocate. */
@@ -220,7 +205,7 @@ static struct pbstream_type_info type_info[] = {
   {PBSTREAM_WIRE_TYPE_32BIT,     get_SFIXED32},
   {PBSTREAM_WIRE_TYPE_64BIT,     get_SFIXED64},
   {PBSTREAM_WIRE_TYPE_VARINT,    get_BOOL},
-  {PBSTREAM_WIRE_TYPE_DELIMITED, get_STRING},
+  {PBSTREAM_WIRE_TYPE_DELIMITED, get_BYTES},
   {PBSTREAM_WIRE_TYPE_DELIMITED, get_BYTES},
   {PBSTREAM_WIRE_TYPE_VARINT,    get_ENUM},
   {PBSTREAM_WIRE_TYPE_DELIMITED, get_MESSAGE}
