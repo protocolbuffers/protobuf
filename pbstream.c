@@ -159,7 +159,9 @@ WVTOV_DELIMITED(MESSAGE);
 static pbstream_status_t get_STRING(struct pbstream_parse_state *s, char *buf,
                                     struct pbstream_value *d) {
   uint32_t tmp;
-  CHECK(get_v_uint32_t(&buf, &tmp));
+  char *b = buf;
+  CHECK(get_v_uint32_t(&b, &tmp));
+  s->offset += (b-buf);  /* advance past length varint. */
   wvtov_STRING(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip string */
   /* we leave UTF-8 validation to the client. */
@@ -169,7 +171,9 @@ static pbstream_status_t get_STRING(struct pbstream_parse_state *s, char *buf,
 static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
                                    struct pbstream_value *d) {
   uint32_t tmp;
-  CHECK(get_v_uint32_t(&buf, &tmp));
+  char *b = buf;
+  CHECK(get_v_uint32_t(&b, &tmp));
+  s->offset += (b-buf);  /* advance past length varint. */
   wvtov_BYTES(tmp, &d->v.delimited, s->offset);
   s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip bytes */
   return PBSTREAM_STATUS_OK;
@@ -179,9 +183,11 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
                                      struct pbstream_value *d) {
   /* We're entering a sub-message. */
   uint32_t tmp;
+  char *b = buf;
   CHECK(get_v_uint32_t(&buf, &tmp));
+  s->offset += (b-buf);  /* advance past length varint. */
   wvtov_MESSAGE(tmp, &d->v.delimited, s->offset);
-  s->offset = d->v.delimited.offset;  /* skip past only the tag. */
+  /* Unlike STRING and BYTES, we *don't* advance past delimited here. */
   if (unlikely(++s->top == s->limit)) {
     /* Stack has grown beyond its limit, must reallocate. */
     int cur_size = s->top - s->base;
@@ -254,7 +260,8 @@ static struct pbstream_field *find_field(struct pbstream_fieldset* fs,
                                          pbstream_field_number_t num)
 {
   /* TODO: a hybrid array/hashtable structure. */
-  if(num < fs->num_fields) return &fs->fields[num];
+  /* TODO: can zero be a tag number? */
+  if(num <= fs->num_fields) return &fs->fields[num-1];
   else return NULL;
 }
 
@@ -277,7 +284,7 @@ pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
 
   struct pbstream_tag tag;
   CHECK(parse_tag(&b, &tag));
-  size_t val_offset = s->offset + (b-buf);
+  s->offset += (b-buf);
   struct pbstream_field *fd = find_field(s->top->fieldset, tag.field_number);
   pbstream_status_t unknown_value_status;
   if(unlikely(!fd)) {
@@ -297,22 +304,25 @@ pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
 
 unknown_value:
   wv->type = tag.wire_type;
-  CHECK(parse_unknown_value(&b, val_offset, wv));
+  CHECK(parse_unknown_value(&b, s->offset, wv));
   s->offset += (b-buf);
   return unknown_value_status;
 }
 
 void pbstream_init_parser(
     struct pbstream_parse_state *state,
-    struct pbstream_fieldset *toplevel_fieldset,
-    void *user_data)
+    struct pbstream_fieldset *toplevel_fieldset)
 {
   state->offset = 0;
-  state->user_data = user_data;
-  /* Initial stack of <300b most protobufs are unlikely to nest >20 deep. */
+  /* Initial stack of <300b, most protobufs are unlikely to nest >20 deep. */
   const int initial_stack = 20;
   state->top = state->base = malloc(sizeof(*state->base) * initial_stack); 
   state->limit = state->base + initial_stack;
   state->top->fieldset = toplevel_fieldset;
   state->top->end_offset = SIZE_MAX;
+}
+
+void pbstream_free_parser(struct pbstream_parse_state *state)
+{
+  free(state->base);
 }

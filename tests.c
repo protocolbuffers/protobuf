@@ -42,9 +42,46 @@ void test_get_v_uint64_t()
   assert(status == PBSTREAM_ERROR_UNTERMINATED_VARINT);
 }
 
+void test_simple_proto()
+{
+  struct pbstream_fieldset *fieldset1 = malloc(sizeof(*fieldset1) +
+                                               2*sizeof(struct pbstream_field));
+  fieldset1->num_fields = 2;
+  fieldset1->fields[0].field_number = 1;
+  fieldset1->fields[0].type = PBSTREAM_TYPE_INT32;
+  fieldset1->fields[1].field_number = 2;
+  fieldset1->fields[1].type = PBSTREAM_TYPE_STRING;
+
+  char message1[] = {0x08, 0x96, 0x01};
+  struct pbstream_parse_state s;
+  pbstream_init_parser(&s, fieldset1);
+  assert(s.offset == 0);
+  pbstream_field_number_t fieldnum;
+  struct pbstream_value val;
+  struct pbstream_wire_value wv;
+  assert(pbstream_parse_field(&s, message1, &fieldnum, &val, &wv) ==
+         PBSTREAM_STATUS_OK);
+  assert(val.field == &fieldset1->fields[0]);
+  assert(val.v.int32 == 150);
+  assert(s.offset == 3);
+  pbstream_free_parser(&s);
+
+  char message2[] = {0x12, 0x07, 0x74, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67};
+  pbstream_init_parser(&s, fieldset1);
+  assert(pbstream_parse_field(&s, message2, &fieldnum, &val, &wv) ==
+         PBSTREAM_STATUS_OK);
+  assert(val.field == &fieldset1->fields[1]);
+  assert(val.v.delimited.offset == 2);
+  assert(val.v.delimited.len == 7);
+  assert(s.offset == 9);
+  pbstream_free_parser(&s);
+  free(fieldset1);
+}
+
 int main()
 {
   test_get_v_uint64_t();
+  test_simple_proto();
   printf("All tests passed.\n");
   return 0;
 }

@@ -9,7 +9,7 @@
 
 /* A list of types as they can appear in a .proto file. */
 typedef enum pbstream_type {
-  PBSTREAM_TYPE_DOUBLE,
+  PBSTREAM_TYPE_DOUBLE = 0,
   PBSTREAM_TYPE_FLOAT,
   PBSTREAM_TYPE_INT32,
   PBSTREAM_TYPE_INT64,
@@ -101,7 +101,6 @@ struct pbstream_parse_stack_frame {
 /* The stream parser's state. */
 struct pbstream_parse_state {
   size_t offset;
-  void *user_data;
   struct pbstream_parse_stack_frame *base, *top, *limit;
 };
 
@@ -110,8 +109,9 @@ struct pbstream_parse_state {
  * unknown. */
 void pbstream_init_parser(
     struct pbstream_parse_state *state,
-    struct pbstream_fieldset *toplevel_fieldset,
-    void *user_data);
+    struct pbstream_fieldset *toplevel_fieldset);
+
+void pbstream_free_parser(struct pbstream_parse_state *state);
 
 /* Status as returned by pbstream_parse().  Status codes <0 are fatal errors
  * that cannot be recovered.  Status codes >0 are unusual but nonfatal events,
