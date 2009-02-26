@@ -41,9 +41,8 @@ typedef enum pbstream_wire_type {
 typedef int32_t pbstream_field_number_t;
 
 /* A deserialized value as described in a .proto file. */
-struct pbstream_field_descriptor;
 struct pbstream_value {
-  struct pbstream_field_descriptor *field_descriptor;
+  struct pbstream_field *field;
   union {
     double _double;
     float  _float;
@@ -60,6 +59,7 @@ struct pbstream_value {
   } v;
 };
 
+/* A tag occurs before each value on-the-wire. */
 struct pbstream_tag {
   pbstream_field_number_t field_number;
   pbstream_wire_type_t wire_type;
@@ -79,54 +79,22 @@ struct pbstream_wire_value {
   } v;
 };
 
-/* The definition of a field as defined in a pbstream (within a message).
- * For example:
- *   required int32 a = 1;
- */
-struct pbstream_field_descriptor {
+/* Definition of a single field in a message. */
+struct pbstream_field {
   pbstream_field_number_t field_number;
   pbstream_type_t type;
-  struct pbstream_message_descriptor *message;  /* if type == MESSAGE */
+  struct pbstream_fieldset *fieldset;  /* if type == MESSAGE */
 };
 
-/* A message as defined by the "message" construct in a .proto file. */
-typedef int pbstream_fieldset_t;  /* TODO */
-struct pbstream_message_descriptor {
-  pbstream_fieldset_t fieldset;
+/* The set of fields corresponding to a message definition. */
+struct pbstream_fieldset {
+  /* TODO: a hybrid array/hashtable structure. */
+  int num_fields;
+  struct pbstream_field fields[];
 };
-
-/* Callback for when an error occurred.
- * The description is a static buffer which the client must not free.  The
- * offset is the location in the input where the error was detected (this
- * offset is relative to the beginning of the stream).  If is_fatal is true,
- * parsing cannot continue. */
-typedef enum pbstream_status {
-  PBSTREAM_STATUS_OK = 0,
-  PBSTREAM_STATUS_SUBMESSAGE_END = 1,
-
-  /** FATAL ERRORS: these indicate corruption, and cannot be recovered. */
-
-  // A varint did not terminate before hitting 64 bits.
-  PBSTREAM_ERROR_UNTERMINATED_VARINT = -1,
-
-  // A submessage ended in the middle of data.
-  PBSTREAM_ERROR_BAD_SUBMESSAGE_END = -2,
-
-  // Encountered a "group" on the wire (deprecated and unsupported).
-  PBSTREAM_ERROR_GROUP = -3,
-
-  /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
-
-  // A value was encountered that was not defined in the .proto file.
-  PBSTREAM_ERROR_UNKNOWN_VALUE = 2,
-
-  // A field was encoded with the wrong wire type.
-  PBSTREAM_ERROR_MISMATCHED_TYPE = 3,
-} pbstream_status_t;
-struct pbstream_parse_state;
 
 struct pbstream_parse_stack_frame {
-  struct pbstream_message_descriptor *message_descriptor;
+  struct pbstream_fieldset *fieldset;
   size_t end_offset;  /* unknown for the top frame, so we set to SIZE_MAX */
 };
 
@@ -142,20 +110,50 @@ struct pbstream_parse_state {
  * unknown. */
 void pbstream_init_parser(
     struct pbstream_parse_state *state,
-    struct pbstream_message_descriptor *message_descriptor,
+    struct pbstream_fieldset *toplevel_fieldset,
     void *user_data);
 
-/* Call this to parse as much of buf as possible, calling callbacks as
- * appropriate.  buf need not be a complete pbstream.  Returns the number of
- * bytes consumed.  In subsequent calls, buf should point to the first byte not
- * consumed by previous calls.
- *
- * If need_more_bytes is non-zero when parse() returns, this indicates that the
- * beginning of a string or sub-message was recognized, but not all bytes of
- * the string were in memory.  The string will not be successfully parsed (and
- * thus parsing of the pbstream cannot proceed) unless need_more_bytes more
- * data is available upon the next call to parse.  The caller may need to
- * increase its buffer size. */
+/* Status as returned by pbstream_parse().  Status codes <0 are fatal errors
+ * that cannot be recovered.  Status codes >0 are unusual but nonfatal events,
+ * which nonetheless must be handled differently since they do not return data
+ * in val. */
+typedef enum pbstream_status {
+  PBSTREAM_STATUS_OK = 0,
+  PBSTREAM_STATUS_SUBMESSAGE_END = 1,  // No data is stored in val or wv.
 
-pbstream_status_t pbstream_parse(struct pbstream_parse_state *state,
-                                 char *buf, int buf_len, int buf_offset);
+  /** FATAL ERRORS: these indicate corruption, and cannot be recovered. */
+
+  // A varint did not terminate before hitting 64 bits.
+  PBSTREAM_ERROR_UNTERMINATED_VARINT = -1,
+
+  // A submessage ended in the middle of data.
+  PBSTREAM_ERROR_BAD_SUBMESSAGE_END = -2,
+
+  // Encountered a "group" on the wire (deprecated and unsupported).
+  PBSTREAM_ERROR_GROUP = -3,
+
+  /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
+
+  // A value was encountered that was not defined in the .proto file.  The
+  // unknown value is stored in wv.
+  PBSTREAM_ERROR_UNKNOWN_VALUE = 2,
+
+  // A field was encoded with the wrong wire type.  The wire value is stored in
+  // wv.
+  PBSTREAM_ERROR_MISMATCHED_TYPE = 3,
+} pbstream_status_t;
+struct pbstream_parse_state;
+
+/* The main parsing function.  Parses the next value from buf, storing the
+ * parsed value in val.  If val is of type PBSTREAM_TYPE_MESSAGE, then a
+ * submessage was entered.
+ *
+ * IMPORTANT NOTE: for efficiency, the parsing routines do not do bounds checks,
+ * and may read as much as far as buf+10.  So the caller must ensure that buf is
+ * not within 10 bytes of unmapped memory, or the program will segfault. Clients
+ * are encouraged to overallocate their buffers by ten bytes to compensate. */
+pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
+                                       char *buf,
+                                       pbstream_field_number_t *fieldnum,
+                                       struct pbstream_value *val,
+                                       struct pbstream_wire_value *wv);

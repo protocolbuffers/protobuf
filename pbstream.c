@@ -190,7 +190,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
     s->top = s->base + cur_size;
     s->limit = s->base + new_size;
   }
-  s->top->message_descriptor = d->field_descriptor->message;
+  s->top->fieldset = d->field->fieldset;
   s->top->end_offset = d->v.delimited.offset + d->v.delimited.len;
   return PBSTREAM_STATUS_OK;
 }
@@ -250,19 +250,20 @@ static pbstream_status_t parse_unknown_value(
   return PBSTREAM_STATUS_OK;
 }
 
-static struct pbstream_field_descriptor *find_field(
-    struct pbstream_message_descriptor* md,
-    pbstream_field_number_t field_number)
+static struct pbstream_field *find_field(struct pbstream_fieldset* fs,
+                                         pbstream_field_number_t num)
 {
-  /* TODO */
-  return NULL;
+  /* TODO: a hybrid array/hashtable structure. */
+  if(num < fs->num_fields) return &fs->fields[num];
+  else return NULL;
 }
 
-/* Parses and processes the next value from buf (but not past end). */
-pbstream_status_t parse_field(struct pbstream_parse_state *s, char *buf,
-                              pbstream_field_number_t *fieldnum,
-                              struct pbstream_value *val,
-                              struct pbstream_wire_value *wv)
+/* Parses and processes the next value from buf. */
+pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
+                                       char *buf,
+                                       pbstream_field_number_t *fieldnum,
+                                       struct pbstream_value *val,
+                                       struct pbstream_wire_value *wv)
 {
   char *b = buf;
   /* Check for end-of-message at the current stack depth. */
@@ -277,8 +278,7 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s, char *buf,
   struct pbstream_tag tag;
   CHECK(parse_tag(&b, &tag));
   size_t val_offset = s->offset + (b-buf);
-  struct pbstream_field_descriptor *fd = find_field(s->top->message_descriptor,
-                                                    tag.field_number);
+  struct pbstream_field *fd = find_field(s->top->fieldset, tag.field_number);
   pbstream_status_t unknown_value_status;
   if(unlikely(!fd)) {
     unknown_value_status = PBSTREAM_ERROR_UNKNOWN_VALUE;
@@ -291,7 +291,7 @@ pbstream_status_t parse_field(struct pbstream_parse_state *s, char *buf,
   }
 
   *fieldnum = tag.field_number;
-  val->field_descriptor = fd;
+  val->field = fd;
   CHECK(info->get(s, b, val));
   return PBSTREAM_STATUS_OK;
 
@@ -304,7 +304,7 @@ unknown_value:
 
 void pbstream_init_parser(
     struct pbstream_parse_state *state,
-    struct pbstream_message_descriptor *message_descriptor,
+    struct pbstream_fieldset *toplevel_fieldset,
     void *user_data)
 {
   state->offset = 0;
@@ -313,6 +313,6 @@ void pbstream_init_parser(
   const int initial_stack = 20;
   state->top = state->base = malloc(sizeof(*state->base) * initial_stack); 
   state->limit = state->base + initial_stack;
-  state->top->message_descriptor = message_descriptor;
+  state->top->fieldset = toplevel_fieldset;
   state->top->end_offset = SIZE_MAX;
 }
