@@ -132,6 +132,9 @@ typedef enum pbstream_status {
   // Encountered a "group" on the wire (deprecated and unsupported).
   PBSTREAM_ERROR_GROUP = -3,
 
+  // Input was nested more than 64 deep.
+  PBSTREAM_ERROR_STACK_OVERFLOW = -4,
+
   /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
 
   // A value was encountered that was not defined in the .proto file.  The

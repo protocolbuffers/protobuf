@@ -47,7 +47,7 @@ void test_simple_proto()
   /* These are the examples from
    * http://code.google.com/apis/protocolbuffers/docs/encoding.html */
   struct pbstream_fieldset *fieldset1 = malloc(sizeof(*fieldset1) +
-                                               2*sizeof(struct pbstream_field));
+                                               sizeof(struct pbstream_field[2]));
   fieldset1->num_fields = 2;
   fieldset1->fields[0].field_number = 1;
   fieldset1->fields[0].type = PBSTREAM_TYPE_INT32;
@@ -79,7 +79,7 @@ void test_simple_proto()
   pbstream_free_parser(&s);
 
   struct pbstream_fieldset *fieldset2 = malloc(sizeof(*fieldset1) +
-                                               3*sizeof(struct pbstream_field));
+                                               sizeof(struct pbstream_field[3]));
   fieldset2->num_fields = 3;
   fieldset2->fields[2].field_number = 3;
   fieldset2->fields[2].type = PBSTREAM_TYPE_MESSAGE;

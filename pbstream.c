@@ -17,6 +17,11 @@
 #define unlikely(x)     (x)
 #endif
 
+#define CHECK(func) do { \
+  pbstream_wire_type_t status = func; \
+  if(status != PBSTREAM_STATUS_OK) return status; \
+  } while (0)
+
 /* Lowest-level functions -- these read integers from the input buffer.
  * To avoid branches, none of these do bounds checking.  So we force clients
  * to overallocate their buffers by >=9 bytes. */
@@ -97,11 +102,6 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 /* Functions for reading wire values and converting them to values.  These
  * are generated with macros because they follow a higly consistent pattern. */
 
-#define CHECK(func) do { \
-  pbstream_wire_type_t status = func; \
-  if(status != PBSTREAM_STATUS_OK) return status; \
-  } while (0)
-
 /* WVTOV() generates a function:
  *   void wvtov_TYPE(wire_t src, val_t *dst, size_t offset)
  * (macro invoker defines the body of the function).  */
@@ -173,14 +173,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
   s->offset += (b-buf);  /* advance past length varint. */
   wvtov_delimited(tmp, &d->v.delimited, s->offset);
   /* Unlike STRING and BYTES, we *don't* advance past delimited here. */
-  if (unlikely(++s->top == s->limit)) {
-    /* Stack has grown beyond its limit, must reallocate. */
-    int cur_size = s->top - s->base;
-    int new_size = cur_size * 2;
-    s->base = realloc(s->base, new_size * sizeof(*s->top));
-    s->top = s->base + cur_size;
-    s->limit = s->base + new_size;
-  }
+  if (unlikely(++s->top == s->limit)) return PBSTREAM_ERROR_STACK_OVERFLOW;
   s->top->fieldset = d->field->fieldset;
   s->top->end_offset = d->v.delimited.offset + d->v.delimited.len;
   return PBSTREAM_STATUS_OK;
@@ -299,10 +292,9 @@ void pbstream_init_parser(
     struct pbstream_fieldset *toplevel_fieldset)
 {
   state->offset = 0;
-  /* Initial stack of <300b, most protobufs are unlikely to nest >20 deep. */
-  const int initial_stack = 20;
-  state->top = state->base = malloc(sizeof(*state->base) * initial_stack); 
-  state->limit = state->base + initial_stack;
+  /* We match proto2's limit of 64 for maximum stack depth. */
+  state->top = state->base = malloc(sizeof(state->base[64]));
+  state->limit = state->base + 64;
   state->top->fieldset = toplevel_fieldset;
   state->top->end_offset = SIZE_MAX;
 }
