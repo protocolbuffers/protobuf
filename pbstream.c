@@ -293,7 +293,7 @@ void pbstream_init_parser(
 {
   state->offset = 0;
   /* We match proto2's limit of 64 for maximum stack depth. */
-  state->top = state->base = malloc(sizeof(state->base[64]));
+  state->top = state->base = malloc(64*sizeof(*state->base));
   state->limit = state->base + 64;
   state->top->fieldset = toplevel_fieldset;
   state->top->end_offset = SIZE_MAX;
