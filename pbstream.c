@@ -184,7 +184,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
   /* We're entering a sub-message. */
   uint32_t tmp;
   char *b = buf;
-  CHECK(get_v_uint32_t(&buf, &tmp));
+  CHECK(get_v_uint32_t(&b, &tmp));
   s->offset += (b-buf);  /* advance past length varint. */
   wvtov_MESSAGE(tmp, &d->v.delimited, s->offset);
   /* Unlike STRING and BYTES, we *don't* advance past delimited here. */

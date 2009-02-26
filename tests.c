@@ -44,6 +44,8 @@ void test_get_v_uint64_t()
 
 void test_simple_proto()
 {
+  /* These are the examples from
+   * http://code.google.com/apis/protocolbuffers/docs/encoding.html */
   struct pbstream_fieldset *fieldset1 = malloc(sizeof(*fieldset1) +
                                                2*sizeof(struct pbstream_field));
   fieldset1->num_fields = 2;
@@ -75,7 +77,39 @@ void test_simple_proto()
   assert(val.v.delimited.len == 7);
   assert(s.offset == 9);
   pbstream_free_parser(&s);
+
+  struct pbstream_fieldset *fieldset2 = malloc(sizeof(*fieldset1) +
+                                               3*sizeof(struct pbstream_field));
+  fieldset2->num_fields = 3;
+  fieldset2->fields[2].field_number = 3;
+  fieldset2->fields[2].type = PBSTREAM_TYPE_MESSAGE;
+  fieldset2->fields[2].fieldset = fieldset1;
+  char message3[] = {0x1a, 0x03, 0x08, 0x96, 0x01};
+  pbstream_init_parser(&s, fieldset2);
+  assert(pbstream_parse_field(&s, message3, &fieldnum, &val, &wv) ==
+         PBSTREAM_STATUS_OK);
+  assert(val.field == &fieldset2->fields[2]);
+  assert(val.v.delimited.offset == 2);
+  assert(val.v.delimited.len == 3);
+  assert(s.offset == 2);
+  assert(s.top-1 == s.base);
+  assert(s.top->fieldset == fieldset1);
+  assert(s.top->end_offset == 5);
+
+  assert(pbstream_parse_field(&s, message3+s.offset, &fieldnum, &val, &wv) ==
+         PBSTREAM_STATUS_OK);
+  assert(val.field == &fieldset1->fields[0]);
+  assert(val.v.int32 == 150);
+  assert(s.offset == 5);
+
+  assert(pbstream_parse_field(&s, NULL /* shouldn't be read */,
+                              &fieldnum, &val, &wv) ==
+         PBSTREAM_STATUS_SUBMESSAGE_END);
+  assert(s.top == s.base);
+  pbstream_free_parser(&s);
+
   free(fieldset1);
+  free(fieldset2);
 }
 
 int main()
