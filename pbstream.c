@@ -4,7 +4,6 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
-#include <stdlib.h>
 #include <string.h>
 #include "pbstream.h"
 
@@ -292,14 +291,8 @@ void pbstream_init_parser(
     struct pbstream_fieldset *toplevel_fieldset)
 {
   state->offset = 0;
-  /* We match proto2's limit of 64 for maximum stack depth. */
-  state->top = state->base = malloc(64*sizeof(*state->base));
-  state->limit = state->base + 64;
+  state->top = state->stack;
+  state->limit = state->top + PBSTREAM_MAX_STACK;
   state->top->fieldset = toplevel_fieldset;
   state->top->end_offset = SIZE_MAX;
-}
-
-void pbstream_free_parser(struct pbstream_parse_state *state)
-{
-  free(state->base);
 }

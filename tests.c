@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "pbstream.c"
 
 void test_get_v_uint64_t()
@@ -66,7 +67,6 @@ void test_simple_proto()
   assert(val.field == &fieldset1->fields[0]);
   assert(val.v.int32 == 150);
   assert(s.offset == 3);
-  pbstream_free_parser(&s);
 
   char message2[] = {0x12, 0x07, 0x74, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67};
   pbstream_init_parser(&s, fieldset1);
@@ -76,7 +76,6 @@ void test_simple_proto()
   assert(val.v.delimited.offset == 2);
   assert(val.v.delimited.len == 7);
   assert(s.offset == 9);
-  pbstream_free_parser(&s);
 
   struct pbstream_fieldset *fieldset2 = malloc(sizeof(*fieldset1) +
                                                sizeof(struct pbstream_field[3]));
@@ -92,7 +91,7 @@ void test_simple_proto()
   assert(val.v.delimited.offset == 2);
   assert(val.v.delimited.len == 3);
   assert(s.offset == 2);
-  assert(s.top-1 == s.base);
+  assert(s.top-1 == s.stack);
   assert(s.top->fieldset == fieldset1);
   assert(s.top->end_offset == 5);
 
@@ -105,8 +104,7 @@ void test_simple_proto()
   assert(pbstream_parse_field(&s, NULL /* shouldn't be read */,
                               &fieldnum, &val, &wv) ==
          PBSTREAM_STATUS_SUBMESSAGE_END);
-  assert(s.top == s.base);
-  pbstream_free_parser(&s);
+  assert(s.top == s.stack);
 
   free(fieldset1);
   free(fieldset2);

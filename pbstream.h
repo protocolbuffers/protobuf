@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/* The maximum that any submessages can be nested.  Matches proto2's limit. */
+#define PBSTREAM_MAX_STACK 64
+
 /* A list of types as they can appear in a .proto file. */
 typedef enum pbstream_type {
   PBSTREAM_TYPE_DOUBLE = 0,
@@ -101,7 +104,8 @@ struct pbstream_parse_stack_frame {
 /* The stream parser's state. */
 struct pbstream_parse_state {
   size_t offset;
-  struct pbstream_parse_stack_frame *base, *top, *limit;
+  struct pbstream_parse_stack_frame stack[PBSTREAM_MAX_STACK];
+  struct pbstream_parse_stack_frame *top, *limit;
 };
 
 /* Call this once before parsing to initialize the data structures.
@@ -110,8 +114,6 @@ struct pbstream_parse_state {
 void pbstream_init_parser(
     struct pbstream_parse_state *state,
     struct pbstream_fieldset *toplevel_fieldset);
-
-void pbstream_free_parser(struct pbstream_parse_state *state);
 
 /* Status as returned by pbstream_parse().  Status codes <0 are fatal errors
  * that cannot be recovered.  Status codes >0 are unusual but nonfatal events,
