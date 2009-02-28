@@ -4,6 +4,8 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include "pbstream.h"
 
@@ -236,10 +238,8 @@ static pbstream_status_t parse_unknown_value(
 static struct pbstream_field *find_field(struct pbstream_fieldset* fs,
                                          pbstream_field_number_t num)
 {
-  /* TODO: a hybrid array/hashtable structure. */
-  /* TODO: can zero be a tag number? */
-  if(num <= fs->num_fields) return &fs->fields[num-1];
-  else return NULL;
+  /* TODO: the hashtable part. */
+  return fs->array[num-1];
 }
 
 /* Parses and processes the next value from buf. */
@@ -295,4 +295,46 @@ void pbstream_init_parser(
   state->limit = state->top + PBSTREAM_MAX_STACK;
   state->top->fieldset = toplevel_fieldset;
   state->top->end_offset = SIZE_MAX;
+}
+
+static int compare_fields(const void *f1, const void *f2)
+{
+  return ((struct pbstream_field*)f1)->field_number -
+         ((struct pbstream_field*)f2)->field_number;
+}
+
+void pbstream_init_fieldset(struct pbstream_fieldset *fieldset,
+                            struct pbstream_field *fields,
+                            int num_fields)
+{
+  qsort(fields, num_fields, sizeof(*fields), compare_fields);
+
+  /* Find the largest n for which at least half the fieldnums <n are used.
+   * Start at 8 to avoid noise of small numbers. */
+  pbstream_field_number_t n = 0, maybe_n;
+  for(int i = 0; i < num_fields; i++) {
+    maybe_n = fields[i].field_number;
+    if(maybe_n > 8 && maybe_n/(i+1) > 2) break;
+    n = maybe_n;
+  }
+
+  fieldset->num_fields = num_fields;
+  fieldset->fields = malloc(sizeof(*fieldset->fields)*num_fields);
+  memcpy(fieldset->fields, fields, sizeof(*fields)*num_fields);
+
+  fieldset->array_size = n;
+  fieldset->array = malloc(sizeof(*fieldset->array)*n);
+  memset(fieldset->array, 0, sizeof(*fieldset->array)*n);
+
+  for (int i = 0; i < num_fields && fields[i].field_number <= n; i++)
+    fieldset->array[fields[i].field_number-1] = &fieldset->fields[i];
+
+  /* Until we support the hashtable part... */
+  assert(n == fields[num_fields-1].field_number);
+}
+
+void pbstream_free_fieldset(struct pbstream_fieldset *fieldset)
+{
+  free(fieldset->fields);
+  free(fieldset->array);
 }

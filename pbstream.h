@@ -91,10 +91,20 @@ struct pbstream_field {
 
 /* The set of fields corresponding to a message definition. */
 struct pbstream_fieldset {
-  /* TODO: a hybrid array/hashtable structure. */
   int num_fields;
-  struct pbstream_field fields[];
+  struct pbstream_field *fields;
+  int array_size;
+  struct pbstream_field **array;
+  /* TODO: the hashtable part. */
 };
+
+/* Takes an array of num_fields fields and builds an optimized table for fast
+ * lookup of fields by number.  The input fields need not be sorted.  This
+ * fieldset must be freed with pbstream_free_fieldset(). */
+void pbstream_init_fieldset(struct pbstream_fieldset *fieldset,
+                            struct pbstream_field *fields,
+                            int num_fields);
+void pbstream_free_fieldset(struct pbstream_fieldset *fieldset);
 
 struct pbstream_parse_stack_frame {
   struct pbstream_fieldset *fieldset;
@@ -134,7 +144,7 @@ typedef enum pbstream_status {
   // Encountered a "group" on the wire (deprecated and unsupported).
   PBSTREAM_ERROR_GROUP = -3,
 
-  // Input was nested more than 64 deep.
+  // Input was nested more than PBSTREAM_MAX_STACK deep.
   PBSTREAM_ERROR_STACK_OVERFLOW = -4,
 
   /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
