@@ -174,7 +174,7 @@ struct pbstream_parse_state;
  * not within 10 bytes of unmapped memory, or the program will segfault. Clients
  * are encouraged to overallocate their buffers by ten bytes to compensate. */
 pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
-                                       char *buf,
+                                       uint8_t *buf,
                                        pbstream_field_number_t *fieldnum,
                                        struct pbstream_tagged_value *val,
                                        struct pbstream_tagged_wire_value *wv);

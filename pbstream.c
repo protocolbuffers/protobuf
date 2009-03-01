@@ -28,9 +28,10 @@
  * To avoid branches, none of these do bounds checking.  So we force clients
  * to overallocate their buffers by >=9 bytes. */
 
-static pbstream_status_t get_v_uint64_t(char **buf, uint64_t *val)
+static pbstream_status_t get_v_uint64_t(uint8_t *restrict *buf,
+                                        uint64_t *restrict val)
 {
-  uint8_t *ptr = (uint8_t*)*buf, b;
+  uint8_t *ptr = *buf, b;
   uint32_t part0 = 0, part1 = 0, part2 = 0;
 
   /* From the original proto2 implementation. */
@@ -47,14 +48,14 @@ static pbstream_status_t get_v_uint64_t(char **buf, uint64_t *val)
   return PBSTREAM_ERROR_UNTERMINATED_VARINT;
 
 done:
-  *buf = (char*)ptr;
+  *buf = ptr;
   *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t skip_v_uint64_t(char **buf)
+static pbstream_status_t skip_v_uint64_t(uint8_t **buf)
 {
-  uint8_t *ptr = (uint8_t*)*buf, b;
+  uint8_t *ptr = *buf, b;
   b = *(ptr++); if (!(b & 0x80)) goto done;
   b = *(ptr++); if (!(b & 0x80)) goto done;
   b = *(ptr++); if (!(b & 0x80)) goto done;
@@ -68,13 +69,14 @@ static pbstream_status_t skip_v_uint64_t(char **buf)
   return PBSTREAM_ERROR_UNTERMINATED_VARINT;
 
 done:
-  *buf = (char*)ptr;
+  *buf = (uint8_t*)ptr;
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_v_uint32_t(char **buf, uint32_t *val)
+static pbstream_status_t get_v_uint32_t(uint8_t *restrict *buf,
+                                        uint32_t *restrict val)
 {
-  uint8_t *ptr = (uint8_t*)*buf, b;
+  uint8_t *ptr = *buf, b;
   uint32_t result;
 
   /* From the original proto2 implementation. */
@@ -86,29 +88,15 @@ static pbstream_status_t get_v_uint32_t(char **buf, uint32_t *val)
   return PBSTREAM_ERROR_UNTERMINATED_VARINT;
 
 done:
-  *buf = (char*)ptr;
+  *buf = ptr;
   *val = result;
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t skip_v_uint32_t(char **buf)
+static pbstream_status_t get_f_uint32_t(uint8_t *restrict *buf,
+                                        uint32_t *restrict val)
 {
-  uint8_t *ptr = (uint8_t*)*buf, b;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  return PBSTREAM_ERROR_UNTERMINATED_VARINT;
-
-done:
-  *buf = (char*)ptr;
-  return PBSTREAM_STATUS_OK;
-}
-
-static pbstream_status_t get_f_uint32_t(char **buf, uint32_t *val)
-{
-  char *b = *buf;
+  uint8_t *b = *buf;
 #define SHL(val, bits) ((uint32_t)val << bits)
   *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
 #undef SHL
@@ -116,15 +104,16 @@ static pbstream_status_t get_f_uint32_t(char **buf, uint32_t *val)
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t skip_f_uint32_t(char **buf)
+static pbstream_status_t skip_f_uint32_t(uint8_t **buf)
 {
   *buf += sizeof(uint32_t);
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_f_uint64_t(char **buf, uint64_t *val)
+static pbstream_status_t get_f_uint64_t(uint8_t *restrict *buf,
+                                        uint64_t *restrict val)
 {
-  char *b = *buf;
+  uint8_t *b = *buf;
   /* TODO: is this worth 32/64 specializing? */
 #define SHL(val, bits) ((uint64_t)val << bits)
   *val = SHL(b[0], 0)  | SHL(b[1], 8)  | SHL(b[2], 16) | SHL(b[3], 24) |
@@ -134,7 +123,7 @@ static pbstream_status_t get_f_uint64_t(char **buf, uint64_t *val)
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t skip_f_uint64_t(char **buf)
+static pbstream_status_t skip_f_uint64_t(uint8_t **buf)
 {
   *buf += sizeof(uint64_t);
   return PBSTREAM_STATUS_OK;
@@ -146,23 +135,17 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 /* Functions for reading wire values and converting them to values.  These
  * are generated with macros because they follow a higly consistent pattern. */
 
-/* WVTOV() generates a function:
- *   void wvtov_TYPE(wire_t src, val_t *dst, size_t offset)
- * (macro invoker defines the body of the function).  */
 #define WVTOV(type, wire_t, val_t) \
-  static void wvtov_ ## type(wire_t s, val_t *d, size_t offset)
+  static void wvtov_ ## type(wire_t s, val_t *d)
 
-/* GET() generates a function:
- *   pbstream_status_t get_TYPE(char **buf, char *end, size_t offset,
- *                              pbstream_value *dst) */
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
   static pbstream_status_t get_ ## type(struct pbstream_parse_state *s, \
-                                        char *buf, \
+                                        uint8_t *buf, \
                                         struct pbstream_tagged_value *d) { \
     wire_t tmp; \
-    char *b = buf; \
+    uint8_t *b = buf; \
     CHECK(get_ ## v_or_f ## _ ## wire_t(&b, &tmp)); \
-    wvtov_ ## type(tmp, &d->v.member_name, s->offset); \
+    wvtov_ ## type(tmp, &d->v.member_name); \
     s->offset += (b-buf); \
     return PBSTREAM_STATUS_OK; \
   }
@@ -197,10 +180,10 @@ static void wvtov_delimited(uint32_t s, struct pbstream_delimited *d, size_t o)
 }
 
 /* Use BYTES version for both STRING and BYTES, leave UTF-8 checks to client. */
-static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
+static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, uint8_t *buf,
                                    struct pbstream_tagged_value *d) {
   uint32_t tmp;
-  char *b = buf;
+  uint8_t *b = buf;
   CHECK(get_v_uint32_t(&b, &tmp));
   s->offset += (b-buf);  /* advance past length varint. */
   wvtov_delimited(tmp, &d->v.delimited, s->offset);
@@ -208,11 +191,11 @@ static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
+static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, uint8_t *buf,
                                      struct pbstream_tagged_value *d) {
   /* We're entering a sub-message. */
   uint32_t tmp;
-  char *b = buf;
+  uint8_t *b = buf;
   CHECK(get_v_uint32_t(&b, &tmp));
   s->offset += (b-buf);  /* advance past length varint. */
   wvtov_delimited(tmp, &d->v.delimited, s->offset);
@@ -225,7 +208,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
 
 struct pbstream_type_info {
   pbstream_wire_type_t expected_wire_type;
-  pbstream_status_t (*get)(struct pbstream_parse_state *s, char *buf,
+  pbstream_status_t (*get)(struct pbstream_parse_state *s, uint8_t *buf,
                            struct pbstream_tagged_value *d);
 };
 static struct pbstream_type_info type_info[] = {
@@ -248,7 +231,7 @@ static struct pbstream_type_info type_info[] = {
   {PBSTREAM_WIRE_TYPE_DELIMITED, get_MESSAGE}
 };
 
-pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
+pbstream_status_t parse_tag(uint8_t **buf, struct pbstream_tag *tag)
 {
   uint32_t tag_int;
   CHECK(get_v_uint32_t(buf, &tag_int));
@@ -257,7 +240,7 @@ pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
   return PBSTREAM_STATUS_OK;
 }
 
-pbstream_status_t parse_wire_value(char **buf, size_t offset,
+pbstream_status_t parse_wire_value(uint8_t **buf, size_t offset,
                                    pbstream_wire_type_t wt,
                                    union pbstream_wire_value *wv)
 {
@@ -280,7 +263,7 @@ pbstream_status_t parse_wire_value(char **buf, size_t offset,
   return PBSTREAM_STATUS_OK;
 }
 
-pbstream_status_t skip_wire_value(char **buf, pbstream_wire_type_t wt)
+pbstream_status_t skip_wire_value(uint8_t **buf, pbstream_wire_type_t wt)
 {
   switch(wt) {
     case PBSTREAM_WIRE_TYPE_VARINT:
@@ -312,7 +295,7 @@ struct pbstream_field *pbstream_find_field(struct pbstream_fieldset* fs,
 
 /* Parses and processes the next value from buf. */
 pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
-                                       char *buf,
+                                       uint8_t *buf,
                                        pbstream_field_number_t *fieldnum,
                                        struct pbstream_tagged_value *val,
                                        struct pbstream_tagged_wire_value *wv)
@@ -327,7 +310,7 @@ pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
   }
 
   struct pbstream_tag tag;
-  char *b = buf;
+  uint8_t *b = buf;
   CHECK(parse_tag(&b, &tag));
   s->offset += (b-buf);
   struct pbstream_field *fd = pbstream_find_field(s->top->fieldset,
