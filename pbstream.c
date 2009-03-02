@@ -20,7 +20,7 @@
 #endif
 
 #define CHECK(func) do { \
-  pbstream_wire_type_t status = func; \
+  pbstream_status_t status = func; \
   if(status != PBSTREAM_STATUS_OK) return status; \
   } while (0)
 
@@ -235,7 +235,7 @@ pbstream_status_t parse_tag(uint8_t **buf, struct pbstream_tag *tag)
 {
   uint32_t tag_int;
   CHECK(get_v_uint32_t(buf, &tag_int));
-  tag->wire_type    = tag_int & 0x07;
+  tag->wire_type    = (pbstream_wire_type_t)(tag_int & 0x07);
   tag->field_number = tag_int >> 3;
   return PBSTREAM_STATUS_OK;
 }

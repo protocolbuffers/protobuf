@@ -71,30 +71,30 @@ struct pbstruct* pbstruct_new(struct pbstruct_definition *definition);
 /* Deletes any sub-structs also. */
 struct pbstruct* pbstruct_delete(struct pbstruct_definition *definition);
 
-bool pbstruct_is_set(struct pbstruct *s, struct pbstruct_field *f) {
+inline bool pbstruct_is_set(struct pbstruct *s, struct pbstruct_field *f) {
   return s->data[f->isset_byte_offset] & f->isset_byte_mask;
 }
 
 /* These do no existence checks or type checks. */
 #define DEFINE_GETTERS(ctype, name) \
-  ctype pbstruct_get_ ## name(struct pbstruct *s, struct pbstruct_field *f) { \
+  inline ctype pbstruct_get_ ## name(struct pbstruct *s, struct pbstruct_field *f) { \
     /* TODO: make sure the compiler knows this is an aligned access. */ \
     return *(ctype*)(s->data + f->byte_offset); \
   } \
-  ctype *pbstruct_get_ ## name ## _array(struct pbstruct *s, \
+  inline ctype *pbstruct_get_ ## name ## _array(struct pbstruct *s, \
                                          struct pbstruct_field *f) { \
     /* TODO: make sure the compiler knows this is an aligned access. */ \
     return *(ctype**)(s->data + f->byte_offset); \
   }
 
-DEFINE_GETTERS(double,   double);
-DEFINE_GETTERS(float,    float);
-DEFINE_GETTERS(int32_t,  int32);
-DEFINE_GETTERS(int64_t,  int64);
-DEFINE_GETTERS(uint32_t, uint32);
-DEFINE_GETTERS(uint64_t, uint64);
-DEFINE_GETTERS(bool,     bool);
-DEFINE_GETTERS(struct pbstruct_delimited*, bytes);
-DEFINE_GETTERS(struct pbstruct_delimited*, string);
-DEFINE_GETTERS(struct pbstruct*, substruct);
+DEFINE_GETTERS(double,   double)
+DEFINE_GETTERS(float,    float)
+DEFINE_GETTERS(int32_t,  int32)
+DEFINE_GETTERS(int64_t,  int64)
+DEFINE_GETTERS(uint32_t, uint32)
+DEFINE_GETTERS(uint64_t, uint64)
+DEFINE_GETTERS(bool,     bool)
+DEFINE_GETTERS(struct pbstruct_delimited*, bytes)
+DEFINE_GETTERS(struct pbstruct_delimited*, string)
+DEFINE_GETTERS(struct pbstruct*, substruct)
 
