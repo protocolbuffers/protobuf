@@ -29,8 +29,7 @@
 
 static pbstream_status_t get_v_uint64_t(char **buf, uint64_t *val)
 {
-  uint8_t* ptr = (uint8_t*)*buf;
-  uint32_t b;
+  uint8_t *ptr = (uint8_t*)*buf, b;
   uint32_t part0 = 0, part1 = 0, part2 = 0;
 
   /* From the original proto2 implementation. */
@@ -52,10 +51,29 @@ done:
   return PBSTREAM_STATUS_OK;
 }
 
+static pbstream_status_t skip_v_uint64_t(char **buf)
+{
+  uint8_t *ptr = (uint8_t*)*buf, b;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  return PBSTREAM_ERROR_UNTERMINATED_VARINT;
+
+done:
+  *buf = (char*)ptr;
+  return PBSTREAM_STATUS_OK;
+}
+
 static pbstream_status_t get_v_uint32_t(char **buf, uint32_t *val)
 {
-  uint8_t* ptr = (uint8_t*)*buf;
-  uint32_t b;
+  uint8_t *ptr = (uint8_t*)*buf, b;
   uint32_t result;
 
   /* From the original proto2 implementation. */
@@ -69,6 +87,21 @@ static pbstream_status_t get_v_uint32_t(char **buf, uint32_t *val)
 done:
   *buf = (char*)ptr;
   *val = result;
+  return PBSTREAM_STATUS_OK;
+}
+
+static pbstream_status_t skip_v_uint32_t(char **buf)
+{
+  uint8_t *ptr = (uint8_t*)*buf, b;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  b = *(ptr++); if (!(b & 0x80)) goto done;
+  return PBSTREAM_ERROR_UNTERMINATED_VARINT;
+
+done:
+  *buf = (char*)ptr;
   return PBSTREAM_STATUS_OK;
 }
 
