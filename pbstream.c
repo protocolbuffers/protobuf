@@ -367,7 +367,7 @@ void pbstream_init_fieldset(struct pbstream_fieldset *fieldset,
   pbstream_field_number_t n = 0, maybe_n;
   for(int i = 0; i < num_fields; i++) {
     maybe_n = fields[i].field_number;
-    if(maybe_n > 8 && maybe_n/(i+1) > 2) break;
+    if(maybe_n > 8 && maybe_n/(i+1) >= 2) break;
     n = maybe_n;
   }
 
