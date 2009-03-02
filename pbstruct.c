@@ -8,4 +8,5 @@
 #include "pbstruct.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
+#define ALIGN_UP(p, t) (alignof(t) + ((p - 1) & ~(alignof(t) - 1)))
 

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "pbstream.h"
+#include "pbstream_lowlevel.h"
 
 /* Branch prediction hints for GCC. */
 #ifdef __GNUC__
@@ -107,26 +108,35 @@ done:
 
 static pbstream_status_t get_f_uint32_t(char **buf, uint32_t *val)
 {
-  uint8_t *b = (uint8_t*)*buf;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  *val = *(uint32_t*)b;  /* likely unaligned, TODO: verify performance. */
-#else
-  *val = b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
-#endif
-  *buf = (char*)b + sizeof(uint32_t);
+  char *b = *buf;
+#define SHL(val, bits) ((uint32_t)val << bits)
+  *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
+#undef SHL
+  *buf += sizeof(uint32_t);
+  return PBSTREAM_STATUS_OK;
+}
+
+static pbstream_status_t skip_f_uint32_t(char **buf)
+{
+  *buf += sizeof(uint32_t);
   return PBSTREAM_STATUS_OK;
 }
 
 static pbstream_status_t get_f_uint64_t(char **buf, uint64_t *val)
 {
-  uint8_t *b = (uint8_t*)*buf;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  *val = *(uint64_t*)buf;  /* likely unaligned, TODO: verify performance. */
-#else
-  *val = (b[0])       | (b[1] << 8 ) | (b[2] << 16) | (b[3] << 24) |
-         (b[4] << 32) | (b[5] << 40) | (b[6] << 48) | (b[7] << 56);
-#endif
-  *buf = (char*)b + sizeof(uint64_t);
+  char *b = *buf;
+  /* TODO: is this worth 32/64 specializing? */
+#define SHL(val, bits) ((uint64_t)val << bits)
+  *val = SHL(b[0], 0)  | SHL(b[1], 8)  | SHL(b[2], 16) | SHL(b[3], 24) |
+         SHL(b[4], 32) | SHL(b[5], 40) | SHL(b[6], 48) | SHL(b[7], 56);
+#undef SHL
+  *buf += sizeof(uint64_t);
+  return PBSTREAM_STATUS_OK;
+}
+
+static pbstream_status_t skip_f_uint64_t(char **buf)
+{
+  *buf += sizeof(uint64_t);
   return PBSTREAM_STATUS_OK;
 }
 
@@ -148,7 +158,7 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
   static pbstream_status_t get_ ## type(struct pbstream_parse_state *s, \
                                         char *buf, \
-                                        struct pbstream_value *d) { \
+                                        struct pbstream_tagged_value *d) { \
     wire_t tmp; \
     char *b = buf; \
     CHECK(get_ ## v_or_f ## _ ## wire_t(&b, &tmp)); \
@@ -175,7 +185,7 @@ T(FIXED64,  f, uint64_t, uint64_t, uint64)  { *d = s;                        }
 T(SFIXED32, f, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
 T(SFIXED64, f, uint64_t, int64_t,  int64)   { *d = (int64_t)s;               }
 T(BOOL,     v, uint32_t, bool,     _bool)   { *d = (bool)s;                  }
-T(ENUM,     v, uint32_t, int32_t,  _enum)   { *d = (int32_t)s;               }
+T(ENUM,     v, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
 #undef WVTOV
 #undef GET
 #undef T
@@ -188,7 +198,7 @@ static void wvtov_delimited(uint32_t s, struct pbstream_delimited *d, size_t o)
 
 /* Use BYTES version for both STRING and BYTES, leave UTF-8 checks to client. */
 static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
-                                   struct pbstream_value *d) {
+                                   struct pbstream_tagged_value *d) {
   uint32_t tmp;
   char *b = buf;
   CHECK(get_v_uint32_t(&b, &tmp));
@@ -199,7 +209,7 @@ static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, char *buf,
 }
 
 static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
-                                     struct pbstream_value *d) {
+                                     struct pbstream_tagged_value *d) {
   /* We're entering a sub-message. */
   uint32_t tmp;
   char *b = buf;
@@ -216,7 +226,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, char *buf,
 struct pbstream_type_info {
   pbstream_wire_type_t expected_wire_type;
   pbstream_status_t (*get)(struct pbstream_parse_state *s, char *buf,
-                           struct pbstream_value *d);
+                           struct pbstream_tagged_value *d);
 };
 static struct pbstream_type_info type_info[] = {
   {PBSTREAM_WIRE_TYPE_64BIT,     get_DOUBLE},
@@ -238,7 +248,7 @@ static struct pbstream_type_info type_info[] = {
   {PBSTREAM_WIRE_TYPE_DELIMITED, get_MESSAGE}
 };
 
-static pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
+pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
 {
   uint32_t tag_int;
   CHECK(get_v_uint32_t(buf, &tag_int));
@@ -247,19 +257,21 @@ static pbstream_status_t parse_tag(char **buf, struct pbstream_tag *tag)
   return PBSTREAM_STATUS_OK;
 }
 
-static pbstream_status_t parse_unknown_value(
-    char **buf, int buf_offset, struct pbstream_wire_value *wv)
+pbstream_status_t parse_wire_value(char **buf, size_t offset,
+                                   pbstream_wire_type_t wt,
+                                   union pbstream_wire_value *wv)
 {
-  switch(wv->type) {
+  switch(wt) {
     case PBSTREAM_WIRE_TYPE_VARINT:
-      CHECK(get_v_uint64_t(buf, &wv->v.varint)); break;
+      CHECK(get_v_uint64_t(buf, &wv->varint)); break;
     case PBSTREAM_WIRE_TYPE_64BIT:
-      CHECK(get_f_uint64_t(buf, &wv->v._64bit)); break;
+      CHECK(get_f_uint64_t(buf, &wv->_64bit)); break;
     case PBSTREAM_WIRE_TYPE_32BIT:
-      CHECK(get_f_uint32_t(buf, &wv->v._32bit)); break;
+      CHECK(get_f_uint32_t(buf, &wv->_32bit)); break;
     case PBSTREAM_WIRE_TYPE_DELIMITED:
-      wv->v.delimited.offset = buf_offset;
-      CHECK(get_v_uint32_t(buf, &wv->v.delimited.len));
+      wv->delimited.offset = offset;
+      CHECK(get_v_uint32_t(buf, &wv->delimited.len));
+      *buf += wv->delimited.len;
       break;
     case PBSTREAM_WIRE_TYPE_START_GROUP:
     case PBSTREAM_WIRE_TYPE_END_GROUP:
@@ -268,8 +280,31 @@ static pbstream_status_t parse_unknown_value(
   return PBSTREAM_STATUS_OK;
 }
 
-static struct pbstream_field *find_field(struct pbstream_fieldset* fs,
-                                         pbstream_field_number_t num)
+pbstream_status_t skip_wire_value(char **buf, pbstream_wire_type_t wt)
+{
+  switch(wt) {
+    case PBSTREAM_WIRE_TYPE_VARINT:
+      CHECK(skip_v_uint64_t(buf)); break;
+    case PBSTREAM_WIRE_TYPE_64BIT:
+      CHECK(skip_f_uint64_t(buf)); break;
+    case PBSTREAM_WIRE_TYPE_32BIT:
+      CHECK(skip_f_uint32_t(buf)); break;
+    case PBSTREAM_WIRE_TYPE_DELIMITED: {
+      /* Have to get (not skip) the length to skip the bytes. */
+      uint32_t len;
+      CHECK(get_v_uint32_t(buf, &len));
+      *buf += len;
+      break;
+    }
+    case PBSTREAM_WIRE_TYPE_START_GROUP:
+    case PBSTREAM_WIRE_TYPE_END_GROUP:
+      return PBSTREAM_ERROR_GROUP;  /* deprecated, no plans to support. */
+  }
+  return PBSTREAM_STATUS_OK;
+}
+
+struct pbstream_field *pbstream_find_field(struct pbstream_fieldset* fs,
+                                           pbstream_field_number_t num)
 {
   /* TODO: the hashtable part. */
   return fs->array[num-1];
@@ -279,10 +314,9 @@ static struct pbstream_field *find_field(struct pbstream_fieldset* fs,
 pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
                                        char *buf,
                                        pbstream_field_number_t *fieldnum,
-                                       struct pbstream_value *val,
-                                       struct pbstream_wire_value *wv)
+                                       struct pbstream_tagged_value *val,
+                                       struct pbstream_tagged_wire_value *wv)
 {
-  char *b = buf;
   /* Check for end-of-message at the current stack depth. */
   if(unlikely(s->offset >= s->top->end_offset)) {
     /* If the end offset isn't an exact field boundary, the pb is corrupt. */
@@ -293,9 +327,11 @@ pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
   }
 
   struct pbstream_tag tag;
+  char *b = buf;
   CHECK(parse_tag(&b, &tag));
   s->offset += (b-buf);
-  struct pbstream_field *fd = find_field(s->top->fieldset, tag.field_number);
+  struct pbstream_field *fd = pbstream_find_field(s->top->fieldset,
+                                                  tag.field_number);
   pbstream_status_t unknown_value_status;
   if(unlikely(!fd)) {
     unknown_value_status = PBSTREAM_ERROR_UNKNOWN_VALUE;
@@ -314,7 +350,8 @@ pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
 
 unknown_value:
   wv->type = tag.wire_type;
-  CHECK(parse_unknown_value(&b, s->offset, wv));
+  b = buf;
+  CHECK(parse_wire_value(&b, s->offset, tag.wire_type, &wv->v));
   s->offset += (b-buf);
   return unknown_value_status;
 }

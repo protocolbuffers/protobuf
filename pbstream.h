@@ -4,8 +4,15 @@
  * Copyright (c) 2008 Joshua Haberman.  See LICENSE for details.
  */
 
+#ifndef PBSTREAM_H_
+#define PBSTREAM_H_
+
 #include <stdint.h>
 #include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit. */
 #define PBSTREAM_MAX_STACK 64
@@ -44,9 +51,9 @@ typedef enum pbstream_wire_type {
 typedef int32_t pbstream_field_number_t;
 
 /* A deserialized value as described in a .proto file. */
-struct pbstream_value {
+struct pbstream_tagged_value {
   struct pbstream_field *field;
-  union {
+  union pbstream_value {
     double _double;
     float  _float;
     int32_t int32;
@@ -58,20 +65,14 @@ struct pbstream_value {
       size_t offset;  /* relative to the beginning of the stream. */
       uint32_t len;
     } delimited;
-    int32_t _enum;
   } v;
 };
 
-/* A tag occurs before each value on-the-wire. */
-struct pbstream_tag {
-  pbstream_field_number_t field_number;
-  pbstream_wire_type_t wire_type;
-};
-
-/* A value as it is encoded on-the-wire */
-struct pbstream_wire_value {
+/* A value as it is encoded on-the-wire, before it has been interpreted as
+ * any particular .proto type. */
+struct pbstream_tagged_wire_value {
   pbstream_wire_type_t type;
-  union {
+  union pbstream_wire_value {
     uint64_t varint;
     uint64_t _64bit;
     struct {
@@ -82,14 +83,19 @@ struct pbstream_wire_value {
   } v;
 };
 
-/* Definition of a single field in a message. */
+/* Definition of a single field in a message.  Note that this does not include
+ * nearly all of the information that can be specified about a field in a
+ * .proto file.  For example, we don't even know the field's name.  We keep
+ * only the information necessary to parse the field. */
 struct pbstream_field {
   pbstream_field_number_t field_number;
   pbstream_type_t type;
   struct pbstream_fieldset *fieldset;  /* if type == MESSAGE */
 };
 
-/* The set of fields corresponding to a message definition. */
+/* A fieldset is a data structure that supports fast lookup of fields by number.
+ * It is logically a map of {field_number -> struct pbstream_field*}.  Fast
+ * lookup is important, because it is in the critical path of parsing. */
 struct pbstream_fieldset {
   int num_fields;
   struct pbstream_field *fields;
@@ -170,5 +176,11 @@ struct pbstream_parse_state;
 pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
                                        char *buf,
                                        pbstream_field_number_t *fieldnum,
-                                       struct pbstream_value *val,
-                                       struct pbstream_wire_value *wv);
+                                       struct pbstream_tagged_value *val,
+                                       struct pbstream_tagged_wire_value *wv);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+
+#endif  /* PBSTREAM_H_ */

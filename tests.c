@@ -60,8 +60,8 @@ void test_simple_proto()
   pbstream_init_parser(&s, &fieldset1);
   assert(s.offset == 0);
   pbstream_field_number_t fieldnum;
-  struct pbstream_value val;
-  struct pbstream_wire_value wv;
+  struct pbstream_tagged_value val;
+  struct pbstream_tagged_wire_value wv;
   assert(pbstream_parse_field(&s, message1, &fieldnum, &val, &wv) ==
          PBSTREAM_STATUS_OK);
   assert(val.field->field_number == 1);
