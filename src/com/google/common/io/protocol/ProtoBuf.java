@@ -145,28 +145,6 @@ public class ProtoBuf {
   }
 
   /**
-   * Adds a new protobuf for the specified tag, setting the child protobuf's
-   * type correctly for the tag.
-   * @param tag the tag for which to create a new protobuf
-   * @return the newly created protobuf
-   */
-  public ProtoBuf addNewProtoBuf(int tag) {
-    ProtoBuf child = newProtoBufForTag(tag);
-    addProtoBuf(tag, child);
-    return child;
-  }
-
-  /**
-   * Creates and returns a new protobuf for the specified tag, setting the new
-   * protobuf's type correctly for the tag.
-   * @param tag the tag for which to create a new protobuf
-   * @return the newly created protobuf
-   */
-  public ProtoBuf newProtoBufForTag(int tag) {
-      return new ProtoBuf((ProtoBufType) msgType.getData(tag));
-  }
-
-  /**
    * Appends the given (repeated) tag with the given String value.
    */
   public void addString(int tag, String value){
@@ -203,7 +181,7 @@ public class ProtoBuf {
     return (byte[]) getObject(tag, index, ProtoBufType.TYPE_DATA);
   }
 
-  /**
+  /** 
    * Returns the integer value for the given tag. 
    */
   public int getInt(int tag) {
@@ -218,7 +196,7 @@ public class ProtoBuf {
         ProtoBufType.TYPE_INT32)).longValue();
   }
 
-  /**
+  /** 
    * Returns the long value for the given tag. 
    */
   public long getLong(int tag) {
@@ -260,7 +238,7 @@ public class ProtoBuf {
     return Double.longBitsToDouble(getLong(tag, index));
   }
 
-  /**
+  /** 
    * Returns the group or nested message for the given tag.
    */
   public ProtoBuf getProtoBuf(int tag) {
@@ -291,7 +269,7 @@ public class ProtoBuf {
     return (String) getObject(tag, index, ProtoBufType.TYPE_TEXT);
   }
 
-  /**
+  /** 
    * Returns the type definition of this protocol buffer or group -- if set. 
    */
   public ProtoBufType getType() {
@@ -749,18 +727,6 @@ public class ProtoBuf {
    */
   public void setProtoBuf(int tag, ProtoBuf pb) {
     setObject(tag, pb);
-  }
-
-  /**
-   * Sets a new protobuf for the specified tag, setting the child protobuf's
-   * type correctly for the tag.
-   * @param tag the tag for which to create a new protobuf
-   * @return the newly created protobuf
-   */
-  public ProtoBuf setNewProtoBuf(int tag) {
-    ProtoBuf child = newProtoBufForTag(tag);
-    setProtoBuf(tag, child);
-    return child;
   }
 
   /** 
