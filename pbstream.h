@@ -153,6 +153,9 @@ typedef enum pbstream_status {
   // Input was nested more than PBSTREAM_MAX_STACK deep.
   PBSTREAM_ERROR_STACK_OVERFLOW = -4,
 
+  // The input data caused the pb's offset (a size_t) to overflow.
+  PBSTREAM_ERROR_OVERFLOW = -5,
+
   /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
 
   // A value was encountered that was not defined in the .proto file.  The

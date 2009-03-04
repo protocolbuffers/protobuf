@@ -187,7 +187,9 @@ static pbstream_status_t get_BYTES(struct pbstream_parse_state *s, uint8_t *buf,
   CHECK(get_v_uint32_t(&b, &tmp));
   s->offset += (b-buf);  /* advance past length varint. */
   wvtov_delimited(tmp, &d->v.delimited, s->offset);
-  s->offset = d->v.delimited.offset + d->v.delimited.len; /* skip bytes */
+  size_t new_offset = s->offset + d->v.delimited.len; /* skip bytes */
+  if (unlikely(new_offset < s->offset)) return PBSTREAM_ERROR_OVERFLOW;
+  s->offset = new_offset;
   return PBSTREAM_STATUS_OK;
 }
 
@@ -203,6 +205,7 @@ static pbstream_status_t get_MESSAGE(struct pbstream_parse_state *s, uint8_t *bu
   if (unlikely(++s->top == s->limit)) return PBSTREAM_ERROR_STACK_OVERFLOW;
   s->top->fieldset = d->field->fieldset;
   s->top->end_offset = d->v.delimited.offset + d->v.delimited.len;
+  if (unlikely(s->top->end_offset < s->offset)) return PBSTREAM_ERROR_OVERFLOW;
   return PBSTREAM_STATUS_OK;
 }
 
@@ -240,21 +243,25 @@ pbstream_status_t parse_tag(uint8_t **buf, struct pbstream_tag *tag)
   return PBSTREAM_STATUS_OK;
 }
 
-pbstream_status_t parse_wire_value(uint8_t **buf, size_t offset,
+pbstream_status_t parse_wire_value(uint8_t *buf, size_t *offset,
                                    pbstream_wire_type_t wt,
                                    union pbstream_wire_value *wv)
 {
+#define READ(expr) CHECK(expr); *offset += (b-buf)
+  uint8_t *b = buf;
   switch(wt) {
     case PBSTREAM_WIRE_TYPE_VARINT:
-      CHECK(get_v_uint64_t(buf, &wv->varint)); break;
+      READ(get_v_uint64_t(&b, &wv->varint)); break;
     case PBSTREAM_WIRE_TYPE_64BIT:
-      CHECK(get_f_uint64_t(buf, &wv->_64bit)); break;
+      READ(get_f_uint64_t(&b, &wv->_64bit)); break;
     case PBSTREAM_WIRE_TYPE_32BIT:
-      CHECK(get_f_uint32_t(buf, &wv->_32bit)); break;
+      READ(get_f_uint32_t(&b, &wv->_32bit)); break;
     case PBSTREAM_WIRE_TYPE_DELIMITED:
-      wv->delimited.offset = offset;
-      CHECK(get_v_uint32_t(buf, &wv->delimited.len));
-      *buf += wv->delimited.len;
+      wv->delimited.offset = *offset;
+      READ(get_v_uint32_t(&b, &wv->delimited.len));
+      size_t new_offset = *offset + wv->delimited.len;
+      if (new_offset < *offset) return PBSTREAM_ERROR_OVERFLOW;
+      *offset += new_offset;
       break;
     case PBSTREAM_WIRE_TYPE_START_GROUP:
     case PBSTREAM_WIRE_TYPE_END_GROUP:
@@ -263,20 +270,24 @@ pbstream_status_t parse_wire_value(uint8_t **buf, size_t offset,
   return PBSTREAM_STATUS_OK;
 }
 
-pbstream_status_t skip_wire_value(uint8_t **buf, pbstream_wire_type_t wt)
+pbstream_status_t skip_wire_value(uint8_t *buf, size_t *offset,
+                                  pbstream_wire_type_t wt)
 {
+  uint8_t *b = buf;
   switch(wt) {
     case PBSTREAM_WIRE_TYPE_VARINT:
-      CHECK(skip_v_uint64_t(buf)); break;
+      READ(skip_v_uint64_t(&b)); break;
     case PBSTREAM_WIRE_TYPE_64BIT:
-      CHECK(skip_f_uint64_t(buf)); break;
+      READ(skip_f_uint64_t(&b)); break;
     case PBSTREAM_WIRE_TYPE_32BIT:
-      CHECK(skip_f_uint32_t(buf)); break;
+      READ(skip_f_uint32_t(&b)); break;
     case PBSTREAM_WIRE_TYPE_DELIMITED: {
       /* Have to get (not skip) the length to skip the bytes. */
       uint32_t len;
-      CHECK(get_v_uint32_t(buf, &len));
-      *buf += len;
+      READ(get_v_uint32_t(&b, &len));
+      size_t new_offset = *offset + len;
+      if (new_offset < *offset) return PBSTREAM_ERROR_OVERFLOW;
+      *offset += new_offset;
       break;
     }
     case PBSTREAM_WIRE_TYPE_START_GROUP:
@@ -284,6 +295,7 @@ pbstream_status_t skip_wire_value(uint8_t **buf, pbstream_wire_type_t wt)
       return PBSTREAM_ERROR_GROUP;  /* deprecated, no plans to support. */
   }
   return PBSTREAM_STATUS_OK;
+#undef READ
 }
 
 struct pbstream_field *pbstream_find_field(struct pbstream_fieldset* fs,
@@ -333,9 +345,7 @@ pbstream_status_t pbstream_parse_field(struct pbstream_parse_state *s,
 
 unknown_value:
   wv->type = tag.wire_type;
-  b = buf;
-  CHECK(parse_wire_value(&b, s->offset, tag.wire_type, &wv->v));
-  s->offset += (b-buf);
+  CHECK(parse_wire_value(buf, &s->offset, tag.wire_type, &wv->v));
   return unknown_value_status;
 }
 
