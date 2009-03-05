@@ -67,6 +67,7 @@ namespace Google.ProtocolBuffers.ProtoBench
             .WeakMergeFrom(CodedInputStream.CreateInstance(inputStream))
             .WeakBuild();
         });
+        Console.WriteLine();
         return true;
       } catch (Exception e) {
         Console.Error.WriteLine("Error: {0}", e.Message);
@@ -97,6 +98,8 @@ namespace Google.ProtocolBuffers.ProtoBench
     }
 
     private static TimeSpan TimeAction(Action action, int iterations) {
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
       Stopwatch sw = Stopwatch.StartNew();
       for (int i = 0; i < iterations; i++) {
         action();
