@@ -91,6 +91,10 @@ namespace Google.ProtocolBuffers {
       return (WireType) (tag & TagTypeMask);
     }
 
+    public static bool IsEndGroupTag(uint tag) {
+      return (WireType)(tag & TagTypeMask) == WireType.EndGroup;
+    }
+
     /// <summary>
     /// Given a tag value, determines the field number (the upper 29 bits).
     /// </summary>

@@ -374,21 +374,29 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine();
       writer.WriteLine("public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {");
       writer.Indent();
-      writer.WriteLine("pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+      writer.WriteLine("pb::UnknownFieldSet.Builder unknownFields = null;");
       writer.WriteLine("while (true) {");
       writer.Indent();
       writer.WriteLine("uint tag = input.ReadTag();");
       writer.WriteLine("switch (tag) {");
       writer.Indent();
       writer.WriteLine("case 0: {"); // 0 signals EOF / limit reached
-      writer.WriteLine("  this.UnknownFields = unknownFields.Build();");
+      writer.WriteLine("  if (unknownFields != null) {");
+      writer.WriteLine("    this.UnknownFields = unknownFields.Build();");
+      writer.WriteLine("  }");
       writer.WriteLine("  return this;");
       writer.WriteLine("}");
       writer.WriteLine("default: {");
-      writer.WriteLine("  if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {");
-      writer.WriteLine("    this.UnknownFields = unknownFields.Build();");
+      writer.WriteLine("  if (pb::WireFormat.IsEndGroupTag(tag)) {");
+      writer.WriteLine("    if (unknownFields != null) {");
+      writer.WriteLine("      this.UnknownFields = unknownFields.Build();");
+      writer.WriteLine("    }");
       writer.WriteLine("    return this;"); // it's an endgroup tag
       writer.WriteLine("  }");
+      writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+      writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+      writer.WriteLine("  }");
+      writer.WriteLine("  ParseUnknownField(input, unknownFields, extensionRegistry, tag);");
       writer.WriteLine("  break;");
       writer.WriteLine("}");
       foreach (FieldDescriptor field in sortedFields) {

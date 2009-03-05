@@ -158,10 +158,12 @@ namespace Google.ProtocolBuffers {
     }
 
     public override TBuilder MergeUnknownFields(UnknownFieldSet unknownFields) {
-      TMessage result = MessageBeingBuilt;
-      result.SetUnknownFields(UnknownFieldSet.CreateBuilder(result.UnknownFields)
-          .MergeFrom(unknownFields)
-          .Build());
+      if (unknownFields != UnknownFieldSet.DefaultInstance) {
+        TMessage result = MessageBeingBuilt;
+        result.SetUnknownFields(UnknownFieldSet.CreateBuilder(result.UnknownFields)
+            .MergeFrom(unknownFields)
+            .Build());
+      }
       return ThisBuilder;
     }
 

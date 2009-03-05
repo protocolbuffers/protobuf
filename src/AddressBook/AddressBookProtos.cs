@@ -246,19 +246,27 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-            pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+            pb::UnknownFieldSet.Builder unknownFields = null;
             while (true) {
               uint tag = input.ReadTag();
               switch (tag) {
                 case 0: {
-                  this.UnknownFields = unknownFields.Build();
+                  if (unknownFields != null) {
+                    this.UnknownFields = unknownFields.Build();
+                  }
                   return this;
                 }
                 default: {
-                  if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                    this.UnknownFields = unknownFields.Build();
+                  if (pb::WireFormat.IsEndGroupTag(tag)) {
+                    if (unknownFields != null) {
+                      this.UnknownFields = unknownFields.Build();
+                    }
                     return this;
                   }
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
                   break;
                 }
                 case 10: {
@@ -268,6 +276,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
                 case 16: {
                   int rawValue = input.ReadEnum();
                   if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType), rawValue)) {
+                    if (unknownFields == null) {
+                      unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                    }
                     unknownFields.MergeVarintField(2, (ulong) rawValue);
                   } else {
                     Type = (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType) rawValue;
@@ -510,19 +521,27 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+        pb::UnknownFieldSet.Builder unknownFields = null;
         while (true) {
           uint tag = input.ReadTag();
           switch (tag) {
             case 0: {
-              this.UnknownFields = unknownFields.Build();
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
               return this;
             }
             default: {
-              if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                this.UnknownFields = unknownFields.Build();
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
                 return this;
               }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
               break;
             }
             case 10: {
@@ -799,19 +818,27 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+        pb::UnknownFieldSet.Builder unknownFields = null;
         while (true) {
           uint tag = input.ReadTag();
           switch (tag) {
             case 0: {
-              this.UnknownFields = unknownFields.Build();
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
               return this;
             }
             default: {
-              if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                this.UnknownFields = unknownFields.Build();
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
                 return this;
               }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
               break;
             }
             case 10: {

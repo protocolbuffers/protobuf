@@ -193,19 +193,27 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        pb::UnknownFieldSet.Builder unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+        pb::UnknownFieldSet.Builder unknownFields = null;
         while (true) {
           uint tag = input.ReadTag();
           switch (tag) {
             case 0: {
-              this.UnknownFields = unknownFields.Build();
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
               return this;
             }
             default: {
-              if (!ParseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                this.UnknownFields = unknownFields.Build();
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
                 return this;
               }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
               break;
             }
             case 8: {

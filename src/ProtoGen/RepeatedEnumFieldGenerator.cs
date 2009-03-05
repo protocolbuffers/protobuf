@@ -79,11 +79,14 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // TODO(jonskeet): Make a more efficient way of doing this
       writer.WriteLine("int rawValue = input.ReadEnum();");
       writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
+      writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+      writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+      writer.WriteLine("  }");
       writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
       writer.WriteLine("} else {");
       writer.WriteLine("  Add{0}(({1}) rawValue);", PropertyName, TypeName);
       writer.WriteLine("}");
-
+      
       if (Descriptor.IsPacked) {
         writer.Outdent();
         writer.WriteLine("}");
