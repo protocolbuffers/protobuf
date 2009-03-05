@@ -40,7 +40,17 @@
   <property name="tmp-dir"
             value="${path::combine(project::get-base-directory(), 'tmp')}"
             overwrite="false" />
-  
+
+  <!-- Directory to build and run benchmarks in -->
+  <property name="benchmark-run-dir"
+            value="${path::combine(tmp-dir, 'benchmark')}"
+            overwrite="false" />
+   
+  <!-- Directory to find benchmark data in -->
+  <property name="benchmark-data-dir"
+            value="${path::combine(project::get-base-directory(), 'benchmarks')}"
+            overwrite="false" />
+
   <!-- Which version of protogen to use when regenerating source -->
   <property name="tools-protogen-config"
             value="${build-configuration}"
@@ -48,9 +58,6 @@
   
   <property name="tools-protogen" 
             value="${src}/ProtoGen/bin/${tools-protogen-config}/protogen.exe" 
-            overwrite="false"/>
-
-  <property name="tools-protobench" value="${src}/ProtoBench/bin/${build-configuration}/protobench.exe" 
             overwrite="false"/>
 
   <target name="clean-build"
@@ -104,8 +111,6 @@
           workingdir="${tmp-dir}">
       <arg value="--proto_path=${protos-dir}" />
       <arg value="--descriptor_set_out=compiled.pb" />
-      <arg file="${protos-dir}/google/protobuf/benchmark.proto" />
-      <arg file="${protos-dir}/google/protobuf/benchmark_speed.proto" />
       <arg file="${protos-dir}/google/protobuf/descriptor.proto" />
       <arg file="${protos-dir}/google/protobuf/csharp_options.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest.proto" />
@@ -148,13 +153,6 @@
         <include name="AddressBookProtos.cs" />
       </fileset>
     </copy>
-
-    <copy todir="${src}/ProtoBench">
-      <fileset basedir="${tmp-dir}">
-        <include name="BenchmarkProtoFile.cs" />
-        <include name="BenchmarkSpeedProtoFile.cs" />
-      </fileset>
-    </copy>
   </target>
 
   <target name="build"
@@ -165,6 +163,64 @@
     </msbuild>
   </target>
   
+  <target name="benchmark" description="Builds and runs benchmarks">
+  
+    <delete dir="${benchmark-run-dir}" />
+    <mkdir dir="${benchmark-run-dir}" />
+
+    <!-- Generate benchmark source files -->
+    <exec program="${tools-protoc}"
+          workingdir="${benchmark-run-dir}">
+      <arg value="--proto_path=${benchmark-data-dir};${protos-dir}" />
+      <arg value="--include_imports=compiled.pb" />  
+      <arg value="--descriptor_set_out=compiled.pb" />  
+      <arg file="${benchmark-data-dir}/google_size.proto" />
+      <arg file="${benchmark-data-dir}/google_speed.proto" />
+    </exec>
+    
+    <exec program="${tools-protogen}"
+          workingdir="${benchmark-run-dir}">
+      <arg value="compiled.pb" />
+    </exec>    
+
+    <!-- Build them into a library -->
+    <csc target="library"
+         output="${benchmark-run-dir}/BenchmarkTypes.dll"
+         optimize="true">
+       <sources>
+         <include name="${benchmark-run-dir}/GoogleSizeProtoFile.cs" />
+         <include name="${benchmark-run-dir}/GoogleSpeedProtoFile.cs" />
+       </sources>
+       <references>
+         <include name="${src}/ProtocolBuffers/bin/${build-configuration}/Google.ProtocolBuffers.dll" />
+       </references>
+    </csc>
+    
+    <!-- Copy everything we need into the same directory -->
+    <copy todir="${benchmark-run-dir}" flatten="true">
+      <fileset>
+        <include name="${src}/ProtocolBuffers/bin/${build-configuration}/Google.ProtocolBuffers.dll" />
+        <include name="${src}/ProtoBench/bin/${build-configuration}/ProtoBench.exe" />
+        <include name="${benchmark-data-dir}/google_message1.dat" />
+        <include name="${benchmark-data-dir}/google_message2.dat" />
+      </fileset>
+    </copy>
+
+    <!-- Run! -->
+    <exec program="${benchmark-run-dir}/ProtoBench.exe" 
+          workingdir="${benchmark-run-dir}"
+          output="${benchmark-run-dir}/results.txt">
+      <arg value="Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes" />
+      <arg value="google_message1.dat" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.SpeedMessage1,BenchmarkTypes" />
+      <arg value="google_message1.dat" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.SizeMessage2,BenchmarkTypes" />
+      <arg value="google_message2.dat" />
+      <arg value="Google.ProtocolBuffers.ProtoBench.SpeedMessage2,BenchmarkTypes" />
+      <arg value="google_message2.dat" />
+    </exec>    
+  </target>
+  
   <target name="test"
           description="Runs all unit tests">
     <nunit2>
@@ -172,21 +228,6 @@
       <test assemblyname="${src}/ProtocolBuffers.Test/bin/${build-configuration}/Google.ProtocolBuffers.Test.dll" />
       <test assemblyname="${src}/Protogen.Test/bin/${build-configuration}/Google.ProtocolBuffers.ProtoGen.Test.dll" />
     </nunit2>
-  </target>
-  
-  <target name="perf-test"
-          description="Runs all performance tests">
-    <exec program="${tools-protobench}"
-          workingdir="${testdata-dir}">
-      <arg value="Google.ProtocolBuffers.ProtoBench.Message1,ProtoBench" />
-      <arg value="benchmark_message1.dat" />
-      <arg value="Google.ProtocolBuffers.ProtoBench.SpeedMessage1,ProtoBench" />
-      <arg value="benchmark_message1.dat" />
-      <arg value="Google.ProtocolBuffers.ProtoBench.Message3,ProtoBench" />
-      <arg value="benchmark_message3.dat" />
-      <arg value="Google.ProtocolBuffers.ProtoBench.SpeedMessage3,ProtoBench" />
-      <arg value="benchmark_message3.dat" />
-    </exec>    
   </target>
   
   <target name="dist" 
@@ -202,8 +243,7 @@
         <include name="ProtoDump/bin/${build-configuration}/ProtoDump.exe" />
         <include name="ProtoBench/bin/${build-configuration}/ProtoBench.exe" />
       </fileset>
-    </copy>
-    
+    </copy>    
   </target>
   
   
