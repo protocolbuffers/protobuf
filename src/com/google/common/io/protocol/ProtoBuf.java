@@ -32,8 +32,8 @@ import java.util.*;
  * but only the simple methods take default values into account. The reason for
  * this behavior is that default values cannot be removed -- they would reappear
  * after a serialization cycle. If a tag has repeated values, setXXX(tag, value)
- * will overwrite all of them and getXXX(tag) will throw an exception. 
- * 
+ * will overwrite all of them and getXXX(tag) will throw an exception.
+ *
  */
 
 public class ProtoBuf {
@@ -46,12 +46,12 @@ public class ProtoBuf {
   private static final String MSG_UNSUPPORTED = "Unsupp.Type";
 
   // names copied from //net/proto2/internal/wire_format.cc
-  private static final int WIRETYPE_END_GROUP = 4;
-  private static final int WIRETYPE_FIXED32 = 5;
-  private static final int WIRETYPE_FIXED64 = 1;
-  private static final int WIRETYPE_LENGTH_DELIMITED = 2;
-  private static final int WIRETYPE_START_GROUP = 3;
-  private static final int WIRETYPE_VARINT = 0;
+  static final int WIRETYPE_END_GROUP = 4;
+  static final int WIRETYPE_FIXED32 = 5;
+  static final int WIRETYPE_FIXED64 = 1;
+  static final int WIRETYPE_LENGTH_DELIMITED = 2;
+  static final int WIRETYPE_START_GROUP = 3;
+  static final int WIRETYPE_VARINT = 0;
 
   /** Maximum number of bytes for VARINT wire format (64 bit, 7 bit/byte) */
   private static final int VARINT_MAX_BYTES = 10;
@@ -62,7 +62,7 @@ public class ProtoBuf {
       new Long(10), new Long(11), new Long(12), new Long(13), new Long(14),
       new Long(15)};
 
-  private final ProtoBufType msgType;
+  private ProtoBufType msgType;
   private final Vector values = new Vector();
   
   /** 
@@ -124,10 +124,46 @@ public class ProtoBuf {
   }
 
   /**
+   * Appends the given (repeated) tag with the given float value.
+   */
+  public void addFloat(int tag, float value) {
+    insertFloat(tag, getCount(tag), value);
+  }
+
+  /**
+   * Appends the given (repeated) tag with the given double value.
+   */
+  public void addDouble(int tag, double value) {
+    insertDouble(tag, getCount(tag), value);
+  }
+
+  /**
    * Appends the given (repeated) tag with the given group or message value.
    */
   public void addProtoBuf(int tag, ProtoBuf value){
     insertProtoBuf(tag, getCount(tag), value);
+  }
+
+  /**
+   * Adds a new protobuf for the specified tag, setting the child protobuf's
+   * type correctly for the tag.
+   * @param tag the tag for which to create a new protobuf
+   * @return the newly created protobuf
+   */
+  public ProtoBuf addNewProtoBuf(int tag) {
+    ProtoBuf child = newProtoBufForTag(tag);
+    addProtoBuf(tag, child);
+    return child;
+  }
+
+  /**
+   * Creates and returns a new protobuf for the specified tag, setting the new
+   * protobuf's type correctly for the tag.
+   * @param tag the tag for which to create a new protobuf
+   * @return the newly created protobuf
+   */
+  public ProtoBuf newProtoBufForTag(int tag) {
+      return new ProtoBuf((ProtoBufType) msgType.getData(tag));
   }
 
   /**
@@ -167,7 +203,7 @@ public class ProtoBuf {
     return (byte[]) getObject(tag, index, ProtoBufType.TYPE_DATA);
   }
 
-  /** 
+  /**
    * Returns the integer value for the given tag. 
    */
   public int getInt(int tag) {
@@ -182,7 +218,7 @@ public class ProtoBuf {
         ProtoBufType.TYPE_INT32)).longValue();
   }
 
-  /** 
+  /**
    * Returns the long value for the given tag. 
    */
   public long getLong(int tag) {
@@ -196,7 +232,35 @@ public class ProtoBuf {
     return ((Long) getObject(tag, index, ProtoBufType.TYPE_INT64)).longValue();
   }
 
-  /** 
+  /**
+   * Returns the float value for the given tag.
+   */
+  public float getFloat(int tag) {
+    return Float.intBitsToFloat(getInt(tag));
+  }
+
+  /**
+   * Returns the float value for the given repeated tag at the given index. 
+   */
+  public float getFloat(int tag, int index) {
+    return Float.intBitsToFloat(getInt(tag, index));
+  }
+
+  /**
+   * Returns the double value for the given tag.
+   */
+  public double getDouble(int tag) {
+    return Double.longBitsToDouble(getLong(tag));
+  }
+
+  /**
+   * Returns the double value for the given repeated tag at the given index. 
+   */
+  public double getDouble(int tag, int index) {
+    return Double.longBitsToDouble(getLong(tag, index));
+  }
+
+  /**
    * Returns the group or nested message for the given tag.
    */
   public ProtoBuf getProtoBuf(int tag) {
@@ -227,13 +291,27 @@ public class ProtoBuf {
     return (String) getObject(tag, index, ProtoBufType.TYPE_TEXT);
   }
 
-  /** 
+  /**
    * Returns the type definition of this protocol buffer or group -- if set. 
    */
   public ProtoBufType getType() {
     return msgType;
   }
 
+  /**
+   * Sets the type definition of this protocol buffer. Used internally in
+   * ProtoBufUtil for incremental reading.
+   * 
+   * @param type the new type
+   */
+  void setType(ProtoBufType type) {
+    if (values.size() != 0 || 
+        (msgType != null && type != null && type != msgType)) {
+      throw new IllegalArgumentException();
+    }
+    this.msgType = type;
+  }
+  
   /**
    * Convenience method for determining whether a tag has a value. Note: in 
    * contrast to getCount(tag) &gt; 0, this method takes the default value
@@ -652,11 +730,37 @@ public class ProtoBuf {
         ? SMALL_NUMBERS[(int) value] : new Long(value));
   }
 
+  /**
+   * Sets the given tag to the given double value.
+   */
+  public void setDouble(int tag, double value) {
+    setLong(tag, Double.doubleToLongBits(value));
+  }
+
+  /**
+   * Sets the given tag to the given float value.
+   */
+  public void setFloat(int tag, float value) {
+    setInt(tag, Float.floatToIntBits(value));
+  }
+
   /** 
    * Sets the given tag to the given Group or nested Message. 
    */
   public void setProtoBuf(int tag, ProtoBuf pb) {
     setObject(tag, pb);
+  }
+
+  /**
+   * Sets a new protobuf for the specified tag, setting the child protobuf's
+   * type correctly for the tag.
+   * @param tag the tag for which to create a new protobuf
+   * @return the newly created protobuf
+   */
+  public ProtoBuf setNewProtoBuf(int tag) {
+    ProtoBuf child = newProtoBufForTag(tag);
+    setProtoBuf(tag, child);
+    return child;
   }
 
   /** 
@@ -693,6 +797,20 @@ public class ProtoBuf {
   public void insertLong(int tag, int index, long value) {
     insertObject(tag, index, value >= 0 && value < SMALL_NUMBERS.length
         ? SMALL_NUMBERS[(int) value] : new Long(value));
+  }
+
+  /**
+   * Inserts the given float value for the given tag at the given index.
+   */
+  public void insertFloat(int tag, int index, float value) {
+    insertInt(tag, index, Float.floatToIntBits(value));
+  }
+
+  /**
+   * Inserts the given double value for the given tag at the given index.
+   */
+  public void insertDouble(int tag, int index, double value) {
+    insertLong(tag, index, Double.doubleToLongBits(value));
   }
 
   /** 
@@ -739,6 +857,8 @@ public class ProtoBuf {
         case ProtoBufType.TYPE_UINT64:
         case ProtoBufType.TYPE_SINT32:
         case ProtoBufType.TYPE_SINT64:
+        case ProtoBufType.TYPE_FLOAT:
+        case ProtoBufType.TYPE_DOUBLE:
           return;
       }
     } else if (object instanceof byte[]){
@@ -1078,21 +1198,21 @@ public class ProtoBuf {
   /**
    * Encodes the given string to UTF-8 in the given buffer or calculates
    * the space needed if the buffer is null.
-   * 
+   *
    * @param s the string to be UTF-8 encoded
    * @param buf byte array to write to
-   * @return new buffer position after writing (which equals the required size 
+   * @return new buffer position after writing (which equals the required size
    *    if pos is 0)
    */
   static int encodeUtf8(String s, byte[] buf, int pos){
     int len = s.length();
     for (int i = 0; i < len; i++){
       int code = s.charAt(i);
-      
+
       // surrogate 0xd800 .. 0xdfff?
       if (code >= 0x0d800 && code <= 0x0dfff && i + 1 < len){
         int codeLo = s.charAt(i + 1);
-        
+
         // 0xfc00 is the surrogate id mask (first six bit of 16 set)
         // 0x03ff is the surrogate data mask (remaining 10 bit)
         // check if actually a surrogate pair (d800 ^ dc00 == 0400)
@@ -1137,35 +1257,35 @@ public class ProtoBuf {
           buf[pos + 2] = (byte) ((0x80 | ((code >> 6) & 0x3F)));
           buf[pos + 3] = (byte) ((0x80 | (code & 0x3F)));
         }
-        pos += 4;        
+        pos += 4;
       }
     }
-    
+
     return pos;
   }
 
   /**
-   * Decodes an array of UTF-8 bytes to a Java string (UTF-16). The tolerant 
-   * flag determines what to do in case of illegal or unsupported sequences. 
-   * 
-   * @param data input byte array containing UTF-8 data 
+   * Decodes an array of UTF-8 bytes to a Java string (UTF-16). The tolerant
+   * flag determines what to do in case of illegal or unsupported sequences.
+   *
+   * @param data input byte array containing UTF-8 data
    * @param start decoding start position in byte array
    * @param end decoding end position in byte array
-   * @param tolerant if true, an IllegalArgumentException is thrown for illegal 
+   * @param tolerant if true, an IllegalArgumentException is thrown for illegal
    *    UTF-8 codes
    * @return the string containing the UTF-8 decoding result
    */
-  static String decodeUtf8(byte[] data, int start, int end, 
+  static String decodeUtf8(byte[] data, int start, int end,
       boolean tolerant){
-    
+
     StringBuffer sb = new StringBuffer(end - start);
     int pos = start;
-    
+
     while (pos < end){
       int b = data[pos++] & 0x0ff;
       if (b <= 0x7f){
         sb.append((char) b);
-      } else if (b >= 0xf5){ // byte sequence too long 
+      } else if (b >= 0xf5){ // byte sequence too long
         if (!tolerant){
           throw new IllegalArgumentException("Invalid UTF8");
         }
@@ -1173,16 +1293,16 @@ public class ProtoBuf {
       } else {
         int border = 0xe0;
         int count = 1;
-        int minCode = 128; 
+        int minCode = 128;
         int mask = 0x01f;
         while (b >= border){
           border = (border >> 1) | 0x80;
-          minCode = minCode << (count == 1 ? 4 : 5); 
+          minCode = minCode << (count == 1 ? 4 : 5);
           count++;
           mask = mask >> 1;
         }
         int code = b & mask;
-        
+
         for (int i = 0; i < count; i++){
           code = code << 6;
           if (pos >= end){
@@ -1197,7 +1317,7 @@ public class ProtoBuf {
             code |= (data[pos++] & 0x3f); // six bit
           }
         }
-        
+
         // illegal code or surrogate code
         if (!tolerant && code < minCode || (code >= 0xd800 && code <= 0xdfff)){
           throw new IllegalArgumentException("Invalid UTF8");
