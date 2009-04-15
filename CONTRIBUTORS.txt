@@ -55,3 +55,5 @@ Non-Google patch contributors:
     * Solaris 10 + Sun Studio fix.
   Alek Storm <alek.storm@gmail.com>
     * Slicing support for repeated scalar fields for the Python API.
+  Oleg Smolsky <oleg.smolsky@gmail.com>
+    * MS Visual Studio error format option.

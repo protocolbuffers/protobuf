@@ -132,18 +132,29 @@ void SetFdToBinaryMode(int fd) {
 class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
                                            public io::ErrorCollector {
  public:
-  ErrorPrinter() {}
+  ErrorPrinter(ErrorFormat format) : format_(format) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const string& filename, int line, int column,
                 const string& message) {
+
+    cerr << filename;
+
     // Users typically expect 1-based line/column numbers, so we add 1
     // to each here.
-    cerr << filename;
     if (line != -1) {
-      cerr << ":" << (line + 1) << ":" << (column + 1);
+      // Allow for both GCC- and Visual-Studio-compatible output.
+      switch (format_) {
+        case CommandLineInterface::ERROR_FORMAT_GCC:
+          cerr << ":" << (line + 1) << ":" << (column + 1);
+          break;
+        case CommandLineInterface::ERROR_FORMAT_MSVS:
+          cerr << "(" << (line + 1) << ") : error in column=" << (column + 1);
+          break;
+      }
     }
+
     cerr << ": " << message << endl;
   }
 
@@ -151,6 +162,9 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
   void AddError(int line, int column, const string& message) {
     AddError("input", line, column, message);
   }
+
+ private:
+  const ErrorFormat format_;
 };
 
 // -------------------------------------------------------------------
@@ -294,6 +308,7 @@ CommandLineInterface::ErrorReportingFileOutput::~ErrorReportingFileOutput() {
 
 CommandLineInterface::CommandLineInterface()
   : mode_(MODE_COMPILE),
+    error_format_(ERROR_FORMAT_GCC),
     imports_in_descriptor_set_(false),
     disallow_services_(false),
     inputs_are_proto_path_relative_(false) {}
@@ -326,7 +341,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   // Allocate the Importer.
-  ErrorPrinter error_collector;
+  ErrorPrinter error_collector(error_format_);
   Importer importer(&source_tree, &error_collector);
 
   vector<const FileDescriptor*> parsed_files;
@@ -657,6 +672,16 @@ bool CommandLineInterface::InterpretArgument(const string& name,
 
     codec_type_ = value;
 
+  } else if (name == "--error_format") {
+    if (value == "gcc") {
+      error_format_ = ERROR_FORMAT_GCC;
+    } else if (value == "msvs") {
+      error_format_ = ERROR_FORMAT_MSVS;
+    } else {
+      cerr << "Unknown error format: " << value << endl;
+      return false;
+    }
+
   } else {
     // Some other flag.  Look it up in the generators list.
     GeneratorMap::const_iterator iter = generators_.find(name);
@@ -722,7 +747,10 @@ void CommandLineInterface::PrintHelpText() {
 "                              the input files to FILE.\n"
 "  --include_imports           When using --descriptor_set_out, also include\n"
 "                              all dependencies of the input files in the\n"
-"                              set, so that the set is self-contained." << endl;
+"                              set, so that the set is self-contained.\n"
+"  --error_format=FORMAT       Set the format in which to print errors.\n"
+"                              FORMAT may be 'gcc' (the default) or 'msvs'\n"
+"                              (Microsoft Visual Studio format)." << endl;
 
   for (GeneratorMap::iterator iter = generators_.begin();
        iter != generators_.end(); ++iter) {
@@ -788,7 +816,7 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 
   if (mode_ == MODE_ENCODE) {
     // Input is text.
-    ErrorPrinter error_collector;
+    ErrorPrinter error_collector(error_format_);
     TextFormat::Parser parser;
     parser.RecordErrorsTo(&error_collector);
     parser.AllowPartialMessage(true);

@@ -9,6 +9,11 @@
     be normally except without a tag before each value (thus, they are
     tightly "packed").
 
+  protoc
+  * --error_format=msvs option causes errors to be printed in Visual Studio
+    format, which should allow them to be clicked on in the build log to go
+    directly to the error location. 
+
   C++
   * UnknownFieldSet now supports STL-like iteration.
   * Message interface has method ParseFromBoundedZeroCopyStream() which parses

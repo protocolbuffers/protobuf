@@ -210,6 +210,13 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   Mode mode_;
 
+  enum ErrorFormat {
+    ERROR_FORMAT_GCC,   // GCC error output format (default).
+    ERROR_FORMAT_MSVS   // Visual Studio output (--error_format=msvs).
+  };
+
+  ErrorFormat error_format_;
+
   vector<pair<string, string> > proto_path_;  // Search path for proto files.
   vector<string> input_files_;                // Names of the input proto files.
 
