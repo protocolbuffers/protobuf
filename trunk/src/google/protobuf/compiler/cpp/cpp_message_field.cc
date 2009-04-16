@@ -213,7 +213,7 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void RepeatedMessageFieldGenerator::
 GenerateInitializer(io::Printer* printer) const {
-  // Not needed for repeated fields.
+  printer->Print(variables_, ",\n$name$_()");
 }
 
 void RepeatedMessageFieldGenerator::
