@@ -560,7 +560,9 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2fdescriptor_2eproto {
 
 FileDescriptorSet::FileDescriptorSet()
   : ::google::protobuf::Message(),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    file_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -568,7 +570,9 @@ void FileDescriptorSet::InitAsDefaultInstance() {}
 
 FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
   : ::google::protobuf::Message(),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    file_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -740,9 +744,15 @@ const ::std::string FileDescriptorProto::_default_package_;
 
 FileDescriptorProto::FileDescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     package_(const_cast< ::std::string*>(&_default_package_)),
+    dependency_(),
+    message_type_(),
+    enum_type_(),
+    service_(),
+    extension_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -752,9 +762,15 @@ void FileDescriptorProto::InitAsDefaultInstance() {  options_ = const_cast< ::go
 
 FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     package_(const_cast< ::std::string*>(&_default_package_)),
+    dependency_(),
+    message_type_(),
+    enum_type_(),
+    service_(),
+    extension_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
@@ -1160,6 +1176,7 @@ const ::google::protobuf::Reflection* FileDescriptorProto::GetReflection() const
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     start_(0),
     end_(0) {
@@ -1170,6 +1187,7 @@ void DescriptorProto_ExtensionRange::InitAsDefaultInstance() {}
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     start_(0),
     end_(0) {
@@ -1377,8 +1395,14 @@ const ::std::string DescriptorProto::_default_name_;
 
 DescriptorProto::DescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
+    field_(),
+    extension_(),
+    nested_type_(),
+    enum_type_(),
+    extension_range_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1388,8 +1412,14 @@ void DescriptorProto::InitAsDefaultInstance() {  options_ = const_cast< ::google
 
 DescriptorProto::DescriptorProto(const DescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
+    field_(),
+    extension_(),
+    nested_type_(),
+    enum_type_(),
+    extension_range_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
@@ -1841,6 +1871,7 @@ const ::std::string FieldDescriptorProto::_default_default_value_;
 
 FieldDescriptorProto::FieldDescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
@@ -1858,6 +1889,7 @@ void FieldDescriptorProto::InitAsDefaultInstance() {  options_ = const_cast< ::g
 
 FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
@@ -2280,8 +2312,10 @@ const ::std::string EnumDescriptorProto::_default_name_;
 
 EnumDescriptorProto::EnumDescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
+    value_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -2291,8 +2325,10 @@ void EnumDescriptorProto::InitAsDefaultInstance() {  options_ = const_cast< ::go
 
 EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
+    value_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
@@ -2536,6 +2572,7 @@ const ::std::string EnumValueDescriptorProto::_default_name_;
 
 EnumValueDescriptorProto::EnumValueDescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
@@ -2548,6 +2585,7 @@ void EnumValueDescriptorProto::InitAsDefaultInstance() {  options_ = const_cast<
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     number_(0),
@@ -2792,8 +2830,10 @@ const ::std::string ServiceDescriptorProto::_default_name_;
 
 ServiceDescriptorProto::ServiceDescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
+    method_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -2803,8 +2843,10 @@ void ServiceDescriptorProto::InitAsDefaultInstance() {  options_ = const_cast< :
 
 ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
+    method_(),
     options_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
@@ -3049,6 +3091,7 @@ const ::std::string MethodDescriptorProto::_default_output_type_;
 
 MethodDescriptorProto::MethodDescriptorProto()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     input_type_(const_cast< ::std::string*>(&_default_input_type_)),
@@ -3062,6 +3105,7 @@ void MethodDescriptorProto::InitAsDefaultInstance() {  options_ = const_cast< ::
 
 MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_(const_cast< ::std::string*>(&_default_name_)),
     input_type_(const_cast< ::std::string*>(&_default_input_type_)),
@@ -3371,11 +3415,13 @@ FileOptions::FileOptions()
     _extensions_(&FileOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
+    _unknown_fields_(),
     _cached_size_(0),
     java_package_(const_cast< ::std::string*>(&_default_java_package_)),
     java_outer_classname_(const_cast< ::std::string*>(&_default_java_outer_classname_)),
     java_multiple_files_(false),
-    optimize_for_(2) {
+    optimize_for_(2),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -3386,11 +3432,13 @@ FileOptions::FileOptions(const FileOptions& from)
     _extensions_(&FileOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
+    _unknown_fields_(),
     _cached_size_(0),
     java_package_(const_cast< ::std::string*>(&_default_java_package_)),
     java_outer_classname_(const_cast< ::std::string*>(&_default_java_outer_classname_)),
     java_multiple_files_(false),
-    optimize_for_(2) {
+    optimize_for_(2),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3711,8 +3759,10 @@ MessageOptions::MessageOptions()
     _extensions_(&MessageOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
+    _unknown_fields_(),
     _cached_size_(0),
-    message_set_wire_format_(false) {
+    message_set_wire_format_(false),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -3723,8 +3773,10 @@ MessageOptions::MessageOptions(const MessageOptions& from)
     _extensions_(&MessageOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
+    _unknown_fields_(),
     _cached_size_(0),
-    message_set_wire_format_(false) {
+    message_set_wire_format_(false),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3963,10 +4015,12 @@ FieldOptions::FieldOptions()
     _extensions_(&FieldOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
+    _unknown_fields_(),
     _cached_size_(0),
     ctype_(1),
     packed_(false),
-    experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)) {
+    experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -3977,10 +4031,12 @@ FieldOptions::FieldOptions(const FieldOptions& from)
     _extensions_(&FieldOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
+    _unknown_fields_(),
     _cached_size_(0),
     ctype_(1),
     packed_(false),
-    experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)) {
+    experimental_map_key_(const_cast< ::std::string*>(&_default_experimental_map_key_)),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -4265,7 +4321,9 @@ EnumOptions::EnumOptions()
     _extensions_(&EnumOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4276,7 +4334,9 @@ EnumOptions::EnumOptions(const EnumOptions& from)
     _extensions_(&EnumOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -4458,7 +4518,9 @@ EnumValueOptions::EnumValueOptions()
     _extensions_(&EnumValueOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4469,7 +4531,9 @@ EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
     _extensions_(&EnumValueOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -4651,7 +4715,9 @@ ServiceOptions::ServiceOptions()
     _extensions_(&ServiceOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4662,7 +4728,9 @@ ServiceOptions::ServiceOptions(const ServiceOptions& from)
     _extensions_(&ServiceOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -4844,7 +4912,9 @@ MethodOptions::MethodOptions()
     _extensions_(&MethodOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4855,7 +4925,9 @@ MethodOptions::MethodOptions(const MethodOptions& from)
     _extensions_(&MethodOptions_descriptor_,
                  ::google::protobuf::DescriptorPool::generated_pool(),
                  ::google::protobuf::MessageFactory::generated_factory()),
-    _cached_size_(0) {
+    _unknown_fields_(),
+    _cached_size_(0),
+    uninterpreted_option_() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -5035,6 +5107,7 @@ const ::std::string UninterpretedOption_NamePart::_default_name_part_;
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_part_(const_cast< ::std::string*>(&_default_name_part_)),
     is_extension_(false) {
@@ -5045,6 +5118,7 @@ void UninterpretedOption_NamePart::InitAsDefaultInstance() {}
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
     name_part_(const_cast< ::std::string*>(&_default_name_part_)),
     is_extension_(false) {
@@ -5254,7 +5328,9 @@ const ::std::string UninterpretedOption::_default_identifier_value_;
 const ::std::string UninterpretedOption::_default_string_value_;
 UninterpretedOption::UninterpretedOption()
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
+    name_(),
     identifier_value_(const_cast< ::std::string*>(&_default_identifier_value_)),
     positive_int_value_(GOOGLE_ULONGLONG(0)),
     negative_int_value_(GOOGLE_LONGLONG(0)),
@@ -5267,7 +5343,9 @@ void UninterpretedOption::InitAsDefaultInstance() {}
 
 UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
   : ::google::protobuf::Message(),
+    _unknown_fields_(),
     _cached_size_(0),
+    name_(),
     identifier_value_(const_cast< ::std::string*>(&_default_identifier_value_)),
     positive_int_value_(GOOGLE_ULONGLONG(0)),
     negative_int_value_(GOOGLE_LONGLONG(0)),

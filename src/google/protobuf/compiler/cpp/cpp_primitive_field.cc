@@ -283,7 +283,11 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateInitializer(io::Printer* printer) const {
-  // Not needed for repeated fields.
+  printer->Print(variables_, ",\n$name$_()");
+  if (descriptor_->options().packed() &&
+      descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
+    printer->Print(variables_, ",\n_$name$_cached_byte_size_()");
+  }
 }
 
 void RepeatedPrimitiveFieldGenerator::

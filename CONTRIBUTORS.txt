@@ -59,3 +59,6 @@ Patch contributors:
     * MS Visual Studio error format option.
   Brian Olson <brianolson@google.com>
     * gzip/zlib I/O support.
+  Michael Poole <mdpoole@troilus.org>
+    * Fixed warnings about generated constructors not explicitly initializing
+      all fields (only present with certain compiler settings).

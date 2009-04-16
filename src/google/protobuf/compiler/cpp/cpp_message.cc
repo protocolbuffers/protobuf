@@ -753,6 +753,7 @@ GenerateInitializerList(io::Printer* printer) {
   }
 
   printer->Print(
+    "_unknown_fields_(),\n"
     "_cached_size_(0)");
 
   // Write the initializers for each field.

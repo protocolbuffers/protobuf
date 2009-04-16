@@ -22,6 +22,8 @@
   * GzipInputStream and GzipOutputStream support reading/writing gzip- or
     zlib-compressed streams if zlib is available.
     (google/protobuf/io/gzip_stream.h)
+  * Generated constructors explicitly initialize all fields (to avoid warnings
+    with certain compiler settings).
 
   Java
   * Fixed bug where Message.mergeFrom(Message) failed to merge extensions.
