@@ -15,6 +15,11 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 
+AC_ARG_WITH([zlib],
+  [AS_HELP_STRING([--with-zlib],
+    [include classes for streaming compressed data in and out @<:@default=check@:>@])],
+  [],[with_zlib=check])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
@@ -37,6 +42,16 @@ AC_CHECK_HEADERS([fcntl.h inttypes.h limits.h stdlib.h unistd.h])
 AC_FUNC_MEMCMP
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([ftruncate memset mkdir strchr strerror strtol])
+
+HAVE_ZLIB=0
+AS_IF([test "$with_zlib" != no],
+  [AC_SEARCH_LIBS([zlibVersion], [z],
+    [AC_DEFINE([HAVE_ZLIB], [1], [Enable classes using zlib compression.])
+     HAVE_ZLIB=1],
+    [if test "$with_zlib" != check; then
+      AC_MSG_FAILURE([--with-zlib was given, but test for zlib failed])
+     fi])])
+AM_CONDITIONAL([HAVE_ZLIB], [test $HAVE_ZLIB = 1])
 
 ACX_PTHREAD
 AC_CXX_STL_HASH
