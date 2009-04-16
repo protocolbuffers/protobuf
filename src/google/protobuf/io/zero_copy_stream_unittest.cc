@@ -46,6 +46,8 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
+#include "config.h"
+
 #ifdef _MSC_VER
 #include <io.h>
 #else
@@ -59,6 +61,9 @@
 #include <sstream>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#if HAVE_ZLIB
+#include <google/protobuf/io/gzip_stream.h>
+#endif
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
@@ -141,6 +146,8 @@ bool IoTest::WriteToOutput(ZeroCopyOutputStream* output,
   }
 }
 
+#define MAX_REPEATED_ZEROS 100
+
 int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
   uint8* out = reinterpret_cast<uint8*>(data);
   int out_size = size;
@@ -148,11 +155,19 @@ int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
   const void* in;
   int in_size = 0;
 
+  int repeated_zeros = 0;
+
   while (true) {
     if (!input->Next(&in, &in_size)) {
       return size - out_size;
     }
-    EXPECT_GT(in_size, 0);
+    EXPECT_GT(in_size, -1);
+    if (in_size == 0) {
+      repeated_zeros++;
+    } else {
+      repeated_zeros = 0;
+    }
+    EXPECT_LT(repeated_zeros, MAX_REPEATED_ZEROS);
 
     if (out_size <= in_size) {
       memcpy(out, in, out_size);
@@ -263,6 +278,95 @@ TEST_F(IoTest, ArrayIo) {
   }
 }
 
+#if HAVE_ZLIB
+TEST_F(IoTest, GzipIo) {
+  const int kBufferSize = 2*1024;
+  uint8* buffer = new uint8[kBufferSize];
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    for (int j = 0; j < kBlockSizeCount; j++) {
+      for (int z = 0; z < kBlockSizeCount; z++) {
+        int gzip_buffer_size = kBlockSizes[z];
+        int size;
+        {
+          ArrayOutputStream output(buffer, kBufferSize, kBlockSizes[i]);
+          GzipOutputStream gzout(
+              &output, GzipOutputStream::GZIP, gzip_buffer_size);
+          WriteStuff(&gzout);
+          gzout.Close();
+          size = output.ByteCount();
+        }
+        {
+          ArrayInputStream input(buffer, size, kBlockSizes[j]);
+          GzipInputStream gzin(
+              &input, GzipInputStream::GZIP, gzip_buffer_size);
+          ReadStuff(&gzin);
+        }
+      }
+    }
+  }
+  delete [] buffer;
+}
+
+TEST_F(IoTest, ZlibIo) {
+  const int kBufferSize = 2*1024;
+  uint8* buffer = new uint8[kBufferSize];
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    for (int j = 0; j < kBlockSizeCount; j++) {
+      for (int z = 0; z < kBlockSizeCount; z++) {
+        int gzip_buffer_size = kBlockSizes[z];
+        int size;
+        {
+          ArrayOutputStream output(buffer, kBufferSize, kBlockSizes[i]);
+          GzipOutputStream gzout(
+              &output, GzipOutputStream::ZLIB, gzip_buffer_size);
+          WriteStuff(&gzout);
+          gzout.Close();
+          size = output.ByteCount();
+        }
+        {
+          ArrayInputStream input(buffer, size, kBlockSizes[j]);
+          GzipInputStream gzin(
+              &input, GzipInputStream::ZLIB, gzip_buffer_size);
+          ReadStuff(&gzin);
+        }
+      }
+    }
+  }
+  delete [] buffer;
+}
+
+TEST_F(IoTest, ZlibIoInputAutodetect) {
+  const int kBufferSize = 2*1024;
+  uint8* buffer = new uint8[kBufferSize];
+  int size;
+  {
+    ArrayOutputStream output(buffer, kBufferSize);
+    GzipOutputStream gzout(&output, GzipOutputStream::ZLIB);
+    WriteStuff(&gzout);
+    gzout.Close();
+    size = output.ByteCount();
+  }
+  {
+    ArrayInputStream input(buffer, size);
+    GzipInputStream gzin(&input, GzipInputStream::AUTO);
+    ReadStuff(&gzin);
+  }
+  {
+    ArrayOutputStream output(buffer, kBufferSize);
+    GzipOutputStream gzout(&output, GzipOutputStream::GZIP);
+    WriteStuff(&gzout);
+    gzout.Close();
+    size = output.ByteCount();
+  }
+  {
+    ArrayInputStream input(buffer, size);
+    GzipInputStream gzin(&input, GzipInputStream::AUTO);
+    ReadStuff(&gzin);
+  }
+  delete [] buffer;
+}
+#endif
+
 // There is no string input, only string output.  Also, it doesn't support
 // explicit block sizes.  So, we'll only run one test and we'll use
 // ArrayInput to read back the results.
@@ -309,6 +413,41 @@ TEST_F(IoTest, FileIo) {
     }
   }
 }
+
+#if HAVE_ZLIB
+TEST_F(IoTest, GzipFileIo) {
+  string filename = TestTempDir() + "/zero_copy_stream_test_file";
+
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    for (int j = 0; j < kBlockSizeCount; j++) {
+      // Make a temporary file.
+      int file =
+        open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, 0777);
+      ASSERT_GE(file, 0);
+      {
+        FileOutputStream output(file, kBlockSizes[i]);
+        GzipOutputStream gzout(&output);
+        WriteStuffLarge(&gzout);
+        gzout.Close();
+        output.Flush();
+        EXPECT_EQ(0, output.GetErrno());
+      }
+
+      // Rewind.
+      ASSERT_NE(lseek(file, 0, SEEK_SET), (off_t)-1);
+
+      {
+        FileInputStream input(file, kBlockSizes[j]);
+        GzipInputStream gzin(&input);
+        ReadStuffLarge(&gzin);
+        EXPECT_EQ(0, input.GetErrno());
+      }
+
+      close(file);
+    }
+  }
+}
+#endif
 
 // MSVC raises various debugging exceptions if we try to use a file
 // descriptor of -1, defeating our tests below.  This class will disable

@@ -34,7 +34,7 @@ Documentation:
 Maven packaging:
   Gregory Kick <gak@google.com>
 
-Non-Google patch contributors:
+Patch contributors:
   Kevin Ko <kevin.s.ko@gmail.com>
     * Small patch to handle trailing slashes in --proto_path flag.
   Johan Euphrosine <proppy@aminche.com>
@@ -57,3 +57,5 @@ Non-Google patch contributors:
     * Slicing support for repeated scalar fields for the Python API.
   Oleg Smolsky <oleg.smolsky@gmail.com>
     * MS Visual Studio error format option.
+  Brian Olson <brianolson@google.com>
+    * gzip/zlib I/O support.

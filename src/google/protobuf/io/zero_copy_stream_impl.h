@@ -431,6 +431,11 @@ class LIBPROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
   // Even if an error occurs, the file descriptor is closed when this returns.
   bool Close();
 
+  // Flushes FileOutputStream's buffers but does not close the
+  // underlying file. No special measures are taken to ensure that
+  // underlying operating system file object is synchronized to disk.
+  bool Flush();
+
   // By default, the file descriptor is not closed when the stream is
   // destroyed.  Call SetCloseOnDelete(true) to change that.  WARNING:
   // This leaves no way for the caller to detect if close() fails.  If

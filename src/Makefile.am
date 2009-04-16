@@ -1,5 +1,15 @@
 ## Process this file with automake to produce Makefile.in
 
+if HAVE_ZLIB
+GZCHECKPROGRAMS = zcgzip zcgunzip
+GZHEADERS = google/protobuf/io/gzip_stream.h
+GZTESTS = google/protobuf/io/gzip_stream_unittest.sh
+else
+GZCHECKPROGRAMS =
+GZHEADERS =
+GZTESTS =
+endif
+
 if GCC
 # These are good warnings to turn on by default
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
@@ -40,6 +50,7 @@ nobase_include_HEADERS =                                       \
   google/protobuf/wire_format.h                                \
   google/protobuf/wire_format_inl.h                            \
   google/protobuf/io/coded_stream.h                            \
+  $(GZHEADERS)                                                 \
   google/protobuf/io/printer.h                                 \
   google/protobuf/io/tokenizer.h                               \
   google/protobuf/io/zero_copy_stream.h                        \
@@ -83,6 +94,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/unknown_field_set.cc                         \
   google/protobuf/wire_format.cc                               \
   google/protobuf/io/coded_stream.cc                           \
+  google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
   google/protobuf/io/tokenizer.cc                              \
   google/protobuf/io/zero_copy_stream.cc                       \
@@ -159,6 +171,8 @@ protoc_inputs =                                                \
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
   solaris/libstdc++.la                                         \
+  google/protobuf/io/gzip_stream.h                             \
+  google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
   google/protobuf/testdata/golden_packed_fields_message        \
   google/protobuf/testdata/text_format_unittest_data.txt       \
@@ -206,7 +220,7 @@ unittest_proto_middleman: protoc$(EXEEXT) $(protoc_inputs)
 
 $(protoc_outputs): unittest_proto_middleman
 
-check_PROGRAMS = protobuf-test
+check_PROGRAMS = protobuf-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
@@ -256,6 +270,14 @@ protobuf_test_SOURCES =                                        \
   gtest/internal/gtest-port.h                                  \
   gtest/internal/gtest-string.h
 
+if HAVE_ZLIB
+zcgzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
+zcgzip_SOURCES = google/protobuf/testing/zcgzip.cc
+
+zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
+zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
+endif
+
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
 
-TESTS = protobuf-test
+TESTS = protobuf-test $(GZTESTS)

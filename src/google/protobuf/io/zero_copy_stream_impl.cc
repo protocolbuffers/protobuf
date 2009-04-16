@@ -528,6 +528,10 @@ bool FileOutputStream::Close() {
   return copying_output_.Close() && flush_succeeded;
 }
 
+bool FileOutputStream::Flush() {
+  return impl_.Flush();
+}
+
 bool FileOutputStream::Next(void** data, int* size) {
   return impl_.Next(data, size);
 }

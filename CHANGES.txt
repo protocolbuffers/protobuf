@@ -19,6 +19,9 @@
   * Message interface has method ParseFromBoundedZeroCopyStream() which parses
     a limited number of bytes from an input stream rather than parsing until
     EOF.
+  * GzipInputStream and GzipOutputStream support reading/writing gzip- or
+    zlib-compressed streams if zlib is available.
+    (google/protobuf/io/gzip_stream.h)
 
   Java
   * Fixed bug where Message.mergeFrom(Message) failed to merge extensions.
