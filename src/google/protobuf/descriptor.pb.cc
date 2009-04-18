@@ -557,6 +557,9 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2fdescriptor_2eproto {
 
 // ===================================================================
 
+#ifndef _MSC_VER
+const int FileDescriptorSet::kFileFieldNumber;
+#endif  // !_MSC_VER
 
 FileDescriptorSet::FileDescriptorSet()
   : ::google::protobuf::Message(),
@@ -736,11 +739,16 @@ const ::google::protobuf::Reflection* FileDescriptorSet::GetReflection() const {
 
 const ::std::string FileDescriptorProto::_default_name_;
 const ::std::string FileDescriptorProto::_default_package_;
-
-
-
-
-
+#ifndef _MSC_VER
+const int FileDescriptorProto::kNameFieldNumber;
+const int FileDescriptorProto::kPackageFieldNumber;
+const int FileDescriptorProto::kDependencyFieldNumber;
+const int FileDescriptorProto::kMessageTypeFieldNumber;
+const int FileDescriptorProto::kEnumTypeFieldNumber;
+const int FileDescriptorProto::kServiceFieldNumber;
+const int FileDescriptorProto::kExtensionFieldNumber;
+const int FileDescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 FileDescriptorProto::FileDescriptorProto()
   : ::google::protobuf::Message(),
@@ -1172,7 +1180,10 @@ const ::google::protobuf::Reflection* FileDescriptorProto::GetReflection() const
 
 // ===================================================================
 
-
+#ifndef _MSC_VER
+const int DescriptorProto_ExtensionRange::kStartFieldNumber;
+const int DescriptorProto_ExtensionRange::kEndFieldNumber;
+#endif  // !_MSC_VER
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange()
   : ::google::protobuf::Message(),
@@ -1387,11 +1398,15 @@ const ::google::protobuf::Reflection* DescriptorProto_ExtensionRange::GetReflect
 // -------------------------------------------------------------------
 
 const ::std::string DescriptorProto::_default_name_;
-
-
-
-
-
+#ifndef _MSC_VER
+const int DescriptorProto::kNameFieldNumber;
+const int DescriptorProto::kFieldFieldNumber;
+const int DescriptorProto::kExtensionFieldNumber;
+const int DescriptorProto::kNestedTypeFieldNumber;
+const int DescriptorProto::kEnumTypeFieldNumber;
+const int DescriptorProto::kExtensionRangeFieldNumber;
+const int DescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 DescriptorProto::DescriptorProto()
   : ::google::protobuf::Message(),
@@ -1862,12 +1877,19 @@ const FieldDescriptorProto_Label FieldDescriptorProto::Label_MIN;
 const FieldDescriptorProto_Label FieldDescriptorProto::Label_MAX;
 #endif  // _MSC_VER
 const ::std::string FieldDescriptorProto::_default_name_;
-
-
-
 const ::std::string FieldDescriptorProto::_default_type_name_;
 const ::std::string FieldDescriptorProto::_default_extendee_;
 const ::std::string FieldDescriptorProto::_default_default_value_;
+#ifndef _MSC_VER
+const int FieldDescriptorProto::kNameFieldNumber;
+const int FieldDescriptorProto::kNumberFieldNumber;
+const int FieldDescriptorProto::kLabelFieldNumber;
+const int FieldDescriptorProto::kTypeFieldNumber;
+const int FieldDescriptorProto::kTypeNameFieldNumber;
+const int FieldDescriptorProto::kExtendeeFieldNumber;
+const int FieldDescriptorProto::kDefaultValueFieldNumber;
+const int FieldDescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 FieldDescriptorProto::FieldDescriptorProto()
   : ::google::protobuf::Message(),
@@ -2308,7 +2330,11 @@ const ::google::protobuf::Reflection* FieldDescriptorProto::GetReflection() cons
 // ===================================================================
 
 const ::std::string EnumDescriptorProto::_default_name_;
-
+#ifndef _MSC_VER
+const int EnumDescriptorProto::kNameFieldNumber;
+const int EnumDescriptorProto::kValueFieldNumber;
+const int EnumDescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 EnumDescriptorProto::EnumDescriptorProto()
   : ::google::protobuf::Message(),
@@ -2568,7 +2594,11 @@ const ::google::protobuf::Reflection* EnumDescriptorProto::GetReflection() const
 // ===================================================================
 
 const ::std::string EnumValueDescriptorProto::_default_name_;
-
+#ifndef _MSC_VER
+const int EnumValueDescriptorProto::kNameFieldNumber;
+const int EnumValueDescriptorProto::kNumberFieldNumber;
+const int EnumValueDescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 EnumValueDescriptorProto::EnumValueDescriptorProto()
   : ::google::protobuf::Message(),
@@ -2826,7 +2856,11 @@ const ::google::protobuf::Reflection* EnumValueDescriptorProto::GetReflection() 
 // ===================================================================
 
 const ::std::string ServiceDescriptorProto::_default_name_;
-
+#ifndef _MSC_VER
+const int ServiceDescriptorProto::kNameFieldNumber;
+const int ServiceDescriptorProto::kMethodFieldNumber;
+const int ServiceDescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 ServiceDescriptorProto::ServiceDescriptorProto()
   : ::google::protobuf::Message(),
@@ -3088,6 +3122,12 @@ const ::google::protobuf::Reflection* ServiceDescriptorProto::GetReflection() co
 const ::std::string MethodDescriptorProto::_default_name_;
 const ::std::string MethodDescriptorProto::_default_input_type_;
 const ::std::string MethodDescriptorProto::_default_output_type_;
+#ifndef _MSC_VER
+const int MethodDescriptorProto::kNameFieldNumber;
+const int MethodDescriptorProto::kInputTypeFieldNumber;
+const int MethodDescriptorProto::kOutputTypeFieldNumber;
+const int MethodDescriptorProto::kOptionsFieldNumber;
+#endif  // !_MSC_VER
 
 MethodDescriptorProto::MethodDescriptorProto()
   : ::google::protobuf::Message(),
@@ -3407,8 +3447,13 @@ const FileOptions_OptimizeMode FileOptions::OptimizeMode_MAX;
 #endif  // _MSC_VER
 const ::std::string FileOptions::_default_java_package_;
 const ::std::string FileOptions::_default_java_outer_classname_;
-
-
+#ifndef _MSC_VER
+const int FileOptions::kJavaPackageFieldNumber;
+const int FileOptions::kJavaOuterClassnameFieldNumber;
+const int FileOptions::kJavaMultipleFilesFieldNumber;
+const int FileOptions::kOptimizeForFieldNumber;
+const int FileOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 FileOptions::FileOptions()
   : ::google::protobuf::Message(),
@@ -3752,7 +3797,10 @@ const ::google::protobuf::Reflection* FileOptions::GetReflection() const {
 
 // ===================================================================
 
-
+#ifndef _MSC_VER
+const int MessageOptions::kMessageSetWireFormatFieldNumber;
+const int MessageOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 MessageOptions::MessageOptions()
   : ::google::protobuf::Message(),
@@ -4006,9 +4054,13 @@ const FieldOptions_CType FieldOptions::STRING_PIECE;
 const FieldOptions_CType FieldOptions::CType_MIN;
 const FieldOptions_CType FieldOptions::CType_MAX;
 #endif  // _MSC_VER
-
-
 const ::std::string FieldOptions::_default_experimental_map_key_;
+#ifndef _MSC_VER
+const int FieldOptions::kCtypeFieldNumber;
+const int FieldOptions::kPackedFieldNumber;
+const int FieldOptions::kExperimentalMapKeyFieldNumber;
+const int FieldOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 FieldOptions::FieldOptions()
   : ::google::protobuf::Message(),
@@ -4315,6 +4367,9 @@ const ::google::protobuf::Reflection* FieldOptions::GetReflection() const {
 
 // ===================================================================
 
+#ifndef _MSC_VER
+const int EnumOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 EnumOptions::EnumOptions()
   : ::google::protobuf::Message(),
@@ -4512,6 +4567,9 @@ const ::google::protobuf::Reflection* EnumOptions::GetReflection() const {
 
 // ===================================================================
 
+#ifndef _MSC_VER
+const int EnumValueOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 EnumValueOptions::EnumValueOptions()
   : ::google::protobuf::Message(),
@@ -4709,6 +4767,9 @@ const ::google::protobuf::Reflection* EnumValueOptions::GetReflection() const {
 
 // ===================================================================
 
+#ifndef _MSC_VER
+const int ServiceOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 ServiceOptions::ServiceOptions()
   : ::google::protobuf::Message(),
@@ -4906,6 +4967,9 @@ const ::google::protobuf::Reflection* ServiceOptions::GetReflection() const {
 
 // ===================================================================
 
+#ifndef _MSC_VER
+const int MethodOptions::kUninterpretedOptionFieldNumber;
+#endif  // !_MSC_VER
 
 MethodOptions::MethodOptions()
   : ::google::protobuf::Message(),
@@ -5104,6 +5168,10 @@ const ::google::protobuf::Reflection* MethodOptions::GetReflection() const {
 // ===================================================================
 
 const ::std::string UninterpretedOption_NamePart::_default_name_part_;
+#ifndef _MSC_VER
+const int UninterpretedOption_NamePart::kNamePartFieldNumber;
+const int UninterpretedOption_NamePart::kIsExtensionFieldNumber;
+#endif  // !_MSC_VER
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart()
   : ::google::protobuf::Message(),
@@ -5320,12 +5388,17 @@ const ::google::protobuf::Reflection* UninterpretedOption_NamePart::GetReflectio
 
 // -------------------------------------------------------------------
 
-
 const ::std::string UninterpretedOption::_default_identifier_value_;
-
-
-
 const ::std::string UninterpretedOption::_default_string_value_;
+#ifndef _MSC_VER
+const int UninterpretedOption::kNameFieldNumber;
+const int UninterpretedOption::kIdentifierValueFieldNumber;
+const int UninterpretedOption::kPositiveIntValueFieldNumber;
+const int UninterpretedOption::kNegativeIntValueFieldNumber;
+const int UninterpretedOption::kDoubleValueFieldNumber;
+const int UninterpretedOption::kStringValueFieldNumber;
+#endif  // !_MSC_VER
+
 UninterpretedOption::UninterpretedOption()
   : ::google::protobuf::Message(),
     _unknown_fields_(),

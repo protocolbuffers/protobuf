@@ -149,6 +149,7 @@ class GeneratedProtocolMessageType(type):
     _AddEnumValues(descriptor, cls)
     _AddInitMethod(descriptor, cls)
     _AddPropertiesForFields(descriptor, cls)
+    _AddPropertiesForExtensions(descriptor, cls)
     _AddStaticMethods(cls)
     _AddMessageMethods(descriptor, cls)
     _AddPrivateHelperMethods(cls)
@@ -331,6 +332,9 @@ def _AddPropertiesForField(field, cls):
   # handle specially here.
   assert _FieldDescriptor.MAX_CPPTYPE == 10
 
+  constant_name = field.name.upper() + "_FIELD_NUMBER"
+  setattr(cls, constant_name, field.number)
+
   if field.label == _FieldDescriptor.LABEL_REPEATED:
     _AddPropertiesForRepeatedField(field, cls)
   elif field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
@@ -453,6 +457,14 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
   # Add a property to encapsulate the getter.
   doc = 'Magic attribute generated for "%s" proto field.' % proto_field_name
   setattr(cls, property_name, property(getter, setter, doc=doc))
+
+
+def _AddPropertiesForExtensions(descriptor, cls):
+  """Adds properties for all fields in this protocol message type."""
+  extension_dict = descriptor.extensions_by_name
+  for extension_name, extension_field in extension_dict.iteritems():
+    constant_name = extension_name.upper() + "_FIELD_NUMBER"
+    setattr(cls, constant_name, extension_field.number)
 
 
 def _AddStaticMethods(cls):

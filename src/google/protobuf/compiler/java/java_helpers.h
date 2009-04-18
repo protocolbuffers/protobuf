@@ -88,6 +88,10 @@ inline string ExtensionIdentifierName(const FieldDescriptor* descriptor) {
 }
 string ClassName(const FileDescriptor* descriptor);
 
+// Get the unqualified name that should be used for a field's field
+// number constant.
+string FieldConstantName(const FieldDescriptor *field);
+
 enum JavaType {
   JAVATYPE_INT,
   JAVATYPE_LONG,

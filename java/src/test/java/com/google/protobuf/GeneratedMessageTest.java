@@ -488,4 +488,31 @@ public class GeneratedMessageTest extends TestCase {
     TestAllTypes message = builder.build();
     TestUtil.assertAllFieldsSet(message.toBuilder().build());
   }
+
+  public void testFieldConstantValues() throws Exception {
+    assertEquals(TestAllTypes.NestedMessage.BB_FIELD_NUMBER, 1);
+    assertEquals(TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER, 1);
+    assertEquals(TestAllTypes.OPTIONALGROUP_FIELD_NUMBER, 16);
+    assertEquals(TestAllTypes.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER, 18);
+    assertEquals(TestAllTypes.OPTIONAL_NESTED_ENUM_FIELD_NUMBER, 21);
+    assertEquals(TestAllTypes.REPEATED_INT32_FIELD_NUMBER, 31);
+    assertEquals(TestAllTypes.REPEATEDGROUP_FIELD_NUMBER, 46);
+    assertEquals(TestAllTypes.REPEATED_NESTED_MESSAGE_FIELD_NUMBER, 48);
+    assertEquals(TestAllTypes.REPEATED_NESTED_ENUM_FIELD_NUMBER, 51);
+  }
+
+  public void testExtensionConstantValues() throws Exception {
+    assertEquals(UnittestProto.TestRequired.SINGLE_FIELD_NUMBER, 1000);
+    assertEquals(UnittestProto.TestRequired.MULTI_FIELD_NUMBER, 1001);
+    assertEquals(UnittestProto.OPTIONAL_INT32_EXTENSION_FIELD_NUMBER, 1);
+    assertEquals(UnittestProto.OPTIONALGROUP_EXTENSION_FIELD_NUMBER, 16);
+    assertEquals(
+      UnittestProto.OPTIONAL_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 18);
+    assertEquals(UnittestProto.OPTIONAL_NESTED_ENUM_EXTENSION_FIELD_NUMBER, 21);
+    assertEquals(UnittestProto.REPEATED_INT32_EXTENSION_FIELD_NUMBER, 31);
+    assertEquals(UnittestProto.REPEATEDGROUP_EXTENSION_FIELD_NUMBER, 46);
+    assertEquals(
+      UnittestProto.REPEATED_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 48);
+    assertEquals(UnittestProto.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER, 51);
+  }
 }

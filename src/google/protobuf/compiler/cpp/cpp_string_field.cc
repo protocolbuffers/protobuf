@@ -180,10 +180,10 @@ void StringFieldGenerator::
 GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
   if (descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
-      "const ::std::string $classname$::_default_$name$_;");
+      "const ::std::string $classname$::_default_$name$_;\n");
   } else {
     printer->Print(variables_,
-      "const ::std::string $classname$::_default_$name$_($default$);");
+      "const ::std::string $classname$::_default_$name$_($default$);\n");
   }
 }
 

@@ -171,6 +171,12 @@ string ClassName(const FileDescriptor* descriptor) {
   return result;
 }
 
+string FieldConstantName(const FieldDescriptor *field) {
+  string name = field->name() + "_FIELD_NUMBER";
+  UpperString(&name);
+  return name;
+}
+
 JavaType GetJavaType(FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::TYPE_INT32:

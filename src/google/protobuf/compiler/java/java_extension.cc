@@ -57,6 +57,8 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
   map<string, string> vars;
   vars["name"] = UnderscoresToCamelCase(descriptor_);
   vars["containing_type"] = ClassName(descriptor_->containing_type());
+  vars["number"] = SimpleItoa(descriptor_->number());
+  vars["constant_name"] = FieldConstantName(descriptor_);
 
   JavaType java_type = GetJavaType(descriptor_);
   string singular_type;
@@ -72,6 +74,8 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
       break;
   }
 
+  printer->Print(vars,
+    "public static final int $constant_name$ = $number$;\n");
   if (descriptor_->is_repeated()) {
     printer->Print(vars,
       "public static\n"

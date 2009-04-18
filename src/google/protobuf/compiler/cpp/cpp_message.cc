@@ -204,6 +204,8 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     map<string, string> vars;
     vars["name"] = FieldName(field);
+    vars["constant_name"] = FieldConstantName(field);
+    vars["number"] = SimpleItoa(field->number());
 
     if (field->is_repeated()) {
       printer->Print(vars, "inline int $name$_size() const;\n");
@@ -212,6 +214,7 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     }
 
     printer->Print(vars, "inline void clear_$name$();\n");
+    printer->Print(vars, "static const int $constant_name$ = $number$;\n");
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -665,8 +668,20 @@ GenerateClassMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(descriptor_->field(i))
                      .GenerateNonInlineAccessorDefinitions(printer);
-    printer->Print("\n");
   }
+
+  // Generate field number constants.
+  printer->Print("#ifndef _MSC_VER\n");
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor *field = descriptor_->field(i);
+    printer->Print(
+      "const int $classname$::$constant_name$;\n",
+      "classname", ClassName(FieldScope(field), false),
+      "constant_name", FieldConstantName(field));
+  }
+  printer->Print(
+    "#endif  // !_MSC_VER\n"
+    "\n");
 
   // Define extension identifiers.
   for (int i = 0; i < descriptor_->extension_count(); i++) {

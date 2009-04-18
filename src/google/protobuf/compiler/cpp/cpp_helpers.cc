@@ -77,6 +77,31 @@ hash_set<string> MakeKeywordsMap() {
 
 hash_set<string> kKeywords = MakeKeywordsMap();
 
+string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
+  string result;
+  // Note:  I distrust ctype.h due to locales.
+  for (int i = 0; i < input.size(); i++) {
+    if ('a' <= input[i] && input[i] <= 'z') {
+      if (cap_next_letter) {
+        result += input[i] + ('A' - 'a');
+      } else {
+        result += input[i];
+      }
+      cap_next_letter = false;
+    } else if ('A' <= input[i] && input[i] <= 'Z') {
+      // Capital letters are left as-is.
+      result += input[i];
+      cap_next_letter = false;
+    } else if ('0' <= input[i] && input[i] <= '9') {
+      result += input[i];
+      cap_next_letter = true;
+    } else {
+      cap_next_letter = true;
+    }
+  }
+  return result;
+}
+
 }  // namespace
 
 const char kThickSeparator[] =
@@ -122,6 +147,11 @@ string FieldName(const FieldDescriptor* field) {
     result.append("_");
   }
   return result;
+}
+
+string FieldConstantName(const FieldDescriptor *field) {
+  string field_name = UnderscoresToCamelCase(field->name(), true);
+  return "k" + field_name + "FieldNumber";
 }
 
 string StripProto(const string& filename) {

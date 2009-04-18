@@ -65,6 +65,10 @@ string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
 // anyway, so normally this just returns field->name().
 string FieldName(const FieldDescriptor* field);
 
+// Get the unqualified name that should be used for a field's field
+// number constant.
+string FieldConstantName(const FieldDescriptor *field);
+
 // Returns the scope where the field was defined (for extensions, this is
 // different from the message type to which the field applies).
 inline const Descriptor* FieldScope(const FieldDescriptor* field) {
