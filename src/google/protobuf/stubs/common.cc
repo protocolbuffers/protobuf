@@ -113,7 +113,27 @@ void NullLogHandler(LogLevel level, const char* filename, int line,
 
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static int log_silencer_count_ = 0;
-static Mutex log_silencer_count_mutex_;
+
+// Mutex which protects log_silencer_count_.  We provide a static function to
+// get it so that it is initialized on first use, which be during
+// initialization time.  If we just allocated it as a global variable, it might
+// not be initialized before someone tries to use it.
+static Mutex* LogSilencerMutex() {
+  static Mutex* log_silencer_count_mutex_ = new Mutex;
+  return log_silencer_count_mutex_;
+}
+
+// Forces the above mutex to be initialized during startup.  This way we don't
+// have to worry about the initialization itself being thread-safe, since no
+// threads should exist yet at startup time.  (Otherwise we'd have no way to
+// make things thread-safe here because we'd need a Mutex for that, and we'd
+// have no way to construct one safely!)
+static struct LogSilencerMutexInitializer {
+  LogSilencerMutexInitializer() {
+    LogSilencerMutex();
+  }
+} log_silencer_mutex_initializer;
+
 
 static string SimpleCtoa(char c) { return string(1, c); }
 
@@ -140,7 +160,7 @@ void LogMessage::Finish() {
   bool suppress = false;
 
   if (level_ != LOGLEVEL_FATAL) {
-    MutexLock lock(&internal::log_silencer_count_mutex_);
+    MutexLock lock(internal::LogSilencerMutex());
     suppress = internal::log_silencer_count_ > 0;
   }
 
@@ -173,12 +193,12 @@ LogHandler* SetLogHandler(LogHandler* new_func) {
 }
 
 LogSilencer::LogSilencer() {
-  MutexLock lock(&internal::log_silencer_count_mutex_);
+  MutexLock lock(internal::LogSilencerMutex());
   ++internal::log_silencer_count_;
 };
 
 LogSilencer::~LogSilencer() {
-  MutexLock lock(&internal::log_silencer_count_mutex_);
+  MutexLock lock(internal::LogSilencerMutex());
   --internal::log_silencer_count_;
 };
 

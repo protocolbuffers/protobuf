@@ -63,3 +63,5 @@ Patch contributors:
     * Fixed warnings about generated constructors not explicitly initializing
       all fields (only present with certain compiler settings).
     * Added generation of field number constants.
+  Wink Saville <wink@google.com>
+    * Fixed initialization ordering problem in logging code.
