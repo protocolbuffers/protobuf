@@ -65,3 +65,5 @@ Patch contributors:
     * Added generation of field number constants.
   Wink Saville <wink@google.com>
     * Fixed initialization ordering problem in logging code.
+  Will Pierce <willp@nuclei.com>
+    * Small patch improving performance of in Python serialization.
