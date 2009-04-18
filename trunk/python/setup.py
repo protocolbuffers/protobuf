@@ -11,6 +11,7 @@ from setuptools import setup
 from distutils.spawn import find_executable
 import sys
 import os
+import subprocess
 
 maintainer_email = "protobuf@googlegroups.com"
 
@@ -42,8 +43,8 @@ def generate_proto(source):
           "or install the binary package.\n")
       sys.exit(-1)
 
-    protoc_command = protoc + " -I../src -I. --python_out=. " + source
-    if os.system(protoc_command) != 0:
+    protoc_command = [ protoc, "-I../src", "-I.", "--python_out=.", source ]
+    if subprocess.call(protoc_command) != 0:
       sys.exit(-1)
 
 def MakeTestSuite():
