@@ -319,6 +319,11 @@ void Generator::PrintTopLevelExtensions() const {
   const bool is_extension = true;
   for (int i = 0; i < file_->extension_count(); ++i) {
     const FieldDescriptor& extension_field = *file_->extension(i);
+    string constant_name = extension_field.name() + "_FIELD_NUMBER";
+    UpperString(&constant_name);
+    printer_->Print("$constant_name$ = $number$\n",
+      "constant_name", constant_name,
+      "number", SimpleItoa(extension_field.number()));
     printer_->Print("$name$ = ", "name", extension_field.name());
     PrintFieldDescriptor(extension_field, is_extension);
     printer_->Print("\n");

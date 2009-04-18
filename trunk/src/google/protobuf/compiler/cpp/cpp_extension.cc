@@ -77,9 +77,11 @@ ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
   map<string, string> vars;
-  vars["extendee"   ] = ClassName(descriptor_->containing_type(), true);
-  vars["type_traits"] = type_traits_;
-  vars["name"       ] = descriptor_->name();
+  vars["extendee"     ] = ClassName(descriptor_->containing_type(), true);
+  vars["number"       ] = SimpleItoa(descriptor_->number());
+  vars["type_traits"  ] = type_traits_;
+  vars["name"         ] = descriptor_->name();
+  vars["constant_name"] = FieldConstantName(descriptor_);
 
   // If this is a class member, it needs to be declared "static".  Otherwise,
   // it needs to be "extern".
@@ -91,24 +93,34 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
   }
 
   printer->Print(vars,
+    "static const int $constant_name$ = $number$;\n"
     "$qualifier$ ::google::protobuf::internal::ExtensionIdentifier< $extendee$,\n"
     "  ::google::protobuf::internal::$type_traits$ > $name$;\n");
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   map<string, string> vars;
-  vars["extendee"   ] = ClassName(descriptor_->containing_type(), true);
-  vars["number"     ] = SimpleItoa(descriptor_->number());
-  vars["type_traits"] = type_traits_;
-  vars["name"       ] = descriptor_->name();
+  vars["extendee"     ] = ClassName(descriptor_->containing_type(), true);
+  vars["type_traits"  ] = type_traits_;
+  vars["name"         ] = descriptor_->name();
+  vars["constant_name"] = FieldConstantName(descriptor_);
 
   // If this is a class member, it needs to be declared in its class scope.
   vars["scope"] = (descriptor_->extension_scope() == NULL) ? "" :
     ClassName(descriptor_->extension_scope(), false) + "::";
 
+  // Likewise, class members need to declare the field constant variable.
+  if (descriptor_->extension_scope() != NULL) {
+    printer->Print(vars,
+      "#ifndef _MSC_VER\n"
+      "const int $scope$$constant_name$;\n"
+      "#endif\n");
+  }
+
   printer->Print(vars,
     "::google::protobuf::internal::ExtensionIdentifier< $extendee$,\n"
-    "  ::google::protobuf::internal::$type_traits$ > $scope$$name$($number$);\n");
+    "  ::google::protobuf::internal::$type_traits$ > $scope$$name$("
+      "$constant_name$);\n");
 }
 
 }  // namespace cpp

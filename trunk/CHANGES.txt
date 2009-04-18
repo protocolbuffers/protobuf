@@ -8,6 +8,15 @@
     this blob, the individual values are encoded the same way they would
     be normally except without a tag before each value (thus, they are
     tightly "packed").
+  * For each field, the generated code contains an integer constant assigned
+    to the field number.  For example, the .proto file:
+      message Foo { optional int bar_baz = 123; }
+    would generate the following constants, all with the integer value 123:
+      C++:     Foo::kBarBazFieldNumber
+      Java:    Foo.BAR_BAZ_FIELD_NUMBER
+      Python:  Foo.BAR_BAZ_FIELD_NUMBER
+    Constants are also generated for extensions, with the same naming scheme.
+    These constants may be used as switch cases.
 
   protoc
   * --error_format=msvs option causes errors to be printed in Visual Studio

@@ -311,6 +311,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
   // Fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
     PrintFieldComment(printer, descriptor_->field(i));
+    printer->Print("public static final int $constant_name$ = $number$;\n",
+      "constant_name", FieldConstantName(descriptor_->field(i)),
+      "number", SimpleItoa(descriptor_->field(i)->number()));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }

@@ -1787,6 +1787,47 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(1000.0, d.ReadDouble())
     self.assertTrue(d.EndOfStream())
 
+  def testFieldNumbers(self):
+    proto = unittest_pb2.TestAllTypes()
+    self.assertEqual(unittest_pb2.TestAllTypes.NestedMessage.BB_FIELD_NUMBER, 1)
+    self.assertEqual(unittest_pb2.TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER, 1)
+    self.assertEqual(unittest_pb2.TestAllTypes.OPTIONALGROUP_FIELD_NUMBER, 16)
+    self.assertEqual(
+      unittest_pb2.TestAllTypes.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER, 18)
+    self.assertEqual(
+      unittest_pb2.TestAllTypes.OPTIONAL_NESTED_ENUM_FIELD_NUMBER, 21)
+    self.assertEqual(unittest_pb2.TestAllTypes.REPEATED_INT32_FIELD_NUMBER, 31)
+    self.assertEqual(unittest_pb2.TestAllTypes.REPEATEDGROUP_FIELD_NUMBER, 46)
+    self.assertEqual(
+      unittest_pb2.TestAllTypes.REPEATED_NESTED_MESSAGE_FIELD_NUMBER, 48)
+    self.assertEqual(
+      unittest_pb2.TestAllTypes.REPEATED_NESTED_ENUM_FIELD_NUMBER, 51)
+
+  def testExtensionFieldNumbers(self):
+    self.assertEqual(unittest_pb2.TestRequired.single.number, 1000)
+    self.assertEqual(unittest_pb2.TestRequired.SINGLE_FIELD_NUMBER, 1000)
+    self.assertEqual(unittest_pb2.TestRequired.multi.number, 1001)
+    self.assertEqual(unittest_pb2.TestRequired.MULTI_FIELD_NUMBER, 1001)
+    self.assertEqual(unittest_pb2.optional_int32_extension.number, 1)
+    self.assertEqual(unittest_pb2.OPTIONAL_INT32_EXTENSION_FIELD_NUMBER, 1)
+    self.assertEqual(unittest_pb2.optionalgroup_extension.number, 16)
+    self.assertEqual(unittest_pb2.OPTIONALGROUP_EXTENSION_FIELD_NUMBER, 16)
+    self.assertEqual(unittest_pb2.optional_nested_message_extension.number, 18)
+    self.assertEqual(
+      unittest_pb2.OPTIONAL_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 18)
+    self.assertEqual(unittest_pb2.optional_nested_enum_extension.number, 21)
+    self.assertEqual(unittest_pb2.OPTIONAL_NESTED_ENUM_EXTENSION_FIELD_NUMBER,
+      21)
+    self.assertEqual(unittest_pb2.repeated_int32_extension.number, 31)
+    self.assertEqual(unittest_pb2.REPEATED_INT32_EXTENSION_FIELD_NUMBER, 31)
+    self.assertEqual(unittest_pb2.repeatedgroup_extension.number, 46)
+    self.assertEqual(unittest_pb2.REPEATEDGROUP_EXTENSION_FIELD_NUMBER, 46)
+    self.assertEqual(unittest_pb2.repeated_nested_message_extension.number, 48)
+    self.assertEqual(
+      unittest_pb2.REPEATED_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 48)
+    self.assertEqual(unittest_pb2.repeated_nested_enum_extension.number, 51)
+    self.assertEqual(unittest_pb2.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER,
+      51)
 
 class OptionsTest(unittest.TestCase):
 
