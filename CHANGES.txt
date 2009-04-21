@@ -17,6 +17,9 @@
       Python:  Foo.BAR_BAZ_FIELD_NUMBER
     Constants are also generated for extensions, with the same naming scheme.
     These constants may be used as switch cases.
+  * Updated bundled Google Test to version 1.3.0.  Google Test is now bundled
+    in its verbatim form as a nested autoconf package, so you can drop in any
+    other version of Google Test if needed.
 
   protoc
   * --error_format=msvs option causes errors to be printed in Visual Studio

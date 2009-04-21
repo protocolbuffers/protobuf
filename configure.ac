@@ -8,7 +8,11 @@ AC_PREREQ(2.59)
 # * python/setup.py
 # * src/google/protobuf/stubs/common.h
 # * src/Makefile.am (Update -version-info for LDFLAGS if needed)
-AC_INIT([protobuf],[2.0.4-SNAPSHOT],[protobuf@googlegroups.com])
+#
+# In the SVN trunk, the version should always be the next anticipated release
+# version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
+# the size of one file name in the dist tarfile over the 99-char limit.)
+AC_INIT([Protocol Buffers],[2.0.4-pre],[protobuf@googlegroups.com],[protobuf])
 
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
 AC_CONFIG_HEADERS([config.h])
@@ -23,6 +27,7 @@ AC_ARG_WITH([zlib],
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
+AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 AC_PROG_LIBTOOL
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
@@ -55,6 +60,8 @@ AM_CONDITIONAL([HAVE_ZLIB], [test $HAVE_ZLIB = 1])
 
 ACX_PTHREAD
 AC_CXX_STL_HASH
+
+AC_CONFIG_SUBDIRS([gtest])
 
 AC_CONFIG_FILES([Makefile src/Makefile ])
 AC_OUTPUT
