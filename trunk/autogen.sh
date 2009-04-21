@@ -13,7 +13,14 @@ __EOF__
   exit 1
 fi
 
-set -ex
+if test ! -e gtest; then
+  echo "gtest bundle not present.  Downloading gtest-1.3.0 automatically." >&2
+  set -ex
+  curl http://googletest.googlecode.com/files/gtest-1.3.0.tar.bz2 | tar jx
+  mv gtest-1.3.0 gtest
+else
+  set -ex
+fi
 
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete

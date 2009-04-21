@@ -179,12 +179,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
-  google/protobuf/compiler/package_info.h                      \
-  gtest/CHANGES                                                \
-  gtest/CONTRIBUTORS                                           \
-  gtest/COPYING                                                \
-  gtest/README                                                 \
-  gtest/gen_gtest_pred_impl.py
+  google/protobuf/compiler/package_info.h
 
 protoc_outputs =                                               \
   google/protobuf/unittest.pb.cc                               \
@@ -221,7 +216,11 @@ unittest_proto_middleman: protoc$(EXEEXT) $(protoc_inputs)
 $(protoc_outputs): unittest_proto_middleman
 
 check_PROGRAMS = protobuf-test $(GZCHECKPROGRAMS)
-protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
+protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
+                      $(top_builddir)/gtest/lib/libgtest.la       \
+                      $(top_builddir)/gtest/lib/libgtest_main.la
+protobuf_test_CPPFLAGS = -I$(top_srcdir)/gtest/include         \
+                         -I$(top_builddir)/gtest/include
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/strutil_unittest.cc                    \
@@ -251,24 +250,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/testing/googletest.cc                        \
   google/protobuf/testing/googletest.h                         \
   google/protobuf/testing/file.cc                              \
-  google/protobuf/testing/file.h                               \
-  gtest/gtest.cc                                               \
-  gtest/gtest.h                                                \
-  gtest/gtest-death-test.cc                                    \
-  gtest/gtest-death-test.h                                     \
-  gtest/gtest-filepath.cc                                      \
-  gtest/gtest-internal-inl.h                                   \
-  gtest/gtest-message.h                                        \
-  gtest/gtest-port.cc                                          \
-  gtest/gtest-spi.h                                            \
-  gtest/gtest_main.cc                                          \
-  gtest/gtest_pred_impl.h                                      \
-  gtest/gtest_prod.h                                           \
-  gtest/internal/gtest-death-test-internal.h                   \
-  gtest/internal/gtest-filepath.h                              \
-  gtest/internal/gtest-internal.h                              \
-  gtest/internal/gtest-port.h                                  \
-  gtest/internal/gtest-string.h
+  google/protobuf/testing/file.h
 
 if HAVE_ZLIB
 zcgzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
