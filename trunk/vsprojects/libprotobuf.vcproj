@@ -348,15 +348,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\stubs\structurally_valid.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\stubs\strutil.cc"
 				>
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\stubs\substitute.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\stubs\structurally_valid.cc"
 				>
 			</File>
 			<File
