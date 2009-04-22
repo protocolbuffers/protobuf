@@ -18,6 +18,8 @@ maintainer_email = "protobuf@googlegroups.com"
 # Find the Protocol Compiler.
 if os.path.exists("../src/protoc"):
   protoc = "../src/protoc"
+elif os.path.exists("../src/protoc.exe"):
+  protoc = "../src/protoc.exe"
 else:
   protoc = find_executable("protoc")
 
