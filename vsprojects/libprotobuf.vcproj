@@ -216,10 +216,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\stubs\scoped_memory_log.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\service.h"
 				>
 			</File>
