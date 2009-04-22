@@ -18,6 +18,15 @@ if test ! -e gtest; then
   set -ex
   curl http://googletest.googlecode.com/files/gtest-1.3.0.tar.bz2 | tar jx
   mv gtest-1.3.0 gtest
+
+  # Temporary hack:  Must change C runtime library to "multi-threaded DLL",
+  #   otherwise it will be set to "multi-threaded static" when MSVC upgrades
+  #   the project file to MSVC 2005/2008.  vladl of Google Test says gtest will
+  #   probably change their default to match, then this will be unnecessary.
+  #   One of these mappings converts the debug configuration and the other
+  #   converts the release configuration.  I don't know which is which.
+  sed -i -e 's/RuntimeLibrary="5"/RuntimeLibrary="3"/g;
+             s/RuntimeLibrary="4"/RuntimeLibrary="2"/g;' gtest/msvc/*.vcproj
 else
   set -ex
 fi
