@@ -1075,7 +1075,7 @@ template<typename T> struct remove_pointer<T* const volatile> {
 
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in
 // structurally_valid.cc.
-bool IsStructurallyValidUTF8(const char* buf, int len);
+LIBPROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
 
 }  // namespace internal
 
