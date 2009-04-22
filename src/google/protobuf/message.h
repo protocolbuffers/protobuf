@@ -118,6 +118,24 @@
 #include <iosfwd>
 #endif
 
+#if defined(_WIN32) && defined(GetMessage)
+// windows.h defines GetMessage() as a macro.  Let's re-define it as an inline
+// function.  This is necessary because Reflection has a method called
+// GetMessage() which we don't want overridden.  The inline function should be
+// equivalent for C++ users.
+inline BOOL GetMessage_Win32(
+    LPMSG lpMsg, HWND hWnd,
+    UINT wMsgFilterMin, UINT wMsgFilterMax) {
+  return GetMessage(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+}
+#undef GetMessage
+inline BOOL GetMessage(
+    LPMSG lpMsg, HWND hWnd,
+    UINT wMsgFilterMin, UINT wMsgFilterMax) {
+  return GetMessage_Win32(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+}
+#endif
+
 #include <google/protobuf/stubs/common.h>
 
 namespace google {

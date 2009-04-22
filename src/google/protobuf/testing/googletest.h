@@ -58,6 +58,7 @@ string GetCapturedTestStderr();
 // For use with ScopedMemoryLog::GetMessages().  Inside Google the LogLevel
 // constants don't have the LOGLEVEL_ prefix, so the code that used
 // ScopedMemoryLog refers to LOGLEVEL_ERROR as just ERROR.
+#undef ERROR  // defend against promiscuous windows.h
 static const LogLevel ERROR = LOGLEVEL_ERROR;
 
 // Receives copies of all LOG(ERROR) messages while in scope.  Sample usage:
