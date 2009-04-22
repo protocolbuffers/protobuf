@@ -32,6 +32,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#ifdef _WIN32
+// Verify that #icnluding windows.h does not break anything (e.g. because
+// windows.h #defines GetMessage() as a macro).
+#include <windows.h>
+#endif
+
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
