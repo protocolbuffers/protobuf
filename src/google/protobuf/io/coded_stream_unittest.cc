@@ -268,8 +268,8 @@ TEST_2D(CodedStreamTest, WriteVarint32, kVarintCases, kBlockSizes) {
   {
     CodedOutputStream coded_output(&output);
 
-    EXPECT_TRUE(coded_output.WriteVarint32(
-      static_cast<uint32>(kVarintCases_case.value)));
+    coded_output.WriteVarint32(static_cast<uint32>(kVarintCases_case.value));
+    EXPECT_FALSE(coded_output.HadError());
 
     EXPECT_EQ(kVarintCases_case.size, coded_output.ByteCount());
   }
@@ -285,7 +285,8 @@ TEST_2D(CodedStreamTest, WriteVarint64, kVarintCases, kBlockSizes) {
   {
     CodedOutputStream coded_output(&output);
 
-    EXPECT_TRUE(coded_output.WriteVarint64(kVarintCases_case.value));
+    coded_output.WriteVarint64(kVarintCases_case.value);
+    EXPECT_FALSE(coded_output.HadError());
 
     EXPECT_EQ(kVarintCases_case.size, coded_output.ByteCount());
   }
@@ -310,8 +311,8 @@ TEST_2D(CodedStreamTest, WriteVarint32SignExtended,
   {
     CodedOutputStream coded_output(&output);
 
-    EXPECT_TRUE(coded_output.WriteVarint32SignExtended(
-      kSignExtendedVarintCases_case));
+    coded_output.WriteVarint32SignExtended(kSignExtendedVarintCases_case);
+    EXPECT_FALSE(coded_output.HadError());
 
     if (kSignExtendedVarintCases_case < 0) {
       EXPECT_EQ(10, coded_output.ByteCount());
@@ -502,7 +503,8 @@ TEST_2D(CodedStreamTest, WriteLittleEndian32, kFixed32Cases, kBlockSizes) {
   {
     CodedOutputStream coded_output(&output);
 
-    EXPECT_TRUE(coded_output.WriteLittleEndian32(kFixed32Cases_case.value));
+    coded_output.WriteLittleEndian32(kFixed32Cases_case.value);
+    EXPECT_FALSE(coded_output.HadError());
 
     EXPECT_EQ(sizeof(uint32), coded_output.ByteCount());
   }
@@ -517,7 +519,8 @@ TEST_2D(CodedStreamTest, WriteLittleEndian64, kFixed64Cases, kBlockSizes) {
   {
     CodedOutputStream coded_output(&output);
 
-    EXPECT_TRUE(coded_output.WriteLittleEndian64(kFixed64Cases_case.value));
+    coded_output.WriteLittleEndian64(kFixed64Cases_case.value);
+    EXPECT_FALSE(coded_output.HadError());
 
     EXPECT_EQ(sizeof(uint64), coded_output.ByteCount());
   }
@@ -552,7 +555,8 @@ TEST_1D(CodedStreamTest, WriteRaw, kBlockSizes) {
   {
     CodedOutputStream coded_output(&output);
 
-    EXPECT_TRUE(coded_output.WriteRaw(kRawBytes, sizeof(kRawBytes)));
+    coded_output.WriteRaw(kRawBytes, sizeof(kRawBytes));
+    EXPECT_FALSE(coded_output.HadError());
 
     EXPECT_EQ(sizeof(kRawBytes), coded_output.ByteCount());
   }

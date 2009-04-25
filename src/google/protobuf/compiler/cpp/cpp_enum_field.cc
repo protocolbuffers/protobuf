@@ -116,8 +116,8 @@ GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void EnumFieldGenerator::
-GenerateInitializer(io::Printer* printer) const {
-  printer->Print(variables_, ",\n$name$_($default$)");
+GenerateConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_ = $default$;\n");
 }
 
 void EnumFieldGenerator::
@@ -128,15 +128,22 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     "if ($type$_IsValid(value)) {\n"
     "  set_$name$(static_cast< $type$ >(value));\n"
     "} else {\n"
-    "  mutable_unknown_fields()->AddField($number$)->add_varint(value);\n"
+    "  mutable_unknown_fields()->AddVarint($number$, value);\n"
     "}\n");
 }
 
 void EnumFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "DO_(::google::protobuf::internal::WireFormat::WriteEnum("
-      "$number$, this->$name$(), output));\n");
+    "::google::protobuf::internal::WireFormat::WriteEnum("
+      "$number$, this->$name$(), output);\n");
+}
+
+void EnumFieldGenerator::
+GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+  printer->Print(variables_,
+    "target = ::google::protobuf::internal::WireFormat::WriteEnumToArray("
+      "$number$, this->$name$(), target);\n");
 }
 
 void EnumFieldGenerator::
@@ -217,12 +224,8 @@ GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void RepeatedEnumFieldGenerator::
-GenerateInitializer(io::Printer* printer) const {
-  printer->Print(variables_, ",\n$name$_()");
-  if (descriptor_->options().packed() &&
-      descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
-    printer->Print(variables_, ",\n_$name$_cached_byte_size_()");
-  }
+GenerateConstructorCode(io::Printer* printer) const {
+  // Not needed for repeated fields.
 }
 
 void RepeatedEnumFieldGenerator::
@@ -248,7 +251,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       "if ($type$_IsValid(value)) {\n"
       "  add_$name$(static_cast< $type$ >(value));\n"
       "} else {\n"
-      "  mutable_unknown_fields()->AddField($number$)->add_varint(value);\n"
+      "  mutable_unknown_fields()->AddVarint($number$, value);\n"
       "}\n");
   }
 }
@@ -259,22 +262,51 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
     // Write the tag and the size.
     printer->Print(variables_,
       "if (this->$name$_size() > 0) {\n"
-      "  DO_(::google::protobuf::internal::WireFormat::WriteTag("
-          "$number$, ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED,"
-          "output));\n"
-      "  DO_(output->WriteVarint32(_$name$_cached_byte_size_));\n"
+      "  ::google::protobuf::internal::WireFormat::WriteTag("
+          "$number$, "
+          "::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED, "
+          "output);\n"
+      "  output->WriteVarint32(_$name$_cached_byte_size_);\n"
       "}\n");
   }
   printer->Print(variables_,
       "for (int i = 0; i < this->$name$_size(); i++) {\n");
   if (descriptor_->options().packed()) {
     printer->Print(variables_,
-      "  DO_(::google::protobuf::internal::WireFormat::WriteEnumNoTag("
-          "this->$name$(i), output));\n");
+      "  ::google::protobuf::internal::WireFormat::WriteEnumNoTag("
+          "this->$name$(i), output);\n");
   } else {
     printer->Print(variables_,
-      "  DO_(::google::protobuf::internal::WireFormat::WriteEnum("
-          "$number$, this->$name$(i), output));\n");
+      "  ::google::protobuf::internal::WireFormat::WriteEnum("
+          "$number$, this->$name$(i), output);\n");
+  }
+  printer->Print("}\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+  if (descriptor_->options().packed()) {
+    // Write the tag and the size.
+    printer->Print(variables_,
+      "if (this->$name$_size() > 0) {\n"
+      "  target = ::google::protobuf::internal::WireFormat::WriteTagToArray("
+          "$number$, "
+          "::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED, "
+          "target);\n"
+      "  target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray("
+          "_$name$_cached_byte_size_, target);\n"
+      "}\n");
+  }
+  printer->Print(variables_,
+      "for (int i = 0; i < this->$name$_size(); i++) {\n");
+  if (descriptor_->options().packed()) {
+    printer->Print(variables_,
+      "  target = ::google::protobuf::internal::WireFormat::WriteEnumNoTagToArray("
+          "this->$name$(i), target);\n");
+  } else {
+    printer->Print(variables_,
+      "  target = ::google::protobuf::internal::WireFormat::WriteEnumToArray("
+          "$number$, this->$name$(i), target);\n");
   }
   printer->Print("}\n");
 }

@@ -94,16 +94,13 @@ class FieldGenerator {
   // message.cc under the GenerateSwap method.
   virtual void GenerateSwappingCode(io::Printer* printer) const = 0;
 
-  // Generate any initializers needed for the private members declared by
-  // GeneratePrivateMembers().  These go into the message class's
-  // constructor's initializer list.  For each initializer, this method
-  // must print the comma and newline separating it from the *previous*
-  // initializer, not the *next* initailizer.  That is, print a ",\n" first,
-  // e.g.:
-  //   printer->Print(",\n$name$_($default$)");
-  virtual void GenerateInitializer(io::Printer* printer) const = 0;
+  // Generate initialization code for private members declared by
+  // GeneratePrivateMembers(). These go into the message class's SharedCtor()
+  // method, invoked by each of the generated constructors.
+  virtual void GenerateConstructorCode(io::Printer* printer) const = 0;
 
-  // Generate any code that needs to go in the class's destructor.
+  // Generate any code that needs to go in the class's SharedDtor() method,
+  // invoked by the destructor.
   // Most field types don't need this, so the default implementation is empty.
   virtual void GenerateDestructorCode(io::Printer* printer) const {}
 
@@ -114,6 +111,12 @@ class FieldGenerator {
   // Generate lines to serialize this field, which are placed within the
   // message's SerializeWithCachedSizes() method.
   virtual void GenerateSerializeWithCachedSizes(io::Printer* printer) const = 0;
+
+  // Generate lines to serialize this field directly to the array "target",
+  // which are placed within the message's SerializeWithCachedSizesToArray()
+  // method. This must also advance "target" past the written bytes.
+  virtual void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const = 0;
 
   // Generate lines to compute the serialized size of this field, which
   // are placed in the message's ByteSize() method.

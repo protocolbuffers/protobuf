@@ -61,6 +61,18 @@ public class DynamicMessageTest extends TestCase {
     reflectionTester.assertAllFieldsSetViaReflection(message);
   }
 
+  public void testDoubleBuildError() throws Exception {
+    Message.Builder builder =
+      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    builder.build();
+    try {
+      builder.build();
+      fail("Should have thrown exception.");
+    } catch (IllegalStateException e) {
+      // Success.
+    }
+  }
+
   public void testDynamicMessageSettersRejectNull() throws Exception {
     Message.Builder builder =
       DynamicMessage.newBuilder(TestAllTypes.getDescriptor());

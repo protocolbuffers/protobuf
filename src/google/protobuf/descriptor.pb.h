@@ -26,9 +26,8 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto();
-void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-    ::google::protobuf::FileDescriptor* file);
+void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
 
 class FileDescriptorSet;
 class FileDescriptorProto;
@@ -74,6 +73,15 @@ LIBPROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = FieldDescriptorProto_Type_TYPE_DOUBLE;
 const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDescriptorProto_Type_TYPE_SINT64;
 
+inline const ::std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    FieldDescriptorProto_Type_descriptor(), value);
+}
+inline bool FieldDescriptorProto_Type_Parse(
+    const ::std::string& name, FieldDescriptorProto_Type* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FieldDescriptorProto_Type>(
+    FieldDescriptorProto_Type_descriptor(), name, value);
+}
 enum FieldDescriptorProto_Label {
   FieldDescriptorProto_Label_LABEL_OPTIONAL = 1,
   FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
@@ -84,6 +92,15 @@ LIBPROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
 const FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN = FieldDescriptorProto_Label_LABEL_OPTIONAL;
 const FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = FieldDescriptorProto_Label_LABEL_REPEATED;
 
+inline const ::std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    FieldDescriptorProto_Label_descriptor(), value);
+}
+inline bool FieldDescriptorProto_Label_Parse(
+    const ::std::string& name, FieldDescriptorProto_Label* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FieldDescriptorProto_Label>(
+    FieldDescriptorProto_Label_descriptor(), name, value);
+}
 enum FileOptions_OptimizeMode {
   FileOptions_OptimizeMode_SPEED = 1,
   FileOptions_OptimizeMode_CODE_SIZE = 2
@@ -93,6 +110,15 @@ LIBPROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
 const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN = FileOptions_OptimizeMode_SPEED;
 const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = FileOptions_OptimizeMode_CODE_SIZE;
 
+inline const ::std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    FileOptions_OptimizeMode_descriptor(), value);
+}
+inline bool FileOptions_OptimizeMode_Parse(
+    const ::std::string& name, FileOptions_OptimizeMode* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FileOptions_OptimizeMode>(
+    FileOptions_OptimizeMode_descriptor(), name, value);
+}
 enum FieldOptions_CType {
   FieldOptions_CType_CORD = 1,
   FieldOptions_CType_STRING_PIECE = 2
@@ -102,6 +128,15 @@ LIBPROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
 const FieldOptions_CType FieldOptions_CType_CType_MIN = FieldOptions_CType_CORD;
 const FieldOptions_CType FieldOptions_CType_CType_MAX = FieldOptions_CType_STRING_PIECE;
 
+inline const ::std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    FieldOptions_CType_descriptor(), value);
+}
+inline bool FieldOptions_CType_Parse(
+    const ::std::string& name, FieldOptions_CType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FieldOptions_CType>(
+    FieldOptions_CType_descriptor(), name, value);
+}
 // ===================================================================
 
 class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message {
@@ -137,14 +172,17 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   void MergeFrom(const FileDescriptorSet& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -170,8 +208,8 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -223,14 +261,17 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   void MergeFrom(const FileDescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -248,6 +289,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // optional string package = 2;
@@ -257,6 +299,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   inline const ::std::string& package() const;
   inline void set_package(const ::std::string& value);
   inline void set_package(const char* value);
+  inline void set_package(const char* value, size_t size);
   inline ::std::string* mutable_package();
   
   // repeated string dependency = 3;
@@ -269,9 +312,11 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   inline ::std::string* mutable_dependency(int index);
   inline void set_dependency(int index, const ::std::string& value);
   inline void set_dependency(int index, const char* value);
+  inline void set_dependency(int index, const char* value, size_t size);
   inline ::std::string* add_dependency();
   inline void add_dependency(const ::std::string& value);
   inline void add_dependency(const char* value);
+  inline void add_dependency(const char* value, size_t size);
   
   // repeated .google.protobuf.DescriptorProto message_type = 4;
   inline int message_type_size() const;
@@ -334,8 +379,8 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto > service_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
   ::google::protobuf::FileOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -387,14 +432,17 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   void MergeFrom(const DescriptorProto_ExtensionRange& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -425,8 +473,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   
   ::google::protobuf::int32 start_;
   ::google::protobuf::int32 end_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -478,14 +526,17 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   void MergeFrom(const DescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -505,6 +556,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
@@ -576,8 +628,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange > extension_range_;
   ::google::protobuf::MessageOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -629,14 +681,17 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   void MergeFrom(const FieldDescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -671,6 +726,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   static inline bool Type_IsValid(int value) {
     return FieldDescriptorProto_Type_IsValid(value);
   }
+  static inline const ::std::string& Type_Name(Type value) {
+    return FieldDescriptorProto_Type_Name(value);
+  }
+  static inline bool Type_Parse(const ::std::string& name,
+      Type* value) {
+    return FieldDescriptorProto_Type_Parse(name, value);
+  }
   static const Type Type_MIN =
     FieldDescriptorProto_Type_Type_MIN;
   static const Type Type_MAX =
@@ -687,6 +749,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   static inline bool Label_IsValid(int value) {
     return FieldDescriptorProto_Label_IsValid(value);
   }
+  static inline const ::std::string& Label_Name(Label value) {
+    return FieldDescriptorProto_Label_Name(value);
+  }
+  static inline bool Label_Parse(const ::std::string& name,
+      Label* value) {
+    return FieldDescriptorProto_Label_Parse(name, value);
+  }
   static const Label Label_MIN =
     FieldDescriptorProto_Label_Label_MIN;
   static const Label Label_MAX =
@@ -701,6 +770,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // optional int32 number = 3;
@@ -731,6 +801,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline const ::std::string& type_name() const;
   inline void set_type_name(const ::std::string& value);
   inline void set_type_name(const char* value);
+  inline void set_type_name(const char* value, size_t size);
   inline ::std::string* mutable_type_name();
   
   // optional string extendee = 2;
@@ -740,6 +811,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline const ::std::string& extendee() const;
   inline void set_extendee(const ::std::string& value);
   inline void set_extendee(const char* value);
+  inline void set_extendee(const char* value, size_t size);
   inline ::std::string* mutable_extendee();
   
   // optional string default_value = 7;
@@ -749,6 +821,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline const ::std::string& default_value() const;
   inline void set_default_value(const ::std::string& value);
   inline void set_default_value(const char* value);
+  inline void set_default_value(const char* value, size_t size);
   inline ::std::string* mutable_default_value();
   
   // optional .google.protobuf.FieldOptions options = 8;
@@ -774,8 +847,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* default_value_;
   static const ::std::string _default_default_value_;
   ::google::protobuf::FieldOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -827,14 +900,17 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   void MergeFrom(const EnumDescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -852,6 +928,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
@@ -879,8 +956,8 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
   ::google::protobuf::EnumOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -932,14 +1009,17 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   void MergeFrom(const EnumValueDescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -957,6 +1037,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // optional int32 number = 2;
@@ -981,8 +1062,8 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   static const ::std::string _default_name_;
   ::google::protobuf::int32 number_;
   ::google::protobuf::EnumValueOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1034,14 +1115,17 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   void MergeFrom(const ServiceDescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -1059,6 +1143,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
@@ -1086,8 +1171,8 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
   ::google::protobuf::ServiceOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1139,14 +1224,17 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   void MergeFrom(const MethodDescriptorProto& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -1164,6 +1252,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
   
   // optional string input_type = 2;
@@ -1173,6 +1262,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline const ::std::string& input_type() const;
   inline void set_input_type(const ::std::string& value);
   inline void set_input_type(const char* value);
+  inline void set_input_type(const char* value, size_t size);
   inline ::std::string* mutable_input_type();
   
   // optional string output_type = 3;
@@ -1182,6 +1272,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline const ::std::string& output_type() const;
   inline void set_output_type(const ::std::string& value);
   inline void set_output_type(const char* value);
+  inline void set_output_type(const char* value, size_t size);
   inline ::std::string* mutable_output_type();
   
   // optional .google.protobuf.MethodOptions options = 4;
@@ -1202,8 +1293,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::std::string* output_type_;
   static const ::std::string _default_output_type_;
   ::google::protobuf::MethodOptions* options_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1255,14 +1346,17 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   void MergeFrom(const FileOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -1281,6 +1375,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   static inline bool OptimizeMode_IsValid(int value) {
     return FileOptions_OptimizeMode_IsValid(value);
   }
+  static inline const ::std::string& OptimizeMode_Name(OptimizeMode value) {
+    return FileOptions_OptimizeMode_Name(value);
+  }
+  static inline bool OptimizeMode_Parse(const ::std::string& name,
+      OptimizeMode* value) {
+    return FileOptions_OptimizeMode_Parse(name, value);
+  }
   static const OptimizeMode OptimizeMode_MIN =
     FileOptions_OptimizeMode_OptimizeMode_MIN;
   static const OptimizeMode OptimizeMode_MAX =
@@ -1295,6 +1396,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline const ::std::string& java_package() const;
   inline void set_java_package(const ::std::string& value);
   inline void set_java_package(const char* value);
+  inline void set_java_package(const char* value, size_t size);
   inline ::std::string* mutable_java_package();
   
   // optional string java_outer_classname = 8;
@@ -1304,6 +1406,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline const ::std::string& java_outer_classname() const;
   inline void set_java_outer_classname(const ::std::string& value);
   inline void set_java_outer_classname(const char* value);
+  inline void set_java_outer_classname(const char* value, size_t size);
   inline ::std::string* mutable_java_outer_classname();
   
   // optional bool java_multiple_files = 10 [default = false];
@@ -1313,7 +1416,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline bool java_multiple_files() const;
   inline void set_java_multiple_files(bool value);
   
-  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = CODE_SIZE];
+  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
   inline bool has_optimize_for() const;
   inline void clear_optimize_for();
   static const int kOptimizeForFieldNumber = 9;
@@ -1330,87 +1433,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FileOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FileOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -1423,8 +1446,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool java_multiple_files_;
   int optimize_for_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1476,14 +1499,17 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   void MergeFrom(const MessageOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -1511,87 +1537,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MessageOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(MessageOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -1599,8 +1545,8 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   
   bool message_set_wire_format_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1652,14 +1598,17 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   void MergeFrom(const FieldOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -1677,6 +1626,13 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   }
   static inline bool CType_IsValid(int value) {
     return FieldOptions_CType_IsValid(value);
+  }
+  static inline const ::std::string& CType_Name(CType value) {
+    return FieldOptions_CType_Name(value);
+  }
+  static inline bool CType_Parse(const ::std::string& name,
+      CType* value) {
+    return FieldOptions_CType_Parse(name, value);
   }
   static const CType CType_MIN =
     FieldOptions_CType_CType_MIN;
@@ -1699,6 +1655,13 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   inline bool packed() const;
   inline void set_packed(bool value);
   
+  // optional bool deprecated = 3 [default = false];
+  inline bool has_deprecated() const;
+  inline void clear_deprecated();
+  static const int kDeprecatedFieldNumber = 3;
+  inline bool deprecated() const;
+  inline void set_deprecated(bool value);
+  
   // optional string experimental_map_key = 9;
   inline bool has_experimental_map_key() const;
   inline void clear_experimental_map_key();
@@ -1706,6 +1669,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   inline const ::std::string& experimental_map_key() const;
   inline void set_experimental_map_key(const ::std::string& value);
   inline void set_experimental_map_key(const char* value);
+  inline void set_experimental_map_key(const char* value, size_t size);
   inline ::std::string* mutable_experimental_map_key();
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -1718,87 +1682,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        FieldOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FieldOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -1806,12 +1690,13 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   
   int ctype_;
   bool packed_;
+  bool deprecated_;
   ::std::string* experimental_map_key_;
   static const ::std::string _default_experimental_map_key_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1862,14 +1747,17 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   void MergeFrom(const EnumOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -1890,95 +1778,15 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(EnumOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2030,14 +1838,17 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   void MergeFrom(const EnumValueOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -2058,95 +1869,15 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        EnumValueOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(EnumValueOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2198,14 +1929,17 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   void MergeFrom(const ServiceOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -2226,95 +1960,15 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        ServiceOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(ServiceOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2366,14 +2020,17 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   void MergeFrom(const MethodOptions& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -2394,95 +2051,15 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
   inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
   
-  template <typename _proto_TypeTraits>
-  inline bool HasExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.Has(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void ClearExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id) {
-    _extensions_.ClearExtension(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline int ExtensionSize(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id) const {
-    return _extensions_.ExtensionSize(id.number());
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Mutable(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::ConstType GetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id,
-      int index) const {
-    return _proto_TypeTraits::Get(id.number(), _extensions_, index);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType MutableExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id,
-      int index) {
-    return _proto_TypeTraits::Mutable(id.number(),index,&_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void SetExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id,
-      int index, typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline typename _proto_TypeTraits::MutableType AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id) {
-    return _proto_TypeTraits::Add(id.number(), &_extensions_);
-  }
-  
-  template <typename _proto_TypeTraits>
-  inline void AddExtension(
-      const ::google::protobuf::internal::ExtensionIdentifier<
-        MethodOptions, _proto_TypeTraits>& id,
-      typename _proto_TypeTraits::ConstType value) {
-    _proto_TypeTraits::Add(id.number(), value, &_extensions_);
-  }
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(MethodOptions)
  private:
   ::google::protobuf::internal::ExtensionSet _extensions_;
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2534,14 +2111,17 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   void MergeFrom(const UninterpretedOption_NamePart& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -2559,6 +2139,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   inline const ::std::string& name_part() const;
   inline void set_name_part(const ::std::string& value);
   inline void set_name_part(const char* value);
+  inline void set_name_part(const char* value, size_t size);
   inline ::std::string* mutable_name_part();
   
   // required bool is_extension = 2;
@@ -2575,8 +2156,8 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   ::std::string* name_part_;
   static const ::std::string _default_name_part_;
   bool is_extension_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2628,14 +2209,17 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   void MergeFrom(const UninterpretedOption& from);
   void Clear();
   bool IsInitialized() const;
-  int ByteSize() const;
   
+  int ByteSize() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
-  bool SerializeWithCachedSizes(
+  void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
+  void SharedCtor();
+  void SharedDtor();
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
@@ -2665,6 +2249,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   inline const ::std::string& identifier_value() const;
   inline void set_identifier_value(const ::std::string& value);
   inline void set_identifier_value(const char* value);
+  inline void set_identifier_value(const char* value, size_t size);
   inline ::std::string* mutable_identifier_value();
   
   // optional uint64 positive_int_value = 4;
@@ -2710,8 +2295,8 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   double double_value_;
   ::std::string* string_value_;
   static const ::std::string _default_string_value_;
-  friend void protobuf_BuildDesc_google_2fprotobuf_2fdescriptor_2eproto_AssignGlobalDescriptors(
-      const ::google::protobuf::FileDescriptor* file);
+  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2794,6 +2379,13 @@ inline void FileDescriptorProto::set_name(const char* value) {
   }
   name_->assign(value);
 }
+inline void FileDescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FileDescriptorProto::mutable_name() {
   _set_bit(0);
   if (name_ == &_default_name_) {
@@ -2828,6 +2420,13 @@ inline void FileDescriptorProto::set_package(const char* value) {
     package_ = new ::std::string;
   }
   package_->assign(value);
+}
+inline void FileDescriptorProto::set_package(const char* value, size_t size) {
+  _set_bit(1);
+  if (package_ == &_default_package_) {
+    package_ = new ::std::string;
+  }
+  package_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FileDescriptorProto::mutable_package() {
   _set_bit(1);
@@ -2864,6 +2463,10 @@ inline void FileDescriptorProto::set_dependency(int index, const ::std::string& 
 inline void FileDescriptorProto::set_dependency(int index, const char* value) {
   dependency_.Mutable(index)->assign(value);
 }
+inline void FileDescriptorProto::set_dependency(int index, const char* value, size_t size) {
+  dependency_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FileDescriptorProto::add_dependency() {
   return dependency_.Add();
 }
@@ -2872,6 +2475,9 @@ inline void FileDescriptorProto::add_dependency(const ::std::string& value) {
 }
 inline void FileDescriptorProto::add_dependency(const char* value) {
   dependency_.Add()->assign(value);
+}
+inline void FileDescriptorProto::add_dependency(const char* value, size_t size) {
+  dependency_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 
 // repeated .google.protobuf.DescriptorProto message_type = 4;
@@ -3058,6 +2664,13 @@ inline void DescriptorProto::set_name(const char* value) {
   }
   name_->assign(value);
 }
+inline void DescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* DescriptorProto::mutable_name() {
   _set_bit(0);
   if (name_ == &_default_name_) {
@@ -3239,6 +2852,13 @@ inline void FieldDescriptorProto::set_name(const char* value) {
   }
   name_->assign(value);
 }
+inline void FieldDescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FieldDescriptorProto::mutable_name() {
   _set_bit(0);
   if (name_ == &_default_name_) {
@@ -3324,6 +2944,13 @@ inline void FieldDescriptorProto::set_type_name(const char* value) {
   }
   type_name_->assign(value);
 }
+inline void FieldDescriptorProto::set_type_name(const char* value, size_t size) {
+  _set_bit(4);
+  if (type_name_ == &_default_type_name_) {
+    type_name_ = new ::std::string;
+  }
+  type_name_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FieldDescriptorProto::mutable_type_name() {
   _set_bit(4);
   if (type_name_ == &_default_type_name_) {
@@ -3359,6 +2986,13 @@ inline void FieldDescriptorProto::set_extendee(const char* value) {
   }
   extendee_->assign(value);
 }
+inline void FieldDescriptorProto::set_extendee(const char* value, size_t size) {
+  _set_bit(5);
+  if (extendee_ == &_default_extendee_) {
+    extendee_ = new ::std::string;
+  }
+  extendee_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FieldDescriptorProto::mutable_extendee() {
   _set_bit(5);
   if (extendee_ == &_default_extendee_) {
@@ -3393,6 +3027,13 @@ inline void FieldDescriptorProto::set_default_value(const char* value) {
     default_value_ = new ::std::string;
   }
   default_value_->assign(value);
+}
+inline void FieldDescriptorProto::set_default_value(const char* value, size_t size) {
+  _set_bit(6);
+  if (default_value_ == &_default_default_value_) {
+    default_value_ = new ::std::string;
+  }
+  default_value_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FieldDescriptorProto::mutable_default_value() {
   _set_bit(6);
@@ -3449,6 +3090,13 @@ inline void EnumDescriptorProto::set_name(const char* value) {
     name_ = new ::std::string;
   }
   name_->assign(value);
+}
+inline void EnumDescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* EnumDescriptorProto::mutable_name() {
   _set_bit(0);
@@ -3531,6 +3179,13 @@ inline void EnumValueDescriptorProto::set_name(const char* value) {
   }
   name_->assign(value);
 }
+inline void EnumValueDescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* EnumValueDescriptorProto::mutable_name() {
   _set_bit(0);
   if (name_ == &_default_name_) {
@@ -3602,6 +3257,13 @@ inline void ServiceDescriptorProto::set_name(const char* value) {
     name_ = new ::std::string;
   }
   name_->assign(value);
+}
+inline void ServiceDescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* ServiceDescriptorProto::mutable_name() {
   _set_bit(0);
@@ -3684,6 +3346,13 @@ inline void MethodDescriptorProto::set_name(const char* value) {
   }
   name_->assign(value);
 }
+inline void MethodDescriptorProto::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* MethodDescriptorProto::mutable_name() {
   _set_bit(0);
   if (name_ == &_default_name_) {
@@ -3719,6 +3388,13 @@ inline void MethodDescriptorProto::set_input_type(const char* value) {
   }
   input_type_->assign(value);
 }
+inline void MethodDescriptorProto::set_input_type(const char* value, size_t size) {
+  _set_bit(1);
+  if (input_type_ == &_default_input_type_) {
+    input_type_ = new ::std::string;
+  }
+  input_type_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* MethodDescriptorProto::mutable_input_type() {
   _set_bit(1);
   if (input_type_ == &_default_input_type_) {
@@ -3753,6 +3429,13 @@ inline void MethodDescriptorProto::set_output_type(const char* value) {
     output_type_ = new ::std::string;
   }
   output_type_->assign(value);
+}
+inline void MethodDescriptorProto::set_output_type(const char* value, size_t size) {
+  _set_bit(2);
+  if (output_type_ == &_default_output_type_) {
+    output_type_ = new ::std::string;
+  }
+  output_type_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* MethodDescriptorProto::mutable_output_type() {
   _set_bit(2);
@@ -3810,6 +3493,13 @@ inline void FileOptions::set_java_package(const char* value) {
   }
   java_package_->assign(value);
 }
+inline void FileOptions::set_java_package(const char* value, size_t size) {
+  _set_bit(0);
+  if (java_package_ == &_default_java_package_) {
+    java_package_ = new ::std::string;
+  }
+  java_package_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FileOptions::mutable_java_package() {
   _set_bit(0);
   if (java_package_ == &_default_java_package_) {
@@ -3845,6 +3535,13 @@ inline void FileOptions::set_java_outer_classname(const char* value) {
   }
   java_outer_classname_->assign(value);
 }
+inline void FileOptions::set_java_outer_classname(const char* value, size_t size) {
+  _set_bit(1);
+  if (java_outer_classname_ == &_default_java_outer_classname_) {
+    java_outer_classname_ = new ::std::string;
+  }
+  java_outer_classname_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FileOptions::mutable_java_outer_classname() {
   _set_bit(1);
   if (java_outer_classname_ == &_default_java_outer_classname_) {
@@ -3869,12 +3566,12 @@ inline void FileOptions::set_java_multiple_files(bool value) {
   java_multiple_files_ = value;
 }
 
-// optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = CODE_SIZE];
+// optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
   return _has_bit(3);
 }
 inline void FileOptions::clear_optimize_for() {
-  optimize_for_ = 2;
+  optimize_for_ = 1;
   _clear_bit(3);
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() const {
@@ -3993,35 +3690,58 @@ inline void FieldOptions::set_packed(bool value) {
   packed_ = value;
 }
 
+// optional bool deprecated = 3 [default = false];
+inline bool FieldOptions::has_deprecated() const {
+  return _has_bit(2);
+}
+inline void FieldOptions::clear_deprecated() {
+  deprecated_ = false;
+  _clear_bit(2);
+}
+inline bool FieldOptions::deprecated() const {
+  return deprecated_;
+}
+inline void FieldOptions::set_deprecated(bool value) {
+  _set_bit(2);
+  deprecated_ = value;
+}
+
 // optional string experimental_map_key = 9;
 inline bool FieldOptions::has_experimental_map_key() const {
-  return _has_bit(2);
+  return _has_bit(3);
 }
 inline void FieldOptions::clear_experimental_map_key() {
   if (experimental_map_key_ != &_default_experimental_map_key_) {
     experimental_map_key_->clear();
   }
-  _clear_bit(2);
+  _clear_bit(3);
 }
 inline const ::std::string& FieldOptions::experimental_map_key() const {
   return *experimental_map_key_;
 }
 inline void FieldOptions::set_experimental_map_key(const ::std::string& value) {
-  _set_bit(2);
+  _set_bit(3);
   if (experimental_map_key_ == &_default_experimental_map_key_) {
     experimental_map_key_ = new ::std::string;
   }
   experimental_map_key_->assign(value);
 }
 inline void FieldOptions::set_experimental_map_key(const char* value) {
-  _set_bit(2);
+  _set_bit(3);
   if (experimental_map_key_ == &_default_experimental_map_key_) {
     experimental_map_key_ = new ::std::string;
   }
   experimental_map_key_->assign(value);
 }
+inline void FieldOptions::set_experimental_map_key(const char* value, size_t size) {
+  _set_bit(3);
+  if (experimental_map_key_ == &_default_experimental_map_key_) {
+    experimental_map_key_ = new ::std::string;
+  }
+  experimental_map_key_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* FieldOptions::mutable_experimental_map_key() {
-  _set_bit(2);
+  _set_bit(3);
   if (experimental_map_key_ == &_default_experimental_map_key_) {
     experimental_map_key_ = new ::std::string;
   }
@@ -4200,6 +3920,13 @@ inline void UninterpretedOption_NamePart::set_name_part(const char* value) {
   }
   name_part_->assign(value);
 }
+inline void UninterpretedOption_NamePart::set_name_part(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_part_ == &_default_name_part_) {
+    name_part_ = new ::std::string;
+  }
+  name_part_->assign(reinterpret_cast<const char*>(value), size);
+}
 inline ::std::string* UninterpretedOption_NamePart::mutable_name_part() {
   _set_bit(0);
   if (name_part_ == &_default_name_part_) {
@@ -4279,6 +4006,13 @@ inline void UninterpretedOption::set_identifier_value(const char* value) {
     identifier_value_ = new ::std::string;
   }
   identifier_value_->assign(value);
+}
+inline void UninterpretedOption::set_identifier_value(const char* value, size_t size) {
+  _set_bit(1);
+  if (identifier_value_ == &_default_identifier_value_) {
+    identifier_value_ = new ::std::string;
+  }
+  identifier_value_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* UninterpretedOption::mutable_identifier_value() {
   _set_bit(1);

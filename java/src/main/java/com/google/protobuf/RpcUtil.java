@@ -39,7 +39,7 @@ public final class RpcUtil {
   private RpcUtil() {}
 
   /**
-   * Take an {@code RcpCallabck<Message>} and convert it to an
+   * Take an {@code RpcCallback<Message>} and convert it to an
    * {@code RpcCallback} accepting a specific message type.  This is always
    * type-safe (parameter type contravariance).
    */
@@ -58,8 +58,8 @@ public final class RpcUtil {
   }
 
   /**
-   * Take an {@code RcpCallabck} accepting a specific message type and convert
-   * it to an {@code RcpCallabck<Message>}.  The generalized callback will
+   * Take an {@code RpcCallback} accepting a specific message type and convert
+   * it to an {@code RpcCallback<Message>}.  The generalized callback will
    * accept any message object which has the same descriptor, and will convert
    * it to the correct class before calling the original callback.  However,
    * if the generalized callback is given a message with a different descriptor,

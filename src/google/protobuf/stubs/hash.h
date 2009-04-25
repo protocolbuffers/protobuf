@@ -178,6 +178,33 @@ struct hash<string> {
   }
 };
 
+template <typename First, typename Second>
+struct hash<pair<First, Second> > {
+  inline size_t operator()(const pair<First, Second>& key) const {
+    size_t first_hash = hash<First>()(key.first);
+    size_t second_hash = hash<Second>()(key.second);
+
+    // FIXME(kenton):  What is the best way to compute this hash?  I have
+    // no idea!  This seems a bit better than an XOR.
+    return first_hash * ((1 << 16) - 1) + second_hash;
+  }
+
+  static const size_t bucket_size = 4;
+  static const size_t min_buckets = 8;
+  inline size_t operator()(const pair<First, Second>& a,
+                           const pair<First, Second>& b) const {
+    return a < b;
+  }
+};
+
+// Used by GCC/SGI STL only.  (Why isn't this provided by the standard
+// library?  :( )
+struct streq {
+  inline bool operator()(const char* a, const char* b) const {
+    return strcmp(a, b) == 0;
+  }
+};
+
 }  // namespace protobuf
 }  // namespace google
 

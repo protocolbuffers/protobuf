@@ -31,6 +31,10 @@
 package com.google.protobuf;
 
 import junit.framework.TestCase;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -128,6 +132,22 @@ public class WireFormatTest extends TestCase {
   public void testExtensionsSerializedSize() throws Exception {
     assertEquals(TestUtil.getAllSet().getSerializedSize(),
                  TestUtil.getAllExtensionsSet().getSerializedSize());
+  }
+
+  public void testSerializeDelimited() throws Exception {
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    TestUtil.getAllSet().writeDelimitedTo(output);
+    output.write(12);
+    TestUtil.getPackedSet().writeDelimitedTo(output);
+    output.write(34);
+
+    ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
+
+    TestUtil.assertAllFieldsSet(TestAllTypes.parseDelimitedFrom(input));
+    assertEquals(12, input.read());
+    TestUtil.assertPackedFieldsSet(TestPackedTypes.parseDelimitedFrom(input));
+    assertEquals(34, input.read());
+    assertEquals(-1, input.read());
   }
 
   private void assertFieldsInOrder(ByteString data) throws Exception {

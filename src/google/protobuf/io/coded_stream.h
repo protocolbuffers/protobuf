@@ -380,7 +380,46 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 //
 // Most methods of CodedOutputStream which return a bool return false if an
 // underlying I/O error occurs.  Once such a failure occurs, the
-// CodedOutputStream is broken and is no longer useful.
+// CodedOutputStream is broken and is no longer useful. The Write* methods do
+// not return the stream status, but will invalidate the stream if an error
+// occurs. The client can probe HadError() to determine the status.
+//
+// Note that every method of CodedOutputStream which writes some data has
+// a corresponding static "ToArray" version. These versions write directly
+// to the provided buffer, returning a pointer past the last written byte.
+// They require that the buffer has sufficient capacity for the encoded data.
+// This allows an optimization where we check if an output stream has enough
+// space for an entire message before we start writing and, if there is, we
+// call only the ToArray methods to avoid doing bound checks for each
+// individual value.
+// i.e., in the example above:
+//
+//   CodedOutputStream coded_output = new CodedOutputStream(raw_output);
+//   int magic_number = 1234;
+//   char text[] = "Hello world!";
+//
+//   int coded_size = sizeof(magic_number) +
+//                    CodedOutputStream::Varint32Size(strlen(text)) +
+//                    strlen(text);
+//
+//   uint8* buffer =
+//       coded_output->GetDirectBufferForNBytesAndAdvance(coded_size);
+//   if (buffer != NULL) {
+//     // The output stream has enough space in the buffer: write directly to
+//     // the array.
+//     buffer = CodedOutputStream::WriteLittleEndian32ToArray(magic_number,
+//                                                            buffer);
+//     buffer = CodedOutputStream::WriteVarint32ToArray(strlen(text), buffer);
+//     buffer = CodedOutputStream::WriteRawToArray(text, strlen(text), buffer);
+//   } else {
+//     // Make bound-checked writes, which will ask the underlying stream for
+//     // more space as needed.
+//     coded_output->WriteLittleEndian32(magic_number);
+//     coded_output->WriteVarint32(strlen(text));
+//     coded_output->WriteRaw(text, strlen(text));
+//   }
+//
+//   delete coded_output;
 class LIBPROTOBUF_EXPORT CodedOutputStream {
  public:
   // Create an CodedOutputStream that writes to the given ZeroCopyOutputStream.
@@ -405,35 +444,65 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // CodedOutputStream interface.
   bool GetDirectBufferPointer(void** data, int* size);
 
+  // If there are at least "size" bytes available in the current buffer,
+  // returns a pointer directly into the buffer and advances over these bytes.
+  // The caller may then write directly into this buffer (e.g. using the
+  // *ToArray static methods) rather than go through CodedOutputStream.  If
+  // there are not enough bytes available, returns NULL.  The return pointer is
+  // invalidated as soon as any other non-const method of CodedOutputStream
+  // is called.
+  inline uint8* GetDirectBufferForNBytesAndAdvance(int size);
+
   // Write raw bytes, copying them from the given buffer.
-  bool WriteRaw(const void* buffer, int size);
+  void WriteRaw(const void* buffer, int size);
+  // Like WriteRaw()  but writing directly to the target array.
+  // This is _not_ inlined, as the compiler often optimizes memcpy into inline
+  // copy loops. Since this gets called by every field with string or bytes
+  // type, inlining may lead to a significant amount of code bloat, with only a
+  // minor performance gain.
+  static uint8* WriteRawToArray(const void* buffer, int size, uint8* target);
 
   // Equivalent to WriteRaw(str.data(), str.size()).
-  bool WriteString(const string& str);
+  void WriteString(const string& str);
+  // Like WriteString()  but writing directly to the target array.
+  static uint8* WriteStringToArray(const string& str, uint8* target);
 
 
   // Write a 32-bit little-endian integer.
-  bool WriteLittleEndian32(uint32 value);
+  void WriteLittleEndian32(uint32 value);
+  // Like WriteLittleEndian32()  but writing directly to the target array.
+  static uint8* WriteLittleEndian32ToArray(uint32 value, uint8* target);
   // Write a 64-bit little-endian integer.
-  bool WriteLittleEndian64(uint64 value);
+  void WriteLittleEndian64(uint64 value);
+  // Like WriteLittleEndian64()  but writing directly to the target array.
+  static uint8* WriteLittleEndian64ToArray(uint64 value, uint8* target);
 
   // Write an unsigned integer with Varint encoding.  Writing a 32-bit value
   // is equivalent to casting it to uint64 and writing it as a 64-bit value,
   // but may be more efficient.
-  bool WriteVarint32(uint32 value);
+  void WriteVarint32(uint32 value);
+  // Like WriteVarint32()  but writing directly to the target array.
+  static uint8* WriteVarint32ToArray(uint32 value, uint8* target);
   // Write an unsigned integer with Varint encoding.
-  bool WriteVarint64(uint64 value);
+  void WriteVarint64(uint64 value);
+  // Like WriteVarint64()  but writing directly to the target array.
+  static uint8* WriteVarint64ToArray(uint64 value, uint8* target);
 
   // Equivalent to WriteVarint32() except when the value is negative,
   // in which case it must be sign-extended to a full 10 bytes.
-  bool WriteVarint32SignExtended(int32 value);
+  void WriteVarint32SignExtended(int32 value);
+  // Like WriteVarint32SignExtended()  but writing directly to the target array.
+  static uint8* WriteVarint32SignExtendedToArray(int32 value, uint8* target);
 
   // This is identical to WriteVarint32(), but optimized for writing tags.
   // In particular, if the input is a compile-time constant, this method
   // compiles down to a couple instructions.
   // Always inline because otherwise the aformentioned optimization can't work,
   // but GCC by default doesn't want to inline this.
-  bool WriteTag(uint32 value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  void WriteTag(uint32 value);
+  // Like WriteTag()  but writing directly to the target array.
+  static uint8* WriteTagToArray(
+      uint32 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
 
   // Returns the number of bytes needed to encode the given value as a varint.
   static int VarintSize32(uint32 value);
@@ -446,6 +515,10 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // Returns the total number of bytes written since this object was created.
   inline int ByteCount() const;
 
+  // Returns true if there was an underlying I/O error since this object was
+  // created.
+  bool HadError() const { return had_error_; }
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 
@@ -453,6 +526,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   uint8* buffer_;
   int buffer_size_;
   int total_bytes_;  // Sum of sizes of all buffers seen so far.
+  bool had_error_;   // Whether an error occurred during output.
 
   // Advance the buffer by a given number of bytes.
   void Advance(int amount);
@@ -461,7 +535,20 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // Advance(buffer_size_).
   bool Refresh();
 
-  bool WriteVarint32Fallback(uint32 value);
+  static uint8* WriteVarint32FallbackToArray(uint32 value, uint8* target);
+
+  // Always-inlined versions of WriteVarint* functions so that code can be
+  // reused, while still controlling size. For instance, WriteVarint32ToArray()
+  // should not directly call this: since it is inlined itself, doing so
+  // would greatly increase the size of generated code. Instead, it should call
+  // WriteVarint32FallbackToArray.  Meanwhile, WriteVarint32() is already
+  // out-of-line, so it should just invoke this directly to avoid any extra
+  // function call overhead.
+  static uint8* WriteVarint32FallbackToArrayInline(
+      uint32 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  static uint8* WriteVarint64ToArrayInline(
+      uint64 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+
   static int VarintSize32Fallback(uint32 value);
 };
 
@@ -540,40 +627,59 @@ inline bool CodedInputStream::ExpectAtEnd() {
   }
 }
 
-inline bool CodedOutputStream::WriteVarint32(uint32 value) {
-  if (value < 0x80 && buffer_size_ > 0) {
-    *buffer_ = static_cast<uint8>(value);
-    Advance(1);
-    return true;
+inline uint8* CodedOutputStream::GetDirectBufferForNBytesAndAdvance(int size) {
+  if (buffer_size_ < size) {
+    return NULL;
   } else {
-    return WriteVarint32Fallback(value);
+    uint8* result = buffer_;
+    Advance(size);
+    return result;
   }
 }
 
-inline bool CodedOutputStream::WriteVarint32SignExtended(int32 value) {
+inline uint8* CodedOutputStream::WriteVarint32ToArray(uint32 value,
+                                                        uint8* target) {
+  if (value < 0x80) {
+    *target = value;
+    return target + 1;
+  } else {
+    return WriteVarint32FallbackToArray(value, target);
+  }
+}
+
+inline void CodedOutputStream::WriteVarint32SignExtended(int32 value) {
   if (value < 0) {
-    return WriteVarint64(static_cast<uint64>(value));
+    WriteVarint64(static_cast<uint64>(value));
   } else {
-    return WriteVarint32(static_cast<uint32>(value));
+    WriteVarint32(static_cast<uint32>(value));
   }
 }
 
-inline bool CodedOutputStream::WriteTag(uint32 value) {
-  if (value < (1 << 7)) {
-    if (buffer_size_ != 0) {
-      buffer_[0] = static_cast<uint8>(value);
-      Advance(1);
-      return true;
-    }
-  } else if (value < (1 << 14)) {
-    if (buffer_size_ >= 2) {
-      buffer_[0] = static_cast<uint8>(value | 0x80);
-      buffer_[1] = static_cast<uint8>(value >> 7);
-      Advance(2);
-      return true;
-    }
+inline uint8* CodedOutputStream::WriteVarint32SignExtendedToArray(
+    int32 value, uint8* target) {
+  if (value < 0) {
+    return WriteVarint64ToArray(static_cast<uint64>(value), target);
+  } else {
+    return WriteVarint32ToArray(static_cast<uint32>(value), target);
   }
-  return WriteVarint32Fallback(value);
+}
+
+inline void CodedOutputStream::WriteTag(uint32 value) {
+  WriteVarint32(value);
+}
+
+inline uint8* CodedOutputStream::WriteTagToArray(
+    uint32 value, uint8* target) {
+  if (value < (1 << 7)) {
+    target[0] = value;
+    return target + 1;
+  } else if (value < (1 << 14)) {
+    target[0] = static_cast<uint8>(value | 0x80);
+    target[1] = static_cast<uint8>(value >> 7);
+    return target + 2;
+  } else {
+    return WriteVarint32FallbackToArray(value, target);
+  }
 }
 
 inline int CodedOutputStream::VarintSize32(uint32 value) {
@@ -592,8 +698,13 @@ inline int CodedOutputStream::VarintSize32SignExtended(int32 value) {
   }
 }
 
-inline bool CodedOutputStream::WriteString(const string& str) {
-  return WriteRaw(str.data(), str.size());
+inline void CodedOutputStream::WriteString(const string& str) {
+  WriteRaw(str.data(), str.size());
+}
+
+inline uint8* CodedOutputStream::WriteStringToArray(
+    const string& str, uint8* target) {
+  return WriteRawToArray(str.data(), str.size(), target);
 }
 
 inline int CodedOutputStream::ByteCount() const {

@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeMap;
 import java.util.List;
@@ -84,6 +85,20 @@ public final class UnknownFieldSet {
     this.fields = fields;
   }
   private Map<Integer, Field> fields;
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    return (other instanceof UnknownFieldSet) &&
+        this.fields.equals(((UnknownFieldSet) other).fields);
+  }
+
+  @Override
+  public int hashCode() {
+    return this.fields.hashCode();
+  }
 
   /** Get a map of fields in the set by number. */
   public Map<Integer, Field> asMap() {
@@ -539,6 +554,36 @@ public final class UnknownFieldSet {
      * since the group's type is presumably unknown.
      */
     public List<UnknownFieldSet> getGroupList()      { return group;           }
+
+    @Override
+    public boolean equals(Object other) {
+      if (this == other) {
+        return true;
+      }
+      if (!(other instanceof Field)) {
+        return false;
+      }
+      return Arrays.equals(this.getIdentityArray(),
+          ((Field) other).getIdentityArray());
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(getIdentityArray());
+    }
+
+    /**
+     * Returns the array of objects to be used to uniquely identify this
+     * {@link UnknownFieldSet.Field} instance.
+     */
+    private Object[] getIdentityArray() {
+      return new Object[] {
+          this.varint,
+          this.fixed32,
+          this.fixed64,
+          this.lengthDelimited,
+          this.group};
+    }
 
     /**
      * Serializes the field, including field number, and writes it to

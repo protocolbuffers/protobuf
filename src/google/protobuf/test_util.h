@@ -137,6 +137,12 @@ class TestUtil {
     const EnumValueDescriptor* import_bar_;
     const EnumValueDescriptor* import_baz_;
 
+    // We have to split this into three function otherwise it creates a stack
+    // frame so large that it triggers a warning.
+    void ExpectAllFieldsSetViaReflection1(const Message& message);
+    void ExpectAllFieldsSetViaReflection2(const Message& message);
+    void ExpectAllFieldsSetViaReflection3(const Message& message);
+
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionTester);
   };
 

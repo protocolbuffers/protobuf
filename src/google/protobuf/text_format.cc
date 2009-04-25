@@ -62,29 +62,20 @@ string Message::DebugString() const {
 }
 
 string Message::ShortDebugString() const {
-  // TODO(kenton):  Make TextFormat support this natively instead of using
-  //   DebugString() and munging the result.
-  string result = DebugString();
+  string debug_string;
+  io::StringOutputStream output_stream(&debug_string);
 
-  // Replace each contiguous range of whitespace (including newlines, and
-  // starting with a newline) with a single space.
-  int out = 0;
-  for (int i = 0; i < result.size(); ++i) {
-    if (result[i] != '\n') {
-      result[out++] = result[i];
-    } else {
-      while (i < result.size() && isspace(result[i])) ++i;
-      --i;
-      result[out++] = ' ';
-    }
-  }
-  // Remove trailing space, if there is one.
-  if (out > 0 && isspace(result[out - 1])) {
-    --out;
-  }
-  result.resize(out);
+  TextFormat::Printer printer;
+  printer.SetSingleLineMode(true);
 
-  return result;
+  printer.Print(*this, &output_stream);
+  // Single line mode currently might have an extra space at the end.
+  if (debug_string.size() > 0 &&
+      debug_string[debug_string.size() - 1] == ' ') {
+    debug_string.resize(debug_string.size() - 1);
+  }
+
+  return debug_string;
 }
 
 void Message::PrintDebugString() const {
@@ -429,9 +420,13 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
-    io::Tokenizer::ParseString(tokenizer_.current().text, text);
+    text->clear();
+    while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+      io::Tokenizer::ParseStringAppend(tokenizer_.current().text, text);
 
-    tokenizer_.Next();
+      tokenizer_.Next();
+    }
+
     return true;
   }
 
@@ -591,15 +586,18 @@ class TextFormat::Parser::ParserImpl {
 // ===========================================================================
 // Internal class for writing text to the io::ZeroCopyOutputStream. Adapted
 // from the Printer found in //google/protobuf/io/printer.h
-class TextFormat::TextGenerator {
+class TextFormat::Printer::TextGenerator {
  public:
-  explicit TextGenerator(io::ZeroCopyOutputStream* output)
+  explicit TextGenerator(io::ZeroCopyOutputStream* output,
+                         int initial_indent_level)
     : output_(output),
       buffer_(NULL),
       buffer_size_(0),
       at_start_of_line_(true),
       failed_(false),
-      indent_("") {
+      indent_(""),
+      initial_indent_level_(initial_indent_level) {
+    indent_.resize(initial_indent_level_ * 2, ' ');
   }
 
   ~TextGenerator() {
@@ -620,7 +618,8 @@ class TextFormat::TextGenerator {
   // Reduces the current indent level by two spaces, or crashes if the indent
   // level is zero.
   void Outdent() {
-    if (indent_.empty()) {
+    if (indent_.empty() ||
+        indent_.size() < initial_indent_level_ * 2) {
       GOOGLE_LOG(DFATAL) << " Outdent() without matching Indent().";
       return;
     }
@@ -699,6 +698,7 @@ class TextFormat::TextGenerator {
   bool failed_;
 
   string indent_;
+  int initial_indent_level_;
 };
 
 // ===========================================================================
@@ -770,8 +770,16 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   return Parser().MergeFromString(input, output);
 }
 
-/* static */ bool TextFormat::PrintToString(const Message& message,
-                                            string* output) {
+// ===========================================================================
+
+TextFormat::Printer::Printer()
+  : initial_indent_level_(0),
+    single_line_mode_(false) {}
+
+TextFormat::Printer::~Printer() {}
+
+bool TextFormat::Printer::PrintToString(const Message& message,
+                                        string* output) {
   GOOGLE_DCHECK(output) << "output specified is NULL";
 
   output->clear();
@@ -782,7 +790,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   return result;
 }
 
-/* static */ bool TextFormat::PrintUnknownFieldsToString(
+bool TextFormat::Printer::PrintUnknownFieldsToString(
     const UnknownFieldSet& unknown_fields,
     string* output) {
   GOOGLE_DCHECK(output) << "output specified is NULL";
@@ -792,9 +800,9 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   return PrintUnknownFields(unknown_fields, &output_stream);
 }
 
-/* static */ bool TextFormat::Print(const Message& message,
-                                    io::ZeroCopyOutputStream* output) {
-  TextGenerator generator(output);
+bool TextFormat::Printer::Print(const Message& message,
+                                io::ZeroCopyOutputStream* output) {
+  TextGenerator generator(output, initial_indent_level_);
 
   Print(message, generator);
 
@@ -802,10 +810,10 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   return !generator.failed();
 }
 
-/* static */ bool TextFormat::PrintUnknownFields(
+bool TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields,
     io::ZeroCopyOutputStream* output) {
-  TextGenerator generator(output);
+  TextGenerator generator(output, initial_indent_level_);
 
   PrintUnknownFields(unknown_fields, generator);
 
@@ -813,8 +821,8 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   return !generator.failed();
 }
 
-/* static */ void TextFormat::Print(const Message& message,
-                                    TextGenerator& generator) {
+void TextFormat::Printer::Print(const Message& message,
+                                TextGenerator& generator) {
   const Reflection* reflection = message.GetReflection();
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
@@ -824,7 +832,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   PrintUnknownFields(reflection->GetUnknownFields(message), generator);
 }
 
-/* static */ void TextFormat::PrintFieldValueToString(
+void TextFormat::Printer::PrintFieldValueToString(
     const Message& message,
     const FieldDescriptor* field,
     int index,
@@ -834,15 +842,15 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
 
   output->clear();
   io::StringOutputStream output_stream(output);
-  TextGenerator generator(&output_stream);
+  TextGenerator generator(&output_stream, initial_indent_level_);
 
   PrintFieldValue(message, message.GetReflection(), field, index, generator);
 }
 
-/* static */ void TextFormat::PrintField(const Message& message,
-                                         const Reflection* reflection,
-                                         const FieldDescriptor* field,
-                                         TextGenerator& generator) {
+void TextFormat::Printer::PrintField(const Message& message,
+                                     const Reflection* reflection,
+                                     const FieldDescriptor* field,
+                                     TextGenerator& generator) {
   int count = 0;
 
   if (field->is_repeated()) {
@@ -874,8 +882,12 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
     }
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      if (single_line_mode_) {
+        generator.Print(" { ");
+      } else {
         generator.Print(" {\n");
         generator.Indent();
+      }
     } else {
       generator.Print(": ");
     }
@@ -889,15 +901,21 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
     PrintFieldValue(message, reflection, field, field_index, generator);
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      if (!single_line_mode_) {
         generator.Outdent();
-        generator.Print("}");
+      }
+      generator.Print("}");
     }
 
-    generator.Print("\n");
+    if (single_line_mode_) {
+      generator.Print(" ");
+    } else {
+      generator.Print("\n");
+    }
   }
 }
 
-/* static */ void TextFormat::PrintFieldValue(
+void TextFormat::Printer::PrintFieldValue(
     const Message& message,
     const Reflection* reflection,
     const FieldDescriptor* field,
@@ -961,6 +979,35 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   }
 }
 
+/* static */ bool TextFormat::Print(const Message& message,
+                                    io::ZeroCopyOutputStream* output) {
+  return Printer().Print(message, output);
+}
+
+/* static */ bool TextFormat::PrintUnknownFields(
+    const UnknownFieldSet& unknown_fields,
+    io::ZeroCopyOutputStream* output) {
+  return Printer().PrintUnknownFields(unknown_fields, output);
+}
+
+/* static */ bool TextFormat::PrintToString(
+    const Message& message, string* output) {
+  return Printer().PrintToString(message, output);
+}
+
+/* static */ bool TextFormat::PrintUnknownFieldsToString(
+    const UnknownFieldSet& unknown_fields, string* output) {
+  return Printer().PrintUnknownFieldsToString(unknown_fields, output);
+}
+
+/* static */ void TextFormat::PrintFieldValueToString(
+    const Message& message,
+    const FieldDescriptor* field,
+    int index,
+    string* output) {
+  return Printer().PrintFieldValueToString(message, field, index, output);
+}
+
 // Prints an integer as hex with a fixed number of digits dependent on the
 // integer type.
 template<typename IntType>
@@ -973,59 +1020,97 @@ static string PaddedHex(IntType value) {
   return result;
 }
 
-/* static */ void TextFormat::PrintUnknownFields(
+void TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields, TextGenerator& generator) {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
     string field_number = SimpleItoa(field.number());
 
-    for (int j = 0; j < field.varint_size(); j++) {
-      generator.Print(field_number);
-      generator.Print(": ");
-      generator.Print(SimpleItoa(field.varint(j)));
-      generator.Print("\n");
-    }
-    for (int j = 0; j < field.fixed32_size(); j++) {
-      generator.Print(field_number);
-      generator.Print(": 0x");
-      char buffer[kFastToBufferSize];
-      generator.Print(FastHex32ToBuffer(field.fixed32(j), buffer));
-      generator.Print("\n");
-    }
-    for (int j = 0; j < field.fixed64_size(); j++) {
-      generator.Print(field_number);
-      generator.Print(": 0x");
-      char buffer[kFastToBufferSize];
-      generator.Print(FastHex64ToBuffer(field.fixed64(j), buffer));
-      generator.Print("\n");
-    }
-    for (int j = 0; j < field.length_delimited_size(); j++) {
-      generator.Print(field_number);
-      const string& value = field.length_delimited(j);
-      UnknownFieldSet embedded_unknown_fields;
-      if (!value.empty() && embedded_unknown_fields.ParseFromString(value)) {
-        // This field is parseable as a Message.
-        // So it is probably an embedded message.
-        generator.Print(" {\n");
-        generator.Indent();
-        PrintUnknownFields(embedded_unknown_fields, generator);
-        generator.Outdent();
-        generator.Print("}\n");
-      } else {
-        // This field is not parseable as a Message.
-        // So it is probably just a plain string.
-        generator.Print(": \"");
-        generator.Print(CEscape(value));
-        generator.Print("\"\n");
+    switch (field.type()) {
+      case UnknownField::TYPE_VARINT:
+        generator.Print(field_number);
+        generator.Print(": ");
+        generator.Print(SimpleItoa(field.varint()));
+        if (single_line_mode_) {
+          generator.Print(" ");
+        } else {
+          generator.Print("\n");
+        }
+        break;
+      case UnknownField::TYPE_FIXED32: {
+        generator.Print(field_number);
+        generator.Print(": 0x");
+        char buffer[kFastToBufferSize];
+        generator.Print(FastHex32ToBuffer(field.fixed32(), buffer));
+        if (single_line_mode_) {
+          generator.Print(" ");
+        } else {
+          generator.Print("\n");
+        }
+        break;
       }
-    }
-    for (int j = 0; j < field.group_size(); j++) {
-      generator.Print(field_number);
-      generator.Print(" {\n");
-      generator.Indent();
-      PrintUnknownFields(field.group(j), generator);
-      generator.Outdent();
-      generator.Print("}\n");
+      case UnknownField::TYPE_FIXED64: {
+        generator.Print(field_number);
+        generator.Print(": 0x");
+        char buffer[kFastToBufferSize];
+        generator.Print(FastHex64ToBuffer(field.fixed64(), buffer));
+        if (single_line_mode_) {
+          generator.Print(" ");
+        } else {
+          generator.Print("\n");
+        }
+        break;
+      }
+      case UnknownField::TYPE_LENGTH_DELIMITED: {
+        generator.Print(field_number);
+        const string& value = field.length_delimited();
+        UnknownFieldSet embedded_unknown_fields;
+        if (!value.empty() && embedded_unknown_fields.ParseFromString(value)) {
+          // This field is parseable as a Message.
+          // So it is probably an embedded message.
+          if (single_line_mode_) {
+            generator.Print(" { ");
+          } else {
+            generator.Print(" {\n");
+            generator.Indent();
+          }
+          PrintUnknownFields(embedded_unknown_fields, generator);
+          if (single_line_mode_) {
+            generator.Print("} ");
+          } else {
+            generator.Outdent();
+            generator.Print("}\n");
+          }
+        } else {
+          // This field is not parseable as a Message.
+          // So it is probably just a plain string.
+          generator.Print(": \"");
+          generator.Print(CEscape(value));
+          generator.Print("\"");
+          if (single_line_mode_) {
+            generator.Print(" ");
+          } else {
+            generator.Print("\n");
+          }
+        }
+        break;
+      }
+      case UnknownField::TYPE_GROUP:
+        generator.Print(field_number);
+        if (single_line_mode_) {
+          generator.Print(" { ");
+        } else {
+          generator.Print(" {\n");
+          generator.Indent();
+        }
+        PrintUnknownFields(field.group(), generator);
+        if (single_line_mode_) {
+          generator.Print("} ");
+        } else {
+          generator.Outdent();
+          generator.Print("}\n");
+        }
+        break;
     }
   }
 }

@@ -55,6 +55,7 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
 #include <string>
+#include <vector>
 #include <google/protobuf/stubs/common.h>
 
 
@@ -94,6 +95,7 @@ class Message;
 
 // Defined in descriptor.cc
 class DescriptorBuilder;
+class FileDescriptorTables;
 
 // Defined in unknown_field_set.h.
 class UnknownField;
@@ -246,6 +248,12 @@ class LIBPROTOBUF_EXPORT Descriptor {
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const MessageOptions* options_;
+
+  // True if this is a placeholder for an unknown type.
+  bool is_placeholder_;
+  // True if this is a placeholder and the type name wasn't fully-qualified.
+  bool is_unqualified_placeholder_;
+
   int field_count_;
   FieldDescriptor* fields_;
   int nested_type_count_;
@@ -256,12 +264,16 @@ class LIBPROTOBUF_EXPORT Descriptor {
   ExtensionRange* extension_ranges_;
   int extension_count_;
   FieldDescriptor* extensions_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
+  // and update them to initialize the field.
 
   // Must be constructed using DescriptorPool.
   Descriptor() {}
   friend class DescriptorBuilder;
   friend class EnumDescriptor;
   friend class FieldDescriptor;
+  friend class MethodDescriptor;
   friend class FileDescriptor;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Descriptor);
 };
@@ -458,6 +470,10 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
 
   // See Descriptor::DebugString().
   string DebugString() const;
+
+  // Helper method to get the CppType for a particular Type.
+  static CppType TypeToCppType(Type type);
+
  private:
   typedef FieldOptions OptionsType;
 
@@ -484,6 +500,9 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   const EnumDescriptor* enum_type_;
   const FieldDescriptor* experimental_map_key_;
   const FieldOptions* options_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<FieldDescriptor>() and AllocateArray<FieldDescriptor>() in
+  // descriptor.cc and update them to initialize the field.
 
   bool has_default_value_;
   union {
@@ -568,15 +587,25 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   const string* name_;
   const string* full_name_;
   const FileDescriptor* file_;
-  int value_count_;
-  EnumValueDescriptor* values_;
   const Descriptor* containing_type_;
   const EnumOptions* options_;
+
+  // True if this is a placeholder for an unknown type.
+  bool is_placeholder_;
+  // True if this is a placeholder and the type name wasn't fully-qualified.
+  bool is_unqualified_placeholder_;
+
+  int value_count_;
+  EnumValueDescriptor* values_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<EnumDescriptor>() and AllocateArray<EnumDescriptor>() in
+  // descriptor.cc and update them to initialize the field.
 
   // Must be constructed using DescriptorPool.
   EnumDescriptor() {}
   friend class DescriptorBuilder;
   friend class Descriptor;
+  friend class FieldDescriptor;
   friend class EnumValueDescriptor;
   friend class FileDescriptor;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumDescriptor);
@@ -627,6 +656,9 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
   int number_;
   const EnumDescriptor* type_;
   const EnumValueOptions* options_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<EnumValueDescriptor>() and AllocateArray<EnumValueDescriptor>()
+  // in descriptor.cc and update them to initialize the field.
 
   // Must be constructed using DescriptorPool.
   EnumValueDescriptor() {}
@@ -685,6 +717,9 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
   const ServiceOptions* options_;
   int method_count_;
   MethodDescriptor* methods_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<ServiceDescriptor>() and AllocateArray<ServiceDescriptor>() in
+  // descriptor.cc and update them to initialize the field.
 
   // Must be constructed using DescriptorPool.
   ServiceDescriptor() {}
@@ -740,6 +775,9 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
   const Descriptor* input_type_;
   const Descriptor* output_type_;
   const MethodOptions* options_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<MethodDescriptor>() and AllocateArray<MethodDescriptor>() in
+  // descriptor.cc and update them to initialize the field.
 
   // Must be constructed using DescriptorPool.
   MethodDescriptor() {}
@@ -846,6 +884,11 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   FieldDescriptor* extensions_;
   const FileOptions* options_;
 
+  const FileDescriptorTables* tables_;
+  // IMPORTANT:  If you add a new field, make sure to search for all instances
+  // of Allocate<FileDescriptor>() and AllocateArray<FileDescriptor>() in
+  // descriptor.cc and update them to initialize the field.
+
   FileDescriptor() {}
   friend class DescriptorBuilder;
   friend class Descriptor;
@@ -945,6 +988,14 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   const FieldDescriptor* FindExtensionByNumber(const Descriptor* extendee,
                                                int number) const;
 
+  // Finds extensions of extendee. The extensions will be appended to
+  // out in an undefined order. Only extensions defined directly in
+  // this DescriptorPool or one of its underlays are guaranteed to be
+  // found: extensions defined in the fallback database might not be found
+  // depending on the database implementation.
+  void FindAllExtensions(const Descriptor* extendee,
+                         vector<const FieldDescriptor*>* out) const;
+
   // Building descriptors --------------------------------------------
 
   // When converting a FileDescriptorProto to a FileDescriptor, various
@@ -996,6 +1047,23 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
     const FileDescriptorProto& proto,
     ErrorCollector* error_collector);
 
+  // By default, it is an error if a FileDescriptorProto contains references
+  // to types or other files that are not found in the DescriptorPool (or its
+  // backing DescriptorDatabase, if any).  If you call
+  // AllowUnknownDependencies(), however, then unknown types and files
+  // will be replaced by placeholder descriptors.  This can allow you to
+  // perform some useful operations with a .proto file even if you do not
+  // have access to other .proto files on which it depends.  However, some
+  // heuristics must be used to fill in the gaps in information, and these
+  // can lead to descriptors which are inaccurate.  For example, the
+  // DescriptorPool may be forced to guess whether an unknown type is a message
+  // or an enum, as well as what package it resides in.  Furthermore,
+  // placeholder types will not be discoverable via FindMessageTypeByName()
+  // and similar methods, which could confuse some descriptor-based algorithms.
+  // Generally, the results of this option should only be relied upon for
+  // debugging purposes.
+  void AllowUnknownDependencies() { allow_unknown_ = true; }
+
   // Internal stuff --------------------------------------------------
   // These methods MUST NOT be called from outside the proto2 library.
   // These methods may contain hidden pitfalls and may be removed in a
@@ -1024,12 +1092,12 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // underlay for a new DescriptorPool in which you add only the new file.
   explicit DescriptorPool(const DescriptorPool* underlay);
 
-  // Called by generated classes at init time.  Do NOT call this in your own
-  // code! descriptor_assigner, if not NULL, is used to assign global
-  // descriptor pointers at the appropriate point during building.
-  typedef void (*InternalDescriptorAssigner)(const FileDescriptor*);
-  const FileDescriptor* InternalBuildGeneratedFile(
-    const void* data, int size, InternalDescriptorAssigner descriptor_assigner);
+  // Called by generated classes at init time to add their descriptors to
+  // generated_pool.  Do NOT call this in your own code!  filename must be a
+  // permanent string (e.g. a string literal).
+  static void InternalAddGeneratedFile(
+      const void* encoded_file_descriptor, int size);
+
 
   // For internal use only:  Gets a non-const pointer to the generated pool.
   // This is called at static-initialization time only, so thread-safety is
@@ -1046,6 +1114,11 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   void internal_set_underlay(const DescriptorPool* underlay) {
     underlay_ = underlay;
   }
+
+  // For internal (unit test) use only:  Returns true if a FileDescriptor has
+  // been constructed for the given file, false otherwise.  Useful for testing
+  // lazy descriptor initialization behavior.
+  bool InternalIsFileLoaded(const string& filename) const;
 
  private:
   friend class Descriptor;
@@ -1085,9 +1158,7 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   scoped_ptr<Tables> tables_;
 
   bool enforce_dependencies_;
-
-  // See InternalBuildGeneratedFile().
-  const void* last_internal_build_generated_file_call_;
+  bool allow_unknown_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorPool);
 };
@@ -1265,6 +1336,10 @@ inline int MethodDescriptor::index() const {
 
 inline FieldDescriptor::CppType FieldDescriptor::cpp_type() const {
   return kTypeToCppTypeMap[type_];
+}
+
+inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
+  return kTypeToCppTypeMap[type];
 }
 
 inline const FileDescriptor* FileDescriptor::dependency(int index) const {

@@ -30,6 +30,10 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import protobuf_unittest.MessageWithNoOuter;
+import protobuf_unittest.ServiceWithNoOuter;
+import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.UnittestProto.FooRequest;
 import protobuf_unittest.UnittestProto.FooResponse;
@@ -56,6 +60,7 @@ public class ServiceTest extends TestCase {
   private final Descriptors.MethodDescriptor barDescriptor =
     TestService.getDescriptor().getMethods().get(1);
 
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     control = EasyMock.createStrictControl();
@@ -127,6 +132,94 @@ public class ServiceTest extends TestCase {
     control.verify();
   }
 
+  /** Tests generated blocking stubs. */
+  public void testBlockingStub() throws Exception {
+    FooRequest fooRequest = FooRequest.newBuilder().build();
+    BarRequest barRequest = BarRequest.newBuilder().build();
+    BlockingRpcChannel mockChannel =
+        control.createMock(BlockingRpcChannel.class);
+    TestService.BlockingInterface stub =
+        TestService.newBlockingStub(mockChannel);
+
+    FooResponse fooResponse = FooResponse.newBuilder().build();
+    BarResponse barResponse = BarResponse.newBuilder().build();
+
+    EasyMock.expect(mockChannel.callBlockingMethod(
+      EasyMock.same(fooDescriptor),
+      EasyMock.same(mockController),
+      EasyMock.same(fooRequest),
+      EasyMock.same(FooResponse.getDefaultInstance()))).andReturn(fooResponse);
+    EasyMock.expect(mockChannel.callBlockingMethod(
+      EasyMock.same(barDescriptor),
+      EasyMock.same(mockController),
+      EasyMock.same(barRequest),
+      EasyMock.same(BarResponse.getDefaultInstance()))).andReturn(barResponse);
+    control.replay();
+
+    assertSame(fooResponse, stub.foo(mockController, fooRequest));
+    assertSame(barResponse, stub.bar(mockController, barRequest));
+    control.verify();
+  }
+
+  public void testNewReflectiveService() {
+    ServiceWithNoOuter.Interface impl =
+        control.createMock(ServiceWithNoOuter.Interface.class);
+    RpcController controller = control.createMock(RpcController.class);
+    Service service = ServiceWithNoOuter.newReflectiveService(impl);
+
+    MethodDescriptor fooMethod =
+        ServiceWithNoOuter.getDescriptor().findMethodByName("Foo");
+    MessageWithNoOuter request = MessageWithNoOuter.getDefaultInstance();
+    RpcCallback<Message> callback = new RpcCallback<Message>() {
+      public void run(Message parameter) {
+        // No reason this should be run.
+        fail();
+      }
+    };
+    RpcCallback<TestAllTypes> specializedCallback =
+        RpcUtil.specializeCallback(callback);
+
+    impl.foo(EasyMock.same(controller), EasyMock.same(request),
+        EasyMock.same(specializedCallback));
+    EasyMock.expectLastCall();
+
+    control.replay();
+
+    service.callMethod(fooMethod, controller, request, callback);
+
+    control.verify();
+  }
+
+  public void testNewReflectiveBlockingService() throws ServiceException {
+    ServiceWithNoOuter.BlockingInterface impl =
+        control.createMock(ServiceWithNoOuter.BlockingInterface.class);
+    RpcController controller = control.createMock(RpcController.class);
+    BlockingService service =
+        ServiceWithNoOuter.newReflectiveBlockingService(impl);
+
+    MethodDescriptor fooMethod =
+        ServiceWithNoOuter.getDescriptor().findMethodByName("Foo");
+    MessageWithNoOuter request = MessageWithNoOuter.getDefaultInstance();
+    RpcCallback<Message> callback = new RpcCallback<Message>() {
+      public void run(Message parameter) {
+        // No reason this should be run.
+        fail();
+      }
+    };
+
+    TestAllTypes expectedResponse = TestAllTypes.getDefaultInstance();
+    EasyMock.expect(impl.foo(EasyMock.same(controller), EasyMock.same(request)))
+        .andReturn(expectedResponse);
+
+    control.replay();
+
+    Message response =
+        service.callBlockingMethod(fooMethod, controller, request);
+    assertEquals(expectedResponse, response);
+
+    control.verify();
+  }
+
   // =================================================================
 
   /**
@@ -135,7 +228,7 @@ public class ServiceTest extends TestCase {
    * In other words, c wraps the given callback.
    */
   private <Type extends Message> RpcCallback<Type> wrapsCallback(
-      MockCallback callback) {
+      MockCallback<?> callback) {
     EasyMock.reportMatcher(new WrapsCallback(callback));
     return null;
   }
@@ -153,9 +246,9 @@ public class ServiceTest extends TestCase {
 
   /** Implementation of the wrapsCallback() argument matcher. */
   private static class WrapsCallback implements IArgumentMatcher {
-    private MockCallback callback;
+    private MockCallback<?> callback;
 
-    public WrapsCallback(MockCallback callback) {
+    public WrapsCallback(MockCallback<?> callback) {
       this.callback = callback;
     }
 

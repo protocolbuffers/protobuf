@@ -164,7 +164,8 @@ inline bool WireFormat::ReadBytes(io::CodedInputStream* input, string* value) {
 }
 
 
-inline bool WireFormat::ReadGroup(int field_number, io::CodedInputStream* input,
+inline bool WireFormat::ReadGroup(int field_number,
+                                  io::CodedInputStream* input,
                                   Message* value) {
   if (!input->IncrementRecursionDepth()) return false;
   if (!value->MergePartialFromCodedStream(input)) return false;
@@ -175,7 +176,8 @@ inline bool WireFormat::ReadGroup(int field_number, io::CodedInputStream* input,
   }
   return true;
 }
-inline bool WireFormat::ReadMessage(io::CodedInputStream* input, Message* value) {
+inline bool WireFormat::ReadMessage(io::CodedInputStream* input,
+                                    Message* value) {
   uint32 length;
   if (!input->ReadVarint32(&length)) return false;
   if (!input->IncrementRecursionDepth()) return false;
@@ -220,140 +222,140 @@ inline bool WireFormat::ReadMessageNoVirtual(io::CodedInputStream* input,
 
 // ===================================================================
 
-inline bool WireFormat::WriteTag(int field_number, WireType type,
+inline void WireFormat::WriteTag(int field_number, WireType type,
                                  io::CodedOutputStream* output) {
-  return output->WriteTag(MakeTag(field_number, type));
+  output->WriteTag(MakeTag(field_number, type));
 }
 
-inline bool WireFormat::WriteInt32NoTag(int32 value,
+inline void WireFormat::WriteInt32NoTag(int32 value,
                                         io::CodedOutputStream* output) {
-  return output->WriteVarint32SignExtended(value);
+  output->WriteVarint32SignExtended(value);
 }
-inline bool WireFormat::WriteInt64NoTag(int64 value,
+inline void WireFormat::WriteInt64NoTag(int64 value,
                                         io::CodedOutputStream* output) {
-  return output->WriteVarint64(static_cast<uint64>(value));
+  output->WriteVarint64(static_cast<uint64>(value));
 }
-inline bool WireFormat::WriteUInt32NoTag(uint32 value,
+inline void WireFormat::WriteUInt32NoTag(uint32 value,
                                          io::CodedOutputStream* output) {
-  return output->WriteVarint32(value);
+  output->WriteVarint32(value);
 }
-inline bool WireFormat::WriteUInt64NoTag(uint64 value,
+inline void WireFormat::WriteUInt64NoTag(uint64 value,
                                          io::CodedOutputStream* output) {
-  return output->WriteVarint64(value);
+  output->WriteVarint64(value);
 }
-inline bool WireFormat::WriteSInt32NoTag(int32 value,
+inline void WireFormat::WriteSInt32NoTag(int32 value,
                                          io::CodedOutputStream* output) {
-  return output->WriteVarint32(ZigZagEncode32(value));
+  output->WriteVarint32(ZigZagEncode32(value));
 }
-inline bool WireFormat::WriteSInt64NoTag(int64 value,
+inline void WireFormat::WriteSInt64NoTag(int64 value,
                                          io::CodedOutputStream* output) {
-  return output->WriteVarint64(ZigZagEncode64(value));
+  output->WriteVarint64(ZigZagEncode64(value));
 }
-inline bool WireFormat::WriteFixed32NoTag(uint32 value,
+inline void WireFormat::WriteFixed32NoTag(uint32 value,
                                           io::CodedOutputStream* output) {
-  return output->WriteLittleEndian32(value);
+  output->WriteLittleEndian32(value);
 }
-inline bool WireFormat::WriteFixed64NoTag(uint64 value,
+inline void WireFormat::WriteFixed64NoTag(uint64 value,
                                           io::CodedOutputStream* output) {
-  return output->WriteLittleEndian64(value);
+  output->WriteLittleEndian64(value);
 }
-inline bool WireFormat::WriteSFixed32NoTag(int32 value,
+inline void WireFormat::WriteSFixed32NoTag(int32 value,
                                            io::CodedOutputStream* output) {
-  return output->WriteLittleEndian32(static_cast<uint32>(value));
+  output->WriteLittleEndian32(static_cast<uint32>(value));
 }
-inline bool WireFormat::WriteSFixed64NoTag(int64 value,
+inline void WireFormat::WriteSFixed64NoTag(int64 value,
                                            io::CodedOutputStream* output) {
-  return output->WriteLittleEndian64(static_cast<uint64>(value));
+  output->WriteLittleEndian64(static_cast<uint64>(value));
 }
-inline bool WireFormat::WriteFloatNoTag(float value,
+inline void WireFormat::WriteFloatNoTag(float value,
                                         io::CodedOutputStream* output) {
-  return output->WriteLittleEndian32(EncodeFloat(value));
+  output->WriteLittleEndian32(EncodeFloat(value));
 }
-inline bool WireFormat::WriteDoubleNoTag(double value,
+inline void WireFormat::WriteDoubleNoTag(double value,
                                          io::CodedOutputStream* output) {
-  return output->WriteLittleEndian64(EncodeDouble(value));
+  output->WriteLittleEndian64(EncodeDouble(value));
 }
-inline bool WireFormat::WriteBoolNoTag(bool value,
+inline void WireFormat::WriteBoolNoTag(bool value,
                                        io::CodedOutputStream* output) {
-  return output->WriteVarint32(value ? 1 : 0);
+  output->WriteVarint32(value ? 1 : 0);
 }
-inline bool WireFormat::WriteEnumNoTag(int value,
+inline void WireFormat::WriteEnumNoTag(int value,
                                        io::CodedOutputStream* output) {
-  return output->WriteVarint32SignExtended(value);
+  output->WriteVarint32SignExtended(value);
 }
 
-inline bool WireFormat::WriteInt32(int field_number, int32 value,
+inline void WireFormat::WriteInt32(int field_number, int32 value,
                                    io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteInt32NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteInt32NoTag(value, output);
 }
-inline bool WireFormat::WriteInt64(int field_number, int64 value,
+inline void WireFormat::WriteInt64(int field_number, int64 value,
                                    io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteInt64NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteInt64NoTag(value, output);
 }
-inline bool WireFormat::WriteUInt32(int field_number, uint32 value,
+inline void WireFormat::WriteUInt32(int field_number, uint32 value,
                                     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteUInt32NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteUInt32NoTag(value, output);
 }
-inline bool WireFormat::WriteUInt64(int field_number, uint64 value,
+inline void WireFormat::WriteUInt64(int field_number, uint64 value,
                                     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteUInt64NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteUInt64NoTag(value, output);
 }
-inline bool WireFormat::WriteSInt32(int field_number, int32 value,
+inline void WireFormat::WriteSInt32(int field_number, int32 value,
                                     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteSInt32NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteSInt32NoTag(value, output);
 }
-inline bool WireFormat::WriteSInt64(int field_number, int64 value,
+inline void WireFormat::WriteSInt64(int field_number, int64 value,
                                     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteSInt64NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteSInt64NoTag(value, output);
 }
-inline bool WireFormat::WriteFixed32(int field_number, uint32 value,
+inline void WireFormat::WriteFixed32(int field_number, uint32 value,
                                      io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_FIXED32, output) &&
-         WriteFixed32NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_FIXED32, output);
+  WriteFixed32NoTag(value, output);
 }
-inline bool WireFormat::WriteFixed64(int field_number, uint64 value,
+inline void WireFormat::WriteFixed64(int field_number, uint64 value,
                                      io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_FIXED64, output) &&
-         WriteFixed64NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_FIXED64, output);
+  WriteFixed64NoTag(value, output);
 }
-inline bool WireFormat::WriteSFixed32(int field_number, int32 value,
+inline void WireFormat::WriteSFixed32(int field_number, int32 value,
                                       io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_FIXED32, output) &&
-         WriteSFixed32NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_FIXED32, output);
+  WriteSFixed32NoTag(value, output);
 }
-inline bool WireFormat::WriteSFixed64(int field_number, int64 value,
+inline void WireFormat::WriteSFixed64(int field_number, int64 value,
                                       io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_FIXED64, output) &&
-         WriteSFixed64NoTag(value, output);
+  WriteTag(field_number, WIRETYPE_FIXED64, output);
+  WriteSFixed64NoTag(value, output);
 }
-inline bool WireFormat::WriteFloat(int field_number, float value,
+inline void WireFormat::WriteFloat(int field_number, float value,
                                    io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_FIXED32, output) &&
-         WriteFloatNoTag(value, output);
+  WriteTag(field_number, WIRETYPE_FIXED32, output);
+  WriteFloatNoTag(value, output);
 }
-inline bool WireFormat::WriteDouble(int field_number, double value,
+inline void WireFormat::WriteDouble(int field_number, double value,
                                     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_FIXED64, output) &&
-         WriteDoubleNoTag(value, output);
+  WriteTag(field_number, WIRETYPE_FIXED64, output);
+  WriteDoubleNoTag(value, output);
 }
-inline bool WireFormat::WriteBool(int field_number, bool value,
+inline void WireFormat::WriteBool(int field_number, bool value,
                                   io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteBoolNoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteBoolNoTag(value, output);
 }
-inline bool WireFormat::WriteEnum(int field_number, int value,
+inline void WireFormat::WriteEnum(int field_number, int value,
                                   io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_VARINT, output) &&
-         WriteEnumNoTag(value, output);
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteEnumNoTag(value, output);
 }
 
-inline bool WireFormat::WriteString(int field_number, const string& value,
+inline void WireFormat::WriteString(int field_number, const string& value,
                                     io::CodedOutputStream* output) {
   // String is for UTF-8 text only
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
@@ -363,46 +365,256 @@ inline bool WireFormat::WriteString(int field_number, const string& value,
                "use the 'bytes' type for raw bytes.";
   }
 #endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  return WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output) &&
-         output->WriteVarint32(value.size()) &&
-         output->WriteString(value);
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  output->WriteVarint32(value.size());
+  output->WriteString(value);
 }
-inline bool WireFormat::WriteBytes(int field_number, const string& value,
+inline void WireFormat::WriteBytes(int field_number, const string& value,
                                    io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output) &&
-         output->WriteVarint32(value.size()) &&
-         output->WriteString(value);
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  output->WriteVarint32(value.size());
+  output->WriteString(value);
 }
 
 
-inline bool WireFormat::WriteGroup(int field_number, const Message& value,
+inline void WireFormat::WriteGroup(int field_number, const Message& value,
                                    io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_START_GROUP, output) &&
-         value.SerializeWithCachedSizes(output) &&
-         WriteTag(field_number, WIRETYPE_END_GROUP, output);
+  WriteTag(field_number, WIRETYPE_START_GROUP, output);
+  value.SerializeWithCachedSizes(output);
+  WriteTag(field_number, WIRETYPE_END_GROUP, output);
 }
-inline bool WireFormat::WriteMessage(int field_number, const Message& value,
+inline void WireFormat::WriteMessage(int field_number, const Message& value,
                                      io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output) &&
-         output->WriteVarint32(value.GetCachedSize()) &&
-         value.SerializeWithCachedSizes(output);
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  output->WriteVarint32(value.GetCachedSize());
+  value.SerializeWithCachedSizes(output);
 }
 
 template<typename MessageType>
-inline bool WireFormat::WriteGroupNoVirtual(
+inline void WireFormat::WriteGroupNoVirtual(
     int field_number, const MessageType& value,
     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_START_GROUP, output) &&
-         value.MessageType::SerializeWithCachedSizes(output) &&
-         WriteTag(field_number, WIRETYPE_END_GROUP, output);
+  WriteTag(field_number, WIRETYPE_START_GROUP, output);
+  value.MessageType::SerializeWithCachedSizes(output);
+  WriteTag(field_number, WIRETYPE_END_GROUP, output);
 }
 template<typename MessageType>
-inline bool WireFormat::WriteMessageNoVirtual(
+inline void WireFormat::WriteMessageNoVirtual(
     int field_number, const MessageType& value,
     io::CodedOutputStream* output) {
-  return WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output) &&
-         output->WriteVarint32(value.MessageType::GetCachedSize()) &&
-         value.MessageType::SerializeWithCachedSizes(output);
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  output->WriteVarint32(value.MessageType::GetCachedSize());
+  value.MessageType::SerializeWithCachedSizes(output);
+}
+
+// ===================================================================
+
+inline uint8* WireFormat::WriteTagToArray(int field_number,
+                                          WireType type,
+                                          uint8* target) {
+  return io::CodedOutputStream::WriteTagToArray(MakeTag(field_number, type),
+                                                target);
+}
+
+inline uint8* WireFormat::WriteInt32NoTagToArray(int32 value, uint8* target) {
+  return io::CodedOutputStream::WriteVarint32SignExtendedToArray(value, target);
+}
+inline uint8* WireFormat::WriteInt64NoTagToArray(int64 value, uint8* target) {
+  return io::CodedOutputStream::WriteVarint64ToArray(
+      static_cast<uint64>(value), target);
+}
+inline uint8* WireFormat::WriteUInt32NoTagToArray(uint32 value, uint8* target) {
+  return io::CodedOutputStream::WriteVarint32ToArray(value, target);
+}
+inline uint8* WireFormat::WriteUInt64NoTagToArray(uint64 value, uint8* target) {
+  return io::CodedOutputStream::WriteVarint64ToArray(value, target);
+}
+inline uint8* WireFormat::WriteSInt32NoTagToArray(int32 value, uint8* target) {
+  return io::CodedOutputStream::WriteVarint32ToArray(ZigZagEncode32(value),
+                                                     target);
+}
+inline uint8* WireFormat::WriteSInt64NoTagToArray(int64 value, uint8* target) {
+  return io::CodedOutputStream::WriteVarint64ToArray(ZigZagEncode64(value),
+                                                     target);
+}
+inline uint8* WireFormat::WriteFixed32NoTagToArray(uint32 value,
+                                                   uint8* target) {
+  return io::CodedOutputStream::WriteLittleEndian32ToArray(value, target);
+}
+inline uint8* WireFormat::WriteFixed64NoTagToArray(uint64 value,
+                                                   uint8* target) {
+  return io::CodedOutputStream::WriteLittleEndian64ToArray(value, target);
+}
+inline uint8* WireFormat::WriteSFixed32NoTagToArray(int32 value,
+                                                    uint8* target) {
+  return io::CodedOutputStream::WriteLittleEndian32ToArray(
+      static_cast<uint32>(value), target);
+}
+inline uint8* WireFormat::WriteSFixed64NoTagToArray(int64 value,
+                                                    uint8* target) {
+  return io::CodedOutputStream::WriteLittleEndian64ToArray(
+      static_cast<uint64>(value), target);
+}
+inline uint8* WireFormat::WriteFloatNoTagToArray(float value, uint8* target) {
+  return io::CodedOutputStream::WriteLittleEndian32ToArray(EncodeFloat(value),
+                                                           target);
+}
+inline uint8* WireFormat::WriteDoubleNoTagToArray(double value,
+                                                  uint8* target) {
+  return io::CodedOutputStream::WriteLittleEndian64ToArray(EncodeDouble(value),
+                                                           target);
+}
+inline uint8* WireFormat::WriteBoolNoTagToArray(bool value,
+                                                uint8* target) {
+  return io::CodedOutputStream::WriteVarint32ToArray(value ? 1 : 0, target);
+}
+inline uint8* WireFormat::WriteEnumNoTagToArray(int value,
+                                                uint8* target) {
+  return io::CodedOutputStream::WriteVarint32SignExtendedToArray(value, target);
+}
+
+inline uint8* WireFormat::WriteInt32ToArray(int field_number,
+                                            int32 value,
+                                            uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteInt32NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteInt64ToArray(int field_number,
+                                            int64 value,
+                                            uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteInt64NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteUInt32ToArray(int field_number,
+                                             uint32 value,
+                                             uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteUInt32NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteUInt64ToArray(int field_number,
+                                             uint64 value,
+                                             uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteUInt64NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteSInt32ToArray(int field_number,
+                                             int32 value,
+                                             uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteSInt32NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteSInt64ToArray(int field_number,
+                                             int64 value,
+                                             uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteSInt64NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteFixed32ToArray(int field_number,
+                                              uint32 value,
+                                              uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_FIXED32, target);
+  return WriteFixed32NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteFixed64ToArray(int field_number,
+                                              uint64 value,
+                                              uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_FIXED64, target);
+  return WriteFixed64NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteSFixed32ToArray(int field_number,
+                                               int32 value,
+                                               uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_FIXED32, target);
+  return WriteSFixed32NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteSFixed64ToArray(int field_number,
+                                               int64 value,
+                                               uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_FIXED64, target);
+  return WriteSFixed64NoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteFloatToArray(int field_number,
+                                            float value,
+                                            uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_FIXED32, target);
+  return WriteFloatNoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteDoubleToArray(int field_number,
+                                             double value,
+                                             uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_FIXED64, target);
+  return WriteDoubleNoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteBoolToArray(int field_number,
+                                           bool value,
+                                           uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteBoolNoTagToArray(value, target);
+}
+inline uint8* WireFormat::WriteEnumToArray(int field_number,
+                                           int value,
+                                           uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
+  return WriteEnumNoTagToArray(value, target);
+}
+
+inline uint8* WireFormat::WriteStringToArray(int field_number,
+                                             const string& value,
+                                             uint8* target) {
+  // String is for UTF-8 text only
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  if (!IsStructurallyValidUTF8(value.data(), value.size())) {
+    GOOGLE_LOG(ERROR) << "Encountered string containing invalid UTF-8 data while "
+               "serializing protocol buffer. Strings must contain only UTF-8; "
+               "use the 'bytes' type for raw bytes.";
+  }
+#endif
+  // WARNING:  In wire_format.cc, both strings and bytes are handled by
+  //   WriteString() to avoid code duplication.  If the implementations become
+  //   different, you will need to update that usage.
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  target = io::CodedOutputStream::WriteVarint32ToArray(value.size(), target);
+  return io::CodedOutputStream::WriteStringToArray(value, target);
+}
+inline uint8* WireFormat::WriteBytesToArray(int field_number,
+                                            const string& value,
+                                            uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  target = io::CodedOutputStream::WriteVarint32ToArray(value.size(), target);
+  return io::CodedOutputStream::WriteStringToArray(value, target);
+}
+
+
+inline uint8* WireFormat::WriteGroupToArray(int field_number,
+                                            const Message& value,
+                                            uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
+  target = value.SerializeWithCachedSizesToArray(target);
+  return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
+}
+inline uint8* WireFormat::WriteMessageToArray(int field_number,
+                                              const Message& value,
+                                              uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  target = io::CodedOutputStream::WriteVarint32ToArray(
+    value.GetCachedSize(), target);
+  return value.SerializeWithCachedSizesToArray(target);
+}
+
+template<typename MessageType>
+inline uint8* WireFormat::WriteGroupNoVirtualToArray(
+    int field_number, const MessageType& value, uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
+  target = value.MessageType::SerializeWithCachedSizesToArray(target);
+  return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
+}
+template<typename MessageType>
+inline uint8* WireFormat::WriteMessageNoVirtualToArray(
+    int field_number, const MessageType& value, uint8* target) {
+  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
+  target = io::CodedOutputStream::WriteVarint32ToArray(
+    value.MessageType::GetCachedSize(), target);
+  return value.MessageType::SerializeWithCachedSizesToArray(target);
 }
 
 // ===================================================================

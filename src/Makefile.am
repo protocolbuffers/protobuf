@@ -35,6 +35,7 @@ MAINTAINERCLEANFILES =   \
 
 nobase_include_HEADERS =                                       \
   google/protobuf/stubs/common.h                               \
+  google/protobuf/stubs/once.h                                 \
   google/protobuf/descriptor.h                                 \
   google/protobuf/descriptor.pb.h                              \
   google/protobuf/descriptor_database.h                        \
@@ -69,6 +70,7 @@ libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 3:0:0
 libprotobuf_la_SOURCES =                                       \
   google/protobuf/stubs/common.cc                              \
+  google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.cc                                \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/map-util.cc                            \
@@ -161,6 +163,7 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 
 protoc_inputs =                                                \
   google/protobuf/unittest.proto                               \
+  google/protobuf/unittest_empty.proto                         \
   google/protobuf/unittest_import.proto                        \
   google/protobuf/unittest_mset.proto                          \
   google/protobuf/unittest_optimize_for.proto                  \
@@ -184,6 +187,8 @@ EXTRA_DIST =                                                   \
 protoc_outputs =                                               \
   google/protobuf/unittest.pb.cc                               \
   google/protobuf/unittest.pb.h                                \
+  google/protobuf/unittest_empty.pb.cc                         \
+  google/protobuf/unittest_empty.pb.h                          \
   google/protobuf/unittest_import.pb.cc                        \
   google/protobuf/unittest_import.pb.h                         \
   google/protobuf/unittest_mset.pb.cc                          \
@@ -223,6 +228,7 @@ protobuf_test_CPPFLAGS = -I$(top_srcdir)/gtest/include         \
                          -I$(top_builddir)/gtest/include
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
+  google/protobuf/stubs/once_unittest.cc                       \
   google/protobuf/stubs/strutil_unittest.cc                    \
   google/protobuf/stubs/structurally_valid_unittest.cc         \
   google/protobuf/descriptor_database_unittest.cc              \

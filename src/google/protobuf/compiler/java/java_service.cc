@@ -57,43 +57,109 @@ void ServiceGenerator::Generate(io::Printer* printer) {
     "classname", descriptor_->name());
   printer->Indent();
 
-  // Generate abstract method declarations.
-  for (int i = 0; i < descriptor_->method_count(); i++) {
-    const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> vars;
-    vars["name"] = UnderscoresToCamelCase(method);
-    vars["input"] = ClassName(method->input_type());
-    vars["output"] = ClassName(method->output_type());
-    printer->Print(vars,
-      "public abstract void $name$(\n"
-      "    com.google.protobuf.RpcController controller,\n"
-      "    $input$ request,\n"
-      "    com.google.protobuf.RpcCallback<$output$> done);\n");
-  }
+  printer->Print(
+    "protected $classname$() {}\n\n",
+    "classname", descriptor_->name());
+
+  GenerateInterface(printer);
+
+  GenerateNewReflectiveServiceMethod(printer);
+  GenerateNewReflectiveBlockingServiceMethod(printer);
+
+  GenerateAbstractMethods(printer);
 
   // Generate getDescriptor() and getDescriptorForType().
   printer->Print(
-    "\n"
     "public static final\n"
     "    com.google.protobuf.Descriptors.ServiceDescriptor\n"
     "    getDescriptor() {\n"
     "  return $file$.getDescriptor().getServices().get($index$);\n"
-    "}\n"
-    "public final com.google.protobuf.Descriptors.ServiceDescriptor\n"
-    "    getDescriptorForType() {\n"
-    "  return getDescriptor();\n"
     "}\n",
     "file", ClassName(descriptor_->file()),
     "index", SimpleItoa(descriptor_->index()));
+  GenerateGetDescriptorForType(printer);
 
   // Generate more stuff.
   GenerateCallMethod(printer);
   GenerateGetPrototype(REQUEST, printer);
   GenerateGetPrototype(RESPONSE, printer);
   GenerateStub(printer);
+  GenerateBlockingStub(printer);
 
   printer->Outdent();
   printer->Print("}\n\n");
+}
+
+void ServiceGenerator::GenerateGetDescriptorForType(io::Printer* printer) {
+  printer->Print(
+    "public final com.google.protobuf.Descriptors.ServiceDescriptor\n"
+    "    getDescriptorForType() {\n"
+    "  return getDescriptor();\n"
+    "}\n");
+}
+
+void ServiceGenerator::GenerateInterface(io::Printer* printer) {
+  printer->Print("public interface Interface {\n");
+  printer->Indent();
+  GenerateAbstractMethods(printer);
+  printer->Outdent();
+  printer->Print("}\n\n");
+}
+
+void ServiceGenerator::GenerateNewReflectiveServiceMethod(
+    io::Printer* printer) {
+  printer->Print(
+    "public static com.google.protobuf.Service newReflectiveService(\n"
+    "    final Interface impl) {\n"
+    "  return new $classname$() {\n",
+    "classname", descriptor_->name());
+  printer->Indent();
+  printer->Indent();
+
+  for (int i = 0; i < descriptor_->method_count(); i++) {
+    const MethodDescriptor* method = descriptor_->method(i);
+    printer->Print("@Override\n");
+    GenerateMethodSignature(printer, method, IS_CONCRETE);
+    printer->Print(
+      " {\n"
+      "  impl.$method$(controller, request, done);\n"
+      "}\n\n",
+      "method", UnderscoresToCamelCase(method));
+  }
+
+  printer->Outdent();
+  printer->Print("};\n");
+  printer->Outdent();
+  printer->Print("}\n\n");
+}
+
+void ServiceGenerator::GenerateNewReflectiveBlockingServiceMethod(
+    io::Printer* printer) {
+  printer->Print(
+    "public static com.google.protobuf.BlockingService\n"
+    "    newReflectiveBlockingService(final BlockingInterface impl) {\n"
+    "  return new com.google.protobuf.BlockingService() {\n");
+  printer->Indent();
+  printer->Indent();
+
+  GenerateGetDescriptorForType(printer);
+
+  GenerateCallBlockingMethod(printer);
+  GenerateGetPrototype(REQUEST, printer);
+  GenerateGetPrototype(RESPONSE, printer);
+
+  printer->Outdent();
+  printer->Print("};\n");
+  printer->Outdent();
+  printer->Print("}\n\n");
+}
+
+void ServiceGenerator::GenerateAbstractMethods(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->method_count(); i++) {
+    const MethodDescriptor* method = descriptor_->method(i);
+    GenerateMethodSignature(printer, method, IS_ABSTRACT);
+    printer->Print(";\n\n");
+  }
 }
 
 void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
@@ -131,7 +197,49 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
   printer->Print(
     "default:\n"
-    "  throw new java.lang.RuntimeException(\"Can't get here.\");\n");
+    "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
+
+  printer->Outdent();
+  printer->Outdent();
+
+  printer->Print(
+    "  }\n"
+    "}\n"
+    "\n");
+}
+
+void ServiceGenerator::GenerateCallBlockingMethod(io::Printer* printer) {
+  printer->Print(
+    "\n"
+    "public final com.google.protobuf.Message callBlockingMethod(\n"
+    "    com.google.protobuf.Descriptors.MethodDescriptor method,\n"
+    "    com.google.protobuf.RpcController controller,\n"
+    "    com.google.protobuf.Message request)\n"
+    "    throws com.google.protobuf.ServiceException {\n"
+    "  if (method.getService() != getDescriptor()) {\n"
+    "    throw new java.lang.IllegalArgumentException(\n"
+    "      \"Service.callBlockingMethod() given method descriptor for \" +\n"
+    "      \"wrong service type.\");\n"
+    "  }\n"
+    "  switch(method.getIndex()) {\n");
+  printer->Indent();
+  printer->Indent();
+
+  for (int i = 0; i < descriptor_->method_count(); i++) {
+    const MethodDescriptor* method = descriptor_->method(i);
+    map<string, string> vars;
+    vars["index"] = SimpleItoa(i);
+    vars["method"] = UnderscoresToCamelCase(method);
+    vars["input"] = ClassName(method->input_type());
+    vars["output"] = ClassName(method->output_type());
+    printer->Print(vars,
+      "case $index$:\n"
+      "  return impl.$method$(controller, ($input$)request);\n");
+  }
+
+  printer->Print(
+    "default:\n"
+    "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
 
   printer->Outdent();
   printer->Outdent();
@@ -144,6 +252,10 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
 void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
                                             io::Printer* printer) {
+  /*
+   * TODO(cpovirk): The exception message says "Service.foo" when it may be
+   * "BlockingService.foo."  Consider fixing.
+   */
   printer->Print(
     "public final com.google.protobuf.Message\n"
     "    get$request_or_response$Prototype(\n"
@@ -171,7 +283,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   printer->Print(
     "default:\n"
-    "  throw new java.lang.RuntimeException(\"Can't get here.\");\n");
+    "  throw new java.lang.AssertionError(\"Can't get here.\");\n");
 
   printer->Outdent();
   printer->Outdent();
@@ -189,7 +301,8 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
     "  return new Stub(channel);\n"
     "}\n"
     "\n"
-    "public static final class Stub extends $classname$ {\n",
+    "public static final class Stub extends $classname$ implements Interface {"
+    "\n",
     "classname", ClassName(descriptor_));
   printer->Indent();
 
@@ -206,31 +319,123 @@ void ServiceGenerator::GenerateStub(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
+    printer->Print("\n");
+    GenerateMethodSignature(printer, method, IS_CONCRETE);
+    printer->Print(" {\n");
+    printer->Indent();
+
     map<string, string> vars;
     vars["index"] = SimpleItoa(i);
-    vars["method"] = UnderscoresToCamelCase(method);
-    vars["input"] = ClassName(method->input_type());
     vars["output"] = ClassName(method->output_type());
     printer->Print(vars,
-      "\n"
-      "public void $method$(\n"
-      "    com.google.protobuf.RpcController controller,\n"
-      "    $input$ request,\n"
-      "    com.google.protobuf.RpcCallback<$output$> done) {\n"
-      "  channel.callMethod(\n"
-      "    getDescriptor().getMethods().get($index$),\n"
-      "    controller,\n"
-      "    request,\n"
-      "    $output$.getDefaultInstance(),\n"
-      "    com.google.protobuf.RpcUtil.generalizeCallback(\n"
-      "      done,\n"
-      "      $output$.class,\n"
-      "      $output$.getDefaultInstance()));\n"
-      "}\n");
+      "channel.callMethod(\n"
+      "  getDescriptor().getMethods().get($index$),\n"
+      "  controller,\n"
+      "  request,\n"
+      "  $output$.getDefaultInstance(),\n"
+      "  com.google.protobuf.RpcUtil.generalizeCallback(\n"
+      "    done,\n"
+      "    $output$.class,\n"
+      "    $output$.getDefaultInstance()));\n");
+
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+
+  printer->Outdent();
+  printer->Print(
+    "}\n"
+    "\n");
+}
+
+void ServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
+  printer->Print(
+    "public static BlockingInterface newBlockingStub(\n"
+    "    com.google.protobuf.BlockingRpcChannel channel) {\n"
+    "  return new BlockingStub(channel);\n"
+    "}\n"
+    "\n");
+
+  printer->Print(
+    "public interface BlockingInterface {");
+  printer->Indent();
+
+  for (int i = 0; i < descriptor_->method_count(); i++) {
+    const MethodDescriptor* method = descriptor_->method(i);
+    GenerateBlockingMethodSignature(printer, method);
+    printer->Print(";\n");
+  }
+
+  printer->Outdent();
+  printer->Print(
+    "}\n"
+    "\n");
+
+  printer->Print(
+    "private static final class BlockingStub implements BlockingInterface {\n");
+  printer->Indent();
+
+  printer->Print(
+    "private BlockingStub(com.google.protobuf.BlockingRpcChannel channel) {\n"
+    "  this.channel = channel;\n"
+    "}\n"
+    "\n"
+    "private final com.google.protobuf.BlockingRpcChannel channel;\n");
+
+  for (int i = 0; i < descriptor_->method_count(); i++) {
+    const MethodDescriptor* method = descriptor_->method(i);
+    GenerateBlockingMethodSignature(printer, method);
+    printer->Print(" {\n");
+    printer->Indent();
+
+    map<string, string> vars;
+    vars["index"] = SimpleItoa(i);
+    vars["output"] = ClassName(method->output_type());
+    printer->Print(vars,
+      "return ($output$) channel.callBlockingMethod(\n"
+      "  getDescriptor().getMethods().get($index$),\n"
+      "  controller,\n"
+      "  request,\n"
+      "  $output$.getDefaultInstance());\n");
+
+    printer->Outdent();
+    printer->Print(
+      "}\n"
+      "\n");
   }
 
   printer->Outdent();
   printer->Print("}\n");
+}
+
+void ServiceGenerator::GenerateMethodSignature(io::Printer* printer,
+                                               const MethodDescriptor* method,
+                                               IsAbstract is_abstract) {
+  map<string, string> vars;
+  vars["name"] = UnderscoresToCamelCase(method);
+  vars["input"] = ClassName(method->input_type());
+  vars["output"] = ClassName(method->output_type());
+  vars["abstract"] = (is_abstract == IS_ABSTRACT) ? "abstract" : "";
+  printer->Print(vars,
+    "public $abstract$ void $name$(\n"
+    "    com.google.protobuf.RpcController controller,\n"
+    "    $input$ request,\n"
+    "    com.google.protobuf.RpcCallback<$output$> done)");
+}
+
+void ServiceGenerator::GenerateBlockingMethodSignature(
+    io::Printer* printer,
+    const MethodDescriptor* method) {
+  map<string, string> vars;
+  vars["method"] = UnderscoresToCamelCase(method);
+  vars["input"] = ClassName(method->input_type());
+  vars["output"] = ClassName(method->output_type());
+  printer->Print(vars,
+    "\n"
+    "public $output$ $method$(\n"
+    "    com.google.protobuf.RpcController controller,\n"
+    "    $input$ request)\n"
+    "    throws com.google.protobuf.ServiceException");
 }
 
 }  // namespace java

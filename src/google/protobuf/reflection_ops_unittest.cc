@@ -138,16 +138,18 @@ TEST(ReflectionOpsTest, MergeExtensions) {
 TEST(ReflectionOpsTest, MergeUnknown) {
   // Test that the messages' UnknownFieldSets are correctly merged.
   unittest::TestEmptyMessage message1, message2;
-  message1.mutable_unknown_fields()->AddField(1234)->add_varint(1);
-  message2.mutable_unknown_fields()->AddField(1234)->add_varint(2);
+  message1.mutable_unknown_fields()->AddVarint(1234, 1);
+  message2.mutable_unknown_fields()->AddVarint(1234, 2);
 
   ReflectionOps::Merge(message2, &message1);
 
-  ASSERT_EQ(1, message1.unknown_fields().field_count());
-  const UnknownField& field = message1.unknown_fields().field(0);
-  ASSERT_EQ(2, field.varint_size());
-  EXPECT_EQ(1, field.varint(0));
-  EXPECT_EQ(2, field.varint(1));
+  ASSERT_EQ(2, message1.unknown_fields().field_count());
+  ASSERT_EQ(UnknownField::TYPE_VARINT,
+            message1.unknown_fields().field(0).type());
+  EXPECT_EQ(1, message1.unknown_fields().field(0).varint());
+  ASSERT_EQ(UnknownField::TYPE_VARINT,
+            message1.unknown_fields().field(1).type());
+  EXPECT_EQ(2, message1.unknown_fields().field(1).varint());
 }
 
 #ifdef GTEST_HAS_DEATH_TEST
@@ -211,7 +213,7 @@ TEST(ReflectionOpsTest, ClearExtensions) {
 TEST(ReflectionOpsTest, ClearUnknown) {
   // Test that the message's UnknownFieldSet is correctly cleared.
   unittest::TestEmptyMessage message;
-  message.mutable_unknown_fields()->AddField(1234)->add_varint(1);
+  message.mutable_unknown_fields()->AddVarint(1234, 1);
 
   ReflectionOps::Clear(&message);
 
@@ -224,16 +226,13 @@ TEST(ReflectionOpsTest, DiscardUnknownFields) {
 
   // Set some unknown fields in message.
   message.mutable_unknown_fields()
-        ->AddField(123456)
-        ->add_varint(654321);
+        ->AddVarint(123456, 654321);
   message.mutable_optional_nested_message()
         ->mutable_unknown_fields()
-        ->AddField(123456)
-        ->add_varint(654321);
+        ->AddVarint(123456, 654321);
   message.mutable_repeated_nested_message(0)
         ->mutable_unknown_fields()
-        ->AddField(123456)
-        ->add_varint(654321);
+        ->AddVarint(123456, 654321);
 
   EXPECT_EQ(1, message.unknown_fields().field_count());
   EXPECT_EQ(1, message.optional_nested_message()
@@ -258,16 +257,13 @@ TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
 
   // Set some unknown fields.
   message.mutable_unknown_fields()
-        ->AddField(123456)
-        ->add_varint(654321);
+        ->AddVarint(123456, 654321);
   message.MutableExtension(unittest::optional_nested_message_extension)
         ->mutable_unknown_fields()
-        ->AddField(123456)
-        ->add_varint(654321);
+        ->AddVarint(123456, 654321);
   message.MutableExtension(unittest::repeated_nested_message_extension, 0)
         ->mutable_unknown_fields()
-        ->AddField(123456)
-        ->add_varint(654321);
+        ->AddVarint(123456, 654321);
 
   EXPECT_EQ(1, message.unknown_fields().field_count());
   EXPECT_EQ(1,

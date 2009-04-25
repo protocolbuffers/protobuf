@@ -565,6 +565,34 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
   EXPECT_EQ("dir5/bar", virtual_file);
 }
 
+TEST_F(DiskSourceTreeTest, VirtualFileToDiskFile) {
+  // Test VirtualFileToDiskFile.
+
+  AddFile(dirnames_[0] + "/foo", "Hello World!");
+  AddFile(dirnames_[1] + "/foo", "This file should be hidden.");
+  AddFile(dirnames_[1] + "/quux", "This file should not be hidden.");
+  source_tree_.MapPath("bar", dirnames_[0]);
+  source_tree_.MapPath("bar", dirnames_[1]);
+
+  // Existent files, shadowed and non-shadowed case.
+  string disk_file;
+  EXPECT_TRUE(source_tree_.VirtualFileToDiskFile("bar/foo", &disk_file));
+  EXPECT_EQ(dirnames_[0] + "/foo", disk_file);
+  EXPECT_TRUE(source_tree_.VirtualFileToDiskFile("bar/quux", &disk_file));
+  EXPECT_EQ(dirnames_[1] + "/quux", disk_file);
+
+  // Nonexistent file in existent directory and vice versa.
+  string not_touched = "not touched";
+  EXPECT_FALSE(source_tree_.VirtualFileToDiskFile("bar/baz", &not_touched));
+  EXPECT_EQ("not touched", not_touched);
+  EXPECT_FALSE(source_tree_.VirtualFileToDiskFile("baz/foo", &not_touched));
+  EXPECT_EQ("not touched", not_touched);
+
+  // Accept NULL as output parameter.
+  EXPECT_TRUE(source_tree_.VirtualFileToDiskFile("bar/foo", NULL));
+  EXPECT_FALSE(source_tree_.VirtualFileToDiskFile("baz/foo", NULL));
+}
+
 }  // namespace
 
 }  // namespace compiler

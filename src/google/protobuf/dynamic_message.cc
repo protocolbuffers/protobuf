@@ -229,8 +229,7 @@ DynamicMessage::DynamicMessage(const TypeInfo* type_info)
   new(OffsetToPointer(type_info_->unknown_fields_offset)) UnknownFieldSet;
 
   if (type_info_->extensions_offset != -1) {
-    new(OffsetToPointer(type_info_->extensions_offset))
-      ExtensionSet(&type_info_->type, type_info_->pool, type_info_->factory);
+    new(OffsetToPointer(type_info_->extensions_offset)) ExtensionSet;
   }
 
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -508,6 +507,7 @@ const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
       type_info->unknown_fields_offset,
       type_info->extensions_offset,
       type_info->pool,
+      this,
       type_info->size));
 
   // Cross link prototypes.

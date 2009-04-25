@@ -18,6 +18,7 @@ Proto2 Python primary authors:
   Petar Petrov <petar@google.com>
 
 Large code contributions:
+  Jason Hsueh <jasonh@google.com>
   Joseph Schorr <jschorr@google.com>
   Wenbo Zhu <wenboz@google.com>
 
@@ -38,7 +39,7 @@ Patch contributors:
   Kevin Ko <kevin.s.ko@gmail.com>
     * Small patch to handle trailing slashes in --proto_path flag.
   Johan Euphrosine <proppy@aminche.com>
-    * Small patch to fix Pyhton CallMethod().
+    * Small patch to fix Python CallMethod().
   Ulrich Kunitz <kune@deine-taler.de>
     * Small optimizations to Python serialization.
   Leandro Lucarella <llucax@gmail.com>

@@ -36,6 +36,7 @@ the InputStream primitives provided here.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import array
 import struct
 from google.protobuf import message
 from google.protobuf.internal import wire_format
@@ -46,7 +47,7 @@ from google.protobuf.internal import wire_format
 # proto2 implementation.
 
 
-class InputStream(object):
+class InputStreamBuffer(object):
 
   """Contains all logic for reading bits, and dealing with stream position.
 
@@ -223,3 +224,115 @@ class InputStream(object):
       shift += 7
       if not (b & 0x80):
         return result
+
+
+class InputStreamArray(object):
+
+  """Contains all logic for reading bits, and dealing with stream position.
+
+  If an InputStream method ever raises an exception, the stream is left
+  in an indeterminate state and is not safe for further use.
+
+  This alternative to InputStreamBuffer is used in environments where buffer()
+  is unavailble, such as Google App Engine.
+  """
+
+  def __init__(self, s):
+    self._buffer = array.array('B', s)
+    self._pos = 0
+
+  def EndOfStream(self):
+    return self._pos >= len(self._buffer)
+
+  def Position(self):
+    return self._pos
+
+  def GetSubBuffer(self, size=None):
+    if size is None:
+      return self._buffer[self._pos : ].tostring()
+    else:
+      if size < 0:
+        raise message.DecodeError('Negative size %d' % size)
+      return self._buffer[self._pos : self._pos + size].tostring()
+
+  def SkipBytes(self, num_bytes):
+    if num_bytes < 0:
+      raise message.DecodeError('Negative num_bytes %d' % num_bytes)
+    self._pos += num_bytes
+    self._pos = min(self._pos, len(self._buffer))
+
+  def ReadBytes(self, size):
+    if size < 0:
+      raise message.DecodeError('Negative size %d' % size)
+    s = self._buffer[self._pos : self._pos + size].tostring()
+    self._pos += len(s)  # Only advance by the number of bytes actually read.
+    return s
+
+  def ReadLittleEndian32(self):
+    try:
+      i = struct.unpack(wire_format.FORMAT_UINT32_LITTLE_ENDIAN,
+                        self._buffer[self._pos : self._pos + 4])
+      self._pos += 4
+      return i[0]  # unpack() result is a 1-element tuple.
+    except struct.error, e:
+      raise message.DecodeError(e)
+
+  def ReadLittleEndian64(self):
+    try:
+      i = struct.unpack(wire_format.FORMAT_UINT64_LITTLE_ENDIAN,
+                        self._buffer[self._pos : self._pos + 8])
+      self._pos += 8
+      return i[0]  # unpack() result is a 1-element tuple.
+    except struct.error, e:
+      raise message.DecodeError(e)
+
+  def ReadVarint32(self):
+    i = self.ReadVarint64()
+    if not wire_format.INT32_MIN <= i <= wire_format.INT32_MAX:
+      raise message.DecodeError('Value out of range for int32: %d' % i)
+    return int(i)
+
+  def ReadVarUInt32(self):
+    i = self.ReadVarUInt64()
+    if i > wire_format.UINT32_MAX:
+      raise message.DecodeError('Value out of range for uint32: %d' % i)
+    return i
+
+  def ReadVarint64(self):
+    i = self.ReadVarUInt64()
+    if i > wire_format.INT64_MAX:
+      i -= (1 << 64)
+    return i
+
+  def ReadVarUInt64(self):
+    i = self._ReadVarintHelper()
+    if not 0 <= i <= wire_format.UINT64_MAX:
+      raise message.DecodeError('Value out of range for uint64: %d' % i)
+    return i
+
+  def _ReadVarintHelper(self):
+    result = 0
+    shift = 0
+    while 1:
+      if shift >= 64:
+        raise message.DecodeError('Too many bytes when decoding varint.')
+      try:
+        b = self._buffer[self._pos]
+      except IndexError:
+        raise message.DecodeError('Truncated varint.')
+      self._pos += 1
+      result |= ((b & 0x7f) << shift)
+      shift += 7
+      if not (b & 0x80):
+        return result
+
+
+try:
+  buffer('')
+  InputStream = InputStreamBuffer
+except NotImplementedError:
+  # Google App Engine: dev_appserver.py
+  InputStream = InputStreamArray
+except RuntimeError:
+  # Google App Engine: production
+  InputStream = InputStreamArray

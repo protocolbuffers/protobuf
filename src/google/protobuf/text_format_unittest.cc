@@ -163,18 +163,16 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
 
   unittest::TestEmptyMessage message;
   UnknownFieldSet* unknown_fields = message.mutable_unknown_fields();
-  UnknownField* field5 = unknown_fields->AddField(5);
 
-  field5->add_varint(1);
-  field5->add_fixed32(2);
-  field5->add_fixed64(3);
-  field5->add_length_delimited("4");
-  field5->add_group()->AddField(10)->add_varint(5);
+  unknown_fields->AddVarint(5, 1);
+  unknown_fields->AddFixed32(5, 2);
+  unknown_fields->AddFixed64(5, 3);
+  unknown_fields->AddLengthDelimited(5, "4");
+  unknown_fields->AddGroup(5)->AddVarint(10, 5);
 
-  UnknownField* field8 = unknown_fields->AddField(8);
-  field8->add_varint(1);
-  field8->add_varint(2);
-  field8->add_varint(3);
+  unknown_fields->AddVarint(8, 1);
+  unknown_fields->AddVarint(8, 2);
+  unknown_fields->AddVarint(8, 3);
 
   EXPECT_EQ(
     "5: 1\n"
@@ -234,6 +232,48 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
     text);
 }
 
+TEST_F(TextFormatTest, PrintMessageWithIndent) {
+  // Test adding an initial indent to printing.
+
+  protobuf_unittest::TestAllTypes message;
+
+  message.add_repeated_string("abc");
+  message.add_repeated_string("def");
+  message.add_repeated_nested_message()->set_bb(123);
+
+  string text;
+  TextFormat::Printer printer;
+  printer.SetInitialIndentLevel(1);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ(
+    "  repeated_string: \"abc\"\n"
+    "  repeated_string: \"def\"\n"
+    "  repeated_nested_message {\n"
+    "    bb: 123\n"
+    "  }\n",
+    text);
+}
+
+TEST_F(TextFormatTest, PrintMessageSingleLine) {
+  // Test printing a message on a single line.
+
+  protobuf_unittest::TestAllTypes message;
+
+  message.add_repeated_string("abc");
+  message.add_repeated_string("def");
+  message.add_repeated_nested_message()->set_bb(123);
+
+  string text;
+  TextFormat::Printer printer;
+  printer.SetInitialIndentLevel(1);
+  printer.SetSingleLineMode(true);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ(
+    "  repeated_string: \"abc\" repeated_string: \"def\" "
+    "repeated_nested_message { bb: 123 } ",
+    text);
+}
+
 TEST_F(TextFormatTest, ParseBasic) {
   io::ArrayInputStream input_stream(proto_debug_string_.data(),
                                     proto_debug_string_.size());
@@ -260,6 +300,29 @@ TEST_F(TextFormatTest, ParseStringEscape) {
 
   // Compare.
   EXPECT_EQ(kEscapeTestString, proto_.optional_string());
+}
+
+TEST_F(TextFormatTest, ParseConcatenatedString) {
+  // Create a parse string with multiple parts on one line.
+  string parse_string = "optional_string: \"foo\" \"bar\"\n";
+
+  io::ArrayInputStream input_stream1(parse_string.data(),
+                                    parse_string.size());
+  TextFormat::Parse(&input_stream1, &proto_);
+
+  // Compare.
+  EXPECT_EQ("foobar", proto_.optional_string());
+
+  // Create a parse string with multiple parts on seperate lines.
+  parse_string = "optional_string: \"foo\"\n"
+                 "\"bar\"\n";
+
+  io::ArrayInputStream input_stream2(parse_string.data(),
+                                    parse_string.size());
+  TextFormat::Parse(&input_stream2, &proto_);
+
+  // Compare.
+  EXPECT_EQ("foobar", proto_.optional_string());
 }
 
 TEST_F(TextFormatTest, ParseFloatWithSuffix) {
