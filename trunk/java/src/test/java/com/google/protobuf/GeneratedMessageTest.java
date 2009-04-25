@@ -71,6 +71,17 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.assertAllFieldsSet(message);
   }
 
+  public void testDoubleBuildError() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    builder.build();
+    try {
+      builder.build();
+      fail("Should have thrown exception.");
+    } catch (IllegalStateException e) {
+      // Success.
+    }
+  }
+
   public void testSettersRejectNull() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {

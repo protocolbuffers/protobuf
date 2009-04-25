@@ -77,7 +77,7 @@ public final class CodedInputStream {
    * may legally end wherever a tag occurs, and zero is not a valid tag number.
    */
   public int readTag() throws IOException {
-    if (bufferPos == bufferSize && !refillBuffer(false)) {
+    if (isAtEnd()) {
       lastTag = 0;
       return 0;
     }
@@ -383,6 +383,39 @@ public final class CodedInputStream {
     return result;
   }
 
+  /**
+   * Reads a varint from the input one byte at a time, so that it does not
+   * read any bytes after the end of the varint.  If you simply wrapped the
+   * stream in a CodedInputStream and used {@link #readRawVarint32(InputStream)}
+   * then you would probably end up reading past the end of the varint since
+   * CodedInputStream buffers its input.
+   */
+  static int readRawVarint32(InputStream input) throws IOException {
+    int result = 0;
+    int offset = 0;
+    for (; offset < 32; offset += 7) {
+      int b = input.read();
+      if (b == -1) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      result |= (b & 0x7f) << offset;
+      if ((b & 0x80) == 0) {
+        return result;
+      }
+    }
+    // Keep reading up to 64 bits.
+    for (; offset < 64; offset += 7) {
+      int b = input.read();
+      if (b == -1) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      if ((b & 0x80) == 0) {
+        return result;
+      }
+    }
+    throw InvalidProtocolBufferException.malformedVarint();
+  }
+
   /** Read a raw Varint from the stream. */
   public long readRawVarint64() throws IOException {
     int shift = 0;
@@ -526,6 +559,10 @@ public final class CodedInputStream {
    * size limits only apply when reading from an {@code InputStream}, not
    * when constructed around a raw byte array (nor with
    * {@link ByteString#newCodedInput}).
+   * <p>
+   * If you want to read several messages from a single CodedInputStream, you
+   * could call {@link #resetSizeCounter()} after each one to avoid hitting the
+   * size limit.
    *
    * @return the old limit.
    */
@@ -537,6 +574,13 @@ public final class CodedInputStream {
     int oldLimit = sizeLimit;
     sizeLimit = limit;
     return oldLimit;
+  }
+
+  /**
+   * Resets the current size counter to zero (see {@link #setSizeLimit(int)}).
+   */
+  public void resetSizeCounter() {
+    totalBytesRetired = 0;
   }
 
   /**
@@ -597,6 +641,15 @@ public final class CodedInputStream {
   }
 
   /**
+   * Returns true if the stream has reached the end of the input.  This is the
+   * case if either the end of the underlying input source has been reached or
+   * if the stream has reached a limit created using {@link #pushLimit(int)}.
+   */
+  public boolean isAtEnd() throws IOException {
+    return bufferPos == bufferSize && !refillBuffer(false);
+  }
+
+  /**
    * Called with {@code this.buffer} is empty to read more bytes from the
    * input.  If {@code mustSucceed} is true, refillBuffer() gurantees that
    * either there will be at least one byte in the buffer when it returns
@@ -622,6 +675,11 @@ public final class CodedInputStream {
 
     bufferPos = 0;
     bufferSize = (input == null) ? -1 : input.read(buffer);
+    if (bufferSize == 0 || bufferSize < -1) {
+      throw new IllegalStateException(
+          "InputStream#read(byte[]) returned invalid result: " + bufferSize +
+          "\nThe InputStream implementation is buggy.");
+    }
     if (bufferSize == -1) {
       bufferSize = 0;
       if (mustSucceed) {
@@ -778,7 +836,7 @@ public final class CodedInputStream {
       throw InvalidProtocolBufferException.truncatedMessage();
     }
 
-    if (size < bufferSize - bufferPos) {
+    if (size <= bufferSize - bufferPos) {
       // We have all the bytes we need already.
       bufferPos += size;
     } else {

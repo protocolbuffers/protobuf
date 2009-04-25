@@ -28,58 +28,37 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+package com.google.protobuf;
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
-#define GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
+/**
+ * Blocking equivalent to {@link Service}.
+ *
+ * @author kenton@google.com Kenton Varda
+ * @author cpovirk@google.com Chris Povirk
+ */
+public interface BlockingService {
+  /**
+   * Equivalent to {@link Service#getDescriptorForType}.
+   */
+  Descriptors.ServiceDescriptor getDescriptorForType();
 
-#include <string>
-#include <google/protobuf/stubs/common.h>
+  /**
+   * Equivalent to {@link Service#callMethod}, except that
+   * {@code callBlockingMethod()} returns the result of the RPC or throws a
+   * {@link ServiceException} if there is a failure, rather than passing the
+   * information to a callback.
+   */
+  Message callBlockingMethod(Descriptors.MethodDescriptor method,
+                             RpcController controller,
+                             Message request) throws ServiceException;
 
-namespace google {
-namespace protobuf {
-  class FieldDescriptor;       // descriptor.h
-  namespace io {
-    class Printer;             // printer.h
-  }
+  /**
+   * Equivalent to {@link Service#getRequestPrototype}.
+   */
+  Message getRequestPrototype(Descriptors.MethodDescriptor method);
+
+  /**
+   * Equivalent to {@link Service#getResponsePrototype}.
+   */
+  Message getResponsePrototype(Descriptors.MethodDescriptor method);
 }
-
-namespace protobuf {
-namespace compiler {
-namespace cpp {
-
-// Generates code for an extension, which may be within the scope of some
-// message or may be at file scope.  This is much simpler than FieldGenerator
-// since extensions are just simple identifiers with interesting types.
-class ExtensionGenerator {
- public:
-  // See generator.cc for the meaning of dllexport_decl.
-  explicit ExtensionGenerator(const FieldDescriptor* descriptor,
-                              const string& dllexport_decl);
-  ~ExtensionGenerator();
-
-  // Header stuff.
-  void GenerateDeclaration(io::Printer* printer);
-
-  // Source file stuff.
-  void GenerateDefinition(io::Printer* printer);
-
-  // Generate code to register the extension.
-  void GenerateRegistration(io::Printer* printer);
-
- private:
-  const FieldDescriptor* descriptor_;
-  string type_traits_;
-  string dllexport_decl_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
-};
-
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__

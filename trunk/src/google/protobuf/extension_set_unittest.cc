@@ -35,10 +35,13 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/stl_util-inl.h>
 
 namespace google {
 namespace protobuf {
@@ -102,6 +105,11 @@ TEST(ExtensionSetTest, Clear) {
               unittest::optional_foreign_message_extension));
   EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
             &message.GetExtension(unittest::optional_import_message_extension));
+
+  // Make sure setting stuff again after clearing works.  (This takes slightly
+  // different code paths since the objects are reused.)
+  TestUtil::SetAllExtensions(&message);
+  TestUtil::ExpectAllExtensionsSet(message);
 }
 
 TEST(ExtensionSetTest, ClearOneField) {
@@ -166,28 +174,90 @@ TEST(ExtensionSetTest, SwapWithSelf) {
   TestUtil::ExpectAllExtensionsSet(message);
 }
 
-TEST(ExtensionSetTest, Serialization) {
+TEST(ExtensionSetTest, SerializationToArray) {
   // Serialize as TestAllExtensions and parse as TestAllTypes to insure wire
   // compatibility of extensions.
+  //
+  // This checks serialization to a flat array by explicitly reserving space in
+  // the string and calling the generated message's
+  // SerializeWithCachedSizesToArray.
   unittest::TestAllExtensions source;
   unittest::TestAllTypes destination;
-  string data;
-
   TestUtil::SetAllExtensions(&source);
-  source.SerializeToString(&data);
+  int size = source.ByteSize();
+  string data;
+  data.resize(size);
+  uint8* target = reinterpret_cast<uint8*>(string_as_array(&data));
+  uint8* end = source.SerializeWithCachedSizesToArray(target);
+  EXPECT_EQ(size, end - target);
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectAllFieldsSet(destination);
 }
 
-TEST(ExtensionSetTest, PackedSerialization) {
+TEST(ExtensionSetTest, SerializationToStream) {
+  // Serialize as TestAllExtensions and parse as TestAllTypes to insure wire
+  // compatibility of extensions.
+  //
+  // This checks serialization to an output stream by creating an array output
+  // stream that can only buffer 1 byte at a time - this prevents the message
+  // from ever jumping to the fast path, ensuring that serialization happens via
+  // the CodedOutputStream.
+  unittest::TestAllExtensions source;
+  unittest::TestAllTypes destination;
+  TestUtil::SetAllExtensions(&source);
+  int size = source.ByteSize();
+  string data;
+  data.resize(size);
+  {
+    io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+    io::CodedOutputStream output_stream(&array_stream);
+    source.SerializeWithCachedSizes(&output_stream);
+    ASSERT_FALSE(output_stream.HadError());
+  }
+  EXPECT_TRUE(destination.ParseFromString(data));
+  TestUtil::ExpectAllFieldsSet(destination);
+}
+
+TEST(ExtensionSetTest, PackedSerializationToArray) {
   // Serialize as TestPackedExtensions and parse as TestPackedTypes to insure
   // wire compatibility of extensions.
+  //
+  // This checks serialization to a flat array by explicitly reserving space in
+  // the string and calling the generated message's
+  // SerializeWithCachedSizesToArray.
   unittest::TestPackedExtensions source;
   unittest::TestPackedTypes destination;
-  string data;
-
   TestUtil::SetPackedExtensions(&source);
-  source.SerializeToString(&data);
+  int size = source.ByteSize();
+  string data;
+  data.resize(size);
+  uint8* target = reinterpret_cast<uint8*>(string_as_array(&data));
+  uint8* end = source.SerializeWithCachedSizesToArray(target);
+  EXPECT_EQ(size, end - target);
+  EXPECT_TRUE(destination.ParseFromString(data));
+  TestUtil::ExpectPackedFieldsSet(destination);
+}
+
+TEST(ExtensionSetTest, PackedSerializationToStream) {
+  // Serialize as TestPackedExtensions and parse as TestPackedTypes to insure
+  // wire compatibility of extensions.
+  //
+  // This checks serialization to an output stream by creating an array output
+  // stream that can only buffer 1 byte at a time - this prevents the message
+  // from ever jumping to the fast path, ensuring that serialization happens via
+  // the CodedOutputStream.
+  unittest::TestPackedExtensions source;
+  unittest::TestPackedTypes destination;
+  TestUtil::SetPackedExtensions(&source);
+  int size = source.ByteSize();
+  string data;
+  data.resize(size);
+  {
+    io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+    io::CodedOutputStream output_stream(&array_stream);
+    source.SerializeWithCachedSizes(&output_stream);
+    ASSERT_FALSE(output_stream.HadError());
+  }
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedFieldsSet(destination);
 }
@@ -393,6 +463,14 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     min_expected_size += 16 * prototype.SpaceUsed();
     EXPECT_LE(min_expected_size, message.SpaceUsed());
   }
+}
+
+TEST(ExtensionSetTest, InvalidEnumDeath) {
+  unittest::TestAllExtensions message;
+  EXPECT_DEBUG_DEATH(
+    message.SetExtension(unittest::optional_foreign_enum_extension,
+                         static_cast<unittest::ForeignEnum>(53)),
+    "IsValid");
 }
 
 }  // namespace

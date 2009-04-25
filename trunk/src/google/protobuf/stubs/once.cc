@@ -29,57 +29,54 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// emulates google3/base/once.h
+//
+// This header is intended to be included only by internal .cc files and
+// generated .pb.cc files.  Users should not use this directly.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
-#define GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
-#include <string>
-#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
 
 namespace google {
 namespace protobuf {
-  class FieldDescriptor;       // descriptor.h
-  namespace io {
-    class Printer;             // printer.h
+
+#ifdef _WIN32
+
+struct GoogleOnceInternal {
+  GoogleOnceInternal() {
+    InitializeCriticalSection(&critical_section);
   }
-}
-
-namespace protobuf {
-namespace compiler {
-namespace cpp {
-
-// Generates code for an extension, which may be within the scope of some
-// message or may be at file scope.  This is much simpler than FieldGenerator
-// since extensions are just simple identifiers with interesting types.
-class ExtensionGenerator {
- public:
-  // See generator.cc for the meaning of dllexport_decl.
-  explicit ExtensionGenerator(const FieldDescriptor* descriptor,
-                              const string& dllexport_decl);
-  ~ExtensionGenerator();
-
-  // Header stuff.
-  void GenerateDeclaration(io::Printer* printer);
-
-  // Source file stuff.
-  void GenerateDefinition(io::Printer* printer);
-
-  // Generate code to register the extension.
-  void GenerateRegistration(io::Printer* printer);
-
- private:
-  const FieldDescriptor* descriptor_;
-  string type_traits_;
-  string dllexport_decl_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
+  ~GoogleOnceInternal() {
+    DeleteCriticalSection(&critical_section);
+  }
+  CRITICAL_SECTION critical_section;
 };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
+GoogleOnceType::GoogleOnceType() {
+  // internal_ may be non-NULL if Init() was already called.
+  if (internal_ == NULL) internal_ = new GoogleOnceInternal;
+}
 
+void GoogleOnceType::Init(void (*init_func)()) {
+  // internal_ may be NULL if we're still in dynamic initialization and the
+  // constructor has not been called yet.  As mentioned in once.h, we assume
+  // that the program is still single-threaded at this time, and therefore it
+  // should be safe to initialize internal_ like so.
+  if (internal_ == NULL) internal_ = new GoogleOnceInternal;
+
+  EnterCriticalSection(&internal_->critical_section);
+  if (!initialized_) {
+    init_func();
+    initialized_ = true;
+  }
+  LeaveCriticalSection(&internal_->critical_section);
+}
+
+#endif
+
+}  // namespace protobuf
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__

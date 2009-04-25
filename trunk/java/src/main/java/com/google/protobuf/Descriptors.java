@@ -1689,7 +1689,7 @@ public final class Descriptors {
 
       GenericDescriptor old =
         descriptorsByName.put(fullName,
-          new PackageDescriptor(fullName, name, file));
+          new PackageDescriptor(name, fullName, file));
       if (old != null) {
         descriptorsByName.put(fullName, old);
         if (!(old instanceof PackageDescriptor)) {

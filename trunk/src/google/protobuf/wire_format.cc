@@ -109,29 +109,29 @@ WireFormat::kWireTypeForFieldType[FieldDescriptor::MAX_TYPE + 1] = {
 
 bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
                            UnknownFieldSet* unknown_fields) {
-  UnknownField* field = (unknown_fields == NULL) ? NULL :
-    unknown_fields->AddField(GetTagFieldNumber(tag));
+  int number = GetTagFieldNumber(tag);
 
   switch (GetTagWireType(tag)) {
     case WIRETYPE_VARINT: {
       uint64 value;
       if (!input->ReadVarint64(&value)) return false;
-      if (field != NULL) field->add_varint(value);
+      if (unknown_fields != NULL) unknown_fields->AddVarint(number, value);
       return true;
     }
     case WIRETYPE_FIXED64: {
       uint64 value;
       if (!input->ReadLittleEndian64(&value)) return false;
-      if (field != NULL) field->add_fixed64(value);
+      if (unknown_fields != NULL) unknown_fields->AddFixed64(number, value);
       return true;
     }
     case WIRETYPE_LENGTH_DELIMITED: {
       uint32 length;
       if (!input->ReadVarint32(&length)) return false;
-      if (field == NULL) {
+      if (unknown_fields == NULL) {
         if (!input->Skip(length)) return false;
       } else {
-        if (!input->ReadString(field->add_length_delimited(), length)) {
+        if (!input->ReadString(unknown_fields->AddLengthDelimited(number),
+                               length)) {
           return false;
         }
       }
@@ -139,7 +139,8 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
     }
     case WIRETYPE_START_GROUP: {
       if (!input->IncrementRecursionDepth()) return false;
-      if (!SkipMessage(input, (field == NULL) ? NULL : field->add_group())) {
+      if (!SkipMessage(input, (unknown_fields == NULL) ?
+                              NULL : unknown_fields->AddGroup(number))) {
         return false;
       }
       input->DecrementRecursionDepth();
@@ -156,7 +157,7 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
     case WIRETYPE_FIXED32: {
       uint32 value;
       if (!input->ReadLittleEndian32(&value)) return false;
-      if (field != NULL) field->add_fixed32(value);
+      if (unknown_fields != NULL) unknown_fields->AddFixed32(number, value);
       return true;
     }
     default: {
@@ -185,72 +186,130 @@ bool WireFormat::SkipMessage(io::CodedInputStream* input,
   }
 }
 
-bool WireFormat::SerializeUnknownFields(const UnknownFieldSet& unknown_fields,
+void WireFormat::SerializeUnknownFields(const UnknownFieldSet& unknown_fields,
                                         io::CodedOutputStream* output) {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
-
-#define DO(EXPRESSION) if (!(EXPRESSION)) return false
-    for (int j = 0; j < field.varint_size(); j++) {
-      DO(output->WriteVarint32(MakeTag(field.number(), WIRETYPE_VARINT)));
-      DO(output->WriteVarint64(field.varint(j)));
+    switch (field.type()) {
+      case UnknownField::TYPE_VARINT:
+        output->WriteVarint32(MakeTag(field.number(), WIRETYPE_VARINT));
+        output->WriteVarint64(field.varint());
+        break;
+      case UnknownField::TYPE_FIXED32:
+        output->WriteVarint32(MakeTag(field.number(), WIRETYPE_FIXED32));
+        output->WriteLittleEndian32(field.fixed32());
+        break;
+      case UnknownField::TYPE_FIXED64:
+        output->WriteVarint32(MakeTag(field.number(), WIRETYPE_FIXED64));
+        output->WriteLittleEndian64(field.fixed64());
+        break;
+      case UnknownField::TYPE_LENGTH_DELIMITED:
+        output->WriteVarint32(
+            MakeTag(field.number(), WIRETYPE_LENGTH_DELIMITED));
+        output->WriteVarint32(field.length_delimited().size());
+        output->WriteString(field.length_delimited());
+        break;
+      case UnknownField::TYPE_GROUP:
+        output->WriteVarint32(MakeTag(field.number(),WIRETYPE_START_GROUP));
+        SerializeUnknownFields(field.group(), output);
+        output->WriteVarint32(MakeTag(field.number(), WIRETYPE_END_GROUP));
+        break;
     }
-    for (int j = 0; j < field.fixed32_size(); j++) {
-      DO(output->WriteVarint32(MakeTag(field.number(), WIRETYPE_FIXED32)));
-      DO(output->WriteLittleEndian32(field.fixed32(j)));
-    }
-    for (int j = 0; j < field.fixed64_size(); j++) {
-      DO(output->WriteVarint32(MakeTag(field.number(), WIRETYPE_FIXED64)));
-      DO(output->WriteLittleEndian64(field.fixed64(j)));
-    }
-    for (int j = 0; j < field.length_delimited_size(); j++) {
-      DO(output->WriteVarint32(
-        MakeTag(field.number(), WIRETYPE_LENGTH_DELIMITED)));
-      DO(output->WriteVarint32(field.length_delimited(j).size()));
-      DO(output->WriteString(field.length_delimited(j)));
-    }
-    for (int j = 0; j < field.group_size(); j++) {
-      DO(output->WriteVarint32(MakeTag(field.number(), WIRETYPE_START_GROUP)));
-      DO(SerializeUnknownFields(field.group(j), output));
-      DO(output->WriteVarint32(MakeTag(field.number(), WIRETYPE_END_GROUP)));
-    }
-#undef DO
   }
-
-  return true;
 }
 
-bool WireFormat::SerializeUnknownMessageSetItems(
+uint8* WireFormat::SerializeUnknownFieldsToArray(
+    const UnknownFieldSet& unknown_fields,
+    uint8* target) {
+  for (int i = 0; i < unknown_fields.field_count(); i++) {
+    const UnknownField& field = unknown_fields.field(i);
+
+    switch (field.type()) {
+      case UnknownField::TYPE_VARINT:
+        target = WriteInt64ToArray(field.number(), field.varint(), target);
+        break;
+      case UnknownField::TYPE_FIXED32:
+        target = WriteFixed32ToArray(field.number(), field.fixed32(), target);
+        break;
+      case UnknownField::TYPE_FIXED64:
+        target = WriteFixed64ToArray(field.number(), field.fixed64(), target);
+        break;
+      case UnknownField::TYPE_LENGTH_DELIMITED:
+        target =
+          WriteBytesToArray(field.number(), field.length_delimited(), target);
+        break;
+      case UnknownField::TYPE_GROUP:
+        target = WriteTagToArray(field.number(), WIRETYPE_START_GROUP, target);
+        target = SerializeUnknownFieldsToArray(field.group(), target);
+        target = WriteTagToArray(field.number(), WIRETYPE_END_GROUP, target);
+        break;
+    }
+  }
+  return target;
+}
+
+void WireFormat::SerializeUnknownMessageSetItems(
     const UnknownFieldSet& unknown_fields,
     io::CodedOutputStream* output) {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
-
-#define DO(EXPRESSION) if (!(EXPRESSION)) return false
     // The only unknown fields that are allowed to exist in a MessageSet are
     // messages, which are length-delimited.
-    for (int j = 0; j < field.length_delimited_size(); j++) {
-      const string& data = field.length_delimited(j);
+    if (field.type() == UnknownField::TYPE_LENGTH_DELIMITED) {
+      const string& data = field.length_delimited();
 
       // Start group.
-      DO(output->WriteVarint32(kMessageSetItemStartTag));
+      output->WriteVarint32(kMessageSetItemStartTag);
 
       // Write type ID.
-      DO(output->WriteVarint32(kMessageSetTypeIdTag));
-      DO(output->WriteVarint32(field.number()));
+      output->WriteVarint32(kMessageSetTypeIdTag);
+      output->WriteVarint32(field.number());
 
       // Write message.
-      DO(output->WriteVarint32(kMessageSetMessageTag));
-      DO(output->WriteVarint32(data.size()));
-      DO(output->WriteString(data));
+      output->WriteVarint32(kMessageSetMessageTag);
+      output->WriteVarint32(data.size());
+      output->WriteString(data);
 
       // End group.
-      DO(output->WriteVarint32(kMessageSetItemEndTag));
+      output->WriteVarint32(kMessageSetItemEndTag);
     }
-#undef DO
+  }
+}
+
+uint8* WireFormat::SerializeUnknownMessageSetItemsToArray(
+    const UnknownFieldSet& unknown_fields,
+    uint8* target) {
+  for (int i = 0; i < unknown_fields.field_count(); i++) {
+    const UnknownField& field = unknown_fields.field(i);
+
+    // The only unknown fields that are allowed to exist in a MessageSet are
+    // messages, which are length-delimited.
+    if (field.type() == UnknownField::TYPE_LENGTH_DELIMITED) {
+      const string& data = field.length_delimited();
+
+      // Start group.
+      target =
+        io::CodedOutputStream::WriteTagToArray(kMessageSetItemStartTag, target);
+
+      // Write type ID.
+      target =
+        io::CodedOutputStream::WriteTagToArray(kMessageSetTypeIdTag, target);
+      target =
+        io::CodedOutputStream::WriteVarint32ToArray(field.number(), target);
+
+      // Write message.
+      target =
+        io::CodedOutputStream::WriteTagToArray(kMessageSetMessageTag, target);
+      target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
+      target = io::CodedOutputStream::WriteStringToArray(data, target);
+
+      // End group.
+      target =
+        io::CodedOutputStream::WriteTagToArray(kMessageSetItemEndTag, target);
+    }
   }
 
-  return true;
+  return target;
 }
 
 int WireFormat::ComputeUnknownFieldsSize(
@@ -259,34 +318,36 @@ int WireFormat::ComputeUnknownFieldsSize(
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
 
-    for (int j = 0; j < field.varint_size(); j++) {
-      size += io::CodedOutputStream::VarintSize32(
-        MakeTag(field.number(), WIRETYPE_VARINT));
-      size += io::CodedOutputStream::VarintSize64(field.varint(j));
-    }
-    for (int j = 0; j < field.fixed32_size(); j++) {
-      size += io::CodedOutputStream::VarintSize32(
-        MakeTag(field.number(), WIRETYPE_FIXED32));
-      size += sizeof(int32);
-    }
-    for (int j = 0; j < field.fixed64_size(); j++) {
-      size += io::CodedOutputStream::VarintSize32(
-        MakeTag(field.number(), WIRETYPE_FIXED64));
-      size += sizeof(int64);
-    }
-    for (int j = 0; j < field.length_delimited_size(); j++) {
-      size += io::CodedOutputStream::VarintSize32(
-        MakeTag(field.number(), WIRETYPE_LENGTH_DELIMITED));
-      size += io::CodedOutputStream::VarintSize32(
-        field.length_delimited(j).size());
-      size += field.length_delimited(j).size();
-    }
-    for (int j = 0; j < field.group_size(); j++) {
-      size += io::CodedOutputStream::VarintSize32(
-        MakeTag(field.number(), WIRETYPE_START_GROUP));
-      size += ComputeUnknownFieldsSize(field.group(j));
-      size += io::CodedOutputStream::VarintSize32(
-        MakeTag(field.number(), WIRETYPE_END_GROUP));
+    switch (field.type()) {
+      case UnknownField::TYPE_VARINT:
+        size += io::CodedOutputStream::VarintSize32(
+          MakeTag(field.number(), WIRETYPE_VARINT));
+        size += io::CodedOutputStream::VarintSize64(field.varint());
+        break;
+      case UnknownField::TYPE_FIXED32:
+        size += io::CodedOutputStream::VarintSize32(
+          MakeTag(field.number(), WIRETYPE_FIXED32));
+        size += sizeof(int32);
+        break;
+      case UnknownField::TYPE_FIXED64:
+        size += io::CodedOutputStream::VarintSize32(
+          MakeTag(field.number(), WIRETYPE_FIXED64));
+        size += sizeof(int64);
+        break;
+      case UnknownField::TYPE_LENGTH_DELIMITED:
+        size += io::CodedOutputStream::VarintSize32(
+          MakeTag(field.number(), WIRETYPE_LENGTH_DELIMITED));
+        size += io::CodedOutputStream::VarintSize32(
+          field.length_delimited().size());
+        size += field.length_delimited().size();
+        break;
+      case UnknownField::TYPE_GROUP:
+        size += io::CodedOutputStream::VarintSize32(
+          MakeTag(field.number(), WIRETYPE_START_GROUP));
+        size += ComputeUnknownFieldsSize(field.group());
+        size += io::CodedOutputStream::VarintSize32(
+          MakeTag(field.number(), WIRETYPE_END_GROUP));
+        break;
     }
   }
 
@@ -301,12 +362,12 @@ int WireFormat::ComputeUnknownMessageSetItemsSize(
 
     // The only unknown fields that are allowed to exist in a MessageSet are
     // messages, which are length-delimited.
-    for (int j = 0; j < field.length_delimited_size(); j++) {
+    if (field.type() == UnknownField::TYPE_LENGTH_DELIMITED) {
       size += kMessageSetItemTagsSize;
       size += io::CodedOutputStream::VarintSize32(field.number());
       size += io::CodedOutputStream::VarintSize32(
-        field.length_delimited(j).size());
-      size += field.length_delimited(j).size();
+        field.length_delimited().size());
+      size += field.length_delimited().size();
     }
   }
 
@@ -487,8 +548,8 @@ bool WireFormat::ParseAndMergeField(
           // UnknownFieldSet.
           int64 sign_extended_value = static_cast<int64>(value);
           message_reflection->MutableUnknownFields(message)
-                            ->AddField(GetTagFieldNumber(tag))
-                            ->add_varint(sign_extended_value);
+                            ->AddVarint(GetTagFieldNumber(tag),
+                                        sign_extended_value);
         }
         break;
       }
@@ -607,7 +668,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
 
 // ===================================================================
 
-bool WireFormat::SerializeWithCachedSizes(
+void WireFormat::SerializeWithCachedSizes(
     const Message& message,
     int size, io::CodedOutputStream* output) {
   const Descriptor* descriptor = message.GetDescriptor();
@@ -617,32 +678,24 @@ bool WireFormat::SerializeWithCachedSizes(
   vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
-    if (!SerializeFieldWithCachedSizes(fields[i], message, output)) {
-      return false;
-    }
+    SerializeFieldWithCachedSizes(fields[i], message, output);
   }
 
   if (descriptor->options().message_set_wire_format()) {
-    if (!SerializeUnknownMessageSetItems(
-           message_reflection->GetUnknownFields(message), output)) {
-      return false;
-    }
+    SerializeUnknownMessageSetItems(
+        message_reflection->GetUnknownFields(message), output);
   } else {
-    if (!SerializeUnknownFields(
-           message_reflection->GetUnknownFields(message), output)) {
-      return false;
-    }
+    SerializeUnknownFields(
+        message_reflection->GetUnknownFields(message), output);
   }
 
   GOOGLE_CHECK_EQ(output->ByteCount(), expected_endpoint)
     << ": Protocol message serialized to a size different from what was "
        "originally expected.  Perhaps it was modified by another thread "
        "during serialization?";
-
-  return true;
 }
 
-bool WireFormat::SerializeFieldWithCachedSizes(
+void WireFormat::SerializeFieldWithCachedSizes(
     const FieldDescriptor* field,
     const Message& message,
     io::CodedOutputStream* output) {
@@ -652,8 +705,8 @@ bool WireFormat::SerializeFieldWithCachedSizes(
       field->containing_type()->options().message_set_wire_format() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       !field->is_repeated()) {
-    return SerializeMessageSetItemWithCachedSizes(
-      field, message, output);
+    SerializeMessageSetItemWithCachedSizes(field, message, output);
+    return;
   }
 
   int count = 0;
@@ -666,10 +719,9 @@ bool WireFormat::SerializeFieldWithCachedSizes(
 
   const bool is_packed = field->options().packed();
   if (is_packed && count > 0) {
-    if (!WriteTag(field->number(), WIRETYPE_LENGTH_DELIMITED, output))
-      return false;
+    WriteTag(field->number(), WIRETYPE_LENGTH_DELIMITED, output);
     const int data_size = FieldDataOnlyByteSize(field, message);
-    if (!output->WriteVarint32(data_size)) return false;
+    output->WriteVarint32(data_size);
   }
 
   for (int j = 0; j < count; j++) {
@@ -682,13 +734,9 @@ bool WireFormat::SerializeFieldWithCachedSizes(
                               message_reflection->Get##CPPTYPE_METHOD(         \
                                 message, field);                               \
         if (is_packed) {                                                       \
-          if (!Write##TYPE_METHOD##NoTag(value, output)) {                     \
-            return false;                                                      \
-          }                                                                    \
+          Write##TYPE_METHOD##NoTag(value, output);                            \
         } else {                                                               \
-          if (!Write##TYPE_METHOD(field->number(), value, output)) {           \
-            return false;                                                      \
-          }                                                                    \
+          Write##TYPE_METHOD(field->number(), value, output);                  \
         }                                                                      \
         break;                                                                 \
       }
@@ -713,15 +761,13 @@ bool WireFormat::SerializeFieldWithCachedSizes(
 
 #define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                       \
       case FieldDescriptor::TYPE_##TYPE:                                     \
-        if (!Write##TYPE_METHOD(                                             \
+        Write##TYPE_METHOD(                                                  \
               field->number(),                                               \
               field->is_repeated() ?                                         \
                 message_reflection->GetRepeated##CPPTYPE_METHOD(             \
                   message, field, j) :                                       \
                 message_reflection->Get##CPPTYPE_METHOD(message, field),     \
-              output)) {                                                     \
-          return false;                                                      \
-        }                                                                    \
+              output);                                                       \
         break;
 
       HANDLE_TYPE(GROUP  , Group  , Message)
@@ -733,10 +779,9 @@ bool WireFormat::SerializeFieldWithCachedSizes(
           message_reflection->GetRepeatedEnum(message, field, j) :
           message_reflection->GetEnum(message, field);
         if (is_packed) {
-          if (!WriteEnumNoTag(value->number(), output)) return false;
+          WriteEnumNoTag(value->number(), output);
         } else {
-          if (!WriteEnum(field->number(), value->number(), output))
-            return false;
+          WriteEnum(field->number(), value->number(), output);
         }
         break;
       }
@@ -749,7 +794,7 @@ bool WireFormat::SerializeFieldWithCachedSizes(
             message_reflection->GetRepeatedStringReference(
               message, field, j, &scratch) :
             message_reflection->GetStringReference(message, field, &scratch);
-          if (!WriteString(field->number(), value, output)) return false;
+          WriteString(field->number(), value, output);
         break;
       }
 
@@ -759,39 +804,35 @@ bool WireFormat::SerializeFieldWithCachedSizes(
             message_reflection->GetRepeatedStringReference(
               message, field, j, &scratch) :
             message_reflection->GetStringReference(message, field, &scratch);
-          if (!WriteBytes(field->number(), value, output)) return false;
+          WriteBytes(field->number(), value, output);
         break;
       }
     }
   }
-
-  return true;
 }
 
-bool WireFormat::SerializeMessageSetItemWithCachedSizes(
+void WireFormat::SerializeMessageSetItemWithCachedSizes(
     const FieldDescriptor* field,
     const Message& message,
     io::CodedOutputStream* output) {
   const Reflection* message_reflection = message.GetReflection();
 
   // Start group.
-  if (!output->WriteVarint32(kMessageSetItemStartTag)) return false;
+  output->WriteVarint32(kMessageSetItemStartTag);
 
   // Write type ID.
-  if (!output->WriteVarint32(kMessageSetTypeIdTag)) return false;
-  if (!output->WriteVarint32(field->number())) return false;
+  output->WriteVarint32(kMessageSetTypeIdTag);
+  output->WriteVarint32(field->number());
 
   // Write message.
-  if (!output->WriteVarint32(kMessageSetMessageTag)) return false;
+  output->WriteVarint32(kMessageSetMessageTag);
 
   const Message& sub_message = message_reflection->GetMessage(message, field);
-  if (!output->WriteVarint32(sub_message.GetCachedSize())) return false;
-  if (!sub_message.SerializeWithCachedSizes(output)) return false;
+  output->WriteVarint32(sub_message.GetCachedSize());
+  sub_message.SerializeWithCachedSizes(output);
 
   // End group.
-  if (!output->WriteVarint32(kMessageSetItemEndTag)) return false;
-
-  return true;
+  output->WriteVarint32(kMessageSetItemEndTag);
 }
 
 // ===================================================================

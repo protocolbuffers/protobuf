@@ -40,6 +40,21 @@ namespace google {
 namespace protobuf {
 
 // Perform a lookup in a map or hash_map.
+// If the key is present in the map then the value associated with that
+// key is returned, otherwise the value passed as a default is returned.
+template <class Collection>
+const typename Collection::value_type::second_type&
+FindWithDefault(const Collection& collection,
+                const typename Collection::value_type::first_type& key,
+                const typename Collection::value_type::second_type& value) {
+  typename Collection::const_iterator it = collection.find(key);
+  if (it == collection.end()) {
+    return value;
+  }
+  return it->second;
+}
+
+// Perform a lookup in a map or hash_map.
 // If the key is present a const pointer to the associated value is returned,
 // otherwise a NULL pointer is returned.
 template <class Collection>

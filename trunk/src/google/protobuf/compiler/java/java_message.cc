@@ -466,6 +466,17 @@ GenerateParseFromMethods(io::Printer* printer) {
     "  return newBuilder().mergeFrom(input, extensionRegistry)\n"
     "           .buildParsed();\n"
     "}\n"
+    "public static $classname$ parseDelimitedFrom(java.io.InputStream input)\n"
+    "    throws java.io.IOException {\n"
+    "  return newBuilder().mergeDelimitedFrom(input).buildParsed();\n"
+    "}\n"
+    "public static $classname$ parseDelimitedFrom(\n"
+    "    java.io.InputStream input,\n"
+    "    com.google.protobuf.ExtensionRegistry extensionRegistry)\n"
+    "    throws java.io.IOException {\n"
+    "  return newBuilder().mergeDelimitedFrom(input, extensionRegistry)\n"
+    "           .buildParsed();\n"
+    "}\n"
     "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.CodedInputStream input)\n"
     "    throws java.io.IOException {\n"
@@ -579,7 +590,8 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
 
   printer->Print(
     "public $classname$ build() {\n"
-    "  if (!isInitialized()) {\n"
+    // If result == null, we'll throw an appropriate exception later.
+    "  if (result != null && !isInitialized()) {\n"
     "    throw new com.google.protobuf.UninitializedMessageException(\n"
     "      result);\n"
     "  }\n"
@@ -595,7 +607,11 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "  return buildPartial();\n"
     "}\n"
     "\n"
-    "public $classname$ buildPartial() {\n",
+    "public $classname$ buildPartial() {\n"
+    "  if (result == null) {\n"
+    "    throw new IllegalStateException(\n"
+    "      \"build() has already been called on this Builder.\");"
+    "  }\n",
     "classname", ClassName(descriptor_));
   printer->Indent();
 

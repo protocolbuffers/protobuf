@@ -176,6 +176,38 @@ class ParserTest : public testing::Test {
 
 // ===================================================================
 
+TEST_F(ParserTest, StopAfterSyntaxIdentifier) {
+  SetupParser(
+    "// blah\n"
+    "syntax = \"foobar\";\n"
+    "this line will not be parsed\n");
+  parser_->SetStopAfterSyntaxIdentifier(true);
+  EXPECT_TRUE(parser_->Parse(input_.get(), NULL));
+  EXPECT_EQ("", error_collector_.text_);
+  EXPECT_EQ("foobar", parser_->GetSyntaxIdentifier());
+}
+
+TEST_F(ParserTest, StopAfterOmittedSyntaxIdentifier) {
+  SetupParser(
+    "// blah\n"
+    "this line will not be parsed\n");
+  parser_->SetStopAfterSyntaxIdentifier(true);
+  EXPECT_TRUE(parser_->Parse(input_.get(), NULL));
+  EXPECT_EQ("", error_collector_.text_);
+  EXPECT_EQ("", parser_->GetSyntaxIdentifier());
+}
+
+TEST_F(ParserTest, StopAfterSyntaxIdentifierWithErrors) {
+  SetupParser(
+    "// blah\n"
+    "syntax = error;\n");
+  parser_->SetStopAfterSyntaxIdentifier(true);
+  EXPECT_FALSE(parser_->Parse(input_.get(), NULL));
+  EXPECT_EQ("1:9: Expected syntax identifier.\n", error_collector_.text_);
+}
+
+// ===================================================================
+
 typedef ParserTest ParseMessageTest;
 
 TEST_F(ParseMessageTest, SimpleMessage) {
@@ -201,7 +233,7 @@ TEST_F(ParseMessageTest, ImplicitSyntaxIdentifier) {
     "  name: \"TestMessage\""
     "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
     "}");
-  EXPECT_EQ("proto2", parser_->GetSyntaxIndentifier());
+  EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
 
 TEST_F(ParseMessageTest, ExplicitSyntaxIdentifier) {
@@ -215,7 +247,7 @@ TEST_F(ParseMessageTest, ExplicitSyntaxIdentifier) {
     "  name: \"TestMessage\""
     "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
     "}");
-  EXPECT_EQ("proto2", parser_->GetSyntaxIndentifier());
+  EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
 
 TEST_F(ParseMessageTest, ExplicitRequiredSyntaxIdentifier) {
@@ -230,7 +262,7 @@ TEST_F(ParseMessageTest, ExplicitRequiredSyntaxIdentifier) {
     "  name: \"TestMessage\""
     "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
     "}");
-  EXPECT_EQ("proto2", parser_->GetSyntaxIndentifier());
+  EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
 
 TEST_F(ParseMessageTest, SimpleFields) {
@@ -673,7 +705,7 @@ TEST_F(ParseErrorTest, MissingSyntaxIdentifier) {
   ExpectHasEarlyExitErrors(
     "message TestMessage {}",
     "0:0: File must begin with 'syntax = \"proto2\";'.\n");
-  EXPECT_EQ("", parser_->GetSyntaxIndentifier());
+  EXPECT_EQ("", parser_->GetSyntaxIdentifier());
 }
 
 TEST_F(ParseErrorTest, UnknownSyntaxIdentifier) {
@@ -681,14 +713,14 @@ TEST_F(ParseErrorTest, UnknownSyntaxIdentifier) {
     "syntax = \"no_such_syntax\";",
     "0:9: Unrecognized syntax identifier \"no_such_syntax\".  This parser "
       "only recognizes \"proto2\".\n");
-  EXPECT_EQ("no_such_syntax", parser_->GetSyntaxIndentifier());
+  EXPECT_EQ("no_such_syntax", parser_->GetSyntaxIdentifier());
 }
 
 TEST_F(ParseErrorTest, SimpleSyntaxError) {
   ExpectHasErrors(
     "message TestMessage @#$ { blah }",
     "0:20: Expected \"{\".\n");
-  EXPECT_EQ("proto2", parser_->GetSyntaxIndentifier());
+  EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
 
 TEST_F(ParseErrorTest, ExpectedTopLevel) {

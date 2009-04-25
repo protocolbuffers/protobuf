@@ -52,6 +52,8 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h>
 #include <google/protobuf/compiler/importer.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
@@ -61,6 +63,7 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/stl_util-inl.h>
 
 namespace google {
 namespace protobuf {
@@ -85,6 +88,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
                                  filename, line, column, message);
   }
 };
+
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 
 // Test that generated code has proper descriptors:
 // Parse a descriptor directly (using google::protobuf::compiler::Importer) and
@@ -114,6 +119,8 @@ TEST(GeneratedDescriptorTest, IdenticalDescriptors) {
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
             generated_decsriptor_proto.DebugString());
 }
+
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 // ===================================================================
 
@@ -220,6 +227,22 @@ TEST(GeneratedMessageTest, ClearOneField) {
   // Make sure if we set it again, then all fields are set.
   message.set_optional_int64(original_value);
   TestUtil::ExpectAllFieldsSet(message);
+}
+
+TEST(GeneratedMessageTest, StringCharStarLength) {
+  // Verify that we can use a char*,length to set one of the string fields.
+  unittest::TestAllTypes message;
+  message.set_optional_string("abcdef", 3);
+  EXPECT_EQ("abc", message.optional_string());
+
+  // Verify that we can use a char*,length to add to a repeated string field.
+  message.add_repeated_string("abcdef", 3);
+  EXPECT_EQ(1, message.repeated_string_size());
+  EXPECT_EQ("abc", message.repeated_string(0));
+
+  // Verify that we can use a char*,length to set a repeated string field.
+  message.set_repeated_string(0, "wxyz", 2);
+  EXPECT_EQ("wx", message.repeated_string(0));
 }
 
 
@@ -346,6 +369,8 @@ TEST(GeneratedMessageTest, UpcastCopyFrom) {
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+
 TEST(GeneratedMessageTest, DynamicMessageCopyFrom) {
   // Test copying from a DynamicMessage, which must fall back to using
   // reflection.
@@ -365,6 +390,8 @@ TEST(GeneratedMessageTest, DynamicMessageCopyFrom) {
 
   TestUtil::ExpectAllFieldsSet(message2);
 }
+
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   // Test merging with a non-empty message. Code is a modified form
@@ -403,22 +430,73 @@ TEST(GeneratedMessageTest, MergeFromSelf) {
 
 #endif  // GTEST_HAS_DEATH_TEST
 
-TEST(GeneratedMessageTest, Serialization) {
+// Test the generated SerializeWithCachedSizesToArray(),
+TEST(GeneratedMessageTest, SerializationToArray) {
   unittest::TestAllTypes message1, message2;
   string data;
-
   TestUtil::SetAllFields(&message1);
-  message1.SerializeToString(&data);
+  int size = message1.ByteSize();
+  data.resize(size);
+  uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+  uint8* end =
+      message1.TestAllTypes::SerializeWithCachedSizesToArray(start);
+  EXPECT_EQ(size, end - start);
   EXPECT_TRUE(message2.ParseFromString(data));
   TestUtil::ExpectAllFieldsSet(message2);
 
+}
 
+TEST(GeneratedMessageTest, PackedFieldsSerializationToArray) {
   unittest::TestPackedTypes packed_message1, packed_message2;
   string packed_data;
   TestUtil::SetPackedFields(&packed_message1);
-  packed_message1.SerializeToString(&packed_data);
+  int packed_size = packed_message1.ByteSize();
+  packed_data.resize(packed_size);
+  uint8* start = reinterpret_cast<uint8*>(string_as_array(&packed_data));
+  uint8* end =
+      packed_message1.TestPackedTypes::SerializeWithCachedSizesToArray(start);
+  EXPECT_EQ(packed_size, end - start);
   EXPECT_TRUE(packed_message2.ParseFromString(packed_data));
   TestUtil::ExpectPackedFieldsSet(packed_message2);
+}
+
+// Test the generated SerializeWithCachedSizes() by forcing the buffer to write
+// one byte at a time.
+TEST(GeneratedMessageTest, SerializationToStream) {
+  unittest::TestAllTypes message1, message2;
+  TestUtil::SetAllFields(&message1);
+  int size = message1.ByteSize();
+  string data;
+  data.resize(size);
+  {
+    // Allow the output stream to buffer only one byte at a time.
+    io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+    io::CodedOutputStream output_stream(&array_stream);
+    message1.TestAllTypes::SerializeWithCachedSizes(&output_stream);
+    EXPECT_FALSE(output_stream.HadError());
+    EXPECT_EQ(size, output_stream.ByteCount());
+  }
+  EXPECT_TRUE(message2.ParseFromString(data));
+  TestUtil::ExpectAllFieldsSet(message2);
+
+}
+
+TEST(GeneratedMessageTest, PackedFieldsSerializationToStream) {
+  unittest::TestPackedTypes message1, message2;
+  TestUtil::SetPackedFields(&message1);
+  int size = message1.ByteSize();
+  string data;
+  data.resize(size);
+  {
+    // Allow the output stream to buffer only one byte at a time.
+    io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+    io::CodedOutputStream output_stream(&array_stream);
+    message1.TestPackedTypes::SerializeWithCachedSizes(&output_stream);
+    EXPECT_FALSE(output_stream.HadError());
+    EXPECT_EQ(size, output_stream.ByteCount());
+  }
+  EXPECT_TRUE(message2.ParseFromString(data));
+  TestUtil::ExpectPackedFieldsSet(message2);
 }
 
 
@@ -547,6 +625,8 @@ TEST(GeneratedMessageTest, TestConflictingSymbolNames) {
   EXPECT_EQ(5, message.friend_());
 }
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+
 TEST(GeneratedMessageTest, TestOptimizedForSize) {
   // We rely on the tests in reflection_ops_unittest and wire_format_unittest
   // to really test that reflection-based methods work.  Here we are mostly
@@ -613,6 +693,8 @@ TEST(GeneratedMessageTest, TestSpaceUsed) {
             sizeof(unittest::TestAllTypes::NestedMessage),
             message1.SpaceUsed());
 }
+
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 // ===================================================================
 
@@ -682,7 +764,36 @@ TEST(GeneratedEnumTest, MinAndMax) {
   }
 }
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+
+TEST(GeneratedEnumTest, Name) {
+  // "Names" in the presence of dup values are a bit arbitrary.
+  EXPECT_EQ("FOO1", unittest::TestEnumWithDupValue_Name(unittest::FOO1));
+  EXPECT_EQ("FOO1", unittest::TestEnumWithDupValue_Name(unittest::FOO2));
+
+  EXPECT_EQ("SPARSE_A", unittest::TestSparseEnum_Name(unittest::SPARSE_A));
+  EXPECT_EQ("SPARSE_B", unittest::TestSparseEnum_Name(unittest::SPARSE_B));
+  EXPECT_EQ("SPARSE_C", unittest::TestSparseEnum_Name(unittest::SPARSE_C));
+  EXPECT_EQ("SPARSE_D", unittest::TestSparseEnum_Name(unittest::SPARSE_D));
+  EXPECT_EQ("SPARSE_E", unittest::TestSparseEnum_Name(unittest::SPARSE_E));
+  EXPECT_EQ("SPARSE_F", unittest::TestSparseEnum_Name(unittest::SPARSE_F));
+  EXPECT_EQ("SPARSE_G", unittest::TestSparseEnum_Name(unittest::SPARSE_G));
+}
+
+TEST(GeneratedEnumTest, Parse) {
+  unittest::TestEnumWithDupValue dup_value = unittest::FOO1;
+  EXPECT_TRUE(unittest::TestEnumWithDupValue_Parse("FOO1", &dup_value));
+  EXPECT_EQ(unittest::FOO1, dup_value);
+  EXPECT_TRUE(unittest::TestEnumWithDupValue_Parse("FOO2", &dup_value));
+  EXPECT_EQ(unittest::FOO2, dup_value);
+  EXPECT_FALSE(unittest::TestEnumWithDupValue_Parse("FOO", &dup_value));
+}
+
+#endif  // PROTOBUF_TEST_NO_DESCRIPTORS
+
 // ===================================================================
+
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 
 // Support code for testing services.
 class GeneratedServiceTest : public testing::Test {
@@ -975,6 +1086,27 @@ TEST_F(GeneratedServiceTest, NotImplemented) {
                             done_.get());
 
   EXPECT_TRUE(controller.called_);
+}
+
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
+
+// ===================================================================
+
+// This test must run last.  It verifies that descriptors were or were not
+// initialized depending on whether PROTOBUF_TEST_NO_DESCRIPTORS was defined.
+// When this is defined, we skip all tests which are expected to trigger
+// descriptor initialization.  This verifies that everything else still works
+// if descriptors are not initialized.
+TEST(DescriptorInitializationTest, Initialized) {
+#ifdef PROTOBUF_TEST_NO_DESCRIPTORS
+  bool should_have_descriptors = false;
+#else
+  bool should_have_descriptors = true;
+#endif
+
+  EXPECT_EQ(should_have_descriptors,
+    DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest.proto"));
 }
 
 }  // namespace cpp_unittest

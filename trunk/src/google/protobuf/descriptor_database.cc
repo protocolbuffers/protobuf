@@ -33,7 +33,11 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/descriptor_database.h>
+
+#include <set>
+
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
 #include <google/protobuf/stubs/map-util.h>
 
@@ -44,149 +48,310 @@ DescriptorDatabase::~DescriptorDatabase() {}
 
 // ===================================================================
 
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
+    const FileDescriptorProto& file,
+    Value value) {
+  if (!InsertIfNotPresent(&by_name_, file.name(), value)) {
+    GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
+    return false;
+  }
+
+  string path = file.package();
+  if (!path.empty()) path += '.';
+
+  for (int i = 0; i < file.message_type_size(); i++) {
+    if (!AddSymbol(path + file.message_type(i).name(), value)) return false;
+    if (!AddNestedExtensions(file.message_type(i), value)) return false;
+  }
+  for (int i = 0; i < file.enum_type_size(); i++) {
+    if (!AddSymbol(path + file.enum_type(i).name(), value)) return false;
+  }
+  for (int i = 0; i < file.extension_size(); i++) {
+    if (!AddSymbol(path + file.extension(i).name(), value)) return false;
+    if (!AddExtension(file.extension(i), value)) return false;
+  }
+  for (int i = 0; i < file.service_size(); i++) {
+    if (!AddSymbol(path + file.service(i).name(), value)) return false;
+  }
+
+  return true;
+}
+
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
+    const string& name, Value value) {
+  // We need to make sure not to violate our map invariant.
+
+  // If the symbol name is invalid it could break our lookup algorithm (which
+  // relies on the fact that '.' sorts before all other characters that are
+  // valid in symbol names).
+  if (!ValidateSymbolName(name)) {
+    GOOGLE_LOG(ERROR) << "Invalid symbol name: " << name;
+    return false;
+  }
+
+  // Try to look up the symbol to make sure a super-symbol doesn't already
+  // exist.
+  typename map<string, Value>::iterator iter = FindLastLessOrEqual(name);
+
+  if (iter == by_symbol_.end()) {
+    // Apparently the map is currently empty.  Just insert and be done with it.
+    by_symbol_.insert(make_pair(name, value));
+    return true;
+  }
+
+  if (IsSubSymbol(iter->first, name)) {
+    GOOGLE_LOG(ERROR) << "Symbol name \"" << name << "\" conflicts with the existing "
+                  "symbol \"" << iter->first << "\".";
+    return false;
+  }
+
+  // OK, that worked.  Now we have to make sure that no symbol in the map is
+  // a sub-symbol of the one we are inserting.  The only symbol which could
+  // be so is the first symbol that is greater than the new symbol.  Since
+  // |iter| points at the last symbol that is less than or equal, we just have
+  // to increment it.
+  ++iter;
+
+  if (iter != by_symbol_.end() && IsSubSymbol(name, iter->first)) {
+    GOOGLE_LOG(ERROR) << "Symbol name \"" << name << "\" conflicts with the existing "
+                  "symbol \"" << iter->first << "\".";
+    return false;
+  }
+
+  // OK, no conflicts.
+
+  // Insert the new symbol using the iterator as a hint, the new entry will
+  // appear immediately before the one the iterator is pointing at.
+  by_symbol_.insert(iter, make_pair(name, value));
+
+  return true;
+}
+
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddNestedExtensions(
+    const DescriptorProto& message_type,
+    Value value) {
+  for (int i = 0; i < message_type.nested_type_size(); i++) {
+    if (!AddNestedExtensions(message_type.nested_type(i), value)) return false;
+  }
+  for (int i = 0; i < message_type.extension_size(); i++) {
+    if (!AddExtension(message_type.extension(i), value)) return false;
+  }
+  return true;
+}
+
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
+    const FieldDescriptorProto& field,
+    Value value) {
+  if (!field.extendee().empty() && field.extendee()[0] == '.') {
+    // The extension is fully-qualified.  We can use it as a lookup key in
+    // the by_symbol_ table.
+    if (!InsertIfNotPresent(&by_extension_,
+                            make_pair(field.extendee().substr(1),
+                                      field.number()),
+                            value)) {
+      GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
+                    "extend " << field.extendee() << " { "
+                 << field.name() << " = " << field.number() << " }";
+      return false;
+    }
+  } else {
+    // Not fully-qualified.  We can't really do anything here, unfortunately.
+    // We don't consider this an error, though, because the descriptor is
+    // valid.
+  }
+  return true;
+}
+
+template <typename Value>
+Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindFile(
+    const string& filename) {
+  return FindWithDefault(by_name_, filename, Value());
+}
+
+template <typename Value>
+Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
+    const string& name) {
+  typename map<string, Value>::iterator iter = FindLastLessOrEqual(name);
+
+  return (iter != by_symbol_.end() && IsSubSymbol(iter->first, name)) ?
+         iter->second : Value();
+}
+
+template <typename Value>
+Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
+    const string& containing_type,
+    int field_number) {
+  return FindWithDefault(by_extension_,
+                         make_pair(containing_type, field_number),
+                         Value());
+}
+
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
+    const string& containing_type,
+    vector<int>* output) {
+  typename map<pair<string, int>, Value >::const_iterator it =
+      by_extension_.lower_bound(make_pair(containing_type, 0));
+  bool success = false;
+
+  for (; it != by_extension_.end() && it->first.first == containing_type;
+       ++it) {
+    output->push_back(it->first.second);
+    success = true;
+  }
+
+  return success;
+}
+
+template <typename Value>
+typename map<string, Value>::iterator
+SimpleDescriptorDatabase::DescriptorIndex<Value>::FindLastLessOrEqual(
+    const string& name) {
+  // Find the last key in the map which sorts less than or equal to the
+  // symbol name.  Since upper_bound() returns the *first* key that sorts
+  // *greater* than the input, we want the element immediately before that.
+  typename map<string, Value>::iterator iter = by_symbol_.upper_bound(name);
+  if (iter != by_symbol_.begin()) --iter;
+  return iter;
+}
+
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::IsSubSymbol(
+    const string& sub_symbol, const string& super_symbol) {
+  return sub_symbol == super_symbol ||
+         (HasPrefixString(super_symbol, sub_symbol) &&
+             super_symbol[sub_symbol.size()] == '.');
+}
+
+template <typename Value>
+bool SimpleDescriptorDatabase::DescriptorIndex<Value>::ValidateSymbolName(
+    const string& name) {
+  for (int i = 0; i < name.size(); i++) {
+    // I don't trust ctype.h due to locales.  :(
+    if (name[i] != '.' && name[i] != '_' &&
+        (name[i] < '0' || name[i] > '9') &&
+        (name[i] < 'A' || name[i] > 'Z') &&
+        (name[i] < 'a' || name[i] > 'z')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// -------------------------------------------------------------------
+
 SimpleDescriptorDatabase::SimpleDescriptorDatabase() {}
 SimpleDescriptorDatabase::~SimpleDescriptorDatabase() {
   STLDeleteElements(&files_to_delete_);
 }
 
-void SimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
+bool SimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
   FileDescriptorProto* new_file = new FileDescriptorProto;
   new_file->CopyFrom(file);
-  AddAndOwn(new_file);
+  return AddAndOwn(new_file);
 }
 
-void SimpleDescriptorDatabase::AddAndOwn(const FileDescriptorProto* file) {
+bool SimpleDescriptorDatabase::AddAndOwn(const FileDescriptorProto* file) {
   files_to_delete_.push_back(file);
-  InsertOrUpdate(&files_by_name_, file->name(), file);
-
-  string path = file->package();
-  if (!path.empty()) path += '.';
-
-  for (int i = 0; i < file->message_type_size(); i++) {
-    AddMessage(path, file->message_type(i), file);
-  }
-  for (int i = 0; i < file->enum_type_size(); i++) {
-    AddEnum(path, file->enum_type(i), file);
-  }
-  for (int i = 0; i < file->extension_size(); i++) {
-    AddField(path, file->extension(i), file);
-  }
-  for (int i = 0; i < file->service_size(); i++) {
-    AddService(path, file->service(i), file);
-  }
-}
-
-void SimpleDescriptorDatabase::AddMessage(
-    const string& path,
-    const DescriptorProto& message_type,
-    const FileDescriptorProto* file) {
-  string full_name = path + message_type.name();
-  InsertOrUpdate(&files_by_symbol_, full_name, file);
-
-  string sub_path = full_name + '.';
-  for (int i = 0; i < message_type.nested_type_size(); i++) {
-    AddMessage(sub_path, message_type.nested_type(i), file);
-  }
-  for (int i = 0; i < message_type.enum_type_size(); i++) {
-    AddEnum(sub_path, message_type.enum_type(i), file);
-  }
-  for (int i = 0; i < message_type.field_size(); i++) {
-    AddField(sub_path, message_type.field(i), file);
-  }
-  for (int i = 0; i < message_type.extension_size(); i++) {
-    AddField(sub_path, message_type.extension(i), file);
-  }
-}
-
-void SimpleDescriptorDatabase::AddField(
-    const string& path,
-    const FieldDescriptorProto& field,
-    const FileDescriptorProto* file) {
-  string full_name = path + field.name();
-  InsertOrUpdate(&files_by_symbol_, full_name, file);
-
-  if (field.has_extendee()) {
-    // This field is an extension.
-    if (!field.extendee().empty() && field.extendee()[0] == '.') {
-      // The extension is fully-qualified.  We can use it as a lookup key in
-      // the files_by_symbol_ table.
-      InsertOrUpdate(&files_by_extension_,
-                     make_pair(field.extendee().substr(1), field.number()),
-                     file);
-    } else {
-      // Not fully-qualified.  We can't really do anything here, unfortunately.
-    }
-  }
-}
-
-void SimpleDescriptorDatabase::AddEnum(
-    const string& path,
-    const EnumDescriptorProto& enum_type,
-    const FileDescriptorProto* file) {
-  string full_name = path + enum_type.name();
-  InsertOrUpdate(&files_by_symbol_, full_name, file);
-
-  string sub_path = full_name + '.';
-  for (int i = 0; i < enum_type.value_size(); i++) {
-    InsertOrUpdate(&files_by_symbol_,
-                   sub_path + enum_type.value(i).name(),
-                   file);
-  }
-}
-
-void SimpleDescriptorDatabase::AddService(
-    const string& path,
-    const ServiceDescriptorProto& service,
-    const FileDescriptorProto* file) {
-  string full_name = path + service.name();
-  InsertOrUpdate(&files_by_symbol_, full_name, file);
-
-  string sub_path = full_name + '.';
-  for (int i = 0; i < service.method_size(); i++) {
-    InsertOrUpdate(&files_by_symbol_,
-                   sub_path + service.method(i).name(),
-                   file);
-  }
+  return index_.AddFile(*file, file);
 }
 
 bool SimpleDescriptorDatabase::FindFileByName(
     const string& filename,
     FileDescriptorProto* output) {
-  const FileDescriptorProto* result = FindPtrOrNull(files_by_name_, filename);
-  if (result == NULL) {
-    return false;
-  } else {
-    output->CopyFrom(*result);
-    return true;
-  }
+  return MaybeCopy(index_.FindFile(filename), output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingSymbol(
     const string& symbol_name,
     FileDescriptorProto* output) {
-  const FileDescriptorProto* result =
-    FindPtrOrNull(files_by_symbol_, symbol_name);
-  if (result == NULL) {
-    return false;
-  } else {
-    output->CopyFrom(*result);
-    return true;
-  }
+  return MaybeCopy(index_.FindSymbol(symbol_name), output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingExtension(
     const string& containing_type,
     int field_number,
     FileDescriptorProto* output) {
-  const FileDescriptorProto* result =
-    FindPtrOrNull(files_by_extension_,
-                  make_pair(containing_type, field_number));
-  if (result == NULL) {
-    return false;
-  } else {
-    output->CopyFrom(*result);
-    return true;
+  return MaybeCopy(index_.FindExtension(containing_type, field_number), output);
+}
+
+bool SimpleDescriptorDatabase::FindAllExtensionNumbers(
+    const string& extendee_type,
+    vector<int>* output) {
+  return index_.FindAllExtensionNumbers(extendee_type, output);
+}
+
+bool SimpleDescriptorDatabase::MaybeCopy(const FileDescriptorProto* file,
+                                         FileDescriptorProto* output) {
+  if (file == NULL) return false;
+  output->CopyFrom(*file);
+  return true;
+}
+
+// -------------------------------------------------------------------
+
+EncodedDescriptorDatabase::EncodedDescriptorDatabase() {}
+EncodedDescriptorDatabase::~EncodedDescriptorDatabase() {
+  for (int i = 0; i < files_to_delete_.size(); i++) {
+    operator delete(files_to_delete_[i]);
   }
+}
+
+bool EncodedDescriptorDatabase::Add(
+    const void* encoded_file_descriptor, int size) {
+  FileDescriptorProto file;
+  if (file.ParseFromArray(encoded_file_descriptor, size)) {
+    return index_.AddFile(file, make_pair(encoded_file_descriptor, size));
+  } else {
+    GOOGLE_LOG(ERROR) << "Invalid file descriptor data passed to "
+                  "EncodedDescriptorDatabase::Add().";
+    return false;
+  }
+}
+
+bool EncodedDescriptorDatabase::AddCopy(
+    const void* encoded_file_descriptor, int size) {
+  void* copy = operator new(size);
+  memcpy(copy, encoded_file_descriptor, size);
+  files_to_delete_.push_back(copy);
+  return Add(copy, size);
+}
+
+bool EncodedDescriptorDatabase::FindFileByName(
+    const string& filename,
+    FileDescriptorProto* output) {
+  return MaybeParse(index_.FindFile(filename), output);
+}
+
+bool EncodedDescriptorDatabase::FindFileContainingSymbol(
+    const string& symbol_name,
+    FileDescriptorProto* output) {
+  return MaybeParse(index_.FindSymbol(symbol_name), output);
+}
+
+bool EncodedDescriptorDatabase::FindFileContainingExtension(
+    const string& containing_type,
+    int field_number,
+    FileDescriptorProto* output) {
+  return MaybeParse(index_.FindExtension(containing_type, field_number),
+                    output);
+}
+
+bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
+    const string& extendee_type,
+    vector<int>* output) {
+  return index_.FindAllExtensionNumbers(extendee_type, output);
+}
+
+bool EncodedDescriptorDatabase::MaybeParse(
+    pair<const void*, int> encoded_file,
+    FileDescriptorProto* output) {
+  if (encoded_file.first == NULL) return false;
+  return output->ParseFromArray(encoded_file.first, encoded_file.second);
 }
 
 // ===================================================================
@@ -228,6 +393,22 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
 
   output->Clear();
   extension->file()->CopyTo(output);
+  return true;
+}
+
+bool DescriptorPoolDatabase::FindAllExtensionNumbers(
+    const string& extendee_type,
+    vector<int>* output) {
+  const Descriptor* extendee = pool_.FindMessageTypeByName(extendee_type);
+  if (extendee == NULL) return false;
+
+  vector<const FieldDescriptor*> extensions;
+  pool_.FindAllExtensions(extendee, &extensions);
+
+  for (int i = 0; i < extensions.size(); ++i) {
+    output->push_back(extensions[i]->number());
+  }
+
   return true;
 }
 
@@ -299,6 +480,28 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
     }
   }
   return false;
+}
+
+bool MergedDescriptorDatabase::FindAllExtensionNumbers(
+    const string& extendee_type,
+    vector<int>* output) {
+  set<int> merged_results;
+  vector<int> results;
+  bool success = false;
+
+  for (int i = 0; i < sources_.size(); i++) {
+    if (sources_[i]->FindAllExtensionNumbers(extendee_type, &results)) {
+      copy(results.begin(), results.end(),
+           insert_iterator<set<int> >(merged_results, merged_results.begin()));
+      success = true;
+    }
+    results.clear();
+  }
+
+  copy(merged_results.begin(), merged_results.end(),
+       insert_iterator<vector<int> >(*output, output->end()));
+
+  return success;
 }
 
 }  // namespace protobuf

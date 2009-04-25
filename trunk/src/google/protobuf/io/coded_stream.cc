@@ -71,18 +71,13 @@ CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
     buffer_size_(0),
     total_bytes_read_(0),
     overflow_bytes_(0),
-
     last_tag_(0),
     legitimate_message_end_(false),
-
     aliasing_enabled_(false),
-
     current_limit_(INT_MAX),
     buffer_size_after_limit_(0),
-
     total_bytes_limit_(kDefaultTotalBytesLimit),
     total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
-
     recursion_depth_(0),
     recursion_limit_(kDefaultRecursionLimit) {
 }
@@ -514,7 +509,14 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
   : output_(output),
     buffer_(NULL),
     buffer_size_(0),
-    total_bytes_(0) {
+    total_bytes_(0),
+    had_error_(false) {
+  // Eagerly Refresh() so buffer space is immediately available.
+  Refresh();
+  // The Refresh() may have failed. If the client doesn't write any data,
+  // though, don't consider this an error. If the client does write data, then
+  // another Refresh() will be attempted and it will set the error once again.
+  had_error_ = false;
 }
 
 CodedOutputStream::~CodedOutputStream() {
@@ -543,21 +545,26 @@ bool CodedOutputStream::GetDirectBufferPointer(void** data, int* size) {
   return true;
 }
 
-bool CodedOutputStream::WriteRaw(const void* data, int size) {
+void CodedOutputStream::WriteRaw(const void* data, int size) {
   while (buffer_size_ < size) {
     memcpy(buffer_, data, buffer_size_);
     size -= buffer_size_;
     data = reinterpret_cast<const uint8*>(data) + buffer_size_;
-    if (!Refresh()) return false;
+    if (!Refresh()) return;
   }
 
   memcpy(buffer_, data, size);
   Advance(size);
-  return true;
+}
+
+uint8* CodedOutputStream::WriteRawToArray(
+    const void* data, int size, uint8* target) {
+  memcpy(target, data, size);
+  return target + size;
 }
 
 
-bool CodedOutputStream::WriteLittleEndian32(uint32 value) {
+void CodedOutputStream::WriteLittleEndian32(uint32 value) {
   uint8 bytes[sizeof(value)];
 
   bool use_fast = buffer_size_ >= sizeof(value);
@@ -570,13 +577,21 @@ bool CodedOutputStream::WriteLittleEndian32(uint32 value) {
 
   if (use_fast) {
     Advance(sizeof(value));
-    return true;
   } else {
-    return WriteRaw(bytes, sizeof(value));
+    WriteRaw(bytes, sizeof(value));
   }
 }
 
-bool CodedOutputStream::WriteLittleEndian64(uint64 value) {
+uint8* CodedOutputStream::WriteLittleEndian32ToArray(
+    uint32 value, uint8* target) {
+  target[0] = static_cast<uint8>(value      );
+  target[1] = static_cast<uint8>(value >>  8);
+  target[2] = static_cast<uint8>(value >> 16);
+  target[3] = static_cast<uint8>(value >> 24);
+  return target + sizeof(value);
+}
+
+void CodedOutputStream::WriteLittleEndian64(uint64 value) {
   uint8 bytes[sizeof(value)];
 
   uint32 part0 = static_cast<uint32>(value);
@@ -596,46 +611,66 @@ bool CodedOutputStream::WriteLittleEndian64(uint64 value) {
 
   if (use_fast) {
     Advance(sizeof(value));
-    return true;
   } else {
-    return WriteRaw(bytes, sizeof(value));
+    WriteRaw(bytes, sizeof(value));
   }
 }
 
-bool CodedOutputStream::WriteVarint32Fallback(uint32 value) {
+uint8* CodedOutputStream::WriteLittleEndian64ToArray(
+    uint64 value, uint8* target) {
+  uint32 part0 = static_cast<uint32>(value);
+  uint32 part1 = static_cast<uint32>(value >> 32);
+
+  target[0] = static_cast<uint8>(part0      );
+  target[1] = static_cast<uint8>(part0 >>  8);
+  target[2] = static_cast<uint8>(part0 >> 16);
+  target[3] = static_cast<uint8>(part0 >> 24);
+  target[4] = static_cast<uint8>(part1      );
+  target[5] = static_cast<uint8>(part1 >>  8);
+  target[6] = static_cast<uint8>(part1 >> 16);
+  target[7] = static_cast<uint8>(part1 >> 24);
+
+  return target + sizeof(value);
+}
+
+inline uint8* CodedOutputStream::WriteVarint32FallbackToArrayInline(
+    uint32 value, uint8* target) {
+  target[0] = static_cast<uint8>(value | 0x80);
+  if (value >= (1 << 7)) {
+    target[1] = static_cast<uint8>((value >>  7) | 0x80);
+    if (value >= (1 << 14)) {
+      target[2] = static_cast<uint8>((value >> 14) | 0x80);
+      if (value >= (1 << 21)) {
+        target[3] = static_cast<uint8>((value >> 21) | 0x80);
+        if (value >= (1 << 28)) {
+          target[4] = static_cast<uint8>(value >> 28);
+          return target + 5;
+        } else {
+          target[3] &= 0x7F;
+          return target + 4;
+        }
+      } else {
+        target[2] &= 0x7F;
+        return target + 3;
+      }
+    } else {
+      target[1] &= 0x7F;
+      return target + 2;
+    }
+  } else {
+    target[0] &= 0x7F;
+    return target + 1;
+  }
+}
+
+void CodedOutputStream::WriteVarint32(uint32 value) {
   if (buffer_size_ >= kMaxVarint32Bytes) {
     // Fast path:  We have enough bytes left in the buffer to guarantee that
     // this write won't cross the end, so we can skip the checks.
     uint8* target = buffer_;
-
-    target[0] = static_cast<uint8>(value | 0x80);
-    if (value >= (1 << 7)) {
-      target[1] = static_cast<uint8>((value >>  7) | 0x80);
-      if (value >= (1 << 14)) {
-        target[2] = static_cast<uint8>((value >> 14) | 0x80);
-        if (value >= (1 << 21)) {
-          target[3] = static_cast<uint8>((value >> 21) | 0x80);
-          if (value >= (1 << 28)) {
-            target[4] = static_cast<uint8>(value >> 28);
-            Advance(5);
-          } else {
-            target[3] &= 0x7F;
-            Advance(4);
-          }
-        } else {
-          target[2] &= 0x7F;
-          Advance(3);
-        }
-      } else {
-        target[1] &= 0x7F;
-        Advance(2);
-      }
-    } else {
-      target[0] &= 0x7F;
-      Advance(1);
-    }
-
-    return true;
+    uint8* end = WriteVarint32FallbackToArrayInline(value, target);
+    int size = end - target;
+    Advance(size);
   } else {
     // Slow path:  This write might cross the end of the buffer, so we
     // compose the bytes first then use WriteRaw().
@@ -646,85 +681,96 @@ bool CodedOutputStream::WriteVarint32Fallback(uint32 value) {
       value >>= 7;
     }
     bytes[size++] = static_cast<uint8>(value) & 0x7F;
-    return WriteRaw(bytes, size);
+    WriteRaw(bytes, size);
   }
 }
 
-bool CodedOutputStream::WriteVarint64(uint64 value) {
+uint8* CodedOutputStream::WriteVarint32FallbackToArray(
+    uint32 value, uint8* target) {
+  return WriteVarint32FallbackToArrayInline(value, target);
+}
+
+inline uint8* CodedOutputStream::WriteVarint64ToArrayInline(
+    uint64 value, uint8* target) {
+  // Splitting into 32-bit pieces gives better performance on 32-bit
+  // processors.
+  uint32 part0 = static_cast<uint32>(value      );
+  uint32 part1 = static_cast<uint32>(value >> 28);
+  uint32 part2 = static_cast<uint32>(value >> 56);
+
+  int size;
+
+  // Here we can't really optimize for small numbers, since the value is
+  // split into three parts.  Cheking for numbers < 128, for instance,
+  // would require three comparisons, since you'd have to make sure part1
+  // and part2 are zero.  However, if the caller is using 64-bit integers,
+  // it is likely that they expect the numbers to often be very large, so
+  // we probably don't want to optimize for small numbers anyway.  Thus,
+  // we end up with a hardcoded binary search tree...
+  if (part2 == 0) {
+    if (part1 == 0) {
+      if (part0 < (1 << 14)) {
+        if (part0 < (1 << 7)) {
+          size = 1; goto size1;
+        } else {
+          size = 2; goto size2;
+        }
+      } else {
+        if (part0 < (1 << 21)) {
+          size = 3; goto size3;
+        } else {
+          size = 4; goto size4;
+        }
+      }
+    } else {
+      if (part1 < (1 << 14)) {
+        if (part1 < (1 << 7)) {
+          size = 5; goto size5;
+        } else {
+          size = 6; goto size6;
+        }
+      } else {
+        if (part1 < (1 << 21)) {
+          size = 7; goto size7;
+        } else {
+          size = 8; goto size8;
+        }
+      }
+    }
+  } else {
+    if (part2 < (1 << 7)) {
+      size = 9; goto size9;
+    } else {
+      size = 10; goto size10;
+    }
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+
+  size10: target[9] = static_cast<uint8>((part2 >>  7) | 0x80);
+  size9 : target[8] = static_cast<uint8>((part2      ) | 0x80);
+  size8 : target[7] = static_cast<uint8>((part1 >> 21) | 0x80);
+  size7 : target[6] = static_cast<uint8>((part1 >> 14) | 0x80);
+  size6 : target[5] = static_cast<uint8>((part1 >>  7) | 0x80);
+  size5 : target[4] = static_cast<uint8>((part1      ) | 0x80);
+  size4 : target[3] = static_cast<uint8>((part0 >> 21) | 0x80);
+  size3 : target[2] = static_cast<uint8>((part0 >> 14) | 0x80);
+  size2 : target[1] = static_cast<uint8>((part0 >>  7) | 0x80);
+  size1 : target[0] = static_cast<uint8>((part0      ) | 0x80);
+
+  target[size-1] &= 0x7F;
+  return target + size;
+}
+
+void CodedOutputStream::WriteVarint64(uint64 value) {
   if (buffer_size_ >= kMaxVarintBytes) {
     // Fast path:  We have enough bytes left in the buffer to guarantee that
     // this write won't cross the end, so we can skip the checks.
     uint8* target = buffer_;
 
-    // Splitting into 32-bit pieces gives better performance on 32-bit
-    // processors.
-    uint32 part0 = static_cast<uint32>(value      );
-    uint32 part1 = static_cast<uint32>(value >> 28);
-    uint32 part2 = static_cast<uint32>(value >> 56);
-
-    int size;
-
-    // Here we can't really optimize for small numbers, since the value is
-    // split into three parts.  Cheking for numbers < 128, for instance,
-    // would require three comparisons, since you'd have to make sure part1
-    // and part2 are zero.  However, if the caller is using 64-bit integers,
-    // it is likely that they expect the numbers to often be very large, so
-    // we probably don't want to optimize for small numbers anyway.  Thus,
-    // we end up with a hardcoded binary search tree...
-    if (part2 == 0) {
-      if (part1 == 0) {
-        if (part0 < (1 << 14)) {
-          if (part0 < (1 << 7)) {
-            size = 1; goto size1;
-          } else {
-            size = 2; goto size2;
-          }
-        } else {
-          if (part0 < (1 << 21)) {
-            size = 3; goto size3;
-          } else {
-            size = 4; goto size4;
-          }
-        }
-      } else {
-        if (part1 < (1 << 14)) {
-          if (part1 < (1 << 7)) {
-            size = 5; goto size5;
-          } else {
-            size = 6; goto size6;
-          }
-        } else {
-          if (part1 < (1 << 21)) {
-            size = 7; goto size7;
-          } else {
-            size = 8; goto size8;
-          }
-        }
-      }
-    } else {
-      if (part2 < (1 << 7)) {
-        size = 9; goto size9;
-      } else {
-        size = 10; goto size10;
-      }
-    }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-
-    size10: target[9] = static_cast<uint8>((part2 >>  7) | 0x80);
-    size9 : target[8] = static_cast<uint8>((part2      ) | 0x80);
-    size8 : target[7] = static_cast<uint8>((part1 >> 21) | 0x80);
-    size7 : target[6] = static_cast<uint8>((part1 >> 14) | 0x80);
-    size6 : target[5] = static_cast<uint8>((part1 >>  7) | 0x80);
-    size5 : target[4] = static_cast<uint8>((part1      ) | 0x80);
-    size4 : target[3] = static_cast<uint8>((part0 >> 21) | 0x80);
-    size3 : target[2] = static_cast<uint8>((part0 >> 14) | 0x80);
-    size2 : target[1] = static_cast<uint8>((part0 >>  7) | 0x80);
-    size1 : target[0] = static_cast<uint8>((part0      ) | 0x80);
-
-    target[size-1] &= 0x7F;
+    uint8* end = WriteVarint64ToArrayInline(value, target);
+    int size = end - target;
     Advance(size);
-    return true;
   } else {
     // Slow path:  This write might cross the end of the buffer, so we
     // compose the bytes first then use WriteRaw().
@@ -735,8 +781,13 @@ bool CodedOutputStream::WriteVarint64(uint64 value) {
       value >>= 7;
     }
     bytes[size++] = static_cast<uint8>(value) & 0x7F;
-    return WriteRaw(bytes, size);
+    WriteRaw(bytes, size);
   }
+}
+
+uint8* CodedOutputStream::WriteVarint64ToArray(
+    uint64 value, uint8* target) {
+  return WriteVarint64ToArrayInline(value, target);
 }
 
 bool CodedOutputStream::Refresh() {
@@ -748,6 +799,7 @@ bool CodedOutputStream::Refresh() {
   } else {
     buffer_ = NULL;
     buffer_size_ = 0;
+    had_error_ = true;
     return false;
   }
 }

@@ -90,11 +90,17 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
+// Get code that evaluates to the field's default value.
+string DefaultValue(const FieldDescriptor* field);
+
 // Convert a file name into a valid identifier.
 string FilenameIdentifier(const string& filename);
 
-// Return the name of the BuildDescriptors() function for a given file.
-string GlobalBuildDescriptorsName(const string& filename);
+// Return the name of the AddDescriptors() function for a given file.
+string GlobalAddDescriptorsName(const string& filename);
+
+// Return the name of the AssignDescriptors() function for a given file.
+string GlobalAssignDescriptorsName(const string& filename);
 
 }  // namespace cpp
 }  // namespace compiler

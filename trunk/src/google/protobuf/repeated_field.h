@@ -93,6 +93,7 @@ class LIBPROTOBUF_EXPORT GenericRepeatedField {
 };
 
 // We need this (from generated_message_reflection.cc).
+LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 int StringSpaceUsedExcludingSelf(const string& str);
 
 }  // namespace internal
@@ -863,6 +864,129 @@ template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
 RepeatedPtrField<Element>::end() const {
   return iterator(elements_ + current_size_);
+}
+
+// Iterators and helper functions that follow the spirit of the STL
+// std::back_insert_iterator and std::back_inserter but are tailor-made
+// for RepeatedField and RepatedPtrField. Typical usage would be:
+//
+//   std::copy(some_sequence.begin(), some_sequence.end(),
+//             google::protobuf::RepeatedFieldBackInserter(proto.mutable_sequence()));
+//
+// Ported by johannes from util/gtl/proto-array-iterators-inl.h
+
+namespace internal {
+// A back inserter for RepeatedField objects.
+template<typename T> class RepeatedFieldBackInsertIterator
+    : public std::iterator<std::output_iterator_tag, T> {
+ public:
+  explicit RepeatedFieldBackInsertIterator(
+      RepeatedField<T>* const mutable_field)
+      : field_(mutable_field) {
+  }
+  RepeatedFieldBackInsertIterator<T>& operator=(const T& value) {
+    field_->Add(value);
+    return *this;
+  }
+  RepeatedFieldBackInsertIterator<T>& operator*() {
+    return *this;
+  }
+  RepeatedFieldBackInsertIterator<T>& operator++() {
+    return *this;
+  }
+  RepeatedFieldBackInsertIterator<T>& operator++(int ignores_parameter) {
+    return *this;
+  }
+
+ private:
+  RepeatedField<T>* const field_;
+};
+
+// A back inserter for RepeatedPtrField objects.
+template<typename T> class RepeatedPtrFieldBackInsertIterator
+    : public std::iterator<std::output_iterator_tag, T> {
+ public:
+  RepeatedPtrFieldBackInsertIterator(
+      RepeatedPtrField<T>* const mutable_field)
+      : field_(mutable_field) {
+  }
+  RepeatedPtrFieldBackInsertIterator<T>& operator=(const T& value) {
+    *field_->Add() = value;
+    return *this;
+  }
+  RepeatedPtrFieldBackInsertIterator<T>& operator=(
+      const T* const ptr_to_value) {
+    *field_->Add() = *ptr_to_value;
+    return *this;
+  }
+  RepeatedPtrFieldBackInsertIterator<T>& operator*() {
+    return *this;
+  }
+  RepeatedPtrFieldBackInsertIterator<T>& operator++() {
+    return *this;
+  }
+  RepeatedPtrFieldBackInsertIterator<T>& operator++(int ignores_parameter) {
+    return *this;
+  }
+
+ private:
+  RepeatedPtrField<T>* const field_;
+};
+
+// A back inserter for RepeatedPtrFields that inserts by transfering ownership
+// of a pointer.
+template<typename T> class AllocatedRepeatedPtrFieldBackInsertIterator
+    : public std::iterator<std::output_iterator_tag, T> {
+ public:
+  explicit AllocatedRepeatedPtrFieldBackInsertIterator(
+      RepeatedPtrField<T>* const mutable_field)
+      : field_(mutable_field) {
+  }
+  AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator=(
+      T* const ptr_to_value) {
+    field_->AddAllocated(ptr_to_value);
+    return *this;
+  }
+  AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator*() {
+    return *this;
+  }
+  AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator++() {
+    return *this;
+  }
+  AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator++(
+      int ignores_parameter) {
+    return *this;
+  }
+
+ private:
+  RepeatedPtrField<T>* const field_;
+};
+}  // namespace internal
+
+// Provides a back insert iterator for RepeatedField instances,
+// similar to std::back_inserter(). Note the identically named
+// function for RepeatedPtrField instances.
+template<typename T> internal::RepeatedFieldBackInsertIterator<T>
+RepeatedFieldBackInserter(RepeatedField<T>* const mutable_field) {
+  return internal::RepeatedFieldBackInsertIterator<T>(mutable_field);
+}
+
+// Provides a back insert iterator for RepeatedPtrField instances,
+// similar to std::back_inserter(). Note the identically named
+// function for RepeatedField instances.
+template<typename T> internal::RepeatedPtrFieldBackInsertIterator<T>
+RepeatedFieldBackInserter(RepeatedPtrField<T>* const mutable_field) {
+  return internal::RepeatedPtrFieldBackInsertIterator<T>(mutable_field);
+}
+
+// Provides a back insert iterator for RepeatedPtrField instances
+// similar to std::back_inserter() which transfers the ownership while
+// copying elements.
+template<typename T> internal::AllocatedRepeatedPtrFieldBackInsertIterator<T>
+AllocatedRepeatedPtrFieldBackInserter(
+    RepeatedPtrField<T>* const mutable_field) {
+  return internal::AllocatedRepeatedPtrFieldBackInsertIterator<T>(
+      mutable_field);
 }
 
 }  // namespace protobuf

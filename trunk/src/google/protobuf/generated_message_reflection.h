@@ -116,6 +116,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   //   pool:          DescriptorPool to search for extension definitions.  Only
   //                  used by FindKnownExtensionByName() and
   //                  FindKnownExtensionByNumber().
+  //   factory:       MessageFactory to use to construct extension messages.
   //   object_size:   The size of a message object of this type, as measured
   //                  by sizeof().
   GeneratedMessageReflection(const Descriptor* descriptor,
@@ -125,6 +126,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                              int unknown_fields_offset,
                              int extensions_offset,
                              const DescriptorPool* pool,
+                             MessageFactory* factory,
                              int object_size);
   ~GeneratedMessageReflection();
 
@@ -274,6 +276,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   int object_size_;
 
   const DescriptorPool* descriptor_pool_;
+  MessageFactory* message_factory_;
 
   template <typename Type>
   inline const Type& GetRaw(const Message& message,
@@ -383,7 +386,30 @@ inline To dynamic_cast_if_available(From from) {
 // Compute the space used by a string, not including sizeof(string) itself.
 // This is slightly complicated because small strings store their data within
 // the string object but large strings do not.
+LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 int StringSpaceUsedExcludingSelf(const string& str);
+
+// Helper for EnumType_Parse functions: try to parse the string 'name' as an
+// enum name of the given type, returning true and filling in value on success,
+// or returning false and leaving value unchanged on failure.
+bool ParseNamedEnum(const EnumDescriptor* descriptor,
+                    const string& name,
+                    int* value);
+
+template<typename EnumType>
+bool ParseNamedEnum(const EnumDescriptor* descriptor,
+                    const string& name,
+                    EnumType* value) {
+  int tmp;
+  if (!ParseNamedEnum(descriptor, name, &tmp)) return false;
+  *value = static_cast<EnumType>(tmp);
+  return true;
+}
+
+// Just a wrapper around printing the name of a value. The main point of this
+// function is not to be inlined, so that you can do this without including
+// descriptor.h.
+const string& NameOfEnum(const EnumDescriptor* descriptor, int value);
 
 
 }  // namespace internal

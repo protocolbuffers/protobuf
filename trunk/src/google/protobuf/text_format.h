@@ -82,6 +82,76 @@ class LIBPROTOBUF_EXPORT TextFormat {
                                       int index,
                                       string* output);
 
+  // Class for those users which require more fine-grained control over how
+  // a protobuffer message is printed out.
+  class LIBPROTOBUF_EXPORT Printer {
+   public:
+    Printer();
+    ~Printer();
+
+    // Like TextFormat::Print
+    bool Print(const Message& message, io::ZeroCopyOutputStream* output);
+    // Like TextFormat::PrintUnknownFields
+    bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
+                            io::ZeroCopyOutputStream* output);
+    // Like TextFormat::PrintToString
+    bool PrintToString(const Message& message, string* output);
+    // Like TextFormat::PrintUnknownFieldsToString
+    bool PrintUnknownFieldsToString(const UnknownFieldSet& unknown_fields,
+                                    string* output);
+    // Like TextFormat::PrintFieldValueToString
+    void PrintFieldValueToString(const Message& message,
+                                 const FieldDescriptor* field,
+                                 int index,
+                                 string* output);
+
+    // Adjust the initial indent level of all output.  Each indent level is
+    // equal to two spaces.
+    void SetInitialIndentLevel(int indent_level) {
+      initial_indent_level_ = indent_level;
+    }
+
+    // If printing in single line mode, then the entire message will be output
+    // on a single line with no line breaks.
+    void SetSingleLineMode(bool single_line_mode) {
+      single_line_mode_ = single_line_mode;
+    }
+
+   private:
+    // Forward declaration of an internal class used to print the text
+    // output to the OutputStream (see text_format.cc for implementation).
+    class TextGenerator;
+
+    // Internal Print method, used for writing to the OutputStream via
+    // the TextGenerator class.
+    void Print(const Message& message,
+               TextGenerator& generator);
+
+    // Print a single field.
+    void PrintField(const Message& message,
+                    const Reflection* reflection,
+                    const FieldDescriptor* field,
+                    TextGenerator& generator);
+
+    // Outputs a textual representation of the value of the field supplied on
+    // the message supplied or the default value if not set.
+    void PrintFieldValue(const Message& message,
+                         const Reflection* reflection,
+                         const FieldDescriptor* field,
+                         int index,
+                         TextGenerator& generator);
+
+    // Print the fields in an UnknownFieldSet.  They are printed by tag number
+    // only.  Embedded messages are heuristically identified by attempting to
+    // parse them.
+    void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
+                            TextGenerator& generator);
+
+    int initial_indent_level_;
+
+    bool single_line_mode_;
+  };
+
   // Parses a text-format protocol message from the given input stream to
   // the given message object.  This function parses the format written
   // by Print().
@@ -138,35 +208,6 @@ class LIBPROTOBUF_EXPORT TextFormat {
   };
 
  private:
-  // Forward declaration of an internal class used to print the text
-  // output to the OutputStream (see text_format.cc for implementation).
-  class TextGenerator;
-
-  // Internal Print method, used for writing to the OutputStream via
-  // the TextGenerator class.
-  static void Print(const Message& message,
-                    TextGenerator& generator);
-
-  // Print a single field.
-  static void PrintField(const Message& message,
-                         const Reflection* reflection,
-                         const FieldDescriptor* field,
-                         TextGenerator& generator);
-
-  // Outputs a textual representation of the value of the field supplied on
-  // the message supplied or the default value if not set.
-  static void PrintFieldValue(const Message& message,
-                              const Reflection* reflection,
-                              const FieldDescriptor* field,
-                              int index,
-                              TextGenerator& generator);
-
-  // Print the fields in an UnknownFieldSet.  They are printed by tag number
-  // only.  Embedded messages are heuristically identified by attempting to
-  // parse them.
-  static void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                                 TextGenerator& generator);
-
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormat);
 };
 

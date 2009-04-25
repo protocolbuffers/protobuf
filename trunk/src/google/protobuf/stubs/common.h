@@ -1039,6 +1039,10 @@ class LIBPROTOBUF_EXPORT MutexLock {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLock);
 };
 
+// TODO(kenton):  Implement these?  Hard to implement portably.
+typedef MutexLock ReaderMutexLock;
+typedef MutexLock WriterMutexLock;
+
 // MutexLockMaybe is like MutexLock, but is a no-op when mu is NULL.
 class LIBPROTOBUF_EXPORT MutexLockMaybe {
  public:
@@ -1056,6 +1060,8 @@ class LIBPROTOBUF_EXPORT MutexLockMaybe {
 // but we don't want to stick "internal::" in front of them everywhere.
 using internal::Mutex;
 using internal::MutexLock;
+using internal::ReaderMutexLock;
+using internal::WriterMutexLock;
 using internal::MutexLockMaybe;
 
 // ===================================================================

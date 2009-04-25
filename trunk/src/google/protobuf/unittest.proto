@@ -269,6 +269,14 @@ extend TestAllExtensions {
   optional string default_cord_extension = 85 [ctype=CORD, default="123"];
 }
 
+message TestNestedExtension {
+  extend TestAllExtensions {
+    // Check for bug where string extensions declared in tested scope did not
+    // compile.
+    optional string test = 1002 [default="test"];
+  }
+}
+
 // We have separate messages for testing required fields because it's
 // annoying to have to fill in required fields in TestProto in order to
 // do anything with it.  Note that we don't need to test every type of

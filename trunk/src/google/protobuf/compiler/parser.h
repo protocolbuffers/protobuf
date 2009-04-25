@@ -90,7 +90,7 @@ class LIBPROTOBUF_EXPORT Parser {
 
   // Returns the identifier used in the "syntax = " declaration, if one was
   // seen during the last call to Parse(), or the empty string otherwise.
-  const string& GetSyntaxIndentifier() { return syntax_identifier_; }
+  const string& GetSyntaxIdentifier() { return syntax_identifier_; }
 
   // If set true, input files will be required to begin with a syntax
   // identifier.  Otherwise, files may omit this.  If a syntax identifier
@@ -98,6 +98,18 @@ class LIBPROTOBUF_EXPORT Parser {
   // top of this file regardless of whether or not it was required.
   void SetRequireSyntaxIdentifier(bool value) {
     require_syntax_identifier_ = value;
+  }
+
+  // Call SetStopAfterSyntaxIdentifier(true) to tell the parser to stop
+  // parsing as soon as it has seen the syntax identifier, or lack thereof.
+  // This is useful for quickly identifying the syntax of the file without
+  // parsing the whole thing.  If this is enabled, no error will be recorded
+  // if the syntax identifier is something other than "proto2" (since
+  // presumably the caller intends to deal with that), but other kinds of
+  // errors (e.g. parse errors) will still be reported.  When this is enabled,
+  // you may pass a NULL FileDescriptorProto to Parse().
+  void SetStopAfterSyntaxIdentifier(bool value) {
+    stop_after_syntax_identifier_ = value;
   }
 
  private:
@@ -281,6 +293,7 @@ class LIBPROTOBUF_EXPORT Parser {
   SourceLocationTable* source_location_table_;
   bool had_errors_;
   bool require_syntax_identifier_;
+  bool stop_after_syntax_identifier_;
   string syntax_identifier_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Parser);

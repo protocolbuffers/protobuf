@@ -1102,6 +1102,15 @@ class FullProtosEqualityTest(unittest.TestCase):
     test_util.SetAllFields(self.first_proto)
     test_util.SetAllFields(self.second_proto)
 
+  def testNoneNotEqual(self):
+    self.assertNotEqual(self.first_proto, None)
+    self.assertNotEqual(None, self.second_proto)
+
+  def testNotEqualToOtherMessage(self):
+    third_proto = unittest_pb2.TestRequired()
+    self.assertNotEqual(self.first_proto, third_proto)
+    self.assertNotEqual(third_proto, self.second_proto)
+
   def testAllFieldsFilledEquality(self):
     self.assertEqual(self.first_proto, self.second_proto)
 

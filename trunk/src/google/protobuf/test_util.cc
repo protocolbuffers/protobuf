@@ -1871,6 +1871,15 @@ void TestUtil::ReflectionTester::SetPackedFieldsViaReflection(
 
 void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
     const Message& message) {
+  // We have to split this into three function otherwise it creates a stack
+  // frame so large that it triggers a warning.
+  ExpectAllFieldsSetViaReflection1(message);
+  ExpectAllFieldsSetViaReflection2(message);
+  ExpectAllFieldsSetViaReflection3(message);
+}
+
+void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
+    const Message& message) {
   const Reflection* reflection = message.GetReflection();
   string scratch;
   const Message* sub_message;
@@ -1949,6 +1958,13 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
 
   EXPECT_EQ("125", reflection->GetString(message, F("optional_cord")));
   EXPECT_EQ("125", reflection->GetStringReference(message, F("optional_cord"), &scratch));
+}
+
+void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
+    const Message& message) {
+  const Reflection* reflection = message.GetReflection();
+  string scratch;
+  const Message* sub_message;
 
   // -----------------------------------------------------------------
 
@@ -2060,6 +2076,12 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
   EXPECT_EQ("325", reflection->GetRepeatedString(message, F("repeated_cord"), 1));
   EXPECT_EQ("325", reflection->GetRepeatedStringReference(
                         message, F("repeated_cord"), 1, &scratch));
+}
+
+void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
+    const Message& message) {
+  const Reflection* reflection = message.GetReflection();
+  string scratch;
 
   // -----------------------------------------------------------------
 

@@ -95,6 +95,7 @@ public class CodedInputStreamTest extends TestCase {
 
     input = CodedInputStream.newInstance(data);
     assertEquals(value, input.readRawVarint64());
+    assertTrue(input.isAtEnd());
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
@@ -105,7 +106,17 @@ public class CodedInputStreamTest extends TestCase {
       input = CodedInputStream.newInstance(
         new SmallBlockInputStream(data, blockSize));
       assertEquals(value, input.readRawVarint64());
+      assertTrue(input.isAtEnd());
     }
+
+    // Try reading direct from an InputStream.  We want to verify that it
+    // doesn't read past the end of the input, so we copy to a new, bigger
+    // array first.
+    byte[] longerData = new byte[data.length + 1];
+    System.arraycopy(data, 0, longerData, 0, data.length);
+    InputStream rawInput = new ByteArrayInputStream(longerData);
+    assertEquals((int)value, CodedInputStream.readRawVarint32(rawInput));
+    assertEquals(1, rawInput.available());
   }
 
   /**
@@ -127,6 +138,14 @@ public class CodedInputStreamTest extends TestCase {
     input = CodedInputStream.newInstance(data);
     try {
       input.readRawVarint64();
+      fail("Should have thrown an exception.");
+    } catch (InvalidProtocolBufferException e) {
+      assertEquals(expected.getMessage(), e.getMessage());
+    }
+
+    // Make sure we get the same error when reading direct from an InputStream.
+    try {
+      CodedInputStream.readRawVarint32(new ByteArrayInputStream(data));
       fail("Should have thrown an exception.");
     } catch (InvalidProtocolBufferException e) {
       assertEquals(expected.getMessage(), e.getMessage());
@@ -180,12 +199,14 @@ public class CodedInputStreamTest extends TestCase {
                                         throws Exception {
     CodedInputStream input = CodedInputStream.newInstance(data);
     assertEquals(value, input.readRawLittleEndian32());
+    assertTrue(input.isAtEnd());
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
       input = CodedInputStream.newInstance(
         new SmallBlockInputStream(data, blockSize));
       assertEquals(value, input.readRawLittleEndian32());
+      assertTrue(input.isAtEnd());
     }
   }
 
@@ -197,12 +218,14 @@ public class CodedInputStreamTest extends TestCase {
                                         throws Exception {
     CodedInputStream input = CodedInputStream.newInstance(data);
     assertEquals(value, input.readRawLittleEndian64());
+    assertTrue(input.isAtEnd());
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
       input = CodedInputStream.newInstance(
         new SmallBlockInputStream(data, blockSize));
       assertEquals(value, input.readRawLittleEndian64());
+      assertTrue(input.isAtEnd());
     }
   }
 
@@ -286,6 +309,20 @@ public class CodedInputStreamTest extends TestCase {
       unknownFields.mergeFieldFrom(tag, input1);
       input2.skipField(tag);
     }
+  }
+
+  /**
+   * Test that a bug in skipRawBytes() has been fixed:  if the skip skips
+   * exactly up to a limit, this should not break things.
+   */
+  public void testSkipRawBytesBug() throws Exception {
+    byte[] rawBytes = new byte[] { 1, 2 };
+    CodedInputStream input = CodedInputStream.newInstance(rawBytes);
+
+    int limit = input.pushLimit(1);
+    input.skipRawBytes(1);
+    input.popLimit(limit);
+    assertEquals(2, input.readRawByte());
   }
 
   public void testReadHugeBlob() throws Exception {
@@ -386,6 +423,30 @@ public class CodedInputStreamTest extends TestCase {
 
     try {
       TestAllTypes.parseFrom(input);
+      fail("Should have thrown an exception!");
+    } catch (InvalidProtocolBufferException e) {
+      // success.
+    }
+  }
+
+  public void testResetSizeCounter() throws Exception {
+    CodedInputStream input = CodedInputStream.newInstance(
+        new SmallBlockInputStream(new byte[256], 8));
+    input.setSizeLimit(16);
+    input.readRawBytes(16);
+
+    try {
+      input.readRawByte();
+      fail("Should have thrown an exception!");
+    } catch (InvalidProtocolBufferException e) {
+      // success.
+    }
+
+    input.resetSizeCounter();
+    input.readRawByte();  // No exception thrown.
+
+    try {
+      input.readRawBytes(16);  // Hits limit again.
       fail("Should have thrown an exception!");
     } catch (InvalidProtocolBufferException e) {
       // success.

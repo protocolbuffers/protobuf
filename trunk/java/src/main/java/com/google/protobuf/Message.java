@@ -183,8 +183,27 @@ public interface Message {
    * Serializes the message and writes it to {@code output}.  This is just a
    * trivial wrapper around {@link #writeTo(CodedOutputStream)}.  This does
    * not flush or close the stream.
+   * <p>
+   * NOTE:  Protocol Buffers are not self-delimiting.  Therefore, if you write
+   * any more data to the stream after the message, you must somehow ensure
+   * that the parser on the receiving end does not interpret this as being
+   * part of the protocol message.  This can be done e.g. by writing the size
+   * of the message before the data, then making sure to limit the input to
+   * that size on the receiving end (e.g. by wrapping the InputStream in one
+   * which limits the input).  Alternatively, just use
+   * {@link #writeDelimitedTo(OutputStream)}.
    */
   void writeTo(OutputStream output) throws IOException;
+
+  /**
+   * Like {@link #writeTo(OutputStream)}, but writes the size of the message
+   * as a varint before writing the data.  This allows more data to be written
+   * to the stream after the message without the need to delimit the message
+   * data yourself.  Use {@link Builder#mergeDelimitedFrom(InputStream)} (or
+   * the static method {@code YourMessageType.parseDelimitedFrom(InputStream)})
+   * to parse messages written by this method.
+   */
+  void writeDelimitedTo(OutputStream output) throws IOException;
 
   // =================================================================
   // Builders
@@ -434,8 +453,11 @@ public interface Message {
      * {@link #mergeFrom(CodedInputStream)}.  Note that this method always
      * reads the <i>entire</i> input (unless it throws an exception).  If you
      * want it to stop earlier, you will need to wrap your input in some
-     * wrapper stream that limits reading.  Despite usually reading the entire
-     * input, this does not close the stream.
+     * wrapper stream that limits reading.  Or, use
+     * {@link Message#writeDelimitedTo(OutputStream)} to write your message and
+     * {@link #mergeDelimitedFrom(InputStream)} to read it.
+     * <p>
+     * Despite usually reading the entire input, this does not close the stream.
      */
     Builder mergeFrom(InputStream input) throws IOException;
 
@@ -447,5 +469,22 @@ public interface Message {
     Builder mergeFrom(InputStream input,
                       ExtensionRegistry extensionRegistry)
                       throws IOException;
+
+    /**
+     * Like {@link #mergeFrom(InputStream)}, but does not read until EOF.
+     * Instead, the size of the message (encoded as a varint) is read first,
+     * then the message data.  Use
+     * {@link Message#writeDelimitedTo(OutputStream)} to write messages in this
+     * format.
+     */
+    Builder mergeDelimitedFrom(InputStream input)
+                               throws IOException;
+
+    /**
+     * Like {@link #mergeDelimitedFrom(InputStream)} but supporting extensions.
+     */
+    Builder mergeDelimitedFrom(InputStream input,
+                               ExtensionRegistry extensionRegistry)
+                               throws IOException;
   }
 }

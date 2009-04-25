@@ -116,8 +116,8 @@ GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
-GenerateInitializer(io::Printer* printer) const {
-  printer->Print(variables_, ",\n$name$_(NULL)");
+GenerateConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_ = NULL;\n");
 }
 
 void MessageFieldGenerator::
@@ -136,8 +136,16 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "DO_(::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
-      "$number$, this->$name$(), output));\n");
+    "::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
+      "$number$, this->$name$(), output);\n");
+}
+
+void MessageFieldGenerator::
+GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+  printer->Print(variables_,
+    "target = ::google::protobuf::internal::WireFormat::"
+      "Write$declared_type$NoVirtualToArray("
+      "$number$, this->$name$(), target);\n");
 }
 
 void MessageFieldGenerator::
@@ -212,8 +220,8 @@ GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateInitializer(io::Printer* printer) const {
-  printer->Print(variables_, ",\n$name$_()");
+GenerateConstructorCode(io::Printer* printer) const {
+  // Not needed for repeated fields.
 }
 
 void RepeatedMessageFieldGenerator::
@@ -233,8 +241,18 @@ void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
     "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  DO_(::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
-        "$number$, this->$name$(i), output));\n"
+    "  ::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
+        "$number$, this->$name$(i), output);\n"
+    "}\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+  printer->Print(variables_,
+    "for (int i = 0; i < this->$name$_size(); i++) {\n"
+    "  target = ::google::protobuf::internal::WireFormat::"
+        "Write$declared_type$NoVirtualToArray("
+        "$number$, this->$name$(i), target);\n"
     "}\n");
 }
 

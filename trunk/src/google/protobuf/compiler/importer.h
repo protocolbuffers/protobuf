@@ -267,6 +267,11 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
                           string* virtual_file,
                           string* shadowing_disk_file);
 
+  // Given a virtual path, find the path to the file on disk.
+  // Return true and update disk_file with the on-disk path if the file exists.
+  // Return false and leave disk_file untouched if the file doesn't exist.
+  bool VirtualFileToDiskFile(const string& virtual_file, string* disk_file);
+
   // implements SourceTree -------------------------------------------
   io::ZeroCopyInputStream* Open(const string& filename);
 
@@ -279,6 +284,11 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
       : virtual_path(virtual_path), disk_path(disk_path) {}
   };
   vector<Mapping> mappings_;
+
+  // Like Open(), but returns the on-disk path in disk_file if disk_file is
+  // non-NULL and the file could be successfully opened.
+  io::ZeroCopyInputStream* OpenVirtualFile(const string& virtual_file,
+                                           string* disk_file);
 
   // Like Open() but given the actual on-disk path.
   io::ZeroCopyInputStream* OpenDiskFile(const string& filename);

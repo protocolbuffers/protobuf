@@ -57,8 +57,27 @@ class ServiceGenerator {
   void Generate(io::Printer* printer);
 
  private:
+
+  // Generate the getDescriptorForType() method.
+  void GenerateGetDescriptorForType(io::Printer* printer);
+
+  // Generate a Java interface for the service.
+  void GenerateInterface(io::Printer* printer);
+
+  // Generate newReflectiveService() method.
+  void GenerateNewReflectiveServiceMethod(io::Printer* printer);
+
+  // Generate newReflectiveBlockingService() method.
+  void GenerateNewReflectiveBlockingServiceMethod(io::Printer* printer);
+
+  // Generate abstract method declarations for all methods.
+  void GenerateAbstractMethods(io::Printer* printer);
+
   // Generate the implementation of Service.callMethod().
   void GenerateCallMethod(io::Printer* printer);
+
+  // Generate the implementation of BlockingService.callBlockingMethod().
+  void GenerateCallBlockingMethod(io::Printer* printer);
 
   // Generate the implementations of Service.get{Request,Response}Prototype().
   enum RequestOrResponse { REQUEST, RESPONSE };
@@ -66,6 +85,20 @@ class ServiceGenerator {
 
   // Generate a stub implementation of the service.
   void GenerateStub(io::Printer* printer);
+
+  // Generate a method signature, possibly abstract, without body or trailing
+  // semicolon.
+  enum IsAbstract { IS_ABSTRACT, IS_CONCRETE };
+  void GenerateMethodSignature(io::Printer* printer,
+                               const MethodDescriptor* method,
+                               IsAbstract is_abstract);
+
+  // Generate a blocking stub interface and implementation of the service.
+  void GenerateBlockingStub(io::Printer* printer);
+
+  // Generate the method signature for one method of a blocking stub.
+  void GenerateBlockingMethodSignature(io::Printer* printer,
+                                       const MethodDescriptor* method);
 
   const ServiceDescriptor* descriptor_;
 

@@ -599,6 +599,10 @@ def _AddHasExtensionMethod(cls):
 def _AddEqualsMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def __eq__(self, other):
+    if (not isinstance(other, message_mod.Message) or
+        other.DESCRIPTOR != self.DESCRIPTOR):
+      return False
+
     if self is other:
       return True
 

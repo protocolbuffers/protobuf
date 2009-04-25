@@ -47,6 +47,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/stl_util-inl.h>
 
 namespace google {
 namespace protobuf {
@@ -205,9 +206,19 @@ bool Message::ParsePartialFromIstream(istream* input) {
 
 
 
-bool Message::SerializeWithCachedSizes(
+void Message::SerializeWithCachedSizes(
     io::CodedOutputStream* output) const {
-  return WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
+  WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
+}
+
+uint8* Message::SerializeWithCachedSizesToArray(uint8* target) const {
+  // We only optimize this when using optimize_for = SPEED.
+  int size = GetCachedSize();
+  io::ArrayOutputStream out(target, size);
+  io::CodedOutputStream coded_out(&out);
+  SerializeWithCachedSizes(&coded_out);
+  GOOGLE_CHECK(!coded_out.HadError());
+  return target + size;
 }
 
 int Message::ByteSize() const {
@@ -234,8 +245,8 @@ bool Message::SerializeToCodedStream(io::CodedOutputStream* output) const {
 bool Message::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
   ByteSize();  // Force size to be cached.
-  if (!SerializeWithCachedSizes(output)) return false;
-  return true;
+  SerializeWithCachedSizes(output);
+  return !output->HadError();
 }
 
 bool Message::SerializeToZeroCopyStream(
@@ -256,19 +267,12 @@ bool Message::AppendToString(string* output) const {
 }
 
 bool Message::AppendPartialToString(string* output) const {
-  // For efficiency, we'd like to reserve the exact amount of space we need
-  // in the string.
-  int total_size = output->size() + ByteSize();
-  output->reserve(total_size);
-
-  io::StringOutputStream output_stream(output);
-
-  {
-    io::CodedOutputStream encoder(&output_stream);
-    if (!SerializeWithCachedSizes(&encoder)) return false;
-  }
-
-  GOOGLE_CHECK_EQ(output_stream.ByteCount(), total_size);
+  int old_size = output->size();
+  int byte_size = ByteSize();
+  STLStringResizeUninitialized(output, old_size + byte_size);
+  uint8* start = reinterpret_cast<uint8*>(string_as_array(output) + old_size);
+  uint8* end = SerializeWithCachedSizesToArray(start);
+  GOOGLE_CHECK_EQ(end, start + byte_size);
   return true;
 }
 
@@ -283,13 +287,17 @@ bool Message::SerializePartialToString(string* output) const {
 }
 
 bool Message::SerializeToArray(void* data, int size) const {
-  io::ArrayOutputStream output_stream(data, size);
-  return SerializeToZeroCopyStream(&output_stream);
+  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
+  return SerializePartialToArray(data, size);
 }
 
 bool Message::SerializePartialToArray(void* data, int size) const {
-  io::ArrayOutputStream output_stream(data, size);
-  return SerializePartialToZeroCopyStream(&output_stream);
+  int byte_size = ByteSize();
+  if (size < byte_size) return false;
+  uint8* end =
+    SerializeWithCachedSizesToArray(reinterpret_cast<uint8*>(data));
+  GOOGLE_CHECK_EQ(end, reinterpret_cast<uint8*>(data) + byte_size);
+  return true;
 }
 
 bool Message::SerializeToFileDescriptor(int file_descriptor) const {
@@ -347,12 +355,20 @@ class GeneratedMessageFactory : public MessageFactory {
 
   static GeneratedMessageFactory* singleton();
 
+  typedef void RegistrationFunc();
+  void RegisterFile(const char* file, RegistrationFunc* registration_func);
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
   // implements MessageFactory ---------------------------------------
   const Message* GetPrototype(const Descriptor* type);
 
  private:
+  // Only written at static init time, so does not require locking.
+  hash_map<const char*, RegistrationFunc*,
+           hash<const char*>, streq> file_map_;
+
+  // Initialized lazily, so requires locking.
+  Mutex mutex_;
   hash_map<const Descriptor*, const Message*> type_map_;
 };
 
@@ -366,25 +382,77 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
   return &singleton;
 }
 
+void GeneratedMessageFactory::RegisterFile(
+    const char* file, RegistrationFunc* registration_func) {
+  if (!InsertIfNotPresent(&file_map_, file, registration_func)) {
+    GOOGLE_LOG(FATAL) << "File is already registered: " << file;
+  }
+}
+
 void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
                                            const Message* prototype) {
   GOOGLE_DCHECK_EQ(descriptor->file()->pool(), DescriptorPool::generated_pool())
     << "Tried to register a non-generated type with the generated "
        "type registry.";
 
+  // This should only be called as a result of calling a file registration
+  // function during GetPrototype(), in which case we already have locked
+  // the mutex.
+  mutex_.AssertHeld();
   if (!InsertIfNotPresent(&type_map_, descriptor, prototype)) {
     GOOGLE_LOG(DFATAL) << "Type is already registered: " << descriptor->full_name();
   }
 }
 
 const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
-  return FindPtrOrNull(type_map_, type);
+  {
+    ReaderMutexLock lock(&mutex_);
+    const Message* result = FindPtrOrNull(type_map_, type);
+    if (result != NULL) return result;
+  }
+
+  // If the type is not in the generated pool, then we can't possibly handle
+  // it.
+  if (type->file()->pool() != DescriptorPool::generated_pool()) return NULL;
+
+  // Apparently the file hasn't been registered yet.  Let's do that now.
+  RegistrationFunc* registration_func =
+      FindPtrOrNull(file_map_, type->file()->name().c_str());
+  if (registration_func == NULL) {
+    GOOGLE_LOG(DFATAL) << "File appears to be in generated pool but wasn't "
+                   "registered: " << type->file()->name();
+    return NULL;
+  }
+
+  WriterMutexLock lock(&mutex_);
+
+  // Check if another thread preempted us.
+  const Message* result = FindPtrOrNull(type_map_, type);
+  if (result == NULL) {
+    // Nope.  OK, register everything.
+    registration_func();
+    // Should be here now.
+    result = FindPtrOrNull(type_map_, type);
+  }
+
+  if (result == NULL) {
+    GOOGLE_LOG(DFATAL) << "Type appears to be in generated pool but wasn't "
+                << "registered: " << type->full_name();
+  }
+
+  return result;
 }
 
 }  // namespace
 
 MessageFactory* MessageFactory::generated_factory() {
   return GeneratedMessageFactory::singleton();
+}
+
+void MessageFactory::InternalRegisterGeneratedFile(
+    const char* filename, void (*register_messages)()) {
+  GeneratedMessageFactory::singleton()->RegisterFile(filename,
+                                                     register_messages);
 }
 
 void MessageFactory::InternalRegisterGeneratedMessage(

@@ -387,9 +387,22 @@ DiskSourceTree::DiskFileToVirtualFile(
   return SUCCESS;
 }
 
+bool DiskSourceTree::VirtualFileToDiskFile(const string& virtual_file,
+                                           string* disk_file) {
+  scoped_ptr<io::ZeroCopyInputStream> stream(OpenVirtualFile(virtual_file,
+                                                             disk_file));
+  return stream != NULL;
+}
+
 io::ZeroCopyInputStream* DiskSourceTree::Open(const string& filename) {
-  if (filename != CanonicalizePath(filename) ||
-      ContainsParentReference(filename)) {
+  return OpenVirtualFile(filename, NULL);
+}
+
+io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
+    const string& virtual_file,
+    string* disk_file) {
+  if (virtual_file != CanonicalizePath(virtual_file) ||
+      ContainsParentReference(virtual_file)) {
     // We do not allow importing of paths containing things like ".." or
     // consecutive slashes since the compiler expects files to be uniquely
     // identified by file name.
@@ -397,16 +410,21 @@ io::ZeroCopyInputStream* DiskSourceTree::Open(const string& filename) {
   }
 
   for (int i = 0; i < mappings_.size(); i++) {
-    string disk_file;
-    if (ApplyMapping(filename, mappings_[i].virtual_path,
-                     mappings_[i].disk_path, &disk_file)) {
-      io::ZeroCopyInputStream* stream = OpenDiskFile(disk_file);
-      if (stream != NULL) return stream;
+    string temp_disk_file;
+    if (ApplyMapping(virtual_file, mappings_[i].virtual_path,
+                     mappings_[i].disk_path, &temp_disk_file)) {
+      io::ZeroCopyInputStream* stream = OpenDiskFile(temp_disk_file);
+      if (stream != NULL) {
+        if (disk_file != NULL) {
+          *disk_file = temp_disk_file;
+        }
+        return stream;
+      }
 
       if (errno == EACCES) {
         // The file exists but is not readable.
         // TODO(kenton):  Find a way to report this more nicely.
-        GOOGLE_LOG(WARNING) << "Read access is denied for file: " << disk_file;
+        GOOGLE_LOG(WARNING) << "Read access is denied for file: " << temp_disk_file;
         return NULL;
       }
     }

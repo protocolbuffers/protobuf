@@ -38,6 +38,7 @@
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 
 namespace google {
 namespace protobuf {
@@ -213,6 +214,41 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
   return "";
 }
 
+string DefaultValue(const FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return SimpleItoa(field->default_value_int32());
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return SimpleItoa(field->default_value_uint32()) + "u";
+    case FieldDescriptor::CPPTYPE_INT64:
+      return "GOOGLE_LONGLONG(" + SimpleItoa(field->default_value_int64()) + ")";
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return SimpleDtoa(field->default_value_double());
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return SimpleFtoa(field->default_value_float());
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() ? "true" : "false";
+    case FieldDescriptor::CPPTYPE_ENUM:
+      // Lazy:  Generate a static_cast because we don't have a helper function
+      //   that constructs the full name of an enum value.
+      return strings::Substitute(
+          "static_cast< $0 >($1)",
+          ClassName(field->enum_type(), true),
+          field->default_value_enum()->number());
+    case FieldDescriptor::CPPTYPE_STRING:
+      return "\"" + CEscape(field->default_value_string()) + "\"";
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return ClassName(field->message_type(), true) + "::default_instance()";
+  }
+  // Can't actually get here; make compiler happy.  (We could add a default
+  // case above but then we wouldn't get the nice compiler warning when a
+  // new type is added.)
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return "";
+}
+
 // Convert a file name into a valid identifier.
 string FilenameIdentifier(const string& filename) {
   string result;
@@ -230,9 +266,14 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
-// Return the name of the BuildDescriptors() function for a given file.
-string GlobalBuildDescriptorsName(const string& filename) {
-  return "protobuf_BuildDesc_" + FilenameIdentifier(filename);
+// Return the name of the AddDescriptors() function for a given file.
+string GlobalAddDescriptorsName(const string& filename) {
+  return "protobuf_AddDesc_" + FilenameIdentifier(filename);
+}
+
+// Return the name of the AssignDescriptors() function for a given file.
+string GlobalAssignDescriptorsName(const string& filename) {
+  return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
 }
 
 }  // namespace cpp

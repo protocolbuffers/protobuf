@@ -31,13 +31,13 @@
 package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
-import protobuf_unittest.UnittestProto.
-  TestEmptyMessageWithExtensions;
+import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions;
 
 import junit.framework.TestCase;
+
 import java.util.Arrays;
 import java.util.Map;
 
@@ -340,5 +340,98 @@ public class UnknownFieldSetTest extends TestCase {
     UnknownFieldSet.Field field = parsed.getField(1);
     assertEquals(1, field.getVarintList().size());
     assertEquals(0x7FFFFFFFFFFFFFFFL, (long)field.getVarintList().get(0));
+  }
+
+  public void testEqualsAndHashCode() {
+    UnknownFieldSet.Field fixed32Field =
+        UnknownFieldSet.Field.newBuilder()
+            .addFixed32(1)
+            .build();
+    UnknownFieldSet.Field fixed64Field =
+        UnknownFieldSet.Field.newBuilder()
+            .addFixed64(1)
+            .build();
+    UnknownFieldSet.Field varIntField =
+        UnknownFieldSet.Field.newBuilder()
+            .addVarint(1)
+            .build();
+    UnknownFieldSet.Field lengthDelimitedField =
+        UnknownFieldSet.Field.newBuilder()
+            .addLengthDelimited(ByteString.EMPTY)
+            .build();
+    UnknownFieldSet.Field groupField =
+        UnknownFieldSet.Field.newBuilder()
+            .addGroup(unknownFields)
+            .build();
+
+    UnknownFieldSet a =
+        UnknownFieldSet.newBuilder()
+            .addField(1, fixed32Field)
+            .build();
+    UnknownFieldSet b =
+        UnknownFieldSet.newBuilder()
+            .addField(1, fixed64Field)
+            .build();
+    UnknownFieldSet c =
+        UnknownFieldSet.newBuilder()
+            .addField(1, varIntField)
+            .build();
+    UnknownFieldSet d =
+        UnknownFieldSet.newBuilder()
+            .addField(1, lengthDelimitedField)
+            .build();
+    UnknownFieldSet e =
+        UnknownFieldSet.newBuilder()
+            .addField(1, groupField)
+            .build();
+
+    checkEqualsIsConsistent(a);
+    checkEqualsIsConsistent(b);
+    checkEqualsIsConsistent(c);
+    checkEqualsIsConsistent(d);
+    checkEqualsIsConsistent(e);
+
+    checkNotEqual(a, b);
+    checkNotEqual(a, c);
+    checkNotEqual(a, d);
+    checkNotEqual(a, e);
+    checkNotEqual(b, c);
+    checkNotEqual(b, d);
+    checkNotEqual(b, e);
+    checkNotEqual(c, d);
+    checkNotEqual(c, e);
+    checkNotEqual(d, e);
+  }
+
+  /**
+   * Asserts that the given field sets are not equal and have different
+   * hash codes.
+   *
+   * @warning It's valid for non-equal objects to have the same hash code, so
+   *   this test is stricter than it needs to be. However, this should happen
+   *   relatively rarely.
+   */
+  private void checkNotEqual(UnknownFieldSet s1, UnknownFieldSet s2) {
+    String equalsError = String.format("%s should not be equal to %s", s1, s2);
+    assertFalse(equalsError, s1.equals(s2));
+    assertFalse(equalsError, s2.equals(s1));
+
+    assertFalse(
+        String.format("%s should have a different hash code from %s", s1, s2),
+        s1.hashCode() == s2.hashCode());
+  }
+
+  /**
+   * Asserts that the given field sets are equal and have identical hash codes.
+   */
+  private void checkEqualsIsConsistent(UnknownFieldSet set) {
+    // Object should be equal to itself.
+    assertEquals(set, set);
+
+    // Object should be equal to a copy of itself.
+    UnknownFieldSet copy = UnknownFieldSet.newBuilder(set).build();
+    assertEquals(set, copy);
+    assertEquals(copy, set);
+    assertEquals(set.hashCode(), copy.hashCode());
   }
 }

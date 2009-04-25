@@ -97,7 +97,8 @@ Parser::Parser()
     error_collector_(NULL),
     source_location_table_(NULL),
     had_errors_(false),
-    require_syntax_identifier_(false) {
+    require_syntax_identifier_(false),
+    stop_after_syntax_identifier_(false) {
 }
 
 Parser::~Parser() {
@@ -309,9 +310,11 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // identifier.
       return false;
     }
-  } else {
+  } else if (!stop_after_syntax_identifier_) {
     syntax_identifier_ = "proto2";
   }
+
+  if (stop_after_syntax_identifier_) return !had_errors_;
 
   // Repeatedly parse statements until we reach the end of the file.
   while (!AtEnd()) {
@@ -341,7 +344,7 @@ bool Parser::ParseSyntaxIdentifier() {
 
   syntax_identifier_ = syntax;
 
-  if (syntax != "proto2") {
+  if (syntax != "proto2" && !stop_after_syntax_identifier_) {
     AddError(syntax_token.line, syntax_token.column,
       "Unrecognized syntax identifier \"" + syntax + "\".  This parser "
       "only recognizes \"proto2\".");

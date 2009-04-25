@@ -40,7 +40,14 @@ from google.protobuf.internal import wire_format
 from google.protobuf.internal import input_stream
 
 
-class InputStreamTest(unittest.TestCase):
+class InputStreamBufferTest(unittest.TestCase):
+
+  def setUp(self):
+    self.__original_input_stream = input_stream.InputStream
+    input_stream.InputStream = input_stream.InputStreamBuffer
+
+  def tearDown(self):
+    input_stream.InputStream = self.__original_input_stream
 
   def testEndOfStream(self):
     stream = input_stream.InputStream('abcd')
@@ -290,6 +297,18 @@ class InputStreamTest(unittest.TestCase):
     s = '\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00'
     stream = input_stream.InputStream(s)
     self.assertRaises(message.DecodeError, stream.ReadVarUInt64)
+
+
+class InputStreamArrayTest(InputStreamBufferTest):
+
+  def setUp(self):
+    # Test InputStreamArray against the same tests in InputStreamBuffer
+    self.__original_input_stream = input_stream.InputStream
+    input_stream.InputStream = input_stream.InputStreamArray
+
+  def tearDown(self):
+    input_stream.InputStream = self.__original_input_stream
+
 
 if __name__ == '__main__':
   unittest.main()

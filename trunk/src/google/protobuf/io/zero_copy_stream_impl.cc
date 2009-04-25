@@ -185,11 +185,12 @@ bool StringOutputStream::Next(void** data, int* size) {
   if (old_size < target_->capacity()) {
     // Resize the string to match its capacity, since we can get away
     // without a memory allocation this way.
-    target_->resize(target_->capacity());
+    STLStringResizeUninitialized(target_, target_->capacity());
   } else {
     // Size has reached capacity, so double the size.  Also make sure
     // that the new size is at least kMinimumSize.
-    target_->resize(
+    STLStringResizeUninitialized(
+      target_,
       max(old_size * 2,
           kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
   }

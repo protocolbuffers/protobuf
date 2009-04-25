@@ -346,6 +346,18 @@ TEST_F(FileDescriptorTest, FindExtensionByNumber) {
   EXPECT_TRUE(pool_.FindExtensionByNumber(foo_message_, 2) == NULL);
 }
 
+TEST_F(FileDescriptorTest, BuildAgain) {
+  // Test that if te call BuildFile again on the same input we get the same
+  // FileDescriptor back.
+  FileDescriptorProto file;
+  foo_file_->CopyTo(&file);
+  EXPECT_EQ(foo_file_, pool_.BuildFile(file));
+
+  // But if we change the file then it won't work.
+  file.set_package("some.other.package");
+  EXPECT_TRUE(pool_.BuildFile(file) == NULL);
+}
+
 // ===================================================================
 
 // Test simple flat messages and fields.
@@ -1492,6 +1504,16 @@ TEST_F(ExtensionDescriptorTest, FindExtensionByName) {
   EXPECT_TRUE(foo_->FindExtensionByName("foo_message") == NULL);
 }
 
+TEST_F(ExtensionDescriptorTest, FindAllExtensions) {
+  vector<const FieldDescriptor*> extensions;
+  pool_.FindAllExtensions(foo_, &extensions);
+  ASSERT_EQ(4, extensions.size());
+  EXPECT_EQ(10, extensions[0]->number());
+  EXPECT_EQ(19, extensions[1]->number());
+  EXPECT_EQ(30, extensions[2]->number());
+  EXPECT_EQ(39, extensions[3]->number());
+}
+
 // ===================================================================
 
 class MiscTest : public testing::Test {
@@ -1715,6 +1737,219 @@ TEST_F(MiscTest, FieldOptions) {
   EXPECT_TRUE(bar->options().has_ctype());
   EXPECT_EQ(FieldOptions::CORD, bar->options().ctype());
 }
+
+// ===================================================================
+
+class AllowUnknownDependenciesTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    FileDescriptorProto foo_proto, bar_proto;
+
+    pool_.AllowUnknownDependencies();
+
+    ASSERT_TRUE(TextFormat::ParseFromString(
+      "name: 'foo.proto'"
+      "dependency: 'bar.proto'"
+      "dependency: 'baz.proto'"
+      "message_type {"
+      "  name: 'Foo'"
+      "  field { name:'bar' number:1 label:LABEL_OPTIONAL type_name:'Bar' }"
+      "  field { name:'baz' number:2 label:LABEL_OPTIONAL type_name:'Baz' }"
+      "  field { name:'qux' number:3 label:LABEL_OPTIONAL"
+      "    type_name: '.corge.Qux'"
+      "    type: TYPE_ENUM"
+      "    options {"
+      "      uninterpreted_option {"
+      "        name {"
+      "          name_part: 'grault'"
+      "          is_extension: true"
+      "        }"
+      "        positive_int_value: 1234"
+      "      }"
+      "    }"
+      "  }"
+      "}",
+      &foo_proto));
+    ASSERT_TRUE(TextFormat::ParseFromString(
+      "name: 'bar.proto'"
+      "message_type { name: 'Bar' }",
+      &bar_proto));
+
+    // Collect pointers to stuff.
+    bar_file_ = pool_.BuildFile(bar_proto);
+    ASSERT_TRUE(bar_file_ != NULL);
+
+    ASSERT_EQ(1, bar_file_->message_type_count());
+    bar_type_ = bar_file_->message_type(0);
+
+    foo_file_ = pool_.BuildFile(foo_proto);
+    ASSERT_TRUE(foo_file_ != NULL);
+
+    ASSERT_EQ(1, foo_file_->message_type_count());
+    foo_type_ = foo_file_->message_type(0);
+
+    ASSERT_EQ(3, foo_type_->field_count());
+    bar_field_ = foo_type_->field(0);
+    baz_field_ = foo_type_->field(1);
+    qux_field_ = foo_type_->field(2);
+  }
+
+  const FileDescriptor* bar_file_;
+  const Descriptor* bar_type_;
+  const FileDescriptor* foo_file_;
+  const Descriptor* foo_type_;
+  const FieldDescriptor* bar_field_;
+  const FieldDescriptor* baz_field_;
+  const FieldDescriptor* qux_field_;
+
+  DescriptorPool pool_;
+};
+
+TEST_F(AllowUnknownDependenciesTest, PlaceholderFile) {
+  ASSERT_EQ(2, foo_file_->dependency_count());
+  EXPECT_EQ(bar_file_, foo_file_->dependency(0));
+
+  const FileDescriptor* baz_file = foo_file_->dependency(1);
+  EXPECT_EQ("baz.proto", baz_file->name());
+  EXPECT_EQ(0, baz_file->message_type_count());
+
+  // Placeholder files should not be findable.
+  EXPECT_EQ(bar_file_, pool_.FindFileByName(bar_file_->name()));
+  EXPECT_TRUE(pool_.FindFileByName(baz_file->name()) == NULL);
+}
+
+TEST_F(AllowUnknownDependenciesTest, PlaceholderTypes) {
+  ASSERT_EQ(FieldDescriptor::TYPE_MESSAGE, bar_field_->type());
+  EXPECT_EQ(bar_type_, bar_field_->message_type());
+
+  ASSERT_EQ(FieldDescriptor::TYPE_MESSAGE, baz_field_->type());
+  const Descriptor* baz_type = baz_field_->message_type();
+  EXPECT_EQ("Baz", baz_type->name());
+  EXPECT_EQ("Baz", baz_type->full_name());
+  EXPECT_EQ("Baz.placeholder.proto", baz_type->file()->name());
+  EXPECT_EQ(0, baz_type->extension_range_count());
+
+  ASSERT_EQ(FieldDescriptor::TYPE_ENUM, qux_field_->type());
+  const EnumDescriptor* qux_type = qux_field_->enum_type();
+  EXPECT_EQ("Qux", qux_type->name());
+  EXPECT_EQ("corge.Qux", qux_type->full_name());
+  EXPECT_EQ("corge.Qux.placeholder.proto", qux_type->file()->name());
+
+  // Placeholder types should not be findable.
+  EXPECT_EQ(bar_type_, pool_.FindMessageTypeByName(bar_type_->full_name()));
+  EXPECT_TRUE(pool_.FindMessageTypeByName(baz_type->full_name()) == NULL);
+  EXPECT_TRUE(pool_.FindEnumTypeByName(qux_type->full_name()) == NULL);
+}
+
+TEST_F(AllowUnknownDependenciesTest, CopyTo) {
+  // FieldDescriptor::CopyTo() should write non-fully-qualified type names
+  // for placeholder types which were not originally fully-qualified.
+  FieldDescriptorProto proto;
+
+  // Bar is not a placeholder, so it is fully-qualified.
+  bar_field_->CopyTo(&proto);
+  EXPECT_EQ(".Bar", proto.type_name());
+  EXPECT_EQ(FieldDescriptorProto::TYPE_MESSAGE, proto.type());
+
+  // Baz is an unqualified placeholder.
+  proto.Clear();
+  baz_field_->CopyTo(&proto);
+  EXPECT_EQ("Baz", proto.type_name());
+  EXPECT_FALSE(proto.has_type());
+
+  // Qux is a fully-qualified placeholder.
+  proto.Clear();
+  qux_field_->CopyTo(&proto);
+  EXPECT_EQ(".corge.Qux", proto.type_name());
+  EXPECT_EQ(FieldDescriptorProto::TYPE_ENUM, proto.type());
+}
+
+TEST_F(AllowUnknownDependenciesTest, CustomOptions) {
+  // Qux should still have the uninterpreted option attached.
+  ASSERT_EQ(1, qux_field_->options().uninterpreted_option_size());
+  const UninterpretedOption& option =
+    qux_field_->options().uninterpreted_option(0);
+  ASSERT_EQ(1, option.name_size());
+  EXPECT_EQ("grault", option.name(0).name_part());
+}
+
+TEST_F(AllowUnknownDependenciesTest, UnknownExtendee) {
+  // Test that we can extend an unknown type.  This is slightly tricky because
+  // it means that the placeholder type must have an extension range.
+
+  FileDescriptorProto extension_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+    "name: 'extension.proto'"
+    "extension { extendee: 'UnknownType' name:'some_extension' number:123"
+    "            label:LABEL_OPTIONAL type:TYPE_INT32 }",
+    &extension_proto));
+  const FileDescriptor* file = pool_.BuildFile(extension_proto);
+
+  ASSERT_TRUE(file != NULL);
+
+  ASSERT_EQ(1, file->extension_count());
+  const Descriptor* extendee = file->extension(0)->containing_type();
+  EXPECT_EQ("UnknownType", extendee->name());
+  ASSERT_EQ(1, extendee->extension_range_count());
+  EXPECT_EQ(1, extendee->extension_range(0)->start);
+  EXPECT_EQ(FieldDescriptor::kMaxNumber + 1, extendee->extension_range(0)->end);
+}
+
+TEST_F(AllowUnknownDependenciesTest, CustomOption) {
+  // Test that we can use a custom option without having parsed
+  // descriptor.proto.
+
+  FileDescriptorProto option_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+    "name: \"unknown_custom_options.proto\" "
+    "dependency: \"google/protobuf/descriptor.proto\" "
+    "extension { "
+    "  extendee: \"google.protobuf.FileOptions\" "
+    "  name: \"some_option\" "
+    "  number: 123456 "
+    "  label: LABEL_OPTIONAL "
+    "  type: TYPE_INT32 "
+    "} "
+    "options { "
+    "  uninterpreted_option { "
+    "    name { "
+    "      name_part: \"some_option\" "
+    "      is_extension: true "
+    "    } "
+    "    positive_int_value: 1234 "
+    "  } "
+    "  uninterpreted_option { "
+    "    name { "
+    "      name_part: \"unknown_option\" "
+    "      is_extension: true "
+    "    } "
+    "    positive_int_value: 1234 "
+    "  } "
+    "  uninterpreted_option { "
+    "    name { "
+    "      name_part: \"optimize_for\" "
+    "      is_extension: false "
+    "    } "
+    "    identifier_value: \"SPEED\" "
+    "  } "
+    "}",
+    &option_proto));
+
+  const FileDescriptor* file = pool_.BuildFile(option_proto);
+  ASSERT_TRUE(file != NULL);
+
+  // Verify that no extension options were set, but they were left as
+  // uninterpreted_options.
+  vector<const FieldDescriptor*> fields;
+  file->options().GetReflection()->ListFields(file->options(), &fields);
+  ASSERT_EQ(2, fields.size());
+  EXPECT_TRUE(file->options().has_optimize_for());
+  EXPECT_EQ(2, file->options().uninterpreted_option_size());
+}
+
+// ===================================================================
 
 TEST(CustomOptions, OptionLocations) {
   const Descriptor* message =
@@ -2108,7 +2343,10 @@ TEST_F(ValidationErrorTest, DupeFile) {
   //   defined.
   BuildFileWithErrors(
     "name: \"foo.proto\" "
-    "message_type { name: \"Foo\" }",
+    "message_type { name: \"Foo\" } "
+    // Add another type so that the files aren't identical (in which case there
+    // would be no error).
+    "enum_type { name: \"Bar\" }",
 
     "foo.proto: foo.proto: OTHER: A file with this name is already in the "
       "pool.\n");
@@ -2174,6 +2412,10 @@ TEST_F(ValidationErrorTest, InvalidDefaults) {
     // we look up the type name.
     "  field { name: \"quux\" number: 5 label: LABEL_OPTIONAL"
     "          default_value: \"abc\" type_name: \"Foo\" }"
+
+    // Repeateds can't have defaults.
+    "  field { name: \"corge\" number: 6 label: LABEL_REPEATED type: TYPE_INT32"
+    "          default_value: \"1\" }"
     "}",
 
     "foo.proto: Foo.foo: DEFAULT_VALUE: Couldn't parse default value.\n"
@@ -2181,6 +2423,10 @@ TEST_F(ValidationErrorTest, InvalidDefaults) {
     "foo.proto: Foo.baz: DEFAULT_VALUE: Boolean default must be true or "
       "false.\n"
     "foo.proto: Foo.qux: DEFAULT_VALUE: Messages can't have default values.\n"
+    "foo.proto: Foo.corge: DEFAULT_VALUE: Repeated fields can't have default "
+      "values.\n"
+    // This ends up being reported later because the error is detected at
+    // cross-linking time.
     "foo.proto: Foo.quux: DEFAULT_VALUE: Messages can't have default "
       "values.\n");
 }
@@ -2473,6 +2719,24 @@ TEST_F(ValidationErrorTest, SearchMostLocalFirst) {
     "foo.proto: Foo.baz: TYPE: \"Bar.Baz\" is not defined.\n");
 }
 
+TEST_F(ValidationErrorTest, SearchMostLocalFirst2) {
+  // This test would find the most local "Bar" first, and does, but
+  // proceeds to find the outer one because the inner one's not an
+  // aggregate.
+  BuildFile(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Bar\""
+    "  nested_type { name: \"Baz\" }"
+    "}"
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name: \"Bar\" number:1 type:TYPE_BYTES } "
+    "  field { name:\"baz\" number:2 label:LABEL_OPTIONAL"
+    "          type_name:\"Bar.Baz\" }"
+    "}");
+}
+
 TEST_F(ValidationErrorTest, PackageOriginallyDeclaredInTransitiveDependent) {
   // Imagine we have the following:
   //
@@ -2519,11 +2783,39 @@ TEST_F(ValidationErrorTest, FieldTypeNotAType) {
     "name: \"foo.proto\" "
     "message_type {"
     "  name: \"Foo\""
-    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"bar\" }"
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL "
+    "          type_name:\".Foo.bar\" }"
     "  field { name:\"bar\" number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
     "}",
 
-    "foo.proto: Foo.foo: TYPE: \"bar\" is not a type.\n");
+    "foo.proto: Foo.foo: TYPE: \".Foo.bar\" is not a type.\n");
+}
+
+TEST_F(ValidationErrorTest, RelativeFieldTypeNotAType) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  nested_type {"
+    "    name: \"Bar\""
+    "    field { name:\"Baz\" number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+    "  }"
+    "  name: \"Foo\""
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL "
+    "          type_name:\"Bar.Baz\" }"
+    "}",
+    "foo.proto: Foo.foo: TYPE: \"Bar.Baz\" is not a type.\n");
+}
+
+TEST_F(ValidationErrorTest, FieldTypeMayBeItsName) {
+  BuildFile(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Bar\""
+    "}"
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name:\"Bar\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
+    "}");
 }
 
 TEST_F(ValidationErrorTest, EnumFieldTypeIsMessage) {
@@ -3344,6 +3636,21 @@ TEST_F(DatabaseBackedPoolTest, FindExtensionByNumber) {
   EXPECT_EQ(extension->file(), pool.FindFileByName("bar.proto"));
 
   EXPECT_TRUE(pool.FindExtensionByNumber(foo, 12) == NULL);
+}
+
+TEST_F(DatabaseBackedPoolTest, FindAllExtensions) {
+  DescriptorPool pool(&database_);
+
+  const Descriptor* foo = pool.FindMessageTypeByName("Foo");
+
+  for (int i = 0; i < 2; ++i) {
+    // Repeat the lookup twice, to check that we get consistent
+    // results despite the fallback database lookup mutating the pool.
+    vector<const FieldDescriptor*> extensions;
+    pool.FindAllExtensions(foo, &extensions);
+    ASSERT_EQ(1, extensions.size());
+    EXPECT_EQ(5, extensions[0]->number());
+  }
 }
 
 TEST_F(DatabaseBackedPoolTest, ErrorWithoutErrorCollector) {

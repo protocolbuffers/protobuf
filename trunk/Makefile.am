@@ -61,6 +61,8 @@ EXTRA_DIST =                                                                 \
   examples/add_person.py                                                     \
   examples/list_people.py                                                    \
   java/src/main/java/com/google/protobuf/AbstractMessage.java                \
+  java/src/main/java/com/google/protobuf/BlockingRpcChannel.java             \
+  java/src/main/java/com/google/protobuf/BlockingService.java                \
   java/src/main/java/com/google/protobuf/ByteString.java                     \
   java/src/main/java/com/google/protobuf/CodedInputStream.java               \
   java/src/main/java/com/google/protobuf/CodedOutputStream.java              \
@@ -77,6 +79,7 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/RpcController.java                  \
   java/src/main/java/com/google/protobuf/RpcUtil.java                        \
   java/src/main/java/com/google/protobuf/Service.java                        \
+  java/src/main/java/com/google/protobuf/ServiceException.java               \
   java/src/main/java/com/google/protobuf/TextFormat.java                     \
   java/src/main/java/com/google/protobuf/UninitializedMessageException.java  \
   java/src/main/java/com/google/protobuf/UnknownFieldSet.java                \

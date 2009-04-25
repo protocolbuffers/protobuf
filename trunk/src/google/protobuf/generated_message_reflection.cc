@@ -58,6 +58,21 @@ int StringSpaceUsedExcludingSelf(const string& str) {
   }
 }
 
+bool ParseNamedEnum(const EnumDescriptor* descriptor,
+                    const string& name,
+                    int* value) {
+  const EnumValueDescriptor* d = descriptor->FindValueByName(name);
+  if (d == NULL) return false;
+  *value = d->number();
+  return true;
+}
+
+const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
+  static string kEmptyString;
+  const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
+  return (d == NULL ? kEmptyString : d->name());
+}
+
 // ===================================================================
 // Helpers for reporting usage errors (e.g. trying to use GetInt32() on
 // a string field).
@@ -160,6 +175,7 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     int unknown_fields_offset,
     int extensions_offset,
     const DescriptorPool* descriptor_pool,
+    MessageFactory* factory,
     int object_size)
   : descriptor_       (descriptor),
     default_instance_ (default_instance),
@@ -170,7 +186,8 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     object_size_      (object_size),
     descriptor_pool_  ((descriptor_pool == NULL) ?
                          DescriptorPool::generated_pool() :
-                         descriptor_pool) {
+                         descriptor_pool),
+    message_factory_  (factory) {
 }
 
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
@@ -365,7 +382,8 @@ void GeneratedMessageReflection::ListFields(
   }
 
   if (extensions_offset_ != -1) {
-    GetExtensionSet(message).AppendToList(output);
+    GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
+                                          output);
   }
 
   // ListFields() must sort output by field number.
@@ -380,7 +398,8 @@ void GeneratedMessageReflection::ListFields(
       const Message& message, const FieldDescriptor* field) const {          \
     USAGE_CHECK_ALL(Get##TYPENAME, SINGULAR, CPPTYPE);                       \
     if (field->is_extension()) {                                             \
-      return GetExtensionSet(message).Get##TYPENAME(field->number());        \
+      return GetExtensionSet(message).Get##TYPENAME(                         \
+        field->number(), field->default_value_##PASSTYPE());                 \
     } else {                                                                 \
       return GetField<TYPE>(message, field);                                 \
     }                                                                        \
@@ -392,7 +411,7 @@ void GeneratedMessageReflection::ListFields(
     USAGE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                       \
     if (field->is_extension()) {                                             \
       return MutableExtensionSet(message)->Set##TYPENAME(                    \
-        field->number(), value);                                             \
+        field->number(), field->type(), value);                              \
     } else {                                                                 \
       SetField<TYPE>(message, field, value);                                 \
     }                                                                        \
@@ -427,7 +446,8 @@ void GeneratedMessageReflection::ListFields(
       PASSTYPE value) const {                                                \
     USAGE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                       \
     if (field->is_extension()) {                                             \
-      MutableExtensionSet(message)->Add##TYPENAME(field->number(), value);   \
+      MutableExtensionSet(message)->Add##TYPENAME(                           \
+        field->number(), field->type(), field->options().packed(), value);   \
     } else {                                                                 \
       AddField<TYPE>(message, field, value);                                 \
     }                                                                        \
@@ -448,7 +468,8 @@ string GeneratedMessageReflection::GetString(
     const Message& message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(field->number());
+    return GetExtensionSet(message).GetString(field->number(),
+                                              field->default_value_string());
   } else {
     return *GetField<const string*>(message, field);
   }
@@ -459,7 +480,8 @@ const string& GeneratedMessageReflection::GetStringReference(
     const FieldDescriptor* field, string* scratch) const {
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(field->number());
+    return GetExtensionSet(message).GetString(field->number(),
+                                              field->default_value_string());
   } else {
     return *GetField<const string*>(message, field);
   }
@@ -471,7 +493,8 @@ void GeneratedMessageReflection::SetString(
     const string& value) const {
   USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return MutableExtensionSet(message)->SetString(field->number(), value);
+    return MutableExtensionSet(message)->SetString(field->number(),
+                                                   field->type(), value);
   } else {
     string** ptr = MutableField<string*>(message, field);
     if (*ptr == DefaultRaw<const string*>(field)) {
@@ -523,7 +546,8 @@ void GeneratedMessageReflection::AddString(
     const string& value) const {
   USAGE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddString(field->number(), value);
+    MutableExtensionSet(message)->AddString(field->number(),
+                                            field->type(), value);
   } else {
     AddField<string>(message, field, value);
   }
@@ -538,7 +562,8 @@ const EnumValueDescriptor* GeneratedMessageReflection::GetEnum(
 
   int value;
   if (field->is_extension()) {
-    value = GetExtensionSet(message).GetEnum(field->number());
+    value = GetExtensionSet(message).GetEnum(
+      field->number(), field->default_value_enum()->number());
   } else {
     value = GetField<int>(message, field);
   }
@@ -555,7 +580,8 @@ void GeneratedMessageReflection::SetEnum(
   USAGE_CHECK_ENUM_VALUE(SetEnum);
 
   if (field->is_extension()) {
-    MutableExtensionSet(message)->SetEnum(field->number(), value->number());
+    MutableExtensionSet(message)->SetEnum(field->number(), field->type(),
+                                          value->number());
   } else {
     SetField<int>(message, field, value->number());
   }
@@ -599,7 +625,9 @@ void GeneratedMessageReflection::AddEnum(
   USAGE_CHECK_ENUM_VALUE(AddEnum);
 
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddEnum(field->number(), value->number());
+    MutableExtensionSet(message)->AddEnum(field->number(), field->type(),
+                                          field->options().packed(),
+                                          value->number());
   } else {
     AddField<int>(message, field, value->number());
   }
@@ -612,7 +640,9 @@ const Message& GeneratedMessageReflection::GetMessage(
   USAGE_CHECK_ALL(GetMessage, SINGULAR, MESSAGE);
 
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetMessage(field->number());
+    return GetExtensionSet(message).GetMessage(field->number(),
+                                               field->message_type(),
+                                               message_factory_);
   } else {
     const Message* result = GetRaw<const Message*>(message, field);
     if (result == NULL) {
@@ -627,13 +657,15 @@ Message* GeneratedMessageReflection::MutableMessage(
   USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
 
   if (field->is_extension()) {
-    return MutableExtensionSet(message)->MutableMessage(field->number());
+    return MutableExtensionSet(message)->MutableMessage(field->number(),
+                                                        field->type(),
+                                                        field->message_type(),
+                                                        message_factory_);
   } else {
     Message** result = MutableField<Message*>(message, field);
     if (*result == NULL) {
       const Message* default_message = DefaultRaw<const Message*>(field);
       *result = default_message->New();
-      (*result)->CopyFrom(*default_message);
     }
     return *result;
   }
@@ -667,7 +699,10 @@ Message* GeneratedMessageReflection::AddMessage(
   USAGE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
 
   if (field->is_extension()) {
-    return MutableExtensionSet(message)->AddMessage(field->number());
+    return MutableExtensionSet(message)->AddMessage(field->number(),
+                                                    field->type(),
+                                                    field->message_type(),
+                                                    message_factory_);
   } else {
     return AddField<Message>(message, field);
   }

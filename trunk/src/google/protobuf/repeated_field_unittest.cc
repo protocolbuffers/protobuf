@@ -36,15 +36,22 @@
 //   other proto2 unittests.
 
 #include <algorithm>
+#include <list>
 
 #include <google/protobuf/repeated_field.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/stl_util-inl.h>
 
 namespace google {
+using protobuf_unittest::TestAllTypes;
+
 namespace protobuf {
+namespace {
 
 // Test operations on a RepeatedField which is small enough that it does
 // not allocate a separate array for storage.
@@ -620,6 +627,148 @@ TEST_F(RepeatedPtrFieldIteratorTest, Mutation) {
   *iter = "qux";
   EXPECT_EQ("qux", proto_array_.Get(0));
 }
+
+// -----------------------------------------------------------------------------
+// Unit-tests for the insert iterators
+// google::protobuf::RepeatedFieldBackInserter,
+// google::protobuf::AllocatedRepeatedPtrFieldBackInserter
+// Ported from util/gtl/proto-array-iterators_unittest.
+
+class RepeatedFieldInsertionIteratorsTest : public testing::Test {
+ protected:
+  std::list<double> halves;
+  std::list<int> fibonacci;
+  std::vector<string> words;
+  typedef TestAllTypes::NestedMessage Nested;
+  Nested nesteds[2];
+  std::vector<Nested*> nested_ptrs;
+  TestAllTypes protobuffer;
+
+  virtual void SetUp() {
+    fibonacci.push_back(1);
+    fibonacci.push_back(1);
+    fibonacci.push_back(2);
+    fibonacci.push_back(3);
+    fibonacci.push_back(5);
+    fibonacci.push_back(8);
+    std::copy(fibonacci.begin(), fibonacci.end(),
+              RepeatedFieldBackInserter(protobuffer.mutable_repeated_int32()));
+
+    halves.push_back(1.0);
+    halves.push_back(0.5);
+    halves.push_back(0.25);
+    halves.push_back(0.125);
+    halves.push_back(0.0625);
+    std::copy(halves.begin(), halves.end(),
+              RepeatedFieldBackInserter(protobuffer.mutable_repeated_double()));
+
+    words.push_back("Able");
+    words.push_back("was");
+    words.push_back("I");
+    words.push_back("ere");
+    words.push_back("I");
+    words.push_back("saw");
+    words.push_back("Elba");
+    std::copy(words.begin(), words.end(),
+              RepeatedFieldBackInserter(protobuffer.mutable_repeated_string()));
+
+    nesteds[0].set_bb(17);
+    nesteds[1].set_bb(4711);
+    std::copy(&nesteds[0], &nesteds[2],
+              RepeatedFieldBackInserter(
+                  protobuffer.mutable_repeated_nested_message()));
+
+    nested_ptrs.push_back(new Nested);
+    nested_ptrs.back()->set_bb(170);
+    nested_ptrs.push_back(new Nested);
+    nested_ptrs.back()->set_bb(47110);
+    std::copy(nested_ptrs.begin(), nested_ptrs.end(),
+              RepeatedFieldBackInserter(
+                  protobuffer.mutable_repeated_nested_message()));
+
+  }
+
+  virtual void TearDown() {
+    STLDeleteContainerPointers(nested_ptrs.begin(), nested_ptrs.end());
+  }
+};
+
+TEST_F(RepeatedFieldInsertionIteratorsTest, Fibonacci) {
+  EXPECT_TRUE(std::equal(fibonacci.begin(),
+                         fibonacci.end(),
+                         protobuffer.repeated_int32().begin()));
+  EXPECT_TRUE(std::equal(protobuffer.repeated_int32().begin(),
+                         protobuffer.repeated_int32().end(),
+                         fibonacci.begin()));
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest, Halves) {
+  EXPECT_TRUE(std::equal(halves.begin(),
+                         halves.end(),
+                         protobuffer.repeated_double().begin()));
+  EXPECT_TRUE(std::equal(protobuffer.repeated_double().begin(),
+                         protobuffer.repeated_double().end(),
+                         halves.begin()));
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest, Words) {
+  ASSERT_EQ(words.size(), protobuffer.repeated_string_size());
+  EXPECT_EQ(words.at(0), protobuffer.repeated_string(0));
+  EXPECT_EQ(words.at(1), protobuffer.repeated_string(1));
+  EXPECT_EQ(words.at(2), protobuffer.repeated_string(2));
+  EXPECT_EQ(words.at(3), protobuffer.repeated_string(3));
+  EXPECT_EQ(words.at(4), protobuffer.repeated_string(4));
+  EXPECT_EQ(words.at(5), protobuffer.repeated_string(5));
+  EXPECT_EQ(words.at(6), protobuffer.repeated_string(6));
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest, Nesteds) {
+  ASSERT_EQ(protobuffer.repeated_nested_message_size(), 4);
+  EXPECT_EQ(protobuffer.repeated_nested_message(0).bb(), 17);
+  EXPECT_EQ(protobuffer.repeated_nested_message(1).bb(), 4711);
+  EXPECT_EQ(protobuffer.repeated_nested_message(2).bb(), 170);
+  EXPECT_EQ(protobuffer.repeated_nested_message(3).bb(), 47110);
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest,
+       AllocatedRepeatedPtrFieldWithStringIntData) {
+  vector<Nested*> data;
+  TestAllTypes goldenproto;
+  for (int i = 0; i < 10; ++i) {
+    Nested* new_data = new Nested;
+    new_data->set_bb(i);
+    data.push_back(new_data);
+
+    new_data = goldenproto.add_repeated_nested_message();
+    new_data->set_bb(i);
+  }
+  TestAllTypes testproto;
+  copy(data.begin(), data.end(),
+       AllocatedRepeatedPtrFieldBackInserter(
+           testproto.mutable_repeated_nested_message()));
+  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest,
+       AllocatedRepeatedPtrFieldWithString) {
+  vector<string*> data;
+  TestAllTypes goldenproto;
+  for (int i = 0; i < 10; ++i) {
+    string* new_data = new string;
+    *new_data = "name-" + SimpleItoa(i);
+    data.push_back(new_data);
+
+    new_data = goldenproto.add_repeated_string();
+    *new_data = "name-" + SimpleItoa(i);
+  }
+  TestAllTypes testproto;
+  copy(data.begin(), data.end(),
+       AllocatedRepeatedPtrFieldBackInserter(
+           testproto.mutable_repeated_string()));
+  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+}
+
+}  // namespace
 
 }  // namespace protobuf
 }  // namespace google
