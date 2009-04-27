@@ -34,6 +34,8 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include <algorithm>
+
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
