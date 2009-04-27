@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\io\gzip_stream.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\stubs\hash.h"
 				>
 			</File>
@@ -197,6 +201,10 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\message.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\once.h"
 				>
 			</File>
 			<File
@@ -304,6 +312,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\io\gzip_stream.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\stubs\hash.cc"
 				>
 			</File>
@@ -317,6 +329,10 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\message.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\once.cc"
 				>
 			</File>
 			<File

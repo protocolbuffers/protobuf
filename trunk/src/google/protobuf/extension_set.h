@@ -633,7 +633,7 @@ class LIBPROTOBUF_EXPORT ExtensionIdentifier {
 
  private:
   const int number_;
-  const typename TypeTraits::ConstType default_value_;
+  typename TypeTraits::ConstType default_value_;
 };
 
 // -------------------------------------------------------------------

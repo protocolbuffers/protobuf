@@ -54,6 +54,31 @@ recommend that you do NOT expose protocol buffer objects in your library's
 public interface, and that you statically link protocol buffers into your
 library.
 
+ZLib support
+============
+
+If you want to include GzipInputStream and GzipOutputStream
+(google/protobuf/io/gzip_stream.h) in libprotoc, you will need to do a few
+additional steps:
+
+1) Obtain a copy of the zlib library.  The pre-compiled DLL at zlib.net works.
+2) Make sure zlib's two headers are in your include path and that the .lib file
+   is in your library path.  You could place all three files directly into the
+   vsproject directory to compile libprotobuf, but they need to be visible to
+   your own project as well, so you should probably just put them into the
+   VC shared icnlude and library directories.
+3) Right-click on the "tests" project and choose "properties".  Navigate the
+   sidebar to "Configuration Properties" -> "Linker" -> "Input".
+4) Under "Additional Dependencies", add the name of the zlib .lib file (e.g.
+   zdll.lib).  Make sure to update both the Debug and Release configurations.
+5) If you are compiling libprotobuf and libprotoc as DLLs (see previous
+   section), repeat steps 2 and 3 for the libprotobuf and libprotoc projects.
+   If you are compiling them as static libraries, then you will need to link
+   against the zlib library directly from your own app.
+6) Edit config.h (in the vsprojects directory) and un-comment the line that
+   #defines HAVE_ZLIB.  (Or, alternatively, define this macro via the project
+   settings.)
+
 Notes on Compiler Warnings
 ==========================
 

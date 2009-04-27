@@ -291,6 +291,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\stubs\once_unittest.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\parser_unittest.cc"
 				>
 			</File>
