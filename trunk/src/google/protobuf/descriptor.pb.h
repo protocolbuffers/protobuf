@@ -208,7 +208,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
@@ -379,7 +379,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto > service_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
   ::google::protobuf::FileOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
@@ -473,7 +473,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   
   ::google::protobuf::int32 start_;
   ::google::protobuf::int32 end_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
@@ -628,7 +628,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange > extension_range_;
   ::google::protobuf::MessageOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
@@ -847,7 +847,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* default_value_;
   static const ::std::string _default_default_value_;
   ::google::protobuf::FieldOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
@@ -956,7 +956,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
   ::google::protobuf::EnumOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
@@ -1062,7 +1062,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   static const ::std::string _default_name_;
   ::google::protobuf::int32 number_;
   ::google::protobuf::EnumValueOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
@@ -1171,7 +1171,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
   ::google::protobuf::ServiceOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
@@ -1293,7 +1293,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::std::string* output_type_;
   static const ::std::string _default_output_type_;
   ::google::protobuf::MethodOptions* options_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
   
@@ -1446,7 +1446,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool java_multiple_files_;
   int optimize_for_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
@@ -1545,7 +1545,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   
   bool message_set_wire_format_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
@@ -1694,7 +1694,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   ::std::string* experimental_map_key_;
   static const ::std::string _default_experimental_map_key_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
@@ -1785,7 +1785,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
@@ -1876,7 +1876,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
@@ -1967,7 +1967,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
@@ -2058,7 +2058,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
@@ -2156,7 +2156,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   ::std::string* name_part_;
   static const ::std::string _default_name_part_;
   bool is_extension_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
@@ -2295,7 +2295,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   double double_value_;
   ::std::string* string_value_;
   static const ::std::string _default_string_value_;
-  friend void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
   

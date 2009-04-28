@@ -424,10 +424,12 @@ GenerateClassDefinition(io::Printer* printer) {
   // Declare AddDescriptors() and BuildDescriptors() as friends so that they
   // can assign private static variables like default_instance_ and reflection_.
   printer->Print(
-    "friend void $adddescriptorsname$();\n"
-    "friend void $assigndescriptorsname$();\n",
+    "friend void $dllexport_decl$ $adddescriptorsname$();\n",
+    "dllexport_decl", dllexport_decl_,
     "adddescriptorsname",
-      GlobalAddDescriptorsName(descriptor_->file()->name()),
+      GlobalAddDescriptorsName(descriptor_->file()->name()));
+  printer->Print(
+    "friend void $assigndescriptorsname$();\n",
     "assigndescriptorsname",
       GlobalAssignDescriptorsName(descriptor_->file()->name()));
 

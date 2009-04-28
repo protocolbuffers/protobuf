@@ -619,7 +619,7 @@ class RepeatedMessageTypeTraits {
 
 template <typename ExtendeeType, typename TypeTraitsType,
           FieldType field_type, bool is_packed>
-class LIBPROTOBUF_EXPORT ExtensionIdentifier {
+class ExtensionIdentifier {
  public:
   typedef TypeTraitsType TypeTraits;
   typedef ExtendeeType Extendee;

@@ -94,7 +94,6 @@ class LIBPROTOBUF_EXPORT GenericRepeatedField {
 
 // We need this (from generated_message_reflection.cc).
 LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
-int StringSpaceUsedExcludingSelf(const string& str);
 
 }  // namespace internal
 

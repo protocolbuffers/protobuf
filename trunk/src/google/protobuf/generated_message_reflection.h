@@ -387,12 +387,11 @@ inline To dynamic_cast_if_available(From from) {
 // This is slightly complicated because small strings store their data within
 // the string object but large strings do not.
 LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
-int StringSpaceUsedExcludingSelf(const string& str);
 
 // Helper for EnumType_Parse functions: try to parse the string 'name' as an
 // enum name of the given type, returning true and filling in value on success,
 // or returning false and leaving value unchanged on failure.
-bool ParseNamedEnum(const EnumDescriptor* descriptor,
+LIBPROTOBUF_EXPORT bool ParseNamedEnum(const EnumDescriptor* descriptor,
                     const string& name,
                     int* value);
 
@@ -409,7 +408,7 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor,
 // Just a wrapper around printing the name of a value. The main point of this
 // function is not to be inlined, so that you can do this without including
 // descriptor.h.
-const string& NameOfEnum(const EnumDescriptor* descriptor, int value);
+LIBPROTOBUF_EXPORT const string& NameOfEnum(const EnumDescriptor* descriptor, int value);
 
 
 }  // namespace internal

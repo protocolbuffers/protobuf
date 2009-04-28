@@ -85,7 +85,7 @@ namespace protobuf {
 
 struct GoogleOnceInternal;
 
-struct GoogleOnceType {
+struct LIBPROTOBUF_EXPORT GoogleOnceType {
   GoogleOnceType();
   void Init(void (*init_func)());
 
