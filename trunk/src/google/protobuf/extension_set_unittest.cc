@@ -465,6 +465,8 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
   }
 }
 
+#ifdef GTEST_HAS_DEATH_TEST
+
 TEST(ExtensionSetTest, InvalidEnumDeath) {
   unittest::TestAllExtensions message;
   EXPECT_DEBUG_DEATH(
@@ -472,6 +474,8 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
                          static_cast<unittest::ForeignEnum>(53)),
     "IsValid");
 }
+
+#endif GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace internal
