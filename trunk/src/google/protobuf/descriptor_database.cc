@@ -57,7 +57,10 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     return false;
   }
 
-  string path = file.package();
+  // We must be careful here -- calling file.package() if file.has_package() is
+  // false could access an uninitialized static-storage variable if we are being
+  // run at startup time.
+  string path = file.has_package() ? file.package() : string();
   if (!path.empty()) path += '.';
 
   for (int i = 0; i < file.message_type_size(); i++) {
