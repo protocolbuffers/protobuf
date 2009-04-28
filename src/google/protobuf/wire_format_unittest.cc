@@ -673,7 +673,9 @@ TEST_F(WireFormatInvalidInputTest, InvalidStringInUnknownGroup) {
 // WriteAnyBytes: fine.
 // ReadAnyBytes: fine.
 const char * kInvalidUTF8String = "Invalid UTF-8: \xA0\xB0\xC0\xD0";
-const char * kValidUTF8String = "Valid UTF-8: \x01\x02\u8C37\u6B4C";
+// This used to be "Valid UTF-8: \x01\x02\u8C37\u6B4C", but MSVC seems to
+// interpret \u differently from GCC.
+const char * kValidUTF8String = "Valid UTF-8: \x01\x02\350\260\267\346\255\214";
 
 template<typename T>
 bool WriteMessage(const char *value, T *message, string *wire_buffer) {
