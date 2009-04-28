@@ -475,7 +475,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
     "IsValid");
 }
 
-#endif GTEST_HAS_DEATH_TEST
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace internal
