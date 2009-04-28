@@ -8,6 +8,7 @@ md include\google\protobuf\compiler\cpp
 md include\google\protobuf\compiler\java
 md include\google\protobuf\compiler\python
 copy ..\src\google\protobuf\stubs\common.h include\google\protobuf\stubs\common.h
+copy ..\src\google\protobuf\stubs\once.h include\google\protobuf\stubs\once.h
 copy ..\src\google\protobuf\descriptor.h include\google\protobuf\descriptor.h
 copy ..\src\google\protobuf\descriptor.pb.h include\google\protobuf\descriptor.pb.h
 copy ..\src\google\protobuf\descriptor_database.h include\google\protobuf\descriptor_database.h
@@ -23,6 +24,7 @@ copy ..\src\google\protobuf\unknown_field_set.h include\google\protobuf\unknown_
 copy ..\src\google\protobuf\wire_format.h include\google\protobuf\wire_format.h
 copy ..\src\google\protobuf\wire_format_inl.h include\google\protobuf\wire_format_inl.h
 copy ..\src\google\protobuf\io\coded_stream.h include\google\protobuf\io\coded_stream.h
+copy ..\src\google\protobuf\io\gzip_stream.h include\google\protobuf\io\gzip_stream.h
 copy ..\src\google\protobuf\io\printer.h include\google\protobuf\io\printer.h
 copy ..\src\google\protobuf\io\tokenizer.h include\google\protobuf\io\tokenizer.h
 copy ..\src\google\protobuf\io\zero_copy_stream.h include\google\protobuf\io\zero_copy_stream.h
