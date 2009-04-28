@@ -89,12 +89,15 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
   vars["constant_name"] = FieldConstantName(descriptor_);
 
   // If this is a class member, it needs to be declared "static".  Otherwise,
-  // it needs to be "extern".
-  vars["qualifier"] =
-    (descriptor_->extension_scope() == NULL) ? "extern" : "static";
-
-  if (!dllexport_decl_.empty()) {
-    vars["qualifier"] = dllexport_decl_ + " " + vars["qualifier"];
+  // it needs to be "extern".  In the latter case, it also needs the DLL
+  // export/import specifier.
+  if (descriptor_->extension_scope() == NULL) {
+    vars["qualifier"] = "extern";
+    if (!dllexport_decl_.empty()) {
+      vars["qualifier"] = dllexport_decl_ + " " + vars["qualifier"];
+    }
+  } else {
+    vars["qualifier"] = "static";
   }
 
   printer->Print(vars,
