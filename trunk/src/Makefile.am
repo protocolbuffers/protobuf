@@ -220,7 +220,15 @@ unittest_proto_middleman: protoc$(EXEEXT) $(protoc_inputs)
 
 $(protoc_outputs): unittest_proto_middleman
 
-check_PROGRAMS = protobuf-test $(GZCHECKPROGRAMS)
+COMMON_TEST_SOURCES =                                          \
+  google/protobuf/test_util.cc                                 \
+  google/protobuf/test_util.h                                  \
+  google/protobuf/testing/googletest.cc                        \
+  google/protobuf/testing/googletest.h                         \
+  google/protobuf/testing/file.cc                              \
+  google/protobuf/testing/file.h
+
+check_PROGRAMS = protobuf-test protobuf-lazy-descriptor-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       $(top_builddir)/gtest/lib/libgtest.la       \
                       $(top_builddir)/gtest/lib/libgtest_main.la
@@ -251,12 +259,20 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/parser_unittest.cc                  \
   google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc       \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
-  google/protobuf/test_util.cc                                 \
-  google/protobuf/test_util.h                                  \
-  google/protobuf/testing/googletest.cc                        \
-  google/protobuf/testing/googletest.h                         \
-  google/protobuf/testing/file.cc                              \
-  google/protobuf/testing/file.h
+  $(COMMON_TEST_SOURCES)
+nodist_protobuf_test_SOURCES = $(protoc_outputs)
+
+# Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
+protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
+                      $(top_builddir)/gtest/lib/libgtest.la       \
+                      $(top_builddir)/gtest/lib/libgtest_main.la
+protobuf_lazy_descriptor_test_CPPFLAGS = -I$(top_srcdir)/gtest/include    \
+                                         -I$(top_builddir)/gtest/include  \
+                                         -DPROTOBUF_TEST_NO_DESCRIPTORS
+protobuf_lazy_descriptor_test_SOURCES =                        \
+  google/protobuf/compiler/cpp/cpp_unittest.cc                 \
+  $(COMMON_TEST_SOURCES)
+nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 
 if HAVE_ZLIB
 zcgzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
@@ -266,6 +282,4 @@ zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
 zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
-nodist_protobuf_test_SOURCES = $(protoc_outputs)
-
-TESTS = protobuf-test $(GZTESTS)
+TESTS = protobuf-test protobuf-lazy-descriptor-test $(GZTESTS)

@@ -77,6 +77,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
 
   // StringPiece and Cord fields are only accessible via reflection in the
   // open source release; see comments in compiler/cpp/string_field.cc.
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   message->GetReflection()->SetString(
     message,
     message->GetDescriptor()->FindFieldByName("optional_string_piece"),
@@ -85,6 +86,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("optional_cord"),
     "125");
+#endif
 
   // -----------------------------------------------------------------
 
@@ -113,6 +115,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   message->add_repeated_foreign_enum(unittest::FOREIGN_BAR      );
   message->add_repeated_import_enum (unittest_import::IMPORT_BAR);
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   message->GetReflection()->AddString(
     message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
@@ -121,6 +124,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     "225");
+#endif
 
   // Add a second one of each field.
   message->add_repeated_int32   (301);
@@ -148,6 +152,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   message->add_repeated_foreign_enum(unittest::FOREIGN_BAZ      );
   message->add_repeated_import_enum (unittest_import::IMPORT_BAZ);
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   message->GetReflection()->AddString(
     message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
@@ -156,6 +161,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     "325");
+#endif
 
   // -----------------------------------------------------------------
 
@@ -179,6 +185,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
   message->set_default_foreign_enum(unittest::FOREIGN_FOO      );
   message->set_default_import_enum (unittest_import::IMPORT_FOO);
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   message->GetReflection()->SetString(
     message,
     message->GetDescriptor()->FindFieldByName("default_string_piece"),
@@ -187,6 +194,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("default_cord"),
     "425");
+#endif
 }
 
 // -------------------------------------------------------------------
@@ -217,6 +225,7 @@ void TestUtil::ModifyRepeatedFields(unittest::TestAllTypes* message) {
   message->set_repeated_foreign_enum(1, unittest::FOREIGN_FOO      );
   message->set_repeated_import_enum (1, unittest_import::IMPORT_FOO);
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   message->GetReflection()->SetRepeatedString(
     message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
@@ -225,6 +234,7 @@ void TestUtil::ModifyRepeatedFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     1, "425");
+#endif
 }
 
 // -------------------------------------------------------------------
@@ -260,8 +270,10 @@ void TestUtil::ExpectAllFieldsSet(const unittest::TestAllTypes& message) {
   EXPECT_TRUE(message.has_optional_foreign_enum());
   EXPECT_TRUE(message.has_optional_import_enum ());
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   EXPECT_TRUE(message.has_optional_string_piece());
   EXPECT_TRUE(message.has_optional_cord());
+#endif
 
   EXPECT_EQ(101  , message.optional_int32   ());
   EXPECT_EQ(102  , message.optional_int64   ());
@@ -315,8 +327,10 @@ void TestUtil::ExpectAllFieldsSet(const unittest::TestAllTypes& message) {
   ASSERT_EQ(2, message.repeated_foreign_enum_size   ());
   ASSERT_EQ(2, message.repeated_import_enum_size    ());
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   ASSERT_EQ(2, message.repeated_string_piece_size());
   ASSERT_EQ(2, message.repeated_cord_size());
+#endif
 
   EXPECT_EQ(201  , message.repeated_int32   (0));
   EXPECT_EQ(202  , message.repeated_int64   (0));
@@ -585,8 +599,10 @@ void TestUtil::ExpectRepeatedFieldsModified(
   ASSERT_EQ(2, message.repeated_foreign_enum_size   ());
   ASSERT_EQ(2, message.repeated_import_enum_size    ());
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
   ASSERT_EQ(2, message.repeated_string_piece_size());
   ASSERT_EQ(2, message.repeated_cord_size());
+#endif
 
   EXPECT_EQ(201  , message.repeated_int32   (0));
   EXPECT_EQ(202  , message.repeated_int64   (0));
