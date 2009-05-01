@@ -42,6 +42,7 @@ EXTRA_DIST =                                                                 \
   CHANGES.txt                                                                \
   editors/README.txt                                                         \
   editors/proto.vim                                                          \
+  editors/protobuf-mode.el                                                   \
   vsprojects/config.h                                                        \
   vsprojects/extract_includes.bat                                            \
   vsprojects/libprotobuf.vcproj                                              \

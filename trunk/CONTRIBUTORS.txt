@@ -68,3 +68,5 @@ Patch contributors:
     * Fixed initialization ordering problem in logging code.
   Will Pierce <willp@nuclei.com>
     * Small patch improving performance of in Python serialization.
+  Alexandre Vassalotti <alexandre@peadrop.com>
+    * Emacs mode for Protocol Buffers (editors/protobuf-mode.el).
