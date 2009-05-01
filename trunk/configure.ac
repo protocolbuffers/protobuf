@@ -31,13 +31,8 @@ AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 AC_PROG_LIBTOOL
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
-AC_CHECK_DECL([__SUNPRO_C], [SUNCC="yes"], [SUNCC="no"])
 
-AS_IF([test "$SUNCC" = "yes"],[
-  CFLAGS="$CFLAGS -xO4 -xlibmil -xdepend -Xa -mt -xstrconst -D_FORTEC_"
-  CXXFLAGS="$CXXFLAGS -xO4 -xlibmil -mt -D_FORTEC_ -xlang=c99 -compat=5 -library=stlport4 -template=no%extdef"
-])
-
+ACX_CHECK_SUNCC
 
 # Checks for header files.
 AC_HEADER_STDC

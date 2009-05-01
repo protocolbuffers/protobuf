@@ -53,7 +53,7 @@ Patch contributors:
   Vincent Choinière <Choiniere.Vincent@hydro.qc.ca>
     * Tru64 support.
   Monty Taylor <monty.taylor@gmail.com>
-    * Solaris 10 + Sun Studio fix.
+    * Solaris 10 + Sun Studio fixes.
   Alek Storm <alek.storm@gmail.com>
     * Slicing support for repeated scalar fields for the Python API.
   Oleg Smolsky <oleg.smolsky@gmail.com>
