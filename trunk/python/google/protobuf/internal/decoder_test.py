@@ -122,7 +122,7 @@ class DecoderTest(unittest.TestCase):
         ['fixed64', decoder.Decoder.ReadFixed64, 0xffffffffffffffff,
         'ReadLittleEndian64', 0xffffffffffffffff],
         ['sfixed32', decoder.Decoder.ReadSFixed32, long(-1),
-         'ReadLittleEndian32', 0xffffffff],
+         'ReadLittleEndian32', long(0xffffffff)],
         ['sfixed64', decoder.Decoder.ReadSFixed64, long(-1),
          'ReadLittleEndian64', 0xffffffffffffffff],
         ['float', decoder.Decoder.ReadFloat, 0.0,
