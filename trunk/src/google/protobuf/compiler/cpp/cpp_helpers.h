@@ -102,6 +102,9 @@ string GlobalAddDescriptorsName(const string& filename);
 // Return the name of the AssignDescriptors() function for a given file.
 string GlobalAssignDescriptorsName(const string& filename);
 
+// Return the name of the ShutdownFile() function for a given file.
+string GlobalShutdownFileName(const string& filename);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

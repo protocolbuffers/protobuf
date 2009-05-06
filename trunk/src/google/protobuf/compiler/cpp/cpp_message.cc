@@ -421,17 +421,20 @@ GenerateClassDefinition(io::Printer* printer) {
                      .GeneratePrivateMembers(printer);
   }
 
-  // Declare AddDescriptors() and BuildDescriptors() as friends so that they
-  // can assign private static variables like default_instance_ and reflection_.
+  // Declare AddDescriptors(), BuildDescriptors(), and ShutdownFile() as
+  // friends so that they can access private static variables like
+  // default_instance_ and reflection_.
   printer->Print(
     "friend void $dllexport_decl$ $adddescriptorsname$();\n",
     "dllexport_decl", dllexport_decl_,
     "adddescriptorsname",
       GlobalAddDescriptorsName(descriptor_->file()->name()));
   printer->Print(
-    "friend void $assigndescriptorsname$();\n",
+    "friend void $assigndescriptorsname$();\n"
+    "friend void $shutdownfilename$();\n",
     "assigndescriptorsname",
-      GlobalAssignDescriptorsName(descriptor_->file()->name()));
+      GlobalAssignDescriptorsName(descriptor_->file()->name()),
+    "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
 
   // Generate offsets and _has_bits_ boilerplate.
   if (descriptor_->field_count() > 0) {
@@ -596,6 +599,19 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
   // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     nested_generators_[i]->GenerateDefaultInstanceInitializer(printer);
+  }
+}
+
+void MessageGenerator::
+GenerateShutdownCode(io::Printer* printer) {
+  printer->Print(
+    "delete $classname$::default_instance_;\n"
+    "delete $classname$_reflection_;\n",
+    "classname", classname_);
+
+  // Handle nested types.
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    nested_generators_[i]->GenerateShutdownCode(printer);
   }
 }
 

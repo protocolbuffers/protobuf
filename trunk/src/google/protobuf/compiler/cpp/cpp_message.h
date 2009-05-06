@@ -98,6 +98,10 @@ class MessageGenerator {
   // allocated before any can be initialized.
   void GenerateDefaultInstanceInitializer(io::Printer* printer);
 
+  // Generates code that should be run when ShutdownProtobufLibrary() is called,
+  // to delete all dynamically-allocated objects.
+  void GenerateShutdownCode(io::Printer* printer);
+
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 

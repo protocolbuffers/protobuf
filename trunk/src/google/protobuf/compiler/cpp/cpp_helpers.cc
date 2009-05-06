@@ -276,6 +276,11 @@ string GlobalAssignDescriptorsName(const string& filename) {
   return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
 }
 
+// Return the name of the ShutdownFile() function for a given file.
+string GlobalShutdownFileName(const string& filename) {
+  return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

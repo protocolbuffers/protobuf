@@ -31,10 +31,12 @@
 // Author: kenton@google.com (Kenton Varda)
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <stdio.h>
 #include <errno.h>
+#include <vector>
 
 #include "config.h"
 
@@ -114,26 +116,20 @@ void NullLogHandler(LogLevel level, const char* filename, int line,
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static int log_silencer_count_ = 0;
 
-// Mutex which protects log_silencer_count_.  We provide a static function to
-// get it so that it is initialized on first use, which be during
-// initialization time.  If we just allocated it as a global variable, it might
-// not be initialized before someone tries to use it.
-static Mutex* LogSilencerMutex() {
-  static Mutex* log_silencer_count_mutex_ = new Mutex;
-  return log_silencer_count_mutex_;
+static Mutex* log_silencer_count_mutex_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(log_silencer_count_init_);
+
+void DeleteLogSilencerCount() {
+  delete log_silencer_count_mutex_;
+  log_silencer_count_mutex_ = NULL;
 }
-
-// Forces the above mutex to be initialized during startup.  This way we don't
-// have to worry about the initialization itself being thread-safe, since no
-// threads should exist yet at startup time.  (Otherwise we'd have no way to
-// make things thread-safe here because we'd need a Mutex for that, and we'd
-// have no way to construct one safely!)
-static struct LogSilencerMutexInitializer {
-  LogSilencerMutexInitializer() {
-    LogSilencerMutex();
-  }
-} log_silencer_mutex_initializer;
-
+void InitLogSilencerCount() {
+  log_silencer_count_mutex_ = new Mutex;
+  OnShutdown(&DeleteLogSilencerCount);
+}
+void InitLogSilencerCountOnce() {
+  GoogleOnceInit(&log_silencer_count_init_, &InitLogSilencerCount);
+}
 
 static string SimpleCtoa(char c) { return string(1, c); }
 
@@ -160,7 +156,8 @@ void LogMessage::Finish() {
   bool suppress = false;
 
   if (level_ != LOGLEVEL_FATAL) {
-    MutexLock lock(internal::LogSilencerMutex());
+    InitLogSilencerCountOnce();
+    MutexLock lock(log_silencer_count_mutex_);
     suppress = internal::log_silencer_count_ > 0;
   }
 
@@ -193,12 +190,14 @@ LogHandler* SetLogHandler(LogHandler* new_func) {
 }
 
 LogSilencer::LogSilencer() {
-  MutexLock lock(internal::LogSilencerMutex());
+  internal::InitLogSilencerCountOnce();
+  MutexLock lock(internal::log_silencer_count_mutex_);
   ++internal::log_silencer_count_;
 };
 
 LogSilencer::~LogSilencer() {
-  MutexLock lock(internal::LogSilencerMutex());
+  internal::InitLogSilencerCountOnce();
+  MutexLock lock(internal::log_silencer_count_mutex_);
   --internal::log_silencer_count_;
 };
 
@@ -290,6 +289,52 @@ void Mutex::AssertHeld() {
 }
 
 #endif
+
+// ===================================================================
+// Shutdown support.
+
+namespace internal {
+
+typedef void OnShutdownFunc();
+vector<void (*)()>* shutdown_functions = NULL;
+Mutex* shutdown_functions_mutex = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(shutdown_functions_init);
+
+void InitShutdownFunctions() {
+  shutdown_functions = new vector<void (*)()>;
+  shutdown_functions_mutex = new Mutex;
+}
+
+inline void InitShutdownFunctionsOnce() {
+  GoogleOnceInit(&shutdown_functions_init, &InitShutdownFunctions);
+}
+
+void OnShutdown(void (*func)()) {
+  InitShutdownFunctionsOnce();
+  MutexLock lock(shutdown_functions_mutex);
+  shutdown_functions->push_back(func);
+}
+
+}  // namespace internal
+
+void ShutdownProtobufLibrary() {
+  internal::InitShutdownFunctionsOnce();
+
+  // We don't need to lock shutdown_functions_mutex because it's up to the
+  // caller to make sure that no one is using the library before this is
+  // called.
+
+  // Make it safe to call this multiple times.
+  if (internal::shutdown_functions == NULL) return;
+
+  for (int i = 0; i < internal::shutdown_functions->size(); i++) {
+    internal::shutdown_functions->at(i)();
+  }
+  delete internal::shutdown_functions;
+  internal::shutdown_functions = NULL;
+  delete internal::shutdown_functions_mutex;
+  internal::shutdown_functions_mutex = NULL;
+}
 
 }  // namespace protobuf
 }  // namespace google
