@@ -145,6 +145,8 @@ DECLARE_STREAM_OPERATOR(const char*  , )
 DECLARE_STREAM_OPERATOR(char         , SimpleCtoa)
 DECLARE_STREAM_OPERATOR(int          , SimpleItoa)
 DECLARE_STREAM_OPERATOR(uint         , SimpleItoa)
+DECLARE_STREAM_OPERATOR(long         , SimpleItoa)
+DECLARE_STREAM_OPERATOR(unsigned long, SimpleItoa)
 DECLARE_STREAM_OPERATOR(double       , SimpleDtoa)
 #undef DECLARE_STREAM_OPERATOR
 

@@ -586,6 +586,8 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(char value);
   LogMessage& operator<<(int value);
   LogMessage& operator<<(uint value);
+  LogMessage& operator<<(long value);
+  LogMessage& operator<<(unsigned long value);
   LogMessage& operator<<(double value);
 
  private:
