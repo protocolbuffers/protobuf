@@ -30,6 +30,11 @@ AC_ARG_WITH([zlib],
     [include classes for streaming compressed data in and out @<:@default=check@:>@])],
   [],[with_zlib=check])
 
+AC_ARG_WITH([protoc],
+  [AS_HELP_STRING([--with-protoc=COMMAND],
+    [use the given protoc command instead of building a new one when building tests (useful for cross-compiling)])],
+  [],[with_protoc=no])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
@@ -89,6 +94,25 @@ AS_IF([test "$with_zlib" != no],
       AC_MSG_FAILURE([--with-zlib was given, but test for zlib failed])
      fi])])
 AM_CONDITIONAL([HAVE_ZLIB], [test $HAVE_ZLIB = 1])
+
+AS_IF([test "$with_protoc" != "no"], [
+  PROTOC=$with_protoc
+  AS_IF([test "$with_protoc" == "yes"], [
+    # No argument given.  Use system protoc.
+    PROTOC=protoc
+  ])
+  AS_IF([echo "$PROTOC" | grep -q '^@<:@^/@:>@.*/'], [
+    # Does not start with a slash, but contains a slash.  So, it's a relative
+    # path (as opposed to an absolute path or an executable in $PATH).
+    # Since it will actually be executed from the src directory, prefix with
+    # the current directory.  We also insert $ac_top_build_prefix in case this
+    # is a nested package and --with-protoc was actually given on the outer
+    # package's configure script.
+    PROTOC=`pwd`/${ac_top_build_prefix}$PROTOC
+  ])
+  AC_SUBST([PROTOC])
+])
+AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 
 ACX_PTHREAD
 AC_CXX_STL_HASH
