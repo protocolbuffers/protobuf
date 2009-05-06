@@ -14,6 +14,12 @@ AC_PREREQ(2.59)
 # the size of one file name in the dist tarfile over the 99-char limit.)
 AC_INIT([Protocol Buffers],[2.0.4-pre],[protobuf@googlegroups.com],[protobuf])
 
+# Detect whether the user specified their own compilation flags.  If so then
+# we want to respect their decision, otherwise we will twiddle them later.
+AS_IF([test "$CXXFLAGS" = ""],[
+  protobuf_default_cxxflags=yes
+])
+
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -31,6 +37,37 @@ AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 AC_PROG_LIBTOOL
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
+
+# autoconf's default CXXFLAGS are usually "-g -O2".  These aren't necessarily
+# the best choice for libprotobuf.
+AC_MSG_CHECKING([C++ compiler flags...])
+AS_IF([test "$protobuf_default_cxxflags" = "yes"],[
+
+  # test_util.cc takes forever to compile with GCC and optimization turned on.
+  # But we cannot override anything that is part of CXXFLAGS since it is the
+  # last thing added to the command line.  The automake docs insist that you
+  # should never want to override CXXFLAGS because they represent the intent of
+  # the user, and the user knows best.  But if the user actually did not set
+  # any CXXFLAGS, then AC_PROG_CXX sets them to a rather arbitrary default.
+  # That's not user intent at all, but automake still treats it like it is.
+  # Grr.  Anyway, getting back to the point, this hack here strips out the -O
+  # flag from autoconf's defaults and puts it into another variable so that
+  # we can override it.  BTW, m4 escaping sucks.
+  PROTOBUF_OPT_FLAG=`echo "$CXXFLAGS" | grep -o '\-O@<:@0-9@:>@\?'`
+  CXXFLAGS=`echo "$CXXFLAGS" | sed -e 's/ \?-O@<:@0-9@:>@\?//g'`
+
+  # Protocol Buffers contains several checks that are intended to be used only
+  # for debugging and which might hurt performance.  Most users are probably
+  # end users who don't want these checks, so add -DNDEBUG by default.
+  CXXFLAGS="$CXXFLAGS -DNDEBUG"
+
+  AC_MSG_RESULT([use default: $PROTOBUF_OPT_FLAG $CXXFLAGS])
+],[
+  PROTOBUF_OPT_FLAG=
+  AC_MSG_RESULT([use user-supplied: $CXXFLAGS])
+])
+
+AC_SUBST(PROTOBUF_OPT_FLAG)
 
 ACX_CHECK_SUNCC
 

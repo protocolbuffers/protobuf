@@ -12,10 +12,12 @@ endif
 
 if GCC
 # These are good warnings to turn on by default
-AM_CXXFLAGS = $(PTHREAD_CFLAGS) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
 else
-AM_CXXFLAGS = $(PTHREAD_CFLAGS)
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS)
 endif
+
+AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG)
 
 AM_LDFLAGS = $(PTHREAD_CFLAGS)
 
@@ -234,6 +236,10 @@ protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       $(top_builddir)/gtest/lib/libgtest_main.la
 protobuf_test_CPPFLAGS = -I$(top_srcdir)/gtest/include         \
                          -I$(top_builddir)/gtest/include
+# Disable optimization for tests unless the user explicitly asked for it,
+# since test_util.cc takes forever to compile with optimization (with GCC).
+# See configure.ac for more info.
+protobuf_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/once_unittest.cc                       \
