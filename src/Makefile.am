@@ -206,6 +206,14 @@ protoc_outputs =                                               \
 
 BUILT_SOURCES = $(protoc_outputs)
 
+if USE_EXTERNAL_PROTOC
+
+unittest_proto_middleman: $(protoc_inputs)
+	$(PROTOC) -I$(srcdir) --cpp_out=. $(protoc_inputs)
+	touch unittest_proto_middleman
+
+else
+
 # This rule is a little weird.  The first prereq is the protoc executable
 # and the rest are its inputs.  Therefore, $^ -- which expands to the
 # list of prereqs -- is actually a valid command.  We have to place "./" in
@@ -219,6 +227,8 @@ BUILT_SOURCES = $(protoc_outputs)
 unittest_proto_middleman: protoc$(EXEEXT) $(protoc_inputs)
 	./$^ -I$(srcdir) --cpp_out=.
 	touch unittest_proto_middleman
+
+endif
 
 $(protoc_outputs): unittest_proto_middleman
 

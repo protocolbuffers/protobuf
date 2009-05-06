@@ -29,6 +29,8 @@
       optional int32 foo = 1 [deprecated = true];
     Currently this does not have any actual effect, but in the future the code
     generators may generate deprecation annotations in each language.
+  * Cross-compiling should now be possible using the --with-protoc option to
+    configure.  See README.txt for more info.
 
   protoc
   * --error_format=msvs option causes errors to be printed in Visual Studio

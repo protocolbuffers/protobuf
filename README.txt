@@ -33,6 +33,29 @@ For advanced usage information on configure and make, see INSTALL.txt.
   If you already built the package with a different prefix, make sure
   to run "make clean" before building again.
 
+** Note for cross-compiling **
+
+  The makefiles normally invoke the protoc executable that they just
+  built in order to build tests.  When cross-compiling, the protoc
+  executable may not be executable on the host machine.  In this case,
+  you must build a copy of protoc for the host machine first, then use
+  the --with-protoc option to tell configure to use it instead.  For
+  example:
+
+    ./configure --with-protoc=protoc
+
+  This will use the installed protoc (found in your $PATH) instead of
+  trying to execute the one built during the build process.  You can
+  also use an executable that hasn't been installed.  For example, if
+  you built the protobuf package for your host machine in ../host,
+  you might do:
+
+    ./configure --with-protoc=../host/src/protoc
+
+  Either way, you must make sure that the protoc executable you use
+  has the same version as the protobuf source code you are trying to
+  use it with.
+
 ** Note for Solaris users **
 
   Solaris 10 x86 has a bug that will make linking fail, complaining
