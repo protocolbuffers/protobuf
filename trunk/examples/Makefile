@@ -22,10 +22,10 @@ protoc_middleman: addressbook.proto
 	@touch protoc_middleman
 
 add_person_cpp: add_person.cc protoc_middleman
-	c++ add_person.cc addressbook.pb.cc -lprotobuf -o add_person_cpp
+	c++ add_person.cc addressbook.pb.cc -lprotobuf -lpthread -o add_person_cpp
 
 list_people_cpp: list_people.cc protoc_middleman
-	c++ list_people.cc addressbook.pb.cc -lprotobuf -o list_people_cpp
+	c++ list_people.cc addressbook.pb.cc -lprotobuf -lpthread -o list_people_cpp
 
 javac_middleman: AddPerson.java ListPeople.java protoc_middleman
 	javac AddPerson.java ListPeople.java com/example/tutorial/AddressBookProtos.java
