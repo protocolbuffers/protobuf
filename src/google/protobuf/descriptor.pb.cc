@@ -451,6 +451,45 @@ void protobuf_RegisterTypes() {
 
 }  // namespace
 
+void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto() {
+  delete FileDescriptorSet::default_instance_;
+  delete FileDescriptorSet_reflection_;
+  delete FileDescriptorProto::default_instance_;
+  delete FileDescriptorProto_reflection_;
+  delete DescriptorProto::default_instance_;
+  delete DescriptorProto_reflection_;
+  delete DescriptorProto_ExtensionRange::default_instance_;
+  delete DescriptorProto_ExtensionRange_reflection_;
+  delete FieldDescriptorProto::default_instance_;
+  delete FieldDescriptorProto_reflection_;
+  delete EnumDescriptorProto::default_instance_;
+  delete EnumDescriptorProto_reflection_;
+  delete EnumValueDescriptorProto::default_instance_;
+  delete EnumValueDescriptorProto_reflection_;
+  delete ServiceDescriptorProto::default_instance_;
+  delete ServiceDescriptorProto_reflection_;
+  delete MethodDescriptorProto::default_instance_;
+  delete MethodDescriptorProto_reflection_;
+  delete FileOptions::default_instance_;
+  delete FileOptions_reflection_;
+  delete MessageOptions::default_instance_;
+  delete MessageOptions_reflection_;
+  delete FieldOptions::default_instance_;
+  delete FieldOptions_reflection_;
+  delete EnumOptions::default_instance_;
+  delete EnumOptions_reflection_;
+  delete EnumValueOptions::default_instance_;
+  delete EnumValueOptions_reflection_;
+  delete ServiceOptions::default_instance_;
+  delete ServiceOptions_reflection_;
+  delete MethodOptions::default_instance_;
+  delete MethodOptions_reflection_;
+  delete UninterpretedOption::default_instance_;
+  delete UninterpretedOption_reflection_;
+  delete UninterpretedOption_NamePart::default_instance_;
+  delete UninterpretedOption_NamePart_reflection_;
+}
+
 void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
   static bool already_here = false;
   if (already_here) return;
@@ -584,6 +623,7 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
   MethodOptions::default_instance_->InitAsDefaultInstance();
   UninterpretedOption::default_instance_->InitAsDefaultInstance();
   UninterpretedOption_NamePart::default_instance_->InitAsDefaultInstance();
+  ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto);
 }
 
 // Force AddDescriptors() to be called at static initialization time.

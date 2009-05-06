@@ -143,20 +143,23 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   // Open namespace.
   GenerateNamespaceOpeners(printer);
 
-  // Forward-declare the AddDescriptors and AssignDescriptors functions, so
-  // that we can declare them to be friends of each class.
+  // Forward-declare the AddDescriptors, AssignDescriptors, and ShutdownFile
+  // functions, so that we can declare them to be friends of each class.
   printer->Print(
     "\n"
     "// Internal implementation detail -- do not call these.\n"
     "void $dllexport_decl$ $adddescriptorsname$();\n",
     "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
     "dllexport_decl", dllexport_decl_);
+
   printer->Print(
-    // Note that we don't put dllexport_decl on this because it is only called
-    // by the .pb.cc file in which it is defined.
+    // Note that we don't put dllexport_decl on these because they are only
+    // called by the .pb.cc file in which they are defined.
     "void $assigndescriptorsname$();\n"
+    "void $shutdownfilename$();\n"
     "\n",
-    "assigndescriptorsname", GlobalAssignDescriptorsName(file_->name()));
+    "assigndescriptorsname", GlobalAssignDescriptorsName(file_->name()),
+    "shutdownfilename", GlobalShutdownFileName(file_->name()));
 
   // Generate forward declarations of classes.
   for (int i = 0; i < file_->message_type_count(); i++) {
@@ -390,6 +393,23 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
+  // ShutdownFile():  Deletes descriptors, default instances, etc. on shutdown.
+  printer->Print(
+    "\n"
+    "void $shutdownfilename$() {\n",
+    "shutdownfilename", GlobalShutdownFileName(file_->name()));
+  printer->Indent();
+
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    message_generators_[i]->GenerateShutdownCode(printer);
+  }
+
+  printer->Outdent();
+  printer->Print(
+    "}\n");
+
+  // -----------------------------------------------------------------
+
   // Now generate the AddDescriptors() function.
   printer->Print(
     "\n"
@@ -461,6 +481,10 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_[i]->GenerateDefaultInstanceInitializer(printer);
   }
+
+  printer->Print(
+    "::google::protobuf::internal::OnShutdown(&$shutdownfilename$);\n",
+    "shutdownfilename", GlobalShutdownFileName(file_->name()));
 
   printer->Outdent();
 

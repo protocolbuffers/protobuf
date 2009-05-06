@@ -47,6 +47,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map-util.h>
@@ -797,30 +798,34 @@ namespace {
 
 EncodedDescriptorDatabase* generated_database_ = NULL;
 DescriptorPool* generated_pool_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(generated_pool_init_);
 
-void InitGeneratedPool() {
-  GOOGLE_CHECK(generated_pool_ == NULL);
-  generated_database_ = new EncodedDescriptorDatabase;
-  generated_pool_ = new DescriptorPool(generated_database_);
+void DeleteGeneratedPool() {
+  delete generated_database_;
+  generated_database_ = NULL;
+  delete generated_pool_;
+  generated_pool_ = NULL;
 }
 
-// Force InitGeneratedPool to be called at static init time, before any threads
-// can be created.
-struct Initializer {
-  Initializer() {
-    if (generated_pool_ == NULL) InitGeneratedPool();
-  }
-} initializer;
+void InitGeneratedPool() {
+  generated_database_ = new EncodedDescriptorDatabase;
+  generated_pool_ = new DescriptorPool(generated_database_);
+  internal::OnShutdown(&DeleteGeneratedPool);
+}
+
+inline void InitGeneratedPoolOnce() {
+  GoogleOnceInit(&generated_pool_init_, &InitGeneratedPool);
+}
 
 }  // anonymous namespace
 
 const DescriptorPool* DescriptorPool::generated_pool() {
-  if (generated_pool_ == NULL) InitGeneratedPool();
+  InitGeneratedPoolOnce();
   return generated_pool_;
 }
 
 DescriptorPool* DescriptorPool::internal_generated_pool() {
-  if (generated_pool_ == NULL) InitGeneratedPool();
+  InitGeneratedPoolOnce();
   return generated_pool_;
 }
 
@@ -848,7 +853,7 @@ void DescriptorPool::InternalAddGeneratedFile(
   // Therefore, when we parse one, we have to be very careful to avoid using
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
-  if (generated_pool_ == NULL) InitGeneratedPool();
+  InitGeneratedPoolOnce();
   GOOGLE_CHECK(generated_database_->Add(encoded_file_descriptor, size));
 }
 

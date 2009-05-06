@@ -78,11 +78,22 @@ struct ExtensionInfo {
 
 typedef hash_map<pair<const Message*, int>, ExtensionInfo> ExtensionRegistry;
 ExtensionRegistry* registry_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(registry_init_);
+
+void DeleteRegistry() {
+  delete registry_;
+  registry_ = NULL;
+}
+
+void InitRegistry() {
+  registry_ = new ExtensionRegistry;
+  internal::OnShutdown(&DeleteRegistry);
+}
 
 // This function is only called at startup, so there is no need for thread-
 // safety.
 void Register(const Message* containing_type, int number, ExtensionInfo info) {
-  if (registry_ == NULL) registry_ = new ExtensionRegistry;
+  GoogleOnceInit(&registry_init_, &InitRegistry);
 
   if (!InsertIfNotPresent(registry_, make_pair(containing_type, number),
                           info)) {

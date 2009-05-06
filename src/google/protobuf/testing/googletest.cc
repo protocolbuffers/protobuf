@@ -233,5 +233,19 @@ void ScopedMemoryLog::HandleLog(LogLevel level, const char* filename,
   }
 }
 
+namespace {
+
+// Force shutdown at process exit so that we can test for memory leaks.  To
+// actually check for leaks, I suggest using the heap checker included with
+// google-perftools.  Set it to "draconian" mode to ensure that every last
+// call to malloc() has a corresponding free().
+struct ForceShutdown {
+  ~ForceShutdown() {
+    ShutdownProtobufLibrary();
+  }
+} force_shutdown;
+
+}  // namespace
+
 }  // namespace protobuf
 }  // namespace google

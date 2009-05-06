@@ -1085,6 +1085,31 @@ LIBPROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
 
 }  // namespace internal
 
+// ===================================================================
+// Shutdown support.
+
+// Shut down the entire protocol buffers library, deleting all static-duration
+// objects allocated by the library or by generated .pb.cc files.
+//
+// There are two reasons you might want to call this:
+// * You use a draconian definition of "memory leak" in which you expect
+//   every single malloc() to have a corresponding free(), even for objects
+//   which live until program exit.
+// * You are writing a dynamically-loaded library which needs to clean up
+//   after itself when the library is unloaded.
+//
+// It is safe to call this multiple times.  However, it is not safe to use
+// any other part of the protocol buffers library after
+// ShutdownProtobufLibrary() has been called.
+LIBPROTOBUF_EXPORT void ShutdownProtobufLibrary();
+
+namespace internal {
+
+// Register a function to be called when ShutdownProtocolBuffers() is called.
+LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
+
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 
