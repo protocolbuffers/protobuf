@@ -293,7 +293,6 @@ namespace Google.ProtocolBuffers {
     /// Otherwise, throw a FormatException.
     /// </summary>
     public float ConsumeFloat() {
-
       // We need to parse infinity and nan separately because
       // Float.parseFloat() does not accept "inf", "infinity", or "nan".
       if (FloatInfinity.IsMatch(currentToken)) {

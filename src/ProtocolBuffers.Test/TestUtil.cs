@@ -31,10 +31,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
+using System.Threading;
 
 namespace Google.ProtocolBuffers {
   internal static class TestUtil {
@@ -1576,6 +1578,20 @@ namespace Google.ProtocolBuffers {
         goldenPackedFieldsMessage = ReadBytesFromFile("golden_packed_fields_message");
       }
       return goldenPackedFieldsMessage;
+    }
+
+    private static readonly string[] TestCultures = { "en-US", "en-GB", "fr-FR", "de-DE" };
+
+    public static void TestInMultipleCultures(Action test) {
+      CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+      foreach (string culture in TestCultures) {
+        try {
+          Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+          test();
+        } finally {
+          Thread.CurrentThread.CurrentCulture = originalCulture;
+        }
+      }
     }
     
     /// <summary>

@@ -422,10 +422,10 @@ namespace Google.ProtocolBuffers.Descriptors {
               defaultValue = TextFormat.ParseUInt64(Proto.DefaultValue);
               break;
             case FieldType.Float:
-              defaultValue = float.Parse(Proto.DefaultValue);
+              defaultValue = TextFormat.ParseFloat(Proto.DefaultValue);
               break;
             case FieldType.Double:
-              defaultValue = double.Parse(Proto.DefaultValue);
+              defaultValue = TextFormat.ParseDouble(Proto.DefaultValue);
               break;
             case FieldType.Bool:
               if (Proto.DefaultValue == "true") {

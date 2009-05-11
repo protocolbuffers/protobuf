@@ -34,6 +34,8 @@ using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
+using System.Globalization;
+using System.Threading;
 
 namespace Google.ProtocolBuffers {
   [TestFixture]
@@ -82,8 +84,10 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     [Test]
     public void PrintMessage() {
-      string text = TextFormat.PrintToString(TestUtil.GetAllSet());
-      Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n"), text.Replace("\r\n", "\n"));
+      TestUtil.TestInMultipleCultures(() => {
+        string text = TextFormat.PrintToString(TestUtil.GetAllSet());
+        Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n"), text.Replace("\r\n", "\n"));
+      });
     }
 
     /// <summary>
@@ -213,9 +217,11 @@ namespace Google.ProtocolBuffers {
 
     [Test]
     public void Parse() {
-      TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
-      TextFormat.Merge(AllFieldsSetText, builder);
-      TestUtil.AssertAllFieldsSet(builder.Build());
+      TestUtil.TestInMultipleCultures(() => {
+        TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+        TextFormat.Merge(AllFieldsSetText, builder);
+        TestUtil.AssertAllFieldsSet(builder.Build());
+      });
     }
 
     [Test]

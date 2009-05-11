@@ -231,6 +231,41 @@ namespace Google.ProtocolBuffers {
       return (int) ParseInteger(text, true, false);
     }
 
+    internal static float ParseFloat(string text) {
+      switch (text) {
+        case "-inf":
+        case "-infinity":
+        case "-inff":
+        case "-infinityf":
+          return float.NegativeInfinity;
+        case "inf":
+        case "infinity":
+        case "inff":
+        case "infinityf":
+          return float.PositiveInfinity;
+        case "nan":
+        case "nanf":
+          return float.NaN;
+        default:
+          return float.Parse(text, CultureInfo.InvariantCulture);
+      }
+    }
+
+    internal static double ParseDouble(string text) {
+      switch (text) {
+        case "-inf":
+        case "-infinity":
+          return double.NegativeInfinity;
+        case "inf":
+        case "infinity":
+          return double.PositiveInfinity;
+        case "nan":
+          return double.NaN;
+        default:
+          return double.Parse(text, CultureInfo.InvariantCulture);
+      }
+    }
+    
     /// <summary>
     /// Parses an integer in hex (leading 0x), decimal (no prefix) or octal (leading 0).
     /// Only a negative sign is permitted, and it must come before the radix indicator.

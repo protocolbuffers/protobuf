@@ -228,8 +228,10 @@ namespace Google.ProtocolBuffers {
 
     [Test]
     public void ReflectionDefaults() {
-      reflectionTester.AssertClearViaReflection(TestAllTypes.DefaultInstance);
-      reflectionTester.AssertClearViaReflection(TestAllTypes.CreateBuilder().Build());
+      TestUtil.TestInMultipleCultures(() => {
+        reflectionTester.AssertClearViaReflection(TestAllTypes.DefaultInstance);
+        reflectionTester.AssertClearViaReflection(TestAllTypes.CreateBuilder().Build());
+      });
     }
     // =================================================================
     // Extensions.
@@ -296,8 +298,10 @@ namespace Google.ProtocolBuffers {
 
     [Test]
     public void ExtensionReflectionDefaults() {
-      extensionsReflectionTester.AssertClearViaReflection(TestAllExtensions.DefaultInstance);
-      extensionsReflectionTester.AssertClearViaReflection(TestAllExtensions.CreateBuilder().Build());
+      TestUtil.TestInMultipleCultures(() => {
+        extensionsReflectionTester.AssertClearViaReflection(TestAllExtensions.DefaultInstance);
+        extensionsReflectionTester.AssertClearViaReflection(TestAllExtensions.CreateBuilder().Build());
+      });
     }    
     
     [Test]
