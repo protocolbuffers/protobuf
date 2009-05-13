@@ -12,7 +12,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[2.0.4-pre],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[2.1.1-pre],[protobuf@googlegroups.com],[protobuf])
 
 # Detect whether the user specified their own compilation flags.  If so then
 # we want to respect their decision, otherwise we will twiddle them later.
