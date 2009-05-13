@@ -105,7 +105,7 @@ if __name__ == '__main__':
     generate_proto("../src/google/protobuf/descriptor.proto")
 
   setup(name = 'protobuf',
-        version = '2.0.4-SNAPSHOT',
+        version = '2.1.1-SNAPSHOT',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         test_suite = 'setup.MakeTestSuite',

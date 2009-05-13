@@ -1,4 +1,4 @@
-????-??-?? version 2.1.0:
+2009-05-13 version 2.1.0:
 
   General
   * Repeated fields of primitive types (types other that string, group, and
