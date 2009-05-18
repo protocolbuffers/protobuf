@@ -87,6 +87,7 @@ struct GoogleOnceInternal;
 
 struct LIBPROTOBUF_EXPORT GoogleOnceType {
   GoogleOnceType();
+  ~GoogleOnceType();
   void Init(void (*init_func)());
 
   volatile bool initialized_;

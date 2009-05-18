@@ -56,6 +56,12 @@ struct GoogleOnceInternal {
   CRITICAL_SECTION critical_section;
 };
 
+GoogleOnceType::~GoogleOnceType()
+{
+  delete internal_;
+  internal_ = NULL;
+}
+
 GoogleOnceType::GoogleOnceType() {
   // internal_ may be non-NULL if Init() was already called.
   if (internal_ == NULL) internal_ = new GoogleOnceInternal;
