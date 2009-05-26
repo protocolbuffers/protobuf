@@ -1,12 +1,19 @@
 
 .PHONY: all clean
 CFLAGS=-std=c99 -O3 -Wall -Wextra -pedantic
-all: pbstream.o tests
+OBJ=upb_parse.o upb_fieldmap.o upb_struct.o
+all: $(OBJ) tests
 clean:
-	rm -f pbstream.o pbstruct.o tests
+	rm -f $(OBJ) tests
 
-pbstream.o: pbstream.c pbstream.h
-	gcc $(CFLAGS) -o pbstream.o -c pbstream.c
+upb_parse.o: upb_parse.c upb_parse.h
+	gcc $(CFLAGS) -o upb_parse.o -c upb_parse.c
 
-tests: tests.c pbstream.c pbstream.h
+upb_fieldmap.o: upb_fieldmap.c upb_fieldmap.h
+	gcc $(CFLAGS) -o upb_fieldmap.o -c upb_fieldmap.c
+
+upb_struct.o: upb_struct.c upb_struct.h
+	gcc $(CFLAGS) -o upb_struct.o -c upb_struct.c
+
+tests: tests.c upb_parse.c upb_parse.h
 	gcc $(CFLAGS) -o tests tests.c

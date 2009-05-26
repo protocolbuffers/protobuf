@@ -1,9 +1,9 @@
 
-pbstream: a stream-oriented implementation of protocol buffers.
+upb - a minimalist implementation of protocol buffers.
 
-- For API documentation, see the header file.
+- For API documentation, see the header files.
 - To build type "make".
 
-Author: Joshua Haberman <joshua@reverberate.org>
+Author: Joshua Haberman (joshua@reverberate.org, haberman@google.com)
 See LICENSE for copyright information.
 
