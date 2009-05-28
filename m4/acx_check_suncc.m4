@@ -12,7 +12,8 @@ dnl Sun CC at my disposal for testing, someone else will have to do it.
 
 AC_DEFUN([ACX_CHECK_SUNCC],[
 
-  AC_CHECK_DECL([__SUNPRO_C], [SUNCC="yes"], [SUNCC="no"])
+  AC_LANG_PUSH([C++])
+  AC_CHECK_DECL([__SUNPRO_CC], [SUNCC="yes"], [SUNCC="no"])
 
   AS_IF([test "$SUNCC" = "yes"],[
     isainfo_k=`isainfo -k`
@@ -30,4 +31,5 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
     CFLAGS="-g -xO4 -xlibmil -xdepend -Xa -mt -xstrconst ${IS_64} ${MEMALIGN_FLAGS} $CFLAGS"
     CXXFLAGS="-g -xO4 -xlibmil -mt ${IS_64} ${MEMALIGN_FLAGS} -xlang=c99 -compat=5 -library=stlport4 -template=no%extdef $CXXFLAGS"
   ])
+  AC_LANG_POP()
 ])
