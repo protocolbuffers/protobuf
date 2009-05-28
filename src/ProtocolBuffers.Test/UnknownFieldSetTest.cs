@@ -326,5 +326,72 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(1, field.VarintList.Count);
       Assert.AreEqual(0x7FFFFFFFFFFFFFFFUL, field.VarintList[0]);
     }
+
+    [Test]
+    public void EqualsAndHashCode() {
+      UnknownField fixed32Field = UnknownField.CreateBuilder().AddFixed32(1).Build();
+      UnknownField fixed64Field = UnknownField.CreateBuilder().AddFixed64(1).Build();
+      UnknownField varIntField = UnknownField.CreateBuilder().AddVarint(1).Build();
+      UnknownField lengthDelimitedField = UnknownField.CreateBuilder().AddLengthDelimited(ByteString.Empty).Build();
+      UnknownField groupField = UnknownField.CreateBuilder().AddGroup(unknownFields).Build();
+
+      UnknownFieldSet a = UnknownFieldSet.CreateBuilder().AddField(1, fixed32Field).Build();
+      UnknownFieldSet b = UnknownFieldSet.CreateBuilder().AddField(1, fixed64Field).Build();
+      UnknownFieldSet c = UnknownFieldSet.CreateBuilder().AddField(1, varIntField).Build();
+      UnknownFieldSet d = UnknownFieldSet.CreateBuilder().AddField(1, lengthDelimitedField).Build();
+      UnknownFieldSet e = UnknownFieldSet.CreateBuilder().AddField(1, groupField).Build();
+
+      CheckEqualsIsConsistent(a);
+      CheckEqualsIsConsistent(b);
+      CheckEqualsIsConsistent(c);
+      CheckEqualsIsConsistent(d);
+      CheckEqualsIsConsistent(e);
+
+      CheckNotEqual(a, b);
+      CheckNotEqual(a, c);
+      CheckNotEqual(a, d);
+      CheckNotEqual(a, e);
+      CheckNotEqual(b, c);
+      CheckNotEqual(b, d);
+      CheckNotEqual(b, e);
+      CheckNotEqual(c, d);
+      CheckNotEqual(c, e);
+      CheckNotEqual(d, e);
+    }
+
+    /// <summary>
+    /// Asserts that the given field sets are not equal and have different
+    /// hash codes.
+    /// </summary>
+    /// <remarks>
+    /// It's valid for non-equal objects to have the same hash code, so
+    /// this test is stricter than it needs to be. However, this should happen
+    /// relatively rarely.
+    /// </remarks>
+    /// <param name="s1"></param>
+    /// <param name="s2"></param>
+    private static void CheckNotEqual(UnknownFieldSet s1, UnknownFieldSet s2) {
+      String equalsError = string.Format("{0} should not be equal to {1}", s1, s2);
+      Assert.IsFalse(s1.Equals(s2), equalsError);
+      Assert.IsFalse(s2.Equals(s1), equalsError);
+
+      Assert.IsFalse(s1.GetHashCode() == s2.GetHashCode(),
+          string.Format("{0} should have a different hash code from {1}", s1, s2));
+          
+    }
+
+    /**
+     * Asserts that the given field sets are equal and have identical hash codes.
+     */
+    private static void CheckEqualsIsConsistent(UnknownFieldSet set) {
+      // Object should be equal to itself.
+      Assert.AreEqual(set, set);
+
+      // Object should be equal to a copy of itself.
+      UnknownFieldSet copy = UnknownFieldSet.CreateBuilder(set).Build();
+      Assert.AreEqual(set, copy);
+      Assert.AreEqual(copy, set);
+      Assert.AreEqual(set.GetHashCode(), copy.GetHashCode());
+    }
   }
 }

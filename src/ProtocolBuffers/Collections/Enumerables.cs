@@ -1,4 +1,4 @@
-// Protocol Buffers - Google's data interchange format
+﻿// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
 // Original C++/Java/Python code:
@@ -29,71 +29,35 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System;
+using System.Collections;
 
 namespace Google.ProtocolBuffers.Collections {
-
   /// <summary>
-  /// Utility non-generic class for calling into Lists{T} using type inference.
+  /// Utility class for IEnumerable (and potentially the generic version in the future).
   /// </summary>
-  public static class Lists {
-
-    /// <summary>
-    /// Returns a read-only view of the specified list.
-    /// </summary>
-    public static IList<T> AsReadOnly<T>(IList<T> list) {
-      return Lists<T>.AsReadOnly(list);
-    }
-
-    public static bool Equals<T>(IList<T> left, IList<T> right) {
-      if (left == right) {
-        return true;
-      }
-      if (left == null || right == null) {
-        return false;
-      }
-      if (left.Count != right.Count) {
-        return false;
-      }
-      IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
-      for (int i = 0; i < left.Count; i++) {
-        if (!comparer.Equals(left[i], right[i])) {
+  public static class Enumerables {
+    public static bool Equals(IEnumerable left, IEnumerable right) {
+      IEnumerator leftEnumerator = left.GetEnumerator();
+      try {
+        foreach (object rightObject in right) {
+          if (!leftEnumerator.MoveNext()) {
+            return false;
+          }
+          if (!Equals(leftEnumerator.Current, rightObject)) {
+            return false;
+          }
+        }
+        if (leftEnumerator.MoveNext()) {
           return false;
+        }
+      } finally {
+        IDisposable leftEnumeratorDisposable = leftEnumerator as IDisposable;
+        if (leftEnumeratorDisposable != null) {
+          leftEnumeratorDisposable.Dispose();
         }
       }
       return true;
-    }
-
-    public static int GetHashCode<T>(IList<T> list) {
-      int hash = 31;
-      foreach (T element in list) {
-        hash = hash * 29 + element.GetHashCode();
-      }
-      return hash;
-    }
-  }
-
-  /// <summary>
-  /// Utility class for dealing with lists.
-  /// </summary>
-  public static class Lists<T> {
-
-    static readonly ReadOnlyCollection<T> empty = new ReadOnlyCollection<T>(new T[0]);
-
-    /// <summary>
-    /// Returns an immutable empty list.
-    /// </summary>
-    public static ReadOnlyCollection<T> Empty {
-      get { return empty; }
-    }
-
-    /// <summary>
-    /// Returns either the original reference if it's already read-only,
-    /// or a new ReadOnlyCollection wrapping the original list.
-    /// </summary>
-    public static IList<T> AsReadOnly(IList<T> list) {
-      return list.IsReadOnly ? list : new ReadOnlyCollection<T>(list);
     }
   }
 }

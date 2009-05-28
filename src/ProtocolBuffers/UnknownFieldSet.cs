@@ -194,6 +194,18 @@ namespace Google.ProtocolBuffers {
       }
     }
 
+    public override bool Equals(object other) {
+      if (ReferenceEquals(this, other)) {
+        return true;
+      }
+      UnknownFieldSet otherSet = other as UnknownFieldSet;
+      return otherSet != null && Dictionaries.Equals(fields, otherSet.fields);
+    }
+
+    public override int GetHashCode() {
+      return Dictionaries.GetHashCode(fields);
+    }
+
     /// <summary>
     /// Parses an UnknownFieldSet from the given input.
     /// </summary>
@@ -236,8 +248,8 @@ namespace Google.ProtocolBuffers {
       // Optimization:  We keep around a builder for the last field that was
       // modified so that we can efficiently add to it multiple times in a
       // row (important when parsing an unknown repeated field).
-      int lastFieldNumber;
-      UnknownField.Builder lastField;
+      private int lastFieldNumber;
+      private UnknownField.Builder lastField;
 
       internal Builder() {
       }

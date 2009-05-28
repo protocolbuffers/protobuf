@@ -113,6 +113,29 @@ namespace Google.ProtocolBuffers {
       get { return groupList; }
     }
 
+    public override bool Equals(object other) {
+      if (ReferenceEquals(this, other)) {
+        return true;
+      }
+      UnknownField otherField = other as UnknownField;
+      return otherField != null
+        && Lists.Equals(varintList, otherField.varintList)
+        && Lists.Equals(fixed32List, otherField.fixed32List)
+        && Lists.Equals(fixed64List, otherField.fixed64List)
+        && Lists.Equals(lengthDelimitedList, otherField.lengthDelimitedList)
+        && Lists.Equals(groupList, otherField.groupList);
+    }
+
+    public override int GetHashCode() {
+      int hash = 43;
+      hash = hash * 47 + Lists.GetHashCode(varintList);
+      hash = hash * 47 + Lists.GetHashCode(fixed32List);
+      hash = hash * 47 + Lists.GetHashCode(fixed64List);
+      hash = hash * 47 + Lists.GetHashCode(lengthDelimitedList);
+      hash = hash * 47 + Lists.GetHashCode(groupList);
+      return hash;
+    }
+
     /// <summary>
     /// Constructs a new Builder.
     /// </summary>

@@ -36,8 +36,7 @@ using System.Collections.Generic;
 namespace Google.ProtocolBuffers.Collections {
 
   /// <summary>
-  /// Non-generic class with generic methods which proxy to the non-generic methods
-  /// in the generic class.
+  /// Utility class for dictionaries.
   /// </summary>
   public static class Dictionaries {
 
@@ -60,27 +59,12 @@ namespace Google.ProtocolBuffers.Collections {
         IEnumerable leftEnumerable = leftEntry.Value as IEnumerable;
         IEnumerable rightEnumerable = rightValue as IEnumerable;
         if (leftEnumerable == null || rightEnumerable == null) {
-          if (!object.Equals(leftEntry.Value, rightValue)) {
+          if (!Equals(leftEntry.Value, rightValue)) {
             return false;
           }
         } else {
-          IEnumerator leftEnumerator = leftEnumerable.GetEnumerator();
-          try {
-            foreach (object rightObject in rightEnumerable) {
-              if (!leftEnumerator.MoveNext()) {
-                return false;
-              }
-              if (!object.Equals(leftEnumerator.Current, rightObject)) {
-                return false;
-              }
-            }
-            if (leftEnumerator.MoveNext()) {
-              return false;
-            }
-          } finally {
-            if (leftEnumerator is IDisposable) {
-              ((IDisposable)leftEnumerator).Dispose();
-            }
+          if (!Enumerables.Equals(leftEnumerable, rightEnumerable)) {
+            return false;
           }
         }
       }

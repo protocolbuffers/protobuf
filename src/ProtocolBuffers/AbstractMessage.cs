@@ -213,13 +213,14 @@ namespace Google.ProtocolBuffers {
       if (otherMessage == null || otherMessage.DescriptorForType != DescriptorForType) {
         return false;
       }
-      return Dictionaries.Equals(AllFields, otherMessage.AllFields);
+      return Dictionaries.Equals(AllFields, otherMessage.AllFields) && UnknownFields.Equals(otherMessage.UnknownFields);
     }
 
     public override int GetHashCode() {
       int hash = 41;
       hash = (19 * hash) + DescriptorForType.GetHashCode();
       hash = (53 * hash) + Dictionaries.GetHashCode(AllFields);
+      hash = (29 * hash) + UnknownFields.GetHashCode();
       return hash;
     }
   }

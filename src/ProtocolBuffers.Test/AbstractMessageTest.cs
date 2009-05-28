@@ -210,6 +210,17 @@ namespace Google.ProtocolBuffers {
       CheckNotEqual(d, f);
 
       CheckNotEqual(e, f);
+
+      // Deserializing into the TestEmptyMessage such that every field is an UnknownFieldSet.Field
+      TestEmptyMessage eUnknownFields = TestEmptyMessage.ParseFrom(e.ToByteArray());
+      TestEmptyMessage fUnknownFields = TestEmptyMessage.ParseFrom(f.ToByteArray());
+      CheckNotEqual(eUnknownFields, fUnknownFields);
+      CheckEqualsIsConsistent(eUnknownFields);
+      CheckEqualsIsConsistent(fUnknownFields);
+
+      // Subseqent reconstitutions should be identical
+      TestEmptyMessage eUnknownFields2 = TestEmptyMessage.ParseFrom(e.ToByteArray());
+      CheckEqualsIsConsistent(eUnknownFields, eUnknownFields2);
     }
     
     /// <summary>
@@ -221,9 +232,16 @@ namespace Google.ProtocolBuffers {
       
       // Object should be equal to a dynamic copy of itself.
       DynamicMessage dynamic = DynamicMessage.CreateBuilder(message).Build();
-      Assert.AreEqual(message, dynamic);
-      Assert.AreEqual(dynamic, message);
-      Assert.AreEqual(dynamic.GetHashCode(), message.GetHashCode());
+      CheckEqualsIsConsistent(message, dynamic);
+    }
+
+    /// <summary>
+    /// Asserts that the given protos are equal and have the same hash code.
+    /// </summary>
+    private static void CheckEqualsIsConsistent(IMessage message1, IMessage message2) {
+      Assert.AreEqual(message1, message2);
+      Assert.AreEqual(message2, message1);
+      Assert.AreEqual(message2.GetHashCode(), message1.GetHashCode());
     }
 
     /// <summary>
