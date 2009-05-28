@@ -24,6 +24,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
           break;
       }
 
+      writer.WriteLine ("public const int {0} = {1};", GetFieldConstantName(Descriptor), Descriptor.FieldNumber);
       if (Descriptor.IsRepeated) {
         writer.WriteLine("{0} static readonly", ClassAccessLevel);
         writer.WriteLine("    pb::GeneratedExtensionBase<scg::IList<{0}>> {1} =", type, name);

@@ -257,6 +257,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetContainer__FieldAccessorTable; }
     }
     
+    public const int MessageSetFieldNumber = 1;
     private bool hasMessageSet;
     private global::Google.ProtocolBuffers.TestProtos.TestMessageSet messageSet_ = global::Google.ProtocolBuffers.TestProtos.TestMessageSet.DefaultInstance;
     public bool HasMessageSet {
@@ -481,8 +482,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension1__FieldAccessorTable; }
     }
     
+    public const int MessageSetExtensionFieldNumber = 1545008;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1> MessageSetExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1>.CreateInstance(Descriptor.Extensions[0]);
+    public const int IFieldNumber = 15;
     private bool hasI;
     private int i_ = 0;
     public bool HasI {
@@ -684,8 +687,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_TestMessageSetExtension2__FieldAccessorTable; }
     }
     
+    public const int MessageSetExtensionFieldNumber = 1547769;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2> MessageSetExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension2>.CreateInstance(Descriptor.Extensions[0]);
+    public const int StrFieldNumber = 25;
     private bool hasStr;
     private string str_ = "";
     public bool HasStr {
@@ -912,6 +917,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.internal__static_protobuf_unittest_RawMessageSet_Item__FieldAccessorTable; }
         }
         
+        public const int TypeIdFieldNumber = 2;
         private bool hasTypeId;
         private int typeId_ = 0;
         public bool HasTypeId {
@@ -921,6 +927,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return typeId_; }
         }
         
+        public const int MessageFieldNumber = 3;
         private bool hasMessage;
         private pb::ByteString message_ = pb::ByteString.Empty;
         public bool HasMessage {
@@ -1137,6 +1144,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int ItemFieldNumber = 1;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> item_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
       get { return item_; }

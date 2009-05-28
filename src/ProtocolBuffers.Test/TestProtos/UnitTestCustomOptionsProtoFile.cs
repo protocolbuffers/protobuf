@@ -115,68 +115,100 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
+    public const int FileOpt1FieldNumber = 7736974;
     public static readonly pb::GeneratedExtensionBase<ulong> FileOpt1 =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[0]);
+    public const int MessageOpt1FieldNumber = 7739036;
     public static readonly pb::GeneratedExtensionBase<int> MessageOpt1 =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[1]);
+    public const int FieldOpt1FieldNumber = 7740936;
     public static readonly pb::GeneratedExtensionBase<ulong> FieldOpt1 =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[2]);
+    public const int FieldOpt2FieldNumber = 7753913;
     public static readonly pb::GeneratedExtensionBase<int> FieldOpt2 =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[3]);
+    public const int EnumOpt1FieldNumber = 7753576;
     public static readonly pb::GeneratedExtensionBase<int> EnumOpt1 =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[4]);
+    public const int ServiceOpt1FieldNumber = 7887650;
     public static readonly pb::GeneratedExtensionBase<long> ServiceOpt1 =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[5]);
+    public const int MethodOpt1FieldNumber = 7890860;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.MethodOpt1> MethodOpt1 =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.MethodOpt1>.CreateInstance(Descriptor.Extensions[6]);
+    public const int BoolOptFieldNumber = 7706090;
     public static readonly pb::GeneratedExtensionBase<bool> BoolOpt =
         pb::GeneratedSingleExtension<bool>.CreateInstance(Descriptor.Extensions[7]);
+    public const int Int32OptFieldNumber = 7705709;
     public static readonly pb::GeneratedExtensionBase<int> Int32Opt =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[8]);
+    public const int Int64OptFieldNumber = 7705542;
     public static readonly pb::GeneratedExtensionBase<long> Int64Opt =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[9]);
+    public const int Uint32OptFieldNumber = 7704880;
     public static readonly pb::GeneratedExtensionBase<uint> Uint32Opt =
         pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[10]);
+    public const int Uint64OptFieldNumber = 7702367;
     public static readonly pb::GeneratedExtensionBase<ulong> Uint64Opt =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[11]);
+    public const int Sint32OptFieldNumber = 7701568;
     public static readonly pb::GeneratedExtensionBase<int> Sint32Opt =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[12]);
+    public const int Sint64OptFieldNumber = 7700863;
     public static readonly pb::GeneratedExtensionBase<long> Sint64Opt =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[13]);
+    public const int Fixed32OptFieldNumber = 7700307;
     public static readonly pb::GeneratedExtensionBase<uint> Fixed32Opt =
         pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[14]);
+    public const int Fixed64OptFieldNumber = 7700194;
     public static readonly pb::GeneratedExtensionBase<ulong> Fixed64Opt =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[15]);
+    public const int Sfixed32OptFieldNumber = 7698645;
     public static readonly pb::GeneratedExtensionBase<int> Sfixed32Opt =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[16]);
+    public const int Sfixed64OptFieldNumber = 7685475;
     public static readonly pb::GeneratedExtensionBase<long> Sfixed64Opt =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[17]);
+    public const int FloatOptFieldNumber = 7675390;
     public static readonly pb::GeneratedExtensionBase<float> FloatOpt =
         pb::GeneratedSingleExtension<float>.CreateInstance(Descriptor.Extensions[18]);
+    public const int DoubleOptFieldNumber = 7673293;
     public static readonly pb::GeneratedExtensionBase<double> DoubleOpt =
         pb::GeneratedSingleExtension<double>.CreateInstance(Descriptor.Extensions[19]);
+    public const int StringOptFieldNumber = 7673285;
     public static readonly pb::GeneratedExtensionBase<string> StringOpt =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[20]);
+    public const int BytesOptFieldNumber = 7673238;
     public static readonly pb::GeneratedExtensionBase<pb::ByteString> BytesOpt =
         pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[21]);
+    public const int EnumOptFieldNumber = 7673233;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType> EnumOpt =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>.CreateInstance(Descriptor.Extensions[22]);
+    public const int MessageTypeOptFieldNumber = 7665967;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType> MessageTypeOpt =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType>.CreateInstance(Descriptor.Extensions[23]);
+    public const int QuuxFieldNumber = 7663707;
     public static readonly pb::GeneratedExtensionBase<int> Quux =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[24]);
+    public const int CorgeFieldNumber = 7663442;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> Corge =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(Descriptor.Extensions[25]);
+    public const int GraultFieldNumber = 7650927;
     public static readonly pb::GeneratedExtensionBase<int> Grault =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[26]);
+    public const int GarplyFieldNumber = 7649992;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1> Garply =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(Descriptor.Extensions[27]);
+    public const int ComplexOpt1FieldNumber = 7646756;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1> ComplexOpt1 =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(Descriptor.Extensions[28]);
+    public const int ComplexOpt2FieldNumber = 7636949;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2> ComplexOpt2 =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2>.CreateInstance(Descriptor.Extensions[29]);
+    public const int ComplexOpt3FieldNumber = 7636463;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> ComplexOpt3 =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(Descriptor.Extensions[30]);
+    public const int ComplexOpt6FieldNumber = 7595468;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6> ComplexOpt6 =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6>.CreateInstance(Descriptor.Extensions[31]);
     #endregion
@@ -310,6 +342,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int Field1FieldNumber = 1;
     private bool hasField1;
     private string field1_ = "";
     public bool HasField1 {
@@ -1258,6 +1291,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_ComplexOptionType1__FieldAccessorTable; }
     }
     
+    public const int FooFieldNumber = 1;
     private bool hasFoo;
     private int foo_ = 0;
     public bool HasFoo {
@@ -1400,8 +1434,10 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__FieldAccessorTable; }
         }
         
+        public const int ComplexOpt4FieldNumber = 7633546;
         public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4> ComplexOpt4 =
             pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4>.CreateInstance(Descriptor.Extensions[0]);
+        public const int WaldoFieldNumber = 1;
         private bool hasWaldo;
         private int waldo_ = 0;
         public bool HasWaldo {
@@ -1501,6 +1537,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int BarFieldNumber = 1;
     private bool hasBar;
     private global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1 bar_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.DefaultInstance;
     public bool HasBar {
@@ -1510,6 +1547,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return bar_; }
     }
     
+    public const int BazFieldNumber = 2;
     private bool hasBaz;
     private int baz_ = 0;
     public bool HasBaz {
@@ -1519,6 +1557,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return baz_; }
     }
     
+    public const int FredFieldNumber = 3;
     private bool hasFred;
     private global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4 fred_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.DefaultInstance;
     public bool HasFred {
@@ -1733,6 +1772,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__FieldAccessorTable; }
         }
         
+        public const int PlughFieldNumber = 3;
         private bool hasPlugh;
         private int plugh_ = 0;
         public bool HasPlugh {
@@ -1832,6 +1872,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int QuxFieldNumber = 1;
     private bool hasQux;
     private int qux_ = 0;
     public bool HasQux {
@@ -1841,6 +1882,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return qux_; }
     }
     
+    public const int ComplexOptionType5FieldNumber = 2;
     private bool hasComplexOptionType5;
     private global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5 complexOptionType5_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.DefaultInstance;
     public bool HasComplexOptionType5 {
@@ -1995,6 +2037,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_ComplexOpt6__FieldAccessorTable; }
     }
     
+    public const int XyzzyFieldNumber = 7593951;
     private bool hasXyzzy;
     private int xyzzy_ = 0;
     public bool HasXyzzy {

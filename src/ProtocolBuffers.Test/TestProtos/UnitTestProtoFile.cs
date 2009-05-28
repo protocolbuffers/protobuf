@@ -329,209 +329,293 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     
     #region Extensions
+    public const int OptionalInt32ExtensionFieldNumber = 1;
     public static readonly pb::GeneratedExtensionBase<int> OptionalInt32Extension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
+    public const int OptionalInt64ExtensionFieldNumber = 2;
     public static readonly pb::GeneratedExtensionBase<long> OptionalInt64Extension =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[1]);
+    public const int OptionalUint32ExtensionFieldNumber = 3;
     public static readonly pb::GeneratedExtensionBase<uint> OptionalUint32Extension =
         pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[2]);
+    public const int OptionalUint64ExtensionFieldNumber = 4;
     public static readonly pb::GeneratedExtensionBase<ulong> OptionalUint64Extension =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[3]);
+    public const int OptionalSint32ExtensionFieldNumber = 5;
     public static readonly pb::GeneratedExtensionBase<int> OptionalSint32Extension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[4]);
+    public const int OptionalSint64ExtensionFieldNumber = 6;
     public static readonly pb::GeneratedExtensionBase<long> OptionalSint64Extension =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[5]);
+    public const int OptionalFixed32ExtensionFieldNumber = 7;
     public static readonly pb::GeneratedExtensionBase<uint> OptionalFixed32Extension =
         pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[6]);
+    public const int OptionalFixed64ExtensionFieldNumber = 8;
     public static readonly pb::GeneratedExtensionBase<ulong> OptionalFixed64Extension =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[7]);
+    public const int OptionalSfixed32ExtensionFieldNumber = 9;
     public static readonly pb::GeneratedExtensionBase<int> OptionalSfixed32Extension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[8]);
+    public const int OptionalSfixed64ExtensionFieldNumber = 10;
     public static readonly pb::GeneratedExtensionBase<long> OptionalSfixed64Extension =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[9]);
+    public const int OptionalFloatExtensionFieldNumber = 11;
     public static readonly pb::GeneratedExtensionBase<float> OptionalFloatExtension =
         pb::GeneratedSingleExtension<float>.CreateInstance(Descriptor.Extensions[10]);
+    public const int OptionalDoubleExtensionFieldNumber = 12;
     public static readonly pb::GeneratedExtensionBase<double> OptionalDoubleExtension =
         pb::GeneratedSingleExtension<double>.CreateInstance(Descriptor.Extensions[11]);
+    public const int OptionalBoolExtensionFieldNumber = 13;
     public static readonly pb::GeneratedExtensionBase<bool> OptionalBoolExtension =
         pb::GeneratedSingleExtension<bool>.CreateInstance(Descriptor.Extensions[12]);
+    public const int OptionalStringExtensionFieldNumber = 14;
     public static readonly pb::GeneratedExtensionBase<string> OptionalStringExtension =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[13]);
+    public const int OptionalBytesExtensionFieldNumber = 15;
     public static readonly pb::GeneratedExtensionBase<pb::ByteString> OptionalBytesExtension =
         pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[14]);
+    public const int OptionalGroupExtensionFieldNumber = 16;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension> OptionalGroupExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension>.CreateInstance(Descriptor.Extensions[15]);
+    public const int OptionalNestedMessageExtensionFieldNumber = 18;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> OptionalNestedMessageExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[16]);
+    public const int OptionalForeignMessageExtensionFieldNumber = 19;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> OptionalForeignMessageExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.CreateInstance(Descriptor.Extensions[17]);
+    public const int OptionalImportMessageExtensionFieldNumber = 20;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportMessage> OptionalImportMessageExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.CreateInstance(Descriptor.Extensions[18]);
+    public const int OptionalNestedEnumExtensionFieldNumber = 21;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> OptionalNestedEnumExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[19]);
+    public const int OptionalForeignEnumExtensionFieldNumber = 22;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> OptionalForeignEnumExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[20]);
+    public const int OptionalImportEnumExtensionFieldNumber = 23;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportEnum> OptionalImportEnumExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(Descriptor.Extensions[21]);
+    public const int OptionalStringPieceExtensionFieldNumber = 24;
     public static readonly pb::GeneratedExtensionBase<string> OptionalStringPieceExtension =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[22]);
+    public const int OptionalCordExtensionFieldNumber = 25;
     public static readonly pb::GeneratedExtensionBase<string> OptionalCordExtension =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[23]);
+    public const int RepeatedInt32ExtensionFieldNumber = 31;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<int>> RepeatedInt32Extension =
         pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[24]);
+    public const int RepeatedInt64ExtensionFieldNumber = 32;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<long>> RepeatedInt64Extension =
         pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[25]);
+    public const int RepeatedUint32ExtensionFieldNumber = 33;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedUint32Extension =
         pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[26]);
+    public const int RepeatedUint64ExtensionFieldNumber = 34;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedUint64Extension =
         pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[27]);
+    public const int RepeatedSint32ExtensionFieldNumber = 35;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSint32Extension =
         pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[28]);
+    public const int RepeatedSint64ExtensionFieldNumber = 36;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSint64Extension =
         pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[29]);
+    public const int RepeatedFixed32ExtensionFieldNumber = 37;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedFixed32Extension =
         pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[30]);
+    public const int RepeatedFixed64ExtensionFieldNumber = 38;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedFixed64Extension =
         pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[31]);
+    public const int RepeatedSfixed32ExtensionFieldNumber = 39;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSfixed32Extension =
         pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[32]);
+    public const int RepeatedSfixed64ExtensionFieldNumber = 40;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSfixed64Extension =
         pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[33]);
+    public const int RepeatedFloatExtensionFieldNumber = 41;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<float>> RepeatedFloatExtension =
         pb::GeneratedRepeatExtension<float>.CreateInstance(Descriptor.Extensions[34]);
+    public const int RepeatedDoubleExtensionFieldNumber = 42;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<double>> RepeatedDoubleExtension =
         pb::GeneratedRepeatExtension<double>.CreateInstance(Descriptor.Extensions[35]);
+    public const int RepeatedBoolExtensionFieldNumber = 43;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<bool>> RepeatedBoolExtension =
         pb::GeneratedRepeatExtension<bool>.CreateInstance(Descriptor.Extensions[36]);
+    public const int RepeatedStringExtensionFieldNumber = 44;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<string>> RepeatedStringExtension =
         pb::GeneratedRepeatExtension<string>.CreateInstance(Descriptor.Extensions[37]);
+    public const int RepeatedBytesExtensionFieldNumber = 45;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<pb::ByteString>> RepeatedBytesExtension =
         pb::GeneratedRepeatExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[38]);
+    public const int RepeatedGroupExtensionFieldNumber = 46;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension>> RepeatedGroupExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension>.CreateInstance(Descriptor.Extensions[39]);
+    public const int RepeatedNestedMessageExtensionFieldNumber = 48;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>> RepeatedNestedMessageExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[40]);
+    public const int RepeatedForeignMessageExtensionFieldNumber = 49;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>> RepeatedForeignMessageExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.CreateInstance(Descriptor.Extensions[41]);
+    public const int RepeatedImportMessageExtensionFieldNumber = 50;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage>> RepeatedImportMessageExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.CreateInstance(Descriptor.Extensions[42]);
+    public const int RepeatedNestedEnumExtensionFieldNumber = 51;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>> RepeatedNestedEnumExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[43]);
+    public const int RepeatedForeignEnumExtensionFieldNumber = 52;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> RepeatedForeignEnumExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[44]);
+    public const int RepeatedImportEnumExtensionFieldNumber = 53;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportEnum>> RepeatedImportEnumExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(Descriptor.Extensions[45]);
+    public const int RepeatedStringPieceExtensionFieldNumber = 54;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<string>> RepeatedStringPieceExtension =
         pb::GeneratedRepeatExtension<string>.CreateInstance(Descriptor.Extensions[46]);
+    public const int RepeatedCordExtensionFieldNumber = 55;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<string>> RepeatedCordExtension =
         pb::GeneratedRepeatExtension<string>.CreateInstance(Descriptor.Extensions[47]);
+    public const int DefaultInt32ExtensionFieldNumber = 61;
     public static readonly pb::GeneratedExtensionBase<int> DefaultInt32Extension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[48]);
+    public const int DefaultInt64ExtensionFieldNumber = 62;
     public static readonly pb::GeneratedExtensionBase<long> DefaultInt64Extension =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[49]);
+    public const int DefaultUint32ExtensionFieldNumber = 63;
     public static readonly pb::GeneratedExtensionBase<uint> DefaultUint32Extension =
         pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[50]);
+    public const int DefaultUint64ExtensionFieldNumber = 64;
     public static readonly pb::GeneratedExtensionBase<ulong> DefaultUint64Extension =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[51]);
+    public const int DefaultSint32ExtensionFieldNumber = 65;
     public static readonly pb::GeneratedExtensionBase<int> DefaultSint32Extension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[52]);
+    public const int DefaultSint64ExtensionFieldNumber = 66;
     public static readonly pb::GeneratedExtensionBase<long> DefaultSint64Extension =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[53]);
+    public const int DefaultFixed32ExtensionFieldNumber = 67;
     public static readonly pb::GeneratedExtensionBase<uint> DefaultFixed32Extension =
         pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[54]);
+    public const int DefaultFixed64ExtensionFieldNumber = 68;
     public static readonly pb::GeneratedExtensionBase<ulong> DefaultFixed64Extension =
         pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[55]);
+    public const int DefaultSfixed32ExtensionFieldNumber = 69;
     public static readonly pb::GeneratedExtensionBase<int> DefaultSfixed32Extension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[56]);
+    public const int DefaultSfixed64ExtensionFieldNumber = 70;
     public static readonly pb::GeneratedExtensionBase<long> DefaultSfixed64Extension =
         pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[57]);
+    public const int DefaultFloatExtensionFieldNumber = 71;
     public static readonly pb::GeneratedExtensionBase<float> DefaultFloatExtension =
         pb::GeneratedSingleExtension<float>.CreateInstance(Descriptor.Extensions[58]);
+    public const int DefaultDoubleExtensionFieldNumber = 72;
     public static readonly pb::GeneratedExtensionBase<double> DefaultDoubleExtension =
         pb::GeneratedSingleExtension<double>.CreateInstance(Descriptor.Extensions[59]);
+    public const int DefaultBoolExtensionFieldNumber = 73;
     public static readonly pb::GeneratedExtensionBase<bool> DefaultBoolExtension =
         pb::GeneratedSingleExtension<bool>.CreateInstance(Descriptor.Extensions[60]);
+    public const int DefaultStringExtensionFieldNumber = 74;
     public static readonly pb::GeneratedExtensionBase<string> DefaultStringExtension =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[61]);
+    public const int DefaultBytesExtensionFieldNumber = 75;
     public static readonly pb::GeneratedExtensionBase<pb::ByteString> DefaultBytesExtension =
         pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[62]);
+    public const int DefaultNestedEnumExtensionFieldNumber = 81;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[63]);
+    public const int DefaultForeignEnumExtensionFieldNumber = 82;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> DefaultForeignEnumExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[64]);
+    public const int DefaultImportEnumExtensionFieldNumber = 83;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportEnum> DefaultImportEnumExtension =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(Descriptor.Extensions[65]);
+    public const int DefaultStringPieceExtensionFieldNumber = 84;
     public static readonly pb::GeneratedExtensionBase<string> DefaultStringPieceExtension =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[66]);
+    public const int DefaultCordExtensionFieldNumber = 85;
     public static readonly pb::GeneratedExtensionBase<string> DefaultCordExtension =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[67]);
+    public const int MyExtensionStringFieldNumber = 50;
     public static readonly pb::GeneratedExtensionBase<string> MyExtensionString =
         pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[68]);
+    public const int MyExtensionIntFieldNumber = 5;
     public static readonly pb::GeneratedExtensionBase<int> MyExtensionInt =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[69]);
+    public const int PackedInt32ExtensionFieldNumber = 90;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<int>> PackedInt32Extension =
         pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[70]);
+    public const int PackedInt64ExtensionFieldNumber = 91;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<long>> PackedInt64Extension =
         pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[71]);
+    public const int PackedUint32ExtensionFieldNumber = 92;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<uint>> PackedUint32Extension =
         pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[72]);
+    public const int PackedUint64ExtensionFieldNumber = 93;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<ulong>> PackedUint64Extension =
         pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[73]);
+    public const int PackedSint32ExtensionFieldNumber = 94;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<int>> PackedSint32Extension =
         pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[74]);
+    public const int PackedSint64ExtensionFieldNumber = 95;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<long>> PackedSint64Extension =
         pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[75]);
+    public const int PackedFixed32ExtensionFieldNumber = 96;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<uint>> PackedFixed32Extension =
         pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[76]);
+    public const int PackedFixed64ExtensionFieldNumber = 97;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<ulong>> PackedFixed64Extension =
         pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[77]);
+    public const int PackedSfixed32ExtensionFieldNumber = 98;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<int>> PackedSfixed32Extension =
         pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[78]);
+    public const int PackedSfixed64ExtensionFieldNumber = 99;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<long>> PackedSfixed64Extension =
         pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[79]);
+    public const int PackedFloatExtensionFieldNumber = 100;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<float>> PackedFloatExtension =
         pb::GeneratedRepeatExtension<float>.CreateInstance(Descriptor.Extensions[80]);
+    public const int PackedDoubleExtensionFieldNumber = 101;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<double>> PackedDoubleExtension =
         pb::GeneratedRepeatExtension<double>.CreateInstance(Descriptor.Extensions[81]);
+    public const int PackedBoolExtensionFieldNumber = 102;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<bool>> PackedBoolExtension =
         pb::GeneratedRepeatExtension<bool>.CreateInstance(Descriptor.Extensions[82]);
+    public const int PackedEnumExtensionFieldNumber = 103;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> PackedEnumExtension =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[83]);
@@ -775,6 +859,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable; }
         }
         
+        public const int BbFieldNumber = 1;
         private bool hasBb;
         private int bb_ = 0;
         public bool HasBb {
@@ -976,6 +1061,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__FieldAccessorTable; }
         }
         
+        public const int AFieldNumber = 17;
         private bool hasA;
         private int a_ = 0;
         public bool HasA {
@@ -1177,6 +1263,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__FieldAccessorTable; }
         }
         
+        public const int AFieldNumber = 47;
         private bool hasA;
         private int a_ = 0;
         public bool HasA {
@@ -1359,6 +1446,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int OptionalInt32FieldNumber = 1;
     private bool hasOptionalInt32;
     private int optionalInt32_ = 0;
     public bool HasOptionalInt32 {
@@ -1368,6 +1456,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalInt32_; }
     }
     
+    public const int OptionalInt64FieldNumber = 2;
     private bool hasOptionalInt64;
     private long optionalInt64_ = 0L;
     public bool HasOptionalInt64 {
@@ -1377,6 +1466,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalInt64_; }
     }
     
+    public const int OptionalUint32FieldNumber = 3;
     private bool hasOptionalUint32;
     private uint optionalUint32_ = 0;
     public bool HasOptionalUint32 {
@@ -1386,6 +1476,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalUint32_; }
     }
     
+    public const int OptionalUint64FieldNumber = 4;
     private bool hasOptionalUint64;
     private ulong optionalUint64_ = 0UL;
     public bool HasOptionalUint64 {
@@ -1395,6 +1486,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalUint64_; }
     }
     
+    public const int OptionalSint32FieldNumber = 5;
     private bool hasOptionalSint32;
     private int optionalSint32_ = 0;
     public bool HasOptionalSint32 {
@@ -1404,6 +1496,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalSint32_; }
     }
     
+    public const int OptionalSint64FieldNumber = 6;
     private bool hasOptionalSint64;
     private long optionalSint64_ = 0;
     public bool HasOptionalSint64 {
@@ -1413,6 +1506,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalSint64_; }
     }
     
+    public const int OptionalFixed32FieldNumber = 7;
     private bool hasOptionalFixed32;
     private uint optionalFixed32_ = 0;
     public bool HasOptionalFixed32 {
@@ -1422,6 +1516,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalFixed32_; }
     }
     
+    public const int OptionalFixed64FieldNumber = 8;
     private bool hasOptionalFixed64;
     private ulong optionalFixed64_ = 0;
     public bool HasOptionalFixed64 {
@@ -1431,6 +1526,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalFixed64_; }
     }
     
+    public const int OptionalSfixed32FieldNumber = 9;
     private bool hasOptionalSfixed32;
     private int optionalSfixed32_ = 0;
     public bool HasOptionalSfixed32 {
@@ -1440,6 +1536,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalSfixed32_; }
     }
     
+    public const int OptionalSfixed64FieldNumber = 10;
     private bool hasOptionalSfixed64;
     private long optionalSfixed64_ = 0;
     public bool HasOptionalSfixed64 {
@@ -1449,6 +1546,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalSfixed64_; }
     }
     
+    public const int OptionalFloatFieldNumber = 11;
     private bool hasOptionalFloat;
     private float optionalFloat_ = 0F;
     public bool HasOptionalFloat {
@@ -1458,6 +1556,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalFloat_; }
     }
     
+    public const int OptionalDoubleFieldNumber = 12;
     private bool hasOptionalDouble;
     private double optionalDouble_ = 0D;
     public bool HasOptionalDouble {
@@ -1467,6 +1566,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalDouble_; }
     }
     
+    public const int OptionalBoolFieldNumber = 13;
     private bool hasOptionalBool;
     private bool optionalBool_ = false;
     public bool HasOptionalBool {
@@ -1476,6 +1576,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalBool_; }
     }
     
+    public const int OptionalStringFieldNumber = 14;
     private bool hasOptionalString;
     private string optionalString_ = "";
     public bool HasOptionalString {
@@ -1485,6 +1586,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalString_; }
     }
     
+    public const int OptionalBytesFieldNumber = 15;
     private bool hasOptionalBytes;
     private pb::ByteString optionalBytes_ = pb::ByteString.Empty;
     public bool HasOptionalBytes {
@@ -1494,6 +1596,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalBytes_; }
     }
     
+    public const int OptionalGroupFieldNumber = 16;
     private bool hasOptionalGroup;
     private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup optionalGroup_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.DefaultInstance;
     public bool HasOptionalGroup {
@@ -1503,6 +1606,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalGroup_; }
     }
     
+    public const int OptionalNestedMessageFieldNumber = 18;
     private bool hasOptionalNestedMessage;
     private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance;
     public bool HasOptionalNestedMessage {
@@ -1512,6 +1616,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalNestedMessage_; }
     }
     
+    public const int OptionalForeignMessageFieldNumber = 19;
     private bool hasOptionalForeignMessage;
     private global::Google.ProtocolBuffers.TestProtos.ForeignMessage optionalForeignMessage_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance;
     public bool HasOptionalForeignMessage {
@@ -1521,6 +1626,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalForeignMessage_; }
     }
     
+    public const int OptionalImportMessageFieldNumber = 20;
     private bool hasOptionalImportMessage;
     private global::Google.ProtocolBuffers.TestProtos.ImportMessage optionalImportMessage_ = global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance;
     public bool HasOptionalImportMessage {
@@ -1530,6 +1636,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalImportMessage_; }
     }
     
+    public const int OptionalNestedEnumFieldNumber = 21;
     private bool hasOptionalNestedEnum;
     private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum.FOO;
     public bool HasOptionalNestedEnum {
@@ -1539,6 +1646,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalNestedEnum_; }
     }
     
+    public const int OptionalForeignEnumFieldNumber = 22;
     private bool hasOptionalForeignEnum;
     private global::Google.ProtocolBuffers.TestProtos.ForeignEnum optionalForeignEnum_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_FOO;
     public bool HasOptionalForeignEnum {
@@ -1548,6 +1656,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalForeignEnum_; }
     }
     
+    public const int OptionalImportEnumFieldNumber = 23;
     private bool hasOptionalImportEnum;
     private global::Google.ProtocolBuffers.TestProtos.ImportEnum optionalImportEnum_ = global::Google.ProtocolBuffers.TestProtos.ImportEnum.IMPORT_FOO;
     public bool HasOptionalImportEnum {
@@ -1557,6 +1666,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalImportEnum_; }
     }
     
+    public const int OptionalStringPieceFieldNumber = 24;
     private bool hasOptionalStringPiece;
     private string optionalStringPiece_ = "";
     public bool HasOptionalStringPiece {
@@ -1566,6 +1676,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalStringPiece_; }
     }
     
+    public const int OptionalCordFieldNumber = 25;
     private bool hasOptionalCord;
     private string optionalCord_ = "";
     public bool HasOptionalCord {
@@ -1575,6 +1686,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalCord_; }
     }
     
+    public const int RepeatedInt32FieldNumber = 31;
     private pbc::PopsicleList<int> repeatedInt32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedInt32List {
       get { return pbc::Lists.AsReadOnly(repeatedInt32_); }
@@ -1586,6 +1698,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedInt32_[index];
     }
     
+    public const int RepeatedInt64FieldNumber = 32;
     private pbc::PopsicleList<long> repeatedInt64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> RepeatedInt64List {
       get { return pbc::Lists.AsReadOnly(repeatedInt64_); }
@@ -1597,6 +1710,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedInt64_[index];
     }
     
+    public const int RepeatedUint32FieldNumber = 33;
     private pbc::PopsicleList<uint> repeatedUint32_ = new pbc::PopsicleList<uint>();
     public scg::IList<uint> RepeatedUint32List {
       get { return pbc::Lists.AsReadOnly(repeatedUint32_); }
@@ -1608,6 +1722,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedUint32_[index];
     }
     
+    public const int RepeatedUint64FieldNumber = 34;
     private pbc::PopsicleList<ulong> repeatedUint64_ = new pbc::PopsicleList<ulong>();
     public scg::IList<ulong> RepeatedUint64List {
       get { return pbc::Lists.AsReadOnly(repeatedUint64_); }
@@ -1619,6 +1734,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedUint64_[index];
     }
     
+    public const int RepeatedSint32FieldNumber = 35;
     private pbc::PopsicleList<int> repeatedSint32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedSint32List {
       get { return pbc::Lists.AsReadOnly(repeatedSint32_); }
@@ -1630,6 +1746,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedSint32_[index];
     }
     
+    public const int RepeatedSint64FieldNumber = 36;
     private pbc::PopsicleList<long> repeatedSint64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> RepeatedSint64List {
       get { return pbc::Lists.AsReadOnly(repeatedSint64_); }
@@ -1641,6 +1758,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedSint64_[index];
     }
     
+    public const int RepeatedFixed32FieldNumber = 37;
     private pbc::PopsicleList<uint> repeatedFixed32_ = new pbc::PopsicleList<uint>();
     public scg::IList<uint> RepeatedFixed32List {
       get { return pbc::Lists.AsReadOnly(repeatedFixed32_); }
@@ -1652,6 +1770,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedFixed32_[index];
     }
     
+    public const int RepeatedFixed64FieldNumber = 38;
     private pbc::PopsicleList<ulong> repeatedFixed64_ = new pbc::PopsicleList<ulong>();
     public scg::IList<ulong> RepeatedFixed64List {
       get { return pbc::Lists.AsReadOnly(repeatedFixed64_); }
@@ -1663,6 +1782,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedFixed64_[index];
     }
     
+    public const int RepeatedSfixed32FieldNumber = 39;
     private pbc::PopsicleList<int> repeatedSfixed32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedSfixed32List {
       get { return pbc::Lists.AsReadOnly(repeatedSfixed32_); }
@@ -1674,6 +1794,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedSfixed32_[index];
     }
     
+    public const int RepeatedSfixed64FieldNumber = 40;
     private pbc::PopsicleList<long> repeatedSfixed64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> RepeatedSfixed64List {
       get { return pbc::Lists.AsReadOnly(repeatedSfixed64_); }
@@ -1685,6 +1806,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedSfixed64_[index];
     }
     
+    public const int RepeatedFloatFieldNumber = 41;
     private pbc::PopsicleList<float> repeatedFloat_ = new pbc::PopsicleList<float>();
     public scg::IList<float> RepeatedFloatList {
       get { return pbc::Lists.AsReadOnly(repeatedFloat_); }
@@ -1696,6 +1818,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedFloat_[index];
     }
     
+    public const int RepeatedDoubleFieldNumber = 42;
     private pbc::PopsicleList<double> repeatedDouble_ = new pbc::PopsicleList<double>();
     public scg::IList<double> RepeatedDoubleList {
       get { return pbc::Lists.AsReadOnly(repeatedDouble_); }
@@ -1707,6 +1830,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedDouble_[index];
     }
     
+    public const int RepeatedBoolFieldNumber = 43;
     private pbc::PopsicleList<bool> repeatedBool_ = new pbc::PopsicleList<bool>();
     public scg::IList<bool> RepeatedBoolList {
       get { return pbc::Lists.AsReadOnly(repeatedBool_); }
@@ -1718,6 +1842,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedBool_[index];
     }
     
+    public const int RepeatedStringFieldNumber = 44;
     private pbc::PopsicleList<string> repeatedString_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringList {
       get { return pbc::Lists.AsReadOnly(repeatedString_); }
@@ -1729,6 +1854,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedString_[index];
     }
     
+    public const int RepeatedBytesFieldNumber = 45;
     private pbc::PopsicleList<pb::ByteString> repeatedBytes_ = new pbc::PopsicleList<pb::ByteString>();
     public scg::IList<pb::ByteString> RepeatedBytesList {
       get { return pbc::Lists.AsReadOnly(repeatedBytes_); }
@@ -1740,6 +1866,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedBytes_[index];
     }
     
+    public const int RepeatedGroupFieldNumber = 46;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> repeatedGroup_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> RepeatedGroupList {
       get { return repeatedGroup_; }
@@ -1751,6 +1878,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedGroup_[index];
     }
     
+    public const int RepeatedNestedMessageFieldNumber = 48;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
       get { return repeatedNestedMessage_; }
@@ -1762,6 +1890,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedNestedMessage_[index];
     }
     
+    public const int RepeatedForeignMessageFieldNumber = 49;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedForeignMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
       get { return repeatedForeignMessage_; }
@@ -1773,6 +1902,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedForeignMessage_[index];
     }
     
+    public const int RepeatedImportMessageFieldNumber = 50;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> repeatedImportMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> RepeatedImportMessageList {
       get { return repeatedImportMessage_; }
@@ -1784,6 +1914,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedImportMessage_[index];
     }
     
+    public const int RepeatedNestedEnumFieldNumber = 51;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
       get { return pbc::Lists.AsReadOnly(repeatedNestedEnum_); }
@@ -1795,6 +1926,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedNestedEnum_[index];
     }
     
+    public const int RepeatedForeignEnumFieldNumber = 52;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedForeignEnumList {
       get { return pbc::Lists.AsReadOnly(repeatedForeignEnum_); }
@@ -1806,6 +1938,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedForeignEnum_[index];
     }
     
+    public const int RepeatedImportEnumFieldNumber = 53;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportEnum> repeatedImportEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportEnum>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportEnum> RepeatedImportEnumList {
       get { return pbc::Lists.AsReadOnly(repeatedImportEnum_); }
@@ -1817,6 +1950,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedImportEnum_[index];
     }
     
+    public const int RepeatedStringPieceFieldNumber = 54;
     private pbc::PopsicleList<string> repeatedStringPiece_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringPieceList {
       get { return pbc::Lists.AsReadOnly(repeatedStringPiece_); }
@@ -1828,6 +1962,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedStringPiece_[index];
     }
     
+    public const int RepeatedCordFieldNumber = 55;
     private pbc::PopsicleList<string> repeatedCord_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedCordList {
       get { return pbc::Lists.AsReadOnly(repeatedCord_); }
@@ -1839,6 +1974,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedCord_[index];
     }
     
+    public const int DefaultInt32FieldNumber = 61;
     private bool hasDefaultInt32;
     private int defaultInt32_ = 41;
     public bool HasDefaultInt32 {
@@ -1848,6 +1984,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInt32_; }
     }
     
+    public const int DefaultInt64FieldNumber = 62;
     private bool hasDefaultInt64;
     private long defaultInt64_ = 42L;
     public bool HasDefaultInt64 {
@@ -1857,6 +1994,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultInt64_; }
     }
     
+    public const int DefaultUint32FieldNumber = 63;
     private bool hasDefaultUint32;
     private uint defaultUint32_ = 43;
     public bool HasDefaultUint32 {
@@ -1866,6 +2004,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultUint32_; }
     }
     
+    public const int DefaultUint64FieldNumber = 64;
     private bool hasDefaultUint64;
     private ulong defaultUint64_ = 44UL;
     public bool HasDefaultUint64 {
@@ -1875,6 +2014,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultUint64_; }
     }
     
+    public const int DefaultSint32FieldNumber = 65;
     private bool hasDefaultSint32;
     private int defaultSint32_ = -45;
     public bool HasDefaultSint32 {
@@ -1884,6 +2024,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultSint32_; }
     }
     
+    public const int DefaultSint64FieldNumber = 66;
     private bool hasDefaultSint64;
     private long defaultSint64_ = 46;
     public bool HasDefaultSint64 {
@@ -1893,6 +2034,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultSint64_; }
     }
     
+    public const int DefaultFixed32FieldNumber = 67;
     private bool hasDefaultFixed32;
     private uint defaultFixed32_ = 47;
     public bool HasDefaultFixed32 {
@@ -1902,6 +2044,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultFixed32_; }
     }
     
+    public const int DefaultFixed64FieldNumber = 68;
     private bool hasDefaultFixed64;
     private ulong defaultFixed64_ = 48;
     public bool HasDefaultFixed64 {
@@ -1911,6 +2054,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultFixed64_; }
     }
     
+    public const int DefaultSfixed32FieldNumber = 69;
     private bool hasDefaultSfixed32;
     private int defaultSfixed32_ = 49;
     public bool HasDefaultSfixed32 {
@@ -1920,6 +2064,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultSfixed32_; }
     }
     
+    public const int DefaultSfixed64FieldNumber = 70;
     private bool hasDefaultSfixed64;
     private long defaultSfixed64_ = -50;
     public bool HasDefaultSfixed64 {
@@ -1929,6 +2074,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultSfixed64_; }
     }
     
+    public const int DefaultFloatFieldNumber = 71;
     private bool hasDefaultFloat;
     private float defaultFloat_ = 51.5F;
     public bool HasDefaultFloat {
@@ -1938,6 +2084,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultFloat_; }
     }
     
+    public const int DefaultDoubleFieldNumber = 72;
     private bool hasDefaultDouble;
     private double defaultDouble_ = 52000D;
     public bool HasDefaultDouble {
@@ -1947,6 +2094,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultDouble_; }
     }
     
+    public const int DefaultBoolFieldNumber = 73;
     private bool hasDefaultBool;
     private bool defaultBool_ = true;
     public bool HasDefaultBool {
@@ -1956,6 +2104,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultBool_; }
     }
     
+    public const int DefaultStringFieldNumber = 74;
     private bool hasDefaultString;
     private string defaultString_ = "hello";
     public bool HasDefaultString {
@@ -1965,6 +2114,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultString_; }
     }
     
+    public const int DefaultBytesFieldNumber = 75;
     private bool hasDefaultBytes;
     private pb::ByteString defaultBytes_ = (pb::ByteString) global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Descriptor.Fields[62].DefaultValue;
     public bool HasDefaultBytes {
@@ -1974,6 +2124,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultBytes_; }
     }
     
+    public const int DefaultNestedEnumFieldNumber = 81;
     private bool hasDefaultNestedEnum;
     private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum defaultNestedEnum_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum.BAR;
     public bool HasDefaultNestedEnum {
@@ -1983,6 +2134,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultNestedEnum_; }
     }
     
+    public const int DefaultForeignEnumFieldNumber = 82;
     private bool hasDefaultForeignEnum;
     private global::Google.ProtocolBuffers.TestProtos.ForeignEnum defaultForeignEnum_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_BAR;
     public bool HasDefaultForeignEnum {
@@ -1992,6 +2144,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultForeignEnum_; }
     }
     
+    public const int DefaultImportEnumFieldNumber = 83;
     private bool hasDefaultImportEnum;
     private global::Google.ProtocolBuffers.TestProtos.ImportEnum defaultImportEnum_ = global::Google.ProtocolBuffers.TestProtos.ImportEnum.IMPORT_BAR;
     public bool HasDefaultImportEnum {
@@ -2001,6 +2154,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultImportEnum_; }
     }
     
+    public const int DefaultStringPieceFieldNumber = 84;
     private bool hasDefaultStringPiece;
     private string defaultStringPiece_ = "abc";
     public bool HasDefaultStringPiece {
@@ -2010,6 +2164,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return defaultStringPiece_; }
     }
     
+    public const int DefaultCordFieldNumber = 85;
     private bool hasDefaultCord;
     private string defaultCord_ = "123";
     public bool HasDefaultCord {
@@ -4872,6 +5027,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable; }
     }
     
+    public const int CFieldNumber = 1;
     private bool hasC;
     private int c_ = 0;
     public bool HasC {
@@ -5239,6 +5395,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_OptionalGroup_extension__FieldAccessorTable; }
     }
     
+    public const int AFieldNumber = 17;
     private bool hasA;
     private int a_ = 0;
     public bool HasA {
@@ -5440,6 +5597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_RepeatedGroup_extension__FieldAccessorTable; }
     }
     
+    public const int AFieldNumber = 47;
     private bool hasA;
     private int a_ = 0;
     public bool HasA {
@@ -5641,11 +5799,14 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestRequired__FieldAccessorTable; }
     }
     
+    public const int SingleFieldNumber = 1000;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequired> Single =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(Descriptor.Extensions[0]);
+    public const int MultiFieldNumber = 1001;
     public static readonly
         pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired>> Multi =
         pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(Descriptor.Extensions[1]);
+    public const int AFieldNumber = 1;
     private bool hasA;
     private int a_ = 0;
     public bool HasA {
@@ -5655,6 +5816,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return a_; }
     }
     
+    public const int Dummy2FieldNumber = 2;
     private bool hasDummy2;
     private int dummy2_ = 0;
     public bool HasDummy2 {
@@ -5664,6 +5826,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy2_; }
     }
     
+    public const int BFieldNumber = 3;
     private bool hasB;
     private int b_ = 0;
     public bool HasB {
@@ -5673,6 +5836,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return b_; }
     }
     
+    public const int Dummy4FieldNumber = 4;
     private bool hasDummy4;
     private int dummy4_ = 0;
     public bool HasDummy4 {
@@ -5682,6 +5846,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy4_; }
     }
     
+    public const int Dummy5FieldNumber = 5;
     private bool hasDummy5;
     private int dummy5_ = 0;
     public bool HasDummy5 {
@@ -5691,6 +5856,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy5_; }
     }
     
+    public const int Dummy6FieldNumber = 6;
     private bool hasDummy6;
     private int dummy6_ = 0;
     public bool HasDummy6 {
@@ -5700,6 +5866,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy6_; }
     }
     
+    public const int Dummy7FieldNumber = 7;
     private bool hasDummy7;
     private int dummy7_ = 0;
     public bool HasDummy7 {
@@ -5709,6 +5876,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy7_; }
     }
     
+    public const int Dummy8FieldNumber = 8;
     private bool hasDummy8;
     private int dummy8_ = 0;
     public bool HasDummy8 {
@@ -5718,6 +5886,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy8_; }
     }
     
+    public const int Dummy9FieldNumber = 9;
     private bool hasDummy9;
     private int dummy9_ = 0;
     public bool HasDummy9 {
@@ -5727,6 +5896,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy9_; }
     }
     
+    public const int Dummy10FieldNumber = 10;
     private bool hasDummy10;
     private int dummy10_ = 0;
     public bool HasDummy10 {
@@ -5736,6 +5906,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy10_; }
     }
     
+    public const int Dummy11FieldNumber = 11;
     private bool hasDummy11;
     private int dummy11_ = 0;
     public bool HasDummy11 {
@@ -5745,6 +5916,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy11_; }
     }
     
+    public const int Dummy12FieldNumber = 12;
     private bool hasDummy12;
     private int dummy12_ = 0;
     public bool HasDummy12 {
@@ -5754,6 +5926,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy12_; }
     }
     
+    public const int Dummy13FieldNumber = 13;
     private bool hasDummy13;
     private int dummy13_ = 0;
     public bool HasDummy13 {
@@ -5763,6 +5936,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy13_; }
     }
     
+    public const int Dummy14FieldNumber = 14;
     private bool hasDummy14;
     private int dummy14_ = 0;
     public bool HasDummy14 {
@@ -5772,6 +5946,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy14_; }
     }
     
+    public const int Dummy15FieldNumber = 15;
     private bool hasDummy15;
     private int dummy15_ = 0;
     public bool HasDummy15 {
@@ -5781,6 +5956,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy15_; }
     }
     
+    public const int Dummy16FieldNumber = 16;
     private bool hasDummy16;
     private int dummy16_ = 0;
     public bool HasDummy16 {
@@ -5790,6 +5966,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy16_; }
     }
     
+    public const int Dummy17FieldNumber = 17;
     private bool hasDummy17;
     private int dummy17_ = 0;
     public bool HasDummy17 {
@@ -5799,6 +5976,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy17_; }
     }
     
+    public const int Dummy18FieldNumber = 18;
     private bool hasDummy18;
     private int dummy18_ = 0;
     public bool HasDummy18 {
@@ -5808,6 +5986,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy18_; }
     }
     
+    public const int Dummy19FieldNumber = 19;
     private bool hasDummy19;
     private int dummy19_ = 0;
     public bool HasDummy19 {
@@ -5817,6 +5996,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy19_; }
     }
     
+    public const int Dummy20FieldNumber = 20;
     private bool hasDummy20;
     private int dummy20_ = 0;
     public bool HasDummy20 {
@@ -5826,6 +6006,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy20_; }
     }
     
+    public const int Dummy21FieldNumber = 21;
     private bool hasDummy21;
     private int dummy21_ = 0;
     public bool HasDummy21 {
@@ -5835,6 +6016,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy21_; }
     }
     
+    public const int Dummy22FieldNumber = 22;
     private bool hasDummy22;
     private int dummy22_ = 0;
     public bool HasDummy22 {
@@ -5844,6 +6026,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy22_; }
     }
     
+    public const int Dummy23FieldNumber = 23;
     private bool hasDummy23;
     private int dummy23_ = 0;
     public bool HasDummy23 {
@@ -5853,6 +6036,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy23_; }
     }
     
+    public const int Dummy24FieldNumber = 24;
     private bool hasDummy24;
     private int dummy24_ = 0;
     public bool HasDummy24 {
@@ -5862,6 +6046,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy24_; }
     }
     
+    public const int Dummy25FieldNumber = 25;
     private bool hasDummy25;
     private int dummy25_ = 0;
     public bool HasDummy25 {
@@ -5871,6 +6056,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy25_; }
     }
     
+    public const int Dummy26FieldNumber = 26;
     private bool hasDummy26;
     private int dummy26_ = 0;
     public bool HasDummy26 {
@@ -5880,6 +6066,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy26_; }
     }
     
+    public const int Dummy27FieldNumber = 27;
     private bool hasDummy27;
     private int dummy27_ = 0;
     public bool HasDummy27 {
@@ -5889,6 +6076,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy27_; }
     }
     
+    public const int Dummy28FieldNumber = 28;
     private bool hasDummy28;
     private int dummy28_ = 0;
     public bool HasDummy28 {
@@ -5898,6 +6086,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy28_; }
     }
     
+    public const int Dummy29FieldNumber = 29;
     private bool hasDummy29;
     private int dummy29_ = 0;
     public bool HasDummy29 {
@@ -5907,6 +6096,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy29_; }
     }
     
+    public const int Dummy30FieldNumber = 30;
     private bool hasDummy30;
     private int dummy30_ = 0;
     public bool HasDummy30 {
@@ -5916,6 +6106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy30_; }
     }
     
+    public const int Dummy31FieldNumber = 31;
     private bool hasDummy31;
     private int dummy31_ = 0;
     public bool HasDummy31 {
@@ -5925,6 +6116,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy31_; }
     }
     
+    public const int Dummy32FieldNumber = 32;
     private bool hasDummy32;
     private int dummy32_ = 0;
     public bool HasDummy32 {
@@ -5934,6 +6126,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return dummy32_; }
     }
     
+    public const int CFieldNumber = 33;
     private bool hasC;
     private int c_ = 0;
     public bool HasC {
@@ -7130,6 +7323,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestRequiredForeign__FieldAccessorTable; }
     }
     
+    public const int OptionalMessageFieldNumber = 1;
     private bool hasOptionalMessage;
     private global::Google.ProtocolBuffers.TestProtos.TestRequired optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance;
     public bool HasOptionalMessage {
@@ -7139,6 +7333,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalMessage_; }
     }
     
+    public const int RepeatedMessageFieldNumber = 2;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestRequired> repeatedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestRequired>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired> RepeatedMessageList {
       get { return repeatedMessage_; }
@@ -7150,6 +7345,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedMessage_[index];
     }
     
+    public const int DummyFieldNumber = 3;
     private bool hasDummy;
     private int dummy_ = 0;
     public bool HasDummy {
@@ -7465,6 +7661,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable; }
     }
     
+    public const int ForeignNestedFieldNumber = 1;
     private bool hasForeignNested;
     private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage foreignNested_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance;
     public bool HasForeignNested {
@@ -8016,6 +8213,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable; }
     }
     
+    public const int AFieldNumber = 1;
     private bool hasA;
     private int a_ = 0;
     public bool HasA {
@@ -8025,6 +8223,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return a_; }
     }
     
+    public const int BbFieldNumber = 268435455;
     private bool hasBb;
     private int bb_ = 0;
     public bool HasBb {
@@ -8257,6 +8456,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable; }
     }
     
+    public const int AFieldNumber = 1;
     private bool hasA;
     private global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage a_ = global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.DefaultInstance;
     public bool HasA {
@@ -8266,6 +8466,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return a_; }
     }
     
+    public const int IFieldNumber = 2;
     private bool hasI;
     private int i_ = 0;
     public bool HasI {
@@ -8521,6 +8722,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable; }
     }
     
+    public const int BbFieldNumber = 1;
     private bool hasBb;
     private global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB bb_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.DefaultInstance;
     public bool HasBb {
@@ -8745,6 +8947,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable; }
     }
     
+    public const int AFieldNumber = 1;
     private bool hasA;
     private global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA a_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.DefaultInstance;
     public bool HasA {
@@ -8754,6 +8957,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return a_; }
     }
     
+    public const int OptionalInt32FieldNumber = 2;
     private bool hasOptionalInt32;
     private int optionalInt32_ = 0;
     public bool HasOptionalInt32 {
@@ -9033,6 +9237,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDupFieldNumber_Foo__FieldAccessorTable; }
         }
         
+        public const int AFieldNumber = 1;
         private bool hasA;
         private int a_ = 0;
         public bool HasA {
@@ -9234,6 +9439,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDupFieldNumber_Bar__FieldAccessorTable; }
         }
         
+        public const int AFieldNumber = 1;
         private bool hasA;
         private int a_ = 0;
         public bool HasA {
@@ -9416,6 +9622,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int AFieldNumber = 1;
     private bool hasA;
     private int a_ = 0;
     public bool HasA {
@@ -9425,6 +9632,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return a_; }
     }
     
+    public const int FooFieldNumber = 2;
     private bool hasFoo;
     private global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo foo_ = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.DefaultInstance;
     public bool HasFoo {
@@ -9434,6 +9642,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return foo_; }
     }
     
+    public const int BarFieldNumber = 3;
     private bool hasBar;
     private global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar bar_ = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.DefaultInstance;
     public bool HasBar {
@@ -9767,6 +9976,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__FieldAccessorTable; }
         }
         
+        public const int NestedmessageRepeatedInt32FieldNumber = 1;
         private pbc::PopsicleList<int> nestedmessageRepeatedInt32_ = new pbc::PopsicleList<int>();
         public scg::IList<int> NestedmessageRepeatedInt32List {
           get { return pbc::Lists.AsReadOnly(nestedmessageRepeatedInt32_); }
@@ -9778,6 +9988,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           return nestedmessageRepeatedInt32_[index];
         }
         
+        public const int NestedmessageRepeatedForeignmessageFieldNumber = 2;
         private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> nestedmessageRepeatedForeignmessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
         public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> NestedmessageRepeatedForeignmessageList {
           get { return nestedmessageRepeatedForeignmessage_; }
@@ -10032,6 +10243,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     
+    public const int OptionalNestedMessageFieldNumber = 1;
     private bool hasOptionalNestedMessage;
     private global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance;
     public bool HasOptionalNestedMessage {
@@ -10256,6 +10468,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable; }
     }
     
+    public const int PrimitiveFieldFieldNumber = 1;
     private bool hasPrimitiveField;
     private int primitiveField_ = 0;
     public bool HasPrimitiveField {
@@ -10265,6 +10478,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return primitiveField_; }
     }
     
+    public const int StringFieldFieldNumber = 2;
     private bool hasStringField;
     private string stringField_ = "";
     public bool HasStringField {
@@ -10274,6 +10488,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return stringField_; }
     }
     
+    public const int EnumFieldFieldNumber = 3;
     private bool hasEnumField;
     private global::Google.ProtocolBuffers.TestProtos.ForeignEnum enumField_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_FOO;
     public bool HasEnumField {
@@ -10283,6 +10498,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return enumField_; }
     }
     
+    public const int MessageFieldFieldNumber = 4;
     private bool hasMessageField;
     private global::Google.ProtocolBuffers.TestProtos.ForeignMessage messageField_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance;
     public bool HasMessageField {
@@ -10292,6 +10508,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return messageField_; }
     }
     
+    public const int StringPieceFieldFieldNumber = 5;
     private bool hasStringPieceField;
     private string stringPieceField_ = "";
     public bool HasStringPieceField {
@@ -10301,6 +10518,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return stringPieceField_; }
     }
     
+    public const int CordFieldFieldNumber = 6;
     private bool hasCordField;
     private string cordField_ = "";
     public bool HasCordField {
@@ -10310,6 +10528,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return cordField_; }
     }
     
+    public const int RepeatedPrimitiveFieldFieldNumber = 7;
     private pbc::PopsicleList<int> repeatedPrimitiveField_ = new pbc::PopsicleList<int>();
     public scg::IList<int> RepeatedPrimitiveFieldList {
       get { return pbc::Lists.AsReadOnly(repeatedPrimitiveField_); }
@@ -10321,6 +10540,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedPrimitiveField_[index];
     }
     
+    public const int RepeatedStringFieldFieldNumber = 8;
     private pbc::PopsicleList<string> repeatedStringField_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringFieldList {
       get { return pbc::Lists.AsReadOnly(repeatedStringField_); }
@@ -10332,6 +10552,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedStringField_[index];
     }
     
+    public const int RepeatedEnumFieldFieldNumber = 9;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> repeatedEnumField_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedEnumFieldList {
       get { return pbc::Lists.AsReadOnly(repeatedEnumField_); }
@@ -10343,6 +10564,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedEnumField_[index];
     }
     
+    public const int RepeatedMessageFieldFieldNumber = 10;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedMessageField_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedMessageFieldList {
       get { return repeatedMessageField_; }
@@ -10354,6 +10576,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedMessageField_[index];
     }
     
+    public const int RepeatedStringPieceFieldFieldNumber = 11;
     private pbc::PopsicleList<string> repeatedStringPieceField_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedStringPieceFieldList {
       get { return pbc::Lists.AsReadOnly(repeatedStringPieceField_); }
@@ -10365,6 +10588,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return repeatedStringPieceField_[index];
     }
     
+    public const int RepeatedCordFieldFieldNumber = 12;
     private pbc::PopsicleList<string> repeatedCordField_ = new pbc::PopsicleList<string>();
     public scg::IList<string> RepeatedCordFieldList {
       get { return pbc::Lists.AsReadOnly(repeatedCordField_); }
@@ -11062,6 +11286,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable; }
     }
     
+    public const int MyStringFieldNumber = 11;
     private bool hasMyString;
     private string myString_ = "";
     public bool HasMyString {
@@ -11071,6 +11296,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return myString_; }
     }
     
+    public const int MyIntFieldNumber = 1;
     private bool hasMyInt;
     private long myInt_ = 0L;
     public bool HasMyInt {
@@ -11080,6 +11306,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return myInt_; }
     }
     
+    public const int MyFloatFieldNumber = 101;
     private bool hasMyFloat;
     private float myFloat_ = 0F;
     public bool HasMyFloat {
@@ -11350,6 +11577,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable; }
     }
     
+    public const int EscapedBytesFieldNumber = 1;
     private bool hasEscapedBytes;
     private pb::ByteString escapedBytes_ = (pb::ByteString) global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Descriptor.Fields[0].DefaultValue;
     public bool HasEscapedBytes {
@@ -11359,6 +11587,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return escapedBytes_; }
     }
     
+    public const int LargeUint32FieldNumber = 2;
     private bool hasLargeUint32;
     private uint largeUint32_ = 4294967295;
     public bool HasLargeUint32 {
@@ -11368,6 +11597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return largeUint32_; }
     }
     
+    public const int LargeUint64FieldNumber = 3;
     private bool hasLargeUint64;
     private ulong largeUint64_ = 18446744073709551615UL;
     public bool HasLargeUint64 {
@@ -11377,6 +11607,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return largeUint64_; }
     }
     
+    public const int SmallInt32FieldNumber = 4;
     private bool hasSmallInt32;
     private int smallInt32_ = -2147483647;
     public bool HasSmallInt32 {
@@ -11386,6 +11617,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return smallInt32_; }
     }
     
+    public const int SmallInt64FieldNumber = 5;
     private bool hasSmallInt64;
     private long smallInt64_ = -9223372036854775807L;
     public bool HasSmallInt64 {
@@ -11395,6 +11627,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return smallInt64_; }
     }
     
+    public const int Utf8StringFieldNumber = 6;
     private bool hasUtf8String;
     private string utf8String_ = (string) global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Descriptor.Fields[5].DefaultValue;
     public bool HasUtf8String {
@@ -11753,6 +11986,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable; }
     }
     
+    public const int PackedInt32FieldNumber = 90;
     private int packedInt32MemoizedSerializedSize;
     private pbc::PopsicleList<int> packedInt32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> PackedInt32List {
@@ -11765,6 +11999,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedInt32_[index];
     }
     
+    public const int PackedInt64FieldNumber = 91;
     private int packedInt64MemoizedSerializedSize;
     private pbc::PopsicleList<long> packedInt64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> PackedInt64List {
@@ -11777,6 +12012,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedInt64_[index];
     }
     
+    public const int PackedUint32FieldNumber = 92;
     private int packedUint32MemoizedSerializedSize;
     private pbc::PopsicleList<uint> packedUint32_ = new pbc::PopsicleList<uint>();
     public scg::IList<uint> PackedUint32List {
@@ -11789,6 +12025,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedUint32_[index];
     }
     
+    public const int PackedUint64FieldNumber = 93;
     private int packedUint64MemoizedSerializedSize;
     private pbc::PopsicleList<ulong> packedUint64_ = new pbc::PopsicleList<ulong>();
     public scg::IList<ulong> PackedUint64List {
@@ -11801,6 +12038,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedUint64_[index];
     }
     
+    public const int PackedSint32FieldNumber = 94;
     private int packedSint32MemoizedSerializedSize;
     private pbc::PopsicleList<int> packedSint32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> PackedSint32List {
@@ -11813,6 +12051,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedSint32_[index];
     }
     
+    public const int PackedSint64FieldNumber = 95;
     private int packedSint64MemoizedSerializedSize;
     private pbc::PopsicleList<long> packedSint64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> PackedSint64List {
@@ -11825,6 +12064,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedSint64_[index];
     }
     
+    public const int PackedFixed32FieldNumber = 96;
     private int packedFixed32MemoizedSerializedSize;
     private pbc::PopsicleList<uint> packedFixed32_ = new pbc::PopsicleList<uint>();
     public scg::IList<uint> PackedFixed32List {
@@ -11837,6 +12077,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedFixed32_[index];
     }
     
+    public const int PackedFixed64FieldNumber = 97;
     private int packedFixed64MemoizedSerializedSize;
     private pbc::PopsicleList<ulong> packedFixed64_ = new pbc::PopsicleList<ulong>();
     public scg::IList<ulong> PackedFixed64List {
@@ -11849,6 +12090,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedFixed64_[index];
     }
     
+    public const int PackedSfixed32FieldNumber = 98;
     private int packedSfixed32MemoizedSerializedSize;
     private pbc::PopsicleList<int> packedSfixed32_ = new pbc::PopsicleList<int>();
     public scg::IList<int> PackedSfixed32List {
@@ -11861,6 +12103,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedSfixed32_[index];
     }
     
+    public const int PackedSfixed64FieldNumber = 99;
     private int packedSfixed64MemoizedSerializedSize;
     private pbc::PopsicleList<long> packedSfixed64_ = new pbc::PopsicleList<long>();
     public scg::IList<long> PackedSfixed64List {
@@ -11873,6 +12116,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedSfixed64_[index];
     }
     
+    public const int PackedFloatFieldNumber = 100;
     private int packedFloatMemoizedSerializedSize;
     private pbc::PopsicleList<float> packedFloat_ = new pbc::PopsicleList<float>();
     public scg::IList<float> PackedFloatList {
@@ -11885,6 +12129,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedFloat_[index];
     }
     
+    public const int PackedDoubleFieldNumber = 101;
     private int packedDoubleMemoizedSerializedSize;
     private pbc::PopsicleList<double> packedDouble_ = new pbc::PopsicleList<double>();
     public scg::IList<double> PackedDoubleList {
@@ -11897,6 +12142,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedDouble_[index];
     }
     
+    public const int PackedBoolFieldNumber = 102;
     private int packedBoolMemoizedSerializedSize;
     private pbc::PopsicleList<bool> packedBool_ = new pbc::PopsicleList<bool>();
     public scg::IList<bool> PackedBoolList {
@@ -11909,6 +12155,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       return packedBool_[index];
     }
     
+    public const int PackedEnumFieldNumber = 103;
     private int packedEnumMemoizedSerializedSize;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> packedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> PackedEnumList {

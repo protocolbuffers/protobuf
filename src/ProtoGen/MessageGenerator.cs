@@ -107,6 +107,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       foreach(FieldDescriptor fieldDescriptor in Descriptor.Fields) {
         // Rats: we lose the debug comment here :(
+        writer.WriteLine("public const int {0} = {1};", GetFieldConstantName(fieldDescriptor), fieldDescriptor.FieldNumber);
         SourceGenerators.CreateFieldGenerator(fieldDescriptor).GenerateMembers(writer);
         writer.WriteLine();
       }
@@ -186,7 +187,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine();
     }
 
-    private void GenerateSerializeOneField(TextGenerator writer, FieldDescriptor fieldDescriptor) {
+    private static void GenerateSerializeOneField(TextGenerator writer, FieldDescriptor fieldDescriptor) {
       SourceGenerators.CreateFieldGenerator(fieldDescriptor).GenerateSerializationCode(writer);
     }
 

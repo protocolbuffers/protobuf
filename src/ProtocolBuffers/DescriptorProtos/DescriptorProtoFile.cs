@@ -211,6 +211,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable; }
     }
     
+    public const int FileFieldNumber = 1;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> file_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> FileList {
       get { return file_; }
@@ -440,6 +441,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable; }
     }
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -449,6 +451,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int PackageFieldNumber = 2;
     private bool hasPackage;
     private string package_ = "";
     public bool HasPackage {
@@ -458,6 +461,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return package_; }
     }
     
+    public const int DependencyFieldNumber = 3;
     private pbc::PopsicleList<string> dependency_ = new pbc::PopsicleList<string>();
     public scg::IList<string> DependencyList {
       get { return pbc::Lists.AsReadOnly(dependency_); }
@@ -469,6 +473,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return dependency_[index];
     }
     
+    public const int MessageTypeFieldNumber = 4;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> messageType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> MessageTypeList {
       get { return messageType_; }
@@ -480,6 +485,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return messageType_[index];
     }
     
+    public const int EnumTypeFieldNumber = 5;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
       get { return enumType_; }
@@ -491,6 +497,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return enumType_[index];
     }
     
+    public const int ServiceFieldNumber = 6;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> service_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> ServiceList {
       get { return service_; }
@@ -502,6 +509,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return service_[index];
     }
     
+    public const int ExtensionFieldNumber = 7;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
       get { return extension_; }
@@ -513,6 +521,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return extension_[index];
     }
     
+    public const int OptionsFieldNumber = 8;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance;
     public bool HasOptions {
@@ -1105,6 +1114,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable; }
         }
         
+        public const int StartFieldNumber = 1;
         private bool hasStart;
         private int start_ = 0;
         public bool HasStart {
@@ -1114,6 +1124,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get { return start_; }
         }
         
+        public const int EndFieldNumber = 2;
         private bool hasEnd;
         private int end_ = 0;
         public bool HasEnd {
@@ -1327,6 +1338,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     #endregion
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -1336,6 +1348,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int FieldFieldNumber = 2;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> field_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> FieldList {
       get { return field_; }
@@ -1347,6 +1360,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return field_[index];
     }
     
+    public const int ExtensionFieldNumber = 6;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
       get { return extension_; }
@@ -1358,6 +1372,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return extension_[index];
     }
     
+    public const int NestedTypeFieldNumber = 3;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> nestedType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> NestedTypeList {
       get { return nestedType_; }
@@ -1369,6 +1384,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return nestedType_[index];
     }
     
+    public const int EnumTypeFieldNumber = 4;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
       get { return enumType_; }
@@ -1380,6 +1396,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return enumType_[index];
     }
     
+    public const int ExtensionRangeFieldNumber = 5;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRangeList {
       get { return extensionRange_; }
@@ -1391,6 +1408,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return extensionRange_[index];
     }
     
+    public const int OptionsFieldNumber = 7;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance;
     public bool HasOptions {
@@ -1964,6 +1982,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     #endregion
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -1973,6 +1992,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int NumberFieldNumber = 3;
     private bool hasNumber;
     private int number_ = 0;
     public bool HasNumber {
@@ -1982,6 +2002,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return number_; }
     }
     
+    public const int LabelFieldNumber = 4;
     private bool hasLabel;
     private global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Label label_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL;
     public bool HasLabel {
@@ -1991,6 +2012,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return label_; }
     }
     
+    public const int TypeFieldNumber = 5;
     private bool hasType;
     private global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Type type_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE;
     public bool HasType {
@@ -2000,6 +2022,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return type_; }
     }
     
+    public const int TypeNameFieldNumber = 6;
     private bool hasTypeName;
     private string typeName_ = "";
     public bool HasTypeName {
@@ -2009,6 +2032,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return typeName_; }
     }
     
+    public const int ExtendeeFieldNumber = 2;
     private bool hasExtendee;
     private string extendee_ = "";
     public bool HasExtendee {
@@ -2018,6 +2042,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return extendee_; }
     }
     
+    public const int DefaultValueFieldNumber = 7;
     private bool hasDefaultValue;
     private string defaultValue_ = "";
     public bool HasDefaultValue {
@@ -2027,6 +2052,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return defaultValue_; }
     }
     
+    public const int OptionsFieldNumber = 8;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance;
     public bool HasOptions {
@@ -2491,6 +2517,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable; }
     }
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -2500,6 +2527,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int ValueFieldNumber = 2;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> value_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> ValueList {
       get { return value_; }
@@ -2511,6 +2539,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return value_[index];
     }
     
+    public const int OptionsFieldNumber = 3;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance;
     public bool HasOptions {
@@ -2827,6 +2856,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable; }
     }
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -2836,6 +2866,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int NumberFieldNumber = 2;
     private bool hasNumber;
     private int number_ = 0;
     public bool HasNumber {
@@ -2845,6 +2876,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return number_; }
     }
     
+    public const int OptionsFieldNumber = 3;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance;
     public bool HasOptions {
@@ -3135,6 +3167,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable; }
     }
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -3144,6 +3177,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int MethodFieldNumber = 2;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> method_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> MethodList {
       get { return method_; }
@@ -3155,6 +3189,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return method_[index];
     }
     
+    public const int OptionsFieldNumber = 3;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance;
     public bool HasOptions {
@@ -3471,6 +3506,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable; }
     }
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -3480,6 +3516,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return name_; }
     }
     
+    public const int InputTypeFieldNumber = 2;
     private bool hasInputType;
     private string inputType_ = "";
     public bool HasInputType {
@@ -3489,6 +3526,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return inputType_; }
     }
     
+    public const int OutputTypeFieldNumber = 3;
     private bool hasOutputType;
     private string outputType_ = "";
     public bool HasOutputType {
@@ -3498,6 +3536,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return outputType_; }
     }
     
+    public const int OptionsFieldNumber = 4;
     private bool hasOptions;
     private global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance;
     public bool HasOptions {
@@ -3831,6 +3870,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     #endregion
     
+    public const int JavaPackageFieldNumber = 1;
     private bool hasJavaPackage;
     private string javaPackage_ = "";
     public bool HasJavaPackage {
@@ -3840,6 +3880,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return javaPackage_; }
     }
     
+    public const int JavaOuterClassnameFieldNumber = 8;
     private bool hasJavaOuterClassname;
     private string javaOuterClassname_ = "";
     public bool HasJavaOuterClassname {
@@ -3849,6 +3890,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return javaOuterClassname_; }
     }
     
+    public const int JavaMultipleFilesFieldNumber = 10;
     private bool hasJavaMultipleFiles;
     private bool javaMultipleFiles_ = false;
     public bool HasJavaMultipleFiles {
@@ -3858,6 +3900,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return javaMultipleFiles_; }
     }
     
+    public const int OptimizeForFieldNumber = 9;
     private bool hasOptimizeFor;
     private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.CODE_SIZE;
     public bool HasOptimizeFor {
@@ -3867,6 +3910,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return optimizeFor_; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -4235,6 +4279,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MessageOptions__FieldAccessorTable; }
     }
     
+    public const int MessageSetWireFormatFieldNumber = 1;
     private bool hasMessageSetWireFormat;
     private bool messageSetWireFormat_ = false;
     public bool HasMessageSetWireFormat {
@@ -4244,6 +4289,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return messageSetWireFormat_; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -4519,6 +4565,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     #endregion
     
+    public const int CtypeFieldNumber = 1;
     private bool hasCtype;
     private global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Types.CType ctype_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Types.CType.CORD;
     public bool HasCtype {
@@ -4528,6 +4575,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return ctype_; }
     }
     
+    public const int PackedFieldNumber = 2;
     private bool hasPacked;
     private bool packed_ = false;
     public bool HasPacked {
@@ -4537,6 +4585,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return packed_; }
     }
     
+    public const int ExperimentalMapKeyFieldNumber = 9;
     private bool hasExperimentalMapKey;
     private string experimentalMapKey_ = "";
     public bool HasExperimentalMapKey {
@@ -4546,6 +4595,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return experimentalMapKey_; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -4882,6 +4932,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumOptions__FieldAccessorTable; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -5116,6 +5167,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -5350,6 +5402,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceOptions__FieldAccessorTable; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -5584,6 +5637,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodOptions__FieldAccessorTable; }
     }
     
+    public const int UninterpretedOptionFieldNumber = 999;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
       get { return uninterpretedOption_; }
@@ -5842,6 +5896,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
         
+        public const int NamePartFieldNumber = 1;
         private bool hasNamePart_;
         private string namePart_ = "";
         public bool HasNamePart_ {
@@ -5851,6 +5906,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get { return namePart_; }
         }
         
+        public const int IsExtensionFieldNumber = 2;
         private bool hasIsExtension;
         private bool isExtension_ = false;
         public bool HasIsExtension {
@@ -6067,6 +6123,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     #endregion
     
+    public const int NameFieldNumber = 2;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart> name_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart>();
     public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart> NameList {
       get { return name_; }
@@ -6078,6 +6135,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return name_[index];
     }
     
+    public const int IdentifierValueFieldNumber = 3;
     private bool hasIdentifierValue;
     private string identifierValue_ = "";
     public bool HasIdentifierValue {
@@ -6087,6 +6145,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return identifierValue_; }
     }
     
+    public const int PositiveIntValueFieldNumber = 4;
     private bool hasPositiveIntValue;
     private ulong positiveIntValue_ = 0UL;
     public bool HasPositiveIntValue {
@@ -6096,6 +6155,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return positiveIntValue_; }
     }
     
+    public const int NegativeIntValueFieldNumber = 5;
     private bool hasNegativeIntValue;
     private long negativeIntValue_ = 0L;
     public bool HasNegativeIntValue {
@@ -6105,6 +6165,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return negativeIntValue_; }
     }
     
+    public const int DoubleValueFieldNumber = 6;
     private bool hasDoubleValue;
     private double doubleValue_ = 0D;
     public bool HasDoubleValue {
@@ -6114,6 +6175,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return doubleValue_; }
     }
     
+    public const int StringValueFieldNumber = 7;
     private bool hasStringValue;
     private pb::ByteString stringValue_ = pb::ByteString.Empty;
     public bool HasStringValue {

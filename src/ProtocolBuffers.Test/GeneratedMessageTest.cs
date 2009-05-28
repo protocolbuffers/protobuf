@@ -397,5 +397,32 @@ namespace Google.ProtocolBuffers {
       TestAllTypes message = builder.Build();
       TestUtil.AssertAllFieldsSet(message.ToBuilder().Build());
     }
+
+    [Test]
+    public void FieldConstantValues() {
+      Assert.AreEqual(TestAllTypes.Types.NestedMessage.BbFieldNumber, 1);
+      Assert.AreEqual(TestAllTypes.OptionalInt32FieldNumber, 1);
+      Assert.AreEqual(TestAllTypes.OptionalGroupFieldNumber, 16);
+      Assert.AreEqual(TestAllTypes.OptionalNestedMessageFieldNumber, 18);
+      Assert.AreEqual(TestAllTypes.OptionalNestedEnumFieldNumber, 21);
+      Assert.AreEqual(TestAllTypes.RepeatedInt32FieldNumber, 31);
+      Assert.AreEqual(TestAllTypes.RepeatedGroupFieldNumber, 46);
+      Assert.AreEqual(TestAllTypes.RepeatedNestedMessageFieldNumber, 48);
+      Assert.AreEqual(TestAllTypes.RepeatedNestedEnumFieldNumber, 51);
+    }
+
+    [Test]
+    public void ExtensionConstantValues() {
+      Assert.AreEqual(TestRequired.SingleFieldNumber, 1000);
+      Assert.AreEqual(TestRequired.MultiFieldNumber, 1001);
+      Assert.AreEqual(UnitTestProtoFile.OptionalInt32ExtensionFieldNumber, 1);
+      Assert.AreEqual(UnitTestProtoFile.OptionalGroupExtensionFieldNumber, 16);
+      Assert.AreEqual(UnitTestProtoFile.OptionalNestedMessageExtensionFieldNumber, 18);
+      Assert.AreEqual(UnitTestProtoFile.OptionalNestedEnumExtensionFieldNumber, 21);
+      Assert.AreEqual(UnitTestProtoFile.RepeatedInt32ExtensionFieldNumber, 31);
+      Assert.AreEqual(UnitTestProtoFile.RepeatedGroupExtensionFieldNumber, 46);
+      Assert.AreEqual(UnitTestProtoFile.RepeatedNestedMessageExtensionFieldNumber, 48);
+      Assert.AreEqual(UnitTestProtoFile.RepeatedNestedEnumExtensionFieldNumber, 51);
+    }
   }
 }

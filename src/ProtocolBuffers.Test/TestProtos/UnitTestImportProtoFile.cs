@@ -66,6 +66,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable; }
     }
     
+    public const int DFieldNumber = 1;
     private bool hasD;
     private int d_ = 0;
     public bool HasD {

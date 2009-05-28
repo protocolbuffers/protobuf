@@ -75,10 +75,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable; }
     }
     
+    public const int TestExtensionFieldNumber = 1234;
     public static readonly pb::GeneratedExtensionBase<int> TestExtension =
         pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
+    public const int TestExtension2FieldNumber = 1235;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize> TestExtension2 =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize>.CreateInstance(Descriptor.Extensions[1]);
+    public const int IFieldNumber = 1;
     private bool hasI;
     private int i_ = 0;
     public bool HasI {
@@ -88,6 +91,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return i_; }
     }
     
+    public const int MsgFieldNumber = 19;
     private bool hasMsg;
     private global::Google.ProtocolBuffers.TestProtos.ForeignMessage msg_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance;
     public bool HasMsg {
@@ -242,6 +246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestRequiredOptimizedForSize__FieldAccessorTable; }
     }
     
+    public const int XFieldNumber = 1;
     private bool hasX;
     private int x_ = 0;
     public bool HasX {
@@ -360,6 +365,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.internal__static_protobuf_unittest_TestOptionalOptimizedForSize__FieldAccessorTable; }
     }
     
+    public const int OFieldNumber = 1;
     private bool hasO;
     private global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize o_ = global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance;
     public bool HasO {

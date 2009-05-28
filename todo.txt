@@ -9,6 +9,9 @@ Current task list (not in order)
 - Avoid using reflection for messages which don't need it (is this
   possible?)
 - Add RegisterAllExtensions
-- Add ToBuilder changes from Google's r92
+- Add ToBuilder changes from Google's r92 (done? Need to check)
 - Silverlight changes (as per email to Jon)
+- Extension registration/initialization code?
 
+From latest Java code:
+r120: (Lots)

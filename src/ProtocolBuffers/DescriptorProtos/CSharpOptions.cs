@@ -31,8 +31,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     #endregion
     
     #region Extensions
+    public const int CsharpFileOptionsFieldNumber = 1000;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions> CSharpFileOptions =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions>.CreateInstance(Descriptor.Extensions[0]);
+    public const int CsharpFieldOptionsFieldNumber = 1000;
     public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions> CSharpFieldOptions =
         pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions>.CreateInstance(Descriptor.Extensions[1]);
     #endregion
@@ -73,6 +75,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable; }
     }
     
+    public const int NamespaceFieldNumber = 1;
     private bool hasNamespace;
     private string namespace_ = "";
     public bool HasNamespace {
@@ -82,6 +85,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return namespace_; }
     }
     
+    public const int UmbrellaClassnameFieldNumber = 2;
     private bool hasUmbrellaClassname;
     private string umbrellaClassname_ = "";
     public bool HasUmbrellaClassname {
@@ -91,6 +95,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return umbrellaClassname_; }
     }
     
+    public const int PublicClassesFieldNumber = 3;
     private bool hasPublicClasses;
     private bool publicClasses_ = false;
     public bool HasPublicClasses {
@@ -100,6 +105,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return publicClasses_; }
     }
     
+    public const int MultipleFilesFieldNumber = 4;
     private bool hasMultipleFiles;
     private bool multipleFiles_ = false;
     public bool HasMultipleFiles {
@@ -109,6 +115,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return multipleFiles_; }
     }
     
+    public const int NestClassesFieldNumber = 5;
     private bool hasNestClasses;
     private bool nestClasses_ = false;
     public bool HasNestClasses {
@@ -301,6 +308,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable; }
     }
     
+    public const int PropertyNameFieldNumber = 1;
     private bool hasPropertyName;
     private string propertyName_ = "";
     public bool HasPropertyName {

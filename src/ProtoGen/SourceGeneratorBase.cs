@@ -30,6 +30,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
+    internal static string GetFieldConstantName(FieldDescriptor field) {
+      return NameHelpers.UnderscoresToPascalCase(GetFieldName(field)) + "FieldNumber";
+    }
+
     private static string ToCSharpName(string name, FileDescriptor file) {
       string result = file.CSharpOptions.Namespace;
       if (file.CSharpOptions.NestClasses) {

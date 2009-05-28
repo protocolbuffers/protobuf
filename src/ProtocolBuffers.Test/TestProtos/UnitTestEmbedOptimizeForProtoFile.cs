@@ -60,6 +60,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestEmbedOptimizeForProtoFile.internal__static_protobuf_unittest_TestEmbedOptimizedForSize__FieldAccessorTable; }
     }
     
+    public const int OptionalMessageFieldNumber = 1;
     private bool hasOptionalMessage;
     private global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance;
     public bool HasOptionalMessage {
@@ -69,6 +70,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return optionalMessage_; }
     }
     
+    public const int RepeatedMessageFieldNumber = 2;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> repeatedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize>();
     public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> RepeatedMessageList {
       get { return repeatedMessage_; }

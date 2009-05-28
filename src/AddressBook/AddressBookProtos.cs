@@ -100,6 +100,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           get { return global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
         }
         
+        public const int NumberFieldNumber = 1;
         private bool hasNumber;
         private string number_ = "";
         public bool HasNumber {
@@ -109,6 +110,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           get { return number_; }
         }
         
+        public const int TypeFieldNumber = 2;
         private bool hasType;
         private global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME;
         public bool HasType {
@@ -332,6 +334,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     #endregion
     
+    public const int NameFieldNumber = 1;
     private bool hasName;
     private string name_ = "";
     public bool HasName {
@@ -341,6 +344,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get { return name_; }
     }
     
+    public const int IdFieldNumber = 2;
     private bool hasId;
     private int id_ = 0;
     public bool HasId {
@@ -350,6 +354,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get { return id_; }
     }
     
+    public const int EmailFieldNumber = 3;
     private bool hasEmail;
     private string email_ = "";
     public bool HasEmail {
@@ -359,6 +364,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get { return email_; }
     }
     
+    public const int PhoneFieldNumber = 4;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>();
     public scg::IList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> PhoneList {
       get { return phone_; }
@@ -685,6 +691,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.internal__static_tutorial_AddressBook__FieldAccessorTable; }
     }
     
+    public const int PersonFieldNumber = 1;
     private pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> person_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person>();
     public scg::IList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> PersonList {
       get { return person_; }
