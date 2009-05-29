@@ -136,6 +136,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMessageSet ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static TestMessageSet ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMessageSet ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static TestMessageSet ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -179,6 +185,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMessageSet BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         TestMessageSet returnMe = result;
         result = null;
         return returnMe;
@@ -314,6 +323,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMessageSetContainer ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static TestMessageSetContainer ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMessageSetContainer ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static TestMessageSetContainer ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -357,6 +372,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMessageSetContainer BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         TestMessageSetContainer returnMe = result;
         result = null;
         return returnMe;
@@ -542,6 +560,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMessageSetExtension1 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static TestMessageSetExtension1 ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMessageSetExtension1 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static TestMessageSetExtension1 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -585,6 +609,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMessageSetExtension1 BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         TestMessageSetExtension1 returnMe = result;
         result = null;
         return returnMe;
@@ -747,6 +774,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMessageSetExtension2 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static TestMessageSetExtension2 ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMessageSetExtension2 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static TestMessageSetExtension2 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -790,6 +823,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMessageSetExtension2 BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         TestMessageSetExtension2 returnMe = result;
         result = null;
         return returnMe;
@@ -992,6 +1028,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static Item ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        public static Item ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static Item ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
         public static Item ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
@@ -1035,6 +1077,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Item BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
             Item returnMe = result;
             result = null;
             return returnMe;
@@ -1203,6 +1248,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static RawMessageSet ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static RawMessageSet ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static RawMessageSet ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static RawMessageSet ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1246,6 +1297,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override RawMessageSet BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.item_.MakeReadOnly();
         RawMessageSet returnMe = result;
         result = null;

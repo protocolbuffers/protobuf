@@ -141,6 +141,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestEmbedOptimizedForSize ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static TestEmbedOptimizedForSize ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestEmbedOptimizedForSize ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static TestEmbedOptimizedForSize ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -184,6 +190,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestEmbedOptimizedForSize BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.repeatedMessage_.MakeReadOnly();
         TestEmbedOptimizedForSize returnMe = result;
         result = null;

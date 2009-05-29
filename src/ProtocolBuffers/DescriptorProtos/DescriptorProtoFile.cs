@@ -273,6 +273,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FileDescriptorSet ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static FileDescriptorSet ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static FileDescriptorSet ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static FileDescriptorSet ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -316,6 +322,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FileDescriptorSet BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.file_.MakeReadOnly();
         FileDescriptorSet returnMe = result;
         result = null;
@@ -642,6 +651,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FileDescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static FileDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static FileDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static FileDescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -685,6 +700,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FileDescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.dependency_.MakeReadOnly();
         result.messageType_.MakeReadOnly();
         result.enumType_.MakeReadOnly();
@@ -1187,6 +1205,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         public static ExtensionRange ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        public static ExtensionRange ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static ExtensionRange ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
         public static ExtensionRange ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
@@ -1230,6 +1254,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override ExtensionRange BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
             ExtensionRange returnMe = result;
             result = null;
             return returnMe;
@@ -1516,6 +1543,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static DescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static DescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static DescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static DescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1559,6 +1592,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override DescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.field_.MakeReadOnly();
         result.extension_.MakeReadOnly();
         result.nestedType_.MakeReadOnly();
@@ -2154,6 +2190,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FieldDescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static FieldDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static FieldDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static FieldDescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -2197,6 +2239,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FieldDescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         FieldDescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -2614,6 +2659,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumDescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static EnumDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static EnumDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static EnumDescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -2657,6 +2708,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumDescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.value_.MakeReadOnly();
         EnumDescriptorProto returnMe = result;
         result = null;
@@ -2948,6 +3002,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumValueDescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static EnumValueDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static EnumValueDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static EnumValueDescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -2991,6 +3051,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumValueDescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         EnumValueDescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -3264,6 +3327,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static ServiceDescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static ServiceDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ServiceDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static ServiceDescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -3307,6 +3376,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override ServiceDescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.method_.MakeReadOnly();
         ServiceDescriptorProto returnMe = result;
         result = null;
@@ -3614,6 +3686,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static MethodDescriptorProto ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static MethodDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static MethodDescriptorProto ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static MethodDescriptorProto ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -3657,6 +3735,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override MethodDescriptorProto BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         MethodDescriptorProto returnMe = result;
         result = null;
         return returnMe;
@@ -4000,6 +4081,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FileOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static FileOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static FileOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static FileOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -4043,6 +4130,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FileOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         FileOptions returnMe = result;
         result = null;
@@ -4361,6 +4451,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static MessageOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static MessageOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static MessageOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static MessageOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -4404,6 +4500,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override MessageOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         MessageOptions returnMe = result;
         result = null;
@@ -4679,6 +4778,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FieldOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static FieldOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static FieldOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static FieldOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -4722,6 +4827,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FieldOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         FieldOptions returnMe = result;
         result = null;
@@ -4998,6 +5106,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static EnumOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static EnumOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static EnumOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -5041,6 +5155,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         EnumOptions returnMe = result;
         result = null;
@@ -5233,6 +5350,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumValueOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static EnumValueOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static EnumValueOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static EnumValueOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -5276,6 +5399,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumValueOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         EnumValueOptions returnMe = result;
         result = null;
@@ -5468,6 +5594,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static ServiceOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static ServiceOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ServiceOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static ServiceOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -5511,6 +5643,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override ServiceOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         ServiceOptions returnMe = result;
         result = null;
@@ -5703,6 +5838,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static MethodOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static MethodOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static MethodOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static MethodOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -5746,6 +5887,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override MethodOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.uninterpretedOption_.MakeReadOnly();
         MethodOptions returnMe = result;
         result = null;
@@ -5971,6 +6115,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         public static NamePart ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        public static NamePart ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static NamePart ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
         public static NamePart ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
@@ -6014,6 +6164,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override NamePart BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
             NamePart returnMe = result;
             result = null;
             return returnMe;
@@ -6265,6 +6418,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static UninterpretedOption ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static UninterpretedOption ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static UninterpretedOption ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static UninterpretedOption ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -6308,6 +6467,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override UninterpretedOption BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.name_.MakeReadOnly();
         UninterpretedOption returnMe = result;
         result = null;

@@ -29,6 +29,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using System.IO;
 using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
@@ -99,6 +100,23 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void SerializeDelimited() {
+      MemoryStream stream = new MemoryStream();
+      TestUtil.GetAllSet().WriteDelimitedTo(stream);
+      stream.WriteByte(12);
+      TestUtil.GetPackedSet().WriteDelimitedTo(stream);
+      stream.WriteByte(34);
+
+      stream.Position = 0;
+
+      TestUtil.AssertAllFieldsSet(TestAllTypes.ParseDelimitedFrom(stream));
+      Assert.AreEqual(12, stream.ReadByte());
+      TestUtil.AssertPackedFieldsSet(TestPackedTypes.ParseDelimitedFrom(stream));
+      Assert.AreEqual(34, stream.ReadByte());
+      Assert.AreEqual(-1, stream.ReadByte());
+    }
+
+    [Test]
     public void ParseExtensions() {
       // TestAllTypes and TestAllExtensions should have compatible wire formats,
       // so if we serealize a TestAllTypes then parse it as TestAllExtensions
@@ -133,7 +151,7 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(TestUtil.GetAllSet().SerializedSize, TestUtil.GetAllExtensionsSet().SerializedSize);
     }
 
-    private void AssertFieldsInOrder(ByteString data) {
+    private static void AssertFieldsInOrder(ByteString data) {
       CodedInputStream input = data.CreateCodedInput();
       uint previousTag = 0;
 

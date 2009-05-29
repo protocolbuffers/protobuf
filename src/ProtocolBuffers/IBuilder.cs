@@ -247,6 +247,20 @@ namespace Google.ProtocolBuffers {
     /// Merge some unknown fields into the set for this message.
     /// </summary>
     TBuilder MergeUnknownFields(UnknownFieldSet unknownFields);
+    
+    /// <summary>
+    /// Like MergeFrom(Stream), but does not read until the end of the file.
+    /// Instead, the size of the message (encoded as a varint) is read first,
+    /// then the message data. Use Message.WriteDelimitedTo(Stream) to
+    /// write messages in this format.
+    /// </summary>
+    /// <param name="input"></param>
+    TBuilder MergeDelimitedFrom(Stream input);
+
+    /// <summary>
+    /// Like MergeDelimitedFrom(Stream) but supporting extensions.
+    /// </summary>
+    TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry);
 
     #region Convenience methods
     /// <summary>
@@ -283,8 +297,9 @@ namespace Google.ProtocolBuffers {
     /// MergeFrom(CodedInputStream). Note that this method always reads
     /// the entire input (unless it throws an exception). If you want it to
     /// stop earlier, you will need to wrap the input in a wrapper
-    /// stream which limits reading. Despite usually reading the entire
-    /// stream, this method never closes the stream.
+    /// stream which limits reading. Or, use IMessage.WriteDelimitedTo(Stream)
+    /// to write your message and MmergeDelimitedFrom(Stream) to read it.
+    /// Despite usually reading the entire stream, this method never closes the stream. 
     /// </summary>
     TBuilder MergeFrom(Stream input);
 

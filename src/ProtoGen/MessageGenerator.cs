@@ -218,6 +218,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("public static {0} ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {{", ClassName);
       writer.WriteLine("  return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();");
       writer.WriteLine("}");
+      writer.WriteLine("public static {0} ParseDelimitedFrom(global::System.IO.Stream input) {{", ClassName);
+      writer.WriteLine("  return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();");
+      writer.WriteLine("}");
+      writer.WriteLine("public static {0} ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {{", ClassName);
+      writer.WriteLine("  return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();");
+      writer.WriteLine("}");
       writer.WriteLine("public static {0} ParseFrom(pb::CodedInputStream input) {{", ClassName);
       writer.WriteLine("  return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();");
       writer.WriteLine("}");
@@ -325,6 +331,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
     
       writer.WriteLine("public override {0} BuildPartial() {{", ClassName);
       writer.Indent();
+      writer.WriteLine("if (result == null) {");
+      writer.WriteLine("  throw new global::System.InvalidOperationException(\"build() has already been called on this Builder\");");
+      writer.WriteLine("}");
       foreach (FieldDescriptor field in Descriptor.Fields) {
         SourceGenerators.CreateFieldGenerator(field).GenerateBuildingCode(writer);
       }

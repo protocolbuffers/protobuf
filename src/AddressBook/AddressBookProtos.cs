@@ -174,6 +174,12 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         public static PhoneNumber ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        public static PhoneNumber ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static PhoneNumber ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
         public static PhoneNumber ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
@@ -217,6 +223,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public override PhoneNumber BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
             PhoneNumber returnMe = result;
             result = null;
             return returnMe;
@@ -446,6 +455,12 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     public static Person ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static Person ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static Person ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static Person ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -489,6 +504,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Person BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.phone_.MakeReadOnly();
         Person returnMe = result;
         result = null;
@@ -753,6 +771,12 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     public static AddressBook ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static AddressBook ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static AddressBook ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static AddressBook ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -796,6 +820,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override AddressBook BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         result.person_.MakeReadOnly();
         AddressBook returnMe = result;
         result = null;

@@ -113,8 +113,25 @@ namespace Google.ProtocolBuffers {
     /// Serializes the message and writes it to the given output stream.
     /// This does not flush or close the stream.
     /// </summary>
-    /// <param name="output"></param>
+    /// <remarks>
+    /// Protocol Buffers are not self-delimiting. Therefore, if you write
+    /// any more data to the stream after the message, you must somehow ensure
+    /// that the parser on the receiving end does not interpret this as being
+    /// part of the protocol message. One way of doing this is by writing the size
+    /// of the message before the data, then making sure you limit the input to
+    /// that size when receiving the data. Alternatively, use WriteDelimitedTo(Stream).
+    /// </remarks>
     void WriteTo(CodedOutputStream output);
+
+    /// <summary>
+    /// Like WriteTo(Stream) but writes the size of the message as a varint before
+    /// writing the data. This allows more data to be written to the stream after the
+    /// message without the need to delimit the message data yourself. Use 
+    /// IBuilder.MergeDelimitedFrom(Stream) or the static method
+    /// YourMessageType.ParseDelimitedFrom(Stream) to parse messages written by this method.
+    /// </summary>
+    /// <param name="output"></param>
+    void WriteDelimitedTo(Stream output);
 
     /// <summary>
     /// Returns the number of bytes required to encode this message.

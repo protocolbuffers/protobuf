@@ -225,6 +225,16 @@ namespace Google.ProtocolBuffers {
       return ThisBuilder;
     }
 
+    public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry) {
+      int size = CodedInputStream.ReadRawVarint32(input);
+      Stream limitedStream = new LimitedInputStream(input, size);
+      return MergeFrom(limitedStream, extensionRegistry);
+    }
+
+    public TBuilder MergeDelimitedFrom(Stream input) {
+      return MergeDelimitedFrom(input, ExtensionRegistry.Empty);
+    }
+
     public virtual IBuilder SetField(FieldDescriptor field, object value) {
       this[field] = value;
       return ThisBuilder;
@@ -233,6 +243,71 @@ namespace Google.ProtocolBuffers {
     public virtual IBuilder SetRepeatedField(FieldDescriptor field, int index, object value) {
       this[field, index] = value;
       return ThisBuilder;
+    }
+
+    /// <summary>
+    /// Stream implementation which proxies another stream, only allowing a certain amount
+    /// of data to be read. Note that this is only used to read delimited streams, so it
+    /// doesn't attempt to implement everything.
+    /// </summary>
+    private class LimitedInputStream : Stream {
+
+      private readonly Stream proxied;
+      private int bytesLeft;
+
+      internal LimitedInputStream(Stream proxied, int size) {
+        this.proxied = proxied;
+        bytesLeft = size;
+      }
+
+      public override bool CanRead {
+        get { return true; }
+      }
+
+      public override bool CanSeek {
+        get { return false; }
+      }
+
+      public override bool CanWrite {
+        get { return false; }
+      }
+
+      public override void Flush() {
+      }
+
+      public override long Length {
+        get { throw new NotImplementedException(); }
+      }
+
+      public override long Position {
+        get {
+          throw new NotImplementedException();
+        }
+        set {
+          throw new NotImplementedException();
+        }
+      }
+
+      public override int Read(byte[] buffer, int offset, int count) {
+        if (bytesLeft > 0) {
+          int bytesRead = proxied.Read(buffer, offset, Math.Min(bytesLeft, count));
+          bytesLeft -= bytesRead;
+          return bytesRead;
+        }
+        return 0;
+      }
+
+      public override long Seek(long offset, SeekOrigin origin) {
+        throw new NotImplementedException();
+      }
+
+      public override void SetLength(long value) {
+        throw new NotImplementedException();
+      }
+
+      public override void Write(byte[] buffer, int offset, int count) {
+        throw new NotImplementedException();
+      }
     }
   }
 }

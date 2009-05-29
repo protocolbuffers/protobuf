@@ -141,7 +141,7 @@ namespace Google.ProtocolBuffers {
     /// zero is not a valid tag number.
     /// </summary>
     public uint ReadTag() {
-      if (bufferPos == bufferSize && !RefillBuffer(false)) {
+      if (IsAtEnd) {
         lastTag = 0;
         return 0;
       }
@@ -458,6 +458,41 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
+    /// Reads a varint from the input one byte at a time, so that it does not
+    /// read any bytes after the end of the varint. If you simply wrapped the
+    /// stream in a CodedInputStream and used ReadRawVarint32(Stream)}
+    /// then you would probably end up reading past the end of the varint since
+    /// CodedInputStream buffers its input.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    internal static int ReadRawVarint32(Stream input) {
+      int result = 0;
+      int offset = 0;
+      for (; offset < 32; offset += 7) {
+        int b = input.ReadByte();
+        if (b == -1) {
+          throw InvalidProtocolBufferException.TruncatedMessage();
+        }
+        result |= (b & 0x7f) << offset;
+        if ((b & 0x80) == 0) {
+          return result;
+        }
+      }
+      // Keep reading up to 64 bits.
+      for (; offset < 64; offset += 7) {
+        int b = input.ReadByte();
+        if (b == -1) {
+          throw InvalidProtocolBufferException.TruncatedMessage();
+        }
+        if ((b & 0x80) == 0) {
+          return result;
+        }
+      }
+      throw InvalidProtocolBufferException.MalformedVarint();
+    }
+
+    /// <summary>
     /// Read a raw varint from the stream.
     /// </summary>
     public ulong ReadRawVarint64() {
@@ -555,6 +590,9 @@ namespace Google.ProtocolBuffers {
     /// as you can without harming your app's functionality.  Note that
     /// size limits only apply when reading from an InputStream, not
     /// when constructed around a raw byte array (nor with ByteString.NewCodedInput).
+    /// If you want to read several messages from a single CodedInputStream, you
+    /// can call ResetSizeCounter() after each message to avoid hitting the
+    /// size limit.
     /// </remarks>
     public int SetSizeLimit(int limit) {
       if (limit < 0) {
@@ -566,6 +604,13 @@ namespace Google.ProtocolBuffers {
     }
 
     #region Internal reading and buffer management
+    /// <summary>
+    /// Resets the current size counter to zero (see SetSizeLimit).
+    /// </summary>
+    public void ResetSizeCounter() {
+      totalBytesRetired = 0;
+    }
+
     /// <summary>
     /// Sets currentLimit to (current position) + byteLimit. This is called
     /// when descending into a length-delimited embedded message. The previous
@@ -621,6 +666,17 @@ namespace Google.ProtocolBuffers {
         return currentAbsolutePosition >= currentLimit;
       }
     }
+
+    /// <summary>
+    /// Returns true if the stream has reached the end of the input. This is the
+    /// case if either the end of the underlying input source has been reached or
+    /// the stream has reached a limit created using PushLimit.
+    /// </summary>
+    public bool IsAtEnd {
+      get {
+        return bufferPos == bufferSize && !RefillBuffer(false);
+      }
+    }
     
     /// <summary>
     /// Called when buffer is empty to read more bytes from the
@@ -649,6 +705,9 @@ namespace Google.ProtocolBuffers {
 
       bufferPos = 0;
       bufferSize = (input == null) ? 0 : input.Read(buffer, 0, buffer.Length);
+      if (bufferSize < 0) {
+        throw new InvalidOperationException("Stream.Read returned a negative count");
+      }
       if (bufferSize == 0) {
         if (mustSucceed) {
           throw InvalidProtocolBufferException.TruncatedMessage();
@@ -847,7 +906,7 @@ namespace Google.ProtocolBuffers {
         throw InvalidProtocolBufferException.TruncatedMessage();
       }
 
-      if (size < bufferSize - bufferPos) {
+      if (size <= bufferSize - bufferPos) {
         // We have all the bytes we need already.
         bufferPos += size;
       } else {
@@ -863,8 +922,9 @@ namespace Google.ProtocolBuffers {
           if (input == null) {
             throw InvalidProtocolBufferException.TruncatedMessage();
           }
-          input.Seek(size - pos, SeekOrigin.Current);
-          if (input.Position > input.Length) {
+          long previousPosition = input.Position;
+          input.Position += size - pos;
+          if (input.Position != previousPosition + size - pos) {
             throw InvalidProtocolBufferException.TruncatedMessage();
           }
           totalBytesRetired += size - pos;

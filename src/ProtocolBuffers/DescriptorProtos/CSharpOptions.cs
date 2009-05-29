@@ -143,6 +143,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static CSharpFileOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CSharpFileOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CSharpFileOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CSharpFileOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -186,6 +192,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override CSharpFileOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CSharpFileOptions returnMe = result;
         result = null;
         return returnMe;
@@ -336,6 +345,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static CSharpFieldOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CSharpFieldOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CSharpFieldOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CSharpFieldOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -379,6 +394,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override CSharpFieldOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CSharpFieldOptions returnMe = result;
         result = null;
         return returnMe;

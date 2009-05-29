@@ -370,6 +370,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMessageWithCustomOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static TestMessageWithCustomOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMessageWithCustomOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static TestMessageWithCustomOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -413,6 +419,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMessageWithCustomOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         TestMessageWithCustomOptions returnMe = result;
         result = null;
         return returnMe;
@@ -480,6 +489,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static CustomOptionFooRequest ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CustomOptionFooRequest ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CustomOptionFooRequest ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CustomOptionFooRequest ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -523,6 +538,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override CustomOptionFooRequest BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CustomOptionFooRequest returnMe = result;
         result = null;
         return returnMe;
@@ -571,6 +589,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static CustomOptionFooResponse ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CustomOptionFooResponse ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CustomOptionFooResponse ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CustomOptionFooResponse ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -614,6 +638,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override CustomOptionFooResponse BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CustomOptionFooResponse returnMe = result;
         result = null;
         return returnMe;
@@ -672,6 +699,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static DummyMessageContainingEnum ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static DummyMessageContainingEnum ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static DummyMessageContainingEnum ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static DummyMessageContainingEnum ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -715,6 +748,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override DummyMessageContainingEnum BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         DummyMessageContainingEnum returnMe = result;
         result = null;
         return returnMe;
@@ -763,6 +799,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static DummyMessageInvalidAsOptionType ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static DummyMessageInvalidAsOptionType ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static DummyMessageInvalidAsOptionType ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static DummyMessageInvalidAsOptionType ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -806,6 +848,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override DummyMessageInvalidAsOptionType BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         DummyMessageInvalidAsOptionType returnMe = result;
         result = null;
         return returnMe;
@@ -854,6 +899,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static CustomOptionMinIntegerValues ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CustomOptionMinIntegerValues ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CustomOptionMinIntegerValues ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CustomOptionMinIntegerValues ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -897,6 +948,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override CustomOptionMinIntegerValues BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CustomOptionMinIntegerValues returnMe = result;
         result = null;
         return returnMe;
@@ -945,6 +999,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static CustomOptionMaxIntegerValues ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CustomOptionMaxIntegerValues ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CustomOptionMaxIntegerValues ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CustomOptionMaxIntegerValues ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -988,6 +1048,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override CustomOptionMaxIntegerValues BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CustomOptionMaxIntegerValues returnMe = result;
         result = null;
         return returnMe;
@@ -1036,6 +1099,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static CustomOptionOtherValues ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static CustomOptionOtherValues ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CustomOptionOtherValues ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static CustomOptionOtherValues ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1079,6 +1148,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override CustomOptionOtherValues BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         CustomOptionOtherValues returnMe = result;
         result = null;
         return returnMe;
@@ -1127,6 +1199,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SettingRealsFromPositiveInts ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static SettingRealsFromPositiveInts ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static SettingRealsFromPositiveInts ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static SettingRealsFromPositiveInts ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1170,6 +1248,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SettingRealsFromPositiveInts BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         SettingRealsFromPositiveInts returnMe = result;
         result = null;
         return returnMe;
@@ -1218,6 +1299,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SettingRealsFromNegativeInts ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static SettingRealsFromNegativeInts ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static SettingRealsFromNegativeInts ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static SettingRealsFromNegativeInts ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1261,6 +1348,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SettingRealsFromNegativeInts BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         SettingRealsFromNegativeInts returnMe = result;
         result = null;
         return returnMe;
@@ -1319,6 +1409,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static ComplexOptionType1 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static ComplexOptionType1 ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ComplexOptionType1 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static ComplexOptionType1 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1362,6 +1458,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override ComplexOptionType1 BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         ComplexOptionType1 returnMe = result;
         result = null;
         return returnMe;
@@ -1465,6 +1564,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static ComplexOptionType4 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        public static ComplexOptionType4 ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static ComplexOptionType4 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
         public static ComplexOptionType4 ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
@@ -1508,6 +1613,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override ComplexOptionType4 BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
             ComplexOptionType4 returnMe = result;
             result = null;
             return returnMe;
@@ -1585,6 +1693,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static ComplexOptionType2 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static ComplexOptionType2 ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ComplexOptionType2 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static ComplexOptionType2 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1628,6 +1742,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override ComplexOptionType2 BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         ComplexOptionType2 returnMe = result;
         result = null;
         return returnMe;
@@ -1800,6 +1917,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static ComplexOptionType5 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        public static ComplexOptionType5 ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static ComplexOptionType5 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
         public static ComplexOptionType5 ParseFrom(pb::CodedInputStream input) {
           return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
         }
@@ -1843,6 +1966,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override ComplexOptionType5 BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
             ComplexOptionType5 returnMe = result;
             result = null;
             return returnMe;
@@ -1910,6 +2036,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static ComplexOptionType3 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static ComplexOptionType3 ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ComplexOptionType3 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static ComplexOptionType3 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -1953,6 +2085,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override ComplexOptionType3 BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         ComplexOptionType3 returnMe = result;
         result = null;
         return returnMe;
@@ -2065,6 +2200,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static ComplexOpt6 ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static ComplexOpt6 ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ComplexOpt6 ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static ComplexOpt6 ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -2108,6 +2249,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override ComplexOpt6 BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         ComplexOpt6 returnMe = result;
         result = null;
         return returnMe;
@@ -2174,6 +2318,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static VariousComplexOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    public static VariousComplexOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static VariousComplexOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
     public static VariousComplexOptions ParseFrom(pb::CodedInputStream input) {
       return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
     }
@@ -2217,6 +2367,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override VariousComplexOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
         VariousComplexOptions returnMe = result;
         result = null;
         return returnMe;

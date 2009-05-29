@@ -205,6 +205,13 @@ namespace Google.ProtocolBuffers {
       codedOutput.Flush();
     }
 
+    public void WriteDelimitedTo(Stream output) {
+      CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
+      codedOutput.WriteRawVarint32((uint) SerializedSize);
+      WriteTo(codedOutput);
+      codedOutput.Flush();
+    }
+
     public override bool Equals(object other) {
       if (other == this) {
         return true;
