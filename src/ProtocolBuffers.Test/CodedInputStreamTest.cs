@@ -61,6 +61,7 @@ namespace Google.ProtocolBuffers {
 
       input = CodedInputStream.CreateInstance(data);
       Assert.AreEqual(value, input.ReadRawVarint64());
+      Assert.IsTrue(input.IsAtEnd);
 
       // Try different block sizes.
       for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2) {
@@ -69,7 +70,18 @@ namespace Google.ProtocolBuffers {
 
         input = CodedInputStream.CreateInstance(new SmallBlockInputStream(data, bufferSize));
         Assert.AreEqual(value, input.ReadRawVarint64());
+        Assert.IsTrue(input.IsAtEnd);
       }
+
+      // Try reading directly from a MemoryStream. We want to verify that it
+      // doesn't read past the end of the input, so write an extra byte - this
+      // lets us test the position at the end.
+      MemoryStream memoryStream = new MemoryStream();
+      memoryStream.Write(data, 0, data.Length);
+      memoryStream.WriteByte(0);
+      memoryStream.Position = 0;
+      Assert.AreEqual((uint)value, CodedInputStream.ReadRawVarint32(memoryStream));
+      Assert.AreEqual(data.Length, memoryStream.Position);
     }
 
     /// <summary>
@@ -77,7 +89,7 @@ namespace Google.ProtocolBuffers {
     /// expects them to fail with an InvalidProtocolBufferException whose
     /// description matches the given one.
     /// </summary>
-    private void AssertReadVarintFailure(InvalidProtocolBufferException expected, byte[] data) {
+    private static void AssertReadVarintFailure(InvalidProtocolBufferException expected, byte[] data) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       try {
         input.ReadRawVarint32();
@@ -89,6 +101,14 @@ namespace Google.ProtocolBuffers {
       input = CodedInputStream.CreateInstance(data);
       try {
         input.ReadRawVarint64();
+        Assert.Fail("Should have thrown an exception.");
+      } catch (InvalidProtocolBufferException e) {
+        Assert.AreEqual(expected.Message, e.Message);
+      }
+
+      // Make sure we get the same error when reading directly from a Stream.
+      try {
+        CodedInputStream.ReadRawVarint32(new MemoryStream(data));
         Assert.Fail("Should have thrown an exception.");
       } catch (InvalidProtocolBufferException e) {
         Assert.AreEqual(expected.Message, e.Message);
@@ -139,12 +159,14 @@ namespace Google.ProtocolBuffers {
     private static void AssertReadLittleEndian32(byte[] data, uint value) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       Assert.AreEqual(value, input.ReadRawLittleEndian32());
+      Assert.IsTrue(input.IsAtEnd);
 
       // Try different block sizes.
       for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
         input = CodedInputStream.CreateInstance(
           new SmallBlockInputStream(data, blockSize));
         Assert.AreEqual(value, input.ReadRawLittleEndian32());
+        Assert.IsTrue(input.IsAtEnd);
       }
     }
 
@@ -155,12 +177,14 @@ namespace Google.ProtocolBuffers {
     private static void AssertReadLittleEndian64(byte[] data, ulong value) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       Assert.AreEqual(value, input.ReadRawLittleEndian64());
+      Assert.IsTrue(input.IsAtEnd);
 
       // Try different block sizes.
       for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
         input = CodedInputStream.CreateInstance(
           new SmallBlockInputStream(data, blockSize));
         Assert.AreEqual(value, input.ReadRawLittleEndian64());
+        Assert.IsTrue(input.IsAtEnd);
       }
     }
 
@@ -237,6 +261,21 @@ namespace Google.ProtocolBuffers {
         unknownFields.MergeFieldFrom(tag, input1);
         input2.SkipField(tag);
       }
+    }
+
+    /// <summary>
+    /// Test that a bug in SkipRawBytes has been fixed: if the skip
+    /// skips exactly up to a limit, this should bnot break things
+    /// </summary>
+    [Test]
+    public void SkipRawBytesBug() {
+      byte[] rawBytes = new byte[] { 1, 2 };
+      CodedInputStream input = CodedInputStream.CreateInstance(rawBytes);
+
+      int limit = input.PushLimit(1);
+      input.SkipRawBytes(1);
+      input.PopLimit(limit);
+      Assert.AreEqual(2, input.ReadRawByte());
     }
 
     public void ReadHugeBlob() {
@@ -345,6 +384,31 @@ namespace Google.ProtocolBuffers {
         Assert.Fail("Should have thrown an exception!");
       } catch (InvalidProtocolBufferException) {
         // success.
+      }
+    }
+
+    [Test]
+    public void ResetSizeCounter() {
+      CodedInputStream input = CodedInputStream.CreateInstance(
+          new SmallBlockInputStream(new byte[256], 8));
+      input.SetSizeLimit(16);
+      input.ReadRawBytes(16);
+
+      try {
+        input.ReadRawByte();
+        Assert.Fail("Should have thrown an exception!");
+      } catch (InvalidProtocolBufferException e) {
+        // Success.
+      }
+
+      input.ResetSizeCounter();
+      input.ReadRawByte();  // No exception thrown.
+
+      try {
+        input.ReadRawBytes(16);  // Hits limit again.
+        Assert.Fail("Should have thrown an exception!");
+      } catch (InvalidProtocolBufferException e) {
+        // Success.
       }
     }
 

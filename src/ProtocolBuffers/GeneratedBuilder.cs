@@ -187,7 +187,8 @@ namespace Google.ProtocolBuffers {
     /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
     /// </summary>
     public override TMessage Build() {
-      if (!IsInitialized) {
+      // If the message is null, we'll throw a more appropriate exception in BuildPartial.
+      if (MessageBeingBuilt != null && !IsInitialized) {
         throw new UninitializedMessageException(MessageBeingBuilt);
       }
       return BuildPartial();

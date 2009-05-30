@@ -296,7 +296,7 @@ namespace Google.ProtocolBuffers {
       }
 
       public override DynamicMessage Build() {
-   	    if (!IsInitialized) {
+        if (fields != null && !IsInitialized) {
           throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields));
         }
         return BuildPartial();
@@ -315,6 +315,9 @@ namespace Google.ProtocolBuffers {
       }
 
       public override DynamicMessage BuildPartial() {
+        if (fields == null) {
+          throw new InvalidOperationException("Build() has already been called on this Builder.");
+        } 
         fields.MakeImmutable();
         DynamicMessage result = new DynamicMessage(type, fields, unknownFields);
         fields = null;

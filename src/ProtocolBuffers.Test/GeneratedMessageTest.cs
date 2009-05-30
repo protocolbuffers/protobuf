@@ -91,6 +91,18 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
+    public void DoubleBuildError() {
+      TestAllTypes.Builder builder = new TestAllTypes.Builder();
+      builder.Build();
+      try {
+        builder.Build();
+        Assert.Fail("Should have thrown exception.");
+      } catch (InvalidOperationException e) {
+        // Success.
+      }
+    }
+
+    [Test]
     public void DefaultInstance() {
       Assert.AreSame(TestAllTypes.DefaultInstance, TestAllTypes.DefaultInstance.DefaultInstanceForType);
       Assert.AreSame(TestAllTypes.DefaultInstance, TestAllTypes.CreateBuilder().DefaultInstanceForType);
@@ -367,7 +379,7 @@ namespace Google.ProtocolBuffers {
     }
 
     [Test]
-    public void TestOptimizedForSizeMergeUsesAllFieldsFromTarget() {
+    public void OptimizedForSizeMergeUsesAllFieldsFromTarget() {
       TestOptimizedForSize withFieldSet = new TestOptimizedForSize.Builder { I = 10 }.Build();
       TestOptimizedForSize.Builder builder = new TestOptimizedForSize.Builder();
       builder.MergeFrom(withFieldSet);

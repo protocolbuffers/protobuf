@@ -466,7 +466,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    internal static int ReadRawVarint32(Stream input) {
+    internal static uint ReadRawVarint32(Stream input) {
       int result = 0;
       int offset = 0;
       for (; offset < 32; offset += 7) {
@@ -476,7 +476,7 @@ namespace Google.ProtocolBuffers {
         }
         result |= (b & 0x7f) << offset;
         if ((b & 0x80) == 0) {
-          return result;
+          return (uint) result;
         }
       }
       // Keep reading up to 64 bits.
@@ -486,7 +486,7 @@ namespace Google.ProtocolBuffers {
           throw InvalidProtocolBufferException.TruncatedMessage();
         }
         if ((b & 0x80) == 0) {
-          return result;
+          return (uint) result;
         }
       }
       throw InvalidProtocolBufferException.MalformedVarint();
@@ -918,16 +918,33 @@ namespace Google.ProtocolBuffers {
 
         // Then skip directly from the InputStream for the rest.
         if (pos < size) {
-          // TODO(jonskeet): Java implementation uses skip(). Not sure whether this is really equivalent...
           if (input == null) {
             throw InvalidProtocolBufferException.TruncatedMessage();
           }
-          long previousPosition = input.Position;
-          input.Position += size - pos;
-          if (input.Position != previousPosition + size - pos) {
+          SkipImpl(size - pos);
+          totalBytesRetired += size - pos;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Abstraction of skipping to cope with streams which can't really skip.
+    /// </summary>
+    private void SkipImpl(int amountToSkip) {
+      if (input.CanSeek) {
+        long previousPosition = input.Position;
+        input.Position += amountToSkip;
+        if (input.Position != previousPosition + amountToSkip) {
+          throw InvalidProtocolBufferException.TruncatedMessage();
+        }
+      } else {
+        byte[] skipBuffer = new byte[1024];
+        while (amountToSkip > 0) {
+          int bytesRead = input.Read(skipBuffer, 0, skipBuffer.Length);
+          if (bytesRead <= 0) {
             throw InvalidProtocolBufferException.TruncatedMessage();
           }
-          totalBytesRetired += size - pos;
+          amountToSkip -= bytesRead;
         }
       }
     }

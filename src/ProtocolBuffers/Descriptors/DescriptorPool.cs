@@ -109,8 +109,7 @@ namespace Google.ProtocolBuffers.Descriptors {
             "package) in file \"" + old.File.Name + "\".");
         }
       }
-      // TODO(jonskeet): Check issue 25 wrt the ordering of these parameters
-      descriptorsByName[fullName] = new PackageDescriptor(fullName, name, file);
+      descriptorsByName[fullName] = new PackageDescriptor(name, fullName, file);
     }
 
     /// <summary>

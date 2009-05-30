@@ -32,6 +32,7 @@ using Google.ProtocolBuffers.TestProtos;
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using NUnit.Framework;
+using System;
 
 namespace Google.ProtocolBuffers {
   [TestFixture]
@@ -54,6 +55,18 @@ namespace Google.ProtocolBuffers {
       reflectionTester.SetAllFieldsViaReflection(builder);
       IMessage message = builder.WeakBuild();
       reflectionTester.AssertAllFieldsSetViaReflection(message);
+    }
+
+    [Test]
+    public void DoubleBuildError() {
+      DynamicMessage.Builder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
+      builder.Build();
+      try {
+        builder.Build();
+        Assert.Fail("Should have thrown exception.");
+      } catch (InvalidOperationException e) {
+        // Success.
+      }
     }
 
     [Test]

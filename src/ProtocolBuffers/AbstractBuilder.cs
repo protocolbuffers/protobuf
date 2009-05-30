@@ -226,7 +226,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry) {
-      int size = CodedInputStream.ReadRawVarint32(input);
+      int size = (int) CodedInputStream.ReadRawVarint32(input);
       Stream limitedStream = new LimitedInputStream(input, size);
       return MergeFrom(limitedStream, extensionRegistry);
     }
