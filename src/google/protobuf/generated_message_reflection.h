@@ -347,9 +347,10 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
 // choose 16 rather than some other number just in case the compiler would
 // be confused by an unaligned pointer.
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)    \
-  (reinterpret_cast<const char*>(                             \
-     &reinterpret_cast<const TYPE*>(16)->FIELD) -             \
-   reinterpret_cast<const char*>(16))
+  static_cast<int>(                                           \
+    reinterpret_cast<const char*>(                            \
+      &reinterpret_cast<const TYPE*>(16)->FIELD) -            \
+    reinterpret_cast<const char*>(16))
 
 // There are some places in proto2 where dynamic_cast would be useful as an
 // optimization.  For example, take Message::MergeFrom(const Message& other).
