@@ -42,3 +42,4 @@ extern bool upb_struct_is_set(uint8_t *s, struct upb_struct_field *f);
 extern bool upb_struct_all_required_fields_set(
     uint8_t *s, struct upb_struct_definition *d);
 extern void upb_struct_clear(uint8_t *s, struct upb_struct_definition *d);
+

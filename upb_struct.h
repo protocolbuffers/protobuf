@@ -57,8 +57,8 @@ struct upb_struct_definition {
 };
 
 /* While these are written to be as fast as possible, it will still be faster
- * cache the results of this lookup if possible.  These return NULL if no such
- * field is found. */
+ * to cache the results of this lookup if possible.  These return NULL if no
+ * such field is found. */
 struct upb_struct_field *upb_struct_find_field_by_name(
   struct upb_struct_definition *d, char *name);
 struct upb_struct_field *upb_struct_find_field_by_number(
