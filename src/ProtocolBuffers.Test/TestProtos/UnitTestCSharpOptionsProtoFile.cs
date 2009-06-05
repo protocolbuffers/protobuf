@@ -103,6 +103,47 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return customized_; }
     }
     
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (HasNormal) {
+        output.WriteString(1, Normal);
+      }
+      if (HasOptionsMessage_) {
+        output.WriteString(2, OptionsMessage_);
+      }
+      if (HasCustomName) {
+        output.WriteString(3, CustomName);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasNormal) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, Normal);
+        }
+        if (HasOptionsMessage_) {
+          size += pb::CodedOutputStream.ComputeStringSize(2, OptionsMessage_);
+        }
+        if (HasCustomName) {
+          size += pb::CodedOutputStream.ComputeStringSize(3, CustomName);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
     public static OptionsMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -176,6 +217,74 @@ namespace Google.ProtocolBuffers.TestProtos {
         OptionsMessage returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is OptionsMessage) {
+          return MergeFrom((OptionsMessage) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(OptionsMessage other) {
+        if (other == OptionsMessage.DefaultInstance) return this;
+        if (other.HasNormal) {
+          Normal = other.Normal;
+        }
+        if (other.HasOptionsMessage_) {
+          OptionsMessage_ = other.OptionsMessage_;
+        }
+        if (other.HasCustomName) {
+          CustomName = other.CustomName;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              Normal = input.ReadString();
+              break;
+            }
+            case 18: {
+              OptionsMessage_ = input.ReadString();
+              break;
+            }
+            case 26: {
+              CustomName = input.ReadString();
+              break;
+            }
+          }
+        }
       }
       
       

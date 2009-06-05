@@ -141,6 +141,59 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return nestClasses_; }
     }
     
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (HasNamespace) {
+        output.WriteString(1, Namespace);
+      }
+      if (HasUmbrellaClassname) {
+        output.WriteString(2, UmbrellaClassname);
+      }
+      if (HasPublicClasses) {
+        output.WriteBool(3, PublicClasses);
+      }
+      if (HasMultipleFiles) {
+        output.WriteBool(4, MultipleFiles);
+      }
+      if (HasNestClasses) {
+        output.WriteBool(5, NestClasses);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasNamespace) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, Namespace);
+        }
+        if (HasUmbrellaClassname) {
+          size += pb::CodedOutputStream.ComputeStringSize(2, UmbrellaClassname);
+        }
+        if (HasPublicClasses) {
+          size += pb::CodedOutputStream.ComputeBoolSize(3, PublicClasses);
+        }
+        if (HasMultipleFiles) {
+          size += pb::CodedOutputStream.ComputeBoolSize(4, MultipleFiles);
+        }
+        if (HasNestClasses) {
+          size += pb::CodedOutputStream.ComputeBoolSize(5, NestClasses);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
     public static CSharpFileOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -214,6 +267,88 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         CSharpFileOptions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CSharpFileOptions) {
+          return MergeFrom((CSharpFileOptions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CSharpFileOptions other) {
+        if (other == CSharpFileOptions.DefaultInstance) return this;
+        if (other.HasNamespace) {
+          Namespace = other.Namespace;
+        }
+        if (other.HasUmbrellaClassname) {
+          UmbrellaClassname = other.UmbrellaClassname;
+        }
+        if (other.HasPublicClasses) {
+          PublicClasses = other.PublicClasses;
+        }
+        if (other.HasMultipleFiles) {
+          MultipleFiles = other.MultipleFiles;
+        }
+        if (other.HasNestClasses) {
+          NestClasses = other.NestClasses;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              Namespace = input.ReadString();
+              break;
+            }
+            case 18: {
+              UmbrellaClassname = input.ReadString();
+              break;
+            }
+            case 24: {
+              PublicClasses = input.ReadBool();
+              break;
+            }
+            case 32: {
+              MultipleFiles = input.ReadBool();
+              break;
+            }
+            case 40: {
+              NestClasses = input.ReadBool();
+              break;
+            }
+          }
+        }
       }
       
       
@@ -346,6 +481,35 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return propertyName_; }
     }
     
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (HasPropertyName) {
+        output.WriteString(1, PropertyName);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasPropertyName) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, PropertyName);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
     public static CSharpFieldOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -419,6 +583,60 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         CSharpFieldOptions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CSharpFieldOptions) {
+          return MergeFrom((CSharpFieldOptions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CSharpFieldOptions other) {
+        if (other == CSharpFieldOptions.DefaultInstance) return this;
+        if (other.HasPropertyName) {
+          PropertyName = other.PropertyName;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              PropertyName = input.ReadString();
+              break;
+            }
+          }
+        }
       }
       
       

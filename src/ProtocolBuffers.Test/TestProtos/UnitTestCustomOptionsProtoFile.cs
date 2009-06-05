@@ -419,6 +419,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return field1_; }
     }
     
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (HasField1) {
+        output.WriteString(1, Field1);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasField1) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, Field1);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
     public static TestMessageWithCustomOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -494,6 +523,60 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestMessageWithCustomOptions) {
+          return MergeFrom((TestMessageWithCustomOptions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestMessageWithCustomOptions other) {
+        if (other == TestMessageWithCustomOptions.DefaultInstance) return this;
+        if (other.HasField1) {
+          Field1 = other.Field1;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              Field1 = input.ReadString();
+              break;
+            }
+          }
+        }
+      }
+      
       
       public bool HasField1 {
         get { return result.HasField1; }
@@ -539,6 +622,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<CustomOptionFooRequest, CustomOptionFooRequest.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_CustomOptionFooRequest__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static CustomOptionFooRequest ParseFrom(pb::ByteString data) {
@@ -616,6 +722,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CustomOptionFooRequest) {
+          return MergeFrom((CustomOptionFooRequest) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CustomOptionFooRequest other) {
+        if (other == CustomOptionFooRequest.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static CustomOptionFooRequest() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -642,6 +795,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<CustomOptionFooResponse, CustomOptionFooResponse.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_CustomOptionFooResponse__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static CustomOptionFooResponse ParseFrom(pb::ByteString data) {
@@ -719,6 +895,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CustomOptionFooResponse) {
+          return MergeFrom((CustomOptionFooResponse) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CustomOptionFooResponse other) {
+        if (other == CustomOptionFooResponse.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static CustomOptionFooResponse() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -756,6 +979,29 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     #endregion
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
     
     public static DummyMessageContainingEnum ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -832,6 +1078,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is DummyMessageContainingEnum) {
+          return MergeFrom((DummyMessageContainingEnum) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(DummyMessageContainingEnum other) {
+        if (other == DummyMessageContainingEnum.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static DummyMessageContainingEnum() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -858,6 +1151,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<DummyMessageInvalidAsOptionType, DummyMessageInvalidAsOptionType.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static DummyMessageInvalidAsOptionType ParseFrom(pb::ByteString data) {
@@ -935,6 +1251,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is DummyMessageInvalidAsOptionType) {
+          return MergeFrom((DummyMessageInvalidAsOptionType) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(DummyMessageInvalidAsOptionType other) {
+        if (other == DummyMessageInvalidAsOptionType.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static DummyMessageInvalidAsOptionType() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -961,6 +1324,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<CustomOptionMinIntegerValues, CustomOptionMinIntegerValues.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_CustomOptionMinIntegerValues__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static CustomOptionMinIntegerValues ParseFrom(pb::ByteString data) {
@@ -1038,6 +1424,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CustomOptionMinIntegerValues) {
+          return MergeFrom((CustomOptionMinIntegerValues) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CustomOptionMinIntegerValues other) {
+        if (other == CustomOptionMinIntegerValues.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static CustomOptionMinIntegerValues() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -1064,6 +1497,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<CustomOptionMaxIntegerValues, CustomOptionMaxIntegerValues.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static CustomOptionMaxIntegerValues ParseFrom(pb::ByteString data) {
@@ -1141,6 +1597,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CustomOptionMaxIntegerValues) {
+          return MergeFrom((CustomOptionMaxIntegerValues) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CustomOptionMaxIntegerValues other) {
+        if (other == CustomOptionMaxIntegerValues.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static CustomOptionMaxIntegerValues() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -1167,6 +1670,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<CustomOptionOtherValues, CustomOptionOtherValues.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_CustomOptionOtherValues__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static CustomOptionOtherValues ParseFrom(pb::ByteString data) {
@@ -1244,6 +1770,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CustomOptionOtherValues) {
+          return MergeFrom((CustomOptionOtherValues) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CustomOptionOtherValues other) {
+        if (other == CustomOptionOtherValues.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static CustomOptionOtherValues() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -1270,6 +1843,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<SettingRealsFromPositiveInts, SettingRealsFromPositiveInts.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_SettingRealsFromPositiveInts__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static SettingRealsFromPositiveInts ParseFrom(pb::ByteString data) {
@@ -1347,6 +1943,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is SettingRealsFromPositiveInts) {
+          return MergeFrom((SettingRealsFromPositiveInts) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(SettingRealsFromPositiveInts other) {
+        if (other == SettingRealsFromPositiveInts.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static SettingRealsFromPositiveInts() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -1373,6 +2016,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<SettingRealsFromNegativeInts, SettingRealsFromNegativeInts.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_SettingRealsFromNegativeInts__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static SettingRealsFromNegativeInts ParseFrom(pb::ByteString data) {
@@ -1450,6 +2116,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is SettingRealsFromNegativeInts) {
+          return MergeFrom((SettingRealsFromNegativeInts) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(SettingRealsFromNegativeInts other) {
+        if (other == SettingRealsFromNegativeInts.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
     }
     static SettingRealsFromNegativeInts() {
       pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
@@ -1486,6 +2199,39 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     public int Foo {
       get { return foo_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (!ExtensionsAreInitialized) return false;
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      pb::ExtendableMessage<ComplexOptionType1, ComplexOptionType1.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
+      if (HasFoo) {
+        output.WriteInt32(1, Foo);
+      }
+      extensionWriter.WriteUntil(536870912, output);
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasFoo) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, Foo);
+        }
+        size += ExtensionsSerializedSize;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static ComplexOptionType1 ParseFrom(pb::ByteString data) {
@@ -1561,6 +2307,61 @@ namespace Google.ProtocolBuffers.TestProtos {
         ComplexOptionType1 returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is ComplexOptionType1) {
+          return MergeFrom((ComplexOptionType1) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(ComplexOptionType1 other) {
+        if (other == ComplexOptionType1.DefaultInstance) return this;
+        if (other.HasFoo) {
+          Foo = other.Foo;
+        }
+          this.MergeExtensionFields(other);
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 8: {
+              Foo = input.ReadInt32();
+              break;
+            }
+          }
+        }
       }
       
       
@@ -1645,6 +2446,35 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return waldo_; }
         }
         
+        public override bool IsInitialized {
+          get {
+            return true;
+          }
+        }
+        
+        public override void WriteTo(pb::CodedOutputStream output) {
+          if (HasWaldo) {
+            output.WriteInt32(1, Waldo);
+          }
+          UnknownFields.WriteTo(output);
+        }
+        
+        private int memoizedSerializedSize = -1;
+        public override int SerializedSize {
+          get {
+            int size = memoizedSerializedSize;
+            if (size != -1) return size;
+            
+            size = 0;
+            if (HasWaldo) {
+              size += pb::CodedOutputStream.ComputeInt32Size(1, Waldo);
+            }
+            size += UnknownFields.SerializedSize;
+            memoizedSerializedSize = size;
+            return size;
+          }
+        }
+        
         public static ComplexOptionType4 ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -1720,6 +2550,60 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
+          public override Builder MergeFrom(pb::IMessage other) {
+            if (other is ComplexOptionType4) {
+              return MergeFrom((ComplexOptionType4) other);
+            } else {
+              base.MergeFrom(other);
+              return this;
+            }
+          }
+          
+          public override Builder MergeFrom(ComplexOptionType4 other) {
+            if (other == ComplexOptionType4.DefaultInstance) return this;
+            if (other.HasWaldo) {
+              Waldo = other.Waldo;
+            }
+            this.MergeUnknownFields(other.UnknownFields);
+            return this;
+          }
+          
+          public override Builder MergeFrom(pb::CodedInputStream input) {
+            return MergeFrom(input, pb::ExtensionRegistry.Empty);
+          }
+          
+          public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+            pb::UnknownFieldSet.Builder unknownFields = null;
+            while (true) {
+              uint tag = input.ReadTag();
+              switch (tag) {
+                case 0: {
+                  if (unknownFields != null) {
+                    this.UnknownFields = unknownFields.Build();
+                  }
+                  return this;
+                }
+                default: {
+                  if (pb::WireFormat.IsEndGroupTag(tag)) {
+                    if (unknownFields != null) {
+                      this.UnknownFields = unknownFields.Build();
+                    }
+                    return this;
+                  }
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  break;
+                }
+                case 8: {
+                  Waldo = input.ReadInt32();
+                  break;
+                }
+              }
+            }
+          }
+          
           
           public bool HasWaldo {
             get { return result.HasWaldo; }
@@ -1775,6 +2659,54 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     public global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4 Fred {
       get { return fred_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (HasFred) {
+          if (!Fred.IsInitialized) return false;
+        }
+        if (!ExtensionsAreInitialized) return false;
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      pb::ExtendableMessage<ComplexOptionType2, ComplexOptionType2.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
+      if (HasBar) {
+        output.WriteMessage(1, Bar);
+      }
+      if (HasBaz) {
+        output.WriteInt32(2, Baz);
+      }
+      if (HasFred) {
+        output.WriteMessage(3, Fred);
+      }
+      extensionWriter.WriteUntil(536870912, output);
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasBar) {
+          size += pb::CodedOutputStream.ComputeMessageSize(1, Bar);
+        }
+        if (HasBaz) {
+          size += pb::CodedOutputStream.ComputeInt32Size(2, Baz);
+        }
+        if (HasFred) {
+          size += pb::CodedOutputStream.ComputeMessageSize(3, Fred);
+        }
+        size += ExtensionsSerializedSize;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static ComplexOptionType2 ParseFrom(pb::ByteString data) {
@@ -1850,6 +2782,85 @@ namespace Google.ProtocolBuffers.TestProtos {
         ComplexOptionType2 returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is ComplexOptionType2) {
+          return MergeFrom((ComplexOptionType2) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(ComplexOptionType2 other) {
+        if (other == ComplexOptionType2.DefaultInstance) return this;
+        if (other.HasBar) {
+          MergeBar(other.Bar);
+        }
+        if (other.HasBaz) {
+          Baz = other.Baz;
+        }
+        if (other.HasFred) {
+          MergeFred(other.Fred);
+        }
+          this.MergeExtensionFields(other);
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.CreateBuilder();
+              if (HasBar) {
+                subBuilder.MergeFrom(Bar);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              Bar = subBuilder.BuildPartial();
+              break;
+            }
+            case 16: {
+              Baz = input.ReadInt32();
+              break;
+            }
+            case 26: {
+              global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.CreateBuilder();
+              if (HasFred) {
+                subBuilder.MergeFrom(Fred);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              Fred = subBuilder.BuildPartial();
+              break;
+            }
+          }
+        }
       }
       
       
@@ -2004,6 +3015,35 @@ namespace Google.ProtocolBuffers.TestProtos {
           get { return plugh_; }
         }
         
+        public override bool IsInitialized {
+          get {
+            return true;
+          }
+        }
+        
+        public override void WriteTo(pb::CodedOutputStream output) {
+          if (HasPlugh) {
+            output.WriteInt32(3, Plugh);
+          }
+          UnknownFields.WriteTo(output);
+        }
+        
+        private int memoizedSerializedSize = -1;
+        public override int SerializedSize {
+          get {
+            int size = memoizedSerializedSize;
+            if (size != -1) return size;
+            
+            size = 0;
+            if (HasPlugh) {
+              size += pb::CodedOutputStream.ComputeInt32Size(3, Plugh);
+            }
+            size += UnknownFields.SerializedSize;
+            memoizedSerializedSize = size;
+            return size;
+          }
+        }
+        
         public static ComplexOptionType5 ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -2079,6 +3119,60 @@ namespace Google.ProtocolBuffers.TestProtos {
             return returnMe;
           }
           
+          public override Builder MergeFrom(pb::IMessage other) {
+            if (other is ComplexOptionType5) {
+              return MergeFrom((ComplexOptionType5) other);
+            } else {
+              base.MergeFrom(other);
+              return this;
+            }
+          }
+          
+          public override Builder MergeFrom(ComplexOptionType5 other) {
+            if (other == ComplexOptionType5.DefaultInstance) return this;
+            if (other.HasPlugh) {
+              Plugh = other.Plugh;
+            }
+            this.MergeUnknownFields(other.UnknownFields);
+            return this;
+          }
+          
+          public override Builder MergeFrom(pb::CodedInputStream input) {
+            return MergeFrom(input, pb::ExtensionRegistry.Empty);
+          }
+          
+          public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+            pb::UnknownFieldSet.Builder unknownFields = null;
+            while (true) {
+              uint tag = input.ReadTag();
+              switch (tag) {
+                case 0: {
+                  if (unknownFields != null) {
+                    this.UnknownFields = unknownFields.Build();
+                  }
+                  return this;
+                }
+                default: {
+                  if (pb::WireFormat.IsEndGroupTag(tag)) {
+                    if (unknownFields != null) {
+                      this.UnknownFields = unknownFields.Build();
+                    }
+                    return this;
+                  }
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  break;
+                }
+                case 24: {
+                  Plugh = input.ReadInt32();
+                  break;
+                }
+              }
+            }
+          }
+          
           
           public bool HasPlugh {
             get { return result.HasPlugh; }
@@ -2124,6 +3218,41 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     public global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5 ComplexOptionType5 {
       get { return complexOptionType5_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (HasQux) {
+        output.WriteInt32(1, Qux);
+      }
+      if (HasComplexOptionType5) {
+        output.WriteGroup(2, ComplexOptionType5);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasQux) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, Qux);
+        }
+        if (HasComplexOptionType5) {
+          size += pb::CodedOutputStream.ComputeGroupSize(2, ComplexOptionType5);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static ComplexOptionType3 ParseFrom(pb::ByteString data) {
@@ -2199,6 +3328,72 @@ namespace Google.ProtocolBuffers.TestProtos {
         ComplexOptionType3 returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is ComplexOptionType3) {
+          return MergeFrom((ComplexOptionType3) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(ComplexOptionType3 other) {
+        if (other == ComplexOptionType3.DefaultInstance) return this;
+        if (other.HasQux) {
+          Qux = other.Qux;
+        }
+        if (other.HasComplexOptionType5) {
+          MergeComplexOptionType5(other.ComplexOptionType5);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 8: {
+              Qux = input.ReadInt32();
+              break;
+            }
+            case 19: {
+              global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.CreateBuilder();
+              if (HasComplexOptionType5) {
+                subBuilder.MergeFrom(ComplexOptionType5);
+              }
+              input.ReadGroup(2, subBuilder, extensionRegistry);
+              ComplexOptionType5 = subBuilder.BuildPartial();
+              break;
+            }
+          }
+        }
       }
       
       
@@ -2293,6 +3488,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return xyzzy_; }
     }
     
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      if (HasXyzzy) {
+        output.WriteInt32(7593951, Xyzzy);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasXyzzy) {
+          size += pb::CodedOutputStream.ComputeInt32Size(7593951, Xyzzy);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
     public static ComplexOpt6 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -2368,6 +3592,60 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is ComplexOpt6) {
+          return MergeFrom((ComplexOpt6) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(ComplexOpt6 other) {
+        if (other == ComplexOpt6.DefaultInstance) return this;
+        if (other.HasXyzzy) {
+          Xyzzy = other.Xyzzy;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 60751608: {
+              Xyzzy = input.ReadInt32();
+              break;
+            }
+          }
+        }
+      }
+      
       
       public bool HasXyzzy {
         get { return result.HasXyzzy; }
@@ -2412,6 +3690,29 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     protected override pb::FieldAccess.FieldAccessorTable<VariousComplexOptions, VariousComplexOptions.Builder> InternalFieldAccessors {
       get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_VariousComplexOptions__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
     }
     
     public static VariousComplexOptions ParseFrom(pb::ByteString data) {
@@ -2487,6 +3788,53 @@ namespace Google.ProtocolBuffers.TestProtos {
         VariousComplexOptions returnMe = result;
         result = null;
         return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is VariousComplexOptions) {
+          return MergeFrom((VariousComplexOptions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(VariousComplexOptions other) {
+        if (other == VariousComplexOptions.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
       }
       
     }
