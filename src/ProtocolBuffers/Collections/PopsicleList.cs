@@ -39,7 +39,7 @@ namespace Google.ProtocolBuffers.Collections {
   /// to be made read-only (with the <see cref="MakeReadOnly" /> method), 
   /// after which any modifying methods throw <see cref="NotSupportedException" />.
   /// </summary>
-  public sealed class PopsicleList<T> : IList<T> {
+  public sealed class PopsicleList<T> : IPopsicleList<T> {
 
     private readonly List<T> items = new List<T>();
     private bool readOnly = false;
@@ -106,6 +106,13 @@ namespace Google.ProtocolBuffers.Collections {
     public bool Remove(T item) {
       ValidateModification();
       return items.Remove(item);
+    }
+
+    public void Add(IEnumerable<T> collection) {
+      if (readOnly) {
+        throw new NotSupportedException("List is read-only");
+      }
+      items.AddRange(collection);
     }
 
     public IEnumerator<T> GetEnumerator() {

@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
+using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers {
   [TestFixture]
@@ -193,6 +194,22 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(expectedMessage, message);
     }
 
+    [Test]
+    public void SettingRepeatedValuesUsingRangeInCollectionInitializer() {
+      int[] values = { 1, 2, 3 };
+      TestAllTypes message = new TestAllTypes.Builder {
+        RepeatedSint32List = { values }
+      }.Build();
+      Assert.IsTrue(Lists.Equals(values, message.RepeatedSint32List));
+    }
+
+    [Test]
+    public void SettingRepeatedValuesUsingIndividualValuesInCollectionInitializer() {
+      TestAllTypes message = new TestAllTypes.Builder {
+        RepeatedSint32List = { 6, 7 }
+      }.Build();
+      Assert.IsTrue(Lists.Equals(new int[] { 6, 7 }, message.RepeatedSint32List));
+    }
     
     [Test]
     public void Defaults() {

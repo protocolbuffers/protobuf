@@ -28,7 +28,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
     public void GenerateBuilderMembers(TextGenerator writer) {
       // Note:  We can return the original list here, because we make it unmodifiable when we build
-      writer.WriteLine("public scg::IList<{0}> {1}List {{", TypeName, PropertyName);
+      // We return it via IPopsicleList so that collection initializers work more pleasantly.
+      writer.WriteLine("public pbc::IPopsicleList<{0}> {1}List {{", TypeName, PropertyName);
       writer.WriteLine("  get {{ return result.{0}_; }}", Name);
       writer.WriteLine("}");
       writer.WriteLine("public int {0}Count {{", PropertyName);

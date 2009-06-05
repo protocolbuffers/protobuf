@@ -42,6 +42,7 @@
     <Compile Include="AbstractMessage.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="Collections\Enumerables.cs" />
+    <Compile Include="Collections\IPopsicleList.cs" />
     <Compile Include="Collections\PopsicleList.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="CodedInputStream.cs" />

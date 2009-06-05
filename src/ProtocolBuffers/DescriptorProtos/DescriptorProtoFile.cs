@@ -419,7 +419,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> FileList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> FileList {
         get { return result.file_; }
       }
       public int FileCount {
@@ -902,7 +902,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<string> DependencyList {
+      public pbc::IPopsicleList<string> DependencyList {
         get { return result.dependency_; }
       }
       public int DependencyCount {
@@ -930,7 +930,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> MessageTypeList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> MessageTypeList {
         get { return result.messageType_; }
       }
       public int MessageTypeCount {
@@ -968,7 +968,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
         get { return result.enumType_; }
       }
       public int EnumTypeCount {
@@ -1006,7 +1006,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> ServiceList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> ServiceList {
         get { return result.service_; }
       }
       public int ServiceCount {
@@ -1044,7 +1044,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
         get { return result.extension_; }
       }
       public int ExtensionCount {
@@ -1776,7 +1776,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> FieldList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> FieldList {
         get { return result.field_; }
       }
       public int FieldCount {
@@ -1814,7 +1814,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> ExtensionList {
         get { return result.extension_; }
       }
       public int ExtensionCount {
@@ -1852,7 +1852,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> NestedTypeList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> NestedTypeList {
         get { return result.nestedType_; }
       }
       public int NestedTypeCount {
@@ -1890,7 +1890,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> EnumTypeList {
         get { return result.enumType_; }
       }
       public int EnumTypeCount {
@@ -1928,7 +1928,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRangeList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRangeList {
         get { return result.extensionRange_; }
       }
       public int ExtensionRangeCount {
@@ -2858,7 +2858,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> ValueList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> ValueList {
         get { return result.value_; }
       }
       public int ValueCount {
@@ -3532,7 +3532,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> MethodList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> MethodList {
         get { return result.method_; }
       }
       public int MethodCount {
@@ -4365,7 +4365,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -4653,7 +4653,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -5083,7 +5083,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -5330,7 +5330,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -5577,7 +5577,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -5824,7 +5824,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -6071,7 +6071,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> UninterpretedOptionList {
         get { return result.uninterpretedOption_; }
       }
       public int UninterpretedOptionCount {
@@ -6692,7 +6692,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart> NameList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart> NameList {
         get { return result.name_; }
       }
       public int NameCount {

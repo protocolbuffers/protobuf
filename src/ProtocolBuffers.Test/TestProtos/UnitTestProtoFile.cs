@@ -4141,7 +4141,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<int> RepeatedInt32List {
+      public pbc::IPopsicleList<int> RepeatedInt32List {
         get { return result.repeatedInt32_; }
       }
       public int RepeatedInt32Count {
@@ -4167,7 +4167,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<long> RepeatedInt64List {
+      public pbc::IPopsicleList<long> RepeatedInt64List {
         get { return result.repeatedInt64_; }
       }
       public int RepeatedInt64Count {
@@ -4194,7 +4194,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<uint> RepeatedUint32List {
+      public pbc::IPopsicleList<uint> RepeatedUint32List {
         get { return result.repeatedUint32_; }
       }
       public int RepeatedUint32Count {
@@ -4225,7 +4225,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<ulong> RepeatedUint64List {
+      public pbc::IPopsicleList<ulong> RepeatedUint64List {
         get { return result.repeatedUint64_; }
       }
       public int RepeatedUint64Count {
@@ -4255,7 +4255,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<int> RepeatedSint32List {
+      public pbc::IPopsicleList<int> RepeatedSint32List {
         get { return result.repeatedSint32_; }
       }
       public int RepeatedSint32Count {
@@ -4281,7 +4281,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<long> RepeatedSint64List {
+      public pbc::IPopsicleList<long> RepeatedSint64List {
         get { return result.repeatedSint64_; }
       }
       public int RepeatedSint64Count {
@@ -4308,7 +4308,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<uint> RepeatedFixed32List {
+      public pbc::IPopsicleList<uint> RepeatedFixed32List {
         get { return result.repeatedFixed32_; }
       }
       public int RepeatedFixed32Count {
@@ -4339,7 +4339,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<ulong> RepeatedFixed64List {
+      public pbc::IPopsicleList<ulong> RepeatedFixed64List {
         get { return result.repeatedFixed64_; }
       }
       public int RepeatedFixed64Count {
@@ -4369,7 +4369,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<int> RepeatedSfixed32List {
+      public pbc::IPopsicleList<int> RepeatedSfixed32List {
         get { return result.repeatedSfixed32_; }
       }
       public int RepeatedSfixed32Count {
@@ -4395,7 +4395,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<long> RepeatedSfixed64List {
+      public pbc::IPopsicleList<long> RepeatedSfixed64List {
         get { return result.repeatedSfixed64_; }
       }
       public int RepeatedSfixed64Count {
@@ -4421,7 +4421,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<float> RepeatedFloatList {
+      public pbc::IPopsicleList<float> RepeatedFloatList {
         get { return result.repeatedFloat_; }
       }
       public int RepeatedFloatCount {
@@ -4447,7 +4447,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<double> RepeatedDoubleList {
+      public pbc::IPopsicleList<double> RepeatedDoubleList {
         get { return result.repeatedDouble_; }
       }
       public int RepeatedDoubleCount {
@@ -4473,7 +4473,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<bool> RepeatedBoolList {
+      public pbc::IPopsicleList<bool> RepeatedBoolList {
         get { return result.repeatedBool_; }
       }
       public int RepeatedBoolCount {
@@ -4499,7 +4499,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<string> RepeatedStringList {
+      public pbc::IPopsicleList<string> RepeatedStringList {
         get { return result.repeatedString_; }
       }
       public int RepeatedStringCount {
@@ -4527,7 +4527,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<pb::ByteString> RepeatedBytesList {
+      public pbc::IPopsicleList<pb::ByteString> RepeatedBytesList {
         get { return result.repeatedBytes_; }
       }
       public int RepeatedBytesCount {
@@ -4555,7 +4555,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> RepeatedGroupList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup> RepeatedGroupList {
         get { return result.repeatedGroup_; }
       }
       public int RepeatedGroupCount {
@@ -4593,7 +4593,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
         get { return result.repeatedNestedMessage_; }
       }
       public int RepeatedNestedMessageCount {
@@ -4631,7 +4631,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
         get { return result.repeatedForeignMessage_; }
       }
       public int RepeatedForeignMessageCount {
@@ -4669,7 +4669,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> RepeatedImportMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportMessage> RepeatedImportMessageList {
         get { return result.repeatedImportMessage_; }
       }
       public int RepeatedImportMessageCount {
@@ -4707,7 +4707,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
         get { return result.repeatedNestedEnum_; }
       }
       public int RepeatedNestedEnumCount {
@@ -4733,7 +4733,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedForeignEnumList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedForeignEnumList {
         get { return result.repeatedForeignEnum_; }
       }
       public int RepeatedForeignEnumCount {
@@ -4759,7 +4759,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportEnum> RepeatedImportEnumList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ImportEnum> RepeatedImportEnumList {
         get { return result.repeatedImportEnum_; }
       }
       public int RepeatedImportEnumCount {
@@ -4785,7 +4785,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<string> RepeatedStringPieceList {
+      public pbc::IPopsicleList<string> RepeatedStringPieceList {
         get { return result.repeatedStringPiece_; }
       }
       public int RepeatedStringPieceCount {
@@ -4813,7 +4813,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<string> RepeatedCordList {
+      public pbc::IPopsicleList<string> RepeatedCordList {
         get { return result.repeatedCord_; }
       }
       public int RepeatedCordCount {
@@ -7860,7 +7860,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired> RepeatedMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestRequired> RepeatedMessageList {
         get { return result.repeatedMessage_; }
       }
       public int RepeatedMessageCount {
@@ -10585,7 +10585,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           
-          public scg::IList<int> NestedmessageRepeatedInt32List {
+          public pbc::IPopsicleList<int> NestedmessageRepeatedInt32List {
             get { return result.nestedmessageRepeatedInt32_; }
           }
           public int NestedmessageRepeatedInt32Count {
@@ -10611,7 +10611,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
           
-          public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> NestedmessageRepeatedForeignmessageList {
+          public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> NestedmessageRepeatedForeignmessageList {
             get { return result.nestedmessageRepeatedForeignmessage_; }
           }
           public int NestedmessageRepeatedForeignmessageCount {
@@ -11523,7 +11523,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<int> RepeatedPrimitiveFieldList {
+      public pbc::IPopsicleList<int> RepeatedPrimitiveFieldList {
         get { return result.repeatedPrimitiveField_; }
       }
       public int RepeatedPrimitiveFieldCount {
@@ -11549,7 +11549,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<string> RepeatedStringFieldList {
+      public pbc::IPopsicleList<string> RepeatedStringFieldList {
         get { return result.repeatedStringField_; }
       }
       public int RepeatedStringFieldCount {
@@ -11577,7 +11577,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedEnumFieldList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedEnumFieldList {
         get { return result.repeatedEnumField_; }
       }
       public int RepeatedEnumFieldCount {
@@ -11603,7 +11603,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedMessageFieldList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedMessageFieldList {
         get { return result.repeatedMessageField_; }
       }
       public int RepeatedMessageFieldCount {
@@ -11641,7 +11641,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<string> RepeatedStringPieceFieldList {
+      public pbc::IPopsicleList<string> RepeatedStringPieceFieldList {
         get { return result.repeatedStringPieceField_; }
       }
       public int RepeatedStringPieceFieldCount {
@@ -11669,7 +11669,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<string> RepeatedCordFieldList {
+      public pbc::IPopsicleList<string> RepeatedCordFieldList {
         get { return result.repeatedCordField_; }
       }
       public int RepeatedCordFieldCount {
@@ -13206,7 +13206,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       
-      public scg::IList<int> PackedInt32List {
+      public pbc::IPopsicleList<int> PackedInt32List {
         get { return result.packedInt32_; }
       }
       public int PackedInt32Count {
@@ -13232,7 +13232,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<long> PackedInt64List {
+      public pbc::IPopsicleList<long> PackedInt64List {
         get { return result.packedInt64_; }
       }
       public int PackedInt64Count {
@@ -13259,7 +13259,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<uint> PackedUint32List {
+      public pbc::IPopsicleList<uint> PackedUint32List {
         get { return result.packedUint32_; }
       }
       public int PackedUint32Count {
@@ -13290,7 +13290,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<ulong> PackedUint64List {
+      public pbc::IPopsicleList<ulong> PackedUint64List {
         get { return result.packedUint64_; }
       }
       public int PackedUint64Count {
@@ -13320,7 +13320,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<int> PackedSint32List {
+      public pbc::IPopsicleList<int> PackedSint32List {
         get { return result.packedSint32_; }
       }
       public int PackedSint32Count {
@@ -13346,7 +13346,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<long> PackedSint64List {
+      public pbc::IPopsicleList<long> PackedSint64List {
         get { return result.packedSint64_; }
       }
       public int PackedSint64Count {
@@ -13373,7 +13373,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<uint> PackedFixed32List {
+      public pbc::IPopsicleList<uint> PackedFixed32List {
         get { return result.packedFixed32_; }
       }
       public int PackedFixed32Count {
@@ -13404,7 +13404,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.CLSCompliant(false)]
-      public scg::IList<ulong> PackedFixed64List {
+      public pbc::IPopsicleList<ulong> PackedFixed64List {
         get { return result.packedFixed64_; }
       }
       public int PackedFixed64Count {
@@ -13434,7 +13434,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<int> PackedSfixed32List {
+      public pbc::IPopsicleList<int> PackedSfixed32List {
         get { return result.packedSfixed32_; }
       }
       public int PackedSfixed32Count {
@@ -13460,7 +13460,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<long> PackedSfixed64List {
+      public pbc::IPopsicleList<long> PackedSfixed64List {
         get { return result.packedSfixed64_; }
       }
       public int PackedSfixed64Count {
@@ -13486,7 +13486,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<float> PackedFloatList {
+      public pbc::IPopsicleList<float> PackedFloatList {
         get { return result.packedFloat_; }
       }
       public int PackedFloatCount {
@@ -13512,7 +13512,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<double> PackedDoubleList {
+      public pbc::IPopsicleList<double> PackedDoubleList {
         get { return result.packedDouble_; }
       }
       public int PackedDoubleCount {
@@ -13538,7 +13538,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<bool> PackedBoolList {
+      public pbc::IPopsicleList<bool> PackedBoolList {
         get { return result.packedBool_; }
       }
       public int PackedBoolCount {
@@ -13564,7 +13564,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> PackedEnumList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> PackedEnumList {
         get { return result.packedEnum_; }
       }
       public int PackedEnumCount {

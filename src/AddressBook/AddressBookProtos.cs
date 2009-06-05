@@ -668,7 +668,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> PhoneList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> PhoneList {
         get { return result.phone_; }
       }
       public int PhoneCount {
@@ -910,7 +910,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> PersonList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> PersonList {
         get { return result.person_; }
       }
       public int PersonCount {

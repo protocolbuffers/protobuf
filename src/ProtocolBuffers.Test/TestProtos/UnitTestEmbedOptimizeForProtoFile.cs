@@ -321,7 +321,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> RepeatedMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> RepeatedMessageList {
         get { return result.repeatedMessage_; }
       }
       public int RepeatedMessageCount {

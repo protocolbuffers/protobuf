@@ -1401,7 +1401,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       
-      public scg::IList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item> ItemList {
         get { return result.item_; }
       }
       public int ItemCount {

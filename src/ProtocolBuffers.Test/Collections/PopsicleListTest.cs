@@ -16,6 +16,7 @@ namespace Google.ProtocolBuffers.Collections {
       AssertNotSupported(() => list.Insert(0, ""));
       AssertNotSupported(() => list.Remove(""));
       AssertNotSupported(() => list.RemoveAt(0));
+      AssertNotSupported(() => list.Add(new[] {"", ""}));
     }
 
     [Test]
