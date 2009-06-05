@@ -29,6 +29,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Google.ProtocolBuffers.Collections;
@@ -292,6 +293,7 @@ namespace Google.ProtocolBuffers {
       /// <summary>
       /// Adds a varint value.
       /// </summary>
+      [CLSCompliant(false)]
       public Builder AddVarint(ulong value) {
         varintList = Add(varintList, value);
         return this;
@@ -300,6 +302,7 @@ namespace Google.ProtocolBuffers {
       /// <summary>
       /// Adds a fixed32 value.
       /// </summary>
+      [CLSCompliant(false)]
       public Builder AddFixed32(uint value) {
         fixed32List = Add(fixed32List, value);
         return this;
@@ -308,6 +311,7 @@ namespace Google.ProtocolBuffers {
       /// <summary>
       /// Adds a fixed64 value.
       /// </summary>
+      [CLSCompliant(false)]
       public Builder AddFixed64(ulong value) {
         fixed64List = Add(fixed64List, value);
         return this;

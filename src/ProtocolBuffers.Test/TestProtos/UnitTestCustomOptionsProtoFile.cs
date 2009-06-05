@@ -47,10 +47,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     #region Extensions
     public const int FileOpt1FieldNumber = 7736974;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> FileOpt1;
     public const int MessageOpt1FieldNumber = 7739036;
     public static pb::GeneratedExtensionBase<int> MessageOpt1;
     public const int FieldOpt1FieldNumber = 7740936;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> FieldOpt1;
     public const int FieldOpt2FieldNumber = 7753913;
     public static pb::GeneratedExtensionBase<int> FieldOpt2;
@@ -67,16 +69,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int Int64OptFieldNumber = 7705542;
     public static pb::GeneratedExtensionBase<long> Int64Opt;
     public const int Uint32OptFieldNumber = 7704880;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<uint> Uint32Opt;
     public const int Uint64OptFieldNumber = 7702367;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> Uint64Opt;
     public const int Sint32OptFieldNumber = 7701568;
     public static pb::GeneratedExtensionBase<int> Sint32Opt;
     public const int Sint64OptFieldNumber = 7700863;
     public static pb::GeneratedExtensionBase<long> Sint64Opt;
     public const int Fixed32OptFieldNumber = 7700307;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<uint> Fixed32Opt;
     public const int Fixed64OptFieldNumber = 7700194;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> Fixed64Opt;
     public const int Sfixed32OptFieldNumber = 7698645;
     public static pb::GeneratedExtensionBase<int> Sfixed32Opt;

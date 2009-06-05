@@ -29,6 +29,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -111,6 +112,7 @@ namespace Google.ProtocolBuffers {
     /// Called by subclasses to parse an unknown field or an extension.
     /// </summary>
     /// <returns>true unless the tag is an end-group tag</returns>
+    [CLSCompliant(false)]
     protected override bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
         ExtensionRegistry extensionRegistry, uint tag) {
       return unknownFields.MergeFieldFrom(input, extensionRegistry, this, tag);

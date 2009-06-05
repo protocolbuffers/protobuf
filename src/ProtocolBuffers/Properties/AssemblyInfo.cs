@@ -29,6 +29,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
@@ -77,3 +78,4 @@ using System.Runtime.CompilerServices;
 "5e09a6084558f989ccde66094f07822808d3a9b922b0e85b912070032e90bb35360be7efb7982b" +
 "702d7a5c6ed1e21d8ca587b4f4c9d2b81210d3641cc75f506cdfc628ac5453ff0a6886986c981d" +
 "12245bc7")]
+[assembly: CLSCompliant(true)]

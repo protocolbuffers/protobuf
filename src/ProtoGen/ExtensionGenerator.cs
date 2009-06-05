@@ -30,8 +30,14 @@ namespace Google.ProtocolBuffers.ProtoGen {
     public void Generate(TextGenerator writer) {
       writer.WriteLine ("public const int {0} = {1};", GetFieldConstantName(Descriptor), Descriptor.FieldNumber);
       if (Descriptor.IsRepeated) {
+        if (!Descriptor.IsCLSCompliant) {
+          writer.WriteLine("[global::System.CLSCompliant(false)]");
+        }
         writer.WriteLine("{0} static pb::GeneratedExtensionBase<scg::IList<{1}>> {2};", ClassAccessLevel, type, name);
       } else {
+        if (!Descriptor.IsCLSCompliant) {
+          writer.WriteLine("[global::System.CLSCompliant(false)]");
+        }
         writer.WriteLine("{0} static pb::GeneratedExtensionBase<{1}> {2};", ClassAccessLevel, type, name);
       }
     }

@@ -6427,6 +6427,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public bool HasPositiveIntValue {
       get { return hasPositiveIntValue; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong PositiveIntValue {
       get { return positiveIntValue_; }
     }
@@ -6751,10 +6752,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public bool HasPositiveIntValue {
         get { return result.HasPositiveIntValue; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong PositiveIntValue {
         get { return result.PositiveIntValue; }
         set { SetPositiveIntValue(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetPositiveIntValue(ulong value) {
         result.hasPositiveIntValue = true;
         result.positiveIntValue_ = value;

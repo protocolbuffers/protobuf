@@ -126,6 +126,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <exception cref="InvalidProtocolBufferException">The last
     /// tag read was not the one specified</exception>
+    [CLSCompliant(false)]
     public void CheckLastTagWas(uint value) {
       if (lastTag != value) {
         throw InvalidProtocolBufferException.InvalidEndTag();
@@ -140,6 +141,7 @@ namespace Google.ProtocolBuffers {
     /// since a protocol message may legally end wherever a tag occurs, and
     /// zero is not a valid tag number.
     /// </summary>
+    [CLSCompliant(false)]
     public uint ReadTag() {
       if (IsAtEnd) {
         lastTag = 0;
@@ -175,6 +177,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a uint64 field from the stream.
     /// </summary>
+    [CLSCompliant(false)]
     public ulong ReadUInt64() {
       return ReadRawVarint64();
     }
@@ -196,6 +199,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a fixed64 field from the stream.
     /// </summary>
+    [CLSCompliant(false)]
     public ulong ReadFixed64() {
       return ReadRawLittleEndian64();
     }
@@ -203,6 +207,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a fixed32 field from the stream.
     /// </summary>
+    [CLSCompliant(false)]
     public uint ReadFixed32() {
       return ReadRawLittleEndian32();
     }
@@ -298,6 +303,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Reads a uint32 field value from the stream.
     /// </summary>   
+    [CLSCompliant(false)]
     public uint ReadUInt32() {
       return ReadRawVarint32();
     }
@@ -418,6 +424,7 @@ namespace Google.ProtocolBuffers {
     /// That means we can check the size just once, then just read directly from the buffer
     /// without constant rechecking of the buffer length.
     /// </summary>
+    [CLSCompliant(false)]
     public uint ReadRawVarint32() {
       if (bufferPos + 5 > bufferSize) {
         return SlowReadRawVarint32();
@@ -495,6 +502,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a raw varint from the stream.
     /// </summary>
+    [CLSCompliant(false)]
     public ulong ReadRawVarint64() {
       int shift = 0;
       ulong result = 0;
@@ -512,6 +520,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a 32-bit little-endian integer from the stream.
     /// </summary>
+    [CLSCompliant(false)]
     public uint ReadRawLittleEndian32() {
       uint b1 = ReadRawByte();
       uint b2 = ReadRawByte();
@@ -523,6 +532,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Read a 64-bit little-endian integer from the stream.
     /// </summary>
+    [CLSCompliant(false)]
     public ulong ReadRawLittleEndian64() {
       ulong b1 = ReadRawByte();
       ulong b2 = ReadRawByte();
@@ -546,6 +556,7 @@ namespace Google.ProtocolBuffers {
     /// sign-extended to 64 bits to be varint encoded, thus always taking
     /// 10 bytes on the wire.)
     /// </remarks>
+    [CLSCompliant(false)]
     public static int DecodeZigZag32(uint n) {
       return (int)(n >> 1) ^ -(int)(n & 1);
     }
@@ -559,6 +570,7 @@ namespace Google.ProtocolBuffers {
     /// sign-extended to 64 bits to be varint encoded, thus always taking
     /// 10 bytes on the wire.)
     /// </remarks>
+    [CLSCompliant(false)]
     public static long DecodeZigZag64(ulong n) {
       return (long)(n >> 1) ^ -(long)(n & 1);
     }
@@ -849,6 +861,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <returns>false if the tag is an end-group tag, in which case
     /// nothing is skipped. Otherwise, returns true.</returns>
+    [CLSCompliant(false)]
     public bool SkipField(uint tag) {
       switch (WireFormat.GetTagWireType(tag)) {
         case WireFormat.WireType.Varint:

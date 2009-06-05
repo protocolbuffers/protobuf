@@ -97,6 +97,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
+    protected void AddClsComplianceCheck(TextGenerator writer) {
+      if (!Descriptor.IsCLSCompliant) {
+        writer.WriteLine("[global::System.CLSCompliant(false)]");
+      }
+    }
+
     /// <summary>
     /// For encodings with fixed sizes, returns that size in bytes.  Otherwise
     /// returns -1. TODO(jonskeet): Make this less ugly.

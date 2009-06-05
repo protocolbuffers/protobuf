@@ -104,16 +104,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int OptionalInt64ExtensionFieldNumber = 2;
     public static pb::GeneratedExtensionBase<long> OptionalInt64Extension;
     public const int OptionalUint32ExtensionFieldNumber = 3;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<uint> OptionalUint32Extension;
     public const int OptionalUint64ExtensionFieldNumber = 4;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> OptionalUint64Extension;
     public const int OptionalSint32ExtensionFieldNumber = 5;
     public static pb::GeneratedExtensionBase<int> OptionalSint32Extension;
     public const int OptionalSint64ExtensionFieldNumber = 6;
     public static pb::GeneratedExtensionBase<long> OptionalSint64Extension;
     public const int OptionalFixed32ExtensionFieldNumber = 7;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<uint> OptionalFixed32Extension;
     public const int OptionalFixed64ExtensionFieldNumber = 8;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> OptionalFixed64Extension;
     public const int OptionalSfixed32ExtensionFieldNumber = 9;
     public static pb::GeneratedExtensionBase<int> OptionalSfixed32Extension;
@@ -152,16 +156,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int RepeatedInt64ExtensionFieldNumber = 32;
     public static pb::GeneratedExtensionBase<scg::IList<long>> RepeatedInt64Extension;
     public const int RepeatedUint32ExtensionFieldNumber = 33;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedUint32Extension;
     public const int RepeatedUint64ExtensionFieldNumber = 34;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedUint64Extension;
     public const int RepeatedSint32ExtensionFieldNumber = 35;
     public static pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSint32Extension;
     public const int RepeatedSint64ExtensionFieldNumber = 36;
     public static pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSint64Extension;
     public const int RepeatedFixed32ExtensionFieldNumber = 37;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedFixed32Extension;
     public const int RepeatedFixed64ExtensionFieldNumber = 38;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedFixed64Extension;
     public const int RepeatedSfixed32ExtensionFieldNumber = 39;
     public static pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSfixed32Extension;
@@ -200,16 +208,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int DefaultInt64ExtensionFieldNumber = 62;
     public static pb::GeneratedExtensionBase<long> DefaultInt64Extension;
     public const int DefaultUint32ExtensionFieldNumber = 63;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<uint> DefaultUint32Extension;
     public const int DefaultUint64ExtensionFieldNumber = 64;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> DefaultUint64Extension;
     public const int DefaultSint32ExtensionFieldNumber = 65;
     public static pb::GeneratedExtensionBase<int> DefaultSint32Extension;
     public const int DefaultSint64ExtensionFieldNumber = 66;
     public static pb::GeneratedExtensionBase<long> DefaultSint64Extension;
     public const int DefaultFixed32ExtensionFieldNumber = 67;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<uint> DefaultFixed32Extension;
     public const int DefaultFixed64ExtensionFieldNumber = 68;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<ulong> DefaultFixed64Extension;
     public const int DefaultSfixed32ExtensionFieldNumber = 69;
     public static pb::GeneratedExtensionBase<int> DefaultSfixed32Extension;
@@ -244,16 +256,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int PackedInt64ExtensionFieldNumber = 91;
     public static pb::GeneratedExtensionBase<scg::IList<long>> PackedInt64Extension;
     public const int PackedUint32ExtensionFieldNumber = 92;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<uint>> PackedUint32Extension;
     public const int PackedUint64ExtensionFieldNumber = 93;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<ulong>> PackedUint64Extension;
     public const int PackedSint32ExtensionFieldNumber = 94;
     public static pb::GeneratedExtensionBase<scg::IList<int>> PackedSint32Extension;
     public const int PackedSint64ExtensionFieldNumber = 95;
     public static pb::GeneratedExtensionBase<scg::IList<long>> PackedSint64Extension;
     public const int PackedFixed32ExtensionFieldNumber = 96;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<uint>> PackedFixed32Extension;
     public const int PackedFixed64ExtensionFieldNumber = 97;
+    [global::System.CLSCompliant(false)]
     public static pb::GeneratedExtensionBase<scg::IList<ulong>> PackedFixed64Extension;
     public const int PackedSfixed32ExtensionFieldNumber = 98;
     public static pb::GeneratedExtensionBase<scg::IList<int>> PackedSfixed32Extension;
@@ -1605,6 +1621,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasOptionalUint32 {
       get { return hasOptionalUint32; }
     }
+    [global::System.CLSCompliant(false)]
     public uint OptionalUint32 {
       get { return optionalUint32_; }
     }
@@ -1615,6 +1632,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasOptionalUint64 {
       get { return hasOptionalUint64; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong OptionalUint64 {
       get { return optionalUint64_; }
     }
@@ -1645,6 +1663,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasOptionalFixed32 {
       get { return hasOptionalFixed32; }
     }
+    [global::System.CLSCompliant(false)]
     public uint OptionalFixed32 {
       get { return optionalFixed32_; }
     }
@@ -1655,6 +1674,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasOptionalFixed64 {
       get { return hasOptionalFixed64; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong OptionalFixed64 {
       get { return optionalFixed64_; }
     }
@@ -1845,24 +1865,28 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int RepeatedUint32FieldNumber = 33;
     private pbc::PopsicleList<uint> repeatedUint32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<uint> RepeatedUint32List {
       get { return pbc::Lists.AsReadOnly(repeatedUint32_); }
     }
     public int RepeatedUint32Count {
       get { return repeatedUint32_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public uint GetRepeatedUint32(int index) {
       return repeatedUint32_[index];
     }
     
     public const int RepeatedUint64FieldNumber = 34;
     private pbc::PopsicleList<ulong> repeatedUint64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> RepeatedUint64List {
       get { return pbc::Lists.AsReadOnly(repeatedUint64_); }
     }
     public int RepeatedUint64Count {
       get { return repeatedUint64_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong GetRepeatedUint64(int index) {
       return repeatedUint64_[index];
     }
@@ -1893,24 +1917,28 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int RepeatedFixed32FieldNumber = 37;
     private pbc::PopsicleList<uint> repeatedFixed32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<uint> RepeatedFixed32List {
       get { return pbc::Lists.AsReadOnly(repeatedFixed32_); }
     }
     public int RepeatedFixed32Count {
       get { return repeatedFixed32_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public uint GetRepeatedFixed32(int index) {
       return repeatedFixed32_[index];
     }
     
     public const int RepeatedFixed64FieldNumber = 38;
     private pbc::PopsicleList<ulong> repeatedFixed64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> RepeatedFixed64List {
       get { return pbc::Lists.AsReadOnly(repeatedFixed64_); }
     }
     public int RepeatedFixed64Count {
       get { return repeatedFixed64_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong GetRepeatedFixed64(int index) {
       return repeatedFixed64_[index];
     }
@@ -2133,6 +2161,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasDefaultUint32 {
       get { return hasDefaultUint32; }
     }
+    [global::System.CLSCompliant(false)]
     public uint DefaultUint32 {
       get { return defaultUint32_; }
     }
@@ -2143,6 +2172,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasDefaultUint64 {
       get { return hasDefaultUint64; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong DefaultUint64 {
       get { return defaultUint64_; }
     }
@@ -2173,6 +2203,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasDefaultFixed32 {
       get { return hasDefaultFixed32; }
     }
+    [global::System.CLSCompliant(false)]
     public uint DefaultFixed32 {
       get { return defaultFixed32_; }
     }
@@ -2183,6 +2214,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasDefaultFixed64 {
       get { return hasDefaultFixed64; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong DefaultFixed64 {
       get { return defaultFixed64_; }
     }
@@ -3632,10 +3664,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalUint32 {
         get { return result.HasOptionalUint32; }
       }
+      [global::System.CLSCompliant(false)]
       public uint OptionalUint32 {
         get { return result.OptionalUint32; }
         set { SetOptionalUint32(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetOptionalUint32(uint value) {
         result.hasOptionalUint32 = true;
         result.optionalUint32_ = value;
@@ -3650,10 +3684,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalUint64 {
         get { return result.HasOptionalUint64; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong OptionalUint64 {
         get { return result.OptionalUint64; }
         set { SetOptionalUint64(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetOptionalUint64(ulong value) {
         result.hasOptionalUint64 = true;
         result.optionalUint64_ = value;
@@ -3704,10 +3740,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalFixed32 {
         get { return result.HasOptionalFixed32; }
       }
+      [global::System.CLSCompliant(false)]
       public uint OptionalFixed32 {
         get { return result.OptionalFixed32; }
         set { SetOptionalFixed32(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetOptionalFixed32(uint value) {
         result.hasOptionalFixed32 = true;
         result.optionalFixed32_ = value;
@@ -3722,10 +3760,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalFixed64 {
         get { return result.HasOptionalFixed64; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong OptionalFixed64 {
         get { return result.OptionalFixed64; }
         set { SetOptionalFixed64(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetOptionalFixed64(ulong value) {
         result.hasOptionalFixed64 = true;
         result.optionalFixed64_ = value;
@@ -4153,23 +4193,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<uint> RepeatedUint32List {
         get { return result.repeatedUint32_; }
       }
       public int RepeatedUint32Count {
         get { return result.RepeatedUint32Count; }
       }
+      [global::System.CLSCompliant(false)]
       public uint GetRepeatedUint32(int index) {
         return result.GetRepeatedUint32(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedUint32(int index, uint value) {
         result.repeatedUint32_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedUint32(uint value) {
         result.repeatedUint32_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedUint32(scg::IEnumerable<uint> values) {
         base.AddRange(values, result.repeatedUint32_);
         return this;
@@ -4179,23 +4224,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<ulong> RepeatedUint64List {
         get { return result.repeatedUint64_; }
       }
       public int RepeatedUint64Count {
         get { return result.RepeatedUint64Count; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong GetRepeatedUint64(int index) {
         return result.GetRepeatedUint64(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedUint64(int index, ulong value) {
         result.repeatedUint64_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedUint64(ulong value) {
         result.repeatedUint64_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedUint64(scg::IEnumerable<ulong> values) {
         base.AddRange(values, result.repeatedUint64_);
         return this;
@@ -4257,23 +4307,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<uint> RepeatedFixed32List {
         get { return result.repeatedFixed32_; }
       }
       public int RepeatedFixed32Count {
         get { return result.RepeatedFixed32Count; }
       }
+      [global::System.CLSCompliant(false)]
       public uint GetRepeatedFixed32(int index) {
         return result.GetRepeatedFixed32(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedFixed32(int index, uint value) {
         result.repeatedFixed32_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedFixed32(uint value) {
         result.repeatedFixed32_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedFixed32(scg::IEnumerable<uint> values) {
         base.AddRange(values, result.repeatedFixed32_);
         return this;
@@ -4283,23 +4338,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<ulong> RepeatedFixed64List {
         get { return result.repeatedFixed64_; }
       }
       public int RepeatedFixed64Count {
         get { return result.RepeatedFixed64Count; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong GetRepeatedFixed64(int index) {
         return result.GetRepeatedFixed64(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedFixed64(int index, ulong value) {
         result.repeatedFixed64_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedFixed64(ulong value) {
         result.repeatedFixed64_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedFixed64(scg::IEnumerable<ulong> values) {
         base.AddRange(values, result.repeatedFixed64_);
         return this;
@@ -4820,10 +4880,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasDefaultUint32 {
         get { return result.HasDefaultUint32; }
       }
+      [global::System.CLSCompliant(false)]
       public uint DefaultUint32 {
         get { return result.DefaultUint32; }
         set { SetDefaultUint32(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetDefaultUint32(uint value) {
         result.hasDefaultUint32 = true;
         result.defaultUint32_ = value;
@@ -4838,10 +4900,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasDefaultUint64 {
         get { return result.HasDefaultUint64; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong DefaultUint64 {
         get { return result.DefaultUint64; }
         set { SetDefaultUint64(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetDefaultUint64(ulong value) {
         result.hasDefaultUint64 = true;
         result.defaultUint64_ = value;
@@ -4892,10 +4956,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasDefaultFixed32 {
         get { return result.HasDefaultFixed32; }
       }
+      [global::System.CLSCompliant(false)]
       public uint DefaultFixed32 {
         get { return result.DefaultFixed32; }
         set { SetDefaultFixed32(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetDefaultFixed32(uint value) {
         result.hasDefaultFixed32 = true;
         result.defaultFixed32_ = value;
@@ -4910,10 +4976,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasDefaultFixed64 {
         get { return result.HasDefaultFixed64; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong DefaultFixed64 {
         get { return result.DefaultFixed64; }
         set { SetDefaultFixed64(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetDefaultFixed64(ulong value) {
         result.hasDefaultFixed64 = true;
         result.defaultFixed64_ = value;
@@ -11975,6 +12043,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasLargeUint32 {
       get { return hasLargeUint32; }
     }
+    [global::System.CLSCompliant(false)]
     public uint LargeUint32 {
       get { return largeUint32_; }
     }
@@ -11985,6 +12054,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasLargeUint64 {
       get { return hasLargeUint64; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong LargeUint64 {
       get { return largeUint64_; }
     }
@@ -12265,10 +12335,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasLargeUint32 {
         get { return result.HasLargeUint32; }
       }
+      [global::System.CLSCompliant(false)]
       public uint LargeUint32 {
         get { return result.LargeUint32; }
         set { SetLargeUint32(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetLargeUint32(uint value) {
         result.hasLargeUint32 = true;
         result.largeUint32_ = value;
@@ -12283,10 +12355,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasLargeUint64 {
         get { return result.HasLargeUint64; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong LargeUint64 {
         get { return result.LargeUint64; }
         set { SetLargeUint64(value); }
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetLargeUint64(ulong value) {
         result.hasLargeUint64 = true;
         result.largeUint64_ = value;
@@ -12409,12 +12483,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int PackedUint32FieldNumber = 92;
     private int packedUint32MemoizedSerializedSize;
     private pbc::PopsicleList<uint> packedUint32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<uint> PackedUint32List {
       get { return pbc::Lists.AsReadOnly(packedUint32_); }
     }
     public int PackedUint32Count {
       get { return packedUint32_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public uint GetPackedUint32(int index) {
       return packedUint32_[index];
     }
@@ -12422,12 +12498,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int PackedUint64FieldNumber = 93;
     private int packedUint64MemoizedSerializedSize;
     private pbc::PopsicleList<ulong> packedUint64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> PackedUint64List {
       get { return pbc::Lists.AsReadOnly(packedUint64_); }
     }
     public int PackedUint64Count {
       get { return packedUint64_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong GetPackedUint64(int index) {
       return packedUint64_[index];
     }
@@ -12461,12 +12539,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int PackedFixed32FieldNumber = 96;
     private int packedFixed32MemoizedSerializedSize;
     private pbc::PopsicleList<uint> packedFixed32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<uint> PackedFixed32List {
       get { return pbc::Lists.AsReadOnly(packedFixed32_); }
     }
     public int PackedFixed32Count {
       get { return packedFixed32_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public uint GetPackedFixed32(int index) {
       return packedFixed32_[index];
     }
@@ -12474,12 +12554,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int PackedFixed64FieldNumber = 97;
     private int packedFixed64MemoizedSerializedSize;
     private pbc::PopsicleList<ulong> packedFixed64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> PackedFixed64List {
       get { return pbc::Lists.AsReadOnly(packedFixed64_); }
     }
     public int PackedFixed64Count {
       get { return packedFixed64_.Count; }
     }
+    [global::System.CLSCompliant(false)]
     public ulong GetPackedFixed64(int index) {
       return packedFixed64_[index];
     }
@@ -13176,23 +13258,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<uint> PackedUint32List {
         get { return result.packedUint32_; }
       }
       public int PackedUint32Count {
         get { return result.PackedUint32Count; }
       }
+      [global::System.CLSCompliant(false)]
       public uint GetPackedUint32(int index) {
         return result.GetPackedUint32(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetPackedUint32(int index, uint value) {
         result.packedUint32_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddPackedUint32(uint value) {
         result.packedUint32_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangePackedUint32(scg::IEnumerable<uint> values) {
         base.AddRange(values, result.packedUint32_);
         return this;
@@ -13202,23 +13289,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<ulong> PackedUint64List {
         get { return result.packedUint64_; }
       }
       public int PackedUint64Count {
         get { return result.PackedUint64Count; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong GetPackedUint64(int index) {
         return result.GetPackedUint64(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetPackedUint64(int index, ulong value) {
         result.packedUint64_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddPackedUint64(ulong value) {
         result.packedUint64_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangePackedUint64(scg::IEnumerable<ulong> values) {
         base.AddRange(values, result.packedUint64_);
         return this;
@@ -13280,23 +13372,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<uint> PackedFixed32List {
         get { return result.packedFixed32_; }
       }
       public int PackedFixed32Count {
         get { return result.PackedFixed32Count; }
       }
+      [global::System.CLSCompliant(false)]
       public uint GetPackedFixed32(int index) {
         return result.GetPackedFixed32(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetPackedFixed32(int index, uint value) {
         result.packedFixed32_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddPackedFixed32(uint value) {
         result.packedFixed32_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangePackedFixed32(scg::IEnumerable<uint> values) {
         base.AddRange(values, result.packedFixed32_);
         return this;
@@ -13306,23 +13403,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
+      [global::System.CLSCompliant(false)]
       public scg::IList<ulong> PackedFixed64List {
         get { return result.packedFixed64_; }
       }
       public int PackedFixed64Count {
         get { return result.PackedFixed64Count; }
       }
+      [global::System.CLSCompliant(false)]
       public ulong GetPackedFixed64(int index) {
         return result.GetPackedFixed64(index);
       }
+      [global::System.CLSCompliant(false)]
       public Builder SetPackedFixed64(int index, ulong value) {
         result.packedFixed64_[index] = value;
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddPackedFixed64(ulong value) {
         result.packedFixed64_.Add(value);
         return this;
       }
+      [global::System.CLSCompliant(false)]
       public Builder AddRangePackedFixed64(scg::IEnumerable<ulong> values) {
         base.AddRange(values, result.packedFixed64_);
         return this;

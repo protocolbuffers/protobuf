@@ -99,6 +99,7 @@ namespace Google.ProtocolBuffers {
     /// Called by derived classes to parse an unknown field.
     /// </summary>
     /// <returns>true unless the tag is an end-group tag</returns>
+    [CLSCompliant(false)]
     protected virtual bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
                                      ExtensionRegistry extensionRegistry, uint tag) {
       return unknownFields.MergeFieldFrom(tag, input);

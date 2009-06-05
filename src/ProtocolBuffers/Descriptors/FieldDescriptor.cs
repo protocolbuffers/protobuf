@@ -278,6 +278,10 @@ namespace Google.ProtocolBuffers.Descriptors {
       get { return fieldType; }
     }
 
+    public bool IsCLSCompliant {
+      get { return mappedType != MappedType.UInt32 && mappedType != MappedType.UInt64; }
+    }
+
     public int FieldNumber {
       get { return Proto.Number; }
     }
