@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
   /// <summary>

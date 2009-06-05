@@ -31,7 +31,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     internal static string GetFieldConstantName(FieldDescriptor field) {
-      return NameHelpers.UnderscoresToPascalCase(GetFieldName(field)) + "FieldNumber";
+      return field.CSharpOptions.PropertyName + "FieldNumber";
     }
 
     private static string ToCSharpName(string name, FileDescriptor file) {

@@ -8,31 +8,47 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   public static partial class UnitTestImportProtoFile {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+    }
+    #endregion
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_import_ImportMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ImportMessage, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder> internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "CiVnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0LnByb3RvEhhwcm90" + 
-        "b2J1Zl91bml0dGVzdF9pbXBvcnQaJGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBf" + 
-        "b3B0aW9ucy5wcm90byIaCg1JbXBvcnRNZXNzYWdlEgkKAWQYASABKAUqPAoK" + 
-        "SW1wb3J0RW51bRIOCgpJTVBPUlRfRk9PEAcSDgoKSU1QT1JUX0JBUhAIEg4K" + 
-        "CklNUE9SVF9CQVoQCUJbChhjb20uZ29vZ2xlLnByb3RvYnVmLnRlc3RIAcI+" + 
-        "PAohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEhdVbml0VGVz" + 
-        "dEltcG9ydFByb3RvRmlsZQ=="),
-        new pbd::FileDescriptor[] {
+    private static pbd::FileDescriptor descriptor;
+    
+    static UnitTestImportProtoFile() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "CiVnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0LnByb3RvEhhwcm90" + 
+          "b2J1Zl91bml0dGVzdF9pbXBvcnQaJGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBf" + 
+          "b3B0aW9ucy5wcm90byIaCg1JbXBvcnRNZXNzYWdlEgkKAWQYASABKAUqPAoK" + 
+          "SW1wb3J0RW51bRIOCgpJTVBPUlRfRk9PEAcSDgoKSU1QT1JUX0JBUhAIEg4K" + 
+          "CklNUE9SVF9CQVoQCUJbChhjb20uZ29vZ2xlLnByb3RvYnVmLnRlc3RIAcI+" + 
+          "PAohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEhdVbml0VGVz" + 
+          "dEltcG9ydFByb3RvRmlsZQ==");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_protobuf_unittest_import_ImportMessage__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ImportMessage, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder>(internal__static_protobuf_unittest_import_ImportMessage__Descriptor,
+                new string[] { "D", });
+        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
+        RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
+        return registry;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
-        });
+          }, assigner);
+    }
     #endregion
     
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_import_ImportMessage__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ImportMessage, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder> internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ImportMessage, global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder>(internal__static_protobuf_unittest_import_ImportMessage__Descriptor,
-            new string[] { "D", });
-    #endregion
   }
   #region Enums
   public enum ImportEnum {
@@ -252,6 +268,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.d_ = 0;
         return this;
       }
+    }
+    static ImportMessage() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.Descriptor;
     }
   }
   

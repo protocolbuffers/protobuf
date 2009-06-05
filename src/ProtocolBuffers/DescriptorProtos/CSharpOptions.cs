@@ -8,49 +8,65 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   
   public static partial class CSharpOptions {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+      registry.Add(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFileOptions);
+      registry.Add(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFieldOptions);
+    }
+    #endregion
+    #region Extensions
+    public const int CSharpFileOptionsFieldNumber = 1000;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions> CSharpFileOptions;
+    public const int CSharpFieldOptionsFieldNumber = 1000;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions> CSharpFieldOptions;
+    #endregion
+    
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_CSharpFileOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder> internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_CSharpFieldOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder> internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
-        "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-        "iAEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
-        "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSFgoOcHVibGljX2NsYXNzZXMYAyAB" + 
-        "KAgSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFzc2VzGAUg" + 
-        "ASgIIisKEkNTaGFycEZpZWxkT3B0aW9ucxIVCg1wcm9wZXJ0eV9uYW1lGAEg" + 
-        "ASgJOl4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYu" + 
-        "RmlsZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZp" + 
-        "bGVPcHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnBy" + 
-        "b3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYu" + 
-        "Q1NoYXJwRmllbGRPcHRpb25z"),
-        new pbd::FileDescriptor[] {
+    private static pbd::FileDescriptor descriptor;
+    
+    static CSharpOptions() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
+          "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
+          "iAEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSFgoOcHVibGljX2NsYXNzZXMYAyAB" + 
+          "KAgSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFzc2VzGAUg" + 
+          "ASgIIisKEkNTaGFycEZpZWxkT3B0aW9ucxIVCg1wcm9wZXJ0eV9uYW1lGAEg" + 
+          "ASgJOl4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYu" + 
+          "RmlsZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZp" + 
+          "bGVPcHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnBy" + 
+          "b3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYu" + 
+          "Q1NoYXJwRmllbGRPcHRpb25z");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", });
+        internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
+                new string[] { "PropertyName", });
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFileOptions = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions>.CreateInstance(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor.Extensions[0]);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFieldOptions = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions>.CreateInstance(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor.Extensions[1]);
+        return null;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
-        });
+          }, assigner);
+    }
     #endregion
     
-    #region Extensions
-    public const int CsharpFileOptionsFieldNumber = 1000;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions> CSharpFileOptions =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions>.CreateInstance(Descriptor.Extensions[0]);
-    public const int CsharpFieldOptionsFieldNumber = 1000;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions> CSharpFieldOptions =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions>.CreateInstance(Descriptor.Extensions[1]);
-    #endregion
-    
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_CSharpFileOptions__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder> internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-            new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_CSharpFieldOptions__Descriptor
-        = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder> internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
-            new string[] { "PropertyName", });
-    #endregion
   }
   #region Messages
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
@@ -293,6 +309,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static CSharpFileOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor;
+    }
   }
   
   public sealed partial class CSharpFieldOptions : pb::GeneratedMessage<CSharpFieldOptions, CSharpFieldOptions.Builder> {
@@ -421,6 +440,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.propertyName_ = "";
         return this;
       }
+    }
+    static CSharpFieldOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor;
     }
   }
   

@@ -225,7 +225,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     }
 
     /// <summary>
-    /// Returns the C#-specific options for this file descriptor. This will always be
+    /// Returns the C#-specific options for this field descriptor. This will always be
     /// completely filled in.
     /// </summary>
     public CSharpFieldOptions CSharpOptions {

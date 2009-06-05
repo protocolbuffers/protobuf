@@ -114,6 +114,7 @@
       <arg file="${protos-dir}/google/protobuf/descriptor.proto" />
       <arg file="${protos-dir}/google/protobuf/csharp_options.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_csharp_options.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_custom_options.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_embed_optimize_for.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_import.proto" />
@@ -140,6 +141,7 @@
     <copy todir="${src}/ProtocolBuffers.Test/TestProtos">
       <fileset basedir="${tmp-dir}">
         <include name="UnitTestProtoFile.cs" />
+        <include name="UnitTestCSharpOptionsProtoFile.cs" />
         <include name="UnitTestCustomOptionsProtoFile.cs" />
         <include name="UnitTestEmbedOptimizeForProtoFile.cs" />
         <include name="UnitTestImportProtoFile.cs" />

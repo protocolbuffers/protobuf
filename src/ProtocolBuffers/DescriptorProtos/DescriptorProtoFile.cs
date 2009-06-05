@@ -8,185 +8,216 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   
   public static partial class DescriptorProtoFile {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+    }
+    #endregion
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_FileDescriptorSet__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.Builder> internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_FileDescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder> internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_DescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder> internal__static_google_protobuf_DescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_DescriptorProto_ExtensionRange__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder> internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_FieldDescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder> internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_EnumDescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder> internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_EnumValueDescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder> internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_ServiceDescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder> internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_MethodDescriptorProto__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder> internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_FileOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileOptions, global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder> internal__static_google_protobuf_FileOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_MessageOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions, global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Builder> internal__static_google_protobuf_MessageOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_FieldOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder> internal__static_google_protobuf_FieldOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_EnumOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Builder> internal__static_google_protobuf_EnumOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_EnumValueOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.Builder> internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_ServiceOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions, global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.Builder> internal__static_google_protobuf_ServiceOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_MethodOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions, global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.Builder> internal__static_google_protobuf_MethodOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_UninterpretedOption__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder> internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder> internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "CiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90bxIPZ29vZ2xlLnBy" + 
-        "b3RvYnVmIkcKEUZpbGVEZXNjcmlwdG9yU2V0EjIKBGZpbGUYASADKAsyJC5n" + 
-        "b29nbGUucHJvdG9idWYuRmlsZURlc2NyaXB0b3JQcm90byLcAgoTRmlsZURl" + 
-        "c2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg8KB3BhY2thZ2UYAiABKAkS" + 
-        "EgoKZGVwZW5kZW5jeRgDIAMoCRI2CgxtZXNzYWdlX3R5cGUYBCADKAsyIC5n" + 
-        "b29nbGUucHJvdG9idWYuRGVzY3JpcHRvclByb3RvEjcKCWVudW1fdHlwZRgF" + 
-        "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5FbnVtRGVzY3JpcHRvclByb3RvEjgK" + 
-        "B3NlcnZpY2UYBiADKAsyJy5nb29nbGUucHJvdG9idWYuU2VydmljZURlc2Ny" + 
-        "aXB0b3JQcm90bxI4CglleHRlbnNpb24YByADKAsyJS5nb29nbGUucHJvdG9i" + 
-        "dWYuRmllbGREZXNjcmlwdG9yUHJvdG8SLQoHb3B0aW9ucxgIIAEoCzIcLmdv" + 
-        "b2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucyKpAwoPRGVzY3JpcHRvclByb3Rv" + 
-        "EgwKBG5hbWUYASABKAkSNAoFZmllbGQYAiADKAsyJS5nb29nbGUucHJvdG9i" + 
-        "dWYuRmllbGREZXNjcmlwdG9yUHJvdG8SOAoJZXh0ZW5zaW9uGAYgAygLMiUu" + 
-        "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvEjUKC25lc3Rl" + 
-        "ZF90eXBlGAMgAygLMiAuZ29vZ2xlLnByb3RvYnVmLkRlc2NyaXB0b3JQcm90" + 
-        "bxI3CgllbnVtX3R5cGUYBCADKAsyJC5nb29nbGUucHJvdG9idWYuRW51bURl" + 
-        "c2NyaXB0b3JQcm90bxJICg9leHRlbnNpb25fcmFuZ2UYBSADKAsyLy5nb29n" + 
-        "bGUucHJvdG9idWYuRGVzY3JpcHRvclByb3RvLkV4dGVuc2lvblJhbmdlEjAK" + 
-        "B29wdGlvbnMYByABKAsyHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlv" + 
-        "bnMaLAoORXh0ZW5zaW9uUmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIg" + 
-        "ASgFIpQFChRGaWVsZERlc2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg4K" + 
-        "Bm51bWJlchgDIAEoBRI6CgVsYWJlbBgEIAEoDjIrLmdvb2dsZS5wcm90b2J1" + 
-        "Zi5GaWVsZERlc2NyaXB0b3JQcm90by5MYWJlbBI4CgR0eXBlGAUgASgOMiou" + 
-        "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvLlR5cGUSEQoJ" + 
-        "dHlwZV9uYW1lGAYgASgJEhAKCGV4dGVuZGVlGAIgASgJEhUKDWRlZmF1bHRf" + 
-        "dmFsdWUYByABKAkSLgoHb3B0aW9ucxgIIAEoCzIdLmdvb2dsZS5wcm90b2J1" + 
-        "Zi5GaWVsZE9wdGlvbnMitgIKBFR5cGUSDwoLVFlQRV9ET1VCTEUQARIOCgpU" + 
-        "WVBFX0ZMT0FUEAISDgoKVFlQRV9JTlQ2NBADEg8KC1RZUEVfVUlOVDY0EAQS" + 
-        "DgoKVFlQRV9JTlQzMhAFEhAKDFRZUEVfRklYRUQ2NBAGEhAKDFRZUEVfRklY" + 
-        "RUQzMhAHEg0KCVRZUEVfQk9PTBAIEg8KC1RZUEVfU1RSSU5HEAkSDgoKVFlQ" + 
-        "RV9HUk9VUBAKEhAKDFRZUEVfTUVTU0FHRRALEg4KClRZUEVfQllURVMQDBIP" + 
-        "CgtUWVBFX1VJTlQzMhANEg0KCVRZUEVfRU5VTRAOEhEKDVRZUEVfU0ZJWEVE" + 
-        "MzIQDxIRCg1UWVBFX1NGSVhFRDY0EBASDwoLVFlQRV9TSU5UMzIQERIPCgtU" + 
-        "WVBFX1NJTlQ2NBASIkMKBUxhYmVsEhIKDkxBQkVMX09QVElPTkFMEAESEgoO" + 
-        "TEFCRUxfUkVRVUlSRUQQAhISCg5MQUJFTF9SRVBFQVRFRBADIowBChNFbnVt" + 
-        "RGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSOAoFdmFsdWUYAiADKAsy" + 
-        "KS5nb29nbGUucHJvdG9idWYuRW51bVZhbHVlRGVzY3JpcHRvclByb3RvEi0K" + 
-        "B29wdGlvbnMYAyABKAsyHC5nb29nbGUucHJvdG9idWYuRW51bU9wdGlvbnMi" + 
-        "bAoYRW51bVZhbHVlRGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSDgoG" + 
-        "bnVtYmVyGAIgASgFEjIKB29wdGlvbnMYAyABKAsyIS5nb29nbGUucHJvdG9i" + 
-        "dWYuRW51bVZhbHVlT3B0aW9ucyKQAQoWU2VydmljZURlc2NyaXB0b3JQcm90" + 
-        "bxIMCgRuYW1lGAEgASgJEjYKBm1ldGhvZBgCIAMoCzImLmdvb2dsZS5wcm90" + 
-        "b2J1Zi5NZXRob2REZXNjcmlwdG9yUHJvdG8SMAoHb3B0aW9ucxgDIAEoCzIf" + 
-        "Lmdvb2dsZS5wcm90b2J1Zi5TZXJ2aWNlT3B0aW9ucyJ/ChVNZXRob2REZXNj" + 
-        "cmlwdG9yUHJvdG8SDAoEbmFtZRgBIAEoCRISCgppbnB1dF90eXBlGAIgASgJ" + 
-        "EhMKC291dHB1dF90eXBlGAMgASgJEi8KB29wdGlvbnMYBCABKAsyHi5nb29n" + 
-        "bGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucyKrAgoLRmlsZU9wdGlvbnMSFAoM" + 
-        "amF2YV9wYWNrYWdlGAEgASgJEhwKFGphdmFfb3V0ZXJfY2xhc3NuYW1lGAgg" + 
-        "ASgJEiIKE2phdmFfbXVsdGlwbGVfZmlsZXMYCiABKAg6BWZhbHNlEkoKDG9w" + 
-        "dGltaXplX2ZvchgJIAEoDjIpLmdvb2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9u" + 
-        "cy5PcHRpbWl6ZU1vZGU6CUNPREVfU0laRRJDChR1bmludGVycHJldGVkX29w" + 
-        "dGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9w" + 
-        "dGlvbiIoCgxPcHRpbWl6ZU1vZGUSCQoFU1BFRUQQARINCglDT0RFX1NJWkUQ" + 
-        "AioJCOgHEICAgIACIogBCg5NZXNzYWdlT3B0aW9ucxImChdtZXNzYWdlX3Nl" + 
-        "dF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9v" + 
-        "cHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRP" + 
-        "cHRpb24qCQjoBxCAgICAAiLlAQoMRmllbGRPcHRpb25zEjIKBWN0eXBlGAEg" + 
-        "ASgOMiMuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5DVHlwZRIOCgZw" + 
-        "YWNrZWQYAiABKAgSHAoUZXhwZXJpbWVudGFsX21hcF9rZXkYCSABKAkSQwoU" + 
-        "dW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVm" + 
-        "LlVuaW50ZXJwcmV0ZWRPcHRpb24iIwoFQ1R5cGUSCAoEQ09SRBABEhAKDFNU" + 
-        "UklOR19QSUVDRRACKgkI6AcQgICAgAIiXQoLRW51bU9wdGlvbnMSQwoUdW5p" + 
-        "bnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVu" + 
-        "aW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiJiChBFbnVtVmFsdWVPcHRp" + 
-        "b25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5w" + 
-        "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiYAoOU2Vy" + 
-        "dmljZU9wdGlvbnMSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQu" + 
-        "Z29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICA" + 
-        "AiJfCg1NZXRob2RPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH" + 
-        "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI" + 
-        "6AcQgICAgAIihQIKE1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoEbmFtZRgCIAMo" + 
-        "CzItLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uLk5hbWVQ" + 
-        "YXJ0EhgKEGlkZW50aWZpZXJfdmFsdWUYAyABKAkSGgoScG9zaXRpdmVfaW50" + 
-        "X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgFIAEoAxIUCgxk" + 
-        "b3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcgASgMGjMKCE5h" + 
-        "bWVQYXJ0EhEKCW5hbWVfcGFydBgBIAIoCRIUCgxpc19leHRlbnNpb24YAiAC" + 
-        "KAhCKQoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRvclByb3Rvc0gB"),
-        new pbd::FileDescriptor[] {
-        });
+    private static pbd::FileDescriptor descriptor;
+    
+    static DescriptorProtoFile() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "CiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90bxIPZ29vZ2xlLnBy" + 
+          "b3RvYnVmIkcKEUZpbGVEZXNjcmlwdG9yU2V0EjIKBGZpbGUYASADKAsyJC5n" + 
+          "b29nbGUucHJvdG9idWYuRmlsZURlc2NyaXB0b3JQcm90byLcAgoTRmlsZURl" + 
+          "c2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg8KB3BhY2thZ2UYAiABKAkS" + 
+          "EgoKZGVwZW5kZW5jeRgDIAMoCRI2CgxtZXNzYWdlX3R5cGUYBCADKAsyIC5n" + 
+          "b29nbGUucHJvdG9idWYuRGVzY3JpcHRvclByb3RvEjcKCWVudW1fdHlwZRgF" + 
+          "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5FbnVtRGVzY3JpcHRvclByb3RvEjgK" + 
+          "B3NlcnZpY2UYBiADKAsyJy5nb29nbGUucHJvdG9idWYuU2VydmljZURlc2Ny" + 
+          "aXB0b3JQcm90bxI4CglleHRlbnNpb24YByADKAsyJS5nb29nbGUucHJvdG9i" + 
+          "dWYuRmllbGREZXNjcmlwdG9yUHJvdG8SLQoHb3B0aW9ucxgIIAEoCzIcLmdv" + 
+          "b2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucyKpAwoPRGVzY3JpcHRvclByb3Rv" + 
+          "EgwKBG5hbWUYASABKAkSNAoFZmllbGQYAiADKAsyJS5nb29nbGUucHJvdG9i" + 
+          "dWYuRmllbGREZXNjcmlwdG9yUHJvdG8SOAoJZXh0ZW5zaW9uGAYgAygLMiUu" + 
+          "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvEjUKC25lc3Rl" + 
+          "ZF90eXBlGAMgAygLMiAuZ29vZ2xlLnByb3RvYnVmLkRlc2NyaXB0b3JQcm90" + 
+          "bxI3CgllbnVtX3R5cGUYBCADKAsyJC5nb29nbGUucHJvdG9idWYuRW51bURl" + 
+          "c2NyaXB0b3JQcm90bxJICg9leHRlbnNpb25fcmFuZ2UYBSADKAsyLy5nb29n" + 
+          "bGUucHJvdG9idWYuRGVzY3JpcHRvclByb3RvLkV4dGVuc2lvblJhbmdlEjAK" + 
+          "B29wdGlvbnMYByABKAsyHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlv" + 
+          "bnMaLAoORXh0ZW5zaW9uUmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIg" + 
+          "ASgFIpQFChRGaWVsZERlc2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg4K" + 
+          "Bm51bWJlchgDIAEoBRI6CgVsYWJlbBgEIAEoDjIrLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5GaWVsZERlc2NyaXB0b3JQcm90by5MYWJlbBI4CgR0eXBlGAUgASgOMiou" + 
+          "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvLlR5cGUSEQoJ" + 
+          "dHlwZV9uYW1lGAYgASgJEhAKCGV4dGVuZGVlGAIgASgJEhUKDWRlZmF1bHRf" + 
+          "dmFsdWUYByABKAkSLgoHb3B0aW9ucxgIIAEoCzIdLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5GaWVsZE9wdGlvbnMitgIKBFR5cGUSDwoLVFlQRV9ET1VCTEUQARIOCgpU" + 
+          "WVBFX0ZMT0FUEAISDgoKVFlQRV9JTlQ2NBADEg8KC1RZUEVfVUlOVDY0EAQS" + 
+          "DgoKVFlQRV9JTlQzMhAFEhAKDFRZUEVfRklYRUQ2NBAGEhAKDFRZUEVfRklY" + 
+          "RUQzMhAHEg0KCVRZUEVfQk9PTBAIEg8KC1RZUEVfU1RSSU5HEAkSDgoKVFlQ" + 
+          "RV9HUk9VUBAKEhAKDFRZUEVfTUVTU0FHRRALEg4KClRZUEVfQllURVMQDBIP" + 
+          "CgtUWVBFX1VJTlQzMhANEg0KCVRZUEVfRU5VTRAOEhEKDVRZUEVfU0ZJWEVE" + 
+          "MzIQDxIRCg1UWVBFX1NGSVhFRDY0EBASDwoLVFlQRV9TSU5UMzIQERIPCgtU" + 
+          "WVBFX1NJTlQ2NBASIkMKBUxhYmVsEhIKDkxBQkVMX09QVElPTkFMEAESEgoO" + 
+          "TEFCRUxfUkVRVUlSRUQQAhISCg5MQUJFTF9SRVBFQVRFRBADIowBChNFbnVt" + 
+          "RGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSOAoFdmFsdWUYAiADKAsy" + 
+          "KS5nb29nbGUucHJvdG9idWYuRW51bVZhbHVlRGVzY3JpcHRvclByb3RvEi0K" + 
+          "B29wdGlvbnMYAyABKAsyHC5nb29nbGUucHJvdG9idWYuRW51bU9wdGlvbnMi" + 
+          "bAoYRW51bVZhbHVlRGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSDgoG" + 
+          "bnVtYmVyGAIgASgFEjIKB29wdGlvbnMYAyABKAsyIS5nb29nbGUucHJvdG9i" + 
+          "dWYuRW51bVZhbHVlT3B0aW9ucyKQAQoWU2VydmljZURlc2NyaXB0b3JQcm90" + 
+          "bxIMCgRuYW1lGAEgASgJEjYKBm1ldGhvZBgCIAMoCzImLmdvb2dsZS5wcm90" + 
+          "b2J1Zi5NZXRob2REZXNjcmlwdG9yUHJvdG8SMAoHb3B0aW9ucxgDIAEoCzIf" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5TZXJ2aWNlT3B0aW9ucyJ/ChVNZXRob2REZXNj" + 
+          "cmlwdG9yUHJvdG8SDAoEbmFtZRgBIAEoCRISCgppbnB1dF90eXBlGAIgASgJ" + 
+          "EhMKC291dHB1dF90eXBlGAMgASgJEi8KB29wdGlvbnMYBCABKAsyHi5nb29n" + 
+          "bGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucyKnAgoLRmlsZU9wdGlvbnMSFAoM" + 
+          "amF2YV9wYWNrYWdlGAEgASgJEhwKFGphdmFfb3V0ZXJfY2xhc3NuYW1lGAgg" + 
+          "ASgJEiIKE2phdmFfbXVsdGlwbGVfZmlsZXMYCiABKAg6BWZhbHNlEkYKDG9w" + 
+          "dGltaXplX2ZvchgJIAEoDjIpLmdvb2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9u" + 
+          "cy5PcHRpbWl6ZU1vZGU6BVNQRUVEEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9u" + 
+          "GOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9u" + 
+          "IigKDE9wdGltaXplTW9kZRIJCgVTUEVFRBABEg0KCUNPREVfU0laRRACKgkI" + 
+          "6AcQgICAgAIiiAEKDk1lc3NhZ2VPcHRpb25zEiYKF21lc3NhZ2Vfc2V0X3dp" + 
+          "cmVfZm9ybWF0GAEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlv" + 
+          "bhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlv" + 
+          "bioJCOgHEICAgIACIoACCgxGaWVsZE9wdGlvbnMSMgoFY3R5cGUYASABKA4y" + 
+          "Iy5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zLkNUeXBlEg4KBnBhY2tl" + 
+          "ZBgCIAEoCBIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxzZRIcChRleHBlcmlt" + 
+          "ZW50YWxfbWFwX2tleRgJIAEoCRJDChR1bmludGVycHJldGVkX29wdGlvbhjn" + 
+          "ByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbiIj" + 
+          "CgVDVHlwZRIICgRDT1JEEAESEAoMU1RSSU5HX1BJRUNFEAIqCQjoBxCAgICA" + 
+          "AiJdCgtFbnVtT3B0aW9ucxJDChR1bmludGVycHJldGVkX29wdGlvbhjnByAD" + 
+          "KAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgH" + 
+          "EICAgIACImIKEEVudW1WYWx1ZU9wdGlvbnMSQwoUdW5pbnRlcnByZXRlZF9v" + 
+          "cHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRP" + 
+          "cHRpb24qCQjoBxCAgICAAiJgCg5TZXJ2aWNlT3B0aW9ucxJDChR1bmludGVy" + 
+          "cHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRl" + 
+          "cnByZXRlZE9wdGlvbioJCOgHEICAgIACIl8KDU1ldGhvZE9wdGlvbnMSQwoU" + 
+          "dW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVm" + 
+          "LlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKFAgoTVW5pbnRlcnBy" + 
+          "ZXRlZE9wdGlvbhI7CgRuYW1lGAIgAygLMi0uZ29vZ2xlLnByb3RvYnVmLlVu" + 
+          "aW50ZXJwcmV0ZWRPcHRpb24uTmFtZVBhcnQSGAoQaWRlbnRpZmllcl92YWx1" + 
+          "ZRgDIAEoCRIaChJwb3NpdGl2ZV9pbnRfdmFsdWUYBCABKAQSGgoSbmVnYXRp" + 
+          "dmVfaW50X3ZhbHVlGAUgASgDEhQKDGRvdWJsZV92YWx1ZRgGIAEoARIUCgxz" + 
+          "dHJpbmdfdmFsdWUYByABKAwaMwoITmFtZVBhcnQSEQoJbmFtZV9wYXJ0GAEg" + 
+          "AigJEhQKDGlzX2V4dGVuc2lvbhgCIAIoCEIpChNjb20uZ29vZ2xlLnByb3Rv" + 
+          "YnVmQhBEZXNjcmlwdG9yUHJvdG9zSAE=");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_google_protobuf_FileDescriptorSet__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.Builder>(internal__static_google_protobuf_FileDescriptorSet__Descriptor,
+                new string[] { "File", });
+        internal__static_google_protobuf_FileDescriptorProto__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder>(internal__static_google_protobuf_FileDescriptorProto__Descriptor,
+                new string[] { "Name", "Package", "Dependency", "MessageType", "EnumType", "Service", "Extension", "Options", });
+        internal__static_google_protobuf_DescriptorProto__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_google_protobuf_DescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder>(internal__static_google_protobuf_DescriptorProto__Descriptor,
+                new string[] { "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "Options", });
+        internal__static_google_protobuf_DescriptorProto_ExtensionRange__Descriptor = internal__static_google_protobuf_DescriptorProto__Descriptor.NestedTypes[0];
+        internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder>(internal__static_google_protobuf_DescriptorProto_ExtensionRange__Descriptor,
+                new string[] { "Start", "End", });
+        internal__static_google_protobuf_FieldDescriptorProto__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder>(internal__static_google_protobuf_FieldDescriptorProto__Descriptor,
+                new string[] { "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "Options", });
+        internal__static_google_protobuf_EnumDescriptorProto__Descriptor = Descriptor.MessageTypes[4];
+        internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder>(internal__static_google_protobuf_EnumDescriptorProto__Descriptor,
+                new string[] { "Name", "Value", "Options", });
+        internal__static_google_protobuf_EnumValueDescriptorProto__Descriptor = Descriptor.MessageTypes[5];
+        internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder>(internal__static_google_protobuf_EnumValueDescriptorProto__Descriptor,
+                new string[] { "Name", "Number", "Options", });
+        internal__static_google_protobuf_ServiceDescriptorProto__Descriptor = Descriptor.MessageTypes[6];
+        internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder>(internal__static_google_protobuf_ServiceDescriptorProto__Descriptor,
+                new string[] { "Name", "Method", "Options", });
+        internal__static_google_protobuf_MethodDescriptorProto__Descriptor = Descriptor.MessageTypes[7];
+        internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder>(internal__static_google_protobuf_MethodDescriptorProto__Descriptor,
+                new string[] { "Name", "InputType", "OutputType", "Options", });
+        internal__static_google_protobuf_FileOptions__Descriptor = Descriptor.MessageTypes[8];
+        internal__static_google_protobuf_FileOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileOptions, global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder>(internal__static_google_protobuf_FileOptions__Descriptor,
+                new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "OptimizeFor", "UninterpretedOption", });
+        internal__static_google_protobuf_MessageOptions__Descriptor = Descriptor.MessageTypes[9];
+        internal__static_google_protobuf_MessageOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions, global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Builder>(internal__static_google_protobuf_MessageOptions__Descriptor,
+                new string[] { "MessageSetWireFormat", "UninterpretedOption", });
+        internal__static_google_protobuf_FieldOptions__Descriptor = Descriptor.MessageTypes[10];
+        internal__static_google_protobuf_FieldOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder>(internal__static_google_protobuf_FieldOptions__Descriptor,
+                new string[] { "Ctype", "Packed", "Deprecated", "ExperimentalMapKey", "UninterpretedOption", });
+        internal__static_google_protobuf_EnumOptions__Descriptor = Descriptor.MessageTypes[11];
+        internal__static_google_protobuf_EnumOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Builder>(internal__static_google_protobuf_EnumOptions__Descriptor,
+                new string[] { "UninterpretedOption", });
+        internal__static_google_protobuf_EnumValueOptions__Descriptor = Descriptor.MessageTypes[12];
+        internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.Builder>(internal__static_google_protobuf_EnumValueOptions__Descriptor,
+                new string[] { "UninterpretedOption", });
+        internal__static_google_protobuf_ServiceOptions__Descriptor = Descriptor.MessageTypes[13];
+        internal__static_google_protobuf_ServiceOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions, global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.Builder>(internal__static_google_protobuf_ServiceOptions__Descriptor,
+                new string[] { "UninterpretedOption", });
+        internal__static_google_protobuf_MethodOptions__Descriptor = Descriptor.MessageTypes[14];
+        internal__static_google_protobuf_MethodOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions, global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.Builder>(internal__static_google_protobuf_MethodOptions__Descriptor,
+                new string[] { "UninterpretedOption", });
+        internal__static_google_protobuf_UninterpretedOption__Descriptor = Descriptor.MessageTypes[15];
+        internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder>(internal__static_google_protobuf_UninterpretedOption__Descriptor,
+                new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", });
+        internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor = internal__static_google_protobuf_UninterpretedOption__Descriptor.NestedTypes[0];
+        internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder>(internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor,
+                new string[] { "NamePart_", "IsExtension", });
+        return null;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
+          }, assigner);
+    }
     #endregion
     
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_FileDescriptorSet__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.Builder> internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.Builder>(internal__static_google_protobuf_FileDescriptorSet__Descriptor,
-            new string[] { "File", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_FileDescriptorProto__Descriptor
-        = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder> internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder>(internal__static_google_protobuf_FileDescriptorProto__Descriptor,
-            new string[] { "Name", "Package", "Dependency", "MessageType", "EnumType", "Service", "Extension", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_DescriptorProto__Descriptor
-        = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder> internal__static_google_protobuf_DescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder>(internal__static_google_protobuf_DescriptorProto__Descriptor,
-            new string[] { "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_DescriptorProto_ExtensionRange__Descriptor
-        = internal__static_google_protobuf_DescriptorProto__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder> internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder>(internal__static_google_protobuf_DescriptorProto_ExtensionRange__Descriptor,
-            new string[] { "Start", "End", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_FieldDescriptorProto__Descriptor
-        = Descriptor.MessageTypes[3];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder> internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder>(internal__static_google_protobuf_FieldDescriptorProto__Descriptor,
-            new string[] { "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_EnumDescriptorProto__Descriptor
-        = Descriptor.MessageTypes[4];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder> internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder>(internal__static_google_protobuf_EnumDescriptorProto__Descriptor,
-            new string[] { "Name", "Value", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_EnumValueDescriptorProto__Descriptor
-        = Descriptor.MessageTypes[5];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder> internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder>(internal__static_google_protobuf_EnumValueDescriptorProto__Descriptor,
-            new string[] { "Name", "Number", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_ServiceDescriptorProto__Descriptor
-        = Descriptor.MessageTypes[6];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder> internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder>(internal__static_google_protobuf_ServiceDescriptorProto__Descriptor,
-            new string[] { "Name", "Method", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_MethodDescriptorProto__Descriptor
-        = Descriptor.MessageTypes[7];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder> internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder>(internal__static_google_protobuf_MethodDescriptorProto__Descriptor,
-            new string[] { "Name", "InputType", "OutputType", "Options", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_FileOptions__Descriptor
-        = Descriptor.MessageTypes[8];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileOptions, global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder> internal__static_google_protobuf_FileOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileOptions, global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder>(internal__static_google_protobuf_FileOptions__Descriptor,
-            new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "OptimizeFor", "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_MessageOptions__Descriptor
-        = Descriptor.MessageTypes[9];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions, global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Builder> internal__static_google_protobuf_MessageOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions, global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Builder>(internal__static_google_protobuf_MessageOptions__Descriptor,
-            new string[] { "MessageSetWireFormat", "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_FieldOptions__Descriptor
-        = Descriptor.MessageTypes[10];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder> internal__static_google_protobuf_FieldOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Builder>(internal__static_google_protobuf_FieldOptions__Descriptor,
-            new string[] { "Ctype", "Packed", "ExperimentalMapKey", "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_EnumOptions__Descriptor
-        = Descriptor.MessageTypes[11];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Builder> internal__static_google_protobuf_EnumOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Builder>(internal__static_google_protobuf_EnumOptions__Descriptor,
-            new string[] { "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_EnumValueOptions__Descriptor
-        = Descriptor.MessageTypes[12];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.Builder> internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.Builder>(internal__static_google_protobuf_EnumValueOptions__Descriptor,
-            new string[] { "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_ServiceOptions__Descriptor
-        = Descriptor.MessageTypes[13];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions, global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.Builder> internal__static_google_protobuf_ServiceOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions, global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.Builder>(internal__static_google_protobuf_ServiceOptions__Descriptor,
-            new string[] { "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_MethodOptions__Descriptor
-        = Descriptor.MessageTypes[14];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions, global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.Builder> internal__static_google_protobuf_MethodOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions, global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.Builder>(internal__static_google_protobuf_MethodOptions__Descriptor,
-            new string[] { "UninterpretedOption", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_UninterpretedOption__Descriptor
-        = Descriptor.MessageTypes[15];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder> internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder>(internal__static_google_protobuf_UninterpretedOption__Descriptor,
-            new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", });
-    internal static readonly pbd::MessageDescriptor internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor
-        = internal__static_google_protobuf_UninterpretedOption__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder> internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder>(internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor,
-            new string[] { "NamePart_", "IsExtension", });
-    #endregion
   }
   #region Messages
   public sealed partial class FileDescriptorSet : pb::GeneratedMessage<FileDescriptorSet, FileDescriptorSet.Builder> {
@@ -425,6 +456,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.file_.Clear();
         return this;
       }
+    }
+    static FileDescriptorSet() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   
@@ -1084,6 +1118,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static FileDescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
@@ -1359,6 +1396,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             result.end_ = 0;
             return this;
           }
+        }
+        static ExtensionRange() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
         }
       }
       
@@ -1962,6 +2002,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static DescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
@@ -2538,6 +2581,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static FieldDescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
@@ -2886,6 +2932,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static EnumDescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
@@ -3205,6 +3254,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance;
         return this;
       }
+    }
+    static EnumValueDescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   
@@ -3553,6 +3605,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance;
         return this;
       }
+    }
+    static ServiceDescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   
@@ -3917,6 +3972,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static MethodDescriptorProto() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class FileOptions : pb::ExtendableMessage<FileOptions, FileOptions.Builder> {
@@ -3983,7 +4041,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptimizeForFieldNumber = 9;
     private bool hasOptimizeFor;
-    private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.CODE_SIZE;
+    private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
     public bool HasOptimizeFor {
       get { return hasOptimizeFor; }
     }
@@ -4303,7 +4361,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       public Builder ClearOptimizeFor() {
         result.hasOptimizeFor = false;
-        result.optimizeFor_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.CODE_SIZE;
+        result.optimizeFor_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
         return this;
       }
       
@@ -4344,6 +4402,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.uninterpretedOption_.Clear();
         return this;
       }
+    }
+    static FileOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   
@@ -4630,6 +4691,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static MessageOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class FieldOptions : pb::ExtendableMessage<FieldOptions, FieldOptions.Builder> {
@@ -4684,6 +4748,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return packed_; }
     }
     
+    public const int DeprecatedFieldNumber = 3;
+    private bool hasDeprecated;
+    private bool deprecated_ = false;
+    public bool HasDeprecated {
+      get { return hasDeprecated; }
+    }
+    public bool Deprecated {
+      get { return deprecated_; }
+    }
+    
     public const int ExperimentalMapKeyFieldNumber = 9;
     private bool hasExperimentalMapKey;
     private string experimentalMapKey_ = "";
@@ -4724,6 +4798,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       if (HasPacked) {
         output.WriteBool(2, Packed);
       }
+      if (HasDeprecated) {
+        output.WriteBool(3, Deprecated);
+      }
       if (HasExperimentalMapKey) {
         output.WriteString(9, ExperimentalMapKey);
       }
@@ -4746,6 +4823,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (HasPacked) {
           size += pb::CodedOutputStream.ComputeBoolSize(2, Packed);
+        }
+        if (HasDeprecated) {
+          size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
         }
         if (HasExperimentalMapKey) {
           size += pb::CodedOutputStream.ComputeStringSize(9, ExperimentalMapKey);
@@ -4853,6 +4933,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasPacked) {
           Packed = other.Packed;
         }
+        if (other.HasDeprecated) {
+          Deprecated = other.Deprecated;
+        }
         if (other.HasExperimentalMapKey) {
           ExperimentalMapKey = other.ExperimentalMapKey;
         }
@@ -4908,6 +4991,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               Packed = input.ReadBool();
               break;
             }
+            case 24: {
+              Deprecated = input.ReadBool();
+              break;
+            }
             case 74: {
               ExperimentalMapKey = input.ReadString();
               break;
@@ -4956,6 +5043,24 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearPacked() {
         result.hasPacked = false;
         result.packed_ = false;
+        return this;
+      }
+      
+      public bool HasDeprecated {
+        get { return result.HasDeprecated; }
+      }
+      public bool Deprecated {
+        get { return result.Deprecated; }
+        set { SetDeprecated(value); }
+      }
+      public Builder SetDeprecated(bool value) {
+        result.hasDeprecated = true;
+        result.deprecated_ = value;
+        return this;
+      }
+      public Builder ClearDeprecated() {
+        result.hasDeprecated = false;
+        result.deprecated_ = false;
         return this;
       }
       
@@ -5015,6 +5120,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.uninterpretedOption_.Clear();
         return this;
       }
+    }
+    static FieldOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   
@@ -5260,6 +5368,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static EnumOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class EnumValueOptions : pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder> {
@@ -5503,6 +5614,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.uninterpretedOption_.Clear();
         return this;
       }
+    }
+    static EnumValueOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   
@@ -5748,6 +5862,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static ServiceOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class MethodOptions : pb::ExtendableMessage<MethodOptions, MethodOptions.Builder> {
@@ -5992,6 +6109,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
     }
+    static MethodOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class UninterpretedOption : pb::GeneratedMessage<UninterpretedOption, UninterpretedOption.Builder> {
@@ -6040,7 +6160,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
         
-        public const int NamePartFieldNumber = 1;
+        public const int NamePart_FieldNumber = 1;
         private bool hasNamePart_;
         private string namePart_ = "";
         public bool HasNamePart_ {
@@ -6270,6 +6390,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             result.isExtension_ = false;
             return this;
           }
+        }
+        static NamePart() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
         }
       }
       
@@ -6697,6 +6820,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.stringValue_ = pb::ByteString.Empty;
         return this;
       }
+    }
+    static UninterpretedOption() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
     }
   }
   

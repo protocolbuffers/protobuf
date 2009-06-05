@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -13,19 +15,49 @@ namespace Google.ProtocolBuffers.ProtoGen {
       : base(descriptor) {
     }
 
+    // Recursively searches the given message to see if it contains any extensions.
+    private static bool UsesExtensions(IMessage message) {
+      // We conservatively assume that unknown fields are extensions.
+      if (message.UnknownFields.FieldDictionary.Count > 0) {
+        return true;
+      }
+
+      foreach (KeyValuePair<FieldDescriptor, object> keyValue in message.AllFields) {
+        FieldDescriptor field = keyValue.Key;
+        if (field.IsExtension) {
+          return true;
+        }
+        if (field.MappedType == MappedType.Message) {
+          if (field.IsRepeated) {
+            foreach (IMessage subMessage in (IEnumerable)keyValue.Value) {
+              if (UsesExtensions(subMessage)) {
+                return true;
+              }
+            }
+          } else {
+            if (UsesExtensions((IMessage)keyValue.Value)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
     public string UmbrellaClassName {
       get { throw new NotImplementedException(); }
     }
 
     public void Generate(TextGenerator writer) {
       WriteIntroduction(writer);
-      WriteDescriptor(writer);
+      WriteExtensionRegistration(writer);
       WriteChildren(writer, "Extensions", Descriptor.Extensions);
       writer.WriteLine("#region Static variables");
       foreach (MessageDescriptor message in Descriptor.MessageTypes) {
         new MessageGenerator(message).GenerateStaticVariables(writer);
       }
       writer.WriteLine("#endregion");
+      WriteDescriptor(writer);
       // The class declaration either gets closed before or after the children are written.
       if (!Descriptor.CSharpOptions.NestClasses) {
         writer.Outdent();
@@ -60,14 +92,32 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.Indent();
     }
 
+    private void WriteExtensionRegistration(TextGenerator writer) {
+      writer.WriteLine("#region Extension registration");
+      writer.WriteLine("public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {");
+      writer.Indent();
+      foreach (FieldDescriptor extension in Descriptor.Extensions) {
+        new ExtensionGenerator(extension).GenerateExtensionRegistrationCode(writer);
+      }
+      foreach (MessageDescriptor message in Descriptor.MessageTypes) {
+        new MessageGenerator(message).GenerateExtensionRegistrationCode(writer);
+      }
+      writer.Outdent();
+      writer.WriteLine("}");
+      writer.WriteLine("#endregion");
+    }
+
     private void WriteDescriptor(TextGenerator writer) {
       writer.WriteLine("#region Descriptor");
 
       writer.WriteLine("public static pbd::FileDescriptor Descriptor {");
       writer.WriteLine("  get { return descriptor; }");
       writer.WriteLine("}");
-      writer.WriteLine("private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(");
-      writer.WriteLine("    global::System.Convert.FromBase64String(");
+      writer.WriteLine("private static pbd::FileDescriptor descriptor;");
+      writer.WriteLine();
+      writer.WriteLine("static {0}() {{", Descriptor.CSharpOptions.UmbrellaClassname);
+      writer.Indent();
+      writer.WriteLine("byte[] descriptorData = global::System.Convert.FromBase64String(");
       writer.Indent();
       writer.Indent();
 
@@ -79,15 +129,44 @@ namespace Google.ProtocolBuffers.ProtoGen {
         writer.WriteLine("\"{0}\" + ", base64.Substring(0, 60));
         base64 = base64.Substring(60);
       }
-      writer.WriteLine("\"{0}\"),", base64);
-
-      writer.WriteLine("new pbd::FileDescriptor[] {");
-      foreach (FileDescriptor dependency in Descriptor.Dependencies) {
-        writer.WriteLine("  {0}.Descriptor, ", DescriptorUtil.GetFullUmbrellaClassName(dependency));
+      writer.WriteLine("\"{0}\");", base64);
+      writer.Outdent();
+      writer.Outdent();
+      writer.WriteLine("pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {");
+      writer.Indent();
+      writer.WriteLine("descriptor = root;");
+      foreach (MessageDescriptor message in Descriptor.MessageTypes) {
+        new MessageGenerator(message).GenerateStaticVariableInitializers(writer);
       }
-      writer.WriteLine("});");
+      foreach (FieldDescriptor extension in Descriptor.Extensions) {
+        new ExtensionGenerator(extension).GenerateStaticVariableInitializers(writer);
+      }
+
+      if (UsesExtensions(Descriptor.Proto)) {
+        // Must construct an ExtensionRegistry containing all possible extensions
+        // and return it.
+        writer.WriteLine("pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();");
+        writer.WriteLine("RegisterAllExtensions(registry);");
+        foreach (FileDescriptor dependency in Descriptor.Dependencies) {
+          writer.WriteLine("{0}.RegisterAllExtensions(registry);", DescriptorUtil.GetFullUmbrellaClassName(dependency));
+        }
+        writer.WriteLine("return registry;");
+      } else {
+        writer.WriteLine("return null;");
+      }
       writer.Outdent();
+      writer.WriteLine("};");
+
+      // -----------------------------------------------------------------
+      // Invoke internalBuildGeneratedFileFrom() to build the file.
+      writer.WriteLine("pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,");
+      writer.WriteLine("    new pbd::FileDescriptor[] {");
+      foreach (FileDescriptor dependency in Descriptor.Dependencies) {
+        writer.WriteLine("    {0}.Descriptor, ", DescriptorUtil.GetFullUmbrellaClassName(dependency));
+      }
+      writer.WriteLine("    }, assigner);");
       writer.Outdent();
+      writer.WriteLine("}");
       writer.WriteLine("#endregion");
       writer.WriteLine();
     }

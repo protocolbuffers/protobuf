@@ -8,776 +8,873 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   public static partial class UnitTestProtoFile {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalInt32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalInt64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalUint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalUint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalFixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalFixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSfixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSfixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalFloatExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalDoubleExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalBoolExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalStringExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalBytesExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalGroupExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalNestedMessageExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalForeignMessageExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalImportMessageExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalNestedEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalForeignEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalImportEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalStringPieceExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalCordExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedInt32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedInt64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedUint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedUint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedFixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedFixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSfixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSfixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedFloatExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedDoubleExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedBoolExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedStringExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedBytesExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedGroupExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedNestedMessageExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedForeignMessageExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedImportMessageExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedNestedEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedForeignEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedImportEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedStringPieceExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedCordExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultInt32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultInt64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultUint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultUint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultFixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultFixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSfixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSfixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultFloatExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultDoubleExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultBoolExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultStringExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultBytesExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultNestedEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultForeignEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultImportEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultStringPieceExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultCordExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.MyExtensionString);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.MyExtensionInt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedInt32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedInt64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedUint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedUint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSint32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSint64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedFixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedFixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSfixed32Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSfixed64Extension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedFloatExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedDoubleExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedBoolExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.TestRequired.Single);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.TestRequired.Multi);
+    }
+    #endregion
+    #region Extensions
+    public const int OptionalInt32ExtensionFieldNumber = 1;
+    public static pb::GeneratedExtensionBase<int> OptionalInt32Extension;
+    public const int OptionalInt64ExtensionFieldNumber = 2;
+    public static pb::GeneratedExtensionBase<long> OptionalInt64Extension;
+    public const int OptionalUint32ExtensionFieldNumber = 3;
+    public static pb::GeneratedExtensionBase<uint> OptionalUint32Extension;
+    public const int OptionalUint64ExtensionFieldNumber = 4;
+    public static pb::GeneratedExtensionBase<ulong> OptionalUint64Extension;
+    public const int OptionalSint32ExtensionFieldNumber = 5;
+    public static pb::GeneratedExtensionBase<int> OptionalSint32Extension;
+    public const int OptionalSint64ExtensionFieldNumber = 6;
+    public static pb::GeneratedExtensionBase<long> OptionalSint64Extension;
+    public const int OptionalFixed32ExtensionFieldNumber = 7;
+    public static pb::GeneratedExtensionBase<uint> OptionalFixed32Extension;
+    public const int OptionalFixed64ExtensionFieldNumber = 8;
+    public static pb::GeneratedExtensionBase<ulong> OptionalFixed64Extension;
+    public const int OptionalSfixed32ExtensionFieldNumber = 9;
+    public static pb::GeneratedExtensionBase<int> OptionalSfixed32Extension;
+    public const int OptionalSfixed64ExtensionFieldNumber = 10;
+    public static pb::GeneratedExtensionBase<long> OptionalSfixed64Extension;
+    public const int OptionalFloatExtensionFieldNumber = 11;
+    public static pb::GeneratedExtensionBase<float> OptionalFloatExtension;
+    public const int OptionalDoubleExtensionFieldNumber = 12;
+    public static pb::GeneratedExtensionBase<double> OptionalDoubleExtension;
+    public const int OptionalBoolExtensionFieldNumber = 13;
+    public static pb::GeneratedExtensionBase<bool> OptionalBoolExtension;
+    public const int OptionalStringExtensionFieldNumber = 14;
+    public static pb::GeneratedExtensionBase<string> OptionalStringExtension;
+    public const int OptionalBytesExtensionFieldNumber = 15;
+    public static pb::GeneratedExtensionBase<pb::ByteString> OptionalBytesExtension;
+    public const int OptionalGroupExtensionFieldNumber = 16;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension> OptionalGroupExtension;
+    public const int OptionalNestedMessageExtensionFieldNumber = 18;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> OptionalNestedMessageExtension;
+    public const int OptionalForeignMessageExtensionFieldNumber = 19;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> OptionalForeignMessageExtension;
+    public const int OptionalImportMessageExtensionFieldNumber = 20;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportMessage> OptionalImportMessageExtension;
+    public const int OptionalNestedEnumExtensionFieldNumber = 21;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> OptionalNestedEnumExtension;
+    public const int OptionalForeignEnumExtensionFieldNumber = 22;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> OptionalForeignEnumExtension;
+    public const int OptionalImportEnumExtensionFieldNumber = 23;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportEnum> OptionalImportEnumExtension;
+    public const int OptionalStringPieceExtensionFieldNumber = 24;
+    public static pb::GeneratedExtensionBase<string> OptionalStringPieceExtension;
+    public const int OptionalCordExtensionFieldNumber = 25;
+    public static pb::GeneratedExtensionBase<string> OptionalCordExtension;
+    public const int RepeatedInt32ExtensionFieldNumber = 31;
+    public static pb::GeneratedExtensionBase<scg::IList<int>> RepeatedInt32Extension;
+    public const int RepeatedInt64ExtensionFieldNumber = 32;
+    public static pb::GeneratedExtensionBase<scg::IList<long>> RepeatedInt64Extension;
+    public const int RepeatedUint32ExtensionFieldNumber = 33;
+    public static pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedUint32Extension;
+    public const int RepeatedUint64ExtensionFieldNumber = 34;
+    public static pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedUint64Extension;
+    public const int RepeatedSint32ExtensionFieldNumber = 35;
+    public static pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSint32Extension;
+    public const int RepeatedSint64ExtensionFieldNumber = 36;
+    public static pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSint64Extension;
+    public const int RepeatedFixed32ExtensionFieldNumber = 37;
+    public static pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedFixed32Extension;
+    public const int RepeatedFixed64ExtensionFieldNumber = 38;
+    public static pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedFixed64Extension;
+    public const int RepeatedSfixed32ExtensionFieldNumber = 39;
+    public static pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSfixed32Extension;
+    public const int RepeatedSfixed64ExtensionFieldNumber = 40;
+    public static pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSfixed64Extension;
+    public const int RepeatedFloatExtensionFieldNumber = 41;
+    public static pb::GeneratedExtensionBase<scg::IList<float>> RepeatedFloatExtension;
+    public const int RepeatedDoubleExtensionFieldNumber = 42;
+    public static pb::GeneratedExtensionBase<scg::IList<double>> RepeatedDoubleExtension;
+    public const int RepeatedBoolExtensionFieldNumber = 43;
+    public static pb::GeneratedExtensionBase<scg::IList<bool>> RepeatedBoolExtension;
+    public const int RepeatedStringExtensionFieldNumber = 44;
+    public static pb::GeneratedExtensionBase<scg::IList<string>> RepeatedStringExtension;
+    public const int RepeatedBytesExtensionFieldNumber = 45;
+    public static pb::GeneratedExtensionBase<scg::IList<pb::ByteString>> RepeatedBytesExtension;
+    public const int RepeatedGroupExtensionFieldNumber = 46;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension>> RepeatedGroupExtension;
+    public const int RepeatedNestedMessageExtensionFieldNumber = 48;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>> RepeatedNestedMessageExtension;
+    public const int RepeatedForeignMessageExtensionFieldNumber = 49;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>> RepeatedForeignMessageExtension;
+    public const int RepeatedImportMessageExtensionFieldNumber = 50;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage>> RepeatedImportMessageExtension;
+    public const int RepeatedNestedEnumExtensionFieldNumber = 51;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>> RepeatedNestedEnumExtension;
+    public const int RepeatedForeignEnumExtensionFieldNumber = 52;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> RepeatedForeignEnumExtension;
+    public const int RepeatedImportEnumExtensionFieldNumber = 53;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportEnum>> RepeatedImportEnumExtension;
+    public const int RepeatedStringPieceExtensionFieldNumber = 54;
+    public static pb::GeneratedExtensionBase<scg::IList<string>> RepeatedStringPieceExtension;
+    public const int RepeatedCordExtensionFieldNumber = 55;
+    public static pb::GeneratedExtensionBase<scg::IList<string>> RepeatedCordExtension;
+    public const int DefaultInt32ExtensionFieldNumber = 61;
+    public static pb::GeneratedExtensionBase<int> DefaultInt32Extension;
+    public const int DefaultInt64ExtensionFieldNumber = 62;
+    public static pb::GeneratedExtensionBase<long> DefaultInt64Extension;
+    public const int DefaultUint32ExtensionFieldNumber = 63;
+    public static pb::GeneratedExtensionBase<uint> DefaultUint32Extension;
+    public const int DefaultUint64ExtensionFieldNumber = 64;
+    public static pb::GeneratedExtensionBase<ulong> DefaultUint64Extension;
+    public const int DefaultSint32ExtensionFieldNumber = 65;
+    public static pb::GeneratedExtensionBase<int> DefaultSint32Extension;
+    public const int DefaultSint64ExtensionFieldNumber = 66;
+    public static pb::GeneratedExtensionBase<long> DefaultSint64Extension;
+    public const int DefaultFixed32ExtensionFieldNumber = 67;
+    public static pb::GeneratedExtensionBase<uint> DefaultFixed32Extension;
+    public const int DefaultFixed64ExtensionFieldNumber = 68;
+    public static pb::GeneratedExtensionBase<ulong> DefaultFixed64Extension;
+    public const int DefaultSfixed32ExtensionFieldNumber = 69;
+    public static pb::GeneratedExtensionBase<int> DefaultSfixed32Extension;
+    public const int DefaultSfixed64ExtensionFieldNumber = 70;
+    public static pb::GeneratedExtensionBase<long> DefaultSfixed64Extension;
+    public const int DefaultFloatExtensionFieldNumber = 71;
+    public static pb::GeneratedExtensionBase<float> DefaultFloatExtension;
+    public const int DefaultDoubleExtensionFieldNumber = 72;
+    public static pb::GeneratedExtensionBase<double> DefaultDoubleExtension;
+    public const int DefaultBoolExtensionFieldNumber = 73;
+    public static pb::GeneratedExtensionBase<bool> DefaultBoolExtension;
+    public const int DefaultStringExtensionFieldNumber = 74;
+    public static pb::GeneratedExtensionBase<string> DefaultStringExtension;
+    public const int DefaultBytesExtensionFieldNumber = 75;
+    public static pb::GeneratedExtensionBase<pb::ByteString> DefaultBytesExtension;
+    public const int DefaultNestedEnumExtensionFieldNumber = 81;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension;
+    public const int DefaultForeignEnumExtensionFieldNumber = 82;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> DefaultForeignEnumExtension;
+    public const int DefaultImportEnumExtensionFieldNumber = 83;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportEnum> DefaultImportEnumExtension;
+    public const int DefaultStringPieceExtensionFieldNumber = 84;
+    public static pb::GeneratedExtensionBase<string> DefaultStringPieceExtension;
+    public const int DefaultCordExtensionFieldNumber = 85;
+    public static pb::GeneratedExtensionBase<string> DefaultCordExtension;
+    public const int MyExtensionStringFieldNumber = 50;
+    public static pb::GeneratedExtensionBase<string> MyExtensionString;
+    public const int MyExtensionIntFieldNumber = 5;
+    public static pb::GeneratedExtensionBase<int> MyExtensionInt;
+    public const int PackedInt32ExtensionFieldNumber = 90;
+    public static pb::GeneratedExtensionBase<scg::IList<int>> PackedInt32Extension;
+    public const int PackedInt64ExtensionFieldNumber = 91;
+    public static pb::GeneratedExtensionBase<scg::IList<long>> PackedInt64Extension;
+    public const int PackedUint32ExtensionFieldNumber = 92;
+    public static pb::GeneratedExtensionBase<scg::IList<uint>> PackedUint32Extension;
+    public const int PackedUint64ExtensionFieldNumber = 93;
+    public static pb::GeneratedExtensionBase<scg::IList<ulong>> PackedUint64Extension;
+    public const int PackedSint32ExtensionFieldNumber = 94;
+    public static pb::GeneratedExtensionBase<scg::IList<int>> PackedSint32Extension;
+    public const int PackedSint64ExtensionFieldNumber = 95;
+    public static pb::GeneratedExtensionBase<scg::IList<long>> PackedSint64Extension;
+    public const int PackedFixed32ExtensionFieldNumber = 96;
+    public static pb::GeneratedExtensionBase<scg::IList<uint>> PackedFixed32Extension;
+    public const int PackedFixed64ExtensionFieldNumber = 97;
+    public static pb::GeneratedExtensionBase<scg::IList<ulong>> PackedFixed64Extension;
+    public const int PackedSfixed32ExtensionFieldNumber = 98;
+    public static pb::GeneratedExtensionBase<scg::IList<int>> PackedSfixed32Extension;
+    public const int PackedSfixed64ExtensionFieldNumber = 99;
+    public static pb::GeneratedExtensionBase<scg::IList<long>> PackedSfixed64Extension;
+    public const int PackedFloatExtensionFieldNumber = 100;
+    public static pb::GeneratedExtensionBase<scg::IList<float>> PackedFloatExtension;
+    public const int PackedDoubleExtensionFieldNumber = 101;
+    public static pb::GeneratedExtensionBase<scg::IList<double>> PackedDoubleExtension;
+    public const int PackedBoolExtensionFieldNumber = 102;
+    public static pb::GeneratedExtensionBase<scg::IList<bool>> PackedBoolExtension;
+    public const int PackedEnumExtensionFieldNumber = 103;
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> PackedEnumExtension;
+    #endregion
+    
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder> internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder> internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder> internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder> internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ForeignMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder> internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllExtensions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllExtensions, global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.Builder> internal__static_protobuf_unittest_TestAllExtensions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Builder> internal__static_protobuf_unittest_OptionalGroup_extension__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Builder> internal__static_protobuf_unittest_RepeatedGroup_extension__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequired__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequired, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder> internal__static_protobuf_unittest_TestRequired__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequiredForeign__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign, global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.Builder> internal__static_protobuf_unittest_TestRequiredForeign__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestForeignNested__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestForeignNested, global::Google.ProtocolBuffers.TestProtos.TestForeignNested.Builder> internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestEmptyMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Builder> internal__static_protobuf_unittest_TestEmptyMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Builder> internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber, global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Builder> internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage, global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder> internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder> internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder> internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Builder> internal__static_protobuf_unittest_TestDupFieldNumber__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDupFieldNumber_Foo__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Builder> internal__static_protobuf_unittest_TestDupFieldNumber_Foo__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDupFieldNumber_Bar__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder> internal__static_protobuf_unittest_TestDupFieldNumber_Bar__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Builder> internal__static_protobuf_unittest_TestNestedMessageHasBits__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder> internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames, global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.Builder> internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestFieldOrderings__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings, global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Builder> internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder> internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedTypes__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder> internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedExtensions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder> internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooRequest__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder> internal__static_protobuf_unittest_FooRequest__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooResponse__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder> internal__static_protobuf_unittest_FooResponse__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_BarRequest__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder> internal__static_protobuf_unittest_BarRequest__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_BarResponse__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder> internal__static_protobuf_unittest_BarResponse__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "Ch5nb29nbGUvcHJvdG9idWYvdW5pdHRlc3QucHJvdG8SEXByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0GiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8a" + 
-        "JWdvb2dsZS9wcm90b2J1Zi91bml0dGVzdF9pbXBvcnQucHJvdG8iuxUKDFRl" + 
-        "c3RBbGxUeXBlcxIWCg5vcHRpb25hbF9pbnQzMhgBIAEoBRIWCg5vcHRpb25h" + 
-        "bF9pbnQ2NBgCIAEoAxIXCg9vcHRpb25hbF91aW50MzIYAyABKA0SFwoPb3B0" + 
-        "aW9uYWxfdWludDY0GAQgASgEEhcKD29wdGlvbmFsX3NpbnQzMhgFIAEoERIX" + 
-        "Cg9vcHRpb25hbF9zaW50NjQYBiABKBISGAoQb3B0aW9uYWxfZml4ZWQzMhgH" + 
-        "IAEoBxIYChBvcHRpb25hbF9maXhlZDY0GAggASgGEhkKEW9wdGlvbmFsX3Nm" + 
-        "aXhlZDMyGAkgASgPEhkKEW9wdGlvbmFsX3NmaXhlZDY0GAogASgQEhYKDm9w" + 
-        "dGlvbmFsX2Zsb2F0GAsgASgCEhcKD29wdGlvbmFsX2RvdWJsZRgMIAEoARIV" + 
-        "Cg1vcHRpb25hbF9ib29sGA0gASgIEhcKD29wdGlvbmFsX3N0cmluZxgOIAEo" + 
-        "CRIWCg5vcHRpb25hbF9ieXRlcxgPIAEoDBJECg1vcHRpb25hbGdyb3VwGBAg" + 
-        "ASgKMi0ucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk9wdGlvbmFs" + 
-        "R3JvdXASTgoXb3B0aW9uYWxfbmVzdGVkX21lc3NhZ2UYEiABKAsyLS5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZRJDChhv" + 
-        "cHRpb25hbF9mb3JlaWduX21lc3NhZ2UYEyABKAsyIS5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5Gb3JlaWduTWVzc2FnZRJIChdvcHRpb25hbF9pbXBvcnRfbWVzc2Fn" + 
-        "ZRgUIAEoCzInLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydC5JbXBvcnRNZXNz" + 
-        "YWdlEkgKFG9wdGlvbmFsX25lc3RlZF9lbnVtGBUgASgOMioucHJvdG9idWZf" + 
-        "dW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZEVudW0SPQoVb3B0aW9uYWxf" + 
-        "Zm9yZWlnbl9lbnVtGBYgASgOMh4ucHJvdG9idWZfdW5pdHRlc3QuRm9yZWln" + 
-        "bkVudW0SQgoUb3B0aW9uYWxfaW1wb3J0X2VudW0YFyABKA4yJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0RW51bRIhChVvcHRpb25hbF9zdHJp" + 
-        "bmdfcGllY2UYGCABKAlCAggCEhkKDW9wdGlvbmFsX2NvcmQYGSABKAlCAggB" + 
-        "EhYKDnJlcGVhdGVkX2ludDMyGB8gAygFEhYKDnJlcGVhdGVkX2ludDY0GCAg" + 
-        "AygDEhcKD3JlcGVhdGVkX3VpbnQzMhghIAMoDRIXCg9yZXBlYXRlZF91aW50" + 
-        "NjQYIiADKAQSFwoPcmVwZWF0ZWRfc2ludDMyGCMgAygREhcKD3JlcGVhdGVk" + 
-        "X3NpbnQ2NBgkIAMoEhIYChByZXBlYXRlZF9maXhlZDMyGCUgAygHEhgKEHJl" + 
-        "cGVhdGVkX2ZpeGVkNjQYJiADKAYSGQoRcmVwZWF0ZWRfc2ZpeGVkMzIYJyAD" + 
-        "KA8SGQoRcmVwZWF0ZWRfc2ZpeGVkNjQYKCADKBASFgoOcmVwZWF0ZWRfZmxv" + 
-        "YXQYKSADKAISFwoPcmVwZWF0ZWRfZG91YmxlGCogAygBEhUKDXJlcGVhdGVk" + 
-        "X2Jvb2wYKyADKAgSFwoPcmVwZWF0ZWRfc3RyaW5nGCwgAygJEhYKDnJlcGVh" + 
-        "dGVkX2J5dGVzGC0gAygMEkQKDXJlcGVhdGVkZ3JvdXAYLiADKAoyLS5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuUmVwZWF0ZWRHcm91cBJOChdy" + 
-        "ZXBlYXRlZF9uZXN0ZWRfbWVzc2FnZRgwIAMoCzItLnByb3RvYnVmX3VuaXR0" + 
-        "ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlEkMKGHJlcGVhdGVkX2Zv" + 
-        "cmVpZ25fbWVzc2FnZRgxIAMoCzIhLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVp" + 
-        "Z25NZXNzYWdlEkgKF3JlcGVhdGVkX2ltcG9ydF9tZXNzYWdlGDIgAygLMicu" + 
-        "cHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydE1lc3NhZ2USSAoUcmVw" + 
-        "ZWF0ZWRfbmVzdGVkX2VudW0YMyADKA4yKi5wcm90b2J1Zl91bml0dGVzdC5U" + 
-        "ZXN0QWxsVHlwZXMuTmVzdGVkRW51bRI9ChVyZXBlYXRlZF9mb3JlaWduX2Vu" + 
-        "dW0YNCADKA4yHi5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bRJCChRy" + 
-        "ZXBlYXRlZF9pbXBvcnRfZW51bRg1IAMoDjIkLnByb3RvYnVmX3VuaXR0ZXN0" + 
-        "X2ltcG9ydC5JbXBvcnRFbnVtEiEKFXJlcGVhdGVkX3N0cmluZ19waWVjZRg2" + 
-        "IAMoCUICCAISGQoNcmVwZWF0ZWRfY29yZBg3IAMoCUICCAESGQoNZGVmYXVs" + 
-        "dF9pbnQzMhg9IAEoBToCNDESGQoNZGVmYXVsdF9pbnQ2NBg+IAEoAzoCNDIS" + 
-        "GgoOZGVmYXVsdF91aW50MzIYPyABKA06AjQzEhoKDmRlZmF1bHRfdWludDY0" + 
-        "GEAgASgEOgI0NBIbCg5kZWZhdWx0X3NpbnQzMhhBIAEoEToDLTQ1EhoKDmRl" + 
-        "ZmF1bHRfc2ludDY0GEIgASgSOgI0NhIbCg9kZWZhdWx0X2ZpeGVkMzIYQyAB" + 
-        "KAc6AjQ3EhsKD2RlZmF1bHRfZml4ZWQ2NBhEIAEoBjoCNDgSHAoQZGVmYXVs" + 
-        "dF9zZml4ZWQzMhhFIAEoDzoCNDkSHQoQZGVmYXVsdF9zZml4ZWQ2NBhGIAEo" + 
-        "EDoDLTUwEhsKDWRlZmF1bHRfZmxvYXQYRyABKAI6BDUxLjUSHQoOZGVmYXVs" + 
-        "dF9kb3VibGUYSCABKAE6BTUyMDAwEhoKDGRlZmF1bHRfYm9vbBhJIAEoCDoE" + 
-        "dHJ1ZRIdCg5kZWZhdWx0X3N0cmluZxhKIAEoCToFaGVsbG8SHAoNZGVmYXVs" + 
-        "dF9ieXRlcxhLIAEoDDoFd29ybGQSTAoTZGVmYXVsdF9uZXN0ZWRfZW51bRhR" + 
-        "IAEoDjIqLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRF" + 
-        "bnVtOgNCQVISSQoUZGVmYXVsdF9mb3JlaWduX2VudW0YUiABKA4yHi5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bToLRk9SRUlHTl9CQVISTQoTZGVm" + 
-        "YXVsdF9pbXBvcnRfZW51bRhTIAEoDjIkLnByb3RvYnVmX3VuaXR0ZXN0X2lt" + 
-        "cG9ydC5JbXBvcnRFbnVtOgpJTVBPUlRfQkFSEiUKFGRlZmF1bHRfc3RyaW5n" + 
-        "X3BpZWNlGFQgASgJOgNhYmNCAggCEh0KDGRlZmF1bHRfY29yZBhVIAEoCToD" + 
-        "MTIzQgIIARobCg1OZXN0ZWRNZXNzYWdlEgoKAmJiGAEgASgFGhoKDU9wdGlv" + 
-        "bmFsR3JvdXASCQoBYRgRIAEoBRoaCg1SZXBlYXRlZEdyb3VwEgkKAWEYLyAB" + 
-        "KAUiJwoKTmVzdGVkRW51bRIHCgNGT08QARIHCgNCQVIQAhIHCgNCQVoQAyIb" + 
-        "Cg5Gb3JlaWduTWVzc2FnZRIJCgFjGAEgASgFIh0KEVRlc3RBbGxFeHRlbnNp" + 
-        "b25zKggIARCAgICAAiIkChdPcHRpb25hbEdyb3VwX2V4dGVuc2lvbhIJCgFh" + 
-        "GBEgASgFIiQKF1JlcGVhdGVkR3JvdXBfZXh0ZW5zaW9uEgkKAWEYLyABKAUi" + 
-        "1QUKDFRlc3RSZXF1aXJlZBIJCgFhGAEgAigFEg4KBmR1bW15MhgCIAEoBRIJ" + 
-        "CgFiGAMgAigFEg4KBmR1bW15NBgEIAEoBRIOCgZkdW1teTUYBSABKAUSDgoG" + 
-        "ZHVtbXk2GAYgASgFEg4KBmR1bW15NxgHIAEoBRIOCgZkdW1teTgYCCABKAUS" + 
-        "DgoGZHVtbXk5GAkgASgFEg8KB2R1bW15MTAYCiABKAUSDwoHZHVtbXkxMRgL" + 
-        "IAEoBRIPCgdkdW1teTEyGAwgASgFEg8KB2R1bW15MTMYDSABKAUSDwoHZHVt" + 
-        "bXkxNBgOIAEoBRIPCgdkdW1teTE1GA8gASgFEg8KB2R1bW15MTYYECABKAUS" + 
-        "DwoHZHVtbXkxNxgRIAEoBRIPCgdkdW1teTE4GBIgASgFEg8KB2R1bW15MTkY" + 
-        "EyABKAUSDwoHZHVtbXkyMBgUIAEoBRIPCgdkdW1teTIxGBUgASgFEg8KB2R1" + 
-        "bW15MjIYFiABKAUSDwoHZHVtbXkyMxgXIAEoBRIPCgdkdW1teTI0GBggASgF" + 
-        "Eg8KB2R1bW15MjUYGSABKAUSDwoHZHVtbXkyNhgaIAEoBRIPCgdkdW1teTI3" + 
-        "GBsgASgFEg8KB2R1bW15MjgYHCABKAUSDwoHZHVtbXkyORgdIAEoBRIPCgdk" + 
-        "dW1teTMwGB4gASgFEg8KB2R1bW15MzEYHyABKAUSDwoHZHVtbXkzMhggIAEo" + 
-        "BRIJCgFjGCEgAigFMlYKBnNpbmdsZRIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RBbGxFeHRlbnNpb25zGOgHIAEoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RSZXF1aXJlZDJVCgVtdWx0aRIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
-        "bGxFeHRlbnNpb25zGOkHIAMoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RS" + 
-        "ZXF1aXJlZCKaAQoTVGVzdFJlcXVpcmVkRm9yZWlnbhI5ChBvcHRpb25hbF9t" + 
-        "ZXNzYWdlGAEgASgLMh8ucHJvdG9idWZfdW5pdHRlc3QuVGVzdFJlcXVpcmVk" + 
-        "EjkKEHJlcGVhdGVkX21lc3NhZ2UYAiADKAsyHy5wcm90b2J1Zl91bml0dGVz" + 
-        "dC5UZXN0UmVxdWlyZWQSDQoFZHVtbXkYAyABKAUiWgoRVGVzdEZvcmVpZ25O" + 
-        "ZXN0ZWQSRQoOZm9yZWlnbl9uZXN0ZWQYASABKAsyLS5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZSISChBUZXN0RW1wdHlN" + 
-        "ZXNzYWdlIioKHlRlc3RFbXB0eU1lc3NhZ2VXaXRoRXh0ZW5zaW9ucyoICAEQ" + 
-        "gICAgAIiNAoYVGVzdFJlYWxseUxhcmdlVGFnTnVtYmVyEgkKAWEYASABKAUS" + 
-        "DQoCYmIY////fyABKAUiVQoUVGVzdFJlY3Vyc2l2ZU1lc3NhZ2USMgoBYRgB" + 
-        "IAEoCzInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RSZWN1cnNpdmVNZXNzYWdl" + 
-        "EgkKAWkYAiABKAUiSwoUVGVzdE11dHVhbFJlY3Vyc2lvbkESMwoCYmIYASAB" + 
-        "KAsyJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0TXV0dWFsUmVjdXJzaW9uQiJi" + 
-        "ChRUZXN0TXV0dWFsUmVjdXJzaW9uQhIyCgFhGAEgASgLMicucHJvdG9idWZf" + 
-        "dW5pdHRlc3QuVGVzdE11dHVhbFJlY3Vyc2lvbkESFgoOb3B0aW9uYWxfaW50" + 
-        "MzIYAiABKAUiswEKElRlc3REdXBGaWVsZE51bWJlchIJCgFhGAEgASgFEjYK" + 
-        "A2ZvbxgCIAEoCjIpLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3REdXBGaWVsZE51" + 
-        "bWJlci5Gb28SNgoDYmFyGAMgASgKMikucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-        "dER1cEZpZWxkTnVtYmVyLkJhchoQCgNGb28SCQoBYRgBIAEoBRoQCgNCYXIS" + 
-        "CQoBYRgBIAEoBSKAAgoYVGVzdE5lc3RlZE1lc3NhZ2VIYXNCaXRzEloKF29w" + 
-        "dGlvbmFsX25lc3RlZF9tZXNzYWdlGAEgASgLMjkucHJvdG9idWZfdW5pdHRl" + 
-        "c3QuVGVzdE5lc3RlZE1lc3NhZ2VIYXNCaXRzLk5lc3RlZE1lc3NhZ2UahwEK" + 
-        "DU5lc3RlZE1lc3NhZ2USJAocbmVzdGVkbWVzc2FnZV9yZXBlYXRlZF9pbnQz" + 
-        "MhgBIAMoBRJQCiVuZXN0ZWRtZXNzYWdlX3JlcGVhdGVkX2ZvcmVpZ25tZXNz" + 
-        "YWdlGAIgAygLMiEucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2Ui" + 
-        "5QMKF1Rlc3RDYW1lbENhc2VGaWVsZE5hbWVzEhYKDlByaW1pdGl2ZUZpZWxk" + 
-        "GAEgASgFEhMKC1N0cmluZ0ZpZWxkGAIgASgJEjEKCUVudW1GaWVsZBgDIAEo" + 
-        "DjIeLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtEjcKDE1lc3NhZ2VG" + 
-        "aWVsZBgEIAEoCzIhLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25NZXNzYWdl" + 
-        "EhwKEFN0cmluZ1BpZWNlRmllbGQYBSABKAlCAggCEhUKCUNvcmRGaWVsZBgG" + 
-        "IAEoCUICCAESHgoWUmVwZWF0ZWRQcmltaXRpdmVGaWVsZBgHIAMoBRIbChNS" + 
-        "ZXBlYXRlZFN0cmluZ0ZpZWxkGAggAygJEjkKEVJlcGVhdGVkRW51bUZpZWxk" + 
-        "GAkgAygOMh4ucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW0SPwoUUmVw" + 
-        "ZWF0ZWRNZXNzYWdlRmllbGQYCiADKAsyIS5wcm90b2J1Zl91bml0dGVzdC5G" + 
-        "b3JlaWduTWVzc2FnZRIkChhSZXBlYXRlZFN0cmluZ1BpZWNlRmllbGQYCyAD" + 
-        "KAlCAggCEh0KEVJlcGVhdGVkQ29yZEZpZWxkGAwgAygJQgIIASJVChJUZXN0" + 
-        "RmllbGRPcmRlcmluZ3MSEQoJbXlfc3RyaW5nGAsgASgJEg4KBm15X2ludBgB" + 
-        "IAEoAxIQCghteV9mbG9hdBhlIAEoAioECAIQCyoECAwQZSKQAgoYVGVzdEV4" + 
-        "dHJlbWVEZWZhdWx0VmFsdWVzEj8KDWVzY2FwZWRfYnl0ZXMYASABKAw6KFww" + 
-        "MDBcMDAxXDAwN1wwMTBcMDE0XG5cclx0XDAxM1xcXCdcIlwzNzYSIAoMbGFy" + 
-        "Z2VfdWludDMyGAIgASgNOgo0Mjk0OTY3Mjk1EioKDGxhcmdlX3VpbnQ2NBgD" + 
-        "IAEoBDoUMTg0NDY3NDQwNzM3MDk1NTE2MTUSIAoLc21hbGxfaW50MzIYBCAB" + 
-        "KAU6Cy0yMTQ3NDgzNjQ3EikKC3NtYWxsX2ludDY0GAUgASgDOhQtOTIyMzM3" + 
-        "MjAzNjg1NDc3NTgwNxIYCgt1dGY4X3N0cmluZxgGIAEoCToD4Yi0IqoDCg9U" + 
-        "ZXN0UGFja2VkVHlwZXMSGAoMcGFja2VkX2ludDMyGFogAygFQgIQARIYCgxw" + 
-        "YWNrZWRfaW50NjQYWyADKANCAhABEhkKDXBhY2tlZF91aW50MzIYXCADKA1C" + 
-        "AhABEhkKDXBhY2tlZF91aW50NjQYXSADKARCAhABEhkKDXBhY2tlZF9zaW50" + 
-        "MzIYXiADKBFCAhABEhkKDXBhY2tlZF9zaW50NjQYXyADKBJCAhABEhoKDnBh" + 
-        "Y2tlZF9maXhlZDMyGGAgAygHQgIQARIaCg5wYWNrZWRfZml4ZWQ2NBhhIAMo" + 
-        "BkICEAESGwoPcGFja2VkX3NmaXhlZDMyGGIgAygPQgIQARIbCg9wYWNrZWRf" + 
-        "c2ZpeGVkNjQYYyADKBBCAhABEhgKDHBhY2tlZF9mbG9hdBhkIAMoAkICEAES" + 
-        "GQoNcGFja2VkX2RvdWJsZRhlIAMoAUICEAESFwoLcGFja2VkX2Jvb2wYZiAD" + 
-        "KAhCAhABEjcKC3BhY2tlZF9lbnVtGGcgAygOMh4ucHJvdG9idWZfdW5pdHRl" + 
-        "c3QuRm9yZWlnbkVudW1CAhABIiAKFFRlc3RQYWNrZWRFeHRlbnNpb25zKggI" + 
-        "ARCAgICAAiIMCgpGb29SZXF1ZXN0Ig0KC0Zvb1Jlc3BvbnNlIgwKCkJhclJl" + 
-        "cXVlc3QiDQoLQmFyUmVzcG9uc2UqQAoLRm9yZWlnbkVudW0SDwoLRk9SRUlH" + 
-        "Tl9GT08QBBIPCgtGT1JFSUdOX0JBUhAFEg8KC0ZPUkVJR05fQkFaEAYqRwoU" + 
-        "VGVzdEVudW1XaXRoRHVwVmFsdWUSCAoERk9PMRABEggKBEJBUjEQAhIHCgNC" + 
-        "QVoQAxIICgRGT08yEAESCAoEQkFSMhACKokBCg5UZXN0U3BhcnNlRW51bRIM" + 
-        "CghTUEFSU0VfQRB7Eg4KCFNQQVJTRV9CEKbnAxIPCghTUEFSU0VfQxCysYAG" + 
-        "EhUKCFNQQVJTRV9EEPH//////////wESFQoIU1BBUlNFX0UQtN78////////" + 
-        "ARIMCghTUEFSU0VfRhAAEgwKCFNQQVJTRV9HEAIymQEKC1Rlc3RTZXJ2aWNl" + 
-        "EkQKA0ZvbxIdLnByb3RvYnVmX3VuaXR0ZXN0LkZvb1JlcXVlc3QaHi5wcm90" + 
-        "b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXISHS5wcm90b2J1Zl91" + 
-        "bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5pdHRlc3QuQmFyUmVz" + 
-        "cG9uc2U6RgoYb3B0aW9uYWxfaW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
-        "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYASABKAU6RgoYb3B0aW9uYWxf" + 
-        "aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
-        "dGVuc2lvbnMYAiABKAM6RwoZb3B0aW9uYWxfdWludDMyX2V4dGVuc2lvbhIk" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAMgASgNOkcK" + 
-        "GW9wdGlvbmFsX3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
-        "dC5UZXN0QWxsRXh0ZW5zaW9ucxgEIAEoBDpHChlvcHRpb25hbF9zaW50MzJf" + 
-        "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
-        "bnMYBSABKBE6RwoZb3B0aW9uYWxfc2ludDY0X2V4dGVuc2lvbhIkLnByb3Rv" + 
-        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAYgASgSOkgKGm9wdGlv" + 
-        "bmFsX2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-        "dEFsbEV4dGVuc2lvbnMYByABKAc6SAoab3B0aW9uYWxfZml4ZWQ2NF9leHRl" + 
-        "bnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgI" + 
-        "IAEoBjpJChtvcHRpb25hbF9zZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgJIAEoDzpJChtvcHRpb25h" + 
-        "bF9zZml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
-        "QWxsRXh0ZW5zaW9ucxgKIAEoEDpGChhvcHRpb25hbF9mbG9hdF9leHRlbnNp" + 
-        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgLIAEo" + 
-        "AjpHChlvcHRpb25hbF9kb3VibGVfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDCABKAE6RQoXb3B0aW9uYWxfYm9v" + 
-        "bF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5z" + 
-        "aW9ucxgNIAEoCDpHChlvcHRpb25hbF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJv" + 
-        "dG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDiABKAk6RgoYb3B0" + 
-        "aW9uYWxfYnl0ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-        "dEFsbEV4dGVuc2lvbnMYDyABKAw6cQoXb3B0aW9uYWxncm91cF9leHRlbnNp" + 
-        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgQIAEo" + 
-        "CjIqLnByb3RvYnVmX3VuaXR0ZXN0Lk9wdGlvbmFsR3JvdXBfZXh0ZW5zaW9u" + 
-        "On4KIW9wdGlvbmFsX25lc3RlZF9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3Rv" + 
-        "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBIgASgLMi0ucHJvdG9i" + 
-        "dWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2U6cwoib3B0" + 
-        "aW9uYWxfZm9yZWlnbl9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBMgASgLMiEucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuRm9yZWlnbk1lc3NhZ2U6eAohb3B0aW9uYWxfaW1wb3J0X21lc3Nh" + 
-        "Z2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-        "c2lvbnMYFCABKAsyJy5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0" + 
-        "TWVzc2FnZTp4Ch5vcHRpb25hbF9uZXN0ZWRfZW51bV9leHRlbnNpb24SJC5w" + 
-        "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgVIAEoDjIqLnBy" + 
-        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOm0KH29w" + 
-        "dGlvbmFsX2ZvcmVpZ25fZW51bV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgWIAEoDjIeLnByb3RvYnVmX3VuaXR0" + 
-        "ZXN0LkZvcmVpZ25FbnVtOnIKHm9wdGlvbmFsX2ltcG9ydF9lbnVtX2V4dGVu" + 
-        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBcg" + 
-        "ASgOMiQucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydEVudW06UQof" + 
-        "b3B0aW9uYWxfc3RyaW5nX3BpZWNlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBggASgJQgIIAjpJChdvcHRpb25h" + 
-        "bF9jb3JkX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-        "eHRlbnNpb25zGBkgASgJQgIIATpGChhyZXBlYXRlZF9pbnQzMl9leHRlbnNp" + 
-        "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgfIAMo" + 
-        "BTpGChhyZXBlYXRlZF9pbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxggIAMoAzpHChlyZXBlYXRlZF91aW50" + 
-        "MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-        "c2lvbnMYISADKA06RwoZcmVwZWF0ZWRfdWludDY0X2V4dGVuc2lvbhIkLnBy" + 
-        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCIgAygEOkcKGXJl" + 
-        "cGVhdGVkX3NpbnQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
-        "ZXN0QWxsRXh0ZW5zaW9ucxgjIAMoETpHChlyZXBlYXRlZF9zaW50NjRfZXh0" + 
-        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-        "JCADKBI6SAoacmVwZWF0ZWRfZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxglIAMoBzpIChpyZXBlYXRl" + 
-        "ZF9maXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
-        "bGxFeHRlbnNpb25zGCYgAygGOkkKG3JlcGVhdGVkX3NmaXhlZDMyX2V4dGVu" + 
-        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCcg" + 
-        "AygPOkkKG3JlcGVhdGVkX3NmaXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
-        "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCggAygQOkYKGHJlcGVhdGVk" + 
-        "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-        "eHRlbnNpb25zGCkgAygCOkcKGXJlcGVhdGVkX2RvdWJsZV9leHRlbnNpb24S" + 
-        "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgqIAMoATpF" + 
-        "ChdyZXBlYXRlZF9ib29sX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0" + 
-        "LlRlc3RBbGxFeHRlbnNpb25zGCsgAygIOkcKGXJlcGVhdGVkX3N0cmluZ19l" + 
-        "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
-        "cxgsIAMoCTpGChhyZXBlYXRlZF9ieXRlc19leHRlbnNpb24SJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgtIAMoDDpxChdyZXBlYXRl" + 
-        "ZGdyb3VwX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-        "eHRlbnNpb25zGC4gAygKMioucHJvdG9idWZfdW5pdHRlc3QuUmVwZWF0ZWRH" + 
-        "cm91cF9leHRlbnNpb246fgohcmVwZWF0ZWRfbmVzdGVkX21lc3NhZ2VfZXh0" + 
-        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-        "MCADKAsyLS5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
-        "TWVzc2FnZTpzCiJyZXBlYXRlZF9mb3JlaWduX21lc3NhZ2VfZXh0ZW5zaW9u" + 
-        "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYMSADKAsy" + 
-        "IS5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduTWVzc2FnZTp4CiFyZXBlYXRl" + 
-        "ZF9pbXBvcnRfbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
-        "dC5UZXN0QWxsRXh0ZW5zaW9ucxgyIAMoCzInLnByb3RvYnVmX3VuaXR0ZXN0" + 
-        "X2ltcG9ydC5JbXBvcnRNZXNzYWdlOngKHnJlcGVhdGVkX25lc3RlZF9lbnVt" + 
-        "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
-        "b25zGDMgAygOMioucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5l" + 
-        "c3RlZEVudW06bQofcmVwZWF0ZWRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDQgAygOMh4u" + 
-        "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06cgoecmVwZWF0ZWRfaW1w" + 
-        "b3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
-        "bEV4dGVuc2lvbnMYNSADKA4yJC5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQu" + 
-        "SW1wb3J0RW51bTpRCh9yZXBlYXRlZF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9u" + 
-        "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNiADKAlC" + 
-        "AggCOkkKF3JlcGVhdGVkX2NvcmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNyADKAlCAggBOkkKF2RlZmF1bHRf" + 
-        "aW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
-        "dGVuc2lvbnMYPSABKAU6AjQxOkkKF2RlZmF1bHRfaW50NjRfZXh0ZW5zaW9u" + 
-        "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYPiABKAM6" + 
-        "AjQyOkoKGGRlZmF1bHRfdWludDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGD8gASgNOgI0MzpKChhkZWZhdWx0" + 
-        "X3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
-        "RXh0ZW5zaW9ucxhAIAEoBDoCNDQ6SwoYZGVmYXVsdF9zaW50MzJfZXh0ZW5z" + 
-        "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYQSAB" + 
-        "KBE6Ay00NTpKChhkZWZhdWx0X3NpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1" + 
-        "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhCIAEoEjoCNDY6SwoZZGVm" + 
-        "YXVsdF9maXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RBbGxFeHRlbnNpb25zGEMgASgHOgI0NzpLChlkZWZhdWx0X2ZpeGVkNjRf" + 
-        "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
-        "bnMYRCABKAY6AjQ4OkwKGmRlZmF1bHRfc2ZpeGVkMzJfZXh0ZW5zaW9uEiQu" + 
-        "cHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRSABKA86AjQ5" + 
-        "Ok0KGmRlZmF1bHRfc2ZpeGVkNjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRiABKBA6Ay01MDpLChdkZWZhdWx0" + 
-        "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-        "eHRlbnNpb25zGEcgASgCOgQ1MS41Ok0KGGRlZmF1bHRfZG91YmxlX2V4dGVu" + 
-        "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEgg" + 
-        "ASgBOgU1MjAwMDpKChZkZWZhdWx0X2Jvb2xfZXh0ZW5zaW9uEiQucHJvdG9i" + 
-        "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYSSABKAg6BHRydWU6TQoY" + 
-        "ZGVmYXVsdF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
-        "VGVzdEFsbEV4dGVuc2lvbnMYSiABKAk6BWhlbGxvOkwKF2RlZmF1bHRfYnl0" + 
-        "ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-        "c2lvbnMYSyABKAw6BXdvcmxkOnwKHWRlZmF1bHRfbmVzdGVkX2VudW1fZXh0" + 
-        "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-        "USABKA4yKi5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
-        "RW51bToDQkFSOnkKHmRlZmF1bHRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGFIgASgOMh4u" + 
-        "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06C0ZPUkVJR05fQkFSOn0K" + 
-        "HWRlZmF1bHRfaW1wb3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-        "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYUyABKA4yJC5wcm90b2J1Zl91bml0" + 
-        "dGVzdF9pbXBvcnQuSW1wb3J0RW51bToKSU1QT1JUX0JBUjpVCh5kZWZhdWx0" + 
-        "X3N0cmluZ19waWVjZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
-        "ZXN0QWxsRXh0ZW5zaW9ucxhUIAEoCToDYWJjQgIIAjpNChZkZWZhdWx0X2Nv" + 
-        "cmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-        "c2lvbnMYVSABKAk6AzEyM0ICCAE6QgoTbXlfZXh0ZW5zaW9uX3N0cmluZxIl" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVsZE9yZGVyaW5ncxgyIAEoCTo/" + 
-        "ChBteV9leHRlbnNpb25faW50EiUucHJvdG9idWZfdW5pdHRlc3QuVGVzdEZp" + 
-        "ZWxkT3JkZXJpbmdzGAUgASgFOksKFnBhY2tlZF9pbnQzMl9leHRlbnNpb24S" + 
-        "Jy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhaIAMo" + 
-        "BUICEAE6SwoWcGFja2VkX2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGFsgAygDQgIQATpMChdwYWNr" + 
-        "ZWRfdWludDMyX2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQ" + 
-        "YWNrZWRFeHRlbnNpb25zGFwgAygNQgIQATpMChdwYWNrZWRfdWludDY0X2V4" + 
-        "dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNp" + 
-        "b25zGF0gAygEQgIQATpMChdwYWNrZWRfc2ludDMyX2V4dGVuc2lvbhInLnBy" + 
-        "b3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF4gAygRQgIQ" + 
-        "ATpMChdwYWNrZWRfc2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0" + 
-        "ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF8gAygSQgIQATpNChhwYWNrZWRf" + 
-        "Zml4ZWQzMl9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFj" + 
-        "a2VkRXh0ZW5zaW9ucxhgIAMoB0ICEAE6TQoYcGFja2VkX2ZpeGVkNjRfZXh0" + 
-        "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
-        "bnMYYSADKAZCAhABOk4KGXBhY2tlZF9zZml4ZWQzMl9leHRlbnNpb24SJy5w" + 
-        "cm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhiIAMoD0IC" + 
-        "EAE6TgoZcGFja2VkX3NmaXhlZDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGMgAygQQgIQATpLChZwYWNr" + 
-        "ZWRfZmxvYXRfZXh0ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBh" + 
-        "Y2tlZEV4dGVuc2lvbnMYZCADKAJCAhABOkwKF3BhY2tlZF9kb3VibGVfZXh0" + 
-        "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
-        "bnMYZSADKAFCAhABOkoKFXBhY2tlZF9ib29sX2V4dGVuc2lvbhInLnByb3Rv" + 
-        "YnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGYgAygIQgIQATpq" + 
-        "ChVwYWNrZWRfZW51bV9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5U" + 
-        "ZXN0UGFja2VkRXh0ZW5zaW9ucxhnIAMoDjIeLnByb3RvYnVmX3VuaXR0ZXN0" + 
-        "LkZvcmVpZ25FbnVtQgIQAUJKQg1Vbml0dGVzdFByb3RvSAHCPjYKIUdvb2ds" + 
-        "ZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIRVW5pdFRlc3RQcm90b0Zp" + 
-        "bGU="),
-        new pbd::FileDescriptor[] {
+    private static pbd::FileDescriptor descriptor;
+    
+    static UnitTestProtoFile() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "Ch5nb29nbGUvcHJvdG9idWYvdW5pdHRlc3QucHJvdG8SEXByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0GiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8a" + 
+          "JWdvb2dsZS9wcm90b2J1Zi91bml0dGVzdF9pbXBvcnQucHJvdG8iuxUKDFRl" + 
+          "c3RBbGxUeXBlcxIWCg5vcHRpb25hbF9pbnQzMhgBIAEoBRIWCg5vcHRpb25h" + 
+          "bF9pbnQ2NBgCIAEoAxIXCg9vcHRpb25hbF91aW50MzIYAyABKA0SFwoPb3B0" + 
+          "aW9uYWxfdWludDY0GAQgASgEEhcKD29wdGlvbmFsX3NpbnQzMhgFIAEoERIX" + 
+          "Cg9vcHRpb25hbF9zaW50NjQYBiABKBISGAoQb3B0aW9uYWxfZml4ZWQzMhgH" + 
+          "IAEoBxIYChBvcHRpb25hbF9maXhlZDY0GAggASgGEhkKEW9wdGlvbmFsX3Nm" + 
+          "aXhlZDMyGAkgASgPEhkKEW9wdGlvbmFsX3NmaXhlZDY0GAogASgQEhYKDm9w" + 
+          "dGlvbmFsX2Zsb2F0GAsgASgCEhcKD29wdGlvbmFsX2RvdWJsZRgMIAEoARIV" + 
+          "Cg1vcHRpb25hbF9ib29sGA0gASgIEhcKD29wdGlvbmFsX3N0cmluZxgOIAEo" + 
+          "CRIWCg5vcHRpb25hbF9ieXRlcxgPIAEoDBJECg1vcHRpb25hbGdyb3VwGBAg" + 
+          "ASgKMi0ucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk9wdGlvbmFs" + 
+          "R3JvdXASTgoXb3B0aW9uYWxfbmVzdGVkX21lc3NhZ2UYEiABKAsyLS5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZRJDChhv" + 
+          "cHRpb25hbF9mb3JlaWduX21lc3NhZ2UYEyABKAsyIS5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5Gb3JlaWduTWVzc2FnZRJIChdvcHRpb25hbF9pbXBvcnRfbWVzc2Fn" + 
+          "ZRgUIAEoCzInLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydC5JbXBvcnRNZXNz" + 
+          "YWdlEkgKFG9wdGlvbmFsX25lc3RlZF9lbnVtGBUgASgOMioucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZEVudW0SPQoVb3B0aW9uYWxf" + 
+          "Zm9yZWlnbl9lbnVtGBYgASgOMh4ucHJvdG9idWZfdW5pdHRlc3QuRm9yZWln" + 
+          "bkVudW0SQgoUb3B0aW9uYWxfaW1wb3J0X2VudW0YFyABKA4yJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0RW51bRIhChVvcHRpb25hbF9zdHJp" + 
+          "bmdfcGllY2UYGCABKAlCAggCEhkKDW9wdGlvbmFsX2NvcmQYGSABKAlCAggB" + 
+          "EhYKDnJlcGVhdGVkX2ludDMyGB8gAygFEhYKDnJlcGVhdGVkX2ludDY0GCAg" + 
+          "AygDEhcKD3JlcGVhdGVkX3VpbnQzMhghIAMoDRIXCg9yZXBlYXRlZF91aW50" + 
+          "NjQYIiADKAQSFwoPcmVwZWF0ZWRfc2ludDMyGCMgAygREhcKD3JlcGVhdGVk" + 
+          "X3NpbnQ2NBgkIAMoEhIYChByZXBlYXRlZF9maXhlZDMyGCUgAygHEhgKEHJl" + 
+          "cGVhdGVkX2ZpeGVkNjQYJiADKAYSGQoRcmVwZWF0ZWRfc2ZpeGVkMzIYJyAD" + 
+          "KA8SGQoRcmVwZWF0ZWRfc2ZpeGVkNjQYKCADKBASFgoOcmVwZWF0ZWRfZmxv" + 
+          "YXQYKSADKAISFwoPcmVwZWF0ZWRfZG91YmxlGCogAygBEhUKDXJlcGVhdGVk" + 
+          "X2Jvb2wYKyADKAgSFwoPcmVwZWF0ZWRfc3RyaW5nGCwgAygJEhYKDnJlcGVh" + 
+          "dGVkX2J5dGVzGC0gAygMEkQKDXJlcGVhdGVkZ3JvdXAYLiADKAoyLS5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuUmVwZWF0ZWRHcm91cBJOChdy" + 
+          "ZXBlYXRlZF9uZXN0ZWRfbWVzc2FnZRgwIAMoCzItLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlEkMKGHJlcGVhdGVkX2Zv" + 
+          "cmVpZ25fbWVzc2FnZRgxIAMoCzIhLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVp" + 
+          "Z25NZXNzYWdlEkgKF3JlcGVhdGVkX2ltcG9ydF9tZXNzYWdlGDIgAygLMicu" + 
+          "cHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydE1lc3NhZ2USSAoUcmVw" + 
+          "ZWF0ZWRfbmVzdGVkX2VudW0YMyADKA4yKi5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0QWxsVHlwZXMuTmVzdGVkRW51bRI9ChVyZXBlYXRlZF9mb3JlaWduX2Vu" + 
+          "dW0YNCADKA4yHi5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bRJCChRy" + 
+          "ZXBlYXRlZF9pbXBvcnRfZW51bRg1IAMoDjIkLnByb3RvYnVmX3VuaXR0ZXN0" + 
+          "X2ltcG9ydC5JbXBvcnRFbnVtEiEKFXJlcGVhdGVkX3N0cmluZ19waWVjZRg2" + 
+          "IAMoCUICCAISGQoNcmVwZWF0ZWRfY29yZBg3IAMoCUICCAESGQoNZGVmYXVs" + 
+          "dF9pbnQzMhg9IAEoBToCNDESGQoNZGVmYXVsdF9pbnQ2NBg+IAEoAzoCNDIS" + 
+          "GgoOZGVmYXVsdF91aW50MzIYPyABKA06AjQzEhoKDmRlZmF1bHRfdWludDY0" + 
+          "GEAgASgEOgI0NBIbCg5kZWZhdWx0X3NpbnQzMhhBIAEoEToDLTQ1EhoKDmRl" + 
+          "ZmF1bHRfc2ludDY0GEIgASgSOgI0NhIbCg9kZWZhdWx0X2ZpeGVkMzIYQyAB" + 
+          "KAc6AjQ3EhsKD2RlZmF1bHRfZml4ZWQ2NBhEIAEoBjoCNDgSHAoQZGVmYXVs" + 
+          "dF9zZml4ZWQzMhhFIAEoDzoCNDkSHQoQZGVmYXVsdF9zZml4ZWQ2NBhGIAEo" + 
+          "EDoDLTUwEhsKDWRlZmF1bHRfZmxvYXQYRyABKAI6BDUxLjUSHQoOZGVmYXVs" + 
+          "dF9kb3VibGUYSCABKAE6BTUyMDAwEhoKDGRlZmF1bHRfYm9vbBhJIAEoCDoE" + 
+          "dHJ1ZRIdCg5kZWZhdWx0X3N0cmluZxhKIAEoCToFaGVsbG8SHAoNZGVmYXVs" + 
+          "dF9ieXRlcxhLIAEoDDoFd29ybGQSTAoTZGVmYXVsdF9uZXN0ZWRfZW51bRhR" + 
+          "IAEoDjIqLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRF" + 
+          "bnVtOgNCQVISSQoUZGVmYXVsdF9mb3JlaWduX2VudW0YUiABKA4yHi5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bToLRk9SRUlHTl9CQVISTQoTZGVm" + 
+          "YXVsdF9pbXBvcnRfZW51bRhTIAEoDjIkLnByb3RvYnVmX3VuaXR0ZXN0X2lt" + 
+          "cG9ydC5JbXBvcnRFbnVtOgpJTVBPUlRfQkFSEiUKFGRlZmF1bHRfc3RyaW5n" + 
+          "X3BpZWNlGFQgASgJOgNhYmNCAggCEh0KDGRlZmF1bHRfY29yZBhVIAEoCToD" + 
+          "MTIzQgIIARobCg1OZXN0ZWRNZXNzYWdlEgoKAmJiGAEgASgFGhoKDU9wdGlv" + 
+          "bmFsR3JvdXASCQoBYRgRIAEoBRoaCg1SZXBlYXRlZEdyb3VwEgkKAWEYLyAB" + 
+          "KAUiJwoKTmVzdGVkRW51bRIHCgNGT08QARIHCgNCQVIQAhIHCgNCQVoQAyIb" + 
+          "Cg5Gb3JlaWduTWVzc2FnZRIJCgFjGAEgASgFIh0KEVRlc3RBbGxFeHRlbnNp" + 
+          "b25zKggIARCAgICAAiIkChdPcHRpb25hbEdyb3VwX2V4dGVuc2lvbhIJCgFh" + 
+          "GBEgASgFIiQKF1JlcGVhdGVkR3JvdXBfZXh0ZW5zaW9uEgkKAWEYLyABKAUi" + 
+          "1QUKDFRlc3RSZXF1aXJlZBIJCgFhGAEgAigFEg4KBmR1bW15MhgCIAEoBRIJ" + 
+          "CgFiGAMgAigFEg4KBmR1bW15NBgEIAEoBRIOCgZkdW1teTUYBSABKAUSDgoG" + 
+          "ZHVtbXk2GAYgASgFEg4KBmR1bW15NxgHIAEoBRIOCgZkdW1teTgYCCABKAUS" + 
+          "DgoGZHVtbXk5GAkgASgFEg8KB2R1bW15MTAYCiABKAUSDwoHZHVtbXkxMRgL" + 
+          "IAEoBRIPCgdkdW1teTEyGAwgASgFEg8KB2R1bW15MTMYDSABKAUSDwoHZHVt" + 
+          "bXkxNBgOIAEoBRIPCgdkdW1teTE1GA8gASgFEg8KB2R1bW15MTYYECABKAUS" + 
+          "DwoHZHVtbXkxNxgRIAEoBRIPCgdkdW1teTE4GBIgASgFEg8KB2R1bW15MTkY" + 
+          "EyABKAUSDwoHZHVtbXkyMBgUIAEoBRIPCgdkdW1teTIxGBUgASgFEg8KB2R1" + 
+          "bW15MjIYFiABKAUSDwoHZHVtbXkyMxgXIAEoBRIPCgdkdW1teTI0GBggASgF" + 
+          "Eg8KB2R1bW15MjUYGSABKAUSDwoHZHVtbXkyNhgaIAEoBRIPCgdkdW1teTI3" + 
+          "GBsgASgFEg8KB2R1bW15MjgYHCABKAUSDwoHZHVtbXkyORgdIAEoBRIPCgdk" + 
+          "dW1teTMwGB4gASgFEg8KB2R1bW15MzEYHyABKAUSDwoHZHVtbXkzMhggIAEo" + 
+          "BRIJCgFjGCEgAigFMlYKBnNpbmdsZRIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
+          "c3RBbGxFeHRlbnNpb25zGOgHIAEoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
+          "c3RSZXF1aXJlZDJVCgVtdWx0aRIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
+          "bGxFeHRlbnNpb25zGOkHIAMoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RS" + 
+          "ZXF1aXJlZCKaAQoTVGVzdFJlcXVpcmVkRm9yZWlnbhI5ChBvcHRpb25hbF9t" + 
+          "ZXNzYWdlGAEgASgLMh8ucHJvdG9idWZfdW5pdHRlc3QuVGVzdFJlcXVpcmVk" + 
+          "EjkKEHJlcGVhdGVkX21lc3NhZ2UYAiADKAsyHy5wcm90b2J1Zl91bml0dGVz" + 
+          "dC5UZXN0UmVxdWlyZWQSDQoFZHVtbXkYAyABKAUiWgoRVGVzdEZvcmVpZ25O" + 
+          "ZXN0ZWQSRQoOZm9yZWlnbl9uZXN0ZWQYASABKAsyLS5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZSISChBUZXN0RW1wdHlN" + 
+          "ZXNzYWdlIioKHlRlc3RFbXB0eU1lc3NhZ2VXaXRoRXh0ZW5zaW9ucyoICAEQ" + 
+          "gICAgAIiNAoYVGVzdFJlYWxseUxhcmdlVGFnTnVtYmVyEgkKAWEYASABKAUS" + 
+          "DQoCYmIY////fyABKAUiVQoUVGVzdFJlY3Vyc2l2ZU1lc3NhZ2USMgoBYRgB" + 
+          "IAEoCzInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RSZWN1cnNpdmVNZXNzYWdl" + 
+          "EgkKAWkYAiABKAUiSwoUVGVzdE11dHVhbFJlY3Vyc2lvbkESMwoCYmIYASAB" + 
+          "KAsyJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0TXV0dWFsUmVjdXJzaW9uQiJi" + 
+          "ChRUZXN0TXV0dWFsUmVjdXJzaW9uQhIyCgFhGAEgASgLMicucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdE11dHVhbFJlY3Vyc2lvbkESFgoOb3B0aW9uYWxfaW50" + 
+          "MzIYAiABKAUiswEKElRlc3REdXBGaWVsZE51bWJlchIJCgFhGAEgASgFEjYK" + 
+          "A2ZvbxgCIAEoCjIpLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3REdXBGaWVsZE51" + 
+          "bWJlci5Gb28SNgoDYmFyGAMgASgKMikucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+          "dER1cEZpZWxkTnVtYmVyLkJhchoQCgNGb28SCQoBYRgBIAEoBRoQCgNCYXIS" + 
+          "CQoBYRgBIAEoBSKAAgoYVGVzdE5lc3RlZE1lc3NhZ2VIYXNCaXRzEloKF29w" + 
+          "dGlvbmFsX25lc3RlZF9tZXNzYWdlGAEgASgLMjkucHJvdG9idWZfdW5pdHRl" + 
+          "c3QuVGVzdE5lc3RlZE1lc3NhZ2VIYXNCaXRzLk5lc3RlZE1lc3NhZ2UahwEK" + 
+          "DU5lc3RlZE1lc3NhZ2USJAocbmVzdGVkbWVzc2FnZV9yZXBlYXRlZF9pbnQz" + 
+          "MhgBIAMoBRJQCiVuZXN0ZWRtZXNzYWdlX3JlcGVhdGVkX2ZvcmVpZ25tZXNz" + 
+          "YWdlGAIgAygLMiEucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2Ui" + 
+          "5QMKF1Rlc3RDYW1lbENhc2VGaWVsZE5hbWVzEhYKDlByaW1pdGl2ZUZpZWxk" + 
+          "GAEgASgFEhMKC1N0cmluZ0ZpZWxkGAIgASgJEjEKCUVudW1GaWVsZBgDIAEo" + 
+          "DjIeLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtEjcKDE1lc3NhZ2VG" + 
+          "aWVsZBgEIAEoCzIhLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25NZXNzYWdl" + 
+          "EhwKEFN0cmluZ1BpZWNlRmllbGQYBSABKAlCAggCEhUKCUNvcmRGaWVsZBgG" + 
+          "IAEoCUICCAESHgoWUmVwZWF0ZWRQcmltaXRpdmVGaWVsZBgHIAMoBRIbChNS" + 
+          "ZXBlYXRlZFN0cmluZ0ZpZWxkGAggAygJEjkKEVJlcGVhdGVkRW51bUZpZWxk" + 
+          "GAkgAygOMh4ucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW0SPwoUUmVw" + 
+          "ZWF0ZWRNZXNzYWdlRmllbGQYCiADKAsyIS5wcm90b2J1Zl91bml0dGVzdC5G" + 
+          "b3JlaWduTWVzc2FnZRIkChhSZXBlYXRlZFN0cmluZ1BpZWNlRmllbGQYCyAD" + 
+          "KAlCAggCEh0KEVJlcGVhdGVkQ29yZEZpZWxkGAwgAygJQgIIASJVChJUZXN0" + 
+          "RmllbGRPcmRlcmluZ3MSEQoJbXlfc3RyaW5nGAsgASgJEg4KBm15X2ludBgB" + 
+          "IAEoAxIQCghteV9mbG9hdBhlIAEoAioECAIQCyoECAwQZSKQAgoYVGVzdEV4" + 
+          "dHJlbWVEZWZhdWx0VmFsdWVzEj8KDWVzY2FwZWRfYnl0ZXMYASABKAw6KFww" + 
+          "MDBcMDAxXDAwN1wwMTBcMDE0XG5cclx0XDAxM1xcXCdcIlwzNzYSIAoMbGFy" + 
+          "Z2VfdWludDMyGAIgASgNOgo0Mjk0OTY3Mjk1EioKDGxhcmdlX3VpbnQ2NBgD" + 
+          "IAEoBDoUMTg0NDY3NDQwNzM3MDk1NTE2MTUSIAoLc21hbGxfaW50MzIYBCAB" + 
+          "KAU6Cy0yMTQ3NDgzNjQ3EikKC3NtYWxsX2ludDY0GAUgASgDOhQtOTIyMzM3" + 
+          "MjAzNjg1NDc3NTgwNxIYCgt1dGY4X3N0cmluZxgGIAEoCToD4Yi0IqoDCg9U" + 
+          "ZXN0UGFja2VkVHlwZXMSGAoMcGFja2VkX2ludDMyGFogAygFQgIQARIYCgxw" + 
+          "YWNrZWRfaW50NjQYWyADKANCAhABEhkKDXBhY2tlZF91aW50MzIYXCADKA1C" + 
+          "AhABEhkKDXBhY2tlZF91aW50NjQYXSADKARCAhABEhkKDXBhY2tlZF9zaW50" + 
+          "MzIYXiADKBFCAhABEhkKDXBhY2tlZF9zaW50NjQYXyADKBJCAhABEhoKDnBh" + 
+          "Y2tlZF9maXhlZDMyGGAgAygHQgIQARIaCg5wYWNrZWRfZml4ZWQ2NBhhIAMo" + 
+          "BkICEAESGwoPcGFja2VkX3NmaXhlZDMyGGIgAygPQgIQARIbCg9wYWNrZWRf" + 
+          "c2ZpeGVkNjQYYyADKBBCAhABEhgKDHBhY2tlZF9mbG9hdBhkIAMoAkICEAES" + 
+          "GQoNcGFja2VkX2RvdWJsZRhlIAMoAUICEAESFwoLcGFja2VkX2Jvb2wYZiAD" + 
+          "KAhCAhABEjcKC3BhY2tlZF9lbnVtGGcgAygOMh4ucHJvdG9idWZfdW5pdHRl" + 
+          "c3QuRm9yZWlnbkVudW1CAhABIiAKFFRlc3RQYWNrZWRFeHRlbnNpb25zKggI" + 
+          "ARCAgICAAiIMCgpGb29SZXF1ZXN0Ig0KC0Zvb1Jlc3BvbnNlIgwKCkJhclJl" + 
+          "cXVlc3QiDQoLQmFyUmVzcG9uc2UqQAoLRm9yZWlnbkVudW0SDwoLRk9SRUlH" + 
+          "Tl9GT08QBBIPCgtGT1JFSUdOX0JBUhAFEg8KC0ZPUkVJR05fQkFaEAYqRwoU" + 
+          "VGVzdEVudW1XaXRoRHVwVmFsdWUSCAoERk9PMRABEggKBEJBUjEQAhIHCgNC" + 
+          "QVoQAxIICgRGT08yEAESCAoEQkFSMhACKokBCg5UZXN0U3BhcnNlRW51bRIM" + 
+          "CghTUEFSU0VfQRB7Eg4KCFNQQVJTRV9CEKbnAxIPCghTUEFSU0VfQxCysYAG" + 
+          "EhUKCFNQQVJTRV9EEPH//////////wESFQoIU1BBUlNFX0UQtN78////////" + 
+          "ARIMCghTUEFSU0VfRhAAEgwKCFNQQVJTRV9HEAIymQEKC1Rlc3RTZXJ2aWNl" + 
+          "EkQKA0ZvbxIdLnByb3RvYnVmX3VuaXR0ZXN0LkZvb1JlcXVlc3QaHi5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXISHS5wcm90b2J1Zl91" + 
+          "bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5pdHRlc3QuQmFyUmVz" + 
+          "cG9uc2U6RgoYb3B0aW9uYWxfaW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYASABKAU6RgoYb3B0aW9uYWxf" + 
+          "aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
+          "dGVuc2lvbnMYAiABKAM6RwoZb3B0aW9uYWxfdWludDMyX2V4dGVuc2lvbhIk" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAMgASgNOkcK" + 
+          "GW9wdGlvbmFsX3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
+          "dC5UZXN0QWxsRXh0ZW5zaW9ucxgEIAEoBDpHChlvcHRpb25hbF9zaW50MzJf" + 
+          "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
+          "bnMYBSABKBE6RwoZb3B0aW9uYWxfc2ludDY0X2V4dGVuc2lvbhIkLnByb3Rv" + 
+          "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAYgASgSOkgKGm9wdGlv" + 
+          "bmFsX2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+          "dEFsbEV4dGVuc2lvbnMYByABKAc6SAoab3B0aW9uYWxfZml4ZWQ2NF9leHRl" + 
+          "bnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgI" + 
+          "IAEoBjpJChtvcHRpb25hbF9zZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgJIAEoDzpJChtvcHRpb25h" + 
+          "bF9zZml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
+          "QWxsRXh0ZW5zaW9ucxgKIAEoEDpGChhvcHRpb25hbF9mbG9hdF9leHRlbnNp" + 
+          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgLIAEo" + 
+          "AjpHChlvcHRpb25hbF9kb3VibGVfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDCABKAE6RQoXb3B0aW9uYWxfYm9v" + 
+          "bF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5z" + 
+          "aW9ucxgNIAEoCDpHChlvcHRpb25hbF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJv" + 
+          "dG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDiABKAk6RgoYb3B0" + 
+          "aW9uYWxfYnl0ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+          "dEFsbEV4dGVuc2lvbnMYDyABKAw6cQoXb3B0aW9uYWxncm91cF9leHRlbnNp" + 
+          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgQIAEo" + 
+          "CjIqLnByb3RvYnVmX3VuaXR0ZXN0Lk9wdGlvbmFsR3JvdXBfZXh0ZW5zaW9u" + 
+          "On4KIW9wdGlvbmFsX25lc3RlZF9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3Rv" + 
+          "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBIgASgLMi0ucHJvdG9i" + 
+          "dWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2U6cwoib3B0" + 
+          "aW9uYWxfZm9yZWlnbl9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBMgASgLMiEucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuRm9yZWlnbk1lc3NhZ2U6eAohb3B0aW9uYWxfaW1wb3J0X21lc3Nh" + 
+          "Z2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+          "c2lvbnMYFCABKAsyJy5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0" + 
+          "TWVzc2FnZTp4Ch5vcHRpb25hbF9uZXN0ZWRfZW51bV9leHRlbnNpb24SJC5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgVIAEoDjIqLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOm0KH29w" + 
+          "dGlvbmFsX2ZvcmVpZ25fZW51bV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgWIAEoDjIeLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LkZvcmVpZ25FbnVtOnIKHm9wdGlvbmFsX2ltcG9ydF9lbnVtX2V4dGVu" + 
+          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBcg" + 
+          "ASgOMiQucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydEVudW06UQof" + 
+          "b3B0aW9uYWxfc3RyaW5nX3BpZWNlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBggASgJQgIIAjpJChdvcHRpb25h" + 
+          "bF9jb3JkX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+          "eHRlbnNpb25zGBkgASgJQgIIATpGChhyZXBlYXRlZF9pbnQzMl9leHRlbnNp" + 
+          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgfIAMo" + 
+          "BTpGChhyZXBlYXRlZF9pbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxggIAMoAzpHChlyZXBlYXRlZF91aW50" + 
+          "MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+          "c2lvbnMYISADKA06RwoZcmVwZWF0ZWRfdWludDY0X2V4dGVuc2lvbhIkLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCIgAygEOkcKGXJl" + 
+          "cGVhdGVkX3NpbnQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0QWxsRXh0ZW5zaW9ucxgjIAMoETpHChlyZXBlYXRlZF9zaW50NjRfZXh0" + 
+          "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
+          "JCADKBI6SAoacmVwZWF0ZWRfZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxglIAMoBzpIChpyZXBlYXRl" + 
+          "ZF9maXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
+          "bGxFeHRlbnNpb25zGCYgAygGOkkKG3JlcGVhdGVkX3NmaXhlZDMyX2V4dGVu" + 
+          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCcg" + 
+          "AygPOkkKG3JlcGVhdGVkX3NmaXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
+          "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCggAygQOkYKGHJlcGVhdGVk" + 
+          "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+          "eHRlbnNpb25zGCkgAygCOkcKGXJlcGVhdGVkX2RvdWJsZV9leHRlbnNpb24S" + 
+          "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgqIAMoATpF" + 
+          "ChdyZXBlYXRlZF9ib29sX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0" + 
+          "LlRlc3RBbGxFeHRlbnNpb25zGCsgAygIOkcKGXJlcGVhdGVkX3N0cmluZ19l" + 
+          "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
+          "cxgsIAMoCTpGChhyZXBlYXRlZF9ieXRlc19leHRlbnNpb24SJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgtIAMoDDpxChdyZXBlYXRl" + 
+          "ZGdyb3VwX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+          "eHRlbnNpb25zGC4gAygKMioucHJvdG9idWZfdW5pdHRlc3QuUmVwZWF0ZWRH" + 
+          "cm91cF9leHRlbnNpb246fgohcmVwZWF0ZWRfbmVzdGVkX21lc3NhZ2VfZXh0" + 
+          "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
+          "MCADKAsyLS5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
+          "TWVzc2FnZTpzCiJyZXBlYXRlZF9mb3JlaWduX21lc3NhZ2VfZXh0ZW5zaW9u" + 
+          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYMSADKAsy" + 
+          "IS5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduTWVzc2FnZTp4CiFyZXBlYXRl" + 
+          "ZF9pbXBvcnRfbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
+          "dC5UZXN0QWxsRXh0ZW5zaW9ucxgyIAMoCzInLnByb3RvYnVmX3VuaXR0ZXN0" + 
+          "X2ltcG9ydC5JbXBvcnRNZXNzYWdlOngKHnJlcGVhdGVkX25lc3RlZF9lbnVt" + 
+          "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
+          "b25zGDMgAygOMioucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5l" + 
+          "c3RlZEVudW06bQofcmVwZWF0ZWRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDQgAygOMh4u" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06cgoecmVwZWF0ZWRfaW1w" + 
+          "b3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
+          "bEV4dGVuc2lvbnMYNSADKA4yJC5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQu" + 
+          "SW1wb3J0RW51bTpRCh9yZXBlYXRlZF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9u" + 
+          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNiADKAlC" + 
+          "AggCOkkKF3JlcGVhdGVkX2NvcmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNyADKAlCAggBOkkKF2RlZmF1bHRf" + 
+          "aW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
+          "dGVuc2lvbnMYPSABKAU6AjQxOkkKF2RlZmF1bHRfaW50NjRfZXh0ZW5zaW9u" + 
+          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYPiABKAM6" + 
+          "AjQyOkoKGGRlZmF1bHRfdWludDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGD8gASgNOgI0MzpKChhkZWZhdWx0" + 
+          "X3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
+          "RXh0ZW5zaW9ucxhAIAEoBDoCNDQ6SwoYZGVmYXVsdF9zaW50MzJfZXh0ZW5z" + 
+          "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYQSAB" + 
+          "KBE6Ay00NTpKChhkZWZhdWx0X3NpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhCIAEoEjoCNDY6SwoZZGVm" + 
+          "YXVsdF9maXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
+          "c3RBbGxFeHRlbnNpb25zGEMgASgHOgI0NzpLChlkZWZhdWx0X2ZpeGVkNjRf" + 
+          "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
+          "bnMYRCABKAY6AjQ4OkwKGmRlZmF1bHRfc2ZpeGVkMzJfZXh0ZW5zaW9uEiQu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRSABKA86AjQ5" + 
+          "Ok0KGmRlZmF1bHRfc2ZpeGVkNjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRiABKBA6Ay01MDpLChdkZWZhdWx0" + 
+          "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+          "eHRlbnNpb25zGEcgASgCOgQ1MS41Ok0KGGRlZmF1bHRfZG91YmxlX2V4dGVu" + 
+          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEgg" + 
+          "ASgBOgU1MjAwMDpKChZkZWZhdWx0X2Jvb2xfZXh0ZW5zaW9uEiQucHJvdG9i" + 
+          "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYSSABKAg6BHRydWU6TQoY" + 
+          "ZGVmYXVsdF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
+          "VGVzdEFsbEV4dGVuc2lvbnMYSiABKAk6BWhlbGxvOkwKF2RlZmF1bHRfYnl0" + 
+          "ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+          "c2lvbnMYSyABKAw6BXdvcmxkOnwKHWRlZmF1bHRfbmVzdGVkX2VudW1fZXh0" + 
+          "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
+          "USABKA4yKi5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
+          "RW51bToDQkFSOnkKHmRlZmF1bHRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGFIgASgOMh4u" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06C0ZPUkVJR05fQkFSOn0K" + 
+          "HWRlZmF1bHRfaW1wb3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYUyABKA4yJC5wcm90b2J1Zl91bml0" + 
+          "dGVzdF9pbXBvcnQuSW1wb3J0RW51bToKSU1QT1JUX0JBUjpVCh5kZWZhdWx0" + 
+          "X3N0cmluZ19waWVjZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0QWxsRXh0ZW5zaW9ucxhUIAEoCToDYWJjQgIIAjpNChZkZWZhdWx0X2Nv" + 
+          "cmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
+          "c2lvbnMYVSABKAk6AzEyM0ICCAE6QgoTbXlfZXh0ZW5zaW9uX3N0cmluZxIl" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVsZE9yZGVyaW5ncxgyIAEoCTo/" + 
+          "ChBteV9leHRlbnNpb25faW50EiUucHJvdG9idWZfdW5pdHRlc3QuVGVzdEZp" + 
+          "ZWxkT3JkZXJpbmdzGAUgASgFOksKFnBhY2tlZF9pbnQzMl9leHRlbnNpb24S" + 
+          "Jy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhaIAMo" + 
+          "BUICEAE6SwoWcGFja2VkX2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGFsgAygDQgIQATpMChdwYWNr" + 
+          "ZWRfdWludDMyX2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQ" + 
+          "YWNrZWRFeHRlbnNpb25zGFwgAygNQgIQATpMChdwYWNrZWRfdWludDY0X2V4" + 
+          "dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNp" + 
+          "b25zGF0gAygEQgIQATpMChdwYWNrZWRfc2ludDMyX2V4dGVuc2lvbhInLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF4gAygRQgIQ" + 
+          "ATpMChdwYWNrZWRfc2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF8gAygSQgIQATpNChhwYWNrZWRf" + 
+          "Zml4ZWQzMl9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFj" + 
+          "a2VkRXh0ZW5zaW9ucxhgIAMoB0ICEAE6TQoYcGFja2VkX2ZpeGVkNjRfZXh0" + 
+          "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
+          "bnMYYSADKAZCAhABOk4KGXBhY2tlZF9zZml4ZWQzMl9leHRlbnNpb24SJy5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhiIAMoD0IC" + 
+          "EAE6TgoZcGFja2VkX3NmaXhlZDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGMgAygQQgIQATpLChZwYWNr" + 
+          "ZWRfZmxvYXRfZXh0ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBh" + 
+          "Y2tlZEV4dGVuc2lvbnMYZCADKAJCAhABOkwKF3BhY2tlZF9kb3VibGVfZXh0" + 
+          "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
+          "bnMYZSADKAFCAhABOkoKFXBhY2tlZF9ib29sX2V4dGVuc2lvbhInLnByb3Rv" + 
+          "YnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGYgAygIQgIQATpq" + 
+          "ChVwYWNrZWRfZW51bV9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0UGFja2VkRXh0ZW5zaW9ucxhnIAMoDjIeLnByb3RvYnVmX3VuaXR0ZXN0" + 
+          "LkZvcmVpZ25FbnVtQgIQAUJKQg1Vbml0dGVzdFByb3RvSAHCPjYKIUdvb2ds" + 
+          "ZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIRVW5pdFRlc3RQcm90b0Zp" + 
+          "bGU=");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_protobuf_unittest_TestAllTypes__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder>(internal__static_protobuf_unittest_TestAllTypes__Descriptor,
+                new string[] { "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalGroup", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalImportMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalImportEnum", "OptionalStringPiece", "OptionalCord", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedGroup", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedStringPiece", "RepeatedCord", "DefaultInt32", "DefaultInt64", "DefaultUint32", "DefaultUint64", "DefaultSint32", "DefaultSint64", "DefaultFixed32", "DefaultFixed64", "DefaultSfixed32", "DefaultSfixed64", "DefaultFloat", "DefaultDouble", "DefaultBool", "DefaultString", "DefaultBytes", "DefaultNestedEnum", "DefaultForeignEnum", "DefaultImportEnum", "DefaultStringPiece", "DefaultCord", });
+        internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder>(internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor,
+                new string[] { "Bb", });
+        internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__Descriptor = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[1];
+        internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder>(internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__Descriptor,
+                new string[] { "A", });
+        internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[2];
+        internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder>(internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor,
+                new string[] { "A", });
+        internal__static_protobuf_unittest_ForeignMessage__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder>(internal__static_protobuf_unittest_ForeignMessage__Descriptor,
+                new string[] { "C", });
+        internal__static_protobuf_unittest_TestAllExtensions__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_protobuf_unittest_TestAllExtensions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllExtensions, global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.Builder>(internal__static_protobuf_unittest_TestAllExtensions__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_protobuf_unittest_OptionalGroup_extension__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Builder>(internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor,
+                new string[] { "A", });
+        internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor = Descriptor.MessageTypes[4];
+        internal__static_protobuf_unittest_RepeatedGroup_extension__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Builder>(internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor,
+                new string[] { "A", });
+        internal__static_protobuf_unittest_TestRequired__Descriptor = Descriptor.MessageTypes[5];
+        internal__static_protobuf_unittest_TestRequired__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequired, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder>(internal__static_protobuf_unittest_TestRequired__Descriptor,
+                new string[] { "A", "Dummy2", "B", "Dummy4", "Dummy5", "Dummy6", "Dummy7", "Dummy8", "Dummy9", "Dummy10", "Dummy11", "Dummy12", "Dummy13", "Dummy14", "Dummy15", "Dummy16", "Dummy17", "Dummy18", "Dummy19", "Dummy20", "Dummy21", "Dummy22", "Dummy23", "Dummy24", "Dummy25", "Dummy26", "Dummy27", "Dummy28", "Dummy29", "Dummy30", "Dummy31", "Dummy32", "C", });
+        global::Google.ProtocolBuffers.TestProtos.TestRequired.Single = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestRequired.Descriptor.Extensions[0]);
+        global::Google.ProtocolBuffers.TestProtos.TestRequired.Multi = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestRequired.Descriptor.Extensions[1]);
+        internal__static_protobuf_unittest_TestRequiredForeign__Descriptor = Descriptor.MessageTypes[6];
+        internal__static_protobuf_unittest_TestRequiredForeign__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign, global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.Builder>(internal__static_protobuf_unittest_TestRequiredForeign__Descriptor,
+                new string[] { "OptionalMessage", "RepeatedMessage", "Dummy", });
+        internal__static_protobuf_unittest_TestForeignNested__Descriptor = Descriptor.MessageTypes[7];
+        internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestForeignNested, global::Google.ProtocolBuffers.TestProtos.TestForeignNested.Builder>(internal__static_protobuf_unittest_TestForeignNested__Descriptor,
+                new string[] { "ForeignNested", });
+        internal__static_protobuf_unittest_TestEmptyMessage__Descriptor = Descriptor.MessageTypes[8];
+        internal__static_protobuf_unittest_TestEmptyMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Builder>(internal__static_protobuf_unittest_TestEmptyMessage__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor = Descriptor.MessageTypes[9];
+        internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Builder>(internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor = Descriptor.MessageTypes[10];
+        internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber, global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Builder>(internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor,
+                new string[] { "A", "Bb", });
+        internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor = Descriptor.MessageTypes[11];
+        internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage, global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder>(internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor,
+                new string[] { "A", "I", });
+        internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor = Descriptor.MessageTypes[12];
+        internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder>(internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor,
+                new string[] { "Bb", });
+        internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor = Descriptor.MessageTypes[13];
+        internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder>(internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor,
+                new string[] { "A", "OptionalInt32", });
+        internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor = Descriptor.MessageTypes[14];
+        internal__static_protobuf_unittest_TestDupFieldNumber__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor,
+                new string[] { "A", "Foo", "Bar", });
+        internal__static_protobuf_unittest_TestDupFieldNumber_Foo__Descriptor = internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_TestDupFieldNumber_Foo__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber_Foo__Descriptor,
+                new string[] { "A", });
+        internal__static_protobuf_unittest_TestDupFieldNumber_Bar__Descriptor = internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor.NestedTypes[1];
+        internal__static_protobuf_unittest_TestDupFieldNumber_Bar__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber_Bar__Descriptor,
+                new string[] { "A", });
+        internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor = Descriptor.MessageTypes[15];
+        internal__static_protobuf_unittest_TestNestedMessageHasBits__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Builder>(internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor,
+                new string[] { "OptionalNestedMessage", });
+        internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__Descriptor = internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder>(internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__Descriptor,
+                new string[] { "NestedmessageRepeatedInt32", "NestedmessageRepeatedForeignmessage", });
+        internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor = Descriptor.MessageTypes[16];
+        internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames, global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.Builder>(internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor,
+                new string[] { "PrimitiveField", "StringField", "EnumField", "MessageField", "StringPieceField", "CordField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedStringPieceField", "RepeatedCordField", });
+        internal__static_protobuf_unittest_TestFieldOrderings__Descriptor = Descriptor.MessageTypes[17];
+        internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings, global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Builder>(internal__static_protobuf_unittest_TestFieldOrderings__Descriptor,
+                new string[] { "MyString", "MyInt", "MyFloat", });
+        internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor = Descriptor.MessageTypes[18];
+        internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder>(internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor,
+                new string[] { "EscapedBytes", "LargeUint32", "LargeUint64", "SmallInt32", "SmallInt64", "Utf8String", });
+        internal__static_protobuf_unittest_TestPackedTypes__Descriptor = Descriptor.MessageTypes[19];
+        internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder>(internal__static_protobuf_unittest_TestPackedTypes__Descriptor,
+                new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", });
+        internal__static_protobuf_unittest_TestPackedExtensions__Descriptor = Descriptor.MessageTypes[20];
+        internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder>(internal__static_protobuf_unittest_TestPackedExtensions__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_FooRequest__Descriptor = Descriptor.MessageTypes[21];
+        internal__static_protobuf_unittest_FooRequest__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder>(internal__static_protobuf_unittest_FooRequest__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_FooResponse__Descriptor = Descriptor.MessageTypes[22];
+        internal__static_protobuf_unittest_FooResponse__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder>(internal__static_protobuf_unittest_FooResponse__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_BarRequest__Descriptor = Descriptor.MessageTypes[23];
+        internal__static_protobuf_unittest_BarRequest__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder>(internal__static_protobuf_unittest_BarRequest__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_BarResponse__Descriptor = Descriptor.MessageTypes[24];
+        internal__static_protobuf_unittest_BarResponse__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder>(internal__static_protobuf_unittest_BarResponse__Descriptor,
+                new string[] { });
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalInt32Extension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[0]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalInt64Extension = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[1]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalUint32Extension = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[2]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalUint64Extension = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[3]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSint32Extension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[4]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSint64Extension = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[5]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalFixed32Extension = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[6]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalFixed64Extension = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[7]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSfixed32Extension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[8]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalSfixed64Extension = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[9]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalFloatExtension = pb::GeneratedSingleExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[10]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalDoubleExtension = pb::GeneratedSingleExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[11]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalBoolExtension = pb::GeneratedSingleExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[12]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalStringExtension = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[13]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalBytesExtension = pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[14]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalGroupExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[15]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalNestedMessageExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[16]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalForeignMessageExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[17]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalImportMessageExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[18]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalNestedEnumExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[19]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalForeignEnumExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[20]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalImportEnumExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[21]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalStringPieceExtension = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[22]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.OptionalCordExtension = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[23]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedInt32Extension = pb::GeneratedRepeatExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[24]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedInt64Extension = pb::GeneratedRepeatExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[25]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedUint32Extension = pb::GeneratedRepeatExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[26]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedUint64Extension = pb::GeneratedRepeatExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[27]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSint32Extension = pb::GeneratedRepeatExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[28]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSint64Extension = pb::GeneratedRepeatExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[29]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedFixed32Extension = pb::GeneratedRepeatExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[30]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedFixed64Extension = pb::GeneratedRepeatExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[31]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSfixed32Extension = pb::GeneratedRepeatExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[32]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedSfixed64Extension = pb::GeneratedRepeatExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[33]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedFloatExtension = pb::GeneratedRepeatExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[34]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedDoubleExtension = pb::GeneratedRepeatExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[35]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedBoolExtension = pb::GeneratedRepeatExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[36]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedStringExtension = pb::GeneratedRepeatExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[37]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedBytesExtension = pb::GeneratedRepeatExtension<pb::ByteString>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[38]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedGroupExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[39]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedNestedMessageExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[40]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedForeignMessageExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[41]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedImportMessageExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[42]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedNestedEnumExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[43]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedForeignEnumExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[44]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedImportEnumExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[45]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedStringPieceExtension = pb::GeneratedRepeatExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[46]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RepeatedCordExtension = pb::GeneratedRepeatExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[47]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultInt32Extension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[48]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultInt64Extension = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[49]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultUint32Extension = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[50]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultUint64Extension = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[51]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSint32Extension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[52]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSint64Extension = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[53]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultFixed32Extension = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[54]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultFixed64Extension = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[55]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSfixed32Extension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[56]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultSfixed64Extension = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[57]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultFloatExtension = pb::GeneratedSingleExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[58]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultDoubleExtension = pb::GeneratedSingleExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[59]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultBoolExtension = pb::GeneratedSingleExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[60]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultStringExtension = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[61]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultBytesExtension = pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[62]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultNestedEnumExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[63]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultForeignEnumExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[64]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultImportEnumExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[65]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultStringPieceExtension = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[66]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.DefaultCordExtension = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[67]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.MyExtensionString = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[68]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.MyExtensionInt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[69]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedInt32Extension = pb::GeneratedRepeatExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[70]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedInt64Extension = pb::GeneratedRepeatExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[71]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedUint32Extension = pb::GeneratedRepeatExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[72]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedUint64Extension = pb::GeneratedRepeatExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[73]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSint32Extension = pb::GeneratedRepeatExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[74]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSint64Extension = pb::GeneratedRepeatExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[75]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedFixed32Extension = pb::GeneratedRepeatExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[76]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedFixed64Extension = pb::GeneratedRepeatExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[77]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSfixed32Extension = pb::GeneratedRepeatExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[78]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedSfixed64Extension = pb::GeneratedRepeatExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[79]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedFloatExtension = pb::GeneratedRepeatExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[80]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedDoubleExtension = pb::GeneratedRepeatExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[81]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedBoolExtension = pb::GeneratedRepeatExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[82]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedEnumExtension = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor.Extensions[83]);
+        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
+        RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.RegisterAllExtensions(registry);
+        return registry;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.Descriptor, 
-        });
+          }, assigner);
+    }
     #endregion
     
-    #region Extensions
-    public const int OptionalInt32ExtensionFieldNumber = 1;
-    public static readonly pb::GeneratedExtensionBase<int> OptionalInt32Extension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
-    public const int OptionalInt64ExtensionFieldNumber = 2;
-    public static readonly pb::GeneratedExtensionBase<long> OptionalInt64Extension =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[1]);
-    public const int OptionalUint32ExtensionFieldNumber = 3;
-    public static readonly pb::GeneratedExtensionBase<uint> OptionalUint32Extension =
-        pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[2]);
-    public const int OptionalUint64ExtensionFieldNumber = 4;
-    public static readonly pb::GeneratedExtensionBase<ulong> OptionalUint64Extension =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[3]);
-    public const int OptionalSint32ExtensionFieldNumber = 5;
-    public static readonly pb::GeneratedExtensionBase<int> OptionalSint32Extension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[4]);
-    public const int OptionalSint64ExtensionFieldNumber = 6;
-    public static readonly pb::GeneratedExtensionBase<long> OptionalSint64Extension =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[5]);
-    public const int OptionalFixed32ExtensionFieldNumber = 7;
-    public static readonly pb::GeneratedExtensionBase<uint> OptionalFixed32Extension =
-        pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[6]);
-    public const int OptionalFixed64ExtensionFieldNumber = 8;
-    public static readonly pb::GeneratedExtensionBase<ulong> OptionalFixed64Extension =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[7]);
-    public const int OptionalSfixed32ExtensionFieldNumber = 9;
-    public static readonly pb::GeneratedExtensionBase<int> OptionalSfixed32Extension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[8]);
-    public const int OptionalSfixed64ExtensionFieldNumber = 10;
-    public static readonly pb::GeneratedExtensionBase<long> OptionalSfixed64Extension =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[9]);
-    public const int OptionalFloatExtensionFieldNumber = 11;
-    public static readonly pb::GeneratedExtensionBase<float> OptionalFloatExtension =
-        pb::GeneratedSingleExtension<float>.CreateInstance(Descriptor.Extensions[10]);
-    public const int OptionalDoubleExtensionFieldNumber = 12;
-    public static readonly pb::GeneratedExtensionBase<double> OptionalDoubleExtension =
-        pb::GeneratedSingleExtension<double>.CreateInstance(Descriptor.Extensions[11]);
-    public const int OptionalBoolExtensionFieldNumber = 13;
-    public static readonly pb::GeneratedExtensionBase<bool> OptionalBoolExtension =
-        pb::GeneratedSingleExtension<bool>.CreateInstance(Descriptor.Extensions[12]);
-    public const int OptionalStringExtensionFieldNumber = 14;
-    public static readonly pb::GeneratedExtensionBase<string> OptionalStringExtension =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[13]);
-    public const int OptionalBytesExtensionFieldNumber = 15;
-    public static readonly pb::GeneratedExtensionBase<pb::ByteString> OptionalBytesExtension =
-        pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[14]);
-    public const int OptionalGroupExtensionFieldNumber = 16;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension> OptionalGroupExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension>.CreateInstance(Descriptor.Extensions[15]);
-    public const int OptionalNestedMessageExtensionFieldNumber = 18;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> OptionalNestedMessageExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[16]);
-    public const int OptionalForeignMessageExtensionFieldNumber = 19;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> OptionalForeignMessageExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.CreateInstance(Descriptor.Extensions[17]);
-    public const int OptionalImportMessageExtensionFieldNumber = 20;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportMessage> OptionalImportMessageExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.CreateInstance(Descriptor.Extensions[18]);
-    public const int OptionalNestedEnumExtensionFieldNumber = 21;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> OptionalNestedEnumExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[19]);
-    public const int OptionalForeignEnumExtensionFieldNumber = 22;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> OptionalForeignEnumExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[20]);
-    public const int OptionalImportEnumExtensionFieldNumber = 23;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportEnum> OptionalImportEnumExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(Descriptor.Extensions[21]);
-    public const int OptionalStringPieceExtensionFieldNumber = 24;
-    public static readonly pb::GeneratedExtensionBase<string> OptionalStringPieceExtension =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[22]);
-    public const int OptionalCordExtensionFieldNumber = 25;
-    public static readonly pb::GeneratedExtensionBase<string> OptionalCordExtension =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[23]);
-    public const int RepeatedInt32ExtensionFieldNumber = 31;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<int>> RepeatedInt32Extension =
-        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[24]);
-    public const int RepeatedInt64ExtensionFieldNumber = 32;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<long>> RepeatedInt64Extension =
-        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[25]);
-    public const int RepeatedUint32ExtensionFieldNumber = 33;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedUint32Extension =
-        pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[26]);
-    public const int RepeatedUint64ExtensionFieldNumber = 34;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedUint64Extension =
-        pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[27]);
-    public const int RepeatedSint32ExtensionFieldNumber = 35;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSint32Extension =
-        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[28]);
-    public const int RepeatedSint64ExtensionFieldNumber = 36;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSint64Extension =
-        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[29]);
-    public const int RepeatedFixed32ExtensionFieldNumber = 37;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<uint>> RepeatedFixed32Extension =
-        pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[30]);
-    public const int RepeatedFixed64ExtensionFieldNumber = 38;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<ulong>> RepeatedFixed64Extension =
-        pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[31]);
-    public const int RepeatedSfixed32ExtensionFieldNumber = 39;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<int>> RepeatedSfixed32Extension =
-        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[32]);
-    public const int RepeatedSfixed64ExtensionFieldNumber = 40;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<long>> RepeatedSfixed64Extension =
-        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[33]);
-    public const int RepeatedFloatExtensionFieldNumber = 41;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<float>> RepeatedFloatExtension =
-        pb::GeneratedRepeatExtension<float>.CreateInstance(Descriptor.Extensions[34]);
-    public const int RepeatedDoubleExtensionFieldNumber = 42;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<double>> RepeatedDoubleExtension =
-        pb::GeneratedRepeatExtension<double>.CreateInstance(Descriptor.Extensions[35]);
-    public const int RepeatedBoolExtensionFieldNumber = 43;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<bool>> RepeatedBoolExtension =
-        pb::GeneratedRepeatExtension<bool>.CreateInstance(Descriptor.Extensions[36]);
-    public const int RepeatedStringExtensionFieldNumber = 44;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<string>> RepeatedStringExtension =
-        pb::GeneratedRepeatExtension<string>.CreateInstance(Descriptor.Extensions[37]);
-    public const int RepeatedBytesExtensionFieldNumber = 45;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<pb::ByteString>> RepeatedBytesExtension =
-        pb::GeneratedRepeatExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[38]);
-    public const int RepeatedGroupExtensionFieldNumber = 46;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension>> RepeatedGroupExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension>.CreateInstance(Descriptor.Extensions[39]);
-    public const int RepeatedNestedMessageExtensionFieldNumber = 48;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>> RepeatedNestedMessageExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>.CreateInstance(Descriptor.Extensions[40]);
-    public const int RepeatedForeignMessageExtensionFieldNumber = 49;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>> RepeatedForeignMessageExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>.CreateInstance(Descriptor.Extensions[41]);
-    public const int RepeatedImportMessageExtensionFieldNumber = 50;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportMessage>> RepeatedImportMessageExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ImportMessage>.CreateInstance(Descriptor.Extensions[42]);
-    public const int RepeatedNestedEnumExtensionFieldNumber = 51;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>> RepeatedNestedEnumExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[43]);
-    public const int RepeatedForeignEnumExtensionFieldNumber = 52;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> RepeatedForeignEnumExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[44]);
-    public const int RepeatedImportEnumExtensionFieldNumber = 53;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ImportEnum>> RepeatedImportEnumExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(Descriptor.Extensions[45]);
-    public const int RepeatedStringPieceExtensionFieldNumber = 54;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<string>> RepeatedStringPieceExtension =
-        pb::GeneratedRepeatExtension<string>.CreateInstance(Descriptor.Extensions[46]);
-    public const int RepeatedCordExtensionFieldNumber = 55;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<string>> RepeatedCordExtension =
-        pb::GeneratedRepeatExtension<string>.CreateInstance(Descriptor.Extensions[47]);
-    public const int DefaultInt32ExtensionFieldNumber = 61;
-    public static readonly pb::GeneratedExtensionBase<int> DefaultInt32Extension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[48]);
-    public const int DefaultInt64ExtensionFieldNumber = 62;
-    public static readonly pb::GeneratedExtensionBase<long> DefaultInt64Extension =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[49]);
-    public const int DefaultUint32ExtensionFieldNumber = 63;
-    public static readonly pb::GeneratedExtensionBase<uint> DefaultUint32Extension =
-        pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[50]);
-    public const int DefaultUint64ExtensionFieldNumber = 64;
-    public static readonly pb::GeneratedExtensionBase<ulong> DefaultUint64Extension =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[51]);
-    public const int DefaultSint32ExtensionFieldNumber = 65;
-    public static readonly pb::GeneratedExtensionBase<int> DefaultSint32Extension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[52]);
-    public const int DefaultSint64ExtensionFieldNumber = 66;
-    public static readonly pb::GeneratedExtensionBase<long> DefaultSint64Extension =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[53]);
-    public const int DefaultFixed32ExtensionFieldNumber = 67;
-    public static readonly pb::GeneratedExtensionBase<uint> DefaultFixed32Extension =
-        pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[54]);
-    public const int DefaultFixed64ExtensionFieldNumber = 68;
-    public static readonly pb::GeneratedExtensionBase<ulong> DefaultFixed64Extension =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[55]);
-    public const int DefaultSfixed32ExtensionFieldNumber = 69;
-    public static readonly pb::GeneratedExtensionBase<int> DefaultSfixed32Extension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[56]);
-    public const int DefaultSfixed64ExtensionFieldNumber = 70;
-    public static readonly pb::GeneratedExtensionBase<long> DefaultSfixed64Extension =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[57]);
-    public const int DefaultFloatExtensionFieldNumber = 71;
-    public static readonly pb::GeneratedExtensionBase<float> DefaultFloatExtension =
-        pb::GeneratedSingleExtension<float>.CreateInstance(Descriptor.Extensions[58]);
-    public const int DefaultDoubleExtensionFieldNumber = 72;
-    public static readonly pb::GeneratedExtensionBase<double> DefaultDoubleExtension =
-        pb::GeneratedSingleExtension<double>.CreateInstance(Descriptor.Extensions[59]);
-    public const int DefaultBoolExtensionFieldNumber = 73;
-    public static readonly pb::GeneratedExtensionBase<bool> DefaultBoolExtension =
-        pb::GeneratedSingleExtension<bool>.CreateInstance(Descriptor.Extensions[60]);
-    public const int DefaultStringExtensionFieldNumber = 74;
-    public static readonly pb::GeneratedExtensionBase<string> DefaultStringExtension =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[61]);
-    public const int DefaultBytesExtensionFieldNumber = 75;
-    public static readonly pb::GeneratedExtensionBase<pb::ByteString> DefaultBytesExtension =
-        pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[62]);
-    public const int DefaultNestedEnumExtensionFieldNumber = 81;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>.CreateInstance(Descriptor.Extensions[63]);
-    public const int DefaultForeignEnumExtensionFieldNumber = 82;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> DefaultForeignEnumExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[64]);
-    public const int DefaultImportEnumExtensionFieldNumber = 83;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ImportEnum> DefaultImportEnumExtension =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ImportEnum>.CreateInstance(Descriptor.Extensions[65]);
-    public const int DefaultStringPieceExtensionFieldNumber = 84;
-    public static readonly pb::GeneratedExtensionBase<string> DefaultStringPieceExtension =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[66]);
-    public const int DefaultCordExtensionFieldNumber = 85;
-    public static readonly pb::GeneratedExtensionBase<string> DefaultCordExtension =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[67]);
-    public const int MyExtensionStringFieldNumber = 50;
-    public static readonly pb::GeneratedExtensionBase<string> MyExtensionString =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[68]);
-    public const int MyExtensionIntFieldNumber = 5;
-    public static readonly pb::GeneratedExtensionBase<int> MyExtensionInt =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[69]);
-    public const int PackedInt32ExtensionFieldNumber = 90;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<int>> PackedInt32Extension =
-        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[70]);
-    public const int PackedInt64ExtensionFieldNumber = 91;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<long>> PackedInt64Extension =
-        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[71]);
-    public const int PackedUint32ExtensionFieldNumber = 92;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<uint>> PackedUint32Extension =
-        pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[72]);
-    public const int PackedUint64ExtensionFieldNumber = 93;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<ulong>> PackedUint64Extension =
-        pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[73]);
-    public const int PackedSint32ExtensionFieldNumber = 94;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<int>> PackedSint32Extension =
-        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[74]);
-    public const int PackedSint64ExtensionFieldNumber = 95;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<long>> PackedSint64Extension =
-        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[75]);
-    public const int PackedFixed32ExtensionFieldNumber = 96;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<uint>> PackedFixed32Extension =
-        pb::GeneratedRepeatExtension<uint>.CreateInstance(Descriptor.Extensions[76]);
-    public const int PackedFixed64ExtensionFieldNumber = 97;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<ulong>> PackedFixed64Extension =
-        pb::GeneratedRepeatExtension<ulong>.CreateInstance(Descriptor.Extensions[77]);
-    public const int PackedSfixed32ExtensionFieldNumber = 98;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<int>> PackedSfixed32Extension =
-        pb::GeneratedRepeatExtension<int>.CreateInstance(Descriptor.Extensions[78]);
-    public const int PackedSfixed64ExtensionFieldNumber = 99;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<long>> PackedSfixed64Extension =
-        pb::GeneratedRepeatExtension<long>.CreateInstance(Descriptor.Extensions[79]);
-    public const int PackedFloatExtensionFieldNumber = 100;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<float>> PackedFloatExtension =
-        pb::GeneratedRepeatExtension<float>.CreateInstance(Descriptor.Extensions[80]);
-    public const int PackedDoubleExtensionFieldNumber = 101;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<double>> PackedDoubleExtension =
-        pb::GeneratedRepeatExtension<double>.CreateInstance(Descriptor.Extensions[81]);
-    public const int PackedBoolExtensionFieldNumber = 102;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<bool>> PackedBoolExtension =
-        pb::GeneratedRepeatExtension<bool>.CreateInstance(Descriptor.Extensions[82]);
-    public const int PackedEnumExtensionFieldNumber = 103;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>> PackedEnumExtension =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>.CreateInstance(Descriptor.Extensions[83]);
-    #endregion
-    
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder> internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder>(internal__static_protobuf_unittest_TestAllTypes__Descriptor,
-            new string[] { "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalGroup", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalImportMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalImportEnum", "OptionalStringPiece", "OptionalCord", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedGroup", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedStringPiece", "RepeatedCord", "DefaultInt32", "DefaultInt64", "DefaultUint32", "DefaultUint64", "DefaultSint32", "DefaultSint64", "DefaultFixed32", "DefaultFixed64", "DefaultSfixed32", "DefaultSfixed64", "DefaultFloat", "DefaultDouble", "DefaultBool", "DefaultString", "DefaultBytes", "DefaultNestedEnum", "DefaultForeignEnum", "DefaultImportEnum", "DefaultStringPiece", "DefaultCord", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor
-        = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder> internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder>(internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor,
-            new string[] { "Bb", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__Descriptor
-        = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder> internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder>(internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__Descriptor,
-            new string[] { "A", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor
-        = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder> internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder>(internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor,
-            new string[] { "A", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ForeignMessage__Descriptor
-        = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder> internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder>(internal__static_protobuf_unittest_ForeignMessage__Descriptor,
-            new string[] { "C", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllExtensions__Descriptor
-        = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllExtensions, global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.Builder> internal__static_protobuf_unittest_TestAllExtensions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllExtensions, global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.Builder>(internal__static_protobuf_unittest_TestAllExtensions__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor
-        = Descriptor.MessageTypes[3];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Builder> internal__static_protobuf_unittest_OptionalGroup_extension__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Builder>(internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor,
-            new string[] { "A", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor
-        = Descriptor.MessageTypes[4];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Builder> internal__static_protobuf_unittest_RepeatedGroup_extension__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Builder>(internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor,
-            new string[] { "A", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequired__Descriptor
-        = Descriptor.MessageTypes[5];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequired, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder> internal__static_protobuf_unittest_TestRequired__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequired, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder>(internal__static_protobuf_unittest_TestRequired__Descriptor,
-            new string[] { "A", "Dummy2", "B", "Dummy4", "Dummy5", "Dummy6", "Dummy7", "Dummy8", "Dummy9", "Dummy10", "Dummy11", "Dummy12", "Dummy13", "Dummy14", "Dummy15", "Dummy16", "Dummy17", "Dummy18", "Dummy19", "Dummy20", "Dummy21", "Dummy22", "Dummy23", "Dummy24", "Dummy25", "Dummy26", "Dummy27", "Dummy28", "Dummy29", "Dummy30", "Dummy31", "Dummy32", "C", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequiredForeign__Descriptor
-        = Descriptor.MessageTypes[6];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign, global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.Builder> internal__static_protobuf_unittest_TestRequiredForeign__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign, global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.Builder>(internal__static_protobuf_unittest_TestRequiredForeign__Descriptor,
-            new string[] { "OptionalMessage", "RepeatedMessage", "Dummy", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestForeignNested__Descriptor
-        = Descriptor.MessageTypes[7];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestForeignNested, global::Google.ProtocolBuffers.TestProtos.TestForeignNested.Builder> internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestForeignNested, global::Google.ProtocolBuffers.TestProtos.TestForeignNested.Builder>(internal__static_protobuf_unittest_TestForeignNested__Descriptor,
-            new string[] { "ForeignNested", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestEmptyMessage__Descriptor
-        = Descriptor.MessageTypes[8];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Builder> internal__static_protobuf_unittest_TestEmptyMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Builder>(internal__static_protobuf_unittest_TestEmptyMessage__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor
-        = Descriptor.MessageTypes[9];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Builder> internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Builder>(internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor
-        = Descriptor.MessageTypes[10];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber, global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Builder> internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber, global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Builder>(internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor,
-            new string[] { "A", "Bb", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor
-        = Descriptor.MessageTypes[11];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage, global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder> internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage, global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder>(internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor,
-            new string[] { "A", "I", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor
-        = Descriptor.MessageTypes[12];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder> internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder>(internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor,
-            new string[] { "Bb", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor
-        = Descriptor.MessageTypes[13];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder> internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder>(internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor,
-            new string[] { "A", "OptionalInt32", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor
-        = Descriptor.MessageTypes[14];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Builder> internal__static_protobuf_unittest_TestDupFieldNumber__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor,
-            new string[] { "A", "Foo", "Bar", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestDupFieldNumber_Foo__Descriptor
-        = internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Builder> internal__static_protobuf_unittest_TestDupFieldNumber_Foo__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber_Foo__Descriptor,
-            new string[] { "A", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestDupFieldNumber_Bar__Descriptor
-        = internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor.NestedTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder> internal__static_protobuf_unittest_TestDupFieldNumber_Bar__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber_Bar__Descriptor,
-            new string[] { "A", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor
-        = Descriptor.MessageTypes[15];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Builder> internal__static_protobuf_unittest_TestNestedMessageHasBits__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Builder>(internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor,
-            new string[] { "OptionalNestedMessage", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__Descriptor
-        = internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder> internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder>(internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__Descriptor,
-            new string[] { "NestedmessageRepeatedInt32", "NestedmessageRepeatedForeignmessage", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor
-        = Descriptor.MessageTypes[16];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames, global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.Builder> internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames, global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.Builder>(internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor,
-            new string[] { "PrimitiveField", "StringField", "EnumField", "MessageField", "StringPieceField", "CordField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedStringPieceField", "RepeatedCordField", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestFieldOrderings__Descriptor
-        = Descriptor.MessageTypes[17];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings, global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Builder> internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings, global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Builder>(internal__static_protobuf_unittest_TestFieldOrderings__Descriptor,
-            new string[] { "MyString", "MyInt", "MyFloat", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor
-        = Descriptor.MessageTypes[18];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder> internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder>(internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor,
-            new string[] { "EscapedBytes", "LargeUint32", "LargeUint64", "SmallInt32", "SmallInt64", "Utf8String", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedTypes__Descriptor
-        = Descriptor.MessageTypes[19];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder> internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder>(internal__static_protobuf_unittest_TestPackedTypes__Descriptor,
-            new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedExtensions__Descriptor
-        = Descriptor.MessageTypes[20];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder> internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder>(internal__static_protobuf_unittest_TestPackedExtensions__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_FooRequest__Descriptor
-        = Descriptor.MessageTypes[21];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder> internal__static_protobuf_unittest_FooRequest__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder>(internal__static_protobuf_unittest_FooRequest__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_FooResponse__Descriptor
-        = Descriptor.MessageTypes[22];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder> internal__static_protobuf_unittest_FooResponse__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder>(internal__static_protobuf_unittest_FooResponse__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_BarRequest__Descriptor
-        = Descriptor.MessageTypes[23];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder> internal__static_protobuf_unittest_BarRequest__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder>(internal__static_protobuf_unittest_BarRequest__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_BarResponse__Descriptor
-        = Descriptor.MessageTypes[24];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder> internal__static_protobuf_unittest_BarResponse__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder>(internal__static_protobuf_unittest_BarResponse__Descriptor,
-            new string[] { });
-    #endregion
   }
   #region Enums
   public enum ForeignEnum {
@@ -1046,6 +1143,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
         }
+        static NestedMessage() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+        }
       }
       
       public sealed partial class OptionalGroup : pb::GeneratedMessage<OptionalGroup, OptionalGroup.Builder> {
@@ -1257,6 +1357,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
         }
+        static OptionalGroup() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+        }
       }
       
       public sealed partial class RepeatedGroup : pb::GeneratedMessage<RepeatedGroup, RepeatedGroup.Builder> {
@@ -1467,6 +1570,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             result.a_ = 0;
             return this;
           }
+        }
+        static RepeatedGroup() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
         }
       }
       
@@ -5039,6 +5145,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestAllTypes() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class ForeignMessage : pb::GeneratedMessage<ForeignMessage, ForeignMessage.Builder> {
@@ -5250,6 +5359,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static ForeignMessage() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestAllExtensions : pb::ExtendableMessage<TestAllExtensions, TestAllExtensions.Builder> {
@@ -5424,6 +5536,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
+    }
+    static TestAllExtensions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -5636,6 +5751,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static OptionalGroup_extension() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class RepeatedGroup_extension : pb::GeneratedMessage<RepeatedGroup_extension, RepeatedGroup_extension.Builder> {
@@ -5847,6 +5965,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static RepeatedGroup_extension() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestRequired : pb::GeneratedMessage<TestRequired, TestRequired.Builder> {
@@ -5872,12 +5993,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public const int SingleFieldNumber = 1000;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequired> Single =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(Descriptor.Extensions[0]);
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequired> Single;
     public const int MultiFieldNumber = 1001;
-    public static readonly
-        pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired>> Multi =
-        pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(Descriptor.Extensions[1]);
+    public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired>> Multi;
     public const int AFieldNumber = 1;
     private bool hasA;
     private int a_ = 0;
@@ -7380,6 +7498,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestRequired() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestRequiredForeign : pb::GeneratedMessage<TestRequiredForeign, TestRequiredForeign.Builder> {
@@ -7727,6 +7848,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestRequiredForeign() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestForeignNested : pb::GeneratedMessage<TestForeignNested, TestForeignNested.Builder> {
@@ -7961,6 +8085,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestForeignNested() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestEmptyMessage : pb::GeneratedMessage<TestEmptyMessage, TestEmptyMessage.Builder> {
@@ -8130,6 +8257,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
+    }
+    static TestEmptyMessage() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -8305,6 +8435,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
+    }
+    static TestEmptyMessageWithExtensions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -8557,6 +8690,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.bb_ = 0;
         return this;
       }
+    }
+    static TestReallyLargeTagNumber() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -8833,6 +8969,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestRecursiveMessage() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestMutualRecursionA : pb::GeneratedMessage<TestMutualRecursionA, TestMutualRecursionA.Builder> {
@@ -9066,6 +9205,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.bb_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.DefaultInstance;
         return this;
       }
+    }
+    static TestMutualRecursionA() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -9342,6 +9484,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestMutualRecursionB() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestDupFieldNumber : pb::GeneratedMessage<TestDupFieldNumber, TestDupFieldNumber.Builder> {
@@ -9577,6 +9722,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
         }
+        static Foo() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+        }
       }
       
       public sealed partial class Bar : pb::GeneratedMessage<Bar, Bar.Builder> {
@@ -9787,6 +9935,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             result.a_ = 0;
             return this;
           }
+        }
+        static Bar() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
         }
       }
       
@@ -10108,6 +10259,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestDupFieldNumber() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestNestedMessageHasBits : pb::GeneratedMessage<TestNestedMessageHasBits, TestNestedMessageHasBits.Builder> {
@@ -10427,6 +10581,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
         }
+        static NestedMessage() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+        }
       }
       
     }
@@ -10641,6 +10798,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance;
         return this;
       }
+    }
+    static TestNestedMessageHasBits() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -11469,6 +11629,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestCamelCaseFieldNames() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestFieldOrderings : pb::ExtendableMessage<TestFieldOrderings, TestFieldOrderings.Builder> {
@@ -11768,6 +11931,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.myFloat_ = 0F;
         return this;
       }
+    }
+    static TestFieldOrderings() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -12186,6 +12352,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.utf8String_ = (string) global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Descriptor.Fields[5].DefaultValue;
         return this;
       }
+    }
+    static TestExtremeDefaultValues() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -13319,6 +13488,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestPackedTypes() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestPackedExtensions : pb::ExtendableMessage<TestPackedExtensions, TestPackedExtensions.Builder> {
@@ -13494,6 +13666,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static TestPackedExtensions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class FooRequest : pb::GeneratedMessage<FooRequest, FooRequest.Builder> {
@@ -13663,6 +13838,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
+    }
+    static FooRequest() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   
@@ -13834,6 +14012,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static FooResponse() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class BarRequest : pb::GeneratedMessage<BarRequest, BarRequest.Builder> {
@@ -14004,6 +14185,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static BarRequest() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class BarResponse : pb::GeneratedMessage<BarResponse, BarResponse.Builder> {
@@ -14173,6 +14357,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
       }
       
+    }
+    static BarResponse() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor;
     }
   }
   

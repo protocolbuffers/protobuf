@@ -8,49 +8,72 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   public static partial class UnitTestOptimizeForProtoFile {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.TestExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.TestExtension2);
+    }
+    #endregion
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder> internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder> internal__static_protobuf_unittest_TestRequiredOptimizedForSize__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Builder> internal__static_protobuf_unittest_TestOptionalOptimizedForSize__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "Citnb29nbGUvcHJvdG9idWYvdW5pdHRlc3Rfb3B0aW1pemVfZm9yLnByb3Rv" + 
-        "EhFwcm90b2J1Zl91bml0dGVzdBokZ29vZ2xlL3Byb3RvYnVmL2NzaGFycF9v" + 
-        "cHRpb25zLnByb3RvGh5nb29nbGUvcHJvdG9idWYvdW5pdHRlc3QucHJvdG8i" + 
-        "kgIKFFRlc3RPcHRpbWl6ZWRGb3JTaXplEgkKAWkYASABKAUSLgoDbXNnGBMg" + 
-        "ASgLMiEucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2UqCQjoBxCA" + 
-        "gICAAjJACg50ZXN0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-        "c3RPcHRpbWl6ZWRGb3JTaXplGNIJIAEoBTJyCg90ZXN0X2V4dGVuc2lvbjIS" + 
-        "Jy5wcm90b2J1Zl91bml0dGVzdC5UZXN0T3B0aW1pemVkRm9yU2l6ZRjTCSAB" + 
-        "KAsyLy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UmVxdWlyZWRPcHRpbWl6ZWRG" + 
-        "b3JTaXplIikKHFRlc3RSZXF1aXJlZE9wdGltaXplZEZvclNpemUSCQoBeBgB" + 
-        "IAIoBSJaChxUZXN0T3B0aW9uYWxPcHRpbWl6ZWRGb3JTaXplEjoKAW8YASAB" + 
-        "KAsyLy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UmVxdWlyZWRPcHRpbWl6ZWRG" + 
-        "b3JTaXplQkZIAsI+QQohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJv" + 
-        "dG9zEhxVbml0VGVzdE9wdGltaXplRm9yUHJvdG9GaWxl"),
-        new pbd::FileDescriptor[] {
+    private static pbd::FileDescriptor descriptor;
+    
+    static UnitTestOptimizeForProtoFile() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "Citnb29nbGUvcHJvdG9idWYvdW5pdHRlc3Rfb3B0aW1pemVfZm9yLnByb3Rv" + 
+          "EhFwcm90b2J1Zl91bml0dGVzdBokZ29vZ2xlL3Byb3RvYnVmL2NzaGFycF9v" + 
+          "cHRpb25zLnByb3RvGh5nb29nbGUvcHJvdG9idWYvdW5pdHRlc3QucHJvdG8i" + 
+          "kgIKFFRlc3RPcHRpbWl6ZWRGb3JTaXplEgkKAWkYASABKAUSLgoDbXNnGBMg" + 
+          "ASgLMiEucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2UqCQjoBxCA" + 
+          "gICAAjJACg50ZXN0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
+          "c3RPcHRpbWl6ZWRGb3JTaXplGNIJIAEoBTJyCg90ZXN0X2V4dGVuc2lvbjIS" + 
+          "Jy5wcm90b2J1Zl91bml0dGVzdC5UZXN0T3B0aW1pemVkRm9yU2l6ZRjTCSAB" + 
+          "KAsyLy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UmVxdWlyZWRPcHRpbWl6ZWRG" + 
+          "b3JTaXplIikKHFRlc3RSZXF1aXJlZE9wdGltaXplZEZvclNpemUSCQoBeBgB" + 
+          "IAIoBSJaChxUZXN0T3B0aW9uYWxPcHRpbWl6ZWRGb3JTaXplEjoKAW8YASAB" + 
+          "KAsyLy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UmVxdWlyZWRPcHRpbWl6ZWRG" + 
+          "b3JTaXplQkZIAsI+QQohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJv" + 
+          "dG9zEhxVbml0VGVzdE9wdGltaXplRm9yUHJvdG9GaWxl");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor,
+                new string[] { "I", "Msg", });
+        global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.TestExtension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Descriptor.Extensions[0]);
+        global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.TestExtension2 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Descriptor.Extensions[1]);
+        internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_protobuf_unittest_TestRequiredOptimizedForSize__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor,
+                new string[] { "X", });
+        internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_protobuf_unittest_TestOptionalOptimizedForSize__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor,
+                new string[] { "O", });
+        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
+        RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.RegisterAllExtensions(registry);
+        return registry;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, 
-        });
+          }, assigner);
+    }
     #endregion
     
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder> internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor,
-            new string[] { "I", "Msg", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor
-        = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder> internal__static_protobuf_unittest_TestRequiredOptimizedForSize__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor,
-            new string[] { "X", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor
-        = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Builder> internal__static_protobuf_unittest_TestOptionalOptimizedForSize__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptionalOptimizedForSize__Descriptor,
-            new string[] { "O", });
-    #endregion
   }
   #region Messages
   public sealed partial class TestOptimizedForSize : pb::ExtendableMessage<TestOptimizedForSize, TestOptimizedForSize.Builder> {
@@ -76,11 +99,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public const int TestExtensionFieldNumber = 1234;
-    public static readonly pb::GeneratedExtensionBase<int> TestExtension =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[0]);
+    public static pb::GeneratedExtensionBase<int> TestExtension;
     public const int TestExtension2FieldNumber = 1235;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize> TestExtension2 =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize>.CreateInstance(Descriptor.Extensions[1]);
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize> TestExtension2;
     public const int IFieldNumber = 1;
     private bool hasI;
     private int i_ = 0;
@@ -231,6 +252,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestOptimizedForSize() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class TestRequiredOptimizedForSize : pb::GeneratedMessage<TestRequiredOptimizedForSize, TestRequiredOptimizedForSize.Builder> {
@@ -358,6 +382,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.x_ = 0;
         return this;
       }
+    }
+    static TestRequiredOptimizedForSize() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor;
     }
   }
   
@@ -504,6 +531,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.o_ = global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance;
         return this;
       }
+    }
+    static TestOptionalOptimizedForSize() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor;
     }
   }
   

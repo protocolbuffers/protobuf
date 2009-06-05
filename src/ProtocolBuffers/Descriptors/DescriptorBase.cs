@@ -40,7 +40,7 @@ namespace Google.ProtocolBuffers.Descriptors {
   public abstract class DescriptorBase<TProto, TOptions> : IDescriptor<TProto>
       where TProto : IMessage, IDescriptorProto<TOptions> {
 
-    private readonly TProto proto;
+    private TProto proto;
     private readonly FileDescriptor file;
     private readonly string fullName;
 
@@ -48,6 +48,10 @@ namespace Google.ProtocolBuffers.Descriptors {
       this.proto = proto;
       this.file = file;
       this.fullName = fullName;
+    }
+
+    internal virtual void ReplaceProto(TProto newProto) {
+      this.proto = newProto;
     }
 
     protected static string ComputeFullName(FileDescriptor file, MessageDescriptor parent, string name) {
@@ -65,7 +69,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     }
 
     /// <summary>
-    /// Returns the protocol buffer form of this descriptor
+    /// Returns the protocol buffer form of this descriptor.
     /// </summary>
     public TProto Proto {
       get { return proto; }

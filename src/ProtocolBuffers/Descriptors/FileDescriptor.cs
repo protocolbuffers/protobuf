@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers.Descriptors {
   /// </summary>
   public sealed class FileDescriptor : IDescriptor<FileDescriptorProto> {
 
-    private readonly FileDescriptorProto proto;
+    private FileDescriptorProto proto;
     private readonly IList<MessageDescriptor> messageTypes;
     private readonly IList<EnumDescriptor> enumTypes;
     private readonly IList<ServiceDescriptor> services;
@@ -275,9 +275,9 @@ namespace Google.ProtocolBuffers.Descriptors {
       }
       for (int i = 0; i < proto.DependencyCount; i++) {
         if (dependencies[i].Name != proto.DependencyList[i]) {
-          /*throw new DescriptorValidationException(result,
+          throw new DescriptorValidationException(result,
             "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-            "those listed in the FileDescriptorProto.");*/
+            "those listed in the FileDescriptorProto.");
         }
       }
 
@@ -306,12 +306,89 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// <summary>
     /// This method is to be called by generated code only.  It is equivalent
     /// to BuildFrom except that the FileDescriptorProto is encoded in
-    /// protocol buffer wire format.
+    /// protocol buffer wire format. This overload is maintained for backward
+    /// compatibility with source code generated before the custom options were available
+    /// (and working).
     /// </summary>
+    public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData, FileDescriptor[] dependencies) {
+      return InternalBuildGeneratedFileFrom(descriptorData, dependencies, x => null);
+    }
+
+    /// <summary>
+    /// This delegate should be used by generated code only. When calling
+    /// FileDescriptor.InternalBuildGeneratedFileFrom, the caller can provide
+    /// a callback which assigns the global variables defined in the generated code
+    /// which point at parts of the FileDescriptor. The callback returns an
+    /// Extension Registry which contains any extensions which might be used in
+    /// the descriptor - that is, extensions of the various "Options" messages defined
+    /// in descriptor.proto. The callback may also return null to indicate that
+    /// no extensions are used in the descriptor.
+    /// </summary>
+    /// <param name="descriptor"></param>
+    /// <returns></returns>
+    public delegate ExtensionRegistry InternalDescriptorAssigner(FileDescriptor descriptor);
+
     public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData,
-        FileDescriptor[] dependencies) {
-      FileDescriptorProto proto = FileDescriptorProto.ParseFrom(descriptorData);
-      return BuildFrom(proto, dependencies);      
+      FileDescriptor[] dependencies,InternalDescriptorAssigner descriptorAssigner) {
+      
+      FileDescriptorProto proto;
+      try {
+        proto = FileDescriptorProto.ParseFrom(descriptorData);
+      } catch (InvalidProtocolBufferException e) {
+        throw new ArgumentException("Failed to parse protocol buffer descriptor for generated code.", e);
+      }
+
+      FileDescriptor result;
+      try {
+        result = BuildFrom(proto, dependencies);
+      } catch (DescriptorValidationException e) {
+        throw new ArgumentException("Invalid embedded descriptor for \"" + proto.Name + "\".", e);
+      }
+
+      ExtensionRegistry registry = descriptorAssigner(result);
+
+      if (registry != null) {
+        // We must re-parse the proto using the registry.
+        try {
+          proto = FileDescriptorProto.ParseFrom(descriptorData, registry);
+        } catch (InvalidProtocolBufferException e) {
+          throw new ArgumentException("Failed to parse protocol buffer descriptor for generated code.", e);
+        }
+
+        result.ReplaceProto(proto);
+      }
+      return result;
+    }
+
+
+    /// <summary>
+    /// Replace our FileDescriptorProto with the given one, which is
+    /// identical except that it might contain extensions that weren't present
+    /// in the original. This method is needed for bootstrapping when a file
+    /// defines custom options. The options may be defined in the file itself,
+    /// so we can't actually parse them until we've constructed the descriptors,
+    /// but to construct the decsriptors we have to have parsed the descriptor
+    /// protos. So, we have to parse the descriptor protos a second time after
+    /// constructing the descriptors.
+    /// </summary>
+    private void ReplaceProto(FileDescriptorProto newProto) {
+      proto = newProto;
+
+      for (int i = 0; i < messageTypes.Count; i++) {
+        messageTypes[i].ReplaceProto(proto.GetMessageType(i));
+      }
+
+      for (int i = 0; i < enumTypes.Count; i++) {
+        enumTypes[i].ReplaceProto(proto.GetEnumType(i));
+      }
+
+      for (int i = 0; i < services.Count; i++) {
+        services[i].ReplaceProto(proto.GetService(i));
+      }
+
+      for (int i = 0; i < extensions.Count; i++) {
+        extensions[i].ReplaceProto(proto.GetExtension(i));
+      }
     }
   }
 }

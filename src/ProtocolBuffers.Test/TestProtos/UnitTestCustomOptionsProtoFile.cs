@@ -8,298 +8,365 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   public static partial class UnitTestCustomOptionsProtoFile {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FileOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt2);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ServiceOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MethodOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BoolOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int32Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int64Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint32Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint64Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint32Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint64Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed32Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed64Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed32Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed64Opt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FloatOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.DoubleOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.StringOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BytesOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageTypeOpt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Quux);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Corge);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Grault);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Garply);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt2);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt3);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt6);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.ComplexOpt4);
+    }
+    #endregion
+    #region Extensions
+    public const int FileOpt1FieldNumber = 7736974;
+    public static pb::GeneratedExtensionBase<ulong> FileOpt1;
+    public const int MessageOpt1FieldNumber = 7739036;
+    public static pb::GeneratedExtensionBase<int> MessageOpt1;
+    public const int FieldOpt1FieldNumber = 7740936;
+    public static pb::GeneratedExtensionBase<ulong> FieldOpt1;
+    public const int FieldOpt2FieldNumber = 7753913;
+    public static pb::GeneratedExtensionBase<int> FieldOpt2;
+    public const int EnumOpt1FieldNumber = 7753576;
+    public static pb::GeneratedExtensionBase<int> EnumOpt1;
+    public const int ServiceOpt1FieldNumber = 7887650;
+    public static pb::GeneratedExtensionBase<long> ServiceOpt1;
+    public const int MethodOpt1FieldNumber = 7890860;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.MethodOpt1> MethodOpt1;
+    public const int BoolOptFieldNumber = 7706090;
+    public static pb::GeneratedExtensionBase<bool> BoolOpt;
+    public const int Int32OptFieldNumber = 7705709;
+    public static pb::GeneratedExtensionBase<int> Int32Opt;
+    public const int Int64OptFieldNumber = 7705542;
+    public static pb::GeneratedExtensionBase<long> Int64Opt;
+    public const int Uint32OptFieldNumber = 7704880;
+    public static pb::GeneratedExtensionBase<uint> Uint32Opt;
+    public const int Uint64OptFieldNumber = 7702367;
+    public static pb::GeneratedExtensionBase<ulong> Uint64Opt;
+    public const int Sint32OptFieldNumber = 7701568;
+    public static pb::GeneratedExtensionBase<int> Sint32Opt;
+    public const int Sint64OptFieldNumber = 7700863;
+    public static pb::GeneratedExtensionBase<long> Sint64Opt;
+    public const int Fixed32OptFieldNumber = 7700307;
+    public static pb::GeneratedExtensionBase<uint> Fixed32Opt;
+    public const int Fixed64OptFieldNumber = 7700194;
+    public static pb::GeneratedExtensionBase<ulong> Fixed64Opt;
+    public const int Sfixed32OptFieldNumber = 7698645;
+    public static pb::GeneratedExtensionBase<int> Sfixed32Opt;
+    public const int Sfixed64OptFieldNumber = 7685475;
+    public static pb::GeneratedExtensionBase<long> Sfixed64Opt;
+    public const int FloatOptFieldNumber = 7675390;
+    public static pb::GeneratedExtensionBase<float> FloatOpt;
+    public const int DoubleOptFieldNumber = 7673293;
+    public static pb::GeneratedExtensionBase<double> DoubleOpt;
+    public const int StringOptFieldNumber = 7673285;
+    public static pb::GeneratedExtensionBase<string> StringOpt;
+    public const int BytesOptFieldNumber = 7673238;
+    public static pb::GeneratedExtensionBase<pb::ByteString> BytesOpt;
+    public const int EnumOptFieldNumber = 7673233;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType> EnumOpt;
+    public const int MessageTypeOptFieldNumber = 7665967;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType> MessageTypeOpt;
+    public const int QuuxFieldNumber = 7663707;
+    public static pb::GeneratedExtensionBase<int> Quux;
+    public const int CorgeFieldNumber = 7663442;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> Corge;
+    public const int GraultFieldNumber = 7650927;
+    public static pb::GeneratedExtensionBase<int> Grault;
+    public const int GarplyFieldNumber = 7649992;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1> Garply;
+    public const int ComplexOpt1FieldNumber = 7646756;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1> ComplexOpt1;
+    public const int ComplexOpt2FieldNumber = 7636949;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2> ComplexOpt2;
+    public const int ComplexOpt3FieldNumber = 7636463;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> ComplexOpt3;
+    public const int ComplexOpt6FieldNumber = 7595468;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6> ComplexOpt6;
+    #endregion
+    
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions, global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.Builder> internal__static_protobuf_unittest_TestMessageWithCustomOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionFooRequest__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.Builder> internal__static_protobuf_unittest_CustomOptionFooRequest__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionFooResponse__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.Builder> internal__static_protobuf_unittest_CustomOptionFooResponse__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_DummyMessageContainingEnum__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum, global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Builder> internal__static_protobuf_unittest_DummyMessageContainingEnum__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType, global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.Builder> internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionMinIntegerValues__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.Builder> internal__static_protobuf_unittest_CustomOptionMinIntegerValues__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.Builder> internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionOtherValues__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.Builder> internal__static_protobuf_unittest_CustomOptionOtherValues__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_SettingRealsFromPositiveInts__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.Builder> internal__static_protobuf_unittest_SettingRealsFromPositiveInts__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_SettingRealsFromNegativeInts__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.Builder> internal__static_protobuf_unittest_SettingRealsFromNegativeInts__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType1__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder> internal__static_protobuf_unittest_ComplexOptionType1__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType2__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Builder> internal__static_protobuf_unittest_ComplexOptionType2__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder> internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType3__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Builder> internal__static_protobuf_unittest_ComplexOptionType3__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder> internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOpt6__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6, global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.Builder> internal__static_protobuf_unittest_ComplexOpt6__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_VariousComplexOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions, global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Builder> internal__static_protobuf_unittest_VariousComplexOptions__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "Ci1nb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfY3VzdG9tX29wdGlvbnMucHJv" + 
-        "dG8SEXByb3RvYnVmX3VuaXR0ZXN0GiRnb29nbGUvcHJvdG9idWYvY3NoYXJw" + 
-        "X29wdGlvbnMucHJvdG8aIGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnBy" + 
-        "b3RvIoYBChxUZXN0TWVzc2FnZVdpdGhDdXN0b21PcHRpb25zEh4KBmZpZWxk" + 
-        "MRgBIAEoCUIOCAHB4MMdLeF1CgIAAAAiNAoGQW5FbnVtEg8KC0FORU5VTV9W" + 
-        "QUwxEAESDwoLQU5FTlVNX1ZBTDIQAhoIxfbJHev8//86EAgA4OnCHcj/////" + 
-        "/////wEiGAoWQ3VzdG9tT3B0aW9uRm9vUmVxdWVzdCIZChdDdXN0b21PcHRp" + 
-        "b25Gb29SZXNwb25zZSJtChpEdW1teU1lc3NhZ2VDb250YWluaW5nRW51bSJP" + 
-        "CgxUZXN0RW51bVR5cGUSGgoWVEVTVF9PUFRJT05fRU5VTV9UWVBFMRAWEiMK" + 
-        "FlRFU1RfT1BUSU9OX0VOVU1fVFlQRTIQ6f//////////ASIhCh9EdW1teU1l" + 
-        "c3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlIooBChxDdXN0b21PcHRpb25NaW5J" + 
-        "bnRlZ2VyVmFsdWVzOmqZ1qgdAAAAAAAAAICtja8dAAAAgJHurx0AAAAAAAAA" + 
-        "AJ31rx0AAAAA+JewHf///////////wGAxLAd/////w/49bAdAICTsh0AsLyy" + 
-        "HYCAgICAgICAgAHoxrIdgICAgPj/////AdDesh0AIpEBChxDdXN0b21PcHRp" + 
-        "b25NYXhJbnRlZ2VyVmFsdWVzOnGZ1qgd/////////3+tja8d////f5Hurx3/" + 
-        "/////////531rx3/////+JewHf7//////////wGAxLAd/v///w/49bAd////" + 
-        "////////AYCTsh3/////D7C8sh3//////////3/oxrId/////wfQ3rIdASJu" + 
-        "ChdDdXN0b21PcHRpb25PdGhlclZhbHVlczpTiNmiHen//////////wGy2aId" + 
-        "C0hlbGxvAFdvcmxkqtyiHQ5IZWxsbywgIldvcmxkIuncoh37WYxCysDzP/Xf" + 
-        "ox3nh0VB6MayHZz//////////wEiNAocU2V0dGluZ1JlYWxzRnJvbVBvc2l0" + 
-        "aXZlSW50czoU6dyiHQAAAAAAQGNA9d+jHQAAQEEiNAocU2V0dGluZ1JlYWxz" + 
-        "RnJvbU5lZ2F0aXZlSW50czoU6dyiHQAAAAAAQGPA9d+jHQAAQMEiKwoSQ29t" + 
-        "cGxleE9wdGlvblR5cGUxEgsKA2ZvbxgBIAEoBSoICGQQgICAgAIiwQIKEkNv" + 
-        "bXBsZXhPcHRpb25UeXBlMhIyCgNiYXIYASABKAsyJS5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5Db21wbGV4T3B0aW9uVHlwZTESCwoDYmF6GAIgASgFEkYKBGZyZWQY" + 
-        "AyABKAsyOC5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIu" + 
-        "Q29tcGxleE9wdGlvblR5cGU0GpcBChJDb21wbGV4T3B0aW9uVHlwZTQSDQoF" + 
-        "d2FsZG8YASABKAUycgoMY29tcGxleF9vcHQ0Eh8uZ29vZ2xlLnByb3RvYnVm" + 
-        "Lk1lc3NhZ2VPcHRpb25zGIr10QMgASgLMjgucHJvdG9idWZfdW5pdHRlc3Qu" + 
-        "Q29tcGxleE9wdGlvblR5cGUyLkNvbXBsZXhPcHRpb25UeXBlNCoICGQQgICA" + 
-        "gAIinAEKEkNvbXBsZXhPcHRpb25UeXBlMxILCgNxdXgYASABKAUSVAoSY29t" + 
-        "cGxleG9wdGlvbnR5cGU1GAIgASgKMjgucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
-        "cGxleE9wdGlvblR5cGUzLkNvbXBsZXhPcHRpb25UeXBlNRojChJDb21wbGV4" + 
-        "T3B0aW9uVHlwZTUSDQoFcGx1Z2gYAyABKAUiHwoLQ29tcGxleE9wdDYSEAoF" + 
-        "eHl6enkY37/PAyABKAUi0AEKFVZhcmlvdXNDb21wbGV4T3B0aW9uczq2AePc" + 
-        "/Bz4/fscGOTc/BzSqI8dAwizD/rekB0CCAn63pAdBBMYFhSq/ZAdAxDbB6r9" + 
-        "kB0G+OaXHY4Fqv2QHQUKAwjnBar9kB0ICgbYhZ4dzw+q/ZAdCgoIkvWdHQMI" + 
-        "2A+q/ZAdCMKslx0DCOUFqv2QHQvCrJcdBtiFnh3OD6r9kB0NwqyXHQiS9Z0d" + 
-        "AwjJEKr9kB0FGgMIwQKi4pUdAggqouKVHQbYhZ4dxAKi4pUdCJL1nR0DCOwG" + 
-        "KjYKCk1ldGhvZE9wdDESEwoPTUVUSE9ET1BUMV9WQUwxEAESEwoPTUVUSE9E" + 
-        "T1BUMV9WQUwyEAIyjgEKHFRlc3RTZXJ2aWNlV2l0aEN1c3RvbU9wdGlvbnMS" + 
-        "YwoDRm9vEikucHJvdG9idWZfdW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVx" + 
-        "dWVzdBoqLnByb3RvYnVmX3VuaXR0ZXN0LkN1c3RvbU9wdGlvbkZvb1Jlc3Bv" + 
-        "bnNlIgXg+oweAhoJkLKLHtPbgMtJOjIKCWZpbGVfb3B0MRIcLmdvb2dsZS5w" + 
-        "cm90b2J1Zi5GaWxlT3B0aW9ucxiOndgDIAEoBDo4CgxtZXNzYWdlX29wdDES" + 
-        "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYnK3YAyABKAU6NAoK" + 
-        "ZmllbGRfb3B0MRIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMYiLzY" + 
-        "AyABKAY6OAoKZmllbGRfb3B0MhIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9w" + 
-        "dGlvbnMYuaHZAyABKAU6AjQyOjIKCWVudW1fb3B0MRIcLmdvb2dsZS5wcm90" + 
-        "b2J1Zi5FbnVtT3B0aW9ucxjontkDIAEoDzo4CgxzZXJ2aWNlX29wdDESHy5n" + 
-        "b29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMYorbhAyABKBI6VQoLbWV0" + 
-        "aG9kX29wdDESHi5nb29nbGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucxisz+ED" + 
-        "IAEoDjIdLnByb3RvYnVmX3VuaXR0ZXN0Lk1ldGhvZE9wdDE6NAoIYm9vbF9v" + 
-        "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY6qvWAyABKAg6" + 
-        "NQoJaW50MzJfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25z" + 
-        "GO2o1gMgASgFOjUKCWludDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNz" + 
-        "YWdlT3B0aW9ucxjGp9YDIAEoAzo2Cgp1aW50MzJfb3B0Eh8uZ29vZ2xlLnBy" + 
-        "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGLCi1gMgASgNOjYKCnVpbnQ2NF9vcHQS" + 
-        "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY347WAyABKAQ6NgoK" + 
-        "c2ludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjA" + 
-        "iNYDIAEoETo2CgpzaW50NjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3Nh" + 
-        "Z2VPcHRpb25zGP+C1gMgASgSOjcKC2ZpeGVkMzJfb3B0Eh8uZ29vZ2xlLnBy" + 
-        "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGNP+1QMgASgHOjcKC2ZpeGVkNjRfb3B0" + 
-        "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGOL91QMgASgGOjgK" + 
-        "DHNmaXhlZDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
-        "cxjV8dUDIAEoDzo4CgxzZml4ZWQ2NF9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
-        "TWVzc2FnZU9wdGlvbnMY44rVAyABKBA6NQoJZmxvYXRfb3B0Eh8uZ29vZ2xl" + 
-        "LnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGP671AMgASgCOjYKCmRvdWJsZV9v" + 
-        "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYzavUAyABKAE6" + 
-        "NgoKc3RyaW5nX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
-        "cxjFq9QDIAEoCTo1CglieXRlc19vcHQSHy5nb29nbGUucHJvdG9idWYuTWVz" + 
-        "c2FnZU9wdGlvbnMYlqvUAyABKAw6cAoIZW51bV9vcHQSHy5nb29nbGUucHJv" + 
-        "dG9idWYuTWVzc2FnZU9wdGlvbnMYkavUAyABKA4yOi5wcm90b2J1Zl91bml0" + 
-        "dGVzdC5EdW1teU1lc3NhZ2VDb250YWluaW5nRW51bS5UZXN0RW51bVR5cGU6" + 
-        "cAoQbWVzc2FnZV90eXBlX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl" + 
-        "T3B0aW9ucxiv8tMDIAEoCzIyLnByb3RvYnVmX3VuaXR0ZXN0LkR1bW15TWVz" + 
-        "c2FnZUludmFsaWRBc09wdGlvblR5cGU6NgoEcXV1eBIlLnByb3RvYnVmX3Vu" + 
-        "aXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRjb4NMDIAEoBTpeCgVjb3JnZRIl" + 
-        "LnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRjS3tMDIAEo" + 
-        "CzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMzo4CgZn" + 
-        "cmF1bHQSJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIY" + 
-        "7/zSAyABKAU6XwoGZ2FycGx5EiUucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxl" + 
-        "eE9wdGlvblR5cGUyGMj10gMgASgLMiUucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
-        "cGxleE9wdGlvblR5cGUxOl8KDGNvbXBsZXhfb3B0MRIfLmdvb2dsZS5wcm90" + 
-        "b2J1Zi5NZXNzYWdlT3B0aW9ucxik3NIDIAEoCzIlLnByb3RvYnVmX3VuaXR0" + 
-        "ZXN0LkNvbXBsZXhPcHRpb25UeXBlMTpfCgxjb21wbGV4X29wdDISHy5nb29n" + 
-        "bGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY1Y/SAyABKAsyJS5wcm90b2J1" + 
-        "Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTI6XwoMY29tcGxleF9vcHQz" + 
-        "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGO+L0gMgASgLMiUu" + 
-        "cHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUzOlcKC2NvbXBs" + 
-        "ZXhvcHQ2Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGMzLzwMg" + 
-        "ASgKMh4ucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdDZCT8I+QwohR29v" + 
-        "Z2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEh5Vbml0VGVzdEN1c3Rv" + 
-        "bU9wdGlvbnNQcm90b0ZpbGXw6MEd6q3A5SQ="),
-        new pbd::FileDescriptor[] {
+    private static pbd::FileDescriptor descriptor;
+    
+    static UnitTestCustomOptionsProtoFile() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "Ci1nb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfY3VzdG9tX29wdGlvbnMucHJv" + 
+          "dG8SEXByb3RvYnVmX3VuaXR0ZXN0GiRnb29nbGUvcHJvdG9idWYvY3NoYXJw" + 
+          "X29wdGlvbnMucHJvdG8aIGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnBy" + 
+          "b3RvIoYBChxUZXN0TWVzc2FnZVdpdGhDdXN0b21PcHRpb25zEh4KBmZpZWxk" + 
+          "MRgBIAEoCUIOCAHB4MMdLeF1CgIAAAAiNAoGQW5FbnVtEg8KC0FORU5VTV9W" + 
+          "QUwxEAESDwoLQU5FTlVNX1ZBTDIQAhoIxfbJHev8//86EAgA4OnCHcj/////" + 
+          "/////wEiGAoWQ3VzdG9tT3B0aW9uRm9vUmVxdWVzdCIZChdDdXN0b21PcHRp" + 
+          "b25Gb29SZXNwb25zZSJtChpEdW1teU1lc3NhZ2VDb250YWluaW5nRW51bSJP" + 
+          "CgxUZXN0RW51bVR5cGUSGgoWVEVTVF9PUFRJT05fRU5VTV9UWVBFMRAWEiMK" + 
+          "FlRFU1RfT1BUSU9OX0VOVU1fVFlQRTIQ6f//////////ASIhCh9EdW1teU1l" + 
+          "c3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlIooBChxDdXN0b21PcHRpb25NaW5J" + 
+          "bnRlZ2VyVmFsdWVzOmqZ1qgdAAAAAAAAAICtja8dAAAAgJHurx0AAAAAAAAA" + 
+          "AJ31rx0AAAAA+JewHf///////////wGAxLAd/////w/49bAdAICTsh0AsLyy" + 
+          "HYCAgICAgICAgAHoxrIdgICAgPj/////AdDesh0AIpEBChxDdXN0b21PcHRp" + 
+          "b25NYXhJbnRlZ2VyVmFsdWVzOnGZ1qgd/////////3+tja8d////f5Hurx3/" + 
+          "/////////531rx3/////+JewHf7//////////wGAxLAd/v///w/49bAd////" + 
+          "////////AYCTsh3/////D7C8sh3//////////3/oxrId/////wfQ3rIdASJu" + 
+          "ChdDdXN0b21PcHRpb25PdGhlclZhbHVlczpTiNmiHen//////////wGy2aId" + 
+          "C0hlbGxvAFdvcmxkqtyiHQ5IZWxsbywgIldvcmxkIuncoh37WYxCysDzP/Xf" + 
+          "ox3nh0VB6MayHZz//////////wEiNAocU2V0dGluZ1JlYWxzRnJvbVBvc2l0" + 
+          "aXZlSW50czoU6dyiHQAAAAAAQGNA9d+jHQAAQEEiNAocU2V0dGluZ1JlYWxz" + 
+          "RnJvbU5lZ2F0aXZlSW50czoU6dyiHQAAAAAAQGPA9d+jHQAAQMEiKwoSQ29t" + 
+          "cGxleE9wdGlvblR5cGUxEgsKA2ZvbxgBIAEoBSoICGQQgICAgAIiwQIKEkNv" + 
+          "bXBsZXhPcHRpb25UeXBlMhIyCgNiYXIYASABKAsyJS5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5Db21wbGV4T3B0aW9uVHlwZTESCwoDYmF6GAIgASgFEkYKBGZyZWQY" + 
+          "AyABKAsyOC5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIu" + 
+          "Q29tcGxleE9wdGlvblR5cGU0GpcBChJDb21wbGV4T3B0aW9uVHlwZTQSDQoF" + 
+          "d2FsZG8YASABKAUycgoMY29tcGxleF9vcHQ0Eh8uZ29vZ2xlLnByb3RvYnVm" + 
+          "Lk1lc3NhZ2VPcHRpb25zGIr10QMgASgLMjgucHJvdG9idWZfdW5pdHRlc3Qu" + 
+          "Q29tcGxleE9wdGlvblR5cGUyLkNvbXBsZXhPcHRpb25UeXBlNCoICGQQgICA" + 
+          "gAIinAEKEkNvbXBsZXhPcHRpb25UeXBlMxILCgNxdXgYASABKAUSVAoSY29t" + 
+          "cGxleG9wdGlvbnR5cGU1GAIgASgKMjgucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
+          "cGxleE9wdGlvblR5cGUzLkNvbXBsZXhPcHRpb25UeXBlNRojChJDb21wbGV4" + 
+          "T3B0aW9uVHlwZTUSDQoFcGx1Z2gYAyABKAUiHwoLQ29tcGxleE9wdDYSEAoF" + 
+          "eHl6enkY37/PAyABKAUi0AEKFVZhcmlvdXNDb21wbGV4T3B0aW9uczq2AePc" + 
+          "/Bz4/fscGOTc/BzSqI8dAwizD/rekB0CCAn63pAdBBMYFhSq/ZAdAxDbB6r9" + 
+          "kB0G+OaXHY4Fqv2QHQUKAwjnBar9kB0ICgbYhZ4dzw+q/ZAdCgoIkvWdHQMI" + 
+          "2A+q/ZAdCMKslx0DCOUFqv2QHQvCrJcdBtiFnh3OD6r9kB0NwqyXHQiS9Z0d" + 
+          "AwjJEKr9kB0FGgMIwQKi4pUdAggqouKVHQbYhZ4dxAKi4pUdCJL1nR0DCOwG" + 
+          "KjYKCk1ldGhvZE9wdDESEwoPTUVUSE9ET1BUMV9WQUwxEAESEwoPTUVUSE9E" + 
+          "T1BUMV9WQUwyEAIyjgEKHFRlc3RTZXJ2aWNlV2l0aEN1c3RvbU9wdGlvbnMS" + 
+          "YwoDRm9vEikucHJvdG9idWZfdW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVx" + 
+          "dWVzdBoqLnByb3RvYnVmX3VuaXR0ZXN0LkN1c3RvbU9wdGlvbkZvb1Jlc3Bv" + 
+          "bnNlIgXg+oweAhoJkLKLHtPbgMtJOjIKCWZpbGVfb3B0MRIcLmdvb2dsZS5w" + 
+          "cm90b2J1Zi5GaWxlT3B0aW9ucxiOndgDIAEoBDo4CgxtZXNzYWdlX29wdDES" + 
+          "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYnK3YAyABKAU6NAoK" + 
+          "ZmllbGRfb3B0MRIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMYiLzY" + 
+          "AyABKAY6OAoKZmllbGRfb3B0MhIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9w" + 
+          "dGlvbnMYuaHZAyABKAU6AjQyOjIKCWVudW1fb3B0MRIcLmdvb2dsZS5wcm90" + 
+          "b2J1Zi5FbnVtT3B0aW9ucxjontkDIAEoDzo4CgxzZXJ2aWNlX29wdDESHy5n" + 
+          "b29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMYorbhAyABKBI6VQoLbWV0" + 
+          "aG9kX29wdDESHi5nb29nbGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucxisz+ED" + 
+          "IAEoDjIdLnByb3RvYnVmX3VuaXR0ZXN0Lk1ldGhvZE9wdDE6NAoIYm9vbF9v" + 
+          "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY6qvWAyABKAg6" + 
+          "NQoJaW50MzJfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25z" + 
+          "GO2o1gMgASgFOjUKCWludDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNz" + 
+          "YWdlT3B0aW9ucxjGp9YDIAEoAzo2Cgp1aW50MzJfb3B0Eh8uZ29vZ2xlLnBy" + 
+          "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGLCi1gMgASgNOjYKCnVpbnQ2NF9vcHQS" + 
+          "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY347WAyABKAQ6NgoK" + 
+          "c2ludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjA" + 
+          "iNYDIAEoETo2CgpzaW50NjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3Nh" + 
+          "Z2VPcHRpb25zGP+C1gMgASgSOjcKC2ZpeGVkMzJfb3B0Eh8uZ29vZ2xlLnBy" + 
+          "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGNP+1QMgASgHOjcKC2ZpeGVkNjRfb3B0" + 
+          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGOL91QMgASgGOjgK" + 
+          "DHNmaXhlZDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
+          "cxjV8dUDIAEoDzo4CgxzZml4ZWQ2NF9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
+          "TWVzc2FnZU9wdGlvbnMY44rVAyABKBA6NQoJZmxvYXRfb3B0Eh8uZ29vZ2xl" + 
+          "LnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGP671AMgASgCOjYKCmRvdWJsZV9v" + 
+          "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYzavUAyABKAE6" + 
+          "NgoKc3RyaW5nX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
+          "cxjFq9QDIAEoCTo1CglieXRlc19vcHQSHy5nb29nbGUucHJvdG9idWYuTWVz" + 
+          "c2FnZU9wdGlvbnMYlqvUAyABKAw6cAoIZW51bV9vcHQSHy5nb29nbGUucHJv" + 
+          "dG9idWYuTWVzc2FnZU9wdGlvbnMYkavUAyABKA4yOi5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5EdW1teU1lc3NhZ2VDb250YWluaW5nRW51bS5UZXN0RW51bVR5cGU6" + 
+          "cAoQbWVzc2FnZV90eXBlX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl" + 
+          "T3B0aW9ucxiv8tMDIAEoCzIyLnByb3RvYnVmX3VuaXR0ZXN0LkR1bW15TWVz" + 
+          "c2FnZUludmFsaWRBc09wdGlvblR5cGU6NgoEcXV1eBIlLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRjb4NMDIAEoBTpeCgVjb3JnZRIl" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRjS3tMDIAEo" + 
+          "CzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMzo4CgZn" + 
+          "cmF1bHQSJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIY" + 
+          "7/zSAyABKAU6XwoGZ2FycGx5EiUucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxl" + 
+          "eE9wdGlvblR5cGUyGMj10gMgASgLMiUucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
+          "cGxleE9wdGlvblR5cGUxOl8KDGNvbXBsZXhfb3B0MRIfLmdvb2dsZS5wcm90" + 
+          "b2J1Zi5NZXNzYWdlT3B0aW9ucxik3NIDIAEoCzIlLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LkNvbXBsZXhPcHRpb25UeXBlMTpfCgxjb21wbGV4X29wdDISHy5nb29n" + 
+          "bGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY1Y/SAyABKAsyJS5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTI6XwoMY29tcGxleF9vcHQz" + 
+          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGO+L0gMgASgLMiUu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUzOlcKC2NvbXBs" + 
+          "ZXhvcHQ2Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGMzLzwMg" + 
+          "ASgKMh4ucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdDZCT8I+QwohR29v" + 
+          "Z2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEh5Vbml0VGVzdEN1c3Rv" + 
+          "bU9wdGlvbnNQcm90b0ZpbGXw6MEd6q3A5SQ=");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_protobuf_unittest_TestMessageWithCustomOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions, global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.Builder>(internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor,
+                new string[] { "Field1", });
+        internal__static_protobuf_unittest_CustomOptionFooRequest__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_protobuf_unittest_CustomOptionFooRequest__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.Builder>(internal__static_protobuf_unittest_CustomOptionFooRequest__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_CustomOptionFooResponse__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_protobuf_unittest_CustomOptionFooResponse__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.Builder>(internal__static_protobuf_unittest_CustomOptionFooResponse__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_DummyMessageContainingEnum__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_protobuf_unittest_DummyMessageContainingEnum__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum, global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Builder>(internal__static_protobuf_unittest_DummyMessageContainingEnum__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__Descriptor = Descriptor.MessageTypes[4];
+        internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType, global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.Builder>(internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_CustomOptionMinIntegerValues__Descriptor = Descriptor.MessageTypes[5];
+        internal__static_protobuf_unittest_CustomOptionMinIntegerValues__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.Builder>(internal__static_protobuf_unittest_CustomOptionMinIntegerValues__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__Descriptor = Descriptor.MessageTypes[6];
+        internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.Builder>(internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_CustomOptionOtherValues__Descriptor = Descriptor.MessageTypes[7];
+        internal__static_protobuf_unittest_CustomOptionOtherValues__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.Builder>(internal__static_protobuf_unittest_CustomOptionOtherValues__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_SettingRealsFromPositiveInts__Descriptor = Descriptor.MessageTypes[8];
+        internal__static_protobuf_unittest_SettingRealsFromPositiveInts__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.Builder>(internal__static_protobuf_unittest_SettingRealsFromPositiveInts__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_SettingRealsFromNegativeInts__Descriptor = Descriptor.MessageTypes[9];
+        internal__static_protobuf_unittest_SettingRealsFromNegativeInts__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.Builder>(internal__static_protobuf_unittest_SettingRealsFromNegativeInts__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_ComplexOptionType1__Descriptor = Descriptor.MessageTypes[10];
+        internal__static_protobuf_unittest_ComplexOptionType1__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder>(internal__static_protobuf_unittest_ComplexOptionType1__Descriptor,
+                new string[] { "Foo", });
+        internal__static_protobuf_unittest_ComplexOptionType2__Descriptor = Descriptor.MessageTypes[11];
+        internal__static_protobuf_unittest_ComplexOptionType2__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Builder>(internal__static_protobuf_unittest_ComplexOptionType2__Descriptor,
+                new string[] { "Bar", "Baz", "Fred", });
+        internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__Descriptor = internal__static_protobuf_unittest_ComplexOptionType2__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder>(internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__Descriptor,
+                new string[] { "Waldo", });
+        global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.ComplexOpt4 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Descriptor.Extensions[0]);
+        internal__static_protobuf_unittest_ComplexOptionType3__Descriptor = Descriptor.MessageTypes[12];
+        internal__static_protobuf_unittest_ComplexOptionType3__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Builder>(internal__static_protobuf_unittest_ComplexOptionType3__Descriptor,
+                new string[] { "Qux", "ComplexOptionType5", });
+        internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__Descriptor = internal__static_protobuf_unittest_ComplexOptionType3__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder>(internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__Descriptor,
+                new string[] { "Plugh", });
+        internal__static_protobuf_unittest_ComplexOpt6__Descriptor = Descriptor.MessageTypes[13];
+        internal__static_protobuf_unittest_ComplexOpt6__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6, global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.Builder>(internal__static_protobuf_unittest_ComplexOpt6__Descriptor,
+                new string[] { "Xyzzy", });
+        internal__static_protobuf_unittest_VariousComplexOptions__Descriptor = Descriptor.MessageTypes[14];
+        internal__static_protobuf_unittest_VariousComplexOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions, global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Builder>(internal__static_protobuf_unittest_VariousComplexOptions__Descriptor,
+                new string[] { });
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FileOpt1 = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[0]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageOpt1 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[1]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt1 = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[2]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt2 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[3]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt1 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[4]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ServiceOpt1 = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[5]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MethodOpt1 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.MethodOpt1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[6]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BoolOpt = pb::GeneratedSingleExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[7]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[8]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[9]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint32Opt = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[10]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint64Opt = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[11]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[12]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[13]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed32Opt = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[14]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed64Opt = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[15]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[16]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[17]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FloatOpt = pb::GeneratedSingleExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[18]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.DoubleOpt = pb::GeneratedSingleExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[19]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.StringOpt = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[20]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BytesOpt = pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[21]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[22]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageTypeOpt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[23]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Quux = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[24]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Corge = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[25]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Grault = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[26]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Garply = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[27]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt1 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[28]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt2 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[29]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt3 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[30]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt6 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[31]);
+        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
+        RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.RegisterAllExtensions(registry);
+        return registry;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, 
-        });
+          }, assigner);
+    }
     #endregion
     
-    #region Extensions
-    public const int FileOpt1FieldNumber = 7736974;
-    public static readonly pb::GeneratedExtensionBase<ulong> FileOpt1 =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[0]);
-    public const int MessageOpt1FieldNumber = 7739036;
-    public static readonly pb::GeneratedExtensionBase<int> MessageOpt1 =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[1]);
-    public const int FieldOpt1FieldNumber = 7740936;
-    public static readonly pb::GeneratedExtensionBase<ulong> FieldOpt1 =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[2]);
-    public const int FieldOpt2FieldNumber = 7753913;
-    public static readonly pb::GeneratedExtensionBase<int> FieldOpt2 =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[3]);
-    public const int EnumOpt1FieldNumber = 7753576;
-    public static readonly pb::GeneratedExtensionBase<int> EnumOpt1 =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[4]);
-    public const int ServiceOpt1FieldNumber = 7887650;
-    public static readonly pb::GeneratedExtensionBase<long> ServiceOpt1 =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[5]);
-    public const int MethodOpt1FieldNumber = 7890860;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.MethodOpt1> MethodOpt1 =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.MethodOpt1>.CreateInstance(Descriptor.Extensions[6]);
-    public const int BoolOptFieldNumber = 7706090;
-    public static readonly pb::GeneratedExtensionBase<bool> BoolOpt =
-        pb::GeneratedSingleExtension<bool>.CreateInstance(Descriptor.Extensions[7]);
-    public const int Int32OptFieldNumber = 7705709;
-    public static readonly pb::GeneratedExtensionBase<int> Int32Opt =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[8]);
-    public const int Int64OptFieldNumber = 7705542;
-    public static readonly pb::GeneratedExtensionBase<long> Int64Opt =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[9]);
-    public const int Uint32OptFieldNumber = 7704880;
-    public static readonly pb::GeneratedExtensionBase<uint> Uint32Opt =
-        pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[10]);
-    public const int Uint64OptFieldNumber = 7702367;
-    public static readonly pb::GeneratedExtensionBase<ulong> Uint64Opt =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[11]);
-    public const int Sint32OptFieldNumber = 7701568;
-    public static readonly pb::GeneratedExtensionBase<int> Sint32Opt =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[12]);
-    public const int Sint64OptFieldNumber = 7700863;
-    public static readonly pb::GeneratedExtensionBase<long> Sint64Opt =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[13]);
-    public const int Fixed32OptFieldNumber = 7700307;
-    public static readonly pb::GeneratedExtensionBase<uint> Fixed32Opt =
-        pb::GeneratedSingleExtension<uint>.CreateInstance(Descriptor.Extensions[14]);
-    public const int Fixed64OptFieldNumber = 7700194;
-    public static readonly pb::GeneratedExtensionBase<ulong> Fixed64Opt =
-        pb::GeneratedSingleExtension<ulong>.CreateInstance(Descriptor.Extensions[15]);
-    public const int Sfixed32OptFieldNumber = 7698645;
-    public static readonly pb::GeneratedExtensionBase<int> Sfixed32Opt =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[16]);
-    public const int Sfixed64OptFieldNumber = 7685475;
-    public static readonly pb::GeneratedExtensionBase<long> Sfixed64Opt =
-        pb::GeneratedSingleExtension<long>.CreateInstance(Descriptor.Extensions[17]);
-    public const int FloatOptFieldNumber = 7675390;
-    public static readonly pb::GeneratedExtensionBase<float> FloatOpt =
-        pb::GeneratedSingleExtension<float>.CreateInstance(Descriptor.Extensions[18]);
-    public const int DoubleOptFieldNumber = 7673293;
-    public static readonly pb::GeneratedExtensionBase<double> DoubleOpt =
-        pb::GeneratedSingleExtension<double>.CreateInstance(Descriptor.Extensions[19]);
-    public const int StringOptFieldNumber = 7673285;
-    public static readonly pb::GeneratedExtensionBase<string> StringOpt =
-        pb::GeneratedSingleExtension<string>.CreateInstance(Descriptor.Extensions[20]);
-    public const int BytesOptFieldNumber = 7673238;
-    public static readonly pb::GeneratedExtensionBase<pb::ByteString> BytesOpt =
-        pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(Descriptor.Extensions[21]);
-    public const int EnumOptFieldNumber = 7673233;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType> EnumOpt =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>.CreateInstance(Descriptor.Extensions[22]);
-    public const int MessageTypeOptFieldNumber = 7665967;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType> MessageTypeOpt =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType>.CreateInstance(Descriptor.Extensions[23]);
-    public const int QuuxFieldNumber = 7663707;
-    public static readonly pb::GeneratedExtensionBase<int> Quux =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[24]);
-    public const int CorgeFieldNumber = 7663442;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> Corge =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(Descriptor.Extensions[25]);
-    public const int GraultFieldNumber = 7650927;
-    public static readonly pb::GeneratedExtensionBase<int> Grault =
-        pb::GeneratedSingleExtension<int>.CreateInstance(Descriptor.Extensions[26]);
-    public const int GarplyFieldNumber = 7649992;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1> Garply =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(Descriptor.Extensions[27]);
-    public const int ComplexOpt1FieldNumber = 7646756;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1> ComplexOpt1 =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(Descriptor.Extensions[28]);
-    public const int ComplexOpt2FieldNumber = 7636949;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2> ComplexOpt2 =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2>.CreateInstance(Descriptor.Extensions[29]);
-    public const int ComplexOpt3FieldNumber = 7636463;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> ComplexOpt3 =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(Descriptor.Extensions[30]);
-    public const int ComplexOpt6FieldNumber = 7595468;
-    public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6> ComplexOpt6 =
-        pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6>.CreateInstance(Descriptor.Extensions[31]);
-    #endregion
-    
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions, global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.Builder> internal__static_protobuf_unittest_TestMessageWithCustomOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions, global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.Builder>(internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor,
-            new string[] { "Field1", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionFooRequest__Descriptor
-        = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.Builder> internal__static_protobuf_unittest_CustomOptionFooRequest__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.Builder>(internal__static_protobuf_unittest_CustomOptionFooRequest__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionFooResponse__Descriptor
-        = Descriptor.MessageTypes[2];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.Builder> internal__static_protobuf_unittest_CustomOptionFooResponse__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.Builder>(internal__static_protobuf_unittest_CustomOptionFooResponse__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_DummyMessageContainingEnum__Descriptor
-        = Descriptor.MessageTypes[3];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum, global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Builder> internal__static_protobuf_unittest_DummyMessageContainingEnum__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum, global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Builder>(internal__static_protobuf_unittest_DummyMessageContainingEnum__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__Descriptor
-        = Descriptor.MessageTypes[4];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType, global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.Builder> internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType, global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.Builder>(internal__static_protobuf_unittest_DummyMessageInvalidAsOptionType__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionMinIntegerValues__Descriptor
-        = Descriptor.MessageTypes[5];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.Builder> internal__static_protobuf_unittest_CustomOptionMinIntegerValues__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.Builder>(internal__static_protobuf_unittest_CustomOptionMinIntegerValues__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__Descriptor
-        = Descriptor.MessageTypes[6];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.Builder> internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.Builder>(internal__static_protobuf_unittest_CustomOptionMaxIntegerValues__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_CustomOptionOtherValues__Descriptor
-        = Descriptor.MessageTypes[7];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.Builder> internal__static_protobuf_unittest_CustomOptionOtherValues__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues, global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.Builder>(internal__static_protobuf_unittest_CustomOptionOtherValues__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_SettingRealsFromPositiveInts__Descriptor
-        = Descriptor.MessageTypes[8];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.Builder> internal__static_protobuf_unittest_SettingRealsFromPositiveInts__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.Builder>(internal__static_protobuf_unittest_SettingRealsFromPositiveInts__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_SettingRealsFromNegativeInts__Descriptor
-        = Descriptor.MessageTypes[9];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.Builder> internal__static_protobuf_unittest_SettingRealsFromNegativeInts__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts, global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.Builder>(internal__static_protobuf_unittest_SettingRealsFromNegativeInts__Descriptor,
-            new string[] { });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType1__Descriptor
-        = Descriptor.MessageTypes[10];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder> internal__static_protobuf_unittest_ComplexOptionType1__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder>(internal__static_protobuf_unittest_ComplexOptionType1__Descriptor,
-            new string[] { "Foo", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType2__Descriptor
-        = Descriptor.MessageTypes[11];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Builder> internal__static_protobuf_unittest_ComplexOptionType2__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Builder>(internal__static_protobuf_unittest_ComplexOptionType2__Descriptor,
-            new string[] { "Bar", "Baz", "Fred", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__Descriptor
-        = internal__static_protobuf_unittest_ComplexOptionType2__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder> internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder>(internal__static_protobuf_unittest_ComplexOptionType2_ComplexOptionType4__Descriptor,
-            new string[] { "Waldo", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType3__Descriptor
-        = Descriptor.MessageTypes[12];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Builder> internal__static_protobuf_unittest_ComplexOptionType3__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Builder>(internal__static_protobuf_unittest_ComplexOptionType3__Descriptor,
-            new string[] { "Qux", "ComplexOptionType5", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__Descriptor
-        = internal__static_protobuf_unittest_ComplexOptionType3__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder> internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder>(internal__static_protobuf_unittest_ComplexOptionType3_ComplexOptionType5__Descriptor,
-            new string[] { "Plugh", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_ComplexOpt6__Descriptor
-        = Descriptor.MessageTypes[13];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6, global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.Builder> internal__static_protobuf_unittest_ComplexOpt6__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6, global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.Builder>(internal__static_protobuf_unittest_ComplexOpt6__Descriptor,
-            new string[] { "Xyzzy", });
-    internal static readonly pbd::MessageDescriptor internal__static_protobuf_unittest_VariousComplexOptions__Descriptor
-        = Descriptor.MessageTypes[14];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions, global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Builder> internal__static_protobuf_unittest_VariousComplexOptions__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions, global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Builder>(internal__static_protobuf_unittest_VariousComplexOptions__Descriptor,
-            new string[] { });
-    #endregion
   }
   #region Enums
   public enum MethodOpt1 {
@@ -447,6 +514,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static TestMessageWithCustomOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class CustomOptionFooRequest : pb::GeneratedMessage<CustomOptionFooRequest, CustomOptionFooRequest.Builder> {
@@ -547,6 +617,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static CustomOptionFooRequest() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class CustomOptionFooResponse : pb::GeneratedMessage<CustomOptionFooResponse, CustomOptionFooResponse.Builder> {
@@ -646,6 +719,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+    }
+    static CustomOptionFooResponse() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
     }
   }
   
@@ -757,6 +833,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static DummyMessageContainingEnum() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class DummyMessageInvalidAsOptionType : pb::GeneratedMessage<DummyMessageInvalidAsOptionType, DummyMessageInvalidAsOptionType.Builder> {
@@ -856,6 +935,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+    }
+    static DummyMessageInvalidAsOptionType() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
     }
   }
   
@@ -957,6 +1039,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static CustomOptionMinIntegerValues() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class CustomOptionMaxIntegerValues : pb::GeneratedMessage<CustomOptionMaxIntegerValues, CustomOptionMaxIntegerValues.Builder> {
@@ -1056,6 +1141,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+    }
+    static CustomOptionMaxIntegerValues() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
     }
   }
   
@@ -1157,6 +1245,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static CustomOptionOtherValues() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class SettingRealsFromPositiveInts : pb::GeneratedMessage<SettingRealsFromPositiveInts, SettingRealsFromPositiveInts.Builder> {
@@ -1257,6 +1348,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
     }
+    static SettingRealsFromPositiveInts() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class SettingRealsFromNegativeInts : pb::GeneratedMessage<SettingRealsFromNegativeInts, SettingRealsFromNegativeInts.Builder> {
@@ -1356,6 +1450,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+    }
+    static SettingRealsFromNegativeInts() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
     }
   }
   
@@ -1485,6 +1582,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static ComplexOptionType1() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class ComplexOptionType2 : pb::ExtendableMessage<ComplexOptionType2, ComplexOptionType2.Builder> {
@@ -1534,8 +1634,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public const int ComplexOpt4FieldNumber = 7633546;
-        public static readonly pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4> ComplexOpt4 =
-            pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4>.CreateInstance(Descriptor.Extensions[0]);
+        public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4> ComplexOpt4;
         public const int WaldoFieldNumber = 1;
         private bool hasWaldo;
         private int waldo_ = 0;
@@ -1639,6 +1738,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             result.waldo_ = 0;
             return this;
           }
+        }
+        static ComplexOptionType4() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
         }
       }
       
@@ -1841,6 +1943,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static ComplexOptionType2() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class ComplexOptionType3 : pb::GeneratedMessage<ComplexOptionType3, ComplexOptionType3.Builder> {
@@ -1992,6 +2097,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             result.plugh_ = 0;
             return this;
           }
+        }
+        static ComplexOptionType5() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
         }
       }
       
@@ -2148,6 +2256,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static ComplexOptionType3() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class ComplexOpt6 : pb::GeneratedMessage<ComplexOpt6, ComplexOpt6.Builder> {
@@ -2276,6 +2387,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
     }
+    static ComplexOpt6() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+    }
   }
   
   public sealed partial class VariousComplexOptions : pb::GeneratedMessage<VariousComplexOptions, VariousComplexOptions.Builder> {
@@ -2375,6 +2489,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         return returnMe;
       }
       
+    }
+    static VariousComplexOptions() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
     }
   }
   

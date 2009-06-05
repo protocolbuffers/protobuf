@@ -286,5 +286,41 @@ namespace Google.ProtocolBuffers {
         Assert.AreEqual(i, service.Methods[i].Index);
       }
     }
+
+    [Test]
+    public void CustomOptions() {
+      MessageDescriptor descriptor = TestMessageWithCustomOptions.Descriptor;
+      Assert.IsTrue(descriptor.Options.HasExtension(UnitTestCustomOptionsProtoFile.MessageOpt1));
+      Assert.AreEqual(-56, descriptor.Options.GetExtension(UnitTestCustomOptionsProtoFile.MessageOpt1));
+
+
+      FieldDescriptor field = descriptor.FindFieldByName("field1");
+      Assert.IsNotNull(field);
+
+      Assert.IsTrue(field.Options.HasExtension(UnitTestCustomOptionsProtoFile.FieldOpt1));
+      Assert.AreEqual(8765432109L, field.Options.GetExtension(UnitTestCustomOptionsProtoFile.FieldOpt1));
+
+      // TODO: Write out enum descriptors
+      /*
+      EnumDescriptor enumType = TestMessageWithCustomOptions.Types.
+        UnittestCustomOptions.TestMessageWithCustomOptions.AnEnum.getDescriptor();
+
+      Assert.IsTrue(
+        enumType.getOptions().hasExtension(UnittestCustomOptions.enumOpt1));
+      Assert.AreEqual(Integer.valueOf(-789),
+        enumType.getOptions().getExtension(UnittestCustomOptions.enumOpt1));
+        */
+
+      ServiceDescriptor service = TestServiceWithCustomOptions.Descriptor;
+
+      Assert.IsTrue(service.Options.HasExtension(UnitTestCustomOptionsProtoFile.ServiceOpt1));
+      Assert.AreEqual(-9876543210L, service.Options.GetExtension(UnitTestCustomOptionsProtoFile.ServiceOpt1));
+
+      MethodDescriptor method = service.FindMethodByName("Foo");
+      Assert.IsNotNull(method);
+
+      Assert.IsTrue(method.Options.HasExtension(UnitTestCustomOptionsProtoFile.MethodOpt1));
+      Assert.AreEqual(MethodOpt1.METHODOPT1_VAL2, method.Options.GetExtension(UnitTestCustomOptionsProtoFile.MethodOpt1));
+    }
   }
 }

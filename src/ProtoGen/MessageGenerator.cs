@@ -39,25 +39,42 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       // The descriptor for this type.
       string access = Descriptor.File.CSharpOptions.NestClasses ? "private" : "internal";
-      writer.WriteLine("{0} static readonly pbd::MessageDescriptor internal__{1}__Descriptor", access, identifier);
-      if (Descriptor.ContainingType == null) {
-        writer.WriteLine("    = Descriptor.MessageTypes[{0}];", Descriptor.Index);
-      } else {
-        writer.WriteLine("    = internal__{0}__Descriptor.NestedTypes[{1}];", GetUniqueFileScopeIdentifier(Descriptor.ContainingType), Descriptor.Index);
-      }
-      writer.WriteLine("{0} static pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder> internal__{2}__FieldAccessorTable",
+      writer.WriteLine("{0} static pbd::MessageDescriptor internal__{1}__Descriptor;", access, identifier);
+      writer.WriteLine("{0} static pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder> internal__{2}__FieldAccessorTable;",
           access, FullClassName, identifier);
-      writer.WriteLine("    = new pb::FieldAccess.FieldAccessorTable<{0}, {0}.Builder>(internal__{1}__Descriptor,",
-          FullClassName, identifier);
+
+      // Generate static members for all nested types.
+      foreach (MessageDescriptor nestedMessage in Descriptor.NestedTypes) {
+        new MessageGenerator(nestedMessage).GenerateStaticVariables(writer);
+      }
+    }
+
+    internal void GenerateStaticVariableInitializers(TextGenerator writer) {
+      string identifier = GetUniqueFileScopeIdentifier(Descriptor);
+
+      writer.Write("internal__{0}__Descriptor = ", identifier);
+      if (Descriptor.ContainingType == null) {
+        writer.WriteLine("Descriptor.MessageTypes[{0}];", Descriptor.Index);
+      } else {
+        writer.WriteLine("internal__{0}__Descriptor.NestedTypes[{1}];", GetUniqueFileScopeIdentifier(Descriptor.ContainingType), Descriptor.Index);
+      }
+
+      writer.WriteLine("internal__{0}__FieldAccessorTable = ", identifier);
+      writer.WriteLine("    new pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder>(internal__{0}__Descriptor,",
+          identifier, FullClassName);
       writer.Print("        new string[] { ");
       foreach (FieldDescriptor field in Descriptor.Fields) {
         writer.Write("\"{0}\", ", field.CSharpOptions.PropertyName);
       }
       writer.WriteLine("});");
 
-      // Generate static members for all nested types.
+      // Generate static member initializers for all nested types.
       foreach (MessageDescriptor nestedMessage in Descriptor.NestedTypes) {
-        new MessageGenerator(nestedMessage).GenerateStaticVariables(writer);
+        new MessageGenerator(nestedMessage).GenerateStaticVariableInitializers(writer);
+      }
+
+      foreach (FieldDescriptor extension in Descriptor.Extensions) {
+        new ExtensionGenerator(extension).GenerateStaticVariableInitializers(writer);
       }
     }
 
@@ -119,6 +136,17 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       GenerateParseFromMethods(writer);
       GenerateBuilder(writer);
+
+      // Force the static initialization code for the file to run, since it may
+      // initialize static variables declared in this class.
+      writer.WriteLine("static {0}() {{", ClassName);
+      // Note that the variable is needed just so we can access the property
+      writer.WriteLine("  pbd::FileDescriptor descriptor = {0}.Descriptor;", DescriptorUtil.GetFullUmbrellaClassName(Descriptor));
+      writer.WriteLine("}");
+
+      writer.Outdent();
+      writer.WriteLine("}");
+      writer.WriteLine();
     }
 
     private void GenerateMessageSerializationMethods(TextGenerator writer) {
@@ -297,9 +325,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
       writer.Outdent();
       writer.WriteLine("}");
-      writer.Outdent();
-      writer.WriteLine("}");
-      writer.WriteLine();
     }
 
     private void GenerateCommonBuilderMethods(TextGenerator writer) {
@@ -471,6 +496,15 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.Outdent();
       writer.WriteLine("}");
       writer.WriteLine();
+    }
+
+    internal void GenerateExtensionRegistrationCode(TextGenerator writer) {
+      foreach (FieldDescriptor extension in Descriptor.Extensions) {
+        new ExtensionGenerator(extension).GenerateExtensionRegistrationCode(writer);
+      }
+      foreach (MessageDescriptor nestedMessage in Descriptor.NestedTypes) {
+        new MessageGenerator(nestedMessage).GenerateExtensionRegistrationCode(writer);
+      }
     }
   }
 }

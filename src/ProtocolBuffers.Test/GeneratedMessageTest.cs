@@ -97,7 +97,7 @@ namespace Google.ProtocolBuffers {
       try {
         builder.Build();
         Assert.Fail("Should have thrown exception.");
-      } catch (InvalidOperationException e) {
+      } catch (InvalidOperationException) {
         // Success.
       }
     }

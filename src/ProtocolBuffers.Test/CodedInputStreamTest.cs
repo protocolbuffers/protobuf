@@ -397,7 +397,7 @@ namespace Google.ProtocolBuffers {
       try {
         input.ReadRawByte();
         Assert.Fail("Should have thrown an exception!");
-      } catch (InvalidProtocolBufferException e) {
+      } catch (InvalidProtocolBufferException) {
         // Success.
       }
 
@@ -407,7 +407,7 @@ namespace Google.ProtocolBuffers {
       try {
         input.ReadRawBytes(16);  // Hits limit again.
         Assert.Fail("Should have thrown an exception!");
-      } catch (InvalidProtocolBufferException e) {
+      } catch (InvalidProtocolBufferException) {
         // Success.
       }
     }

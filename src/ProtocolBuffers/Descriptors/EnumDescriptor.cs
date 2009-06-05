@@ -29,6 +29,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.DescriptorProtos;
 
@@ -87,6 +88,13 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// <returns>The value's descriptor, or null if not found.</returns>
     internal EnumValueDescriptor FindValueByName(string name) {
       return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
+    }
+
+    internal override void ReplaceProto(EnumDescriptorProto newProto) {
+      base.ReplaceProto(newProto);
+      for (int i = 0; i < values.Count; i++) {
+        values[i].ReplaceProto(newProto.GetValue(i));
+      }
     }
   }
 }

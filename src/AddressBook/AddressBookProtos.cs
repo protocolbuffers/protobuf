@@ -8,44 +8,62 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   
   public static partial class AddressBookProtos {
   
+    #region Extension registration
+    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
+    }
+    #endregion
+    #region Static variables
+    internal static pbd::MessageDescriptor internal__static_tutorial_Person__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder> internal__static_tutorial_Person__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_tutorial_Person_PhoneNumber__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder> internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_tutorial_AddressBook__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder> internal__static_tutorial_AddressBook__FieldAccessorTable;
+    #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static readonly pbd::FileDescriptor descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(
-        global::System.Convert.FromBase64String(
-        "Chp0dXRvcmlhbC9hZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaJGdvb2ds" + 
-        "ZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byLaAQoGUGVyc29uEgwK" + 
-        "BG5hbWUYASACKAkSCgoCaWQYAiACKAUSDQoFZW1haWwYAyABKAkSKwoFcGhv" + 
-        "bmUYBCADKAsyHC50dXRvcmlhbC5QZXJzb24uUGhvbmVOdW1iZXIaTQoLUGhv" + 
-        "bmVOdW1iZXISDgoGbnVtYmVyGAEgAigJEi4KBHR5cGUYAiABKA4yGi50dXRv" + 
-        "cmlhbC5QZXJzb24uUGhvbmVUeXBlOgRIT01FIisKCVBob25lVHlwZRIKCgZN" + 
-        "T0JJTEUQABIICgRIT01FEAESCAoEV09SSxACIi8KC0FkZHJlc3NCb29rEiAK" + 
-        "BnBlcnNvbhgBIAMoCzIQLnR1dG9yaWFsLlBlcnNvbkJFSAHCPkAKK0dvb2ds" + 
-        "ZS5Qcm90b2NvbEJ1ZmZlcnMuRXhhbXBsZXMuQWRkcmVzc0Jvb2sSEUFkZHJl" + 
-        "c3NCb29rUHJvdG9z"),
-        new pbd::FileDescriptor[] {
+    private static pbd::FileDescriptor descriptor;
+    
+    static AddressBookProtos() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          "Chp0dXRvcmlhbC9hZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaJGdvb2ds" + 
+          "ZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byLaAQoGUGVyc29uEgwK" + 
+          "BG5hbWUYASACKAkSCgoCaWQYAiACKAUSDQoFZW1haWwYAyABKAkSKwoFcGhv" + 
+          "bmUYBCADKAsyHC50dXRvcmlhbC5QZXJzb24uUGhvbmVOdW1iZXIaTQoLUGhv" + 
+          "bmVOdW1iZXISDgoGbnVtYmVyGAEgAigJEi4KBHR5cGUYAiABKA4yGi50dXRv" + 
+          "cmlhbC5QZXJzb24uUGhvbmVUeXBlOgRIT01FIisKCVBob25lVHlwZRIKCgZN" + 
+          "T0JJTEUQABIICgRIT01FEAESCAoEV09SSxACIi8KC0FkZHJlc3NCb29rEiAK" + 
+          "BnBlcnNvbhgBIAMoCzIQLnR1dG9yaWFsLlBlcnNvbkJFSAHCPkAKK0dvb2ds" + 
+          "ZS5Qcm90b2NvbEJ1ZmZlcnMuRXhhbXBsZXMuQWRkcmVzc0Jvb2sSEUFkZHJl" + 
+          "c3NCb29rUHJvdG9z");
+      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
+        descriptor = root;
+        internal__static_tutorial_Person__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_tutorial_Person__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder>(internal__static_tutorial_Person__Descriptor,
+                new string[] { "Name", "Id", "Email", "Phone", });
+        internal__static_tutorial_Person_PhoneNumber__Descriptor = internal__static_tutorial_Person__Descriptor.NestedTypes[0];
+        internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder>(internal__static_tutorial_Person_PhoneNumber__Descriptor,
+                new string[] { "Number", "Type", });
+        internal__static_tutorial_AddressBook__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_tutorial_AddressBook__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder>(internal__static_tutorial_AddressBook__Descriptor,
+                new string[] { "Person", });
+        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
+        RegisterAllExtensions(registry);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
+        return registry;
+      };
+      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbd::FileDescriptor[] {
           global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
-        });
+          }, assigner);
+    }
     #endregion
     
-    #region Static variables
-    internal static readonly pbd::MessageDescriptor internal__static_tutorial_Person__Descriptor
-        = Descriptor.MessageTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder> internal__static_tutorial_Person__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder>(internal__static_tutorial_Person__Descriptor,
-            new string[] { "Name", "Id", "Email", "Phone", });
-    internal static readonly pbd::MessageDescriptor internal__static_tutorial_Person_PhoneNumber__Descriptor
-        = internal__static_tutorial_Person__Descriptor.NestedTypes[0];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder> internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder>(internal__static_tutorial_Person_PhoneNumber__Descriptor,
-            new string[] { "Number", "Type", });
-    internal static readonly pbd::MessageDescriptor internal__static_tutorial_AddressBook__Descriptor
-        = Descriptor.MessageTypes[1];
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder> internal__static_tutorial_AddressBook__FieldAccessorTable
-        = new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder>(internal__static_tutorial_AddressBook__Descriptor,
-            new string[] { "Person", });
-    #endregion
   }
   #region Messages
   public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
@@ -337,6 +355,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             result.type_ = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME;
             return this;
           }
+        }
+        static PhoneNumber() {
+          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor;
         }
       }
       
@@ -685,6 +706,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         return this;
       }
     }
+    static Person() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor;
+    }
   }
   
   public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
@@ -923,6 +947,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         result.person_.Clear();
         return this;
       }
+    }
+    static AddressBook() {
+      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor;
     }
   }
   

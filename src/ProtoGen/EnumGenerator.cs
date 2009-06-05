@@ -5,6 +5,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     internal EnumGenerator(EnumDescriptor descriptor) : base(descriptor) {
     }
 
+    // TODO(jonskeet): Write out enum descriptors? Can be retrieved from file...
     public void Generate(TextGenerator writer) {
       writer.WriteLine("{0} enum {1} {{", ClassAccessLevel, Descriptor.Name);
       writer.Indent();

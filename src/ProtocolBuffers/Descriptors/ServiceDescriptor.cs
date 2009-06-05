@@ -72,5 +72,12 @@ namespace Google.ProtocolBuffers.Descriptors {
         method.CrossLink();
       }
     }
+
+    internal override void ReplaceProto(ServiceDescriptorProto newProto) {
+      base.ReplaceProto(newProto);
+      for (int i = 0; i < methods.Count; i++) {
+        methods[i].ReplaceProto(newProto.GetMethod(i));
+      }
+    }
   }
 }
