@@ -22,6 +22,25 @@ public final class ProtoBufUtil {
     }
   }
 
+  /** Convenience method to return a string value from of a proto or null. */
+  public static String getProtoValueOrNull(ProtoBuf proto, int tag) {
+    try {
+      return (proto != null && proto.has(tag)) ? proto.getString(tag) : null;
+    } catch (ClassCastException e) {
+      return null;
+    }
+  }
+
+  /** Convenience method to return a string value from of a proto or null. */
+  public static String getProtoValueOrNull(ProtoBuf proto, int tag, int index) {
+    try {
+      return (proto != null && proto.has(tag) && proto.getCount(tag) > index) ?
+          proto.getString(tag, index) : null;
+    } catch (ClassCastException e) {
+      return null;
+    }
+  }
+
   /** Convenience method to return a string value from of a sub-proto or "". */
   public static String getSubProtoValueOrEmpty(
       ProtoBuf proto, int sub, int tag) {
