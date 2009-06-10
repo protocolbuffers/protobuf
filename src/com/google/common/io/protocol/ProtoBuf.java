@@ -7,7 +7,9 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Protocol buffer message object.
+ * Protocol buffer message object. Currently, it is assumed that tags ids are 
+ * not large. This could be improved by storing a start offset, reducing the 
+ * assumption to a dense number space.
  * <p>
  * ProtoBuf instances may or may not reference a ProtoBufType instance,
  * representing information from a corresponding .proto file, which defines tag 
@@ -31,6 +33,7 @@ import java.util.*;
  * this behavior is that default values cannot be removed -- they would reappear
  * after a serialization cycle. If a tag has repeated values, setXXX(tag, value)
  * will overwrite all of them and getXXX(tag) will throw an exception.
+ *
  */
 
 public class ProtoBuf {
@@ -42,9 +45,7 @@ public class ProtoBuf {
   private static final String MSG_MISMATCH = "Type mismatch";
   private static final String MSG_UNSUPPORTED = "Unsupp.Type";
 
-  // see
-  // http://code.google.com/apis/protocolbuffers/docs/overview.html
-  // for more details about wire format.
+  // names copied from //net/proto2/internal/wire_format.cc
   static final int WIRETYPE_END_GROUP = 4;
   static final int WIRETYPE_FIXED32 = 5;
   static final int WIRETYPE_FIXED64 = 1;
@@ -55,19 +56,20 @@ public class ProtoBuf {
   /** Maximum number of bytes for VARINT wire format (64 bit, 7 bit/byte) */
   private static final int VARINT_MAX_BYTES = 10;
   
+  private static Long[] SMALL_NUMBERS = {
+      new Long(0), new Long(1), new Long(2), new Long(3), new Long(4),
+      new Long(5), new Long(6), new Long(7), new Long(8), new Long(9),
+      new Long(10), new Long(11), new Long(12), new Long(13), new Long(14),
+      new Long(15)};
+
   private ProtoBufType msgType;
-  private final IntMap values;
+  private final Vector values = new Vector();
   
   /** 
    * Wire types picked up on the wire or implied by setters (if no other
    * type information is available.
    */
-  private final IntMap wireTypes;
-
-  /**
-   * Saved by a call to #getCachedDataSize(false) and returned in #getCachedSize()
-   */
-  private int cachedSize = Integer.MIN_VALUE;
+  private final StringBuffer wireTypes = new StringBuffer();
 
   /**
    * Creates a protocol message according to the given description. The
@@ -76,22 +78,14 @@ public class ProtoBuf {
    */
   public ProtoBuf(ProtoBufType type) {
     this.msgType = type;
-    if (type != null) {
-      // if the type is known, use the type to create IntMaps.
-      values = type.newIntMapForProtoBuf();
-      wireTypes = type.newIntMapForProtoBuf();
-    } else {
-      values = new IntMap();
-      wireTypes = new IntMap();
-    }
   }
 
-  /**
+  /** 
    * Clears all data stored in this ProtoBuf.
    */
   public void clear() {
-    values.clear();
-    wireTypes.clear();
+    values.setSize(0);
+    wireTypes.setLength(0);
   }
   
   /**
@@ -216,7 +210,7 @@ public class ProtoBuf {
     return (int) ((Long) getObject(tag, ProtoBufType.TYPE_INT32)).longValue();
   }
 
-  /**
+  /** 
    * Returns the integer value for the given repeated tag at the given index. 
    */
   public int getInt(int tag, int index) {
@@ -311,8 +305,7 @@ public class ProtoBuf {
    * @param type the new type
    */
   void setType(ProtoBufType type) {
-    // reject if the type is already set, or value is alreay set.
-    if (!values.isEmpty() ||
+    if (values.size() != 0 || 
         (msgType != null && type != null && type != msgType)) {
       throw new IllegalArgumentException();
     }
@@ -366,8 +359,7 @@ public class ProtoBuf {
    * @return          this
    * @throws          IOException raised if an IO exception occurs in the 
    *                  underlying stream or the end of the stream is reached at 
-   *                  an unexpected position, or if we encounter bad data
-   *                  while reading.
+   *                  an unexpected position
    */
   public int parse(InputStream is, int available) throws IOException {
 
@@ -384,7 +376,11 @@ public class ProtoBuf {
         break;
       }
       int tag = (int) (tagAndType >>> 3);
-      wireTypes.put(tag, wireType);
+      while (wireTypes.length() <= tag){
+        wireTypes.append((char) ProtoBufType.TYPE_UNDEFINED);
+      }
+      wireTypes.setCharAt(tag, (char) wireType);
+
       // first step: decode tag value
       Object value;
       switch (wireType) {
@@ -394,7 +390,8 @@ public class ProtoBuf {
           if (isZigZagEncodedType(tag)) {
             v = zigZagDecode(v);
           }
-          value = v;
+          value = (v >= 0 && v < SMALL_NUMBERS.length) ? 
+              SMALL_NUMBERS[(int) v] : new Long(v);
           break;
 
         // also used for fixed values
@@ -411,7 +408,9 @@ public class ProtoBuf {
             shift += 8;
           }
 
-          value = v;
+          value = (v >= 0 && v < SMALL_NUMBERS.length) 
+              ? SMALL_NUMBERS[(int) v]
+              : new Long(v);
           break;
 
         case WIRETYPE_LENGTH_DELIMITED:
@@ -446,8 +445,7 @@ public class ProtoBuf {
           break;
 
         default:
-          throw new IOException("Unknown wire type " + wireType +
-              ", reading garbage data?");
+          throw new RuntimeException(MSG_UNSUPPORTED + wireType);
       }
       insertObject(tag, getCount(tag), value);
     }
@@ -468,9 +466,9 @@ public class ProtoBuf {
       throw new ArrayIndexOutOfBoundsException();
     }
     if (count == 1){
-      values.remove(tag);
+      values.setElementAt(null, tag);
     } else {
-      Vector v = (Vector) values.get(tag);
+      Vector v = (Vector) values.elementAt(tag);
       v.removeElementAt(index);
     }
   }
@@ -479,15 +477,12 @@ public class ProtoBuf {
    * Returns the number of repeated and optional (0..1) values for a given tag.
    * Note: Default values are not counted (and in general not considered in 
    * access methods for repeated tags), but considered for has(tag). 
-   *
-   * @param tag the tag of the field
-   * @throws ArrayIndexOutOfBoundsException when tag is < 0
    */
   public int getCount(int tag) {
-    if (tag < 0) {
-      throw new ArrayIndexOutOfBoundsException(tag);
+    if (tag >= values.size()){
+      return 0;
     }
-    Object o = values.get(tag);
+    Object o = values.elementAt(tag);
     if (o == null){
       return 0;
     }
@@ -507,69 +502,38 @@ public class ProtoBuf {
       tagType = msgType.getType(tag);
     }
 
-    if (tagType == ProtoBufType.TYPE_UNDEFINED) {
-      Integer tagTypeObj = (Integer) wireTypes.get(tag);
-      if (tagTypeObj != null) {
-        tagType = tagTypeObj.intValue();
-      }
+    if (tagType == ProtoBufType.TYPE_UNDEFINED && tag < wireTypes.length()) {
+      tagType = wireTypes.charAt(tag);
     }
-
+    
     if (tagType == ProtoBufType.TYPE_UNDEFINED && getCount(tag) > 0) {
       Object o = getObject(tag, 0, ProtoBufType.TYPE_UNDEFINED);
-
-      tagType = (o instanceof Long) || (o instanceof Boolean)
+      
+      tagType = (o instanceof Long) || (o instanceof Boolean) 
         ? WIRETYPE_VARINT : WIRETYPE_LENGTH_DELIMITED;
     }
-
+    
     return tagType;
   }
-
+  
   /** 
    * Returns the number of bytes needed to store this protocol buffer 
    */
   public int getDataSize() {
-    return getCachedDataSize(false /* don't trust cache */);
-  }
-
-  /**
-   * Each Protobuf keeps track of a <code> cachedSize </code> that is
-   * used to short circuit evaluation of its children's sizes. This value
-   * should only be trusted if you are reasonably certain it cannot be
-   * corrupt. (A corrupt cache can happen if any child ProtoBuf of this
-   * ProtoBuf has had a value set. In general, it is best to only trust
-   * the cache if you have just finished cleansing it.)
-   *
-   * <P/>The cache can be cleansed by calling this method with
-   * trustCache = false.
-   *
-   * @param trustCache if the cached size should be trusted. Set false to
-   * recompuate the size.
-   */
-  private int getCachedDataSize(boolean trustCache) {
-    if (cachedSize != Integer.MIN_VALUE && trustCache) {
-      return cachedSize;
-    }
     int size = 0;
-    IntMap.KeyIterator itr = values.keys();
-    while(itr.hasNext()) {
-      int tag = itr.next();
+    for (int tag = 0; tag <= maxTag(); tag++) {
       for (int i = 0; i < getCount(tag); i++) {
-        size += getCachedDataSize(tag, i, trustCache);
+        size += getDataSize(tag, i);
       }
-    }
-    cachedSize = size;
-
-    return cachedSize;
+    }      
+    return size;
   }
-
-  /**
-   * Returns the size of the child.
-   *
-   * @param tag tag used to determine the type of this child
-   * @param i used to determine which count this child is
-   * @param trustSizeCache passed down to #getCachedDataSize()
+  
+ 
+  /** 
+   * Returns the size of the given value 
    */
-  private int getCachedDataSize(int tag, int i, boolean trustSizeCache) {
+  private int getDataSize(int tag, int i) {
     int tagSize = getVarIntSize(tag << 3);
     
     switch(getWireType(tag)){
@@ -587,20 +551,20 @@ public class ProtoBuf {
         // take end group into account....
         return tagSize + getProtoBuf(tag, i).getDataSize() + tagSize;
     }
-
+    
     // take the object as stored
     Object o = getObject(tag, i, ProtoBufType.TYPE_UNDEFINED);
-
+    
     int contentSize;
-
-    if (o instanceof byte[]) {
+    
+    if (o instanceof byte[]){
       contentSize = ((byte[]) o).length;
     } else if (o instanceof String) {
       contentSize = encodeUtf8((String) o, null, 0);
     } else {
-      contentSize = ((ProtoBuf) o).getCachedDataSize(trustSizeCache);
+      contentSize = ((ProtoBuf) o).getDataSize();
     }
-
+    
     return tagSize + getVarIntSize(contentSize) + contentSize;
   }
 
@@ -620,93 +584,67 @@ public class ProtoBuf {
     return size;
   }
 
-  /**
+  /** 
    * Writes this and nested protocol buffers to the given output stream.
    * 
    * @param os target output stream
-   * @throws IOException thrown if there is an IOException
+   * @throws   IOException thrown if there is an IOException
    */
   public void outputTo(OutputStream os) throws IOException {
-    // We can't know what changed since we last output, so refresh the children.
-    getDataSize();
-    outputToInternal(os);
-  }
+    for (int tag = 0; tag <= maxTag(); tag++) {
+      int size = getCount(tag);
+      int wireType = getWireType(tag);
+      
+      // ignore default values
+      for (int i = 0; i < size; i++) {
+        writeVarInt(os, (tag << 3) | wireType);
 
-  /**
-   * Recursive output method wrapped by #outputTo()
-   * 
-   * @param os target output stream
-   * @throws IOException thrown if there is an IOException
-   */
-  private void outputToInternal(OutputStream os) throws IOException {
-    IntMap.KeyIterator itr = values.keys();
-    while (itr.hasNext()) {
-      int tag = itr.next();
-      outputField(tag, os);
-    }
-  }
+        switch (wireType) {
+          case WIRETYPE_FIXED32:
+          case WIRETYPE_FIXED64:
+            long v = ((Long) getObject(tag, i, ProtoBufType.TYPE_INT64))
+                .longValue();
+            int cnt = (wireType == WIRETYPE_FIXED32) ? 4 : 8;
+            for (int b = 0; b < cnt; b++) {
+              os.write((int) (v & 0x0ff));
+              v >>= 8;
+            }
+            break;
 
-  /**
-   * Output a field indicated by the tag to given stream.
-   *
-   * @param tag the tag of the field to output.
-   * @param os target output stream
-   * @throws IOException thrown if there is an IOException
-   */
-  private void outputField(int tag, OutputStream os) throws IOException {
-    int size = getCount(tag);
-    int wireType = getWireType(tag);
-    int wireTypeTag = (tag << 3) | wireType;
+          case WIRETYPE_VARINT:
+            v = ((Long) getObject(tag, i, ProtoBufType.TYPE_INT64)).longValue();
+            if (isZigZagEncodedType(tag)) {
+              v = zigZagEncode(v);
+            }
+            writeVarInt(os, v);
+            break;
 
-    // ignore default values
-    for (int i = 0; i < size; i++) {
-      writeVarInt(os, wireTypeTag);
-      switch (wireType) {
-        case WIRETYPE_FIXED32:
-        case WIRETYPE_FIXED64:
-          long v = ((Long) getObject(tag, i, ProtoBufType.TYPE_INT64))
-              .longValue();
-          int cnt = (wireType == WIRETYPE_FIXED32) ? 4 : 8;
-          for (int b = 0; b < cnt; b++) {
-            os.write((int) (v & 0x0ff));
-            v >>= 8;
-          }
-          break;
+          case WIRETYPE_LENGTH_DELIMITED:
+            Object o = getObject(tag, i, 
+                getType(tag) == ProtoBufType.TYPE_MESSAGE 
+                ? ProtoBufType.TYPE_UNDEFINED
+                : ProtoBufType.TYPE_DATA);
+            
+            if (o instanceof byte[]){
+              byte[] data = (byte[]) o;
+              writeVarInt(os, data.length);
+              os.write(data);
+            } else {
+              ProtoBuf msg = (ProtoBuf) o;
+              writeVarInt(os, msg.getDataSize());
+              msg.outputTo(os);
+            }
+            break;
 
-        case WIRETYPE_VARINT:
-          v = ((Long) getObject(tag, i, ProtoBufType.TYPE_INT64)).longValue();
-          if (isZigZagEncodedType(tag)) {
-            v = zigZagEncode(v);
-          }
-          writeVarInt(os, v);
-          break;
-
-        case WIRETYPE_LENGTH_DELIMITED:
-          Object o = getObject(tag, i,
-                               getType(tag) == ProtoBufType.TYPE_MESSAGE
-                               ? ProtoBufType.TYPE_UNDEFINED
-                               : ProtoBufType.TYPE_DATA);
-
-          if (o instanceof byte[]) {
-            byte[] data = (byte[]) o;
-            writeVarInt(os, data.length);
-            os.write(data);
-          } else {
-
-            ProtoBuf msg = (ProtoBuf) o;
-            writeVarInt(os, msg.getCachedDataSize(true));
-            msg.outputToInternal(os);
-          }
-          break;
-
-        case WIRETYPE_START_GROUP:
-          ((ProtoBuf) getObject(tag, i, ProtoBufType.TYPE_GROUP))
-              .outputToInternal(os);
-          writeVarInt(os, (tag << 3) | WIRETYPE_END_GROUP);
-          break;
-
-        default:
-          throw new IllegalArgumentException();
+          case WIRETYPE_START_GROUP:
+            ((ProtoBuf) getObject(tag, i, ProtoBufType.TYPE_GROUP))
+                .outputTo(os);
+            writeVarInt(os, (tag << 3) | WIRETYPE_END_GROUP);
+            break;
+            
+          default:
+            throw new IllegalArgumentException();
+        }
       }
     }
   }
@@ -755,12 +693,12 @@ public class ProtoBuf {
     outputTo(baos);
     return baos.toByteArray();
   }
-
+  
   /**
    * Returns the largest tag id used in this message (to simplify testing). 
    */
   public int maxTag() {
-    return values.maxKey();
+    return values.size() - 1;
   }
 
   /** 
@@ -788,7 +726,8 @@ public class ProtoBuf {
    * Sets the given tag to the given long value.
    */
   public void setLong(int tag, long value) {
-    setObject(tag, value);
+    setObject(tag, value >= 0 && value < SMALL_NUMBERS.length
+        ? SMALL_NUMBERS[(int) value] : new Long(value));
   }
 
   /**
@@ -856,7 +795,8 @@ public class ProtoBuf {
    * Inserts the given long value for the given tag at the given index. 
    */
   public void insertLong(int tag, int index, long value) {
-    insertObject(tag, index, value);
+    insertObject(tag, index, value >= 0 && value < SMALL_NUMBERS.length
+        ? SMALL_NUMBERS[(int) value] : new Long(value));
   }
 
   /**
@@ -939,8 +879,8 @@ public class ProtoBuf {
         case ProtoBufType.TYPE_GROUP:
         case ProtoBufType.TYPE_MESSAGE:
           if (msgType == null || msgType.getData(tag) == null ||
-              ((ProtoBuf) object).msgType == null ||
-              ((ProtoBuf) object).msgType.equals(msgType.getData(tag))) {
+              ((ProtoBuf) object).msgType == null || 
+              ((ProtoBuf) object).msgType == msgType.getData(tag)) {
             return;
           }
       }
@@ -1004,7 +944,7 @@ public class ProtoBuf {
       throw new ArrayIndexOutOfBoundsException();
     }
 
-    Object o = values.get(tag);
+    Object o = values.elementAt(tag);
     
     Vector v = null;
     if (o instanceof Vector) {
@@ -1085,14 +1025,14 @@ public class ProtoBuf {
     if (count == 0) {
       setObject(tag, o);
     } else {
-      Object curr = values.get(tag);
+      Object curr = values.elementAt(tag);
       Vector v;
       if (curr instanceof Vector) {
         v = (Vector) curr;
       } else {
         v = new Vector();
         v.addElement(curr);
-        values.put(tag, v);
+        values.setElementAt(v, tag);
       }
       v.insertElementAt(o, index);
     }
@@ -1102,7 +1042,7 @@ public class ProtoBuf {
    * Converts the object if a better suited class exists for the given .proto 
    * type. If the formats are not compatible, an exception is thrown.
    */
-  private static Object convert(Object obj, int tagType) {
+  private Object convert(Object obj, int tagType) {
     switch (tagType) {
       case ProtoBufType.TYPE_UNDEFINED:
         return obj;
@@ -1128,7 +1068,7 @@ public class ProtoBuf {
       case ProtoBufType.TYPE_SINT32:
       case ProtoBufType.TYPE_SINT64:
         if (obj instanceof Boolean) {
-          return ((Boolean) obj).booleanValue() ? 1 : 0;
+          return SMALL_NUMBERS[((Boolean) obj).booleanValue() ? 1 : 0];
         }
         return obj;
       case ProtoBufType.TYPE_DATA:
@@ -1213,13 +1153,13 @@ public class ProtoBuf {
    * values.
    */
   private void setObject(int tag, Object o) {
-    if (tag < 0) {
-      throw new ArrayIndexOutOfBoundsException();
+    if (values.size() <= tag) {
+      values.setSize(tag + 1);
     }
     if (o != null) {
       assertTypeMatch(tag, o);
     }
-    values.put(tag, o);
+    values.setElementAt(o, tag);
   }
 
   /** 

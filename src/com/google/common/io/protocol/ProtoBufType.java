@@ -6,8 +6,9 @@ package com.google.common.io.protocol;
 import java.util.*;
 
 /**
- * This class can be used to create a memory model of a .proto file.
- * 
+ * This class can be used to create a memory model of a .proto file. Currently, 
+ * it is assumed that tags ids are not large. This could be improved by storing 
+ * a start offset, relaxing the assumption to a dense number space.
  */
 public class ProtoBufType {
   // Note: Values 0..15 are reserved for wire types!
@@ -41,46 +42,11 @@ public class ProtoBufType {
   public static final int REQUIRED = 0x100;
   public static final int OPTIONAL = 0x200;
   public static final int REPEATED = 0x400;
-
-  private final IntMap types = new IntMap();
-
-  /*
-   * A struct to store field type and default object.
-   * Two TypeInfo objects are equal iff both have the
-   * euqal type and object.
-   */
-  static class TypeInfo {
-    private int type;
-    private Object data;
-    TypeInfo(int t, Object d) {
-      type = t;
-      data = d;
-    }
-
-    public int hashCode() {
-      return type;
-    }
-
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null || !(obj instanceof TypeInfo)) {
-        return false;
-      }
-      TypeInfo peerTypeInfo = (TypeInfo) obj;
-      return  type == peerTypeInfo.type &&
-          (data == peerTypeInfo.data ||
-           (data != null && data.equals(peerTypeInfo.data)));
-    }
-
-    public String toString() {
-      return "TypeInfo{type=" + type + ", data=" + data + "}";
-    }
-  };
-
+  
+  private final StringBuffer types = new StringBuffer();
+  private final Vector data = new Vector();
   private final String typeName;
-
+  
   /**
    * Empty constructor.
    */
@@ -108,36 +74,35 @@ public class ProtoBufType {
    * @return               this is returned to permit cascading
    */
   public ProtoBufType addElement(int optionsAndType, int tag, Object data) {
-    types.put(tag, new TypeInfo(optionsAndType, data));
+    while (types.length() <= tag) {
+      types.append((char) TYPE_UNDEFINED);
+      this.data.addElement(null);
+    }
+    types.setCharAt(tag, (char) optionsAndType);
+    this.data.setElementAt(data, tag);
+
     return this;
   }
-
-  /**
-   * Returns a IntMap that has the same lower buffer size as types.
-   * This is for ProtoBuf to create IntMap with pre-allocated
-   * internal buffer.
-   */
-  /* package protected */ IntMap newIntMapForProtoBuf() {
-    return types.newIntMapWithSameBufferSize();
-  }
-
+  
   /** 
    * Returns the type for the given tag id (without modifiers such as OPTIONAL,
    * REPEATED). For undefined tags, TYPE_UNDEFINED is returned.
    */  
   public int getType(int tag) {
-    TypeInfo typeInfo = (TypeInfo) types.get(tag);
-    return typeInfo == null ? TYPE_UNDEFINED : typeInfo.type & MASK_TYPE;
+    return (tag < 0 || tag >= types.length()) 
+        ? TYPE_UNDEFINED
+        : (types.charAt(tag) & MASK_TYPE);
   }
   
-  /**
+  /** 
    * Returns a bit combination of the modifiers for the given tag id 
    * (OPTIONAL, REPEATED, REQUIRED). For undefined tags, OPTIONAL|REPEATED
    * is returned.
-   */
+   */  
   public int getModifiers(int tag) {
-    TypeInfo typeInfo = (TypeInfo) types.get(tag);
-    return typeInfo == null ? (OPTIONAL | REPEATED) : typeInfo.type & MASK_MODIFIER;
+    return (tag < 0 || tag >= types.length()) 
+        ? (OPTIONAL | REPEATED)
+        : (types.charAt(tag) & MASK_MODIFIER);
   }
   
   /**
@@ -146,15 +111,14 @@ public class ProtoBufType {
    * tags, null is returned.
    */
   public Object getData(int tag) {
-    TypeInfo typeInfo = (TypeInfo) types.get(tag);
-    return typeInfo == null ? typeInfo : typeInfo.data;
+    return (tag < 0 || tag >= data.size()) ? null : data.elementAt(tag);
   }
   
   /**
    * Returns the type name set in the constructor for debugging purposes.
    */
   public String toString() {
-    return "ProtoBufType Name: " + typeName;
+    return typeName;
   }
   
   /**
@@ -174,9 +138,9 @@ public class ProtoBufType {
     }
     ProtoBufType other = (ProtoBufType) object;
 
-    return types.equals(other.types);
+    return stringEquals(types, other.types);
   }
-
+   
   /**
    * {@inheritDoc}
    */
@@ -186,5 +150,21 @@ public class ProtoBufType {
     } else {
       return super.hashCode();
     }
+  }
+
+  public static boolean stringEquals(CharSequence a, CharSequence b) {
+    if (a == b) return true;
+    int length;
+    if (a != null && b != null && (length = a.length()) == b.length()) {
+      if (a instanceof String && b instanceof String) {
+        return a.equals(b);
+      } else {
+        for (int i = 0; i < length; i++) {
+          if (a.charAt(i) != b.charAt(i)) return false;
+        }
+        return true;
+      }
+    }
+    return false;
   }
 }
