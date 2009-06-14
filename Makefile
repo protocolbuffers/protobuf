@@ -1,23 +1,18 @@
 
 .PHONY: all clean
 CC=gcc
-CFLAGS=-std=c99 -O3 -Wall -Wextra -pedantic
+CFLAGS=-std=c99
+CPPFLAGS=-O3 -Wall -Wextra -pedantic -g
 OBJ=upb_parse.o upb_table.o upb_struct.o descriptor.o
-all: $(OBJ)
+all: $(OBJ) test_table
 clean:
 	rm -f $(OBJ) tests
 
 upb_parse.o: upb_parse.c upb_parse.h
-	$(CC) $(CFLAGS) -o upb_parse.o -c upb_parse.c
-
 upb_table.o: upb_table.c upb_table.h
-	$(CC) $(CFLAGS) -o upb_table.o -c upb_table.c
-
 upb_struct.o: upb_struct.c upb_struct.h
-	$(CC) $(CFLAGS) -o upb_struct.o -c upb_struct.c
-
 descriptor.o: descriptor.c descriptor.h
-	$(CC) $(CFLAGS) -o descriptor.o -c descriptor.c
+test_table: test_table.cc upb_table.o
 
 tests: tests.c upb_parse.c upb_parse.h
 	$(CC) $(CFLAGS) -o tests tests.c

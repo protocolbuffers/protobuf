@@ -25,7 +25,7 @@ enum upb_wire_type {
   UPB_WIRE_TYPE_DELIMITED   = 2,
   UPB_WIRE_TYPE_START_GROUP = 3,
   UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5,
+  UPB_WIRE_TYPE_32BIT       = 5
 };
 typedef int8_t upb_wire_type_t;
 
@@ -94,7 +94,7 @@ typedef enum upb_status {
   UPB_ERROR_UNKNOWN_VALUE = 2,
 
   // A field was encoded with the wrong wire type.
-  UPB_ERROR_MISMATCHED_TYPE = 3,
+  UPB_ERROR_MISMATCHED_TYPE = 3
 } upb_status_t;
 
 #ifdef __cplusplus

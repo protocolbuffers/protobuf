@@ -13,17 +13,19 @@
 extern "C" {
 #endif
 
+/* Inttables are keyed by 32-bit integer. */
 typedef int32_t upb_inttable_key_t;
 
-#define UPB_END_OF_CHAIN (upb_inttable_key_t)-1
+#define UPB_EMPTY_ENTRY (upb_inttable_key_t)-1
 
 struct upb_inttable_entry {
   upb_inttable_key_t key;
-  int32_t next;
+  struct upb_inttable_entry *next;  /* Internal chaining. */
 };
 
 struct upb_inttable {
   uint32_t size;  /* Is a power of two. */
+  uint32_t entry_size;  /* How big is each entry? */
   void *entries;
 };
 
@@ -37,34 +39,36 @@ struct upb_inttable {
 void upb_inttable_init(struct upb_inttable *table, void *entries,
                        int num_entries, int entry_size);
 
-inline int32_t upb_inttable_hash(struct upb_inttable * table,
-                                 upb_inttable_key_t key) {
-  return key & (table->size-1);
-}
-
 /* Frees any data that was allocated by upb_inttable_init. */
 void upb_inttable_free(struct upb_inttable *table);
 
 inline struct upb_inttable_entry *upb_inttable_entry_get(
     void *entries, int32_t pos, int entry_size) {
-  return (struct upb_inttable_entry*)((char*)entries) + pos*entry_size;
+  return (struct upb_inttable_entry*)(((char*)entries) + pos*entry_size);
 }
 
-inline struct upb_inttable_entry *upb_inttable_get(
-    struct upb_inttable *table, int32_t pos, int entry_size) {
+inline struct upb_inttable_entry *upb_inttable_mainpos2(
+    struct upb_inttable *table, upb_inttable_key_t key, int32_t entry_size) {
+  /* Identity hash for integers. */
+  int32_t pos = key & (table->size-1);
   return upb_inttable_entry_get(table->entries, pos, entry_size);
+}
+
+inline struct upb_inttable_entry *upb_inttable_mainpos(
+    struct upb_inttable *table, upb_inttable_key_t key) {
+  return upb_inttable_mainpos2(table, key, table->entry_size);
 }
 
 /* Lookups up key in this table.  Inlined because this is in the critical path
  * of parsing. */
-inline void *upb_inttable_lookup(struct upb_inttable *table, int32_t key,
-                                 int entry_size) {
-  int32_t pos = upb_inttable_hash(table, key);
+inline void *upb_inttable_lookup(struct upb_inttable *table,
+                                 int32_t key,
+                                 int32_t entry_size) {
+  struct upb_inttable_entry *e = upb_inttable_mainpos2(table, key, entry_size);
   do {
-    struct upb_inttable_entry *e = upb_inttable_get(table, pos, entry_size);
     if (key == e->key) return e;
-    pos = e->next;
-  } while (pos != UPB_END_OF_CHAIN);
+    e = e->next;
+  } while (e);
   return NULL;  /* Not found. */
 }
 
