@@ -64,6 +64,11 @@ inline struct upb_inttable_entry *upb_inttable_mainpos(
 inline void *upb_inttable_lookup(struct upb_inttable *table,
                                  int32_t key,
                                  int32_t entry_size) {
+  /* TODO: experiment with Cuckoo Hashing, which can perform lookups without
+   * any branches, cf:
+   * http://www.cs.cmu.edu/~damon2006/pdf/zukowski06archconscioushashing.pdf.
+   * The tradeoff is having to calculate a second hash for every lookup, which
+   * will hurt the simple array case. */
   struct upb_inttable_entry *e = upb_inttable_mainpos2(table, key, entry_size);
   do {
     if (key == e->key) return e;
