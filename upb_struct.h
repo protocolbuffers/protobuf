@@ -29,6 +29,7 @@
 #ifndef PBSTRUCT_H_
 #define PBSTRUCT_H_
 
+#include "upb.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -134,67 +135,67 @@ UPB_DEFINE_PRIMITIVE_ARRAY(bool,     bool)
  *
  * These do no existence checks, bounds checks, or type checks. */
 
-#define UPB_DEFINE_ACCESSORS(ctype, name) \
-  inline ctype *upb_struct_get_ ## name ## _ptr( \
+#define UPB_DEFINE_ACCESSORS(ctype, name, INLINE) \
+  INLINE ctype *upb_struct_get_ ## name ## _ptr( \
       uint8_t *s, struct upb_struct_field *f) { \
     return (ctype*)(s + f->byte_offset); \
   } \
-  inline ctype upb_struct_get_ ## name( \
+  INLINE ctype upb_struct_get_ ## name( \
       uint8_t *s, struct upb_struct_field *f) { \
     return *upb_struct_get_ ## name ## _ptr(s, f); \
   } \
-  inline void upb_struct_set_ ## name( \
+  INLINE void upb_struct_set_ ## name( \
       uint8_t *s, struct upb_struct_field *f, ctype val) { \
     *upb_struct_get_ ## name ## _ptr(s, f) = val; \
   }
 
-#define UPB_DEFINE_ARRAY_ACCESSORS(ctype, name) \
-  inline ctype *upb_array_get_ ## name ## _ptr(struct upb_array *a, int n) { \
+#define UPB_DEFINE_ARRAY_ACCESSORS(ctype, name, INLINE) \
+  INLINE ctype *upb_array_get_ ## name ## _ptr(struct upb_array *a, int n) { \
     return ((ctype*)a->data) + n; \
   } \
-  inline ctype upb_array_get_ ## name(struct upb_array *a, int n) { \
+  INLINE ctype upb_array_get_ ## name(struct upb_array *a, int n) { \
     return *upb_array_get_ ## name ## _ptr(a, n); \
   } \
-  inline void upb_array_set_ ## name(struct upb_array *a, int n, ctype val) { \
+  INLINE void upb_array_set_ ## name(struct upb_array *a, int n, ctype val) { \
     *upb_array_get_ ## name ## _ptr(a, n) = val; \
   }
 
-#define UPB_DEFINE_ALL_ACCESSORS(ctype, name) \
-  UPB_DEFINE_ACCESSORS(ctype, name) \
-  UPB_DEFINE_ARRAY_ACCESSORS(ctype, name)
+#define UPB_DEFINE_ALL_ACCESSORS(ctype, name, INLINE) \
+  UPB_DEFINE_ACCESSORS(ctype, name, INLINE) \
+  UPB_DEFINE_ARRAY_ACCESSORS(ctype, name, INLINE)
 
-UPB_DEFINE_ALL_ACCESSORS(double,   double)
-UPB_DEFINE_ALL_ACCESSORS(float,    float)
-UPB_DEFINE_ALL_ACCESSORS(int32_t,  int32)
-UPB_DEFINE_ALL_ACCESSORS(int64_t,  int64)
-UPB_DEFINE_ALL_ACCESSORS(uint32_t, uint32)
-UPB_DEFINE_ALL_ACCESSORS(uint64_t, uint64)
-UPB_DEFINE_ALL_ACCESSORS(bool,     bool)
-UPB_DEFINE_ALL_ACCESSORS(struct upb_struct_delimited*, bytes)
-UPB_DEFINE_ALL_ACCESSORS(struct upb_struct_delimited*, string)
-UPB_DEFINE_ALL_ACCESSORS(uint8_t*, substruct)
-UPB_DEFINE_ACCESSORS(struct upb_array*, array)
+UPB_DEFINE_ALL_ACCESSORS(double,   double, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(float,    float,  INLINE)
+UPB_DEFINE_ALL_ACCESSORS(int32_t,  int32,  INLINE)
+UPB_DEFINE_ALL_ACCESSORS(int64_t,  int64,  INLINE)
+UPB_DEFINE_ALL_ACCESSORS(uint32_t, uint32, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(uint64_t, uint64, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(bool,     bool,   INLINE)
+UPB_DEFINE_ALL_ACCESSORS(struct upb_struct_delimited*, bytes, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(struct upb_struct_delimited*, string, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(uint8_t*, substruct, INLINE)
+UPB_DEFINE_ACCESSORS(struct upb_array*, array, INLINE)
 
 /* Functions for reading and writing the "set" flags in the pbstruct.  Note
  * that these do not perform any memory management associated with any dynamic
  * memory these fields may be referencing; that is the client's responsibility.
  * These *only* set and test the flags. */
-inline void upb_struct_set(uint8_t *s, struct upb_struct_field *f)
+INLINE void upb_struct_set(uint8_t *s, struct upb_struct_field *f)
 {
   s[f->isset_byte_offset] |= f->isset_byte_mask;
 }
 
-inline void upb_struct_unset(uint8_t *s, struct upb_struct_field *f)
+INLINE void upb_struct_unset(uint8_t *s, struct upb_struct_field *f)
 {
   s[f->isset_byte_offset] &= ~f->isset_byte_mask;
 }
 
-inline bool upb_struct_is_set(uint8_t *s, struct upb_struct_field *f)
+INLINE bool upb_struct_is_set(uint8_t *s, struct upb_struct_field *f)
 {
   return s[f->isset_byte_offset] & f->isset_byte_mask;
 }
 
-inline bool upb_struct_all_required_fields_set(
+INLINE bool upb_struct_all_required_fields_set(
     uint8_t *s, struct upb_struct_definition *d)
 {
   int num_fields = d->num_required_fields;
@@ -207,7 +208,7 @@ inline bool upb_struct_all_required_fields_set(
   return true;
 }
 
-inline void upb_struct_clear(uint8_t *s, struct upb_struct_definition *d)
+INLINE void upb_struct_clear(uint8_t *s, struct upb_struct_definition *d)
 {
   memset(s, 0, d->set_flags_bytes);
 }

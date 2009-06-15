@@ -27,7 +27,7 @@ upb_status_t parse_tag(uint8_t **buf, struct upb_tag *tag);
 
 extern upb_wire_type_t upb_expected_wire_types[];
 /* Returns true if wt is the correct on-the-wire type for ft. */
-inline bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
+INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
   return upb_expected_wire_types[ft] == wt;
 }
 

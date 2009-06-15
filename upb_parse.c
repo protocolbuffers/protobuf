@@ -4,6 +4,7 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
+#define INLINE
 #include "upb_parse.h"
 
 #include <assert.h>
@@ -262,4 +263,3 @@ upb_status_t upb_parse_value(uint8_t **b, upb_field_type_t ft,
   }
 #undef CASE
 }
-

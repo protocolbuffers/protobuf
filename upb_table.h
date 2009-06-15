@@ -42,26 +42,26 @@ void upb_inttable_init(struct upb_inttable *table, void *entries,
 /* Frees any data that was allocated by upb_inttable_init. */
 void upb_inttable_free(struct upb_inttable *table);
 
-inline struct upb_inttable_entry *upb_inttable_entry_get(
+INLINE struct upb_inttable_entry *upb_inttable_entry_get(
     void *entries, int32_t pos, int entry_size) {
   return (struct upb_inttable_entry*)(((char*)entries) + pos*entry_size);
 }
 
-inline struct upb_inttable_entry *upb_inttable_mainpos2(
+INLINE struct upb_inttable_entry *upb_inttable_mainpos2(
     struct upb_inttable *table, upb_inttable_key_t key, int32_t entry_size) {
   /* Identity hash for integers. */
   int32_t pos = key & (table->size-1);
   return upb_inttable_entry_get(table->entries, pos, entry_size);
 }
 
-inline struct upb_inttable_entry *upb_inttable_mainpos(
+INLINE struct upb_inttable_entry *upb_inttable_mainpos(
     struct upb_inttable *table, upb_inttable_key_t key) {
   return upb_inttable_mainpos2(table, key, table->entry_size);
 }
 
 /* Lookups up key in this table.  Inlined because this is in the critical path
  * of parsing. */
-inline void *upb_inttable_lookup(struct upb_inttable *table,
+INLINE void *upb_inttable_lookup(struct upb_inttable *table,
                                  int32_t key,
                                  int32_t entry_size) {
   /* TODO: experiment with Cuckoo Hashing, which can perform lookups without
