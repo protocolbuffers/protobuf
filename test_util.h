@@ -1,3 +1,6 @@
+/* Function for printing numbers using si prefixes (k, M, G, etc.).
+ * From http://www.cs.tut.fi/~jkorpela/c/eng.html */
+
 #define PREFIX_START (-24)
 /* Smallest power of then for which there is a prefix defined.
    If the set of prefixes will be extended, change this constant
@@ -8,7 +11,7 @@
 
 static char *eng(double value, int digits, int numeric)
 {
-  static char *prefix[] = {
+  static const char *prefix[] = {
   "y", "z", "a", "f", "p", "n", "u", "m", "",
   "k", "M", "G", "T", "P", "E", "Z", "Y"
   };
