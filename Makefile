@@ -2,10 +2,10 @@
 .PHONY: all clean
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -fgnu89-inline
+CFLAGS=-std=c99
 CPPFLAGS=-O3 -Wall -Wextra -pedantic -g
 OBJ=upb_parse.o upb_table.o upb_struct.o descriptor.o
-all: $(OBJ) test_table
+all: $(OBJ) test_table tests
 clean:
 	rm -f $(OBJ) tests
 
