@@ -98,30 +98,31 @@ static upb_status_t get_v_uint64_t(void *restrict *buf,
 static upb_status_t get_v_uint64_t(void *restrict *buf,
                                    uint64_t *restrict val)
 {
+  uint8_t *b = *buf;
   /* Endian-specific! */
-  uint64_t b0 = *(uint64_t*)*buf;
+  uint64_t b0 = *(uint64_t*)b;
 
   /* Put the 10 continuation bits in the bottom 10 bits of cont. */
   uint32_t cont = (b0 & 0x8080808080808080ULL) * 0x2040810204081ULL >> 56;
-  cont |= (*(*buf+8) & 0x80) << 1 | (*(*buf+9) & 0x80) << 2;
+  cont |= (*(b+8) & 0x80) << 1 | (*(b+9) & 0x80) << 2;
 
-  int num_bytes = __builtin_ctzll(~cont) + 1;
+  int num_bytes = __builtin_ffs(~cont);
   uint32_t part0 = 0, part1 = 0, part2 = 0;
 
   switch(num_bytes) {
     default: return UPB_ERROR_UNTERMINATED_VARINT;
-    case 10: part2 |= ((*buf)[9] & 0x7F) <<  7;
-    case 9:  part2 |= ((*buf)[8] & 0x7F)      ;
-    case 8:  part1 |= ((*buf)[7] & 0x7F) << 21;
-    case 7:  part1 |= ((*buf)[6] & 0x7F) << 14;
-    case 6:  part1 |= ((*buf)[5] & 0x7F) <<  7;
-    case 5:  part1 |= ((*buf)[4] & 0x7F)      ;
-    case 4:  part0 |= ((*buf)[3] & 0x7F) << 21;
-    case 3:  part0 |= ((*buf)[2] & 0x7F) << 14;
-    case 2:  part0 |= ((*buf)[1] & 0x7F) <<  7;
-    case 1:  part0 |= ((*buf)[0] & 0x7F)      ;
+    case 10: part2 |= (b[9] & 0x7F) <<  7;
+    case 9:  part2 |= (b[8] & 0x7F)      ;
+    case 8:  part1 |= (b[7] & 0x7F) << 21;
+    case 7:  part1 |= (b[6] & 0x7F) << 14;
+    case 6:  part1 |= (b[5] & 0x7F) <<  7;
+    case 5:  part1 |= (b[4] & 0x7F)      ;
+    case 4:  part0 |= (b[3] & 0x7F) << 21;
+    case 3:  part0 |= (b[2] & 0x7F) << 14;
+    case 2:  part0 |= (b[1] & 0x7F) <<  7;
+    case 1:  part0 |= (b[0] & 0x7F)      ;
   }
-  *buf += num_bytes;
+  *buf = b + num_bytes;
   *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
   return UPB_STATUS_OK;
 }
