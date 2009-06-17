@@ -53,6 +53,15 @@ namespace Google.ProtocolBuffers {
       this.missingFields = Lists.AsReadOnly(missingFields);
     }
 
+    
+    /// <summary>
+    /// Returns a read-only list of human-readable names of
+    /// required fields missing from this message. Each name
+    /// is a full path to a field, e.g. "foo.bar[5].baz"
+    /// </summary>
+    public IList<string> MissingFields {
+      get { return missingFields; }
+    }
 
     /// <summary>
     /// Converts this exception into an InvalidProtocolBufferException.
@@ -138,6 +147,3 @@ namespace Google.ProtocolBuffers {
     }
   }
 }
-
-  
-

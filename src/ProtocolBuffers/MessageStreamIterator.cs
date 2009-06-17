@@ -65,7 +65,6 @@ namespace Google.ProtocolBuffers {
 
     /// <summary>
     /// Works out the builder type for TMessage, or throws an ArgumentException to explain why it can't.
-    /// This will check 
     /// </summary>
     private static Type FindBuilderType() {
       MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", Type.EmptyTypes);
@@ -87,6 +86,9 @@ namespace Google.ProtocolBuffers {
       return builderType;
     }
 
+// This is only ever fetched by reflection, so the compiler may
+// complain that it's unused
+#pragma warning disable 0414
     /// <summary>
     /// Method we'll use to build messageReader, with the first parameter fixed to TMessage.CreateBuilder. Note that we
     /// have to introduce another type parameter (TMessage2) as we can't constrain TMessage for just a single method
@@ -101,8 +103,9 @@ namespace Google.ProtocolBuffers {
       TBuilder builder = builderBuilder();
       input.ReadMessage(builder, registry);
       return builder.Build();
-    }
-    
+        }
+#pragma warning restore 0414
+
     private static readonly uint ExpectedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
 
     private MessageStreamIterator(StreamProvider streamProvider, ExtensionRegistry extensionRegistry) {
