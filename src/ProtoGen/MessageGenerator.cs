@@ -140,8 +140,11 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // Force the static initialization code for the file to run, since it may
       // initialize static variables declared in this class.
       writer.WriteLine("static {0}() {{", ClassName);
-      // Note that the variable is needed just so we can access the property
-      writer.WriteLine("  pbd::FileDescriptor descriptor = {0}.Descriptor;", DescriptorUtil.GetFullUmbrellaClassName(Descriptor));
+      // We call object.ReferenceEquals() just to make it a valid statement on its own.
+      // Another option would be GetType(), but that causes problems in DescriptorProtoFile,
+      // where the bootstrapping is somewhat recursive - type initializers call
+      // each other, effectively. We temporarily see Descriptor as null.
+      writer.WriteLine("  object.ReferenceEquals({0}.Descriptor, null);", DescriptorUtil.GetFullUmbrellaClassName(Descriptor));
       writer.WriteLine("}");
 
       writer.Outdent();

@@ -346,7 +346,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static OptionsMessage() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCSharpOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCSharpOptionsProtoFile.Descriptor, null);
     }
   }
   

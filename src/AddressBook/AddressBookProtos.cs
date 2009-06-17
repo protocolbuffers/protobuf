@@ -357,7 +357,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
         }
         static PhoneNumber() {
-          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor;
+          object.ReferenceEquals(global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor, null);
         }
       }
       
@@ -707,7 +707,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
     }
     static Person() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor, null);
     }
   }
   
@@ -949,7 +949,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
     }
     static AddressBook() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.Examples.AddressBook.AddressBookProtos.Descriptor, null);
     }
   }
   

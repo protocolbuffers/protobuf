@@ -458,7 +458,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static FileDescriptorSet() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -1119,7 +1119,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static FileDescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -1398,7 +1398,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
         }
         static ExtensionRange() {
-          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+          object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
         }
       }
       
@@ -2003,7 +2003,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static DescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -2582,7 +2582,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static FieldDescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -2933,7 +2933,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static EnumDescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -3256,7 +3256,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static EnumValueDescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -3607,7 +3607,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static ServiceDescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -3973,7 +3973,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static MethodDescriptorProto() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -4404,7 +4404,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static FileOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -4692,7 +4692,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static MessageOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -5122,7 +5122,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static FieldOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -5369,7 +5369,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static EnumOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -5616,7 +5616,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static EnumValueOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -5863,7 +5863,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static ServiceOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -6110,7 +6110,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static MethodOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   
@@ -6392,7 +6392,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
         }
         static NamePart() {
-          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+          object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
         }
       }
       
@@ -6825,7 +6825,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static UninterpretedOption() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
   

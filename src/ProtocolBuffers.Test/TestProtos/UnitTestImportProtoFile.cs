@@ -270,7 +270,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static ImportMessage() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestImportProtoFile.Descriptor, null);
     }
   }
   

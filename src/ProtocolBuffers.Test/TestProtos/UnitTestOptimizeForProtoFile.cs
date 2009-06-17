@@ -253,7 +253,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestOptimizedForSize() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor, null);
     }
   }
   
@@ -384,7 +384,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestRequiredOptimizedForSize() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor, null);
     }
   }
   
@@ -533,7 +533,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestOptionalOptimizedForSize() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestOptimizeForProtoFile.Descriptor, null);
     }
   }
   

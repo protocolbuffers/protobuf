@@ -268,7 +268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static TestMessageSet() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor, null);
     }
   }
   
@@ -505,7 +505,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestMessageSetContainer() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor, null);
     }
   }
   
@@ -721,7 +721,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestMessageSetExtension1() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor, null);
     }
   }
   
@@ -938,7 +938,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestMessageSetExtension2() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor, null);
     }
   }
   
@@ -1220,7 +1220,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         static Item() {
-          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor;
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor, null);
         }
       }
       
@@ -1440,7 +1440,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static RawMessageSet() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestMessageSetProtoFile.Descriptor, null);
     }
   }
   

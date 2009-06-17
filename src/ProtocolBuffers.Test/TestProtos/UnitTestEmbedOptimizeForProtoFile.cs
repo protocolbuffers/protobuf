@@ -360,7 +360,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestEmbedOptimizedForSize() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestEmbedOptimizeForProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestEmbedOptimizeForProtoFile.Descriptor, null);
     }
   }
   

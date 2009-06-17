@@ -445,7 +445,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static CSharpFileOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
     }
   }
   
@@ -660,7 +660,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static CSharpFieldOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
     }
   }
   

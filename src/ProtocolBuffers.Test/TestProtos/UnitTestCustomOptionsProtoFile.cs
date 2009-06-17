@@ -604,7 +604,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestMessageWithCustomOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -777,7 +777,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static CustomOptionFooRequest() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -950,7 +950,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static CustomOptionFooResponse() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -1133,7 +1133,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static DummyMessageContainingEnum() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -1306,7 +1306,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static DummyMessageInvalidAsOptionType() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -1479,7 +1479,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static CustomOptionMinIntegerValues() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -1652,7 +1652,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static CustomOptionMaxIntegerValues() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -1825,7 +1825,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static CustomOptionOtherValues() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -1998,7 +1998,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static SettingRealsFromPositiveInts() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -2171,7 +2171,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static SettingRealsFromNegativeInts() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -2390,7 +2390,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static ComplexOptionType1() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -2630,7 +2630,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         static ComplexOptionType4() {
-          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
         }
       }
       
@@ -2961,7 +2961,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static ComplexOptionType2() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -3199,7 +3199,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         static ComplexOptionType5() {
-          pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
         }
       }
       
@@ -3458,7 +3458,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static ComplexOptionType3() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -3672,7 +3672,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static ComplexOpt6() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
@@ -3845,7 +3845,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static VariousComplexOptions() {
-      pbd::FileDescriptor descriptor = global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor;
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
     }
   }
   
