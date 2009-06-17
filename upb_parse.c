@@ -29,7 +29,7 @@
  * To avoid branches, none of these do bounds checking.  So we force clients
  * to overallocate their buffers by >=9 bytes. */
 
-static upb_status_t get_v_uint64_t(uint8_t *restrict *buf,
+static upb_status_t get_v_uint64_t(void *restrict *buf,
                                    uint64_t *restrict val)
 {
   uint8_t *ptr = *buf, b;
@@ -59,7 +59,7 @@ done:
 
 #if 0
 /* The no-branching version. */
-static upb_status_t get_v_uint64_t(uint8_t *restrict *buf,
+static upb_status_t get_v_uint64_t(void *restrict *buf,
                                    uint64_t *restrict val)
 {
   uint8_t *b = *buf;
@@ -95,7 +95,7 @@ static upb_status_t get_v_uint64_t(uint8_t *restrict *buf,
 }
 
 /* The single-branch version. */
-static upb_status_t get_v_uint64_t(uint8_t *restrict *buf,
+static upb_status_t get_v_uint64_t(void *restrict *buf,
                                    uint64_t *restrict val)
 {
   /* Endian-specific! */
@@ -127,7 +127,7 @@ static upb_status_t get_v_uint64_t(uint8_t *restrict *buf,
 }
 #endif
 
-static upb_status_t skip_v_uint64_t(uint8_t **buf)
+static upb_status_t skip_v_uint64_t(void **buf)
 {
   uint8_t *ptr = *buf, b;
   b = *(ptr++); if (!(b & 0x80)) goto done;
@@ -147,7 +147,7 @@ done:
   return UPB_STATUS_OK;
 }
 
-static upb_status_t get_v_uint32_t(uint8_t *restrict *buf,
+static upb_status_t get_v_uint32_t(void *restrict *buf,
                                    uint32_t *restrict val)
 {
   uint8_t *ptr = *buf, b;
@@ -167,24 +167,25 @@ done:
   return UPB_STATUS_OK;
 }
 
-static upb_status_t get_f_uint32_t(uint8_t *restrict *buf,
+static upb_status_t get_f_uint32_t(void *restrict *buf,
                                    uint32_t *restrict val)
 {
   uint8_t *b = *buf;
 #define SHL(val, bits) ((uint32_t)val << bits)
   *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
 #undef SHL
-  *buf += sizeof(uint32_t);
+  b += sizeof(uint32_t);
+  *buf = b;
   return UPB_STATUS_OK;
 }
 
-static upb_status_t skip_f_uint32_t(uint8_t **buf)
+static upb_status_t skip_f_uint32_t(void **buf)
 {
-  *buf += sizeof(uint32_t);
+  *buf = (char*)*buf + sizeof(uint32_t);
   return UPB_STATUS_OK;
 }
 
-static upb_status_t get_f_uint64_t(uint8_t *restrict *buf,
+static upb_status_t get_f_uint64_t(void *restrict *buf,
                                    uint64_t *restrict val)
 {
   uint8_t *b = *buf;
@@ -193,13 +194,14 @@ static upb_status_t get_f_uint64_t(uint8_t *restrict *buf,
   *val = SHL(b[0], 0)  | SHL(b[1], 8)  | SHL(b[2], 16) | SHL(b[3], 24) |
          SHL(b[4], 32) | SHL(b[5], 40) | SHL(b[6], 48) | SHL(b[7], 56);
 #undef SHL
-  *buf += sizeof(uint64_t);
+  b += sizeof(uint64_t);
+  *buf = b;
   return UPB_STATUS_OK;
 }
 
-static upb_status_t skip_f_uint64_t(uint8_t **buf)
+static upb_status_t skip_f_uint64_t(void **buf)
 {
-  *buf += sizeof(uint64_t);
+  *buf = (char*)*buf + sizeof(uint64_t);
   return UPB_STATUS_OK;
 }
 
@@ -213,7 +215,7 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   static void wvtov_ ## type(wire_t s, val_t *d)
 
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  static upb_status_t get_ ## type(uint8_t **buf, union upb_value *d) { \
+  static upb_status_t get_ ## type(void **buf, union upb_value *d) { \
     wire_t tmp; \
     CHECK(get_ ## v_or_f ## _ ## wire_t(buf, &tmp)); \
     wvtov_ ## type(tmp, &d->member_name); \
@@ -264,7 +266,7 @@ upb_wire_type_t upb_expected_wire_types[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64] = UPB_WIRE_TYPE_VARINT,
 };
 
-upb_status_t parse_tag(uint8_t **buf, struct upb_tag *tag)
+upb_status_t upb_parse_tag(void **buf, struct upb_tag *tag)
 {
   uint32_t tag_int;
   CHECK(get_v_uint32_t(buf, &tag_int));
@@ -273,12 +275,12 @@ upb_status_t parse_tag(uint8_t **buf, struct upb_tag *tag)
   return UPB_STATUS_OK;
 }
 
-upb_status_t parse_wire_value(uint8_t *buf, size_t *offset,
-                              upb_wire_type_t wt,
-                              union upb_wire_value *wv)
+upb_status_t upb_parse_wire_value(void *buf, size_t *offset,
+                                  upb_wire_type_t wt,
+                                  union upb_wire_value *wv)
 {
-#define READ(expr) CHECK(expr); *offset += (b-buf)
-  uint8_t *b = buf;
+#define READ(expr) CHECK(expr); *offset += ((char*)b-(char*)buf)
+  void *b = buf;
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT: READ(get_v_uint64_t(&b, &wv->varint)); break;
     case UPB_WIRE_TYPE_64BIT: READ(get_f_uint64_t(&b, &wv->_64bit)); break;
@@ -290,15 +292,15 @@ upb_status_t parse_wire_value(uint8_t *buf, size_t *offset,
       *offset += new_offset;
       break;
     case UPB_WIRE_TYPE_START_GROUP:
-    case UPB_WIRE_TYPE_END_GROUP: return UPB_ERROR_GROUP;  /* TODO */
+    case UPB_WIRE_TYPE_END_GROUP: break;
   }
   return UPB_STATUS_OK;
 }
 
-upb_status_t skip_wire_value(uint8_t *buf, size_t *offset,
-                             upb_wire_type_t wt)
+upb_status_t upb_skip_wire_value(void *buf, size_t *offset,
+                                 upb_wire_type_t wt)
 {
-  uint8_t *b = buf;
+  void *b = buf;
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT: READ(skip_v_uint64_t(&b)); break;
     case UPB_WIRE_TYPE_64BIT: READ(skip_f_uint64_t(&b)); break;
@@ -312,14 +314,14 @@ upb_status_t skip_wire_value(uint8_t *buf, size_t *offset,
       *offset += new_offset;
       break;
     }
-    case UPB_WIRE_TYPE_START_GROUP:
-    case UPB_WIRE_TYPE_END_GROUP: return UPB_ERROR_GROUP;  /* TODO */
+    case UPB_WIRE_TYPE_START_GROUP: /* TODO: skip to matching end group. */
+    case UPB_WIRE_TYPE_END_GROUP: break;
   }
   return UPB_STATUS_OK;
 #undef READ
 }
 
-upb_status_t upb_parse_value(uint8_t **b, upb_field_type_t ft,
+upb_status_t upb_parse_value(void **b, upb_field_type_t ft,
                              union upb_value *v)
 {
 #define CASE(t) \
@@ -332,7 +334,82 @@ upb_status_t upb_parse_value(uint8_t **b, upb_field_type_t ft,
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
       return get_UINT32(b, v);
-    default: return UPB_ERROR;  /* Including GROUP. */
+    default: return 0;  /* Including GROUP -- groups have no value. */
   }
 #undef CASE
+}
+
+static void pop_stack_frame(struct upb_parse_state *s)
+{
+  s->submsg_end_cb(s);
+  s->top--;
+  s->top = (struct upb_parse_stack_frame*)((char*)s->top - s->udata_size);
+}
+
+static upb_status_t push_stack_frame(struct upb_parse_state *s, size_t end,
+                                     void *user_field_desc)
+{
+  s->top++;
+  s->top = (struct upb_parse_stack_frame*)((char*)s->top + s->udata_size);
+  if(unlikely(s->top > s->limit)) return UPB_ERROR_STACK_OVERFLOW;
+  s->top->end_offset = end;
+  s->submsg_start_cb(s, user_field_desc);
+  return UPB_STATUS_OK;
+}
+
+upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
+                       size_t *read)
+{
+  size_t start_offset = s->offset;
+  size_t end_offset = start_offset + len;
+  while(!s->done && s->offset < end_offset) {
+    while(s->offset >= s->top->end_offset) pop_stack_frame(s);
+    while(s->packed_end_offset > s->offset) {
+      /* Parse a packed field entry. */
+    }
+
+    struct upb_tag tag;
+    void *b = buf;
+    CHECK(upb_parse_tag(&b, &tag));
+    int tag_bytes = ((char*)b - (char*)buf);
+    s->offset += tag_bytes;
+    buf = b;
+    if(unlikely(tag.wire_type == UPB_WIRE_TYPE_END_GROUP)) {
+      if(unlikely(s->top->end_offset != 0)) return UPB_ERROR_SPURIOUS_END_GROUP;
+      pop_stack_frame(s);
+      continue;
+    }
+
+    void *user_field_desc;
+    upb_field_type_t ft = s->tag_cb(s, &tag, &user_field_desc);
+    if(ft == 0) {
+      CHECK(upb_skip_wire_value(b, &s->offset, tag.wire_type));
+    } else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
+      /* No length specified, an "end group" tag will mark the end. */
+      push_stack_frame(s, 0, user_field_desc);
+    } else {
+      /* For all other cases we parse the next value. */
+      union upb_value v;
+      CHECK(upb_parse_value(&b, ft, &v));
+      if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
+        /* The value we parsed is the length of the submessage. */
+        push_stack_frame(s, s->offset + v.delim_len, user_field_desc);
+      } else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING ||
+                ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES) {
+        s->value_cb(s, &v, b, user_field_desc);
+        b = (char*)b + v.delim_len;
+      } else if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
+        /* Delimited data which is not a string, bytes, or a submessage.
+         * It must be a packed array. */
+        s->packed_type = ft;
+        s->packed_end_offset = s->offset + v.delim_len;
+      } else {
+        /* The common case: a simple value. */
+        CHECK(upb_parse_value(&b, ft, &v));
+        s->value_cb(s, &v, b, user_field_desc);
+      }
+    }
+  }
+  *read = s->offset - start_offset;
+  return UPB_STATUS_OK;
 }

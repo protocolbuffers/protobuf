@@ -37,7 +37,7 @@ enum upb_wire_type {
   UPB_WIRE_TYPE_END_GROUP   = 4,
   UPB_WIRE_TYPE_32BIT       = 5
 };
-typedef int8_t upb_wire_type_t;
+typedef uint8_t upb_wire_type_t;
 
 /* A value as it is encoded on-the-wire, except delimited, which is handled
  * separately. */
@@ -48,8 +48,10 @@ union upb_wire_value {
 };
 
 /* Value type as defined in a .proto file.  The values of this are defined by
- * google_protobuf_FieldDescriptorProto_Type (from descriptor.proto).  */
-typedef int32_t upb_field_type_t;
+ * google_protobuf_FieldDescriptorProto_Type (from descriptor.proto).
+ * Note that descriptor.proto reserves "0" for errors, and we use it to
+ * represent exceptional circumstances. */
+typedef uint8_t upb_field_type_t;
 
 /* A value as described in a .proto file, except delimited, which is handled
  * separately. */
@@ -76,35 +78,21 @@ struct upb_tag {
 /* Status codes used as a return value. */
 typedef enum upb_status {
   UPB_STATUS_OK = 0,
-  UPB_STATUS_SUBMESSAGE_END = 1,
-
-  /** FATAL ERRORS: these indicate corruption, and cannot be recovered. */
 
   // A varint did not terminate before hitting 64 bits.
   UPB_ERROR_UNTERMINATED_VARINT = -1,
 
-  // A submessage ended in the middle of data.
+  // A submessage or packed array ended in the middle of data.
   UPB_ERROR_BAD_SUBMESSAGE_END = -2,
 
-  // Encountered a "group" on the wire (deprecated and unsupported).
-  UPB_ERROR_GROUP = -3,
-
   // Input was nested more than UPB_MAX_NESTING deep.
-  UPB_ERROR_STACK_OVERFLOW = -4,
+  UPB_ERROR_STACK_OVERFLOW = -3,
 
   // The input data caused the pb's offset (a size_t) to overflow.
-  UPB_ERROR_OVERFLOW = -5,
+  UPB_ERROR_OVERFLOW = -4,
 
-  // Generic error.
-  UPB_ERROR = -6,
-
-  /** NONFATAL ERRORS: the input was invalid, but we can continue if desired. */
-
-  // A value was encountered that was not defined in the .proto file.
-  UPB_ERROR_UNKNOWN_VALUE = 2,
-
-  // A field was encoded with the wrong wire type.
-  UPB_ERROR_MISMATCHED_TYPE = 3
+  // An "end group" tag was encountered in an inappropriate place.
+  UPB_ERROR_SPURIOUS_END_GROUP = -5
 } upb_status_t;
 
 #ifdef __cplusplus

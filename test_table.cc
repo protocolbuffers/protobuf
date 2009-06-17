@@ -189,4 +189,3 @@ int main()
   test(keys4, 64);
   delete[] keys4;
 }
-
