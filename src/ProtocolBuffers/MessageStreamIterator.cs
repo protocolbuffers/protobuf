@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers {
 
 // This is only ever fetched by reflection, so the compiler may
 // complain that it's unused
-#pragma warning disable 0414
+#pragma warning disable 0169
     /// <summary>
     /// Method we'll use to build messageReader, with the first parameter fixed to TMessage.CreateBuilder. Note that we
     /// have to introduce another type parameter (TMessage2) as we can't constrain TMessage for just a single method
