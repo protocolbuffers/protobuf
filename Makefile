@@ -16,4 +16,4 @@ descriptor.o: descriptor.c descriptor.h
 test_table: test_table.cc upb_table.o
 
 tests: tests.c upb_parse.c upb_parse.h
-	$(CC) $(CFLAGS) -o tests tests.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o tests tests.c
