@@ -235,8 +235,8 @@ namespace Google.ProtocolBuffers {
         bufferPos += size;
         return result;
       }
-      // Slow path:  Build a byte array first then copy it.
-      return Encoding.UTF8.GetString(ReadRawBytes(size));
+      // Slow path: Build a byte array first then copy it.
+      return Encoding.UTF8.GetString(ReadRawBytes(size), 0, size);
     }
 
     /// <summary>

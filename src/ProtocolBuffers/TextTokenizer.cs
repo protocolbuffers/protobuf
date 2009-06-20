@@ -69,9 +69,15 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     private int previousColumn = 0;
 
+#if SILVERLIGHT
+    private const RegexOptions CompiledRegexWhereAvailable = RegexOptions.None;
+#else
+    private const RegexOptions CompiledRegexWhereAvailable = RegexOptions.Compiled;
+#endif
+
     // Note: atomic groups used to mimic possessive quantifiers in Java in both of these regexes
     private static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(?>(\\s|(#.*$))+)", 
-        RegexOptions.Compiled | RegexOptions.Multiline);
+        CompiledRegexWhereAvailable | RegexOptions.Multiline);
     private static readonly Regex TokenPattern = new Regex(
       "\\G[a-zA-Z_](?>[0-9a-zA-Z_+-]*)|" +              // an identifier
       "\\G[0-9+-](?>[0-9a-zA-Z_.+-]*)|" +                  // a number
@@ -79,9 +85,9 @@ namespace Google.ProtocolBuffers {
       "\\G\'(?>([^\"\\\n\\\\]|\\\\.)*)(\'|\\\\?$)",      // a single-quoted string
       RegexOptions.Compiled | RegexOptions.Multiline);
 
-    private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex FloatInfinity = new Regex("^-?inf(inity)?f?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex FloatNan = new Regex("^nanf?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$", CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
+    private static readonly Regex FloatInfinity = new Regex("^-?inf(inity)?f?$", CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
+    private static readonly Regex FloatNan = new Regex("^nanf?$", CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
 
     /** Construct a tokenizer that parses tokens from the given text. */
     public TextTokenizer(string text) {

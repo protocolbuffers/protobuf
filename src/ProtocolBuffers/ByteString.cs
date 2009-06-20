@@ -116,7 +116,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public string ToString(Encoding encoding) {
-      return encoding.GetString(bytes);
+      return encoding.GetString(bytes, 0, bytes.Length);
     }
 
     public string ToStringUtf8() {

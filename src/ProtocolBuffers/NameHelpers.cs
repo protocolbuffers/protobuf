@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Globalization;
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -31,7 +32,7 @@ namespace Google.ProtocolBuffers {
         char c = input[i];
         if ('a' <= c && c <= 'z') {
           if (capitaliseNext) {
-            result.Append(char.ToUpperInvariant(c));
+            result.Append(char.ToUpper(c, CultureInfo.InvariantCulture));
           } else {
             result.Append(c);
           }
@@ -40,7 +41,7 @@ namespace Google.ProtocolBuffers {
           if (i == 0 && !pascal) {
             // Force first letter to lower-case unless explicitly told to
             // capitalize it.
-            result.Append(char.ToLowerInvariant(c));
+            result.Append(char.ToLower(c, CultureInfo.InvariantCulture));
           } else {
             // Capital letters after the first are left as-is.
             result.Append(c);
