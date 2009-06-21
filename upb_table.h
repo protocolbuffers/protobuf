@@ -2,6 +2,14 @@
  * upb - a minimalist implementation of protocol buffers.
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+ *
+ * This file defines very fast int->struct (inttable) and string->struct
+ * (strtable) hash tables.  The struct can be of any size, and it is stored
+ * in the table itself, for cache-friendly performance.
+ *
+ * The table uses internal chaining with Brent's variation (inspired by the
+ * Lua implementation of hash tables).  The hash function for strings is
+ * Austin Appleby's "MurmurHash."
  */
 
 #ifndef UPB_TABLE_H_
