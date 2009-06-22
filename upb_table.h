@@ -23,6 +23,9 @@ extern "C" {
 
 typedef uint32_t upb_inttable_key_t;
 
+#define UPB_END_OF_CHAIN (uint32_t)0
+#define UPB_INDEX(base, i, m) (void*)((char*)base + (i*m))
+
 struct upb_inttable_entry {
   upb_inttable_key_t key;
   uint32_t next;  /* Internal chaining. */
@@ -78,8 +81,8 @@ INLINE uint32_t upb_strtable_size(struct upb_strtable *t) {
 void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e);
 void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e);
 
-INLINE uint32_t upb_inttable_hash(struct upb_inttable *t, upb_inttable_key_t k) {
-  return k & (upb_inttable_size(t)-1);  /* Identity hash for ints. */
+INLINE uint32_t upb_inttable_bucket(struct upb_inttable *t, upb_inttable_key_t k) {
+  return (k & (upb_inttable_size(t)-1)) + 1;  /* Identity hash for ints. */
 }
 
 /* Looks up key in this table.  Inlined because this is in the critical path
@@ -88,14 +91,13 @@ INLINE uint32_t upb_inttable_hash(struct upb_inttable *t, upb_inttable_key_t k) 
  * compiler more ability to optimize. */
 INLINE void *upb_inttable_lookup(struct upb_inttable *t,
                                  uint32_t key, uint32_t entry_size) {
-  uint32_t hash = upb_inttable_hash(t, key);
-  while(1) {
-    struct upb_inttable_entry *e =
-        (struct upb_inttable_entry*)(char*)t->t.entries + hash*entry_size;
-    if(e->key == 0) return NULL;
-    else if(e->key == key) return e;
-    hash = e->next;
-  }
+  uint32_t bucket = upb_inttable_bucket(t, key);
+  struct upb_inttable_entry *e;
+  do {
+    e = UPB_INDEX(t->t.entries, bucket-1, entry_size);
+    if(e->key == key) return e;
+  } while((bucket = e->next) != UPB_END_OF_CHAIN);
+  return NULL;  /* Not found. */
 }
 
 void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key);
