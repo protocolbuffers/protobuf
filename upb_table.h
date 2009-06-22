@@ -21,69 +21,84 @@
 extern "C" {
 #endif
 
-/* Inttables are keyed by 32-bit integer. */
-typedef int32_t upb_inttable_key_t;
-
-#define UPB_EMPTY_ENTRY (upb_inttable_key_t)-1
+typedef uint32_t upb_inttable_key_t;
 
 struct upb_inttable_entry {
   upb_inttable_key_t key;
-  struct upb_inttable_entry *next;  /* Internal chaining. */
+  uint32_t next;  /* Internal chaining. */
+};
+
+/* TODO: consider storing the hash in the entry.  This would avoid the need to
+ * rehash on table resizes, but more importantly could possibly improve lookup
+ * performance by letting us compare hashes before comparing lengths or the
+ * strings themselves. */
+struct upb_strtable_entry {
+  struct upb_string key;
+  uint32_t next;  /* Internal chaining. */
+};
+
+struct upb_table {
+  void *entries;
+  uint32_t count;       /* How many elements are currently in the table? */
+  uint16_t entry_size;  /* How big is each entry? */
+  uint8_t size_lg2;     /* The table is 2^size_lg2 in size. */
+};
+
+struct upb_strtable {
+  struct upb_table t;
 };
 
 struct upb_inttable {
-  uint32_t size;  /* Is a power of two. */
-  uint32_t entry_size;  /* How big is each entry? */
-  void *entries;
+  struct upb_table t;
 };
 
-/* Builds an int32_t -> <entry> table, optimized for very fast lookup by
- * number.  table is a pointer to a previously allocated upb_inttable.
- * entries points to an array of the desired entries themselves, each of size
- * entry_size.  The table is allocated in dynamic memory, and does not reference
- * the data in entries.  Entries may be modified by the function.
- *
- * The table must be freed with upb_inttable_free. */
-void upb_inttable_init(struct upb_inttable *table, void *entries,
-                       int num_entries, int entry_size);
-
-/* Frees any data that was allocated by upb_inttable_init. */
+/* Initialize and free a table, respectively.  Specify the initial size
+ * with 'size' (the size will be increased as necessary).  Entry size
+ * specifies how many bytes each entry in the table is. */
+void upb_inttable_init(struct upb_inttable *table,
+                       uint32_t size, uint16_t entry_size);
 void upb_inttable_free(struct upb_inttable *table);
+void upb_strtable_init(struct upb_strtable *table,
+                       uint32_t size, uint16_t entry_size);
+void upb_strtable_free(struct upb_strtable *table);
 
-INLINE struct upb_inttable_entry *upb_inttable_entry_get(
-    void *entries, int32_t pos, int entry_size) {
-  return (struct upb_inttable_entry*)(((char*)entries) + pos*entry_size);
+INLINE uint32_t upb_table_size(struct upb_table *t) { return 1 << t->size_lg2; }
+INLINE uint32_t upb_inttable_size(struct upb_inttable *t) {
+  return upb_table_size(&t->t);
+}
+INLINE uint32_t upb_strtable_size(struct upb_strtable *t) {
+  return upb_table_size(&t->t);
 }
 
-INLINE struct upb_inttable_entry *upb_inttable_mainpos2(
-    struct upb_inttable *table, upb_inttable_key_t key, int32_t entry_size) {
-  /* Identity hash for integers. */
-  int32_t pos = key & (table->size-1);
-  return upb_inttable_entry_get(table->entries, pos, entry_size);
+/* Inserts the given key into the hashtable with the given value.  The key must
+ * not already exist in the hash table.  The data will be copied from e into
+ * the hashtable (the amount of data copied comes from entry_size when the
+ * table was constructed).  Therefore the data at val may be freed once the
+ * call returns. */
+void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e);
+void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e);
+
+INLINE uint32_t upb_inttable_hash(struct upb_inttable *t, upb_inttable_key_t k) {
+  return k & (upb_inttable_size(t)-1);  /* Identity hash for ints. */
 }
 
-INLINE struct upb_inttable_entry *upb_inttable_mainpos(
-    struct upb_inttable *table, upb_inttable_key_t key) {
-  return upb_inttable_mainpos2(table, key, table->entry_size);
+/* Looks up key in this table.  Inlined because this is in the critical path
+ * of parsing.  We have the caller specify the entry_size because fixing
+ * this as a literal (instead of reading table->entry_size) gives the
+ * compiler more ability to optimize. */
+INLINE void *upb_inttable_lookup(struct upb_inttable *t,
+                                 uint32_t key, uint32_t entry_size) {
+  uint32_t hash = upb_inttable_hash(t, key);
+  while(1) {
+    struct upb_inttable_entry *e =
+        (struct upb_inttable_entry*)(char*)t->t.entries + hash*entry_size;
+    if(e->key == 0) return NULL;
+    else if(e->key == key) return e;
+    hash = e->next;
+  }
 }
 
-/* Lookups up key in this table.  Inlined because this is in the critical path
- * of parsing. */
-INLINE void *upb_inttable_lookup(struct upb_inttable *table,
-                                 int32_t key,
-                                 int32_t entry_size) {
-  /* TODO: experiment with Cuckoo Hashing, which can perform lookups without
-   * any branches, cf:
-   * http://www.cs.cmu.edu/~damon2006/pdf/zukowski06archconscioushashing.pdf.
-   * The tradeoff is having to calculate a second hash for every lookup, which
-   * will hurt the simple array case. */
-  struct upb_inttable_entry *e = upb_inttable_mainpos2(table, key, entry_size);
-  do {
-    if (key == e->key) return e;
-    e = e->next;
-  } while (e);
-  return NULL;  /* Not found. */
-}
+void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key);
 
 #ifdef __cplusplus
 }  /* extern "C" */

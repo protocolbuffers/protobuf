@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>  /* for size_t. */
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,6 +28,17 @@ extern "C" {
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit. */
 #define UPB_MAX_NESTING 64
+
+/* Represents a string or bytes. */
+struct upb_string {
+  void *data;
+  uint32_t byte_len;
+};
+
+INLINE bool upb_string_eql(struct upb_string *s1, struct upb_string *s2) {
+  return s1->byte_len == s2->byte_len &&
+         memcmp(s1->data, s2->data, s1->byte_len) == 0;
+}
 
 /* A list of types as they are encoded on-the-wire. */
 enum upb_wire_type {

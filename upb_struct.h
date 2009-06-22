@@ -67,29 +67,23 @@ struct upb_struct_field *upb_struct_find_field_by_number(
 
 /* Variable-length data (strings and arrays).**********************************/
 
-/* Represents a string or bytes. */
-struct upb_string {
-  size_t byte_len;
-  void *data;
-};
-
 /* Represents an array (a repeated field) of any type.  The interpretation of
  * the data in the array depends on the type. */
 struct upb_array {
-  size_t len;     /* Measured in elements. */
   void *data;  /* Size of individual elements is based on type. */
+  uint32_t len;     /* Measured in elements. */
 };
 
 /* A generic array of structs, using void* instead of specific types. */
 struct upb_struct_array {
-  size_t len;
   void **elements;
+  uint32_t len;
 };
 
 /* An array of strings. */
 struct upb_string_array {
-  size_t len;
   struct upb_string **elements;
+  uint32_t len;
 };
 
 /* Specific arrays of all the primitive types. */
