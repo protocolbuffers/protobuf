@@ -52,15 +52,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       using (TextWriter textWriter = File.CreateText(Path.Combine(options.OutputDirectory, descriptor.CSharpOptions.UmbrellaClassname + ".cs"))) {
         TextGenerator writer = new TextGenerator(textWriter);        
         ucg.Generate(writer);
-        /*
-        GenerateSiblings(umbrellaSource, descriptor, descriptor.MessageTypes);
-        GenerateSiblings(umbrellaSource, descriptor, descriptor.EnumTypes);
-        GenerateSiblings(umbrellaSource, descriptor, descriptor.Services);*/
       }
-    }
-
-    private static void GenerateSiblings<T>(SourceFileGenerator parentSourceGenerator, FileDescriptor file, IEnumerable<T> siblings)
-        where T : IDescriptor {
     }
 
     /// <summary>
