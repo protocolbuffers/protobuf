@@ -4,7 +4,6 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
-#define INLINE
 #include "upb_parse.h"
 
 #include <assert.h>
@@ -56,22 +55,11 @@ done:
 
 static upb_status_t skip_v_uint64_t(void **buf)
 {
-  uint8_t *ptr = *buf, b;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
-  b = *(ptr++); if (!(b & 0x80)) goto done;
+  for(int i = 0; i < 10; i++, *buf++) {
+    uint8_t *b = *buf;
+    if(!(*b & 0x80)) return UPB_STATUS_OK;
+  }
   return UPB_ERROR_UNTERMINATED_VARINT;
-
-done:
-  *buf = (uint8_t*)ptr;
-  return UPB_STATUS_OK;
 }
 
 static upb_status_t get_v_uint32_t(void *restrict *buf,
