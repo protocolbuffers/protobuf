@@ -47,12 +47,11 @@ extern "C" {
 
 /* Structure definition. ******************************************************/
 
-/* One single field of the struct. */
 struct upb_msg_field {
   uint32_t byte_offset;        /* Where to find the data. */
   uint16_t isset_byte_offset;  /* The byte where the "set" bit lives. */
   uint8_t isset_byte_mask;
-  uint8_t type;         /* Copied from the descriptor for cache-friendliness. */
+  upb_field_type_t type;  /* Copied from descriptor for cache-friendliness. */
   struct google_protobuf_FieldDescriptorProto *descriptor;
   union {
     struct upb_msg *msg;
@@ -60,7 +59,6 @@ struct upb_msg_field {
   } ref;
 };
 
-/* Definition of a complete struct. */
 struct upb_msg {
   struct google_protobuf_DescriptorProto *descriptor;
   size_t size;
@@ -71,6 +69,9 @@ struct upb_msg {
   struct upb_strtable fields_by_name;
   struct upb_msg_field fields[];
 };
+
+void upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
+void upb_msg_free(struct upb_msg *m);
 
 /* While these are written to be as fast as possible, it will still be faster
  * to cache the results of this lookup if possible.  These return NULL if no
