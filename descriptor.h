@@ -1,6 +1,6 @@
 /* Auto-generated from descriptor.proto.  Do not edit. */
 
-#include "upb_struct.h"
+#include "upb_msg.h"
 
 /* Enums. */
 

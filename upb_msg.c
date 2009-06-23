@@ -3,5 +3,4 @@
  *
  */
 
-#define INLINE
-#include "upb_struct.h"
+#include "upb_msg.h"

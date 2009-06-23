@@ -3,11 +3,15 @@
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  *
- * upb_struct defines an in-memory byte-level format for storing protobufs.  It
- * is very much like a C struct that you can define at run-time, but also
- * supports reflection.  Like C structs it supports offset-based access, as
- * opposed to the much slower name-based lookup.  The format represents both
- * the values themselves and bits describing whether each field is set or not.
+ * upb_msg contains a full description of a message as defined in a .proto file.
+ * This allows for run-time reflection over .proto types, but also defines an
+ * in-memory byte-level format for storing protobufs.
+ *
+ * The in-memory format is very much like a C struct that you can define at
+ * run-time, but also supports reflection.  Like C structs it supports
+ * offset-based access, as opposed to the much slower name-based lookup.  The
+ * format represents both the values themselves and bits describing whether each
+ * field is set or not.
  *
  * The upb compiler emits C structs that mimic this definition exactly, so that
  * you can access the same hunk of memory using either this run-time
@@ -29,11 +33,13 @@
 #ifndef PBSTRUCT_H_
 #define PBSTRUCT_H_
 
-#include "upb.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "upb.h"
+#include "upb_table.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,28 +48,35 @@ extern "C" {
 /* Structure definition. ******************************************************/
 
 /* One single field of the struct. */
-struct upb_struct_field {
-  ptrdiff_t byte_offset;        /* Where to find the data. */
-  ptrdiff_t isset_byte_offset;  /* The byte where the "set" bit lives. */
+struct upb_msg_field {
+  uint32_t byte_offset;        /* Where to find the data. */
+  uint16_t isset_byte_offset;  /* The byte where the "set" bit lives. */
   uint8_t isset_byte_mask;
+  uint8_t type;         /* Copied from the descriptor for cache-friendliness. */
+  struct google_protobuf_FieldDescriptorProto *descriptor;
+  union {
+    struct upb_msg *msg;
+    struct upb_enum *_enum;
+  } ref;
 };
 
 /* Definition of a complete struct. */
-struct upb_struct_definition {
+struct upb_msg {
+  struct google_protobuf_DescriptorProto *descriptor;
   size_t size;
   int num_fields;
   int set_flags_bytes;
   int num_required_fields;  /* Required fields have the lowest set bytemasks. */
-  struct upb_struct_field fields[];
+  struct upb_inttable fields_by_num;
+  struct upb_strtable fields_by_name;
+  struct upb_msg_field fields[];
 };
 
 /* While these are written to be as fast as possible, it will still be faster
  * to cache the results of this lookup if possible.  These return NULL if no
  * such field is found. */
-struct upb_struct_field *upb_struct_find_field_by_name(
-  struct upb_struct_definition *d, char *name);
-struct upb_struct_field *upb_struct_find_field_by_number(
-  struct upb_struct_definition *d, uint32_t number);
+struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m, char *name);
+struct upb_msg_field *upb_msg_fieldbynumber(struct upb_msg *m, uint32_t number);
 
 /* Variable-length data (strings and arrays).**********************************/
 
@@ -75,7 +88,7 @@ struct upb_array {
 };
 
 /* A generic array of structs, using void* instead of specific types. */
-struct upb_struct_array {
+struct upb_msg_array {
   void **elements;
   uint32_t len;
 };
@@ -115,9 +128,9 @@ UPB_DEFINE_PRIMITIVE_ARRAY(bool,     bool)
 /* For each primitive type we define a set of six functions:
  *
  *  // For fetching out of a struct (s points to the raw struct data).
- *  int32_t *upb_struct_get_int32_ptr(void *s, struct upb_struct_field *f);
- *  int32_t upb_struct_get_int32(void *s, struct upb_struct_field *f);
- *  void upb_struct_set_int32(void *s, struct upb_struct_field *f, int32_t val);
+ *  int32_t *upb_msg_get_int32_ptr(void *s, struct upb_msg_field *f);
+ *  int32_t upb_msg_get_int32(void *s, struct upb_msg_field *f);
+ *  void upb_msg_set_int32(void *s, struct upb_msg_field *f, int32_t val);
  *
  *  // For fetching out of an array.
  *  int32_t *upb_array_get_int32_ptr(struct upb_array *a, int n);
@@ -130,17 +143,17 @@ UPB_DEFINE_PRIMITIVE_ARRAY(bool,     bool)
  * These do no existence checks, bounds checks, or type checks. */
 
 #define UPB_DEFINE_ACCESSORS(ctype, name, INLINE) \
-  INLINE ctype *upb_struct_get_ ## name ## _ptr( \
-      void *s, struct upb_struct_field *f) { \
+  INLINE ctype *upb_msg_get_ ## name ## _ptr( \
+      void *s, struct upb_msg_field *f) { \
     return (ctype*)((char*)s + f->byte_offset); \
   } \
-  INLINE ctype upb_struct_get_ ## name( \
-      void *s, struct upb_struct_field *f) { \
-    return *upb_struct_get_ ## name ## _ptr(s, f); \
+  INLINE ctype upb_msg_get_ ## name( \
+      void *s, struct upb_msg_field *f) { \
+    return *upb_msg_get_ ## name ## _ptr(s, f); \
   } \
-  INLINE void upb_struct_set_ ## name( \
-      void *s, struct upb_struct_field *f, ctype val) { \
-    *upb_struct_get_ ## name ## _ptr(s, f) = val; \
+  INLINE void upb_msg_set_ ## name( \
+      void *s, struct upb_msg_field *f, ctype val) { \
+    *upb_msg_get_ ## name ## _ptr(s, f) = val; \
   }
 
 #define UPB_DEFINE_ARRAY_ACCESSORS(ctype, name, INLINE) \
@@ -165,8 +178,8 @@ UPB_DEFINE_ALL_ACCESSORS(int64_t,  int64,  INLINE)
 UPB_DEFINE_ALL_ACCESSORS(uint32_t, uint32, INLINE)
 UPB_DEFINE_ALL_ACCESSORS(uint64_t, uint64, INLINE)
 UPB_DEFINE_ALL_ACCESSORS(bool,     bool,   INLINE)
-UPB_DEFINE_ALL_ACCESSORS(struct upb_struct_delimited*, bytes, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(struct upb_struct_delimited*, string, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, bytes, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, string, INLINE)
 UPB_DEFINE_ALL_ACCESSORS(void*, substruct, INLINE)
 UPB_DEFINE_ACCESSORS(struct upb_array*, array, INLINE)
 
@@ -174,25 +187,24 @@ UPB_DEFINE_ACCESSORS(struct upb_array*, array, INLINE)
  * that these do not perform any memory management associated with any dynamic
  * memory these fields may be referencing; that is the client's responsibility.
  * These *only* set and test the flags. */
-INLINE void upb_struct_set(void *s, struct upb_struct_field *f)
+INLINE void upb_msg_set(void *s, struct upb_msg_field *f)
 {
   ((char*)s)[f->isset_byte_offset] |= f->isset_byte_mask;
 }
 
-INLINE void upb_struct_unset(void *s, struct upb_struct_field *f)
+INLINE void upb_msg_unset(void *s, struct upb_msg_field *f)
 {
   ((char*)s)[f->isset_byte_offset] &= ~f->isset_byte_mask;
 }
 
-INLINE bool upb_struct_is_set(void *s, struct upb_struct_field *f)
+INLINE bool upb_msg_is_set(void *s, struct upb_msg_field *f)
 {
   return ((char*)s)[f->isset_byte_offset] & f->isset_byte_mask;
 }
 
-INLINE bool upb_struct_all_required_fields_set(
-    void *s, struct upb_struct_definition *d)
+INLINE bool upb_msg_all_required_fields_set(void *s, struct upb_msg *m)
 {
-  int num_fields = d->num_required_fields;
+  int num_fields = m->num_required_fields;
   int i = 0;
   while(num_fields > 8) {
     if(((uint8_t*)s)[i++] != 0xFF) return false;
@@ -202,9 +214,9 @@ INLINE bool upb_struct_all_required_fields_set(
   return true;
 }
 
-INLINE void upb_struct_clear(void *s, struct upb_struct_definition *d)
+INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 {
-  memset(s, 0, d->set_flags_bytes);
+  memset(s, 0, m->set_flags_bytes);
 }
 
 #ifdef __cplusplus
