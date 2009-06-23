@@ -55,9 +55,12 @@ done:
 
 static upb_status_t skip_v_uint64_t(void **buf)
 {
-  for(int i = 0; i < 10; i++, *buf++) {
-    uint8_t *b = *buf;
-    if(!(*b & 0x80)) return UPB_STATUS_OK;
+  uint8_t *b = *buf;
+  for(int i = 0; i < 10; i++, b++) {
+    if(!(*b & 0x80)) {
+      *buf = b;
+      return UPB_STATUS_OK;
+    }
   }
   return UPB_ERROR_UNTERMINATED_VARINT;
 }
