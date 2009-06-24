@@ -212,7 +212,7 @@ upb_status_t upb_parse_wire_value(void *buf, size_t *offset,
       READ(get_v_uint32_t(&b, &wv->_32bit));
       size_t new_offset = *offset + wv->_32bit;
       if (new_offset < *offset) return UPB_ERROR_OVERFLOW;
-      *offset += new_offset;
+      *offset = new_offset;
       break;
     case UPB_WIRE_TYPE_START_GROUP:
     case UPB_WIRE_TYPE_END_GROUP: break;
@@ -234,7 +234,7 @@ upb_status_t upb_skip_wire_value(void *buf, size_t *offset,
       READ(get_v_uint32_t(&b, &len));
       size_t new_offset = *offset + len;
       if (new_offset < *offset) return UPB_ERROR_OVERFLOW;
-      *offset += new_offset;
+      *offset = new_offset;
       break;
     }
     case UPB_WIRE_TYPE_START_GROUP: /* TODO: skip to matching end group. */
@@ -328,7 +328,6 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
         s->packed_end_offset = s->offset + v.delim_len;
       } else {
         /* The common case: a simple value. */
-        CHECK(upb_parse_value(&b, ft, &v));
         s->value_cb(s, &v, b, user_field_desc);
       }
     }
