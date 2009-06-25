@@ -18,6 +18,7 @@ namespace Google.ProtocolBuffers {
 
     private readonly StreamProvider streamProvider;
     private readonly ExtensionRegistry extensionRegistry;
+    private readonly int sizeLimit;
 
     /// <summary>
     /// Delegate created via reflection trickery (once per type) to create a builder
@@ -103,17 +104,22 @@ namespace Google.ProtocolBuffers {
       TBuilder builder = builderBuilder();
       input.ReadMessage(builder, registry);
       return builder.Build();
-        }
+    }
 #pragma warning restore 0414
 
     private static readonly uint ExpectedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
 
-    private MessageStreamIterator(StreamProvider streamProvider, ExtensionRegistry extensionRegistry) {
+    private MessageStreamIterator(StreamProvider streamProvider, ExtensionRegistry extensionRegistry, int sizeLimit) {
       if (messageReader == null) {
         throw typeInitializationException;
       }
       this.streamProvider = streamProvider;
       this.extensionRegistry = extensionRegistry;
+      this.sizeLimit = sizeLimit;
+    }
+
+    private MessageStreamIterator(StreamProvider streamProvider, ExtensionRegistry extensionRegistry) 
+      : this (streamProvider, extensionRegistry, CodedInputStream.DefaultSizeLimit) {
     }
 
     /// <summary>
@@ -121,7 +127,16 @@ namespace Google.ProtocolBuffers {
     /// but the specified extension registry.
     /// </summary>
     public MessageStreamIterator<TMessage> WithExtensionRegistry(ExtensionRegistry newRegistry) {
-      return new MessageStreamIterator<TMessage>(streamProvider, newRegistry);
+      return new MessageStreamIterator<TMessage>(streamProvider, newRegistry, sizeLimit);
+    }
+
+    /// <summary>
+    /// Creates a new instance which uses the same stream provider and extension registry as this one,
+    /// but with the specified size limit. Note that this must be big enough for the largest message
+    /// and the tag and size preceding it.
+    /// </summary>
+    public MessageStreamIterator<TMessage> WithSizeLimit(int newSizeLimit) {
+      return new MessageStreamIterator<TMessage>(streamProvider, extensionRegistry, newSizeLimit);
     }
 
     public static MessageStreamIterator<TMessage> FromFile(string file) {
@@ -135,12 +150,14 @@ namespace Google.ProtocolBuffers {
     public IEnumerator<TMessage> GetEnumerator() {
       using (Stream stream = streamProvider()) {
         CodedInputStream input = CodedInputStream.CreateInstance(stream);
+        input.SetSizeLimit(sizeLimit);
         uint tag;
         while ((tag = input.ReadTag()) != 0) {
           if (tag != ExpectedTag) {
             throw InvalidProtocolBufferException.InvalidMessageStreamTag();
           }
           yield return messageReader(input, extensionRegistry);
+          input.ResetSizeCounter();
         }
       }
     }

@@ -61,9 +61,9 @@ namespace Google.ProtocolBuffers {
     private readonly Stream input;
     private uint lastTag = 0;
 
-    const int DefaultRecursionLimit = 64;
-    const int DefaultSizeLimit = 64 << 20; // 64MB
-    const int BufferSize = 4096;
+    internal const int DefaultRecursionLimit = 64;
+    internal const int DefaultSizeLimit = 64 << 20; // 64MB
+    internal const int BufferSize = 4096;
     
     /// <summary>
     /// The total number of bytes read before the current buffer. The
@@ -741,7 +741,7 @@ namespace Google.ProtocolBuffers {
     /// Read one byte from the input.
     /// </summary>
     /// <exception cref="InvalidProtocolBufferException">
-    /// he end of the stream or the current limit was reached
+    /// the end of the stream or the current limit was reached
     /// </exception>
     public byte ReadRawByte() {
       if (bufferPos == bufferSize) {
