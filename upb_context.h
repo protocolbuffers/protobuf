@@ -42,7 +42,7 @@ struct upb_context {
 
 /* Initializes and frees a upb_context, respectively.  Newly initialized
  * contexts will always have the types in descriptor.proto defined. */
-void upb_context_init(struct upb_context *c);
+bool upb_context_init(struct upb_context *c);
 void upb_context_free(struct upb_context *c);
 
 /* Looking up symbols. ********************************************************/

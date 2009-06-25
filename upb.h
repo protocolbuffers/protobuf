@@ -67,6 +67,14 @@ union upb_wire_value {
  * represent exceptional circumstances. */
 typedef uint8_t upb_field_type_t;
 
+struct upb_type_info {
+  uint8_t align;
+  uint8_t size;
+  uint8_t expected_wire_type;
+};
+
+extern struct upb_type_info upb_type_info[];
+
 /* A value as described in a .proto file, except delimited, which is handled
  * separately. */
 union upb_value {

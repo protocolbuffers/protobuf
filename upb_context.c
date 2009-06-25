@@ -4,7 +4,6 @@
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include "descriptor.h"
@@ -17,12 +16,13 @@ int memrchr(char *data, char c, size_t len)
   return off;
 }
 
-void upb_context_init(struct upb_context *c)
+bool upb_context_init(struct upb_context *c)
 {
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
   if(!upb_context_addfd(c, &google_protobuf_filedescriptor, UPB_ONREDEF_ERROR))
-    assert(false);
+    return false;  /* Indicates that upb is buggy or corrupt. */
+  return true;
 }
 
 void upb_context_free(struct upb_context *c)

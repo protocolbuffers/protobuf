@@ -48,15 +48,23 @@ extern "C" {
 /* Structure definition. ******************************************************/
 
 struct upb_msg_field {
-  uint32_t byte_offset;        /* Where to find the data. */
-  uint16_t isset_byte_offset;  /* The byte where the "set" bit lives. */
-  uint8_t isset_byte_mask;
-  upb_field_type_t type;  /* Copied from descriptor for cache-friendliness. */
-  struct google_protobuf_FieldDescriptorProto *descriptor;
+  uint32_t byte_offset;     /* Where to find the data. */
+  uint32_t field_index:24;  /* Indexes upb_msg.fields. Also indicates set bit */
+  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
   union {
-    struct upb_msg *msg;
-    struct upb_enum *_enum;
+    struct upb_msg *msg;    /* Set if type == MESSAGE */
+    struct upb_enum *_enum; /* Set if type == ENUM */
   } ref;
+};
+
+struct upb_fieldsbynum_entry {
+  struct upb_inttable_entry e;
+  struct upb_msg_field f;
+};
+
+struct upb_fieldsbyname_entry {
+  struct upb_strtable_entry e;
+  struct upb_msg_field f;
 };
 
 struct upb_msg {
@@ -70,16 +78,27 @@ struct upb_msg {
   struct upb_msg_field *fields;
 };
 
-/* Initialize and free a upb_msg.  Note that init does not resolve
- * upb_msg_field.ref -- that is left to the caller. */
-void upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
+/* Initialize and free a upb_msg.  Caller retains ownership of d, but the msg
+ * will contain references to it, so it must outlive the msg.  Note that init
+ * does not resolve upb_msg_field.ref -- that is left to the caller. */
+bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
 void upb_msg_free(struct upb_msg *m);
 
 /* While these are written to be as fast as possible, it will still be faster
  * to cache the results of this lookup if possible.  These return NULL if no
  * such field is found. */
-struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m, char *name);
-struct upb_msg_field *upb_msg_fieldbynumber(struct upb_msg *m, uint32_t number);
+INLINE struct upb_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
+                                                uint32_t number) {
+  struct upb_fieldsbynum_entry *e = upb_inttable_lookup(
+      &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
+  return e ? &e->f : NULL;
+}
+INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
+                                                 struct upb_string *name) {
+  struct upb_fieldsbyname_entry *e =
+      upb_strtable_lookup(&m->fields_by_name, name);
+  return e ? &e->f : NULL;
+}
 
 /* Variable-length data (strings and arrays).**********************************/
 
@@ -186,23 +205,31 @@ UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, string, INLINE)
 UPB_DEFINE_ALL_ACCESSORS(void*, substruct, INLINE)
 UPB_DEFINE_ACCESSORS(struct upb_array*, array, INLINE)
 
+INLINE size_t upb_isset_offset(uint32_t field_index) {
+  return field_index / 8;
+}
+
+INLINE size_t upb_isset_mask(uint32_t field_index) {
+  return 1 << (field_index % 8);
+}
+
 /* Functions for reading and writing the "set" flags in the pbstruct.  Note
  * that these do not perform any memory management associated with any dynamic
  * memory these fields may be referencing; that is the client's responsibility.
  * These *only* set and test the flags. */
 INLINE void upb_msg_set(void *s, struct upb_msg_field *f)
 {
-  ((char*)s)[f->isset_byte_offset] |= f->isset_byte_mask;
+  ((char*)s)[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
 }
 
 INLINE void upb_msg_unset(void *s, struct upb_msg_field *f)
 {
-  ((char*)s)[f->isset_byte_offset] &= ~f->isset_byte_mask;
+  ((char*)s)[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
 }
 
 INLINE bool upb_msg_is_set(void *s, struct upb_msg_field *f)
 {
-  return ((char*)s)[f->isset_byte_offset] & f->isset_byte_mask;
+  return ((char*)s)[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
 }
 
 INLINE bool upb_msg_all_required_fields_set(void *s, struct upb_msg *m)
