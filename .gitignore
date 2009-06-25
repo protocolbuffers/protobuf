@@ -22,6 +22,8 @@ dist/
 *.suo
 _ReSharper.*
 *.sln.cache
-mono/*.dll
+mono/bin
 mono/tmp
-mono/*.exe
+mono/protoc
+mono/TestResult.xml
+mono/.libs

@@ -19,10 +19,11 @@ PROTOS_DIR=../protos
 
 cd tmp
 echo Generating new source
-mono ../ProtoGen.exe compiled.pb
+mono ../bin/ProtoGen.exe compiled.pb
 
 echo Copying source into place
 cp DescriptorProtoFile.cs CSharpOptions.cs ../../src/ProtocolBuffers/DescriptorProtos
 cp UnitTest*.cs ../../src/ProtocolBuffers.Test/TestProtos
 cp AddressBookProtos.cs ../../src/AddressBook
 cd ..
+rm -rf tmp
