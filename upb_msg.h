@@ -67,9 +67,11 @@ struct upb_msg {
   int num_required_fields;  /* Required fields have the lowest set bytemasks. */
   struct upb_inttable fields_by_num;
   struct upb_strtable fields_by_name;
-  struct upb_msg_field fields[];
+  struct upb_msg_field *fields;
 };
 
+/* Initialize and free a upb_msg.  Note that init does not resolve
+ * upb_msg_field.ref -- that is left to the caller. */
 void upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
 void upb_msg_free(struct upb_msg *m);
 

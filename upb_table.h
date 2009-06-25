@@ -94,7 +94,7 @@ INLINE void *upb_inttable_lookup(struct upb_inttable *t,
   uint32_t bucket = upb_inttable_bucket(t, key);
   struct upb_inttable_entry *e;
   do {
-    e = UPB_INDEX(t->t.entries, bucket-1, entry_size);
+    e = (struct upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket-1, entry_size);
     if(e->key == key) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;  /* Not found. */

@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include "descriptor.h"
 #include "upb_context.h"
@@ -72,6 +73,19 @@ bool upb_context_addfd(struct upb_context *c,
                        google_protobuf_FileDescriptorProto *fd,
                        int onredef)
 {
-  /* TODO */
+  /* TODO: properly handle redefinitions and unresolvable symbols. */
+  if(fd->set_flags.has.message_type) {
+    for(unsigned int i = 0; i < fd->message_type->len; i++) {
+      struct google_protobuf_DescriptorProto *d = fd->message_type->elements[i];
+      if(!d->set_flags.has.name) return false;
+      struct upb_symtab_entry e;
+      e.e.key = *d->name;
+      e.type = UPB_SYM_MESSAGE;
+      e.p.msg = malloc(sizeof(*e.p.msg));
+      upb_msg_init(e.p.msg, d);
+      upb_strtable_insert(&c->symtab, &e.e);
+    }
+  }
+  /* TODO: handle enums, extensions, and services. */
   return true;
 }

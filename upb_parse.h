@@ -37,7 +37,11 @@ void upb_parse_state_free(struct upb_parse_state *state);
  *
  * The client can set user_field_desc to a record describing this field -- this
  * pointer will be supplied to the value callback (for simple values) or the
- * submsg_start callback (for submessages).  */
+ * submsg_start callback (for submessages).
+ *
+ * TODO: there needs to be a way to skip a delimited field while still knowing
+ * its offset and length.  That could be through this callback or it could be a
+ * separate callback. */
 typedef upb_field_type_t (*upb_tag_cb)(struct upb_parse_state *s,
                                        struct upb_tag *tag,
                                        void **user_field_desc);
