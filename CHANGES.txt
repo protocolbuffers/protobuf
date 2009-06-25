@@ -1,3 +1,13 @@
+????-??-?? version 2.1.1:
+
+  C++
+  * Fixed bug where Message.Swap(Message) was only implemented for
+    optimize_for_speed.  Swap now properly implemented in both modes
+    (Issue 91).
+  * Added RemoveLast and SwapElements(index1, index2) to Reflection
+    interface for repeated elements.
+  * Added Swap(Message) to Reflection interface.
+
 2009-05-13 version 2.1.0:
 
   General

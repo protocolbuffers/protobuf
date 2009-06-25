@@ -807,6 +807,14 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
   MergeFrom(from);
 }
 
+bool FileDescriptorSet::IsInitialized() const {
+  
+  for (int i = 0; i < file_size(); i++) {
+    if (!this->file(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
 void FileDescriptorSet::Swap(FileDescriptorSet* other) {
   if (other != this) {
     file_.Swap(&other->file_);
@@ -814,14 +822,6 @@ void FileDescriptorSet::Swap(FileDescriptorSet* other) {
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool FileDescriptorSet::IsInitialized() const {
-  
-  for (int i = 0; i < file_size(); i++) {
-    if (!this->file(i).IsInitialized()) return false;
-  }
-  return true;
 }
 
 const ::google::protobuf::Descriptor* FileDescriptorSet::GetDescriptor() const {
@@ -1274,22 +1274,6 @@ void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
   MergeFrom(from);
 }
 
-void FileDescriptorProto::Swap(FileDescriptorProto* other) {
-  if (other != this) {
-    std::swap(name_, other->name_);
-    std::swap(package_, other->package_);
-    dependency_.Swap(&other->dependency_);
-    message_type_.Swap(&other->message_type_);
-    enum_type_.Swap(&other->enum_type_);
-    service_.Swap(&other->service_);
-    extension_.Swap(&other->extension_);
-    std::swap(options_, other->options_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool FileDescriptorProto::IsInitialized() const {
   
   for (int i = 0; i < message_type_size(); i++) {
@@ -1308,6 +1292,22 @@ bool FileDescriptorProto::IsInitialized() const {
     if (!this->options().IsInitialized()) return false;
   }
   return true;
+}
+
+void FileDescriptorProto::Swap(FileDescriptorProto* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(package_, other->package_);
+    dependency_.Swap(&other->dependency_);
+    message_type_.Swap(&other->message_type_);
+    enum_type_.Swap(&other->enum_type_);
+    service_.Swap(&other->service_);
+    extension_.Swap(&other->extension_);
+    std::swap(options_, other->options_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
 }
 
 const ::google::protobuf::Descriptor* FileDescriptorProto::GetDescriptor() const {
@@ -1536,6 +1536,11 @@ void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRan
   MergeFrom(from);
 }
 
+bool DescriptorProto_ExtensionRange::IsInitialized() const {
+  
+  return true;
+}
+
 void DescriptorProto_ExtensionRange::Swap(DescriptorProto_ExtensionRange* other) {
   if (other != this) {
     std::swap(start_, other->start_);
@@ -1544,11 +1549,6 @@ void DescriptorProto_ExtensionRange::Swap(DescriptorProto_ExtensionRange* other)
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool DescriptorProto_ExtensionRange::IsInitialized() const {
-  
-  return true;
 }
 
 const ::google::protobuf::Descriptor* DescriptorProto_ExtensionRange::GetDescriptor() const {
@@ -1960,21 +1960,6 @@ void DescriptorProto::CopyFrom(const DescriptorProto& from) {
   MergeFrom(from);
 }
 
-void DescriptorProto::Swap(DescriptorProto* other) {
-  if (other != this) {
-    std::swap(name_, other->name_);
-    field_.Swap(&other->field_);
-    extension_.Swap(&other->extension_);
-    nested_type_.Swap(&other->nested_type_);
-    enum_type_.Swap(&other->enum_type_);
-    extension_range_.Swap(&other->extension_range_);
-    std::swap(options_, other->options_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool DescriptorProto::IsInitialized() const {
   
   for (int i = 0; i < field_size(); i++) {
@@ -1993,6 +1978,21 @@ bool DescriptorProto::IsInitialized() const {
     if (!this->options().IsInitialized()) return false;
   }
   return true;
+}
+
+void DescriptorProto::Swap(DescriptorProto* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    field_.Swap(&other->field_);
+    extension_.Swap(&other->extension_);
+    nested_type_.Swap(&other->nested_type_);
+    enum_type_.Swap(&other->enum_type_);
+    extension_range_.Swap(&other->extension_range_);
+    std::swap(options_, other->options_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
 }
 
 const ::google::protobuf::Descriptor* DescriptorProto::GetDescriptor() const {
@@ -2546,6 +2546,14 @@ void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
   MergeFrom(from);
 }
 
+bool FieldDescriptorProto::IsInitialized() const {
+  
+  if (has_options()) {
+    if (!this->options().IsInitialized()) return false;
+  }
+  return true;
+}
+
 void FieldDescriptorProto::Swap(FieldDescriptorProto* other) {
   if (other != this) {
     std::swap(name_, other->name_);
@@ -2560,14 +2568,6 @@ void FieldDescriptorProto::Swap(FieldDescriptorProto* other) {
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool FieldDescriptorProto::IsInitialized() const {
-  
-  if (has_options()) {
-    if (!this->options().IsInitialized()) return false;
-  }
-  return true;
 }
 
 const ::google::protobuf::Descriptor* FieldDescriptorProto::GetDescriptor() const {
@@ -2839,17 +2839,6 @@ void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
   MergeFrom(from);
 }
 
-void EnumDescriptorProto::Swap(EnumDescriptorProto* other) {
-  if (other != this) {
-    std::swap(name_, other->name_);
-    value_.Swap(&other->value_);
-    std::swap(options_, other->options_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool EnumDescriptorProto::IsInitialized() const {
   
   for (int i = 0; i < value_size(); i++) {
@@ -2859,6 +2848,17 @@ bool EnumDescriptorProto::IsInitialized() const {
     if (!this->options().IsInitialized()) return false;
   }
   return true;
+}
+
+void EnumDescriptorProto::Swap(EnumDescriptorProto* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    value_.Swap(&other->value_);
+    std::swap(options_, other->options_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
 }
 
 const ::google::protobuf::Descriptor* EnumDescriptorProto::GetDescriptor() const {
@@ -3132,6 +3132,14 @@ void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
   MergeFrom(from);
 }
 
+bool EnumValueDescriptorProto::IsInitialized() const {
+  
+  if (has_options()) {
+    if (!this->options().IsInitialized()) return false;
+  }
+  return true;
+}
+
 void EnumValueDescriptorProto::Swap(EnumValueDescriptorProto* other) {
   if (other != this) {
     std::swap(name_, other->name_);
@@ -3141,14 +3149,6 @@ void EnumValueDescriptorProto::Swap(EnumValueDescriptorProto* other) {
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool EnumValueDescriptorProto::IsInitialized() const {
-  
-  if (has_options()) {
-    if (!this->options().IsInitialized()) return false;
-  }
-  return true;
 }
 
 const ::google::protobuf::Descriptor* EnumValueDescriptorProto::GetDescriptor() const {
@@ -3420,17 +3420,6 @@ void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
   MergeFrom(from);
 }
 
-void ServiceDescriptorProto::Swap(ServiceDescriptorProto* other) {
-  if (other != this) {
-    std::swap(name_, other->name_);
-    method_.Swap(&other->method_);
-    std::swap(options_, other->options_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool ServiceDescriptorProto::IsInitialized() const {
   
   for (int i = 0; i < method_size(); i++) {
@@ -3440,6 +3429,17 @@ bool ServiceDescriptorProto::IsInitialized() const {
     if (!this->options().IsInitialized()) return false;
   }
   return true;
+}
+
+void ServiceDescriptorProto::Swap(ServiceDescriptorProto* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    method_.Swap(&other->method_);
+    std::swap(options_, other->options_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
 }
 
 const ::google::protobuf::Descriptor* ServiceDescriptorProto::GetDescriptor() const {
@@ -3760,6 +3760,14 @@ void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
   MergeFrom(from);
 }
 
+bool MethodDescriptorProto::IsInitialized() const {
+  
+  if (has_options()) {
+    if (!this->options().IsInitialized()) return false;
+  }
+  return true;
+}
+
 void MethodDescriptorProto::Swap(MethodDescriptorProto* other) {
   if (other != this) {
     std::swap(name_, other->name_);
@@ -3770,14 +3778,6 @@ void MethodDescriptorProto::Swap(MethodDescriptorProto* other) {
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool MethodDescriptorProto::IsInitialized() const {
-  
-  if (has_options()) {
-    if (!this->options().IsInitialized()) return false;
-  }
-  return true;
 }
 
 const ::google::protobuf::Descriptor* MethodDescriptorProto::GetDescriptor() const {
@@ -4163,6 +4163,15 @@ void FileOptions::CopyFrom(const FileOptions& from) {
   MergeFrom(from);
 }
 
+bool FileOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void FileOptions::Swap(FileOptions* other) {
   if (other != this) {
     std::swap(java_package_, other->java_package_);
@@ -4175,15 +4184,6 @@ void FileOptions::Swap(FileOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool FileOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* FileOptions::GetDescriptor() const {
@@ -4425,6 +4425,15 @@ void MessageOptions::CopyFrom(const MessageOptions& from) {
   MergeFrom(from);
 }
 
+bool MessageOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void MessageOptions::Swap(MessageOptions* other) {
   if (other != this) {
     std::swap(message_set_wire_format_, other->message_set_wire_format_);
@@ -4434,15 +4443,6 @@ void MessageOptions::Swap(MessageOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool MessageOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* MessageOptions::GetDescriptor() const {
@@ -4821,6 +4821,15 @@ void FieldOptions::CopyFrom(const FieldOptions& from) {
   MergeFrom(from);
 }
 
+bool FieldOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void FieldOptions::Swap(FieldOptions* other) {
   if (other != this) {
     std::swap(ctype_, other->ctype_);
@@ -4833,15 +4842,6 @@ void FieldOptions::Swap(FieldOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool FieldOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* FieldOptions::GetDescriptor() const {
@@ -5043,6 +5043,15 @@ void EnumOptions::CopyFrom(const EnumOptions& from) {
   MergeFrom(from);
 }
 
+bool EnumOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void EnumOptions::Swap(EnumOptions* other) {
   if (other != this) {
     uninterpreted_option_.Swap(&other->uninterpreted_option_);
@@ -5051,15 +5060,6 @@ void EnumOptions::Swap(EnumOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool EnumOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* EnumOptions::GetDescriptor() const {
@@ -5261,6 +5261,15 @@ void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
   MergeFrom(from);
 }
 
+bool EnumValueOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void EnumValueOptions::Swap(EnumValueOptions* other) {
   if (other != this) {
     uninterpreted_option_.Swap(&other->uninterpreted_option_);
@@ -5269,15 +5278,6 @@ void EnumValueOptions::Swap(EnumValueOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool EnumValueOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* EnumValueOptions::GetDescriptor() const {
@@ -5479,6 +5479,15 @@ void ServiceOptions::CopyFrom(const ServiceOptions& from) {
   MergeFrom(from);
 }
 
+bool ServiceOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void ServiceOptions::Swap(ServiceOptions* other) {
   if (other != this) {
     uninterpreted_option_.Swap(&other->uninterpreted_option_);
@@ -5487,15 +5496,6 @@ void ServiceOptions::Swap(ServiceOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool ServiceOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* ServiceOptions::GetDescriptor() const {
@@ -5697,6 +5697,15 @@ void MethodOptions::CopyFrom(const MethodOptions& from) {
   MergeFrom(from);
 }
 
+bool MethodOptions::IsInitialized() const {
+  
+  for (int i = 0; i < uninterpreted_option_size(); i++) {
+    if (!this->uninterpreted_option(i).IsInitialized()) return false;
+  }
+  
+  if (!_extensions_.IsInitialized()) return false;  return true;
+}
+
 void MethodOptions::Swap(MethodOptions* other) {
   if (other != this) {
     uninterpreted_option_.Swap(&other->uninterpreted_option_);
@@ -5705,15 +5714,6 @@ void MethodOptions::Swap(MethodOptions* other) {
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);
   }
-}
-
-bool MethodOptions::IsInitialized() const {
-  
-  for (int i = 0; i < uninterpreted_option_size(); i++) {
-    if (!this->uninterpreted_option(i).IsInitialized()) return false;
-  }
-  
-  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 const ::google::protobuf::Descriptor* MethodOptions::GetDescriptor() const {
@@ -5945,6 +5945,12 @@ void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& 
   MergeFrom(from);
 }
 
+bool UninterpretedOption_NamePart::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  
+  return true;
+}
+
 void UninterpretedOption_NamePart::Swap(UninterpretedOption_NamePart* other) {
   if (other != this) {
     std::swap(name_part_, other->name_part_);
@@ -5953,12 +5959,6 @@ void UninterpretedOption_NamePart::Swap(UninterpretedOption_NamePart* other) {
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool UninterpretedOption_NamePart::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
-  
-  return true;
 }
 
 const ::google::protobuf::Descriptor* UninterpretedOption_NamePart::GetDescriptor() const {
@@ -6342,6 +6342,14 @@ void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
   MergeFrom(from);
 }
 
+bool UninterpretedOption::IsInitialized() const {
+  
+  for (int i = 0; i < name_size(); i++) {
+    if (!this->name(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
 void UninterpretedOption::Swap(UninterpretedOption* other) {
   if (other != this) {
     name_.Swap(&other->name_);
@@ -6354,14 +6362,6 @@ void UninterpretedOption::Swap(UninterpretedOption* other) {
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
-}
-
-bool UninterpretedOption::IsInitialized() const {
-  
-  for (int i = 0; i < name_size(); i++) {
-    if (!this->name(i).IsInitialized()) return false;
-  }
-  return true;
 }
 
 const ::google::protobuf::Descriptor* UninterpretedOption::GetDescriptor() const {

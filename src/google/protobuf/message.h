@@ -97,7 +97,7 @@
 //     // Use the reflection interface to examine the contents.
 //     const Reflection* reflection = foo->GetReflection();
 //     assert(reflection->GetString(foo, text_field) == "Hello World!");
-//     assert(reflection->CountField(foo, numbers_field) == 3);
+//     assert(reflection->FieldSize(foo, numbers_field) == 3);
 //     assert(reflection->GetInt32(foo, numbers_field, 0) == 1);
 //     assert(reflection->GetInt32(foo, numbers_field, 1) == 5);
 //     assert(reflection->GetInt32(foo, numbers_field, 2) == 42);
@@ -493,6 +493,25 @@ class LIBPROTOBUF_EXPORT Reflection {
   // FieldSize() returns zero.
   virtual void ClearField(Message* message,
                           const FieldDescriptor* field) const = 0;
+
+  // Remove the last element of a repeated field.
+  // We don't provide a way to remove any element other than the last
+  // because it invites inefficient use, such as O(n^2) filtering loops
+  // that should have been O(n).  If you want to remove an element other
+  // than the last, the best way to do it is to re-arrange the elements
+  // (using Swap()) so that the one you want removed is at the end, then
+  // call RemoveLast().
+  virtual void RemoveLast(Message* message,
+                          const FieldDescriptor* field) const = 0;
+
+  // Swap the complete contents of two messages.
+  virtual void Swap(Message* message1, Message* message2) const = 0;
+
+  // Swap two elements of a repeated field.
+  virtual void SwapElements(Message* message,
+                    const FieldDescriptor* field,
+                    int index1,
+                    int index2) const = 0;
 
   // List all fields of the message which are currently set.  This includes
   // extensions.  Singular fields will only be listed if HasField(field) would

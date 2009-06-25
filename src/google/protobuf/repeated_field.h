@@ -86,6 +86,9 @@ class LIBPROTOBUF_EXPORT GenericRepeatedField {
   virtual void* GenericMutable(int index) = 0;
   virtual void* GenericAdd() = 0;
   virtual void GenericClear() = 0;
+  virtual void GenericRemoveLast() = 0;
+  virtual void GenericSwap(GenericRepeatedField *other) = 0;
+  virtual void GenericSwapElements(int index1, int index2) = 0;
   virtual int GenericSize() const = 0;
   virtual int GenericSpaceUsedExcludingSelf() const = 0;
 
@@ -135,6 +138,9 @@ class RepeatedField : public internal::GenericRepeatedField {
   // Swap entire contents with "other".
   void Swap(RepeatedField* other);
 
+  // Swap two elements of a repeated field.
+  void SwapElements(int index1, int index2);
+
   // STL-like iterator support
   typedef Element* iterator;
   typedef const Element* const_iterator;
@@ -154,6 +160,9 @@ class RepeatedField : public internal::GenericRepeatedField {
   void* GenericMutable(int index);
   void* GenericAdd();
   void GenericClear();
+  void GenericRemoveLast();
+  void GenericSwap(GenericRepeatedField *other);
+  void GenericSwapElements(int index1, int index2);
   int GenericSize() const;
   int GenericSpaceUsedExcludingSelf() const;
 
@@ -214,6 +223,9 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   // Swap entire contents with "other".
   void Swap(RepeatedPtrField* other);
 
+  // Swap two elements of a repeated field.
+  void SwapElements(int index1, int index2);
+
   // STL-like iterator support
   typedef internal::RepeatedPtrIterator<Element**> iterator;
   typedef internal::RepeatedPtrIterator<const Element* const*> const_iterator;
@@ -266,6 +278,9 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   void* GenericMutable(int index);
   void* GenericAdd();
   void GenericClear();
+  void GenericRemoveLast();
+  void GenericSwap(GenericRepeatedField *other);
+  void GenericSwapElements(int index1, int index2);
   int GenericSize() const;
   int GenericSpaceUsedExcludingSelf() const;
 
@@ -396,6 +411,11 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 }
 
 template <typename Element>
+void RepeatedField<Element>::SwapElements(int index1, int index2) {
+  swap(*Mutable(index1), *Mutable(index2));
+}
+
+template <typename Element>
 inline typename RepeatedField<Element>::iterator
 RepeatedField<Element>::begin() {
   return elements_;
@@ -441,6 +461,21 @@ void* RepeatedField<Element>::GenericAdd() {
 template <typename Element>
 void RepeatedField<Element>::GenericClear() {
   Clear();
+}
+
+template <typename Element>
+void RepeatedField<Element>::GenericRemoveLast() {
+  RemoveLast();
+}
+
+template <typename Element>
+void RepeatedField<Element>::GenericSwap(GenericRepeatedField *other) {
+  Swap(down_cast<RepeatedField<Element>*>(other));
+}
+
+template <typename Element>
+void RepeatedField<Element>::GenericSwapElements(int index1, int index2) {
+  SwapElements(index1, index2);
 }
 
 template <typename Element>
@@ -623,6 +658,11 @@ void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
 }
 
 template <typename Element>
+void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
+  swap(elements_[index1], elements_[index2]);
+}
+
+template <typename Element>
 inline int RepeatedPtrField<Element>::SpaceUsedExcludingSelf() const {
   int allocated_bytes =
       (elements_ != initial_space_) ? total_size_ * sizeof(elements_[0]) : 0;
@@ -708,6 +748,21 @@ void RepeatedPtrField<Element>::GenericClear() {
 }
 
 template <typename Element>
+void RepeatedPtrField<Element>::GenericRemoveLast() {
+  RemoveLast();
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::GenericSwap(GenericRepeatedField *other) {
+  Swap(down_cast<RepeatedPtrField<Element>*>(other));
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::GenericSwapElements(int index1, int index2) {
+  SwapElements(index1, index2);
+}
+
+template <typename Element>
 int RepeatedPtrField<Element>::GenericSize() const {
   return size();
 }
@@ -736,7 +791,7 @@ inline Element* RepeatedPtrField<Element>::NewElement() {
   return new Element;
 }
 
-// RepeatedPtrField<Message> is alowed but requires a prototype since Message
+// RepeatedPtrField<Message> is allowed but requires a prototype since Message
 // is abstract.
 template <>
 inline Message* RepeatedPtrField<Message>::NewElement() {

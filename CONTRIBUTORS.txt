@@ -70,3 +70,5 @@ Patch contributors:
     * Small patch improving performance of in Python serialization.
   Alexandre Vassalotti <alexandre@peadrop.com>
     * Emacs mode for Protocol Buffers (editors/protobuf-mode.el).
+  Scott Stafford <scott.stafford@gmail.com>
+    * Added Swap(), SwapElements(), and RemoveLast() to Reflection interface.
