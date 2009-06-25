@@ -209,7 +209,7 @@ INLINE size_t upb_isset_offset(uint32_t field_index) {
   return field_index / 8;
 }
 
-INLINE size_t upb_isset_mask(uint32_t field_index) {
+INLINE uint8_t upb_isset_mask(uint32_t field_index) {
   return 1 << (field_index % 8);
 }
 
