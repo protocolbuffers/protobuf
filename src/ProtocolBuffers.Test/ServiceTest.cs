@@ -71,7 +71,7 @@ namespace Google.ProtocolBuffers {
       MockRepository mocks = new MockRepository();
       FooRequest fooRequest = FooRequest.CreateBuilder().Build();
       FooResponse fooResponse = FooResponse.CreateBuilder().Build();
-      IRpcController controller = mocks.StrictMock<IRpcController>();
+      IRpcController controller = mocks.StrictMockWithRemoting<IRpcController>();
 
       bool fooCalled = false;
 
@@ -110,10 +110,16 @@ namespace Google.ProtocolBuffers {
     public void GeneratedStubFooCall() {
       FooRequest fooRequest = FooRequest.CreateBuilder().Build();      
       MockRepository mocks = new MockRepository();
-      IRpcChannel mockChannel = mocks.StrictMock<IRpcChannel>();
-      IRpcController mockController = mocks.StrictMock<IRpcController>();
+      IRpcChannel mockChannel = mocks.StrictMockWithRemoting<IRpcChannel>();
+      IRpcController mockController = mocks.StrictMockWithRemoting<IRpcController>();
       TestService service = TestService.CreateStub(mockChannel);
-      Action<FooResponse> doneHandler = mocks.StrictMock<Action<FooResponse>>();
+      bool doneCalled = false;
+      // TODO(jonskeet): Use Rhino for this (to get ordering) when Mono works with it properly
+      Action<FooResponse> doneHandler = response => {
+        Assert.IsFalse(doneCalled);
+        doneCalled = true;
+        Assert.AreEqual(FooResponse.DefaultInstance, response);
+      };
 
       using (mocks.Record()) {
         
@@ -123,7 +129,6 @@ namespace Google.ProtocolBuffers {
             .Constraints(Is.Same(FooDescriptor), Is.Same(mockController), Is.Same(fooRequest), 
                          Is.Same(FooResponse.DefaultInstance), Is.Anything())
             .Do((CallFooDelegate) ((p1, p2, p3, response, done) => done(response)));
-        doneHandler.Invoke(FooResponse.DefaultInstance);
       }
 
       service.Foo(mockController, fooRequest, doneHandler);
@@ -136,7 +141,7 @@ namespace Google.ProtocolBuffers {
       MockRepository mocks = new MockRepository();
       BarRequest barRequest = BarRequest.CreateBuilder().Build();
       BarResponse barResponse = BarResponse.CreateBuilder().Build();
-      IRpcController controller = mocks.StrictMock<IRpcController>();
+      IRpcController controller = mocks.StrictMockWithRemoting<IRpcController>();
 
       bool barCalled = false;
 
