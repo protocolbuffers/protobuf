@@ -1070,11 +1070,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return NestedMessage.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Descriptor; }
           }
           
           public override NestedMessage DefaultInstanceForType {
-            get { return NestedMessage.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance; }
           }
           
           public override NestedMessage BuildPartial() {
@@ -1096,7 +1096,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(NestedMessage other) {
-            if (other == NestedMessage.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) return this;
             if (other.HasBb) {
               Bb = other.Bb;
             }
@@ -1284,11 +1284,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return OptionalGroup.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Descriptor; }
           }
           
           public override OptionalGroup DefaultInstanceForType {
-            get { return OptionalGroup.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.DefaultInstance; }
           }
           
           public override OptionalGroup BuildPartial() {
@@ -1310,7 +1310,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(OptionalGroup other) {
-            if (other == OptionalGroup.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.DefaultInstance) return this;
             if (other.HasA) {
               A = other.A;
             }
@@ -1498,11 +1498,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return RepeatedGroup.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Descriptor; }
           }
           
           public override RepeatedGroup DefaultInstanceForType {
-            get { return RepeatedGroup.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.DefaultInstance; }
           }
           
           public override RepeatedGroup BuildPartial() {
@@ -1524,7 +1524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(RepeatedGroup other) {
-            if (other == RepeatedGroup.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.DefaultInstance) return this;
             if (other.HasA) {
               A = other.A;
             }
@@ -2961,11 +2961,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestAllTypes.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Descriptor; }
       }
       
       public override TestAllTypes DefaultInstanceForType {
-        get { return TestAllTypes.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance; }
       }
       
       public override TestAllTypes BuildPartial() {
@@ -3011,7 +3011,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestAllTypes other) {
-        if (other == TestAllTypes.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance) return this;
         if (other.HasOptionalInt32) {
           OptionalInt32 = other.OptionalInt32;
         }
@@ -5338,11 +5338,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ForeignMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Descriptor; }
       }
       
       public override ForeignMessage DefaultInstanceForType {
-        get { return ForeignMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance; }
       }
       
       public override ForeignMessage BuildPartial() {
@@ -5364,7 +5364,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(ForeignMessage other) {
-        if (other == ForeignMessage.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) return this;
         if (other.HasC) {
           C = other.C;
         }
@@ -5540,11 +5540,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestAllExtensions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.Descriptor; }
       }
       
       public override TestAllExtensions DefaultInstanceForType {
-        get { return TestAllExtensions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.DefaultInstance; }
       }
       
       public override TestAllExtensions BuildPartial() {
@@ -5566,7 +5566,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestAllExtensions other) {
-        if (other == TestAllExtensions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.DefaultInstance) return this;
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -5730,11 +5730,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return OptionalGroup_extension.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Descriptor; }
       }
       
       public override OptionalGroup_extension DefaultInstanceForType {
-        get { return OptionalGroup_extension.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.DefaultInstance; }
       }
       
       public override OptionalGroup_extension BuildPartial() {
@@ -5756,7 +5756,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(OptionalGroup_extension other) {
-        if (other == OptionalGroup_extension.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.DefaultInstance) return this;
         if (other.HasA) {
           A = other.A;
         }
@@ -5944,11 +5944,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return RepeatedGroup_extension.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Descriptor; }
       }
       
       public override RepeatedGroup_extension DefaultInstanceForType {
-        get { return RepeatedGroup_extension.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.DefaultInstance; }
       }
       
       public override RepeatedGroup_extension BuildPartial() {
@@ -5970,7 +5970,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(RepeatedGroup_extension other) {
-        if (other == RepeatedGroup_extension.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.DefaultInstance) return this;
         if (other.HasA) {
           A = other.A;
         }
@@ -6677,11 +6677,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestRequired.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequired.Descriptor; }
       }
       
       public override TestRequired DefaultInstanceForType {
-        get { return TestRequired.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance; }
       }
       
       public override TestRequired BuildPartial() {
@@ -6703,7 +6703,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestRequired other) {
-        if (other == TestRequired.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance) return this;
         if (other.HasA) {
           A = other.A;
         }
@@ -7731,11 +7731,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestRequiredForeign.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.Descriptor; }
       }
       
       public override TestRequiredForeign DefaultInstanceForType {
-        get { return TestRequiredForeign.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.DefaultInstance; }
       }
       
       public override TestRequiredForeign BuildPartial() {
@@ -7758,7 +7758,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestRequiredForeign other) {
-        if (other == TestRequiredForeign.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.DefaultInstance) return this;
         if (other.HasOptionalMessage) {
           MergeOptionalMessage(other.OptionalMessage);
         }
@@ -8041,11 +8041,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestForeignNested.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestForeignNested.Descriptor; }
       }
       
       public override TestForeignNested DefaultInstanceForType {
-        get { return TestForeignNested.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestForeignNested.DefaultInstance; }
       }
       
       public override TestForeignNested BuildPartial() {
@@ -8067,7 +8067,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestForeignNested other) {
-        if (other == TestForeignNested.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestForeignNested.DefaultInstance) return this;
         if (other.HasForeignNested) {
           MergeForeignNested(other.ForeignNested);
         }
@@ -8262,11 +8262,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestEmptyMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Descriptor; }
       }
       
       public override TestEmptyMessage DefaultInstanceForType {
-        get { return TestEmptyMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.DefaultInstance; }
       }
       
       public override TestEmptyMessage BuildPartial() {
@@ -8288,7 +8288,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestEmptyMessage other) {
-        if (other == TestEmptyMessage.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -8439,11 +8439,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestEmptyMessageWithExtensions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Descriptor; }
       }
       
       public override TestEmptyMessageWithExtensions DefaultInstanceForType {
-        get { return TestEmptyMessageWithExtensions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.DefaultInstance; }
       }
       
       public override TestEmptyMessageWithExtensions BuildPartial() {
@@ -8465,7 +8465,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestEmptyMessageWithExtensions other) {
-        if (other == TestEmptyMessageWithExtensions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.DefaultInstance) return this;
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -8645,11 +8645,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestReallyLargeTagNumber.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Descriptor; }
       }
       
       public override TestReallyLargeTagNumber DefaultInstanceForType {
-        get { return TestReallyLargeTagNumber.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.DefaultInstance; }
       }
       
       public override TestReallyLargeTagNumber BuildPartial() {
@@ -8671,7 +8671,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestReallyLargeTagNumber other) {
-        if (other == TestReallyLargeTagNumber.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.DefaultInstance) return this;
         if (other.HasA) {
           A = other.A;
         }
@@ -8900,11 +8900,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestRecursiveMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Descriptor; }
       }
       
       public override TestRecursiveMessage DefaultInstanceForType {
-        get { return TestRecursiveMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.DefaultInstance; }
       }
       
       public override TestRecursiveMessage BuildPartial() {
@@ -8926,7 +8926,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestRecursiveMessage other) {
-        if (other == TestRecursiveMessage.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.DefaultInstance) return this;
         if (other.HasA) {
           MergeA(other.A);
         }
@@ -9162,11 +9162,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestMutualRecursionA.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Descriptor; }
       }
       
       public override TestMutualRecursionA DefaultInstanceForType {
-        get { return TestMutualRecursionA.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.DefaultInstance; }
       }
       
       public override TestMutualRecursionA BuildPartial() {
@@ -9188,7 +9188,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestMutualRecursionA other) {
-        if (other == TestMutualRecursionA.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.DefaultInstance) return this;
         if (other.HasBb) {
           MergeBb(other.Bb);
         }
@@ -9415,11 +9415,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestMutualRecursionB.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Descriptor; }
       }
       
       public override TestMutualRecursionB DefaultInstanceForType {
-        get { return TestMutualRecursionB.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.DefaultInstance; }
       }
       
       public override TestMutualRecursionB BuildPartial() {
@@ -9441,7 +9441,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestMutualRecursionB other) {
-        if (other == TestMutualRecursionB.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.DefaultInstance) return this;
         if (other.HasA) {
           MergeA(other.A);
         }
@@ -9701,11 +9701,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return Foo.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Descriptor; }
           }
           
           public override Foo DefaultInstanceForType {
-            get { return Foo.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.DefaultInstance; }
           }
           
           public override Foo BuildPartial() {
@@ -9727,7 +9727,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(Foo other) {
-            if (other == Foo.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.DefaultInstance) return this;
             if (other.HasA) {
               A = other.A;
             }
@@ -9915,11 +9915,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return Bar.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Descriptor; }
           }
           
           public override Bar DefaultInstanceForType {
-            get { return Bar.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.DefaultInstance; }
           }
           
           public override Bar BuildPartial() {
@@ -9941,7 +9941,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(Bar other) {
-            if (other == Bar.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.DefaultInstance) return this;
             if (other.HasA) {
               A = other.A;
             }
@@ -10142,11 +10142,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestDupFieldNumber.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Descriptor; }
       }
       
       public override TestDupFieldNumber DefaultInstanceForType {
-        get { return TestDupFieldNumber.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.DefaultInstance; }
       }
       
       public override TestDupFieldNumber BuildPartial() {
@@ -10168,7 +10168,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestDupFieldNumber other) {
-        if (other == TestDupFieldNumber.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.DefaultInstance) return this;
         if (other.HasA) {
           A = other.A;
         }
@@ -10503,11 +10503,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return NestedMessage.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Descriptor; }
           }
           
           public override NestedMessage DefaultInstanceForType {
-            get { return NestedMessage.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance; }
           }
           
           public override NestedMessage BuildPartial() {
@@ -10531,7 +10531,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(NestedMessage other) {
-            if (other == NestedMessage.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance) return this;
             if (other.nestedmessageRepeatedInt32_.Count != 0) {
               base.AddRange(other.nestedmessageRepeatedInt32_, result.nestedmessageRepeatedInt32_);
             }
@@ -10755,11 +10755,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestNestedMessageHasBits.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Descriptor; }
       }
       
       public override TestNestedMessageHasBits DefaultInstanceForType {
-        get { return TestNestedMessageHasBits.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.DefaultInstance; }
       }
       
       public override TestNestedMessageHasBits BuildPartial() {
@@ -10781,7 +10781,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestNestedMessageHasBits other) {
-        if (other == TestNestedMessageHasBits.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.DefaultInstance) return this;
         if (other.HasOptionalNestedMessage) {
           MergeOptionalNestedMessage(other.OptionalNestedMessage);
         }
@@ -11217,11 +11217,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestCamelCaseFieldNames.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.Descriptor; }
       }
       
       public override TestCamelCaseFieldNames DefaultInstanceForType {
-        get { return TestCamelCaseFieldNames.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.DefaultInstance; }
       }
       
       public override TestCamelCaseFieldNames BuildPartial() {
@@ -11249,7 +11249,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestCamelCaseFieldNames other) {
-        if (other == TestCamelCaseFieldNames.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.DefaultInstance) return this;
         if (other.HasPrimitiveField) {
           PrimitiveField = other.PrimitiveField;
         }
@@ -11859,11 +11859,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestFieldOrderings.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Descriptor; }
       }
       
       public override TestFieldOrderings DefaultInstanceForType {
-        get { return TestFieldOrderings.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.DefaultInstance; }
       }
       
       public override TestFieldOrderings BuildPartial() {
@@ -11885,7 +11885,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestFieldOrderings other) {
-        if (other == TestFieldOrderings.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.DefaultInstance) return this;
         if (other.HasMyString) {
           MyString = other.MyString;
         }
@@ -12207,11 +12207,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestExtremeDefaultValues.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Descriptor; }
       }
       
       public override TestExtremeDefaultValues DefaultInstanceForType {
-        get { return TestExtremeDefaultValues.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.DefaultInstance; }
       }
       
       public override TestExtremeDefaultValues BuildPartial() {
@@ -12233,7 +12233,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestExtremeDefaultValues other) {
-        if (other == TestExtremeDefaultValues.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.DefaultInstance) return this;
         if (other.HasEscapedBytes) {
           EscapedBytes = other.EscapedBytes;
         }
@@ -12952,11 +12952,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestPackedTypes.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Descriptor; }
       }
       
       public override TestPackedTypes DefaultInstanceForType {
-        get { return TestPackedTypes.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.DefaultInstance; }
       }
       
       public override TestPackedTypes BuildPartial() {
@@ -12992,7 +12992,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestPackedTypes other) {
-        if (other == TestPackedTypes.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.DefaultInstance) return this;
         if (other.packedInt32_.Count != 0) {
           base.AddRange(other.packedInt32_, result.packedInt32_);
         }
@@ -13703,11 +13703,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestPackedExtensions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Descriptor; }
       }
       
       public override TestPackedExtensions DefaultInstanceForType {
-        get { return TestPackedExtensions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.DefaultInstance; }
       }
       
       public override TestPackedExtensions BuildPartial() {
@@ -13729,7 +13729,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestPackedExtensions other) {
-        if (other == TestPackedExtensions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.DefaultInstance) return this;
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -13877,11 +13877,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FooRequest.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.FooRequest.Descriptor; }
       }
       
       public override FooRequest DefaultInstanceForType {
-        get { return FooRequest.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.FooRequest.DefaultInstance; }
       }
       
       public override FooRequest BuildPartial() {
@@ -13903,7 +13903,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(FooRequest other) {
-        if (other == FooRequest.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.FooRequest.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -14050,11 +14050,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FooResponse.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.FooResponse.Descriptor; }
       }
       
       public override FooResponse DefaultInstanceForType {
-        get { return FooResponse.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.FooResponse.DefaultInstance; }
       }
       
       public override FooResponse BuildPartial() {
@@ -14076,7 +14076,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(FooResponse other) {
-        if (other == FooResponse.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.FooResponse.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -14223,11 +14223,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return BarRequest.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.BarRequest.Descriptor; }
       }
       
       public override BarRequest DefaultInstanceForType {
-        get { return BarRequest.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.BarRequest.DefaultInstance; }
       }
       
       public override BarRequest BuildPartial() {
@@ -14249,7 +14249,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(BarRequest other) {
-        if (other == BarRequest.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.BarRequest.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -14396,11 +14396,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return BarResponse.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.BarResponse.Descriptor; }
       }
       
       public override BarResponse DefaultInstanceForType {
-        get { return BarResponse.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.BarResponse.DefaultInstance; }
       }
       
       public override BarResponse BuildPartial() {
@@ -14422,7 +14422,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(BarResponse other) {
-        if (other == BarResponse.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.BarResponse.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }

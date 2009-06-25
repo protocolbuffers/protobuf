@@ -253,11 +253,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CSharpFileOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Descriptor; }
       }
       
       public override CSharpFileOptions DefaultInstanceForType {
-        get { return CSharpFileOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.DefaultInstance; }
       }
       
       public override CSharpFileOptions BuildPartial() {
@@ -279,7 +279,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(CSharpFileOptions other) {
-        if (other == CSharpFileOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.DefaultInstance) return this;
         if (other.HasNamespace) {
           Namespace = other.Namespace;
         }
@@ -569,11 +569,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CSharpFieldOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Descriptor; }
       }
       
       public override CSharpFieldOptions DefaultInstanceForType {
-        get { return CSharpFieldOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.DefaultInstance; }
       }
       
       public override CSharpFieldOptions BuildPartial() {
@@ -595,7 +595,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(CSharpFieldOptions other) {
-        if (other == CSharpFieldOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.DefaultInstance) return this;
         if (other.HasPropertyName) {
           PropertyName = other.PropertyName;
         }

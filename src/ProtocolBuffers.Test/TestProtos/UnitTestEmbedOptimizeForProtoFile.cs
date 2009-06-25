@@ -199,11 +199,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestEmbedOptimizedForSize.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.Descriptor; }
       }
       
       public override TestEmbedOptimizedForSize DefaultInstanceForType {
-        get { return TestEmbedOptimizedForSize.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.DefaultInstance; }
       }
       
       public override TestEmbedOptimizedForSize BuildPartial() {
@@ -226,7 +226,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestEmbedOptimizedForSize other) {
-        if (other == TestEmbedOptimizedForSize.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.DefaultInstance) return this;
         if (other.HasOptionalMessage) {
           MergeOptionalMessage(other.OptionalMessage);
         }

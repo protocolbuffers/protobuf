@@ -180,11 +180,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ImportMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ImportMessage.Descriptor; }
       }
       
       public override ImportMessage DefaultInstanceForType {
-        get { return ImportMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance; }
       }
       
       public override ImportMessage BuildPartial() {
@@ -206,7 +206,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(ImportMessage other) {
-        if (other == ImportMessage.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance) return this;
         if (other.HasD) {
           D = other.D;
         }

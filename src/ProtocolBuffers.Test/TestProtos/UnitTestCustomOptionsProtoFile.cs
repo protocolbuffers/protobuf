@@ -513,11 +513,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestMessageWithCustomOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.Descriptor; }
       }
       
       public override TestMessageWithCustomOptions DefaultInstanceForType {
-        get { return TestMessageWithCustomOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.DefaultInstance; }
       }
       
       public override TestMessageWithCustomOptions BuildPartial() {
@@ -539,7 +539,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(TestMessageWithCustomOptions other) {
-        if (other == TestMessageWithCustomOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMessageWithCustomOptions.DefaultInstance) return this;
         if (other.HasField1) {
           Field1 = other.Field1;
         }
@@ -712,11 +712,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CustomOptionFooRequest.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.Descriptor; }
       }
       
       public override CustomOptionFooRequest DefaultInstanceForType {
-        get { return CustomOptionFooRequest.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.DefaultInstance; }
       }
       
       public override CustomOptionFooRequest BuildPartial() {
@@ -738,7 +738,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(CustomOptionFooRequest other) {
-        if (other == CustomOptionFooRequest.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -885,11 +885,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CustomOptionFooResponse.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.Descriptor; }
       }
       
       public override CustomOptionFooResponse DefaultInstanceForType {
-        get { return CustomOptionFooResponse.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.DefaultInstance; }
       }
       
       public override CustomOptionFooResponse BuildPartial() {
@@ -911,7 +911,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(CustomOptionFooResponse other) {
-        if (other == CustomOptionFooResponse.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -1068,11 +1068,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return DummyMessageContainingEnum.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Descriptor; }
       }
       
       public override DummyMessageContainingEnum DefaultInstanceForType {
-        get { return DummyMessageContainingEnum.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.DefaultInstance; }
       }
       
       public override DummyMessageContainingEnum BuildPartial() {
@@ -1094,7 +1094,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(DummyMessageContainingEnum other) {
-        if (other == DummyMessageContainingEnum.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -1241,11 +1241,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return DummyMessageInvalidAsOptionType.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.Descriptor; }
       }
       
       public override DummyMessageInvalidAsOptionType DefaultInstanceForType {
-        get { return DummyMessageInvalidAsOptionType.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.DefaultInstance; }
       }
       
       public override DummyMessageInvalidAsOptionType BuildPartial() {
@@ -1267,7 +1267,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(DummyMessageInvalidAsOptionType other) {
-        if (other == DummyMessageInvalidAsOptionType.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -1414,11 +1414,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CustomOptionMinIntegerValues.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.Descriptor; }
       }
       
       public override CustomOptionMinIntegerValues DefaultInstanceForType {
-        get { return CustomOptionMinIntegerValues.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.DefaultInstance; }
       }
       
       public override CustomOptionMinIntegerValues BuildPartial() {
@@ -1440,7 +1440,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(CustomOptionMinIntegerValues other) {
-        if (other == CustomOptionMinIntegerValues.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.CustomOptionMinIntegerValues.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -1587,11 +1587,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CustomOptionMaxIntegerValues.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.Descriptor; }
       }
       
       public override CustomOptionMaxIntegerValues DefaultInstanceForType {
-        get { return CustomOptionMaxIntegerValues.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.DefaultInstance; }
       }
       
       public override CustomOptionMaxIntegerValues BuildPartial() {
@@ -1613,7 +1613,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(CustomOptionMaxIntegerValues other) {
-        if (other == CustomOptionMaxIntegerValues.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.CustomOptionMaxIntegerValues.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -1760,11 +1760,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return CustomOptionOtherValues.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.Descriptor; }
       }
       
       public override CustomOptionOtherValues DefaultInstanceForType {
-        get { return CustomOptionOtherValues.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.DefaultInstance; }
       }
       
       public override CustomOptionOtherValues BuildPartial() {
@@ -1786,7 +1786,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(CustomOptionOtherValues other) {
-        if (other == CustomOptionOtherValues.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.CustomOptionOtherValues.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -1933,11 +1933,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return SettingRealsFromPositiveInts.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.Descriptor; }
       }
       
       public override SettingRealsFromPositiveInts DefaultInstanceForType {
-        get { return SettingRealsFromPositiveInts.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.DefaultInstance; }
       }
       
       public override SettingRealsFromPositiveInts BuildPartial() {
@@ -1959,7 +1959,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(SettingRealsFromPositiveInts other) {
-        if (other == SettingRealsFromPositiveInts.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.SettingRealsFromPositiveInts.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -2106,11 +2106,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return SettingRealsFromNegativeInts.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.Descriptor; }
       }
       
       public override SettingRealsFromNegativeInts DefaultInstanceForType {
-        get { return SettingRealsFromNegativeInts.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.DefaultInstance; }
       }
       
       public override SettingRealsFromNegativeInts BuildPartial() {
@@ -2132,7 +2132,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(SettingRealsFromNegativeInts other) {
-        if (other == SettingRealsFromNegativeInts.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.SettingRealsFromNegativeInts.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -2299,11 +2299,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ComplexOptionType1.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Descriptor; }
       }
       
       public override ComplexOptionType1 DefaultInstanceForType {
-        get { return ComplexOptionType1.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.DefaultInstance; }
       }
       
       public override ComplexOptionType1 BuildPartial() {
@@ -2325,7 +2325,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(ComplexOptionType1 other) {
-        if (other == ComplexOptionType1.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.DefaultInstance) return this;
         if (other.HasFoo) {
           Foo = other.Foo;
         }
@@ -2540,11 +2540,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return ComplexOptionType4.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Descriptor; }
           }
           
           public override ComplexOptionType4 DefaultInstanceForType {
-            get { return ComplexOptionType4.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.DefaultInstance; }
           }
           
           public override ComplexOptionType4 BuildPartial() {
@@ -2566,7 +2566,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(ComplexOptionType4 other) {
-            if (other == ComplexOptionType4.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.DefaultInstance) return this;
             if (other.HasWaldo) {
               Waldo = other.Waldo;
             }
@@ -2774,11 +2774,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ComplexOptionType2.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Descriptor; }
       }
       
       public override ComplexOptionType2 DefaultInstanceForType {
-        get { return ComplexOptionType2.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.DefaultInstance; }
       }
       
       public override ComplexOptionType2 BuildPartial() {
@@ -2800,7 +2800,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(ComplexOptionType2 other) {
-        if (other == ComplexOptionType2.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.DefaultInstance) return this;
         if (other.HasBar) {
           MergeBar(other.Bar);
         }
@@ -3109,11 +3109,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return ComplexOptionType5.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Descriptor; }
           }
           
           public override ComplexOptionType5 DefaultInstanceForType {
-            get { return ComplexOptionType5.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.DefaultInstance; }
           }
           
           public override ComplexOptionType5 BuildPartial() {
@@ -3135,7 +3135,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(ComplexOptionType5 other) {
-            if (other == ComplexOptionType5.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.DefaultInstance) return this;
             if (other.HasPlugh) {
               Plugh = other.Plugh;
             }
@@ -3320,11 +3320,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ComplexOptionType3.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Descriptor; }
       }
       
       public override ComplexOptionType3 DefaultInstanceForType {
-        get { return ComplexOptionType3.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.DefaultInstance; }
       }
       
       public override ComplexOptionType3 BuildPartial() {
@@ -3346,7 +3346,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(ComplexOptionType3 other) {
-        if (other == ComplexOptionType3.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.DefaultInstance) return this;
         if (other.HasQux) {
           Qux = other.Qux;
         }
@@ -3582,11 +3582,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ComplexOpt6.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.Descriptor; }
       }
       
       public override ComplexOpt6 DefaultInstanceForType {
-        get { return ComplexOpt6.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.DefaultInstance; }
       }
       
       public override ComplexOpt6 BuildPartial() {
@@ -3608,7 +3608,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(ComplexOpt6 other) {
-        if (other == ComplexOpt6.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.DefaultInstance) return this;
         if (other.HasXyzzy) {
           Xyzzy = other.Xyzzy;
         }
@@ -3780,11 +3780,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return VariousComplexOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Descriptor; }
       }
       
       public override VariousComplexOptions DefaultInstanceForType {
-        get { return VariousComplexOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.DefaultInstance; }
       }
       
       public override VariousComplexOptions BuildPartial() {
@@ -3806,7 +3806,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(VariousComplexOptions other) {
-        if (other == VariousComplexOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.DefaultInstance) return this;
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }

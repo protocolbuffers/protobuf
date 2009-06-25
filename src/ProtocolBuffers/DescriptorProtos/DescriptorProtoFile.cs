@@ -345,11 +345,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FileDescriptorSet.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.Descriptor; }
       }
       
       public override FileDescriptorSet DefaultInstanceForType {
-        get { return FileDescriptorSet.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.DefaultInstance; }
       }
       
       public override FileDescriptorSet BuildPartial() {
@@ -372,7 +372,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(FileDescriptorSet other) {
-        if (other == FileDescriptorSet.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.DefaultInstance) return this;
         if (other.file_.Count != 0) {
           base.AddRange(other.file_, result.file_);
         }
@@ -726,11 +726,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FileDescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Descriptor; }
       }
       
       public override FileDescriptorProto DefaultInstanceForType {
-        get { return FileDescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.DefaultInstance; }
       }
       
       public override FileDescriptorProto BuildPartial() {
@@ -757,7 +757,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(FileDescriptorProto other) {
-        if (other == FileDescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -1283,11 +1283,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return ExtensionRange.Descriptor; }
+            get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Descriptor; }
           }
           
           public override ExtensionRange DefaultInstanceForType {
-            get { return ExtensionRange.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.DefaultInstance; }
           }
           
           public override ExtensionRange BuildPartial() {
@@ -1309,7 +1309,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override Builder MergeFrom(ExtensionRange other) {
-            if (other == ExtensionRange.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.DefaultInstance) return this;
             if (other.HasStart) {
               Start = other.Start;
             }
@@ -1624,11 +1624,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return DescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Descriptor; }
       }
       
       public override DescriptorProto DefaultInstanceForType {
-        get { return DescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.DefaultInstance; }
       }
       
       public override DescriptorProto BuildPartial() {
@@ -1655,7 +1655,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(DescriptorProto other) {
-        if (other == DescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -2274,11 +2274,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FieldDescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Descriptor; }
       }
       
       public override FieldDescriptorProto DefaultInstanceForType {
-        get { return FieldDescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.DefaultInstance; }
       }
       
       public override FieldDescriptorProto BuildPartial() {
@@ -2300,7 +2300,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(FieldDescriptorProto other) {
-        if (other == FieldDescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -2746,11 +2746,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return EnumDescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Descriptor; }
       }
       
       public override EnumDescriptorProto DefaultInstanceForType {
-        get { return EnumDescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.DefaultInstance; }
       }
       
       public override EnumDescriptorProto BuildPartial() {
@@ -2773,7 +2773,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(EnumDescriptorProto other) {
-        if (other == EnumDescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -3092,11 +3092,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return EnumValueDescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Descriptor; }
       }
       
       public override EnumValueDescriptorProto DefaultInstanceForType {
-        get { return EnumValueDescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.DefaultInstance; }
       }
       
       public override EnumValueDescriptorProto BuildPartial() {
@@ -3118,7 +3118,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(EnumValueDescriptorProto other) {
-        if (other == EnumValueDescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -3420,11 +3420,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ServiceDescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Descriptor; }
       }
       
       public override ServiceDescriptorProto DefaultInstanceForType {
-        get { return ServiceDescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.DefaultInstance; }
       }
       
       public override ServiceDescriptorProto BuildPartial() {
@@ -3447,7 +3447,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(ServiceDescriptorProto other) {
-        if (other == ServiceDescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -3782,11 +3782,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return MethodDescriptorProto.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Descriptor; }
       }
       
       public override MethodDescriptorProto DefaultInstanceForType {
-        get { return MethodDescriptorProto.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.DefaultInstance; }
       }
       
       public override MethodDescriptorProto BuildPartial() {
@@ -3808,7 +3808,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(MethodDescriptorProto other) {
-        if (other == MethodDescriptorProto.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -4180,11 +4180,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FileOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Descriptor; }
       }
       
       public override FileOptions DefaultInstanceForType {
-        get { return FileOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance; }
       }
       
       public override FileOptions BuildPartial() {
@@ -4207,7 +4207,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(FileOptions other) {
-        if (other == FileOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance) return this;
         if (other.HasJavaPackage) {
           JavaPackage = other.JavaPackage;
         }
@@ -4553,11 +4553,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return MessageOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Descriptor; }
       }
       
       public override MessageOptions DefaultInstanceForType {
-        get { return MessageOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance; }
       }
       
       public override MessageOptions BuildPartial() {
@@ -4580,7 +4580,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(MessageOptions other) {
-        if (other == MessageOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance) return this;
         if (other.HasMessageSetWireFormat) {
           MessageSetWireFormat = other.MessageSetWireFormat;
         }
@@ -4899,11 +4899,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return FieldOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Descriptor; }
       }
       
       public override FieldOptions DefaultInstanceForType {
-        get { return FieldOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance; }
       }
       
       public override FieldOptions BuildPartial() {
@@ -4926,7 +4926,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(FieldOptions other) {
-        if (other == FieldOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance) return this;
         if (other.HasCtype) {
           Ctype = other.Ctype;
         }
@@ -5255,11 +5255,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return EnumOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.Descriptor; }
       }
       
       public override EnumOptions DefaultInstanceForType {
-        get { return EnumOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance; }
       }
       
       public override EnumOptions BuildPartial() {
@@ -5282,7 +5282,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(EnumOptions other) {
-        if (other == EnumOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
@@ -5502,11 +5502,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return EnumValueOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.Descriptor; }
       }
       
       public override EnumValueOptions DefaultInstanceForType {
-        get { return EnumValueOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance; }
       }
       
       public override EnumValueOptions BuildPartial() {
@@ -5529,7 +5529,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(EnumValueOptions other) {
-        if (other == EnumValueOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
@@ -5749,11 +5749,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return ServiceOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.Descriptor; }
       }
       
       public override ServiceOptions DefaultInstanceForType {
-        get { return ServiceOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance; }
       }
       
       public override ServiceOptions BuildPartial() {
@@ -5776,7 +5776,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(ServiceOptions other) {
-        if (other == ServiceOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
@@ -5996,11 +5996,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return MethodOptions.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.Descriptor; }
       }
       
       public override MethodOptions DefaultInstanceForType {
-        get { return MethodOptions.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance; }
       }
       
       public override MethodOptions BuildPartial() {
@@ -6023,7 +6023,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(MethodOptions other) {
-        if (other == MethodOptions.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
           base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
         }
@@ -6276,11 +6276,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return NamePart.Descriptor; }
+            get { return global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Descriptor; }
           }
           
           public override NamePart DefaultInstanceForType {
-            get { return NamePart.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.DefaultInstance; }
           }
           
           public override NamePart BuildPartial() {
@@ -6302,7 +6302,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override Builder MergeFrom(NamePart other) {
-            if (other == NamePart.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.DefaultInstance) return this;
             if (other.HasNamePart_) {
               NamePart_ = other.NamePart_;
             }
@@ -6583,11 +6583,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return UninterpretedOption.Descriptor; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Descriptor; }
       }
       
       public override UninterpretedOption DefaultInstanceForType {
-        get { return UninterpretedOption.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance; }
       }
       
       public override UninterpretedOption BuildPartial() {
@@ -6610,7 +6610,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder MergeFrom(UninterpretedOption other) {
-        if (other == UninterpretedOption.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance) return this;
         if (other.name_.Count != 0) {
           base.AddRange(other.name_, result.name_);
         }

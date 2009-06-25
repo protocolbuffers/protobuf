@@ -349,11 +349,11 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("}");
       writer.WriteLine();
       writer.WriteLine("public override pbd::MessageDescriptor DescriptorForType {");
-      writer.WriteLine("  get {{ return {0}.Descriptor; }}", ClassName);
+      writer.WriteLine("  get {{ return {0}.Descriptor; }}", FullClassName);
       writer.WriteLine("}");
       writer.WriteLine();
       writer.WriteLine("public override {0} DefaultInstanceForType {{", ClassName);
-      writer.WriteLine("  get {{ return {0}.DefaultInstance; }}", ClassName);
+      writer.WriteLine("  get {{ return {0}.DefaultInstance; }}", FullClassName);
       writer.WriteLine("}");
       writer.WriteLine();
     
@@ -386,7 +386,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
         // Optimization:  If other is the default instance, we know none of its
         // fields are set so we can skip the merge.
         writer.Indent();
-        writer.WriteLine("if (other == {0}.DefaultInstance) return this;", ClassName);
+        writer.WriteLine("if (other == {0}.DefaultInstance) return this;", FullClassName);
         foreach (FieldDescriptor field in Descriptor.Fields) {
           SourceGenerators.CreateFieldGenerator(field).GenerateMergingCode(writer);
         }

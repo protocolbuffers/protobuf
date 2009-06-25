@@ -203,11 +203,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return OptionsMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.OptionsMessage.Descriptor; }
       }
       
       public override OptionsMessage DefaultInstanceForType {
-        get { return OptionsMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.OptionsMessage.DefaultInstance; }
       }
       
       public override OptionsMessage BuildPartial() {
@@ -229,7 +229,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(OptionsMessage other) {
-        if (other == OptionsMessage.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.OptionsMessage.DefaultInstance) return this;
         if (other.HasNormal) {
           Normal = other.Normal;
         }

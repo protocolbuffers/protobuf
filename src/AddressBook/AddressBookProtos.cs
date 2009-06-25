@@ -233,11 +233,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return PhoneNumber.Descriptor; }
+            get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Descriptor; }
           }
           
           public override PhoneNumber DefaultInstanceForType {
-            get { return PhoneNumber.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.DefaultInstance; }
           }
           
           public override PhoneNumber BuildPartial() {
@@ -259,7 +259,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public override Builder MergeFrom(PhoneNumber other) {
-            if (other == PhoneNumber.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.DefaultInstance) return this;
             if (other.HasNumber) {
               Number = other.Number;
             }
@@ -517,11 +517,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return Person.Descriptor; }
+        get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.Descriptor; }
       }
       
       public override Person DefaultInstanceForType {
-        get { return Person.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.DefaultInstance; }
       }
       
       public override Person BuildPartial() {
@@ -544,7 +544,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Builder MergeFrom(Person other) {
-        if (other == Person.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.Examples.AddressBook.Person.DefaultInstance) return this;
         if (other.HasName) {
           Name = other.Name;
         }
@@ -836,11 +836,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return AddressBook.Descriptor; }
+        get { return global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Descriptor; }
       }
       
       public override AddressBook DefaultInstanceForType {
-        get { return AddressBook.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.DefaultInstance; }
       }
       
       public override AddressBook BuildPartial() {
@@ -863,7 +863,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Builder MergeFrom(AddressBook other) {
-        if (other == AddressBook.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.DefaultInstance) return this;
         if (other.person_.Count != 0) {
           base.AddRange(other.person_, result.person_);
         }

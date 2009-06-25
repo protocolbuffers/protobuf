@@ -181,11 +181,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestOptimizedForSize.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Descriptor; }
       }
       
       public override TestOptimizedForSize DefaultInstanceForType {
-        get { return TestOptimizedForSize.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance; }
       }
       
       public override TestOptimizedForSize BuildPartial() {
@@ -348,11 +348,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestRequiredOptimizedForSize.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.Descriptor; }
       }
       
       public override TestRequiredOptimizedForSize DefaultInstanceForType {
-        get { return TestRequiredOptimizedForSize.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize.DefaultInstance; }
       }
       
       public override TestRequiredOptimizedForSize BuildPartial() {
@@ -479,11 +479,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return TestOptionalOptimizedForSize.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.Descriptor; }
       }
       
       public override TestOptionalOptimizedForSize DefaultInstanceForType {
-        get { return TestOptionalOptimizedForSize.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.TestOptionalOptimizedForSize.DefaultInstance; }
       }
       
       public override TestOptionalOptimizedForSize BuildPartial() {
