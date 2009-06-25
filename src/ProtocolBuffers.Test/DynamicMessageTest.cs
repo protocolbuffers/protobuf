@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Google.ProtocolBuffers.TestProtos;
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -31,8 +29,10 @@ using Google.ProtocolBuffers.TestProtos;
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using Google.ProtocolBuffers.TestProtos;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers {
   [TestFixture]

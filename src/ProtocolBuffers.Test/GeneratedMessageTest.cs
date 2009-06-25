@@ -31,10 +31,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
-using Google.ProtocolBuffers.Descriptors;
+using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
-using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers {
   [TestFixture]
