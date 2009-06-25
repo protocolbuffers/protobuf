@@ -684,12 +684,12 @@ GenerateClassMethods(io::Printer* printer) {
     GenerateCopyFrom(printer);
     printer->Print("\n");
 
-    GenerateSwap(printer);
-    printer->Print("\n");
-
     GenerateIsInitialized(printer);
     printer->Print("\n");
   }
+
+  GenerateSwap(printer);
+  printer->Print("\n");
 
   printer->Print(
     "const ::google::protobuf::Descriptor* $classname$::GetDescriptor() const {\n"
@@ -967,21 +967,26 @@ GenerateSwap(io::Printer* printer) {
   printer->Print("if (other != this) {\n");
   printer->Indent();
 
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    field_generators_.get(field).GenerateSwappingCode(printer);
+  if ( descriptor_->file()->options().optimize_for() == FileOptions::SPEED ) {
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* field = descriptor_->field(i);
+      field_generators_.get(field).GenerateSwappingCode(printer);
+    }
+
+    for (int i = 0; i < (descriptor_->field_count() + 31) / 32; ++i) {
+      printer->Print("std::swap(_has_bits_[$i$], other->_has_bits_[$i$]);\n",
+                     "i", SimpleItoa(i));
+    }
+
+    printer->Print("_unknown_fields_.Swap(&other->_unknown_fields_);\n");
+    printer->Print("std::swap(_cached_size_, other->_cached_size_);\n");
+    if (descriptor_->extension_range_count() > 0) {
+      printer->Print("_extensions_.Swap(&other->_extensions_);\n");
+    }
+  } else {
+    printer->Print("GetReflection()->Swap(this, other);");
   }
 
-  for (int i = 0; i < (descriptor_->field_count() + 31) / 32; ++i) {
-    printer->Print("std::swap(_has_bits_[$i$], other->_has_bits_[$i$]);\n",
-                   "i", SimpleItoa(i));
-  }
-
-  printer->Print("_unknown_fields_.Swap(&other->_unknown_fields_);\n");
-  printer->Print("std::swap(_cached_size_, other->_cached_size_);\n");
-  if (descriptor_->extension_range_count() > 0) {
-    printer->Print("_extensions_.Swap(&other->_extensions_);\n");
-  }
 
   printer->Outdent();
   printer->Print("}\n");

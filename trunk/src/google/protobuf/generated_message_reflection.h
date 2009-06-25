@@ -140,6 +140,10 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   bool HasField(const Message& message, const FieldDescriptor* field) const;
   int FieldSize(const Message& message, const FieldDescriptor* field) const;
   void ClearField(Message* message, const FieldDescriptor* field) const;
+  void RemoveLast(Message* message, const FieldDescriptor* field) const;
+  void Swap(Message* message1, Message* message2) const;
+  void SwapElements(Message* message, const FieldDescriptor* field, 
+            int index1, int index2) const;
   void ListFields(const Message& message,
                   vector<const FieldDescriptor*>* output) const;
 

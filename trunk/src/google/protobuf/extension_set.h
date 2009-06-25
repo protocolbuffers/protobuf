@@ -228,6 +228,9 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
                       const Descriptor* message_type,
                       MessageFactory* factory);
 
+  void RemoveLast(int number);
+  void SwapElements(int number, int index1, int index2);
+
   // -----------------------------------------------------------------
   // TODO(kenton):  Hardcore memory management accessors
 

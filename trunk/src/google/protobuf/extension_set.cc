@@ -497,6 +497,88 @@ Message* ExtensionSet::AddMessage(int number, FieldType type,
 
 #undef GOOGLE_DCHECK_TYPE
 
+void ExtensionSet::RemoveLast(int number) {
+  map<int, Extension>::iterator iter = extensions_.find(number);
+  GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
+
+  Extension* extension = &iter->second;
+  GOOGLE_DCHECK(extension->is_repeated);
+
+  switch(cpp_type(extension->type)) {
+    case FieldDescriptor::CPPTYPE_INT32:   
+      extension->repeated_int32_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_INT64:   
+      extension->repeated_int64_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_UINT32:   
+      extension->repeated_uint32_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_UINT64:   
+      extension->repeated_uint64_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_FLOAT:   
+      extension->repeated_float_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_DOUBLE:   
+      extension->repeated_double_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_BOOL:   
+      extension->repeated_bool_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_ENUM:   
+      extension->repeated_enum_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:   
+      extension->repeated_string_value->RemoveLast(); 
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:   
+      extension->repeated_message_value->RemoveLast(); 
+      break;
+  }
+}
+
+void ExtensionSet::SwapElements(int number, int index1, int index2) {
+  map<int, Extension>::iterator iter = extensions_.find(number);
+  GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
+
+  Extension* extension = &iter->second;
+  GOOGLE_DCHECK(extension->is_repeated);
+
+  switch(cpp_type(extension->type)) {
+    case FieldDescriptor::CPPTYPE_INT32:   
+      extension->repeated_int32_value->SwapElements(index1, index2);
+      break;
+    case FieldDescriptor::CPPTYPE_INT64:   
+      extension->repeated_int64_value->SwapElements(index1, index2); 
+      break;
+    case FieldDescriptor::CPPTYPE_UINT32:   
+      extension->repeated_uint32_value->SwapElements(index1, index2);
+      break;
+    case FieldDescriptor::CPPTYPE_UINT64:   
+      extension->repeated_uint64_value->SwapElements(index1, index2);
+      break;
+    case FieldDescriptor::CPPTYPE_FLOAT:   
+      extension->repeated_float_value->SwapElements(index1, index2); 
+      break;
+    case FieldDescriptor::CPPTYPE_DOUBLE:   
+      extension->repeated_double_value->SwapElements(index1, index2); 
+      break;
+    case FieldDescriptor::CPPTYPE_BOOL:   
+      extension->repeated_bool_value->SwapElements(index1, index2); 
+      break;
+    case FieldDescriptor::CPPTYPE_ENUM:   
+      extension->repeated_enum_value->SwapElements(index1, index2); 
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:   
+      extension->repeated_string_value->SwapElements(index1, index2); 
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:   
+      extension->repeated_message_value->SwapElements(index1, index2); 
+      break;
+  }
+}
+
 // ===================================================================
 
 void ExtensionSet::Clear() {

@@ -146,6 +146,122 @@ TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
             &reflection->GetMessage(message, F("optional_import_message")));
 }
 
+
+TEST(GeneratedMessageReflectionTest, Swap) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+
+  TestUtil::SetAllFields(&message1);
+
+  const Reflection* reflection = message1.GetReflection();
+  reflection->Swap(&message1, &message2);
+
+  TestUtil::ExpectClear(message1);
+  TestUtil::ExpectAllFieldsSet(message2);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapWithBothSet) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+
+  TestUtil::SetAllFields(&message1);
+  TestUtil::SetAllFields(&message2);
+  TestUtil::ModifyRepeatedFields(&message2);
+
+  const Reflection* reflection = message1.GetReflection();
+  reflection->Swap(&message1, &message2);
+
+  TestUtil::ExpectRepeatedFieldsModified(message1);
+  TestUtil::ExpectAllFieldsSet(message2);
+
+  message1.set_optional_int32(532819);
+
+  reflection->Swap(&message1, &message2);
+
+  EXPECT_EQ(532819, message2.optional_int32());
+}
+
+TEST(GeneratedMessageReflectionTest, SwapExtensions) {
+  unittest::TestAllExtensions message1;
+  unittest::TestAllExtensions message2;
+
+  TestUtil::SetAllExtensions(&message1);
+
+  const Reflection* reflection = message1.GetReflection();
+  reflection->Swap(&message1, &message2);
+
+  TestUtil::ExpectExtensionsClear(message1);
+  TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapUnknown) {
+  unittest::TestEmptyMessage message1, message2;
+
+  message1.mutable_unknown_fields()->AddVarint(1234, 1);
+
+  EXPECT_EQ(1, message1.unknown_fields().field_count());
+  EXPECT_EQ(0, message2.unknown_fields().field_count());
+  const Reflection* reflection = message1.GetReflection();
+  reflection->Swap(&message1, &message2);
+  EXPECT_EQ(0, message1.unknown_fields().field_count());
+  EXPECT_EQ(1, message2.unknown_fields().field_count());
+}
+
+TEST(GeneratedMessageReflectionTest, RemoveLast) {
+  unittest::TestAllTypes message;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllTypes::descriptor());
+
+  TestUtil::SetAllFields(&message);
+
+  reflection_tester.RemoveLastRepeatedsViaReflection(&message);
+
+  TestUtil::ExpectLastRepeatedsRemoved(message);
+}
+
+TEST(GeneratedMessageReflectionTest, RemoveLastExtensions) {
+  unittest::TestAllExtensions message;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllExtensions::descriptor());
+
+  TestUtil::SetAllExtensions(&message);
+  reflection_tester.RemoveLastRepeatedsViaReflection(&message);
+
+  TestUtil::ExpectLastRepeatedExtensionsRemoved(message);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapRepeatedElements) {
+  unittest::TestAllTypes message;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllTypes::descriptor());
+
+  TestUtil::SetAllFields(&message);
+
+  // Swap and test that fields are all swapped.
+  reflection_tester.SwapRepeatedsViaReflection(&message);
+  TestUtil::ExpectRepeatedsSwapped(message);
+
+  // Swap back and test that fields are all back to original values.
+  reflection_tester.SwapRepeatedsViaReflection(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapRepeatedElementsExtension) {
+  unittest::TestAllExtensions message;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllExtensions::descriptor());
+
+  TestUtil::SetAllExtensions(&message);
+
+  // Swap and test that fields are all swapped.
+  reflection_tester.SwapRepeatedsViaReflection(&message);
+  TestUtil::ExpectRepeatedExtensionsSwapped(message);
+
+  // Swap back and test that fields are all back to original values.
+  reflection_tester.SwapRepeatedsViaReflection(&message);
+  TestUtil::ExpectAllExtensionsSet(message);
+}
+
 TEST(GeneratedMessageReflectionTest, Extensions) {
   // Set every extension to a unique value then go back and check all those
   // values.

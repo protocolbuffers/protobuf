@@ -96,6 +96,17 @@ class TestUtil {
   // SetAllFieldsAndExtensions().
   static void ExpectAllFieldsAndExtensionsInOrder(const string& serialized);
 
+  // Check that all repeated fields have had their last elements removed.
+  static void ExpectLastRepeatedsRemoved(
+      const unittest::TestAllTypes& message);
+  static void ExpectLastRepeatedExtensionsRemoved(
+      const unittest::TestAllExtensions& message);
+
+  // Check that all repeated fields have had their first and last elements swapped.
+  static void ExpectRepeatedsSwapped(const unittest::TestAllTypes& message);
+  static void ExpectRepeatedExtensionsSwapped(
+      const unittest::TestAllExtensions& message);
+
   // Like above, but use the reflection interface.
   class ReflectionTester {
    public:
@@ -115,6 +126,9 @@ class TestUtil {
     void ModifyPackedFieldsViaReflection(Message* message);
     void ExpectPackedFieldsSetViaReflection(const Message& message);
     void ExpectPackedClearViaReflection(const Message& message);
+
+    void RemoveLastRepeatedsViaReflection(Message* message);
+    void SwapRepeatedsViaReflection(Message* message);
 
    private:
     const FieldDescriptor* F(const string& name);

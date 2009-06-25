@@ -269,6 +269,61 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
   return total_size;
 }
 
+void GeneratedMessageReflection::Swap(
+    Message* message1,
+    Message* message2) const {
+  if (message1 == message2) return;
+
+  GOOGLE_CHECK_EQ(message1->GetReflection(), this)
+    << "Tried to swap using reflection object incompatible with message1.";
+
+  GOOGLE_CHECK_EQ(message2->GetReflection(), this)
+    << "Tried to swap using reflection object incompatible with message2.";
+
+  uint32* has_bits1 = MutableHasBits(message1);
+  uint32* has_bits2 = MutableHasBits(message2);
+  int has_bits_size = (descriptor_->field_count() + 31) / 32;
+
+  for (int i = 0; i < has_bits_size; i++) {
+    std::swap(has_bits1[i], has_bits2[i]);
+  }
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (field->is_repeated()) {
+      MutableRaw<GenericRepeatedField>(message1, field)->GenericSwap(
+          MutableRaw<GenericRepeatedField>(message2, field));
+    } else {
+      switch (field->cpp_type()) {
+#define SWAP_VALUES(CPPTYPE, TYPE)                                           \
+        case FieldDescriptor::CPPTYPE_##CPPTYPE:                             \
+          swap(*MutableRaw<TYPE>(message1, field),                           \
+               *MutableRaw<TYPE>(message2, field));                          \
+          break;
+          SWAP_VALUES(INT32 , int32 );
+          SWAP_VALUES(INT64 , int64 );
+          SWAP_VALUES(UINT32, uint32);
+          SWAP_VALUES(UINT64, uint64);
+          SWAP_VALUES(FLOAT , float );
+          SWAP_VALUES(DOUBLE, double);
+          SWAP_VALUES(BOOL  , bool  );
+          SWAP_VALUES(ENUM  , int32 );
+          SWAP_VALUES(STRING, string*);
+          SWAP_VALUES(MESSAGE, Message*);
+#undef SWAP_PRIMITIVE_VALUES
+        default:
+          GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+      }
+    }
+  }
+
+  if (extensions_offset_ != -1) {
+    MutableExtensionSet(message1)->Swap(MutableExtensionSet(message2));
+  }
+
+  MutableUnknownFields(message1)->Swap(MutableUnknownFields(message2));
+}
+
 // -------------------------------------------------------------------
 
 bool GeneratedMessageReflection::HasField(const Message& message,
@@ -285,8 +340,8 @@ bool GeneratedMessageReflection::HasField(const Message& message,
 
 int GeneratedMessageReflection::FieldSize(const Message& message,
                                           const FieldDescriptor* field) const {
-  USAGE_CHECK_MESSAGE_TYPE(HasField);
-  USAGE_CHECK_REPEATED(HasField);
+  USAGE_CHECK_MESSAGE_TYPE(FieldSize);
+  USAGE_CHECK_REPEATED(FieldSize);
 
   if (field->is_extension()) {
     return GetExtensionSet(message).ExtensionSize(field->number());
@@ -347,6 +402,36 @@ void GeneratedMessageReflection::ClearField(
     }
   } else {
     MutableRaw<GenericRepeatedField>(message, field)->GenericClear();
+  }
+}
+
+void GeneratedMessageReflection::RemoveLast(
+    Message* message,
+    const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE_TYPE(RemoveLast);
+  USAGE_CHECK_REPEATED(RemoveLast);
+
+  if (field->is_extension()) {
+    MutableExtensionSet(message)->RemoveLast(field->number());
+  } else {
+    MutableRaw<GenericRepeatedField>(message, field)->GenericRemoveLast();
+  }
+}
+
+void GeneratedMessageReflection::SwapElements(
+    Message* message,
+    const FieldDescriptor* field,
+    int index1,
+    int index2) const {
+  USAGE_CHECK_MESSAGE_TYPE(Swap);
+  USAGE_CHECK_REPEATED(Swap);
+
+  if (field->is_extension()) {
+    MutableExtensionSet(message)->SwapElements(
+                                      field->number(), index1, index2);
+  } else {
+    MutableRaw<GenericRepeatedField>(message, field)->GenericSwapElements(
+                                                            index1, index2);
   }
 }
 
