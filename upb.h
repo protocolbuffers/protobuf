@@ -31,7 +31,9 @@ extern "C" {
 
 /* Represents a string or bytes. */
 struct upb_string {
-  void *data;
+  /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
+   * ingrained convention that we follow it. */
+  char *data;
   uint32_t byte_len;
 };
 

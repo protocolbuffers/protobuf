@@ -400,3 +400,4 @@ struct google_protobuf_UninterpretedOption {
 };
 UPB_DEFINE_STRUCT_ARRAY(google_protobuf_UninterpretedOption)
 
+extern google_protobuf_FileDescriptorProto google_protobuf_filedescriptor;
