@@ -54,7 +54,6 @@
     <Compile Include="RepeatedMessageFieldGenerator.cs" />
     <Compile Include="RepeatedPrimitiveFieldGenerator.cs" />
     <Compile Include="ServiceGenerator.cs" />
-    <Compile Include="SourceFileGenerator.cs" />
     <Compile Include="DependencyResolutionException.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="GeneratorOptions.cs" />
