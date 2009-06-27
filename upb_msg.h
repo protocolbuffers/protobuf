@@ -45,38 +45,67 @@
 extern "C" {
 #endif
 
+/* Forward declarations from descriptor.h. */
+struct google_protobuf_DescriptorProto;
+struct google_protobuf_FieldDescriptorProto;
+
 /* Structure definition. ******************************************************/
 
+/* Fields that reference other types have pointers to the other type. */
+union upb_msg_field_ref {
+  struct upb_msg *msg;    /* Set if type == MESSAGE */
+  struct upb_enum *_enum; /* Set if type == ENUM */
+};
+
+/* Structure that describes a single field in a message. */
 struct upb_msg_field {
+  struct google_protobuf_FieldDescriptorProto *descriptor;
   uint32_t byte_offset;     /* Where to find the data. */
-  uint32_t field_index:24;  /* Indexes upb_msg.fields. Also indicates set bit */
-  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
-  union {
-    struct upb_msg *msg;    /* Set if type == MESSAGE */
-    struct upb_enum *_enum; /* Set if type == ENUM */
-  } ref;
+  uint32_t field_index;  /* Indexes upb_msg.fields. Also indicates set bit */
+  union upb_msg_field_ref ref;
 };
 
-struct upb_fieldsbynum_entry {
-  struct upb_inttable_entry e;
-  struct upb_msg_field f;
-};
-
-struct upb_fieldsbyname_entry {
-  struct upb_strtable_entry e;
-  struct upb_msg_field f;
-};
-
+/* Structure that describes a single .proto message type. */
 struct upb_msg {
   struct google_protobuf_DescriptorProto *descriptor;
   size_t size;
-  int num_fields;
-  int set_flags_bytes;
-  int num_required_fields;  /* Required fields have the lowest set bytemasks. */
+  uint32_t num_fields;
+  uint32_t set_flags_bytes;
+  uint32_t num_required_fields;  /* Required fields have the lowest set bytemasks. */
   struct upb_inttable fields_by_num;
   struct upb_strtable fields_by_name;
   struct upb_msg_field *fields;
 };
+
+/* The num->field and name->field maps in upb_msg allow fast lookup of fields
+ * by number or name.  These lookups are in the critical path of parsing and
+ * field lookup, so they must be as fast as possible.  To make these more
+ * cache-friendly, we put the data in the table by value, but use only an
+ * abbreviated set of data (ie. not all the data in upb_msg_field).  Notably,
+ * we don't include the pointer to the field descriptor.  But the upb_msg_field
+ * can be retrieved in its entirety using the function below.*/
+
+struct upb_abbrev_msg_field {
+  uint32_t byte_offset;     /* Where to find the data. */
+  uint32_t field_index:24;  /* Indexes upb_msg.fields. Also indicates set bit */
+  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
+  union upb_msg_field_ref ref;
+};
+
+struct upb_fieldsbynum_entry {
+  struct upb_inttable_entry e;
+  struct upb_abbrev_msg_field f;
+};
+
+struct upb_fieldsbyname_entry {
+  struct upb_strtable_entry e;
+  struct upb_abbrev_msg_field f;
+};
+
+struct upb_msg_field *upb_get_msg_field(
+    struct upb_abbrev_msg_field *f, struct upb_msg *m) {
+  return &m->fields[f->field_index];
+}
 
 /* Initialize and free a upb_msg.  Caller retains ownership of d, but the msg
  * will contain references to it, so it must outlive the msg.  Note that init
@@ -87,14 +116,14 @@ void upb_msg_free(struct upb_msg *m);
 /* While these are written to be as fast as possible, it will still be faster
  * to cache the results of this lookup if possible.  These return NULL if no
  * such field is found. */
-INLINE struct upb_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
-                                                uint32_t number) {
+INLINE struct upb_abbrev_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
+                                                       uint32_t number) {
   struct upb_fieldsbynum_entry *e = upb_inttable_lookup(
       &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
   return e ? &e->f : NULL;
 }
-INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
-                                                 struct upb_string *name) {
+INLINE struct upb_abbrev_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
+                                                        struct upb_string *name) {
   struct upb_fieldsbyname_entry *e =
       upb_strtable_lookup(&m->fields_by_name, name);
   return e ? &e->f : NULL;
