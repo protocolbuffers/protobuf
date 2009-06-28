@@ -8,7 +8,7 @@
 
 struct table_entry {
   struct upb_inttable_entry e;
-  int32_t value;  /* key+2 */
+  uint32_t value;  /* key*2 */
 };
 
 double get_usertime()
@@ -24,25 +24,24 @@ static uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 void test(int32_t *keys, size_t num_entries)
 {
   /* Initialize structures. */
-  struct table_entry *entries = new table_entry[num_entries];
   struct upb_inttable table;
-  int32_t largest_key = 0;
-  std::map<int32_t, int32_t> m;
-  __gnu_cxx::hash_map<int32_t, int32_t> hm;
+  uint32_t largest_key = 0;
+  std::map<uint32_t, uint32_t> m;
+  __gnu_cxx::hash_map<uint32_t, uint32_t> hm;
+  upb_inttable_init(&table, num_entries, sizeof(struct table_entry));
   for(size_t i = 0; i < num_entries; i++) {
     int32_t key = keys[i];
     largest_key = max(largest_key, key);
-    entries[i].e.key = key;
-    entries[i].value = key*2;
+    struct table_entry e;
+    e.e.key = key;
+    e.value = key*2;
+    upb_inttable_insert(&table, &e.e);
     m[key] = key*2;
     hm[key] = key*2;
   }
-  upb_inttable_init(&table, entries, num_entries, sizeof(struct table_entry));
-  printf("size: %lu\n", sizeof(struct table_entry));
-  delete[] entries;
 
   /* Test correctness. */
-  for(int32_t i = 0; i < largest_key; i++) {
+  for(uint32_t i = 1; i <= largest_key; i++) {
     struct table_entry *e = (struct table_entry*)upb_inttable_lookup(
         &table, i, sizeof(struct table_entry));
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
@@ -157,7 +156,7 @@ int32_t *get_contiguous_keys(int32_t num)
 {
   int32_t *buf = new int32_t[num];
   for(int32_t i = 0; i < num; i++)
-    buf[i] = i;
+    buf[i] = i+1;
   return buf;
 }
 
@@ -181,11 +180,11 @@ int main()
   int32_t *keys4 = new int32_t[64];
   for(int32_t i = 0; i < 64; i++) {
     if(i < 32)
-      keys4[i] = i;
+      keys4[i] = i+1;
     else
-      keys4[i] = 10100+i;
+      keys4[i] = 10101+i;
   }
-  printf("1-32 and 10033-10064 ====\n");
+  printf("1-32 and 10133-10164 ====\n");
   test(keys4, 64);
   delete[] keys4;
 }

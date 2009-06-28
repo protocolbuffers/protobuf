@@ -15,6 +15,7 @@
 #ifndef UPB_TABLE_H_
 #define UPB_TABLE_H_
 
+#include <assert.h>
 #include "upb.h"
 
 #ifdef __cplusplus
@@ -24,7 +25,8 @@ extern "C" {
 typedef uint32_t upb_inttable_key_t;
 
 #define UPB_END_OF_CHAIN (uint32_t)0
-#define UPB_INDEX(base, i, m) (void*)((char*)base + (i*m))
+#define UPB_EMPTY_ENTRY (uint32_t)0
+#define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
 struct upb_inttable_entry {
   upb_inttable_key_t key;
@@ -91,6 +93,7 @@ INLINE uint32_t upb_inttable_bucket(struct upb_inttable *t, upb_inttable_key_t k
  * compiler more ability to optimize. */
 INLINE void *upb_inttable_lookup(struct upb_inttable *t,
                                  uint32_t key, uint32_t entry_size) {
+  assert(key != 0);
   uint32_t bucket = upb_inttable_bucket(t, key);
   struct upb_inttable_entry *e;
   do {

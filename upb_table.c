@@ -89,7 +89,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
        * place our new element and append it to this key's chain. */
       uint32_t empty_bucket = empty_intbucket(t);
       while (table_e->next != UPB_END_OF_CHAIN)
-        table_e = intent(t, table_e->next-1);
+        table_e = intent(t, table_e->next);
       table_e->next = empty_bucket;
       table_e = intent(t, empty_bucket);
     } else {
@@ -101,7 +101,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
       struct upb_inttable_entry *evictee_e = intent(t, evictee_bucket);
       while(1) {
         assert(evictee_e->key != UPB_EMPTY_ENTRY);
-        assert(evictee_e->next != END_OF_CHAIN);
+        assert(evictee_e->next != UPB_END_OF_CHAIN);
         if(evictee_e->next == bucket) {
           evictee_e->next = empty_bucket;
           break;
@@ -116,6 +116,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
 
 void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
 {
+  assert(e->key != 0);
   if((double)++t->t.count / upb_inttable_size(t) > MAX_LOAD) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     struct upb_inttable new_table;
@@ -127,7 +128,7 @@ void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
     upb_inttable_free(t);
     *t = new_table;
   }
-  intinsert(t->t.entries, e);
+  intinsert(t, e);
 }
 
 static uint32_t empty_strbucket(struct upb_strtable *table)
@@ -151,7 +152,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
        * place our new element and append it to this key's chain. */
       uint32_t empty_bucket = empty_strbucket(t);
       while (table_e->next != UPB_END_OF_CHAIN)
-        table_e = strent(t, table_e->next-1);
+        table_e = strent(t, table_e->next);
       table_e->next = empty_bucket;
       table_e = strent(t, empty_bucket);
     } else {
@@ -162,8 +163,8 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
       memcpy(strent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
       struct upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
       while(1) {
-        assert(evictee_e->key != UPB_EMPTY_ENTRY);
-        assert(evictee_e->next != END_OF_CHAIN);
+        assert(evictee_e->key.byte_len != 0);
+        assert(evictee_e->next != UPB_END_OF_CHAIN);
         if(evictee_e->next == bucket) {
           evictee_e->next = empty_bucket;
           break;
