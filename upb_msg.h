@@ -4,8 +4,11 @@
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  *
  * upb_msg contains a full description of a message as defined in a .proto file.
- * This allows for run-time reflection over .proto types, but also defines an
- * in-memory byte-level format for storing protobufs.
+ * It supports many features and operations for dealing with proto messages:
+ * - reflection over .proto types at runtime (list fields, get names, etc).
+ * - an in-memory byte-level format for efficiently storing and accessing msgs.
+ * - serializing and deserializing from the in-memory format to a protobuf.
+ * - optional memory management for handling strings, arrays, and submessages.
  *
  * The in-memory format is very much like a C struct that you can define at
  * run-time, but also supports reflection.  Like C structs it supports
@@ -25,9 +28,12 @@
  * this format.  This format is designed to allow the fastest possible random
  * access of individual fields.
  *
- * Note that no memory management is defined, which should make it easier to
- * integrate this format with existing memory-management schemes.  Any memory
- * management semantics can be used with the format as defined here.
+ * Note that clients need not use the memory management facilities defined here.
+ * They are for convenience only -- clients wishing to do their own memory
+ * management may do so (allowing clients to perform advanced techniques like
+ * reference-counting, garbage collection, and string references).  Different
+ * clients can read each others messages regardless of what memory management
+ * scheme each is using.
  */
 
 #ifndef UPB_MSG_H_
@@ -49,13 +55,13 @@ extern "C" {
 struct google_protobuf_DescriptorProto;
 struct google_protobuf_FieldDescriptorProto;
 
-/* Structure definition. ******************************************************/
+/* Message definition. ********************************************************/
 
 /* Structure that describes a single field in a message. */
 struct upb_msg_field {
-  struct google_protobuf_FieldDescriptorProto *descriptor;
   uint32_t byte_offset;     /* Where to find the data. */
   uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
+  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
   union upb_symbol_ref ref;
 };
 
@@ -69,62 +75,53 @@ struct upb_msg {
   struct upb_inttable fields_by_num;
   struct upb_strtable fields_by_name;
   struct upb_msg_field *fields;
+  struct google_protobuf_FieldDescriptorProto **field_descriptors;
 };
 
 /* The num->field and name->field maps in upb_msg allow fast lookup of fields
  * by number or name.  These lookups are in the critical path of parsing and
  * field lookup, so they must be as fast as possible.  To make these more
- * cache-friendly, we put the data in the table by value, but use only an
- * abbreviated set of data (ie. not all the data in upb_msg_field).  Notably,
- * we don't include the pointer to the field descriptor.  But the upb_msg_field
- * can be retrieved in its entirety using the function below.*/
-
-struct upb_abbrev_msg_field {
-  uint32_t byte_offset;     /* Where to find the data. */
-  uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
-  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
-  union upb_symbol_ref ref;
-};
+ * cache-friendly, we put the data in the table by value. */
 
 struct upb_fieldsbynum_entry {
   struct upb_inttable_entry e;
-  struct upb_abbrev_msg_field f;
+  struct upb_msg_field f;
 };
 
 struct upb_fieldsbyname_entry {
   struct upb_strtable_entry e;
-  struct upb_abbrev_msg_field f;
+  struct upb_msg_field f;
 };
 
-INLINE struct upb_msg_field *upb_get_msg_field(
-    struct upb_abbrev_msg_field *f, struct upb_msg *m) {
-  return &m->fields[f->field_index];
+/* Can be used to retrieve a field descriptor given the upb_msg_field ref. */
+INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
+    struct upb_msg_field *f, struct upb_msg *m) {
+  return m->field_descriptors[f->field_index];
 }
 
 /* Initialize and free a upb_msg.  Caller retains ownership of d, but the msg
  * will contain references to it, so it must outlive the msg.  Note that init
- * does not resolve upb_msg_field.ref -- that is left to the caller. */
+ * does not resolve upb_msg_field.ref -- the caller should do that
+ * post-initialization by calling upb_msg_ref() below. */
 bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
 void upb_msg_free(struct upb_msg *m);
 
 /* Clients use this function on a previously initialized upb_msg to resolve the
- * "ref" field in the upb_msg_field and upb_abbrev_msg_field.  Since messages
- * can refer to each other in mutually-recursive ways, this step must be
- * separated from initialization.  The function is necessary because there are
- * multiple internal maps in which the ref appears. */
+ * "ref" field in the upb_msg_field.  Since messages can refer to each other in
+ * mutually-recursive ways, this step must be separated from initialization. */
 void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f, union upb_symbol_ref ref);
 
 /* While these are written to be as fast as possible, it will still be faster
  * to cache the results of this lookup if possible.  These return NULL if no
  * such field is found. */
-INLINE struct upb_abbrev_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
-                                                       uint32_t number) {
+INLINE struct upb_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
+                                                uint32_t number) {
   struct upb_fieldsbynum_entry *e = upb_inttable_lookup(
       &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
   return e ? &e->f : NULL;
 }
-INLINE struct upb_abbrev_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
-                                                        struct upb_string *name) {
+INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
+                                                 struct upb_string *name) {
   struct upb_fieldsbyname_entry *e =
       upb_strtable_lookup(&m->fields_by_name, name);
   return e ? &e->f : NULL;
@@ -179,7 +176,7 @@ UPB_DEFINE_PRIMITIVE_ARRAY(bool,     bool)
 
 /* For each primitive type we define a set of six functions:
  *
- *  // For fetching out of a struct (s points to the raw struct data).
+ *  // For fetching out of a msg (s points to the raw msg data).
  *  int32_t *upb_msg_get_int32_ptr(void *s, struct upb_msg_field *f);
  *  int32_t upb_msg_get_int32(void *s, struct upb_msg_field *f);
  *  void upb_msg_set_int32(void *s, struct upb_msg_field *f, int32_t val);
@@ -232,8 +229,10 @@ UPB_DEFINE_ALL_ACCESSORS(uint64_t, uint64, INLINE)
 UPB_DEFINE_ALL_ACCESSORS(bool,     bool,   INLINE)
 UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, bytes, INLINE)
 UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, string, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(void*, substruct, INLINE)
+UPB_DEFINE_ALL_ACCESSORS(void*,    submsg, INLINE)
 UPB_DEFINE_ACCESSORS(struct upb_array*, array, INLINE)
+
+/* "Set" flag reading and writing.  *******************************************/
 
 INLINE size_t upb_isset_offset(uint32_t field_index) {
   return field_index / 8;
@@ -243,10 +242,9 @@ INLINE uint8_t upb_isset_mask(uint32_t field_index) {
   return 1 << (field_index % 8);
 }
 
-/* Functions for reading and writing the "set" flags in the pbstruct.  Note
- * that these do not perform any memory management associated with any dynamic
- * memory these fields may be referencing; that is the client's responsibility.
- * These *only* set and test the flags. */
+/* Functions for reading and writing the "set" flags in the msg.  Note that
+ * these do not perform memory management associated with any dynamic memory
+ * these fields may be referencing. These *only* set and test the flags. */
 INLINE void upb_msg_set(void *s, struct upb_msg_field *f)
 {
   ((char*)s)[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);

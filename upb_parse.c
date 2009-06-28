@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #include "descriptor.h"
 
@@ -264,6 +265,22 @@ upb_status_t upb_parse_value(void **b, upb_field_type_t ft,
     default: return 0;  /* Including GROUP -- groups have no value. */
   }
 #undef CASE
+}
+
+void upb_parse_state_init(struct upb_parse_state *state, size_t udata_size)
+{
+  state->offset = 0;
+  size_t stack_bytes = (sizeof(*state->stack) + udata_size) * UPB_MAX_NESTING;
+  state->stack = state->top = malloc(stack_bytes);
+  state->limit = (struct upb_parse_stack_frame*)((char*)state->stack + stack_bytes);
+  state->udata_size = udata_size;
+  state->done = false;
+  state->packed_end_offset = 0;
+}
+
+void upb_parse_state_free(struct upb_parse_state *state)
+{
+  free(state->stack);
 }
 
 static void pop_stack_frame(struct upb_parse_state *s)

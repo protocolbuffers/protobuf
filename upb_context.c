@@ -185,7 +185,6 @@ bool upb_context_addfd(struct upb_context *c,
                  (fd->set_flags.has.service ? fd->service->len : 0);
   upb_strtable_init(&tmp, symcount, sizeof(struct upb_symtab_entry));
 
-  /* TODO: properly handle redefinitions and unresolvable symbols. */
   if(fd->set_flags.has.message_type)
     for(unsigned int i = 0; i < fd->message_type->len; i++)
       if(!insert_message(&tmp, fd->message_type->elements[i], &package))
@@ -207,7 +206,7 @@ bool upb_context_addfd(struct upb_context *c,
       struct upb_msg *m = e->ref.msg;
       for(unsigned int i = 0; i < m->num_fields; i++) {
         struct upb_msg_field *f = &m->fields[i];
-        google_protobuf_FieldDescriptorProto *fd = f->descriptor;
+        google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
         if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE)
           ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->name, UPB_SYM_MESSAGE);
@@ -215,7 +214,7 @@ bool upb_context_addfd(struct upb_context *c,
           ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->name, UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
-        if(!ref.msg) goto error;
+        if(!ref.msg) goto error;  /* Ref. to undefined symbol. */
         upb_msg_ref(m, f, ref);
       }
     }
