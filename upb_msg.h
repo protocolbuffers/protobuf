@@ -96,7 +96,7 @@ struct upb_fieldsbyname_entry {
   struct upb_abbrev_msg_field f;
 };
 
-struct upb_msg_field *upb_get_msg_field(
+INLINE struct upb_msg_field *upb_get_msg_field(
     struct upb_abbrev_msg_field *f, struct upb_msg *m) {
   return &m->fields[f->field_index];
 }

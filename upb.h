@@ -16,15 +16,8 @@
 extern "C" {
 #endif
 
-/* Portable inlining strategy: use C99 rules except on GCC.
- *   see: http://www.greenend.org.uk/rjk/2003/03/inline.html. */
-#ifndef INLINE
-# if __GNUC__ && !__GNUC_STDC_INLINE__
-#  define INLINE extern inline
-# else
-#  define INLINE inline
-# endif
-#endif
+/* inline if possible, emit standalone code if required. */
+#define INLINE static inline
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit. */
 #define UPB_MAX_NESTING 64
