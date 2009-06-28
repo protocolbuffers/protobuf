@@ -107,6 +107,13 @@ INLINE struct upb_msg_field *upb_get_msg_field(
 bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
 void upb_msg_free(struct upb_msg *m);
 
+/* Clients use this function on a previously initialized upb_msg to resolve the
+ * "ref" field in the upb_msg_field and upb_abbrev_msg_field.  Since messages
+ * can refer to each other in mutually-recursive ways, this step must be
+ * separated from initialization.  The function is necessary because there are
+ * multiple internal maps in which the ref appears. */
+void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f, union upb_symbol_ref ref);
+
 /* While these are written to be as fast as possible, it will still be faster
  * to cache the results of this lookup if possible.  These return NULL if no
  * such field is found. */
@@ -271,6 +278,13 @@ INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 {
   memset(s, 0, m->set_flags_bytes);
 }
+
+/* Serialization/Deserialization.  ********************************************/
+
+/* Parses the string data in s according to the message description in m.
+ * Returns a newly allocated message which is now owned by the caller, or
+ * NULL if there was an error parsing the string. */
+void *upb_msg_parse(struct upb_msg *m, struct upb_string *s);
 
 #ifdef __cplusplus
 }  /* extern "C" */

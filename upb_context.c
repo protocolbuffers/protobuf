@@ -30,6 +30,7 @@ bool upb_context_init(struct upb_context *c)
 void upb_context_free(struct upb_context *c)
 {
   upb_strtable_free(&c->symtab);
+  for(size_t i = 0; i < c->fd_len; i++) free(c->fd[i]);
 }
 
 struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
@@ -215,7 +216,7 @@ bool upb_context_addfd(struct upb_context *c,
         else
           continue;  /* No resolving necessary. */
         if(!ref.msg) goto error;
-        upb_msg_ref(m, f, &ref);
+        upb_msg_ref(m, f, ref);
       }
     }
   }
@@ -227,5 +228,14 @@ bool upb_context_addfd(struct upb_context *c,
   return true;
 
 error:
+  /* TODO */
   return false;
+}
+
+bool upb_context_parsefd(struct upb_context *c, struct upb_string *fd_str) {
+  google_protobuf_FileDescriptorProto *fd = upb_msg_parse(c->fd_msg, fd_str);
+  if(!fd) return false;
+  if(!upb_context_addfd(c, fd)) return false;
+  c->fd[c->fd_len++] = fd;  /* Need to keep a ref since we own it. */
+  return true;
 }

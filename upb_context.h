@@ -2,9 +2,10 @@
  * upb - a minimalist implementation of protocol buffers.
  *
  * A context represents a namespace of proto definitions, sort of like an
- * interpreter's symbol table.  It is mostly empty when first constructed.
- * Clients add definitions to the context by supplying unserialized or
- * serialized descriptors (as defined in descriptor.proto).
+ * interpreter's symbol table.  It is empty when first constructed, with the
+ * exception of built-in types (those defined in descriptor.proto).  Clients
+ * add definitions to the context by supplying unserialized or serialized
+ * descriptors (as defined in descriptor.proto).
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
@@ -27,6 +28,12 @@ struct upb_symtab_entry {
 
 struct upb_context {
   struct upb_strtable symtab;
+  struct upb_msg *fd_msg;  /* This is in symtab also, kept here for convenience. */
+
+  /* A list of the FileDescriptorProtos we own (from having parsed them
+   * ourselves) and must free on destruction. */
+  size_t fd_size, fd_len;
+  google_protobuf_FileDescriptorProto **fd;
 };
 
 /* Initializes and frees a upb_context, respectively.  Newly initialized
@@ -72,20 +79,9 @@ struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
 bool upb_context_addfd(struct upb_context *c,
                        google_protobuf_FileDescriptorProto *fd);
 
-/* Adds the serialized FileDescriptorSet proto contained in fdss to the context,
- * and adds symbol table entries for all the objects defined therein.  onredef
- * controls the behavior in the case the fds attempts to define a type that is
- * already defined.
- *
- * Returns true if the protobuf in fds was parsed successfully and all
- * references were successfully resolved.  If false is returned, the context is
- * unmodified.  */
-bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds,
-                          int onredef);
-
-/* Like the previous, but for a single FileDescriptorProto instead of a set. */
-bool upb_context_parsefd(struct upb_context *c, struct upb_string *fds,
-                         int onredef);
+/* Like the previous, but takes a serialized FileDescriptorProto and parses
+ * it before adding to the context. */
+bool upb_context_parsefd(struct upb_context *c, struct upb_string *fd);
 
 #ifdef __cplusplus
 }  /* extern "C" */
