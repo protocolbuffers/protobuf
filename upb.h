@@ -29,6 +29,9 @@ extern "C" {
 /* The maximum that any submessages can be nested.  Matches proto2's limit. */
 #define UPB_MAX_NESTING 64
 
+/* The maximum number of fields that any one .proto type can have. */
+#define UPB_MAX_FIELDS (1<<16)
+
 /* Represents a string or bytes. */
 struct upb_string {
   /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
@@ -95,6 +98,19 @@ typedef int32_t upb_field_number_t;
 struct upb_tag {
   upb_field_number_t field_number;
   upb_wire_type_t wire_type;
+};
+
+enum upb_symbol_type {
+  UPB_SYM_MESSAGE,
+  UPB_SYM_ENUM,
+  UPB_SYM_SERVICE,
+  UPB_SYM_EXTENSION
+};
+
+union upb_symbol_ref {
+  struct upb_msg *msg;
+  struct upb_enum *_enum;
+  struct upb_svc *svc;
 };
 
 /* Status codes used as a return value. */

@@ -30,8 +30,8 @@
  * management semantics can be used with the format as defined here.
  */
 
-#ifndef PBSTRUCT_H_
-#define PBSTRUCT_H_
+#ifndef UPB_MSG_H_
+#define UPB_MSG_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -51,18 +51,12 @@ struct google_protobuf_FieldDescriptorProto;
 
 /* Structure definition. ******************************************************/
 
-/* Fields that reference other types have pointers to the other type. */
-union upb_msg_field_ref {
-  struct upb_msg *msg;    /* Set if type == MESSAGE */
-  struct upb_enum *_enum; /* Set if type == ENUM */
-};
-
 /* Structure that describes a single field in a message. */
 struct upb_msg_field {
   struct google_protobuf_FieldDescriptorProto *descriptor;
   uint32_t byte_offset;     /* Where to find the data. */
-  uint32_t field_index;  /* Indexes upb_msg.fields. Also indicates set bit */
-  union upb_msg_field_ref ref;
+  uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
+  union upb_symbol_ref ref;
 };
 
 /* Structure that describes a single .proto message type. */
@@ -87,9 +81,9 @@ struct upb_msg {
 
 struct upb_abbrev_msg_field {
   uint32_t byte_offset;     /* Where to find the data. */
-  uint32_t field_index:24;  /* Indexes upb_msg.fields. Also indicates set bit */
+  uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
   upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
-  union upb_msg_field_ref ref;
+  union upb_symbol_ref ref;
 };
 
 struct upb_fieldsbynum_entry {
@@ -282,4 +276,4 @@ INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 }  /* extern "C" */
 #endif
 
-#endif  /* PBSTRUCT_H_ */
+#endif  /* UPB_MSG_H_ */

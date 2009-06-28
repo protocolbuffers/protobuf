@@ -102,6 +102,15 @@ INLINE void *upb_inttable_lookup(struct upb_inttable *t,
 
 void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key);
 
+/* Provides iteration over the table.  The order in which the entries are
+ * returned is undefined.  Insertions invalidate iterators.  The _next
+ * functions return NULL when the end has been reached. */
+void *upb_inttable_begin(struct upb_inttable *t);
+void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur);
+
+void *upb_strtable_begin(struct upb_strtable *t);
+void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

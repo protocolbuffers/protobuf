@@ -8,8 +8,10 @@
 #include <string.h>
 #include "descriptor.h"
 #include "upb_context.h"
+#include "upb_enum.h"
+#include "upb_msg.h"
 
-int memrchr(char *data, char c, size_t len)
+static int memrchr(char *data, char c, size_t len)
 {
   int off = len-1;
   while(off > 0 && data[off] != c) --off;
@@ -20,7 +22,7 @@ bool upb_context_init(struct upb_context *c)
 {
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
-  if(!upb_context_addfd(c, &google_protobuf_filedescriptor, UPB_ONREDEF_ERROR))
+  if(!upb_context_addfd(c, &google_protobuf_filedescriptor))
     return false;  /* Indicates that upb is buggy or corrupt. */
   return true;
 }
@@ -36,9 +38,9 @@ struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
   return upb_strtable_lookup(&c->symtab, symbol);
 }
 
-struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
-                                             struct upb_string *base,
-                                             struct upb_string *symbol)
+static struct upb_symtab_entry *resolve(struct upb_strtable *t,
+                                        struct upb_string *base,
+                                        struct upb_string *symbol)
 {
   if(base->byte_len + symbol->byte_len + 1 >= UPB_SYM_MAX_LENGTH ||
      symbol->byte_len == 0) return NULL;
@@ -47,7 +49,7 @@ struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
     /* Symbols starting with '.' are absolute, so we do a single lookup. */
     struct upb_string sym_str = {.data = symbol->data+1,
                                  .byte_len = symbol->byte_len-1};
-    return upb_context_lookup(c, &sym_str);
+    return upb_strtable_lookup(t, &sym_str);
   } else {
     /* Remove components from base until we find an entry or run out. */
     char sym[UPB_SYM_MAX_LENGTH+1];
@@ -60,7 +62,7 @@ struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
       memcpy(sym + baselen + 1, symbol->data, symbol->byte_len);
       sym_str.byte_len = baselen + symbol->byte_len + 1;
 
-      struct upb_symtab_entry *e = upb_context_lookup(c, &sym_str);
+      struct upb_symtab_entry *e = upb_strtable_lookup(t, &sym_str);
       if (e) return e;
       else if(baselen == 0) return NULL;  /* No more scopes to try. */
 
@@ -69,23 +71,161 @@ struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
   }
 }
 
-bool upb_context_addfd(struct upb_context *c,
-                       google_protobuf_FileDescriptorProto *fd,
-                       int onredef)
+union upb_symbol_ref resolve2(struct upb_strtable *t1, struct upb_strtable *t2,
+                              struct upb_string *base, struct upb_string *sym,
+                                 enum upb_symbol_type expected_type) {
+  union upb_symbol_ref nullref = {.msg = NULL};
+  struct upb_symtab_entry *e = resolve(t1, base, sym);
+  if(e == NULL) e = resolve(t2, base, sym);
+
+  if(e && e->type == expected_type) return e->ref;
+  else return nullref;
+}
+
+
+struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
+                                             struct upb_string *base,
+                                             struct upb_string *symbol) {
+  return resolve(&c->symtab, base, symbol);
+}
+
+/* join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
+ * join("", "Baz") -> "Baz"
+ * Caller owns the returned string and must free it. */
+static struct upb_string join(struct upb_string *base, struct upb_string *name) {
+  size_t len = base->byte_len + name->byte_len;
+  if(base->byte_len > 0) len++;  /* For the separator. */
+  struct upb_string joined = {.byte_len=len, .data=malloc(len)};
+  if(base->byte_len > 0) {
+    /* nested_base = base + '.' +  d->name */
+    memcpy(joined.data, base->data, base->byte_len);
+    joined.data[base->byte_len] = UPB_CONTEXT_SEPARATOR;
+    memcpy(&joined.data[base->byte_len+1], name->data, name->byte_len);
+  } else {
+    memcpy(joined.data, name->data, name->byte_len);
+  }
+  return joined;
+}
+
+static bool insert_enum(struct upb_strtable *t,
+                        google_protobuf_EnumDescriptorProto *ed,
+                        struct upb_string *base)
 {
+  if(!ed->set_flags.has.name) return false;
+
+  /* We own this and must free it on destruct. */
+  struct upb_string fqname = join(base, ed->name);
+
+  /* Redefinition within a FileDescriptorProto is not allowed. */
+  if(upb_strtable_lookup(t, &fqname)) {
+    free(fqname.data);
+    return false;
+  }
+
+  struct upb_symtab_entry e;
+  e.e.key = fqname;
+  e.type = UPB_SYM_ENUM;
+  e.ref._enum = malloc(sizeof(*e.ref._enum));
+  upb_enum_init(e.ref._enum, ed);
+  upb_strtable_insert(t, &e.e);
+
+  return true;
+}
+
+static bool insert_message(struct upb_strtable *t,
+                           google_protobuf_DescriptorProto *d,
+                           struct upb_string *base)
+{
+  if(!d->set_flags.has.name) return false;
+
+  /* We own this and must free it on destruct. */
+  struct upb_string fqname = join(base, d->name);
+
+  /* Redefinition within a FileDescriptorProto is not allowed. */
+  if(upb_strtable_lookup(t, d->name)) {
+    free(fqname.data);
+    return false;
+  }
+
+  struct upb_symtab_entry e;
+  e.e.key = fqname;
+  e.type = UPB_SYM_MESSAGE;
+  e.ref.msg = malloc(sizeof(*e.ref.msg));
+  upb_msg_init(e.ref.msg, d);
+  upb_strtable_insert(t, &e.e);
+
+  /* Add nested messages and enums. */
+  if(d->set_flags.has.nested_type)
+    for(unsigned int i = 0; i < d->nested_type->len; i++)
+      if(!insert_message(t, d->nested_type->elements[i], &fqname))
+        return false;
+
+  if(d->set_flags.has.enum_type)
+    for(unsigned int i = 0; i < d->enum_type->len; i++)
+      if(!insert_enum(t, d->enum_type->elements[i], &fqname))
+        return false;
+
+  return true;
+}
+
+bool upb_context_addfd(struct upb_context *c,
+                       google_protobuf_FileDescriptorProto *fd)
+{
+  struct upb_string package = {.byte_len=0};
+  if(fd->set_flags.has.package) package = *fd->package;
+
+  /* We want the entire add operation to be atomic, so we initially insert into
+   * this temporary map of symbols.  Once we have verified that there are no
+   * errors (all symbols can be resolved and no illegal redefinitions occurred)
+   * only then do we insert into the context's table. */
+  struct upb_strtable tmp;
+  int symcount = (fd->set_flags.has.message_type ? fd->message_type->len : 0) +
+                 (fd->set_flags.has.enum_type ? fd->enum_type->len : 0) +
+                 (fd->set_flags.has.service ? fd->service->len : 0);
+  upb_strtable_init(&tmp, symcount, sizeof(struct upb_symtab_entry));
+
   /* TODO: properly handle redefinitions and unresolvable symbols. */
-  if(fd->set_flags.has.message_type) {
-    for(unsigned int i = 0; i < fd->message_type->len; i++) {
-      struct google_protobuf_DescriptorProto *d = fd->message_type->elements[i];
-      if(!d->set_flags.has.name) return false;
-      struct upb_symtab_entry e;
-      e.e.key = *d->name;
-      e.type = UPB_SYM_MESSAGE;
-      e.p.msg = malloc(sizeof(*e.p.msg));
-      upb_msg_init(e.p.msg, d);
-      upb_strtable_insert(&c->symtab, &e.e);
+  if(fd->set_flags.has.message_type)
+    for(unsigned int i = 0; i < fd->message_type->len; i++)
+      if(!insert_message(&tmp, fd->message_type->elements[i], &package))
+        goto error;
+
+  if(fd->set_flags.has.enum_type)
+    for(unsigned int i = 0; i < fd->enum_type->len; i++)
+      if(!insert_enum(&tmp, fd->enum_type->elements[i], &package))
+        goto error;
+
+  /* TODO: handle extensions and services. */
+
+  /* Attempt to resolve all references. */
+  struct upb_symtab_entry *e;
+  for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e)) {
+    if(upb_strtable_lookup(&c->symtab, &e->e.key))
+      goto error;  /* Redefinition prohibited. */
+    if(e->type == UPB_SYM_MESSAGE) {
+      struct upb_msg *m = e->ref.msg;
+      for(unsigned int i = 0; i < m->num_fields; i++) {
+        struct upb_msg_field *f = &m->fields[i];
+        google_protobuf_FieldDescriptorProto *fd = f->descriptor;
+        union upb_symbol_ref ref;
+        if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE)
+          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->name, UPB_SYM_MESSAGE);
+        else if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM)
+          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->name, UPB_SYM_ENUM);
+        else
+          continue;  /* No resolving necessary. */
+        if(!ref.msg) goto error;
+        upb_msg_ref(m, f, &ref);
+      }
     }
   }
-  /* TODO: handle enums, extensions, and services. */
+
+  /* All references were successfully resolved -- add to the symbol table. */
+  for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e))
+    upb_strtable_insert(&c->symtab, &e->e);
+
   return true;
+
+error:
+  return false;
 }

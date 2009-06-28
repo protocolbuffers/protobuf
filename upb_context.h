@@ -19,21 +19,10 @@
 extern "C" {
 #endif
 
-enum upb_symbol_type {
-  UPB_SYM_MESSAGE,
-  UPB_SYM_ENUM,
-  UPB_SYM_SERVICE,
-  UPB_SYM_EXTENSION
-};
-
 struct upb_symtab_entry {
   struct upb_strtable_entry e;
   enum upb_symbol_type type;
-  union {
-    struct upb_msg *msg;
-    struct upb_enum *_enum;
-    struct upb_svc *svc;
-  } p;
+  union upb_symbol_ref ref;
 };
 
 struct upb_context {
@@ -73,23 +62,15 @@ struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
 
 /* Adding symbols. ************************************************************/
 
-/* Enum controlling what happens if a symbol is redefined. */
-enum upb_onredef {
-  UPB_ONREDEF_REPLACE, /* Replace existing definition (must be same type). */
-  UPB_ONREDEF_KEEP,    /* Keep existing definition, ignore new one. */
-  UPB_ONREDEF_ERROR    /* Error on redefinition. */
-};
-
 /* Adds the definitions in the given file descriptor to this context.  All
  * types that are referenced from fd must have previously been defined (or be
- * defined in fd).  onredef controls the behavior in the case that fd attempts
- * to define a type that is already defined.
+ * defined in fd).  fd may not attempt to define any names that are already
+ * defined in this context.
  *
  * Caller retains ownership of fd, but the context will contain references to
  * it, so it must outlive the context. */
 bool upb_context_addfd(struct upb_context *c,
-                       google_protobuf_FileDescriptorProto *fd,
-                       int onredef);
+                       google_protobuf_FileDescriptorProto *fd);
 
 /* Adds the serialized FileDescriptorSet proto contained in fdss to the context,
  * and adds symbol table entries for all the objects defined therein.  onredef
