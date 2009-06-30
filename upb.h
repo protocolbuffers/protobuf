@@ -110,6 +110,9 @@ union upb_symbol_ref {
 typedef enum upb_status {
   UPB_STATUS_OK = 0,
 
+  // The input byte stream ended in the middle of a record.
+  UPB_STATUS_NEED_MORE_DATA = 1,
+
   // A varint did not terminate before hitting 64 bits.
   UPB_ERROR_UNTERMINATED_VARINT = -1,
 

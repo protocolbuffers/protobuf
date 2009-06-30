@@ -29,31 +29,14 @@ void upb_parse_state_init(struct upb_parse_state *state, size_t udata_size);
 void upb_parse_state_free(struct upb_parse_state *state);
 
 /* The callback that is called immediately after a tag has been parsed.  The
- * client uses it to decide if it wants to process this value or skip it.  If
- * it wants to process it, it must determine its specific .proto type (at this
- * point we only know its wire type) and verify that it matches the wire type.
- * The client will then return the .proto type.  To skip the value, the client
- * should return 0 (which is not a valid .proto type).
+ * client must either advance the stream beyond the corresponding value or
+ * return an error to indicate that the stream should rewind to before the
+ * tag.
  *
- * The client can set user_field_desc to a record describing this field -- this
- * pointer will be supplied to the value callback (for simple values) or the
- * submsg_start callback (for submessages).
- *
- * TODO: there needs to be a way to skip a delimited field while still knowing
- * its offset and length.  That could be through this callback or it could be a
- * separate callback. */
-typedef upb_field_type_t (*upb_tag_cb)(struct upb_parse_state *s,
-                                       struct upb_tag *tag,
-                                       void **user_field_desc);
-
-/* The callback that is called for individual values.  This callback is only
- * called when the previously invoked tag_cb has returned nonzero.  It receives
- * the parsed and converted value as well as the user_field_desc that was set
- * by the tag_cb.  Note that this function can be called several times in a row
- * (ie. with no intervening tag_cb) in the case of packed arrays.  For string
- * data (bytes and string) str points to the beginning of the string. */
-typedef void (*upb_value_cb)(struct upb_parse_state *s, union upb_value *v,
-                             void *str, void *user_field_desc);
+ * The client advances the stream beyond the corresponding value by either
+ * parsing the value or skipping it. */
+typedef upb_field_type_t (*upb_tag_cb)(void **buf, struct upb_parse_state *s,
+                                       struct upb_tag *tag);
 
 /* Callbacks that are called when a submessage begins and ends, respectively.
  * Both are called with the submessage's stack frame at the top of the stack. */
@@ -77,7 +60,6 @@ struct upb_parse_state {
   size_t packed_end_offset;  /* 0 if not in a packed array. */
   upb_field_type_t packed_type;
   upb_tag_cb tag_cb;
-  upb_value_cb value_cb;
   upb_submsg_start_cb submsg_start_cb;
   upb_submsg_end_cb submsg_end_cb;
 };
@@ -94,7 +76,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
 /* Parses a single tag from the character data starting at buf, and updates
  * buf to point one past the bytes that were consumed.  buf will be incremented
  * by at most ten bytes. */
-upb_status_t upb_parse_tag(void **buf, struct upb_tag *tag);
+upb_status_t upb_parse_tag(void **buf, size_t len, struct upb_tag *tag);
 
 extern upb_wire_type_t upb_expected_wire_types[];
 /* Returns true if wt is the correct on-the-wire type for ft. */
@@ -106,19 +88,19 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
  * caller must have previously checked that the wire type is appropriate for
  * this field type.  For delimited data, buf is advanced to the beginning of
  * the delimited data, not the end. */
-upb_status_t upb_parse_value(void **buf, upb_field_type_t ft,
+upb_status_t upb_parse_value(void **buf, size_t len, upb_field_type_t ft,
                              union upb_value *value);
 
 /* Parses a wire value with the given type (which must have been obtained from
  * a tag that was just parsed) and adds the number of bytes that were consumed
  * to *offset.  For delimited types, offset is advanced past the delimited
  * data.  */
-upb_status_t upb_parse_wire_value(void *buf, size_t *offset,
+upb_status_t upb_parse_wire_value(void *buf, size_t len, size_t *offset,
                                   upb_wire_type_t wt,
                                   union upb_wire_value *wv);
 
 /* Like the above, but discards the wire value instead of saving it. */
-upb_status_t upb_skip_wire_value(void *buf, size_t *offset,
+upb_status_t upb_skip_wire_value(void *buf, size_t len, size_t *offset,
                                  upb_wire_type_t wt);
 
 #ifdef __cplusplus

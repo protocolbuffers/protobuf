@@ -30,88 +30,93 @@
  * To avoid branches, none of these do bounds checking.  So we force clients
  * to overallocate their buffers by >=9 bytes. */
 
-static upb_status_t get_v_uint64_t(void *restrict *buf,
+static size_t min(size_t a, size_t b) { return a < b ? a : b; }
+
+static upb_status_t get_v_uint64_t(void *restrict *buf, size_t len,
                                    uint64_t *restrict val)
 {
-  uint8_t *ptr = *buf, b;
-  uint32_t part0 = 0, part1 = 0, part2 = 0;
-
-  /* From the original proto2 implementation. */
-  b = *(ptr++); part0  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part0 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part0 |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part0 |= (b & 0x7F) << 21; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part1  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part1 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part1 |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part1 |= (b & 0x7F) << 21; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part2  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-  b = *(ptr++); part2 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-  return UPB_ERROR_UNTERMINATED_VARINT;
-
-done:
-  *buf = ptr;
-  *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
-  return UPB_STATUS_OK;
-}
-
-static upb_status_t skip_v_uint64_t(void **buf)
-{
+  uint32_t bitpos, bytes = min(len, 10);
   uint8_t *b = *buf;
-  for(int i = 0; i < 10; i++, b++) {
-    if(!(*b & 0x80)) {
-      *buf = b;
-      return UPB_STATUS_OK;
-    }
+  uint8_t *end = b + bytes;
+  uint8_t last = 0x80;
+  *val = 0;
+  for(bitpos = 0; b < end && (last & 0x80); b++, bitpos += 7)
+    *val |= ((uint64_t)((last = *b) & 0x7F)) << bitpos;
+
+  if(unlikely(last & 0x80)) {
+    return bytes < 10 ? UPB_STATUS_NEED_MORE_DATA : UPB_ERROR_UNTERMINATED_VARINT;
+  } else {
+    *buf = b;
+    return UPB_STATUS_OK;
   }
-  return UPB_ERROR_UNTERMINATED_VARINT;
 }
 
-static upb_status_t get_v_uint32_t(void *restrict *buf,
+static upb_status_t skip_v_uint64_t(void **buf, size_t len)
+{
+  uint32_t bytes = min(len, 10);
+  uint8_t *b = *buf;
+  uint8_t *end = b + bytes;
+  uint8_t last = 0x80;
+  for(; b < end && (last & 0x80); b++)
+    last = *b;
+
+  if(unlikely(b == end)) {
+    return bytes < 10 ? UPB_STATUS_NEED_MORE_DATA : UPB_ERROR_UNTERMINATED_VARINT;
+  } else {
+    *buf = b;
+    return UPB_STATUS_OK;
+  }
+}
+
+static upb_status_t get_v_uint32_t(void *restrict *buf, size_t len,
                                    uint32_t *restrict val)
 {
-  uint8_t *ptr = *buf, b;
-  uint32_t result;
+  uint32_t bitpos, bytes = min(len, 5);
+  uint8_t *b = *buf;
+  uint8_t *end = b + bytes;
+  uint8_t last = 0x80;
+  *val = 0;
+  for(bitpos = 0; b < end && (last & 0x80); b++, bitpos += 7)
+    *val |= ((uint32_t)((last = *b) & 0x7F)) << bitpos;
 
-  /* From the original proto2 implementation. */
-  b = *(ptr++); result  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |= (b & 0x7F) << 21; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result  = (b & 0x7F) << 28; if (!(b & 0x80)) goto done;
-  return UPB_ERROR_UNTERMINATED_VARINT;
-
-done:
-  *buf = ptr;
-  *val = result;
-  return UPB_STATUS_OK;
+  if(unlikely(b == end)) {
+    return bytes < 5 ? UPB_STATUS_NEED_MORE_DATA : UPB_ERROR_UNTERMINATED_VARINT;
+  } else {
+    *buf = b;
+    return UPB_STATUS_OK;
+  }
 }
 
 #define SHL(val, bits) ((uint32_t)val << bits)
-static upb_status_t get_f_uint32_t(void *restrict *buf,
+static upb_status_t get_f_uint32_t(void *restrict *buf, size_t len,
                                    uint32_t *restrict val)
 {
+  const uint8_t size = sizeof(uint32_t);
+  if(unlikely(len < size)) return UPB_STATUS_NEED_MORE_DATA;
   uint8_t *b = *buf;
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint32_t*)b;
 #else
   *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
 #endif
-  b += sizeof(uint32_t);
+  b += size;
   *buf = b;
   return UPB_STATUS_OK;
 }
 #undef SHL
 
-static upb_status_t skip_f_uint32_t(void **buf)
+static upb_status_t skip_f_uint32_t(void **buf, size_t len)
 {
-  *buf = (char*)*buf + sizeof(uint32_t);
+  const uint8_t size = sizeof(uint32_t);
+  if(unlikely(len < size)) return UPB_STATUS_NEED_MORE_DATA;
+  *buf = (char*)*buf + size;
   return UPB_STATUS_OK;
 }
 
-static upb_status_t get_f_uint64_t(void *restrict *buf,
+static upb_status_t get_f_uint64_t(void *restrict *buf, size_t len,
                                    uint64_t *restrict val)
 {
+  if(unlikely(len < sizeof(uint64_t))) return UPB_STATUS_NEED_MORE_DATA;
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint64_t*)*buf;
   *buf = (char*)*buf + sizeof(uint64_t);
@@ -124,9 +129,11 @@ static upb_status_t get_f_uint64_t(void *restrict *buf,
   return UPB_STATUS_OK;
 }
 
-static upb_status_t skip_f_uint64_t(void **buf)
+static upb_status_t skip_f_uint64_t(void **buf, size_t len)
 {
-  *buf = (char*)*buf + sizeof(uint64_t);
+  const uint8_t size = sizeof(uint64_t);
+  if(unlikely(len < size)) return UPB_STATUS_NEED_MORE_DATA;
+  *buf = (char*)*buf + size;
   return UPB_STATUS_OK;
 }
 
@@ -140,10 +147,10 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   static void wvtov_ ## type(wire_t s, val_t *d)
 
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  static upb_status_t get_ ## type(void **buf, union upb_value *d) { \
+  static upb_status_t get_ ## type(void **buf, size_t len, val_t *d) { \
     wire_t tmp; \
-    CHECK(get_ ## v_or_f ## _ ## wire_t(buf, &tmp)); \
-    wvtov_ ## type(tmp, &d->member_name); \
+    CHECK(get_ ## v_or_f ## _ ## wire_t(buf, len, &tmp)); \
+    wvtov_ ## type(tmp, d); \
     return UPB_STATUS_OK; \
   }
 
@@ -194,27 +201,27 @@ struct upb_type_info upb_type_info[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64]  = {alignof(int64_t),  sizeof(int64_t),  UPB_WIRE_TYPE_VARINT},
 };
 
-upb_status_t upb_parse_tag(void **buf, struct upb_tag *tag)
+upb_status_t upb_parse_tag(void **buf, size_t len, struct upb_tag *tag)
 {
   uint32_t tag_int;
-  CHECK(get_v_uint32_t(buf, &tag_int));
+  CHECK(get_v_uint32_t(buf, len, &tag_int));
   tag->wire_type    = (upb_wire_type_t)(tag_int & 0x07);
   tag->field_number = tag_int >> 3;
   return UPB_STATUS_OK;
 }
 
-upb_status_t upb_parse_wire_value(void *buf, size_t *offset,
+upb_status_t upb_parse_wire_value(void *buf, size_t len, size_t *offset,
                                   upb_wire_type_t wt,
                                   union upb_wire_value *wv)
 {
 #define READ(expr) CHECK(expr); *offset += ((char*)b-(char*)buf)
   void *b = buf;
   switch(wt) {
-    case UPB_WIRE_TYPE_VARINT: READ(get_v_uint64_t(&b, &wv->varint)); break;
-    case UPB_WIRE_TYPE_64BIT: READ(get_f_uint64_t(&b, &wv->_64bit)); break;
-    case UPB_WIRE_TYPE_32BIT: READ(get_f_uint32_t(&b, &wv->_32bit)); break;
+    case UPB_WIRE_TYPE_VARINT: READ(get_v_uint64_t(&b, len, &wv->varint)); break;
+    case UPB_WIRE_TYPE_64BIT: READ(get_f_uint64_t(&b, len, &wv->_64bit)); break;
+    case UPB_WIRE_TYPE_32BIT: READ(get_f_uint32_t(&b, len, &wv->_32bit)); break;
     case UPB_WIRE_TYPE_DELIMITED:
-      READ(get_v_uint32_t(&b, &wv->_32bit));
+      READ(get_v_uint32_t(&b, len, &wv->_32bit));
       size_t new_offset = *offset + wv->_32bit;
       if (new_offset < *offset) return UPB_ERROR_OVERFLOW;
       *offset = new_offset;
@@ -225,19 +232,19 @@ upb_status_t upb_parse_wire_value(void *buf, size_t *offset,
   return UPB_STATUS_OK;
 }
 
-upb_status_t upb_skip_wire_value(void *buf, size_t *offset,
+upb_status_t upb_skip_wire_value(void *buf, size_t len, size_t *offset,
                                  upb_wire_type_t wt)
 {
   void *b = buf;
   switch(wt) {
-    case UPB_WIRE_TYPE_VARINT: READ(skip_v_uint64_t(&b)); break;
-    case UPB_WIRE_TYPE_64BIT: READ(skip_f_uint64_t(&b)); break;
-    case UPB_WIRE_TYPE_32BIT: READ(skip_f_uint32_t(&b)); break;
+    case UPB_WIRE_TYPE_VARINT: READ(skip_v_uint64_t(&b, len)); break;
+    case UPB_WIRE_TYPE_64BIT: READ(skip_f_uint64_t(&b, len)); break;
+    case UPB_WIRE_TYPE_32BIT: READ(skip_f_uint32_t(&b, len)); break;
     case UPB_WIRE_TYPE_DELIMITED: {
       /* Have to get (not skip) the length to skip the bytes. */
-      uint32_t len;
-      READ(get_v_uint32_t(&b, &len));
-      size_t new_offset = *offset + len;
+      uint32_t delim_len;
+      READ(get_v_uint32_t(&b, len, &delim_len));
+      size_t new_offset = *offset + delim_len;
       if (new_offset < *offset) return UPB_ERROR_OVERFLOW;
       *offset = new_offset;
       break;
@@ -249,19 +256,31 @@ upb_status_t upb_skip_wire_value(void *buf, size_t *offset,
 #undef READ
 }
 
-upb_status_t upb_parse_value(void **b, upb_field_type_t ft,
+upb_status_t upb_parse_value(void **b, size_t len, upb_field_type_t ft,
                              union upb_value *v)
 {
-#define CASE(t) \
-  case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: return get_ ## t(b, v);
+#define CASE(t, member_name) \
+  case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: \
+    return get_ ## t(b, len, &v->member_name);
   switch(ft) {
-    CASE(DOUBLE) CASE(FLOAT) CASE(INT64) CASE(UINT64) CASE(INT32) CASE(FIXED64)
-    CASE(FIXED32) CASE(BOOL) CASE(UINT32) CASE(ENUM) CASE(SFIXED32)
-    CASE(SFIXED64) CASE(SINT32) CASE(SINT64)
+    CASE(DOUBLE,   _double)
+    CASE(FLOAT,    _float)
+    CASE(INT32,    int32)
+    CASE(INT64,    int64)
+    CASE(UINT32,   uint32)
+    CASE(UINT64,   uint64)
+    CASE(SINT32,   int32)
+    CASE(SINT64,   int64)
+    CASE(FIXED32,  uint32)
+    CASE(FIXED64,  uint64)
+    CASE(SFIXED32, int32)
+    CASE(SFIXED64, int64)
+    CASE(BOOL,     _bool)
+    CASE(ENUM,     int32)
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
-      return get_UINT32(b, v);
+      return get_INT32(b, len, &v->int32);
     default: return 0;  /* Including GROUP -- groups have no value. */
   }
 #undef CASE
@@ -301,6 +320,7 @@ static upb_status_t push_stack_frame(struct upb_parse_state *s, size_t end,
   return UPB_STATUS_OK;
 }
 
+#if 0
 upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
                        size_t *read)
 {
@@ -314,7 +334,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
 
     struct upb_tag tag;
     void *b = buf;
-    CHECK(upb_parse_tag(&b, &tag));
+    CHECK(upb_parse_tag(&b, len, &tag));
     int tag_bytes = ((char*)b - (char*)buf);
     s->offset += tag_bytes;
     buf = b;
@@ -325,7 +345,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
     }
 
     void *user_field_desc;
-    upb_field_type_t ft = s->tag_cb(s, &tag, &user_field_desc);
+    //upb_field_type_t ft = s->tag_cb(s, &tag, &user_field_desc);
     if(ft == 0) {
       CHECK(upb_skip_wire_value(b, &s->offset, tag.wire_type));
     } else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
@@ -356,3 +376,4 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
   *read = s->offset - start_offset;
   return UPB_STATUS_OK;
 }
+#endif
