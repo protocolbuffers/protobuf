@@ -26,9 +26,7 @@
   if(status != UPB_STATUS_OK) return status; \
   } while (0)
 
-/* Lowest-level functions -- these read integers from the input buffer.
- * To avoid branches, none of these do bounds checking.  So we force clients
- * to overallocate their buffers by >=9 bytes. */
+/* Lowest-level functions -- these read integers from the input buffer. */
 
 static size_t min(size_t a, size_t b) { return a < b ? a : b; }
 
