@@ -16,6 +16,15 @@
 extern "C" {
 #endif
 
+/* Branch prediction hints for GCC. */
+#ifdef __GNUC__
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
+#else
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#endif
+
 /* inline if possible, emit standalone code if required. */
 #define INLINE static inline
 
@@ -113,6 +122,9 @@ typedef enum upb_status {
   // The input byte stream ended in the middle of a record.
   UPB_STATUS_NEED_MORE_DATA = 1,
 
+  // The user value callback opted to stop parsing.
+  UPB_STATUS_USER_CANCELLED = 2,
+
   // A varint did not terminate before hitting 64 bits.
   UPB_ERROR_UNTERMINATED_VARINT = -1,
 
@@ -126,8 +138,15 @@ typedef enum upb_status {
   UPB_ERROR_OVERFLOW = -4,
 
   // An "end group" tag was encountered in an inappropriate place.
-  UPB_ERROR_SPURIOUS_END_GROUP = -5
+  UPB_ERROR_SPURIOUS_END_GROUP = -5,
+
+  UPB_ERROR_ILLEGAL = -6
 } upb_status_t;
+
+#define UPB_CHECK(func) do { \
+  upb_status_t status = func; \
+  if(status != UPB_STATUS_OK) return status; \
+  } while (0)
 
 #ifdef __cplusplus
 }  /* extern "C" */
