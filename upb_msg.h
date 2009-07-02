@@ -62,6 +62,7 @@ struct upb_msg_field {
   uint32_t byte_offset;     /* Where to find the data. */
   uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
   upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
+  upb_label_t label;
   union upb_symbol_ref ref;
 };
 
@@ -127,71 +128,70 @@ INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
   return e ? &e->f : NULL;
 }
 
-/* Variable-length data (strings and arrays).**********************************/
+/* Arrays. ********************************************************************/
 
 /* Represents an array (a repeated field) of any type.  The interpretation of
  * the data in the array depends on the type. */
 struct upb_array {
-  void *data;  /* Size of individual elements is based on type. */
+  union {
+    double   *_double;
+    float    *_float;
+    int32_t  *int32;
+    int64_t  *int64;
+    uint32_t *uint32;
+    uint64_t *uint64;
+    bool     *_bool;
+    struct upb_string **string;
+    void     **submsg;
+    void     *_void;
+  } elements;
   uint32_t len;     /* Measured in elements. */
 };
 
-/* A generic array of structs, using void* instead of specific types. */
-struct upb_msg_array {
-  void **elements;
-  uint32_t len;
-};
-
-/* An array of strings. */
-struct upb_string_array {
-  struct upb_string **elements;
-  uint32_t len;
-};
-
-/* Specific arrays of all the primitive types. */
-#define UPB_DEFINE_PRIMITIVE_ARRAY(type, name) \
+/* These are all overlays on upb_array, pointers between them can be cast. */
+#define UPB_DEFINE_ARRAY_TYPE(name, type) \
   struct upb_ ## name ## _array { \
-    size_t len; \
     type *elements; \
+    uint32_t len; \
   };
 
-UPB_DEFINE_PRIMITIVE_ARRAY(double,   double)
-UPB_DEFINE_PRIMITIVE_ARRAY(float,    float)
-UPB_DEFINE_PRIMITIVE_ARRAY(int32_t,  int32)
-UPB_DEFINE_PRIMITIVE_ARRAY(int64_t,  int64)
-UPB_DEFINE_PRIMITIVE_ARRAY(uint32_t, uint32)
-UPB_DEFINE_PRIMITIVE_ARRAY(uint64_t, uint64)
-UPB_DEFINE_PRIMITIVE_ARRAY(bool,     bool)
-#undef UPB_DEFINE_PRMITIVE_ARRAY
+union upb_value_ptr upb_array_getelementptr(struct upb_array *arr, uint32_t n,
+                                            upb_field_type_t type)
+{
+  union upb_value_ptr ptr = {
+    ._void = ((char*)arr->elements._void + n*upb_type_info[type].size)
+  };
+  return ptr;
+}
 
-#define UPB_STRUCT_ARRAY(struct_type) struct struct_type ## _array
+UPB_DEFINE_ARRAY_TYPE(upb_double, double)
+UPB_DEFINE_ARRAY_TYPE(upb_float,  float)
+UPB_DEFINE_ARRAY_TYPE(upb_int32,  int32_t)
+UPB_DEFINE_ARRAY_TYPE(upb_int64,  int64_t)
+UPB_DEFINE_ARRAY_TYPE(upb_uint32, uint32_t)
+UPB_DEFINE_ARRAY_TYPE(upb_uint64, uint64_t)
+UPB_DEFINE_ARRAY_TYPE(upb_bool,   bool)
+UPB_DEFINE_ARRAY_TYPE(upb_string, struct upb_string*)
 
-#define UPB_DEFINE_STRUCT_ARRAY(struct_type) \
-  UPB_STRUCT_ARRAY(struct_type) { \
-    size_t len; \
-    struct_type **elements; \
+#define UPB_MSG_ARRAY(msg_type) struct msg_type ## _array
+#define UPB_DEFINE_MSG_ARRAY(msg_type) \
+  UPB_MSG_ARRAY(msg_type) { \
+    msg_type **elements; \
+    uint32_t len; \
   };
 
 /* Accessors for primitive types.  ********************************************/
 
-/* For each primitive type we define a set of six functions:
+/* For each primitive type we define a set of three functions:
  *
  *  // For fetching out of a msg (s points to the raw msg data).
  *  int32_t *upb_msg_get_int32_ptr(void *s, struct upb_msg_field *f);
  *  int32_t upb_msg_get_int32(void *s, struct upb_msg_field *f);
  *  void upb_msg_set_int32(void *s, struct upb_msg_field *f, int32_t val);
  *
- *  // For fetching out of an array.
- *  int32_t *upb_array_get_int32_ptr(struct upb_array *a, int n);
- *  int32_t upb_array_get_int32(struct upb_array *a, int n);
- *  void upb_array_set_int32(struct upb_array *a, int n, ctype val);
- *
- * For arrays we provide only the first three because protobufs do not support
- * arrays of arrays.
- *
  * These do no existence checks, bounds checks, or type checks. */
 
-#define UPB_DEFINE_ACCESSORS(ctype, name, INLINE) \
+#define UPB_DEFINE_ACCESSORS(INLINE, name, ctype) \
   INLINE ctype *upb_msg_get_ ## name ## _ptr( \
       void *s, struct upb_msg_field *f) { \
     return (ctype*)((char*)s + f->byte_offset); \
@@ -205,32 +205,35 @@ UPB_DEFINE_PRIMITIVE_ARRAY(bool,     bool)
     *upb_msg_get_ ## name ## _ptr(s, f) = val; \
   }
 
-#define UPB_DEFINE_ARRAY_ACCESSORS(ctype, name, INLINE) \
-  INLINE ctype *upb_array_get_ ## name ## _ptr(struct upb_array *a, int n) { \
-    return ((ctype*)a->data) + n; \
-  } \
-  INLINE ctype upb_array_get_ ## name(struct upb_array *a, int n) { \
-    return *upb_array_get_ ## name ## _ptr(a, n); \
-  } \
-  INLINE void upb_array_set_ ## name(struct upb_array *a, int n, ctype val) { \
-    *upb_array_get_ ## name ## _ptr(a, n) = val; \
-  }
+UPB_DEFINE_ACCESSORS(INLINE, double, double)
+UPB_DEFINE_ACCESSORS(INLINE, float,  float)
+UPB_DEFINE_ACCESSORS(INLINE, int32,  int32_t)
+UPB_DEFINE_ACCESSORS(INLINE, int64,  int64_t)
+UPB_DEFINE_ACCESSORS(INLINE, uint32, uint32_t)
+UPB_DEFINE_ACCESSORS(INLINE, uint64, uint64_t)
+UPB_DEFINE_ACCESSORS(INLINE, bool,   bool)
+UPB_DEFINE_ACCESSORS(INLINE, bytes,  struct upb_string*)
+UPB_DEFINE_ACCESSORS(INLINE, string, struct upb_string*)
+UPB_DEFINE_ACCESSORS(INLINE, submsg, void*)
+UPB_DEFINE_ACCESSORS(INLINE, array,  struct upb_array*)
 
-#define UPB_DEFINE_ALL_ACCESSORS(ctype, name, INLINE) \
-  UPB_DEFINE_ACCESSORS(ctype, name, INLINE) \
-  UPB_DEFINE_ARRAY_ACCESSORS(ctype, name, INLINE)
+INLINE union upb_value_ptr upb_msg_get_ptr(
+    void *data, struct upb_msg_field *f) {
+  union upb_value_ptr p = {._void = ((char*)data + f->byte_offset)};
+  return p;
+}
 
-UPB_DEFINE_ALL_ACCESSORS(double,   double, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(float,    float,  INLINE)
-UPB_DEFINE_ALL_ACCESSORS(int32_t,  int32,  INLINE)
-UPB_DEFINE_ALL_ACCESSORS(int64_t,  int64,  INLINE)
-UPB_DEFINE_ALL_ACCESSORS(uint32_t, uint32, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(uint64_t, uint64, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(bool,     bool,   INLINE)
-UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, bytes, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(struct upb_string*, string, INLINE)
-UPB_DEFINE_ALL_ACCESSORS(void*,    submsg, INLINE)
-UPB_DEFINE_ACCESSORS(struct upb_array*, array, INLINE)
+/* Memory management  *********************************************************/
+
+void *upb_msg_new(struct upb_msg *m);
+//void upb_msg_free(void *msg, struct upb_msg *m, bool free_submsgs);
+
+/* Note!  These two may not be use on a upb_string* that was initialized by
+ * means other than these functions. */
+void upb_msg_reuse_str(struct upb_string **str, uint32_t len);
+void upb_msg_reuse_array(struct upb_array **arr, uint32_t n, upb_field_type_t t);
+void upb_msg_reuse_strref(struct upb_string **str);
+void upb_msg_reuse_submsg(void **msg, struct upb_msg *m);
 
 /* "Set" flag reading and writing.  *******************************************/
 
@@ -279,10 +282,8 @@ INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 
 /* Serialization/Deserialization.  ********************************************/
 
-/* Parses the string data in s according to the message description in m.
- * Returns a newly allocated message which is now owned by the caller, or
- * NULL if there was an error parsing the string. */
-void *upb_msg_parse(struct upb_msg *m, struct upb_string *s);
+/* Parses the string data in s according to the message description in m. */
+upb_status_t upb_msg_merge(void *data, struct upb_msg *m, struct upb_string *s);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -4,7 +4,7 @@
  * This file contains parsing routines; both stream-oriented and tree-oriented
  * models are supported.
  *
- * Copyright (c) 2008 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_PARSE_H_
@@ -54,6 +54,7 @@ typedef upb_status_t (*upb_value_cb)(struct upb_parse_state *s,
 /* The callback that is called when a string is parsed. */
 typedef upb_status_t (*upb_str_cb)(struct upb_parse_state *s,
                                    struct upb_string *str,
+                                   upb_field_type_t type,
                                    void *user_field_desc);
 
 /* Callbacks that are called when a submessage begins and ends, respectively.
@@ -105,7 +106,7 @@ upb_status_t upb_parse_tag(void **buf, void *end, struct upb_tag *tag);
  * this field type.  For delimited data, buf is advanced to the beginning of
  * the delimited data, not the end. */
 upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
-                             union upb_value *v);
+                             union upb_value_ptr v);
 
 /* Parses a wire value with the given type (which must have been obtained from
  * a tag that was just parsed) and adds the number of bytes that were consumed

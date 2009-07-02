@@ -38,13 +38,18 @@ extern "C" {
 struct upb_string {
   /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
    * ingrained convention that we follow it. */
-  char *data;
+  char *ptr;
   uint32_t byte_len;
 };
 
-INLINE bool upb_string_eql(struct upb_string *s1, struct upb_string *s2) {
+INLINE bool upb_streql(struct upb_string *s1, struct upb_string *s2) {
   return s1->byte_len == s2->byte_len &&
-         memcmp(s1->data, s2->data, s1->byte_len) == 0;
+         memcmp(s1->ptr, s2->ptr, s1->byte_len) == 0;
+}
+
+INLINE void upb_strcpy(struct upb_string *dest, struct upb_string *src) {
+  memcpy(dest->ptr, src->ptr, dest->byte_len);
+  dest->byte_len = src->byte_len;
 }
 
 /* A list of types as they are encoded on-the-wire. */
@@ -72,16 +77,21 @@ union upb_wire_value {
  * represent exceptional circumstances. */
 typedef uint8_t upb_field_type_t;
 
+/* Label (optional, repeated, required) as defined in a .proto file.  The values
+ * of this are defined by google.protobuf.FieldDescriptorProto.Label (from
+ * descriptor.proto). */
+typedef uint8_t  upb_label_t;
+
 struct upb_type_info {
   uint8_t align;
   uint8_t size;
   uint8_t expected_wire_type;
 };
 
+/* This array is indexed by upb_field_type_t. */
 extern struct upb_type_info upb_type_info[];
 
-/* A value as described in a .proto file, except delimited, which is handled
- * separately. */
+/* A scalar value as described in a .proto file */
 union upb_value {
   double _double;
   float  _float;
@@ -90,7 +100,19 @@ union upb_value {
   uint32_t uint32;
   uint64_t uint64;
   bool _bool;
-  uint32_t delim_len;
+};
+
+union upb_value_ptr {
+  double *_double;
+  float  *_float;
+  int32_t *int32;
+  int64_t *int64;
+  uint32_t *uint32;
+  uint64_t *uint64;
+  bool *_bool;
+  struct upb_string **string;
+  struct upb_array **array;
+  void *_void;
 };
 
 /* The number of a field, eg. "optional string foo = 3". */

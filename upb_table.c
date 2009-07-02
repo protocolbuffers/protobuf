@@ -53,7 +53,7 @@ void upb_strtable_free(struct upb_strtable *t) { upb_table_free(&t->t); }
 
 static uint32_t strtable_bucket(struct upb_strtable *t, struct upb_string *key)
 {
-  uint32_t hash = MurmurHash2(key->data, key->byte_len, 0);
+  uint32_t hash = MurmurHash2(key->ptr, key->byte_len, 0);
   return (hash & (upb_strtable_size(t)-1)) + 1;
 }
 
@@ -63,7 +63,7 @@ void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key)
   struct upb_strtable_entry *e;
   do {
     e = strent(t, bucket);
-    if(upb_string_eql(&e->key, key)) return e;
+    if(upb_streql(&e->key, key)) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;
 }

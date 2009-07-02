@@ -222,11 +222,11 @@ upb_status_t upb_skip_wire_value(void **buf, void *end, upb_wire_type_t wt)
 }
 
 upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
-                             union upb_value *v)
+                             union upb_value_ptr v)
 {
 #define CASE(t, member_name) \
   case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: \
-    return get_ ## t(buf, end, &v->member_name);
+    return get_ ## t(buf, end, v.member_name);
   switch(ft) {
     CASE(DOUBLE,   _double)
     CASE(FLOAT,    _float)
@@ -307,8 +307,8 @@ static upb_status_t parse_delimited(struct upb_parse_state *s,
     void *delim_end = (char*)*buf + delim_len;
     if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING ||
        ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES) {
-      struct upb_string str = {.data = *buf, .byte_len = delim_len};
-      s->str_cb(s, &str, user_field_desc);
+      struct upb_string str = {.ptr = *buf, .byte_len = delim_len};
+      s->str_cb(s, &str, ft, user_field_desc);
       *buf = delim_end;
     } else {
       /* Packed Array. */

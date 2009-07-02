@@ -1,11 +1,11 @@
 #include "descriptor.h"
 
 static struct upb_string google_protobuf_filedescriptor_name = {
-  .byte_len=32, .data="google/protobuf/descriptor.proto"
+  .byte_len=32, .ptr="google/protobuf/descriptor.proto"
 };
 
 static struct upb_string google_protobuf_filedescriptor_package = {
-  .byte_len=15, .data="google.protobuf"
+  .byte_len=15, .ptr="google.protobuf"
 };
 
 struct google_protobuf_DescriptorProto google_protobuf_FileDescriptorSet_descriptor;
@@ -44,7 +44,7 @@ static google_protobuf_DescriptorProto *google_protobuf_filedescriptor_message_t
   &google_protobuf_UninterpretedOption_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto) google_protobuf_filedescriptor_message_type = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto) google_protobuf_filedescriptor_message_type = {
   .len=16, .elements=google_protobuf_filedescriptor_message_type_array
 };
 
@@ -67,7 +67,7 @@ google_protobuf_FileDescriptorProto google_protobuf_filedescriptor = {
 
 /* google_protobuf_FileDescriptorSet_descriptor */
 static struct upb_string google_protobuf_FileDescriptorSet_descriptor_name = {
-  .byte_len=17, .data="FileDescriptorSet"
+  .byte_len=17, .ptr="FileDescriptorSet"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorSet_file_descriptor;
@@ -76,7 +76,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_FileDescriptorSet_d
   &google_protobuf_FileDescriptorSet_file_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FileDescriptorSet_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FileDescriptorSet_descriptor_field = {
   .len=1, .elements=google_protobuf_FileDescriptorSet_descriptor_field_array
 };
 
@@ -88,11 +88,11 @@ google_protobuf_DescriptorProto google_protobuf_FileDescriptorSet_descriptor = {
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_FileDescriptorSet_file_fieldname = {
-  .byte_len=4, .data="file"
+  .byte_len=4, .ptr="file"
 };
 
 static struct upb_string google_protobuf_FileDescriptorSet_file_field_typename = {
-  .byte_len=19, .data="FileDescriptorProto"
+  .byte_len=19, .ptr="FileDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorSet_file = {
@@ -104,7 +104,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorSet_file = {
 };
 /* google_protobuf_FileDescriptorProto_descriptor */
 static struct upb_string google_protobuf_FileDescriptorProto_descriptor_name = {
-  .byte_len=19, .data="FileDescriptorProto"
+  .byte_len=19, .ptr="FileDescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_name_descriptor;
@@ -127,7 +127,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_FileDescriptorProto
   &google_protobuf_FileDescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FileDescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FileDescriptorProto_descriptor_field = {
   .len=8, .elements=google_protobuf_FileDescriptorProto_descriptor_field_array
 };
 
@@ -139,7 +139,7 @@ google_protobuf_DescriptorProto google_protobuf_FileDescriptorProto_descriptor =
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_name = {
@@ -150,7 +150,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_name = 
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_package_fieldname = {
-  .byte_len=7, .data="package"
+  .byte_len=7, .ptr="package"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_package = {
@@ -161,7 +161,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_package
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_dependency_fieldname = {
-  .byte_len=10, .data="dependency"
+  .byte_len=10, .ptr="dependency"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_dependency = {
@@ -172,11 +172,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_depende
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_message_type_fieldname = {
-  .byte_len=12, .data="message_type"
+  .byte_len=12, .ptr="message_type"
 };
 
 static struct upb_string google_protobuf_FileDescriptorProto_message_type_field_typename = {
-  .byte_len=15, .data="DescriptorProto"
+  .byte_len=15, .ptr="DescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_message_type = {
@@ -187,11 +187,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_message
   .type_name = &google_protobuf_FileDescriptorProto_message_type_field_typename,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_enum_type_fieldname = {
-  .byte_len=9, .data="enum_type"
+  .byte_len=9, .ptr="enum_type"
 };
 
 static struct upb_string google_protobuf_FileDescriptorProto_enum_type_field_typename = {
-  .byte_len=19, .data="EnumDescriptorProto"
+  .byte_len=19, .ptr="EnumDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_enum_type = {
@@ -202,11 +202,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_enum_ty
   .type_name = &google_protobuf_FileDescriptorProto_enum_type_field_typename,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_service_fieldname = {
-  .byte_len=7, .data="service"
+  .byte_len=7, .ptr="service"
 };
 
 static struct upb_string google_protobuf_FileDescriptorProto_service_field_typename = {
-  .byte_len=22, .data="ServiceDescriptorProto"
+  .byte_len=22, .ptr="ServiceDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_service = {
@@ -217,11 +217,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_service
   .type_name = &google_protobuf_FileDescriptorProto_service_field_typename,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_extension_fieldname = {
-  .byte_len=9, .data="extension"
+  .byte_len=9, .ptr="extension"
 };
 
 static struct upb_string google_protobuf_FileDescriptorProto_extension_field_typename = {
-  .byte_len=20, .data="FieldDescriptorProto"
+  .byte_len=20, .ptr="FieldDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_extension = {
@@ -232,11 +232,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_extensi
   .type_name = &google_protobuf_FileDescriptorProto_extension_field_typename,
 };
 static struct upb_string google_protobuf_FileDescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_FileDescriptorProto_options_field_typename = {
-  .byte_len=11, .data="FileOptions"
+  .byte_len=11, .ptr="FileOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_options = {
@@ -248,7 +248,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileDescriptorProto_options
 };
 /* google_protobuf_DescriptorProto_descriptor */
 static struct upb_string google_protobuf_DescriptorProto_descriptor_name = {
-  .byte_len=15, .data="DescriptorProto"
+  .byte_len=15, .ptr="DescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_name_descriptor;
@@ -269,7 +269,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_DescriptorProto_des
   &google_protobuf_DescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_DescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_DescriptorProto_descriptor_field = {
   .len=7, .elements=google_protobuf_DescriptorProto_descriptor_field_array
 };
 
@@ -279,7 +279,7 @@ static google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_descript
   &google_protobuf_DescriptorProto_ExtensionRange_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto) google_protobuf_DescriptorProto_descriptor_nested_type = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto) google_protobuf_DescriptorProto_descriptor_nested_type = {
   .len=1, .elements=google_protobuf_DescriptorProto_descriptor_nested_type_array
 };
 
@@ -291,7 +291,7 @@ google_protobuf_DescriptorProto google_protobuf_DescriptorProto_descriptor = {
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_DescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_name = {
@@ -302,11 +302,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_name = {
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_DescriptorProto_field_fieldname = {
-  .byte_len=5, .data="field"
+  .byte_len=5, .ptr="field"
 };
 
 static struct upb_string google_protobuf_DescriptorProto_field_field_typename = {
-  .byte_len=20, .data="FieldDescriptorProto"
+  .byte_len=20, .ptr="FieldDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_field = {
@@ -317,11 +317,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_field = {
   .type_name = &google_protobuf_DescriptorProto_field_field_typename,
 };
 static struct upb_string google_protobuf_DescriptorProto_extension_fieldname = {
-  .byte_len=9, .data="extension"
+  .byte_len=9, .ptr="extension"
 };
 
 static struct upb_string google_protobuf_DescriptorProto_extension_field_typename = {
-  .byte_len=20, .data="FieldDescriptorProto"
+  .byte_len=20, .ptr="FieldDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_extension = {
@@ -332,11 +332,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_extension =
   .type_name = &google_protobuf_DescriptorProto_extension_field_typename,
 };
 static struct upb_string google_protobuf_DescriptorProto_nested_type_fieldname = {
-  .byte_len=11, .data="nested_type"
+  .byte_len=11, .ptr="nested_type"
 };
 
 static struct upb_string google_protobuf_DescriptorProto_nested_type_field_typename = {
-  .byte_len=15, .data="DescriptorProto"
+  .byte_len=15, .ptr="DescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_nested_type = {
@@ -347,11 +347,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_nested_type
   .type_name = &google_protobuf_DescriptorProto_nested_type_field_typename,
 };
 static struct upb_string google_protobuf_DescriptorProto_enum_type_fieldname = {
-  .byte_len=9, .data="enum_type"
+  .byte_len=9, .ptr="enum_type"
 };
 
 static struct upb_string google_protobuf_DescriptorProto_enum_type_field_typename = {
-  .byte_len=19, .data="EnumDescriptorProto"
+  .byte_len=19, .ptr="EnumDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_enum_type = {
@@ -362,11 +362,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_enum_type =
   .type_name = &google_protobuf_DescriptorProto_enum_type_field_typename,
 };
 static struct upb_string google_protobuf_DescriptorProto_extension_range_fieldname = {
-  .byte_len=15, .data="extension_range"
+  .byte_len=15, .ptr="extension_range"
 };
 
 static struct upb_string google_protobuf_DescriptorProto_extension_range_field_typename = {
-  .byte_len=14, .data="ExtensionRange"
+  .byte_len=14, .ptr="ExtensionRange"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_extension_range = {
@@ -377,11 +377,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_extension_r
   .type_name = &google_protobuf_DescriptorProto_extension_range_field_typename,
 };
 static struct upb_string google_protobuf_DescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_DescriptorProto_options_field_typename = {
-  .byte_len=14, .data="MessageOptions"
+  .byte_len=14, .ptr="MessageOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_options = {
@@ -393,7 +393,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_options = {
 };
 /* google_protobuf_DescriptorProto_ExtensionRange_descriptor */
 static struct upb_string google_protobuf_DescriptorProto_ExtensionRange_descriptor_name = {
-  .byte_len=14, .data="ExtensionRange"
+  .byte_len=14, .ptr="ExtensionRange"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_ExtensionRange_start_descriptor;
@@ -404,7 +404,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_DescriptorProto_Ext
   &google_protobuf_DescriptorProto_ExtensionRange_end_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_DescriptorProto_ExtensionRange_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_DescriptorProto_ExtensionRange_descriptor_field = {
   .len=2, .elements=google_protobuf_DescriptorProto_ExtensionRange_descriptor_field_array
 };
 
@@ -416,7 +416,7 @@ google_protobuf_DescriptorProto google_protobuf_DescriptorProto_ExtensionRange_d
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_DescriptorProto_ExtensionRange_start_fieldname = {
-  .byte_len=5, .data="start"
+  .byte_len=5, .ptr="start"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_ExtensionRange_start = {
@@ -427,7 +427,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_ExtensionRa
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_DescriptorProto_ExtensionRange_end_fieldname = {
-  .byte_len=3, .data="end"
+  .byte_len=3, .ptr="end"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_ExtensionRange_end = {
@@ -439,7 +439,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_DescriptorProto_ExtensionRa
 };
 /* google_protobuf_FieldDescriptorProto_descriptor */
 static struct upb_string google_protobuf_FieldDescriptorProto_descriptor_name = {
-  .byte_len=20, .data="FieldDescriptorProto"
+  .byte_len=20, .ptr="FieldDescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_name_descriptor;
@@ -462,7 +462,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProt
   &google_protobuf_FieldDescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FieldDescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FieldDescriptorProto_descriptor_field = {
   .len=8, .elements=google_protobuf_FieldDescriptorProto_descriptor_field_array
 };
 
@@ -474,7 +474,7 @@ static google_protobuf_EnumDescriptorProto *google_protobuf_FieldDescriptorProto
   &google_protobuf_FieldDescriptorProto_Label_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_FieldDescriptorProto_descriptor_enum_type = {
+static UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_FieldDescriptorProto_descriptor_enum_type = {
   .len=2, .elements=google_protobuf_FieldDescriptorProto_descriptor_enum_type_array
 };
 
@@ -486,7 +486,7 @@ google_protobuf_DescriptorProto google_protobuf_FieldDescriptorProto_descriptor 
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_name = {
@@ -497,7 +497,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_name =
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_number_fieldname = {
-  .byte_len=6, .data="number"
+  .byte_len=6, .ptr="number"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_number = {
@@ -508,11 +508,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_number
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_label_fieldname = {
-  .byte_len=5, .data="label"
+  .byte_len=5, .ptr="label"
 };
 
 static struct upb_string google_protobuf_FieldDescriptorProto_label_field_typename = {
-  .byte_len=5, .data="Label"
+  .byte_len=5, .ptr="Label"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_label = {
@@ -523,11 +523,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_label 
   .type_name = &google_protobuf_FieldDescriptorProto_label_field_typename,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_type_fieldname = {
-  .byte_len=4, .data="type"
+  .byte_len=4, .ptr="type"
 };
 
 static struct upb_string google_protobuf_FieldDescriptorProto_type_field_typename = {
-  .byte_len=4, .data="Type"
+  .byte_len=4, .ptr="Type"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_type = {
@@ -538,7 +538,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_type =
   .type_name = &google_protobuf_FieldDescriptorProto_type_field_typename,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_type_name_fieldname = {
-  .byte_len=9, .data="type_name"
+  .byte_len=9, .ptr="type_name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_type_name = {
@@ -549,7 +549,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_type_n
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_extendee_fieldname = {
-  .byte_len=8, .data="extendee"
+  .byte_len=8, .ptr="extendee"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_extendee = {
@@ -560,7 +560,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_extend
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_default_value_fieldname = {
-  .byte_len=13, .data="default_value"
+  .byte_len=13, .ptr="default_value"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_default_value = {
@@ -571,11 +571,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_defaul
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_FieldDescriptorProto_options_field_typename = {
-  .byte_len=12, .data="FieldOptions"
+  .byte_len=12, .ptr="FieldOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_options = {
@@ -586,14 +586,14 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_option
   .type_name = &google_protobuf_FieldDescriptorProto_options_field_typename,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_Type_name = {
-  .byte_len=4, .data="Type"
+  .byte_len=4, .ptr="Type"
 };
 
 google_protobuf_EnumDescriptorProto google_protobuf_FieldDescriptorProto_Type_descriptor = {
   .name = &google_protobuf_FieldDescriptorProto_Type_name,
 };
 static struct upb_string google_protobuf_FieldDescriptorProto_Label_name = {
-  .byte_len=5, .data="Label"
+  .byte_len=5, .ptr="Label"
 };
 
 google_protobuf_EnumDescriptorProto google_protobuf_FieldDescriptorProto_Label_descriptor = {
@@ -601,7 +601,7 @@ google_protobuf_EnumDescriptorProto google_protobuf_FieldDescriptorProto_Label_d
 };
 /* google_protobuf_EnumDescriptorProto_descriptor */
 static struct upb_string google_protobuf_EnumDescriptorProto_descriptor_name = {
-  .byte_len=19, .data="EnumDescriptorProto"
+  .byte_len=19, .ptr="EnumDescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_name_descriptor;
@@ -614,7 +614,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_EnumDescriptorProto
   &google_protobuf_EnumDescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumDescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumDescriptorProto_descriptor_field = {
   .len=3, .elements=google_protobuf_EnumDescriptorProto_descriptor_field_array
 };
 
@@ -626,7 +626,7 @@ google_protobuf_DescriptorProto google_protobuf_EnumDescriptorProto_descriptor =
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_EnumDescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_name = {
@@ -637,11 +637,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_name = 
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_EnumDescriptorProto_value_fieldname = {
-  .byte_len=5, .data="value"
+  .byte_len=5, .ptr="value"
 };
 
 static struct upb_string google_protobuf_EnumDescriptorProto_value_field_typename = {
-  .byte_len=24, .data="EnumValueDescriptorProto"
+  .byte_len=24, .ptr="EnumValueDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_value = {
@@ -652,11 +652,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_value =
   .type_name = &google_protobuf_EnumDescriptorProto_value_field_typename,
 };
 static struct upb_string google_protobuf_EnumDescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_EnumDescriptorProto_options_field_typename = {
-  .byte_len=11, .data="EnumOptions"
+  .byte_len=11, .ptr="EnumOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_options = {
@@ -668,7 +668,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumDescriptorProto_options
 };
 /* google_protobuf_EnumValueDescriptorProto_descriptor */
 static struct upb_string google_protobuf_EnumValueDescriptorProto_descriptor_name = {
-  .byte_len=24, .data="EnumValueDescriptorProto"
+  .byte_len=24, .ptr="EnumValueDescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_name_descriptor;
@@ -681,7 +681,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_EnumValueDescriptor
   &google_protobuf_EnumValueDescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumValueDescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumValueDescriptorProto_descriptor_field = {
   .len=3, .elements=google_protobuf_EnumValueDescriptorProto_descriptor_field_array
 };
 
@@ -693,7 +693,7 @@ google_protobuf_DescriptorProto google_protobuf_EnumValueDescriptorProto_descrip
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_EnumValueDescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_name = {
@@ -704,7 +704,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_na
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_EnumValueDescriptorProto_number_fieldname = {
-  .byte_len=6, .data="number"
+  .byte_len=6, .ptr="number"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_number = {
@@ -715,11 +715,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_nu
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_EnumValueDescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_EnumValueDescriptorProto_options_field_typename = {
-  .byte_len=16, .data="EnumValueOptions"
+  .byte_len=16, .ptr="EnumValueOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_options = {
@@ -731,7 +731,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumValueDescriptorProto_op
 };
 /* google_protobuf_ServiceDescriptorProto_descriptor */
 static struct upb_string google_protobuf_ServiceDescriptorProto_descriptor_name = {
-  .byte_len=22, .data="ServiceDescriptorProto"
+  .byte_len=22, .ptr="ServiceDescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_name_descriptor;
@@ -744,7 +744,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_ServiceDescriptorPr
   &google_protobuf_ServiceDescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_ServiceDescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_ServiceDescriptorProto_descriptor_field = {
   .len=3, .elements=google_protobuf_ServiceDescriptorProto_descriptor_field_array
 };
 
@@ -756,7 +756,7 @@ google_protobuf_DescriptorProto google_protobuf_ServiceDescriptorProto_descripto
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_ServiceDescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_name = {
@@ -767,11 +767,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_name
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_ServiceDescriptorProto_method_fieldname = {
-  .byte_len=6, .data="method"
+  .byte_len=6, .ptr="method"
 };
 
 static struct upb_string google_protobuf_ServiceDescriptorProto_method_field_typename = {
-  .byte_len=21, .data="MethodDescriptorProto"
+  .byte_len=21, .ptr="MethodDescriptorProto"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_method = {
@@ -782,11 +782,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_meth
   .type_name = &google_protobuf_ServiceDescriptorProto_method_field_typename,
 };
 static struct upb_string google_protobuf_ServiceDescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_ServiceDescriptorProto_options_field_typename = {
-  .byte_len=14, .data="ServiceOptions"
+  .byte_len=14, .ptr="ServiceOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_options = {
@@ -798,7 +798,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_ServiceDescriptorProto_opti
 };
 /* google_protobuf_MethodDescriptorProto_descriptor */
 static struct upb_string google_protobuf_MethodDescriptorProto_descriptor_name = {
-  .byte_len=21, .data="MethodDescriptorProto"
+  .byte_len=21, .ptr="MethodDescriptorProto"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_name_descriptor;
@@ -813,7 +813,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_MethodDescriptorPro
   &google_protobuf_MethodDescriptorProto_options_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_MethodDescriptorProto_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_MethodDescriptorProto_descriptor_field = {
   .len=4, .elements=google_protobuf_MethodDescriptorProto_descriptor_field_array
 };
 
@@ -825,7 +825,7 @@ google_protobuf_DescriptorProto google_protobuf_MethodDescriptorProto_descriptor
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_MethodDescriptorProto_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_name = {
@@ -836,7 +836,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_name 
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_MethodDescriptorProto_input_type_fieldname = {
-  .byte_len=10, .data="input_type"
+  .byte_len=10, .ptr="input_type"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_input_type = {
@@ -847,7 +847,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_input
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_MethodDescriptorProto_output_type_fieldname = {
-  .byte_len=11, .data="output_type"
+  .byte_len=11, .ptr="output_type"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_output_type = {
@@ -858,11 +858,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_outpu
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_MethodDescriptorProto_options_fieldname = {
-  .byte_len=7, .data="options"
+  .byte_len=7, .ptr="options"
 };
 
 static struct upb_string google_protobuf_MethodDescriptorProto_options_field_typename = {
-  .byte_len=13, .data="MethodOptions"
+  .byte_len=13, .ptr="MethodOptions"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_options = {
@@ -874,7 +874,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_MethodDescriptorProto_optio
 };
 /* google_protobuf_FileOptions_descriptor */
 static struct upb_string google_protobuf_FileOptions_descriptor_name = {
-  .byte_len=11, .data="FileOptions"
+  .byte_len=11, .ptr="FileOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_package_descriptor;
@@ -891,7 +891,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_FileOptions_descrip
   &google_protobuf_FileOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FileOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FileOptions_descriptor_field = {
   .len=5, .elements=google_protobuf_FileOptions_descriptor_field_array
 };
 
@@ -901,7 +901,7 @@ static google_protobuf_EnumDescriptorProto *google_protobuf_FileOptions_descript
   &google_protobuf_FileOptions_OptimizeMode_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_FileOptions_descriptor_enum_type = {
+static UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_FileOptions_descriptor_enum_type = {
   .len=1, .elements=google_protobuf_FileOptions_descriptor_enum_type_array
 };
 
@@ -911,7 +911,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_FileOptio
   &google_protobuf_FileOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_FileOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_FileOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_FileOptions_descriptor_extension_range_array
 };
 
@@ -923,7 +923,7 @@ google_protobuf_DescriptorProto google_protobuf_FileOptions_descriptor = {
   .extension_range = &google_protobuf_FileOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_FileOptions_java_package_fieldname = {
-  .byte_len=12, .data="java_package"
+  .byte_len=12, .ptr="java_package"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_package = {
@@ -934,7 +934,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_package = 
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FileOptions_java_outer_classname_fieldname = {
-  .byte_len=20, .data="java_outer_classname"
+  .byte_len=20, .ptr="java_outer_classname"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_outer_classname = {
@@ -945,7 +945,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_outer_clas
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FileOptions_java_multiple_files_fieldname = {
-  .byte_len=19, .data="java_multiple_files"
+  .byte_len=19, .ptr="java_multiple_files"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_multiple_files = {
@@ -956,11 +956,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_java_multiple_f
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FileOptions_optimize_for_fieldname = {
-  .byte_len=12, .data="optimize_for"
+  .byte_len=12, .ptr="optimize_for"
 };
 
 static struct upb_string google_protobuf_FileOptions_optimize_for_field_typename = {
-  .byte_len=12, .data="OptimizeMode"
+  .byte_len=12, .ptr="OptimizeMode"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_optimize_for = {
@@ -971,11 +971,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_optimize_for = 
   .type_name = &google_protobuf_FileOptions_optimize_for_field_typename,
 };
 static struct upb_string google_protobuf_FileOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_FileOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_uninterpreted_option = {
@@ -986,7 +986,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FileOptions_uninterpreted_o
   .type_name = &google_protobuf_FileOptions_uninterpreted_option_field_typename,
 };
 static struct upb_string google_protobuf_FileOptions_OptimizeMode_name = {
-  .byte_len=12, .data="OptimizeMode"
+  .byte_len=12, .ptr="OptimizeMode"
 };
 
 google_protobuf_EnumDescriptorProto google_protobuf_FileOptions_OptimizeMode_descriptor = {
@@ -994,7 +994,7 @@ google_protobuf_EnumDescriptorProto google_protobuf_FileOptions_OptimizeMode_des
 };
 /* google_protobuf_MessageOptions_descriptor */
 static struct upb_string google_protobuf_MessageOptions_descriptor_name = {
-  .byte_len=14, .data="MessageOptions"
+  .byte_len=14, .ptr="MessageOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_MessageOptions_message_set_wire_format_descriptor;
@@ -1005,7 +1005,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_MessageOptions_desc
   &google_protobuf_MessageOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_MessageOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_MessageOptions_descriptor_field = {
   .len=2, .elements=google_protobuf_MessageOptions_descriptor_field_array
 };
 
@@ -1015,7 +1015,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_MessageOp
   &google_protobuf_MessageOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_MessageOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_MessageOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_MessageOptions_descriptor_extension_range_array
 };
 
@@ -1027,7 +1027,7 @@ google_protobuf_DescriptorProto google_protobuf_MessageOptions_descriptor = {
   .extension_range = &google_protobuf_MessageOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_MessageOptions_message_set_wire_format_fieldname = {
-  .byte_len=23, .data="message_set_wire_format"
+  .byte_len=23, .ptr="message_set_wire_format"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MessageOptions_message_set_wire_format = {
@@ -1038,11 +1038,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_MessageOptions_message_set_
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_MessageOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_MessageOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MessageOptions_uninterpreted_option = {
@@ -1054,7 +1054,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_MessageOptions_uninterprete
 };
 /* google_protobuf_FieldOptions_descriptor */
 static struct upb_string google_protobuf_FieldOptions_descriptor_name = {
-  .byte_len=12, .data="FieldOptions"
+  .byte_len=12, .ptr="FieldOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_ctype_descriptor;
@@ -1067,7 +1067,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_FieldOptions_descri
   &google_protobuf_FieldOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FieldOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FieldOptions_descriptor_field = {
   .len=3, .elements=google_protobuf_FieldOptions_descriptor_field_array
 };
 
@@ -1077,7 +1077,7 @@ static google_protobuf_EnumDescriptorProto *google_protobuf_FieldOptions_descrip
   &google_protobuf_FieldOptions_CType_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_FieldOptions_descriptor_enum_type = {
+static UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_FieldOptions_descriptor_enum_type = {
   .len=1, .elements=google_protobuf_FieldOptions_descriptor_enum_type_array
 };
 
@@ -1087,7 +1087,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_FieldOpti
   &google_protobuf_FieldOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_FieldOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_FieldOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_FieldOptions_descriptor_extension_range_array
 };
 
@@ -1099,11 +1099,11 @@ google_protobuf_DescriptorProto google_protobuf_FieldOptions_descriptor = {
   .extension_range = &google_protobuf_FieldOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_FieldOptions_ctype_fieldname = {
-  .byte_len=5, .data="ctype"
+  .byte_len=5, .ptr="ctype"
 };
 
 static struct upb_string google_protobuf_FieldOptions_ctype_field_typename = {
-  .byte_len=5, .data="CType"
+  .byte_len=5, .ptr="CType"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_ctype = {
@@ -1114,7 +1114,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_ctype = {
   .type_name = &google_protobuf_FieldOptions_ctype_field_typename,
 };
 static struct upb_string google_protobuf_FieldOptions_experimental_map_key_fieldname = {
-  .byte_len=20, .data="experimental_map_key"
+  .byte_len=20, .ptr="experimental_map_key"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_experimental_map_key = {
@@ -1125,11 +1125,11 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_experimental_m
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_FieldOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_FieldOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_uninterpreted_option = {
@@ -1140,7 +1140,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_FieldOptions_uninterpreted_
   .type_name = &google_protobuf_FieldOptions_uninterpreted_option_field_typename,
 };
 static struct upb_string google_protobuf_FieldOptions_CType_name = {
-  .byte_len=5, .data="CType"
+  .byte_len=5, .ptr="CType"
 };
 
 google_protobuf_EnumDescriptorProto google_protobuf_FieldOptions_CType_descriptor = {
@@ -1148,7 +1148,7 @@ google_protobuf_EnumDescriptorProto google_protobuf_FieldOptions_CType_descripto
 };
 /* google_protobuf_EnumOptions_descriptor */
 static struct upb_string google_protobuf_EnumOptions_descriptor_name = {
-  .byte_len=11, .data="EnumOptions"
+  .byte_len=11, .ptr="EnumOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_EnumOptions_uninterpreted_option_descriptor;
@@ -1157,7 +1157,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_EnumOptions_descrip
   &google_protobuf_EnumOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumOptions_descriptor_field = {
   .len=1, .elements=google_protobuf_EnumOptions_descriptor_field_array
 };
 
@@ -1167,7 +1167,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_EnumOptio
   &google_protobuf_EnumOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_EnumOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_EnumOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_EnumOptions_descriptor_extension_range_array
 };
 
@@ -1179,11 +1179,11 @@ google_protobuf_DescriptorProto google_protobuf_EnumOptions_descriptor = {
   .extension_range = &google_protobuf_EnumOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_EnumOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_EnumOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumOptions_uninterpreted_option = {
@@ -1195,7 +1195,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumOptions_uninterpreted_o
 };
 /* google_protobuf_EnumValueOptions_descriptor */
 static struct upb_string google_protobuf_EnumValueOptions_descriptor_name = {
-  .byte_len=16, .data="EnumValueOptions"
+  .byte_len=16, .ptr="EnumValueOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_EnumValueOptions_uninterpreted_option_descriptor;
@@ -1204,7 +1204,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_EnumValueOptions_de
   &google_protobuf_EnumValueOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumValueOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_EnumValueOptions_descriptor_field = {
   .len=1, .elements=google_protobuf_EnumValueOptions_descriptor_field_array
 };
 
@@ -1214,7 +1214,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_EnumValue
   &google_protobuf_EnumValueOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_EnumValueOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_EnumValueOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_EnumValueOptions_descriptor_extension_range_array
 };
 
@@ -1226,11 +1226,11 @@ google_protobuf_DescriptorProto google_protobuf_EnumValueOptions_descriptor = {
   .extension_range = &google_protobuf_EnumValueOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_EnumValueOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_EnumValueOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_EnumValueOptions_uninterpreted_option = {
@@ -1242,7 +1242,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_EnumValueOptions_uninterpre
 };
 /* google_protobuf_ServiceOptions_descriptor */
 static struct upb_string google_protobuf_ServiceOptions_descriptor_name = {
-  .byte_len=14, .data="ServiceOptions"
+  .byte_len=14, .ptr="ServiceOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_ServiceOptions_uninterpreted_option_descriptor;
@@ -1251,7 +1251,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_ServiceOptions_desc
   &google_protobuf_ServiceOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_ServiceOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_ServiceOptions_descriptor_field = {
   .len=1, .elements=google_protobuf_ServiceOptions_descriptor_field_array
 };
 
@@ -1261,7 +1261,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_ServiceOp
   &google_protobuf_ServiceOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_ServiceOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_ServiceOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_ServiceOptions_descriptor_extension_range_array
 };
 
@@ -1273,11 +1273,11 @@ google_protobuf_DescriptorProto google_protobuf_ServiceOptions_descriptor = {
   .extension_range = &google_protobuf_ServiceOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_ServiceOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_ServiceOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_ServiceOptions_uninterpreted_option = {
@@ -1289,7 +1289,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_ServiceOptions_uninterprete
 };
 /* google_protobuf_MethodOptions_descriptor */
 static struct upb_string google_protobuf_MethodOptions_descriptor_name = {
-  .byte_len=13, .data="MethodOptions"
+  .byte_len=13, .ptr="MethodOptions"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_MethodOptions_uninterpreted_option_descriptor;
@@ -1298,7 +1298,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_MethodOptions_descr
   &google_protobuf_MethodOptions_uninterpreted_option_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_MethodOptions_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_MethodOptions_descriptor_field = {
   .len=1, .elements=google_protobuf_MethodOptions_descriptor_field_array
 };
 
@@ -1308,7 +1308,7 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_MethodOpt
   &google_protobuf_MethodOptions_descriptor_extension_range0_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_MethodOptions_descriptor_extension_range = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_MethodOptions_descriptor_extension_range = {
   .len=1, .elements=google_protobuf_MethodOptions_descriptor_extension_range_array
 };
 
@@ -1320,11 +1320,11 @@ google_protobuf_DescriptorProto google_protobuf_MethodOptions_descriptor = {
   .extension_range = &google_protobuf_MethodOptions_descriptor_extension_range,
 };
 static struct upb_string google_protobuf_MethodOptions_uninterpreted_option_fieldname = {
-  .byte_len=20, .data="uninterpreted_option"
+  .byte_len=20, .ptr="uninterpreted_option"
 };
 
 static struct upb_string google_protobuf_MethodOptions_uninterpreted_option_field_typename = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_MethodOptions_uninterpreted_option = {
@@ -1336,7 +1336,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_MethodOptions_uninterpreted
 };
 /* google_protobuf_UninterpretedOption_descriptor */
 static struct upb_string google_protobuf_UninterpretedOption_descriptor_name = {
-  .byte_len=19, .data="UninterpretedOption"
+  .byte_len=19, .ptr="UninterpretedOption"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_name_descriptor;
@@ -1355,7 +1355,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_UninterpretedOption
   &google_protobuf_UninterpretedOption_string_value_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_UninterpretedOption_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_UninterpretedOption_descriptor_field = {
   .len=6, .elements=google_protobuf_UninterpretedOption_descriptor_field_array
 };
 
@@ -1365,7 +1365,7 @@ static google_protobuf_DescriptorProto *google_protobuf_UninterpretedOption_desc
   &google_protobuf_UninterpretedOption_NamePart_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto) google_protobuf_UninterpretedOption_descriptor_nested_type = {
+static UPB_MSG_ARRAY(google_protobuf_DescriptorProto) google_protobuf_UninterpretedOption_descriptor_nested_type = {
   .len=1, .elements=google_protobuf_UninterpretedOption_descriptor_nested_type_array
 };
 
@@ -1377,11 +1377,11 @@ google_protobuf_DescriptorProto google_protobuf_UninterpretedOption_descriptor =
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_name_fieldname = {
-  .byte_len=4, .data="name"
+  .byte_len=4, .ptr="name"
 };
 
 static struct upb_string google_protobuf_UninterpretedOption_name_field_typename = {
-  .byte_len=8, .data="NamePart"
+  .byte_len=8, .ptr="NamePart"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_name = {
@@ -1392,7 +1392,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_name = 
   .type_name = &google_protobuf_UninterpretedOption_name_field_typename,
 };
 static struct upb_string google_protobuf_UninterpretedOption_identifier_value_fieldname = {
-  .byte_len=16, .data="identifier_value"
+  .byte_len=16, .ptr="identifier_value"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_identifier_value = {
@@ -1403,7 +1403,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_identif
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_positive_int_value_fieldname = {
-  .byte_len=18, .data="positive_int_value"
+  .byte_len=18, .ptr="positive_int_value"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_positive_int_value = {
@@ -1414,7 +1414,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_positiv
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_negative_int_value_fieldname = {
-  .byte_len=18, .data="negative_int_value"
+  .byte_len=18, .ptr="negative_int_value"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_negative_int_value = {
@@ -1425,7 +1425,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_negativ
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_double_value_fieldname = {
-  .byte_len=12, .data="double_value"
+  .byte_len=12, .ptr="double_value"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_double_value = {
@@ -1436,7 +1436,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_double_
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_string_value_fieldname = {
-  .byte_len=12, .data="string_value"
+  .byte_len=12, .ptr="string_value"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_string_value = {
@@ -1448,7 +1448,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_string_
 };
 /* google_protobuf_UninterpretedOption_NamePart_descriptor */
 static struct upb_string google_protobuf_UninterpretedOption_NamePart_descriptor_name = {
-  .byte_len=8, .data="NamePart"
+  .byte_len=8, .ptr="NamePart"
 };
 
 struct google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_NamePart_name_part_descriptor;
@@ -1459,7 +1459,7 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_UninterpretedOption
   &google_protobuf_UninterpretedOption_NamePart_is_extension_descriptor,
 };
 
-static UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_UninterpretedOption_NamePart_descriptor_field = {
+static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_UninterpretedOption_NamePart_descriptor_field = {
   .len=2, .elements=google_protobuf_UninterpretedOption_NamePart_descriptor_field_array
 };
 
@@ -1471,7 +1471,7 @@ google_protobuf_DescriptorProto google_protobuf_UninterpretedOption_NamePart_des
   .extension_range = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_NamePart_name_part_fieldname = {
-  .byte_len=9, .data="name_part"
+  .byte_len=9, .ptr="name_part"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_NamePart_name_part = {
@@ -1482,7 +1482,7 @@ google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_NamePar
   .type_name = NULL,
 };
 static struct upb_string google_protobuf_UninterpretedOption_NamePart_is_extension_fieldname = {
-  .byte_len=12, .data="is_extension"
+  .byte_len=12, .ptr="is_extension"
 };
 
 google_protobuf_FieldDescriptorProto google_protobuf_UninterpretedOption_NamePart_is_extension = {

@@ -125,9 +125,9 @@ struct google_protobuf_FileDescriptorSet {
       bool file:1;  /* = 1, repeated. */
     } has;
   } set_flags;
-  UPB_STRUCT_ARRAY(google_protobuf_FileDescriptorProto)* file;
+  UPB_MSG_ARRAY(google_protobuf_FileDescriptorProto)* file;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_FileDescriptorSet)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_FileDescriptorSet)
 
 struct google_protobuf_FileDescriptorProto {
   union {
@@ -146,13 +146,13 @@ struct google_protobuf_FileDescriptorProto {
   struct upb_string* name;
   struct upb_string* package;
   struct upb_string_array* dependency;
-  UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto)* message_type;
-  UPB_STRUCT_ARRAY(google_protobuf_EnumDescriptorProto)* enum_type;
-  UPB_STRUCT_ARRAY(google_protobuf_ServiceDescriptorProto)* service;
-  UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto)* extension;
+  UPB_MSG_ARRAY(google_protobuf_DescriptorProto)* message_type;
+  UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto)* enum_type;
+  UPB_MSG_ARRAY(google_protobuf_ServiceDescriptorProto)* service;
+  UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto)* extension;
   google_protobuf_FileOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_FileDescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_FileDescriptorProto)
 
 struct google_protobuf_DescriptorProto_ExtensionRange {
   union {
@@ -165,7 +165,7 @@ struct google_protobuf_DescriptorProto_ExtensionRange {
   int32_t start;
   int32_t end;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange)
 struct google_protobuf_DescriptorProto {
   union {
     uint8_t bytes[1];
@@ -180,14 +180,14 @@ struct google_protobuf_DescriptorProto {
     } has;
   } set_flags;
   struct upb_string* name;
-  UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto)* field;
-  UPB_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto)* extension;
-  UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto)* nested_type;
-  UPB_STRUCT_ARRAY(google_protobuf_EnumDescriptorProto)* enum_type;
-  UPB_STRUCT_ARRAY(google_protobuf_DescriptorProto_ExtensionRange)* extension_range;
+  UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto)* field;
+  UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto)* extension;
+  UPB_MSG_ARRAY(google_protobuf_DescriptorProto)* nested_type;
+  UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto)* enum_type;
+  UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange)* extension_range;
   google_protobuf_MessageOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_DescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_DescriptorProto)
 
 struct google_protobuf_FieldDescriptorProto {
   union {
@@ -212,7 +212,7 @@ struct google_protobuf_FieldDescriptorProto {
   struct upb_string* default_value;
   google_protobuf_FieldOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_FieldDescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldDescriptorProto)
 
 struct google_protobuf_EnumDescriptorProto {
   union {
@@ -224,10 +224,10 @@ struct google_protobuf_EnumDescriptorProto {
     } has;
   } set_flags;
   struct upb_string* name;
-  UPB_STRUCT_ARRAY(google_protobuf_EnumValueDescriptorProto)* value;
+  UPB_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto)* value;
   google_protobuf_EnumOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_EnumDescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumDescriptorProto)
 
 struct google_protobuf_EnumValueDescriptorProto {
   union {
@@ -242,7 +242,7 @@ struct google_protobuf_EnumValueDescriptorProto {
   int32_t number;
   google_protobuf_EnumValueOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_EnumValueDescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto)
 
 struct google_protobuf_ServiceDescriptorProto {
   union {
@@ -254,10 +254,10 @@ struct google_protobuf_ServiceDescriptorProto {
     } has;
   } set_flags;
   struct upb_string* name;
-  UPB_STRUCT_ARRAY(google_protobuf_MethodDescriptorProto)* method;
+  UPB_MSG_ARRAY(google_protobuf_MethodDescriptorProto)* method;
   google_protobuf_ServiceOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_ServiceDescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_ServiceDescriptorProto)
 
 struct google_protobuf_MethodDescriptorProto {
   union {
@@ -274,7 +274,7 @@ struct google_protobuf_MethodDescriptorProto {
   struct upb_string* output_type;
   google_protobuf_MethodOptions* options;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_MethodDescriptorProto)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_MethodDescriptorProto)
 
 struct google_protobuf_FileOptions {
   union {
@@ -291,9 +291,9 @@ struct google_protobuf_FileOptions {
   struct upb_string* java_outer_classname;
   bool java_multiple_files;
   int32_t optimize_for; /* enum google.protobuf.FileOptions.OptimizeMode */
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_FileOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_FileOptions)
 
 struct google_protobuf_MessageOptions {
   union {
@@ -304,9 +304,9 @@ struct google_protobuf_MessageOptions {
     } has;
   } set_flags;
   bool message_set_wire_format;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_MessageOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_MessageOptions)
 
 struct google_protobuf_FieldOptions {
   union {
@@ -319,9 +319,9 @@ struct google_protobuf_FieldOptions {
   } set_flags;
   int32_t ctype; /* enum google.protobuf.FieldOptions.CType */
   struct upb_string* experimental_map_key;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_FieldOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldOptions)
 
 struct google_protobuf_EnumOptions {
   union {
@@ -330,9 +330,9 @@ struct google_protobuf_EnumOptions {
       bool uninterpreted_option:1;  /* = 999, repeated. */
     } has;
   } set_flags;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_EnumOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumOptions)
 
 struct google_protobuf_EnumValueOptions {
   union {
@@ -341,9 +341,9 @@ struct google_protobuf_EnumValueOptions {
       bool uninterpreted_option:1;  /* = 999, repeated. */
     } has;
   } set_flags;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_EnumValueOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumValueOptions)
 
 struct google_protobuf_ServiceOptions {
   union {
@@ -352,9 +352,9 @@ struct google_protobuf_ServiceOptions {
       bool uninterpreted_option:1;  /* = 999, repeated. */
     } has;
   } set_flags;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_ServiceOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_ServiceOptions)
 
 struct google_protobuf_MethodOptions {
   union {
@@ -363,9 +363,9 @@ struct google_protobuf_MethodOptions {
       bool uninterpreted_option:1;  /* = 999, repeated. */
     } has;
   } set_flags;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_MethodOptions)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_MethodOptions)
 
 struct google_protobuf_UninterpretedOption_NamePart {
   union {
@@ -378,7 +378,7 @@ struct google_protobuf_UninterpretedOption_NamePart {
   struct upb_string* name_part;
   bool is_extension;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_UninterpretedOption_NamePart)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption_NamePart)
 struct google_protobuf_UninterpretedOption {
   union {
     uint8_t bytes[1];
@@ -391,13 +391,13 @@ struct google_protobuf_UninterpretedOption {
       bool string_value:1;  /* = 7, optional. */
     } has;
   } set_flags;
-  UPB_STRUCT_ARRAY(google_protobuf_UninterpretedOption_NamePart)* name;
+  UPB_MSG_ARRAY(google_protobuf_UninterpretedOption_NamePart)* name;
   struct upb_string* identifier_value;
   uint64_t positive_int_value;
   int64_t negative_int_value;
   double double_value;
   struct upb_string* string_value;
 };
-UPB_DEFINE_STRUCT_ARRAY(google_protobuf_UninterpretedOption)
+UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption)
 
 extern google_protobuf_FileDescriptorProto google_protobuf_filedescriptor;
