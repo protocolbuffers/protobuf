@@ -65,7 +65,14 @@ struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
 struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
                                             struct upb_string *symbol);
 
-/* TODO: let the client enumerate the symbols. */
+INLINE struct upb_symtab_entry *upb_context_symbegin(struct upb_context *c) {
+  return upb_strtable_begin(&c->symtab);
+}
+
+INLINE struct upb_symtab_entry *upb_context_symnext(
+    struct upb_context *c, struct upb_inttable_entry *cur) {
+  return upb_strtable_next(&c->symtab, cur);
+}
 
 /* Adding symbols. ************************************************************/
 
