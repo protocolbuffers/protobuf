@@ -96,11 +96,6 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
 
 /* Data-consuming functions (to be called from value cb). *********************/
 
-/* Parses a single tag from the character data starting at buf, and updates
- * buf to point one past the bytes that were consumed.  buf will be incremented
- * by at most ten bytes. */
-upb_status_t upb_parse_tag(void **buf, void *end, struct upb_tag *tag);
-
 /* Parses and converts a value from the character data starting at buf.  The
  * caller must have previously checked that the wire type is appropriate for
  * this field type.  For delimited data, buf is advanced to the beginning of
@@ -114,9 +109,6 @@ upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
  * data.  */
 upb_status_t upb_parse_wire_value(void **buf, void *end, upb_wire_type_t wt,
                                   union upb_wire_value *wv);
-
-/* Like the above, but discards the wire value instead of saving it. */
-upb_status_t upb_skip_wire_value(void **buf, void *end, upb_wire_type_t wt);
 
 #ifdef __cplusplus
 }  /* extern "C" */

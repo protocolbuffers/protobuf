@@ -187,7 +187,7 @@ struct upb_type_info upb_type_info[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP]   = {0,0,0},
 };
 
-upb_status_t upb_parse_tag(void **buf, void *end, struct upb_tag *tag)
+static upb_status_t parse_tag(void **buf, void *end, struct upb_tag *tag)
 {
   uint32_t tag_int;
   UPB_CHECK(get_v_uint32_t(buf, end, &tag_int));
@@ -208,7 +208,7 @@ upb_status_t upb_parse_wire_value(void **buf, void *end, upb_wire_type_t wt,
   return UPB_STATUS_OK;
 }
 
-upb_status_t upb_skip_wire_value(void **buf, void *end, upb_wire_type_t wt)
+static upb_status_t skip_wire_value(void **buf, void *end, upb_wire_type_t wt)
 {
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT: UPB_CHECK(skip_v_uint64_t(buf, end)); break;
@@ -327,7 +327,7 @@ static upb_status_t parse_nondelimited(struct upb_parse_state *s,
   void *user_field_desc;
   upb_field_type_t ft = s->tag_cb(s, tag, &user_field_desc);
   if(ft == 0) {
-    UPB_CHECK(upb_skip_wire_value(buf, end, tag->wire_type));
+    UPB_CHECK(skip_wire_value(buf, end, tag->wire_type));
   } else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
     /* No length specified, an "end group" tag will mark the end. */
     UPB_CHECK(push_stack_frame(s, 0, user_field_desc));
@@ -350,7 +350,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
 
     struct upb_tag tag;
     void *bufstart = buf;
-    UPB_CHECK(upb_parse_tag(&buf, end, &tag));
+    UPB_CHECK(parse_tag(&buf, end, &tag));
     if(unlikely(tag.wire_type == UPB_WIRE_TYPE_END_GROUP)) {
       if(unlikely(s->top->end_offset != 0)) return UPB_ERROR_SPURIOUS_END_GROUP;
       pop_stack_frame(s);
