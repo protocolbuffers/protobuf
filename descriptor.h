@@ -1,5 +1,8 @@
 /* Auto-generated from descriptor.proto.  Do not edit. */
 
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_H_
+
 #include "upb_msg.h"
 
 /* Enums. */
@@ -401,3 +404,5 @@ struct google_protobuf_UninterpretedOption {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption)
 
 extern google_protobuf_FileDescriptorProto google_protobuf_filedescriptor;
+
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_H_ */

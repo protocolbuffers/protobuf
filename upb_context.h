@@ -82,7 +82,11 @@ INLINE struct upb_symtab_entry *upb_context_symnext(
  * defined in this context.
  *
  * Caller retains ownership of fd, but the context will contain references to
- * it, so it must outlive the context. */
+ * it, so it must outlive the context.
+ *
+ * upb_context_addfd only returns true or false; it does not give any hint
+ * about what happened in the case of failure.  This is because the descriptor
+ * is expected to have been validated at the time it was parsed/generated. */
 bool upb_context_addfd(struct upb_context *c,
                        google_protobuf_FileDescriptorProto *fd);
 

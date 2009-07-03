@@ -22,8 +22,13 @@ bool upb_context_init(struct upb_context *c)
 {
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
-  if(!upb_context_addfd(c, &google_protobuf_filedescriptor))
+  if(!upb_context_addfd(c, &google_protobuf_filedescriptor)) {
+    assert(false);
     return false;  /* Indicates that upb is buggy or corrupt. */
+  }
+  c->fd_size = 16;
+  c->fd_len = 0;
+  c->fd = malloc(sizeof(*c->fd));
   return true;
 }
 
@@ -31,6 +36,7 @@ void upb_context_free(struct upb_context *c)
 {
   upb_strtable_free(&c->symtab);
   for(size_t i = 0; i < c->fd_len; i++) free(c->fd[i]);
+  free(c->fd);
 }
 
 struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
@@ -112,7 +118,8 @@ static bool insert_enum(struct upb_strtable *t,
                         google_protobuf_EnumDescriptorProto *ed,
                         struct upb_string *base)
 {
-  if(!ed->set_flags.has.name) return false;
+  // TODO: re-enable when compiler sets this flag
+  //if(!ed->set_flags.has.name) return false;
 
   /* We own this and must free it on destruct. */
   struct upb_string fqname = join(base, ed->name);
@@ -137,7 +144,8 @@ static bool insert_message(struct upb_strtable *t,
                            google_protobuf_DescriptorProto *d,
                            struct upb_string *base)
 {
-  if(!d->set_flags.has.name) return false;
+  /* TODO: re-enable when compiler sets this flag. */
+  //if(!d->set_flags.has.name) return false;
 
   /* We own this and must free it on destruct. */
   struct upb_string fqname = join(base, d->name);
@@ -232,9 +240,14 @@ error:
 }
 
 bool upb_context_parsefd(struct upb_context *c, struct upb_string *fd_str) {
-  google_protobuf_FileDescriptorProto *fd = upb_alloc_and_parse(c->fd_msg, fd_str);
+  google_protobuf_FileDescriptorProto *fd =
+      upb_alloc_and_parse(c->fd_msg, fd_str, true);
   if(!fd) return false;
   if(!upb_context_addfd(c, fd)) return false;
+  if(c->fd_size == c->fd_len) {
+    c->fd_size *= 2;
+    c->fd = realloc(c->fd, c->fd_size);
+  }
   c->fd[c->fd_len++] = fd;  /* Need to keep a ref since we own it. */
   return true;
 }

@@ -242,7 +242,7 @@ void upb_msg_parse_free(struct upb_msg_parse_state *s);
 upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
                            void *data, size_t len, size_t *read);
 
-void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *s);
+void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *s, bool byref);
 
 /* Note!  These two may not be use on a upb_string* that was initialized by
  * means other than these functions. */

@@ -34,6 +34,8 @@ extern "C" {
 /* The maximum number of fields that any one .proto type can have. */
 #define UPB_MAX_FIELDS (1<<16)
 
+INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
+
 /* Represents a string or bytes. */
 struct upb_string {
   /* We expect the data to be 8-bit clean (uint8_t), but char* is such an

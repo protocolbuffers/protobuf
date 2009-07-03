@@ -15,13 +15,11 @@ static const double MAX_LOAD = 0.85;
 
 static uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
 
-static uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
-
 /* We use 1-based indexes into the table so that 0 can be "NULL". */
-static struct upb_inttable_entry *intent(struct upb_inttable *t, uint32_t i) {
+static struct upb_inttable_entry *intent(struct upb_inttable *t, int32_t i) {
   return UPB_INDEX(t->t.entries, i-1, t->t.entry_size);
 }
-static struct upb_strtable_entry *strent(struct upb_strtable *t, uint32_t i) {
+static struct upb_strtable_entry *strent(struct upb_strtable *t, int32_t i) {
   return UPB_INDEX(t->t.entries, i-1, t->t.entry_size);
 }
 
@@ -190,7 +188,33 @@ void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
     upb_strtable_free(t);
     *t = new_table;
   }
-  strinsert(t->t.entries, e);
+  strinsert(t, e);
+}
+
+void *upb_inttable_begin(struct upb_inttable *t) {
+  return upb_inttable_next(t, intent(t, -1));
+}
+
+void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur) {
+  struct upb_inttable_entry *end = intent(t, upb_inttable_size(t));
+  do {
+    cur = (void*)((char*)cur + t->t.entry_size);
+    if(cur == end) return NULL;
+  } while(cur->key == UPB_EMPTY_ENTRY);
+  return cur;
+}
+
+void *upb_strtable_begin(struct upb_strtable *t) {
+  return upb_strtable_next(t, strent(t, -1));
+}
+
+void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) {
+  struct upb_strtable_entry *end = strent(t, upb_strtable_size(t));
+  do {
+    cur = (void*)((char*)cur + t->t.entry_size);
+    if(cur == end) return NULL;
+  } while(cur->key.byte_len == 0);
+  return cur;
 }
 
 #ifdef UPB_UNALIGNED_READS_OK

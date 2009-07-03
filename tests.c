@@ -1,7 +1,12 @@
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "descriptor.c"
 #include "upb_parse.c"
+#include "upb_context.c"
+#include "upb_msg.c"
+#include "upb_table.c"
 
 void test_get_v_uint64_t()
 {
@@ -51,9 +56,16 @@ void test_get_v_uint64_t()
   assert(status == UPB_STATUS_NEED_MORE_DATA);
 }
 
+void test_upb_context() {
+  struct upb_context c;
+  assert(upb_context_init(&c));
+  upb_context_free(&c);
+}
+
 int main()
 {
   test_get_v_uint64_t();
+  test_upb_context();
   printf("All tests passed.\n");
   return 0;
 }

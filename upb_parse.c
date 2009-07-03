@@ -247,7 +247,7 @@ upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
 #undef CASE
 }
 
-void upb_parse_state_init(struct upb_parse_state *state, size_t udata_size)
+void upb_parse_init(struct upb_parse_state *state, size_t udata_size)
 {
   state->offset = 0;
   size_t stack_bytes = (sizeof(*state->stack) + udata_size) * UPB_MAX_NESTING;
@@ -256,7 +256,7 @@ void upb_parse_state_init(struct upb_parse_state *state, size_t udata_size)
   state->udata_size = udata_size;
 }
 
-void upb_parse_state_free(struct upb_parse_state *state)
+void upb_parse_free(struct upb_parse_state *state)
 {
   free(state->stack);
 }

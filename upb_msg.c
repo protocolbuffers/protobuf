@@ -10,8 +10,6 @@
 
 #define ALIGN_UP(p, t) (t + ((p - 1) & (~t - 1)))
 
-static uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
-
 static int div_round_up(int numerator, int denominator) {
   /* cf. http://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division */
   return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
@@ -100,6 +98,20 @@ void *upb_msg_new(struct upb_msg *m)
 }
 
 //void upb_msg_free(void *msg, struct upb_msg *m, bool free_submsgs);
+
+void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f,
+                 union upb_symbol_ref ref) {
+  struct google_protobuf_FieldDescriptorProto *d =
+      upb_msg_field_descriptor(f, m);
+  struct upb_fieldsbynum_entry *int_e = upb_inttable_lookup(
+      &m->fields_by_num, d->number, sizeof(struct upb_fieldsbynum_entry));
+  struct upb_fieldsbyname_entry *str_e =
+      upb_strtable_lookup(&m->fields_by_name, d->name);
+  assert(int_e && str_e);
+  f->ref = ref;
+  int_e->f.ref = ref;
+  str_e->f.ref = ref;
+}
 
 struct mm_upb_string {
   struct upb_string s;
@@ -261,4 +273,19 @@ upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
                            void *data, size_t len, size_t *read)
 {
   return upb_parse(&s->s, data, len, read);
+}
+
+void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *str, bool byref)
+{
+  struct upb_msg_parse_state s;
+  void *msg = upb_msg_new(m);
+  upb_msg_parse_init(&s, msg, m, false, byref);
+  size_t read;
+  upb_status_t status = upb_msg_parse(&s, str->ptr, str->byte_len, &read);
+  if(status == UPB_STATUS_OK && read == str->byte_len) {
+    return msg;
+  } else {
+    upb_msg_free(msg);
+    return NULL;
+  }
 }
