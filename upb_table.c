@@ -192,7 +192,7 @@ void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
 }
 
 void *upb_inttable_begin(struct upb_inttable *t) {
-  return upb_inttable_next(t, intent(t, -1));
+  return upb_inttable_next(t, intent(t, 0));
 }
 
 void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur) {
@@ -205,7 +205,7 @@ void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur) 
 }
 
 void *upb_strtable_begin(struct upb_strtable *t) {
-  return upb_strtable_next(t, strent(t, -1));
+  return upb_strtable_next(t, strent(t, 0));
 }
 
 void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) {

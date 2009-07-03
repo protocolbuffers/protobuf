@@ -9,6 +9,10 @@ all: $(OBJ) test_table tests
 clean:
 	rm -f $(OBJ) tests
 
+libupb.a: $(OBJ)
+	ar rcs libupb.a $(OBJ)
+test_table: libupb.a
+
 -include deps
 deps: *.c *.h
 	gcc -MM *.c > deps

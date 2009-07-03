@@ -160,7 +160,10 @@ static bool insert_message(struct upb_strtable *t,
   e.e.key = fqname;
   e.type = UPB_SYM_MESSAGE;
   e.ref.msg = malloc(sizeof(*e.ref.msg));
-  upb_msg_init(e.ref.msg, d);
+  if(!upb_msg_init(e.ref.msg, d)) {
+    free(fqname.ptr);
+    return false;
+  }
   upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
