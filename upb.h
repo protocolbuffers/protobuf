@@ -59,6 +59,10 @@ INLINE void upb_print(struct upb_string *str) {
   fputc('\n', stdout);
 }
 
+#define UPB_STRLIT(strlit) {.ptr=strlit, .byte_len=sizeof(strlit)-1}
+#define UPB_STRFARG(str) (str).byte_len, (str).ptr
+#define UPB_STRFMT "%.*s"
+
 /* A list of types as they are encoded on-the-wire. */
 enum upb_wire_type {
   UPB_WIRE_TYPE_VARINT      = 0,

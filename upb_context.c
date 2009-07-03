@@ -18,24 +18,30 @@ static int memrchr(char *data, char c, size_t len)
   return off;
 }
 
+bool addfd(struct upb_strtable *t, google_protobuf_FileDescriptorProto *fd);
+
 bool upb_context_init(struct upb_context *c)
 {
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
+  upb_strtable_init(&c->psymtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
-  if(!upb_context_addfd(c, &google_protobuf_filedescriptor)) {
+  if(!addfd(&c->psymtab, &google_protobuf_filedescriptor)) {
     assert(false);
     return false;  /* Indicates that upb is buggy or corrupt. */
   }
+  struct upb_string name = UPB_STRLIT("google.protobuf.FileDescriptorProto");
+  c->fd_msg = upb_strtable_lookup(&c->psymtab, &name);
+  assert(c->fd_msg);
   c->fd_size = 16;
   c->fd_len = 0;
   c->fd = malloc(sizeof(*c->fd));
   return true;
 }
 
-void upb_context_free(struct upb_context *c)
+static void free_symtab(struct upb_strtable *t)
 {
-  struct upb_symtab_entry *e = upb_strtable_begin(&c->symtab);
-  for(; e; e = upb_strtable_next(&c->symtab, &e->e)) {
+  struct upb_symtab_entry *e = upb_strtable_begin(t);
+  for(; e; e = upb_strtable_next(t, &e->e)) {
     switch(e->type) {
       case UPB_SYM_MESSAGE: upb_msg_free(e->ref.msg); break;
       case UPB_SYM_ENUM: upb_enum_free(e->ref._enum); break;
@@ -44,7 +50,13 @@ void upb_context_free(struct upb_context *c)
     free(e->ref.msg);  /* The pointer is the same for all. */
     free(e->e.key.ptr);
   }
-  upb_strtable_free(&c->symtab);
+  upb_strtable_free(t);
+}
+
+void upb_context_free(struct upb_context *c)
+{
+  free_symtab(&c->symtab);
+  free_symtab(&c->psymtab);
   for(size_t i = 0; i < c->fd_len; i++) free(c->fd[i]);
   free(c->fd);
 }
@@ -192,8 +204,7 @@ static bool insert_message(struct upb_strtable *t,
   return true;
 }
 
-bool upb_context_addfd(struct upb_context *c,
-                       google_protobuf_FileDescriptorProto *fd)
+bool addfd(struct upb_strtable *t, google_protobuf_FileDescriptorProto *fd)
 {
   struct upb_string package = {.byte_len=0};
   if(fd->set_flags.has.package) package = *fd->package;
@@ -223,7 +234,7 @@ bool upb_context_addfd(struct upb_context *c,
   /* Attempt to resolve all references. */
   struct upb_symtab_entry *e;
   for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e)) {
-    if(upb_strtable_lookup(&c->symtab, &e->e.key))
+    if(upb_strtable_lookup(t, &e->e.key))
       goto error;  /* Redefinition prohibited. */
     if(e->type == UPB_SYM_MESSAGE) {
       struct upb_msg *m = e->ref.msg;
@@ -232,9 +243,9 @@ bool upb_context_addfd(struct upb_context *c,
         google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
         if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE)
-          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->type_name, UPB_SYM_MESSAGE);
+          ref = resolve2(t, &tmp, &e->e.key, fd->type_name, UPB_SYM_MESSAGE);
         else if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM)
-          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->type_name, UPB_SYM_ENUM);
+          ref = resolve2(t, &tmp, &e->e.key, fd->type_name, UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
         if(!ref.msg) goto error;  /* Ref. to undefined symbol. */
@@ -245,7 +256,7 @@ bool upb_context_addfd(struct upb_context *c,
 
   /* All references were successfully resolved -- add to the symbol table. */
   for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e))
-    upb_strtable_insert(&c->symtab, &e->e);
+    upb_strtable_insert(t, &e->e);
 
   upb_strtable_free(&tmp);
   return true;
@@ -253,6 +264,12 @@ bool upb_context_addfd(struct upb_context *c,
 error:
   /* TODO */
   return false;
+}
+
+bool upb_context_addfd(struct upb_context *c,
+                       google_protobuf_FileDescriptorProto *fd)
+{
+  return addfd(&c->symtab, fd);
 }
 
 bool upb_context_parsefd(struct upb_context *c, struct upb_string *fd_str) {

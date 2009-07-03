@@ -27,8 +27,9 @@ struct upb_symtab_entry {
 };
 
 struct upb_context {
-  struct upb_strtable symtab;
-  struct upb_msg *fd_msg;  /* This is in symtab also, kept here for convenience. */
+  struct upb_strtable symtab;   /* The context's symbol table. */
+  struct upb_strtable psymtab;  /* Private symbols, for internal use. */
+  struct upb_msg *fd_msg;    /* This is in psymtab, ptr here for convenience. */
 
   /* A list of the FileDescriptorProtos we own (from having parsed them
    * ourselves) and must free on destruction. */
