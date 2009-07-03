@@ -16,7 +16,8 @@ static int div_round_up(int numerator, int denominator) {
 }
 
 static int compare_fields(const void *e1, const void *e2) {
-  const google_protobuf_FieldDescriptorProto *fd1 = e1, *fd2 = e2;
+  const google_protobuf_FieldDescriptorProto *fd1 = *(void**)e1;
+  const google_protobuf_FieldDescriptorProto *fd2 = *(void**)e2;
   /* Required fields go before non-required. */
   bool req1 = fd1->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REQUIRED;
   bool req2 = fd2->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REQUIRED;
@@ -90,6 +91,7 @@ void upb_msg_free(struct upb_msg *m)
   upb_inttable_free(&m->fields_by_num);
   upb_strtable_free(&m->fields_by_name);
   free(m->fields);
+  free(m->field_descriptors);
 }
 
 void *upb_msg_new(struct upb_msg *m)

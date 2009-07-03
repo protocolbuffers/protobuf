@@ -34,6 +34,16 @@ bool upb_context_init(struct upb_context *c)
 
 void upb_context_free(struct upb_context *c)
 {
+  struct upb_symtab_entry *e = upb_strtable_begin(&c->symtab);
+  for(; e; e = upb_strtable_next(&c->symtab, &e->e)) {
+    switch(e->type) {
+      case UPB_SYM_MESSAGE: upb_msg_free(e->ref.msg); break;
+      case UPB_SYM_ENUM: upb_enum_free(e->ref._enum); break;
+      default: break;  /* TODO */
+    }
+    free(e->ref.msg);  /* The pointer is the same for all. */
+    free(e->e.key.ptr);
+  }
   upb_strtable_free(&c->symtab);
   for(size_t i = 0; i < c->fd_len; i++) free(c->fd[i]);
   free(c->fd);
@@ -165,8 +175,6 @@ static bool insert_message(struct upb_strtable *t,
     return false;
   }
   upb_strtable_insert(t, &e.e);
-  printf("Inserted ");
-  upb_print(&e.e.key);
 
   /* Add nested messages and enums. */
   //if(d->set_flags.has.nested_type)
@@ -175,7 +183,8 @@ static bool insert_message(struct upb_strtable *t,
       if(!insert_message(t, d->nested_type->elements[i], &fqname))
         return false;
 
-  if(d->set_flags.has.enum_type)
+  //if(d->set_flags.has.enum_type)
+  if(d->enum_type)
     for(unsigned int i = 0; i < d->enum_type->len; i++)
       if(!insert_enum(t, d->enum_type->elements[i], &fqname))
         return false;
@@ -228,9 +237,7 @@ bool upb_context_addfd(struct upb_context *c,
           ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->type_name, UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
-        upb_print(&e->e.key);
-        if(!ref.msg) { printf("FAILED!\n"); goto error; } /* Ref. to undefined symbol. */
-        printf("Successful!\n");
+        if(!ref.msg) goto error;  /* Ref. to undefined symbol. */
         upb_msg_ref(m, f, ref);
       }
     }
@@ -240,6 +247,7 @@ bool upb_context_addfd(struct upb_context *c,
   for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e))
     upb_strtable_insert(&c->symtab, &e->e);
 
+  upb_strtable_free(&tmp);
   return true;
 
 error:
