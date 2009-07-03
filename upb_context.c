@@ -165,9 +165,12 @@ static bool insert_message(struct upb_strtable *t,
     return false;
   }
   upb_strtable_insert(t, &e.e);
+  printf("Inserted ");
+  upb_print(&e.e.key);
 
   /* Add nested messages and enums. */
-  if(d->set_flags.has.nested_type)
+  //if(d->set_flags.has.nested_type)
+  if(d->nested_type)
     for(unsigned int i = 0; i < d->nested_type->len; i++)
       if(!insert_message(t, d->nested_type->elements[i], &fqname))
         return false;
@@ -220,12 +223,14 @@ bool upb_context_addfd(struct upb_context *c,
         google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
         if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE)
-          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->name, UPB_SYM_MESSAGE);
+          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->type_name, UPB_SYM_MESSAGE);
         else if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM)
-          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->name, UPB_SYM_ENUM);
+          ref = resolve2(&c->symtab, &tmp, &e->e.key, fd->type_name, UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
-        if(!ref.msg) goto error;  /* Ref. to undefined symbol. */
+        upb_print(&e->e.key);
+        if(!ref.msg) { printf("FAILED!\n"); goto error; } /* Ref. to undefined symbol. */
+        printf("Successful!\n");
         upb_msg_ref(m, f, ref);
       }
     }

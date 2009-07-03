@@ -54,6 +54,11 @@ INLINE void upb_strcpy(struct upb_string *dest, struct upb_string *src) {
   dest->byte_len = src->byte_len;
 }
 
+INLINE void upb_print(struct upb_string *str) {
+  fwrite(str->ptr, str->byte_len, 1, stdout);
+  fputc('\n', stdout);
+}
+
 /* A list of types as they are encoded on-the-wire. */
 enum upb_wire_type {
   UPB_WIRE_TYPE_VARINT      = 0,

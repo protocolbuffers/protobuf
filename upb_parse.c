@@ -100,8 +100,8 @@ static upb_status_t get_f_uint64_t(void *restrict *buf, void *end,
   *buf = uint64_end;
 #else
   uint32_t lo32, hi32;
-  get_f_uint32_t(buf, &lo32);
-  get_f_uint32_t(buf, &hi32);
+  get_f_uint32_t(buf, &lo32, end);
+  get_f_uint32_t(buf, &hi32, end);
   *val = lo32 | ((uint64_t)hi32 << 32);
 #endif
   return UPB_STATUS_OK;

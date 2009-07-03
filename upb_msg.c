@@ -40,6 +40,7 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
   upb_strtable_init(&m->fields_by_name, d->field->len,
                     sizeof(struct upb_fieldsbyname_entry));
 
+  m->descriptor = d;
   m->num_fields = d->field->len;
   m->set_flags_bytes = div_round_up(m->num_fields, 8);
   /* These are incremented in the loop. */

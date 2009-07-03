@@ -227,13 +227,32 @@ int32_t *get_contiguous_keys(int32_t num)
 int main()
 {
   vector<string> keys;
+  keys.push_back("google.protobuf.FileDescriptorSet");
+  keys.push_back("google.protobuf.FileDescriptorProto");
+  keys.push_back("google.protobuf.DescriptorProto");
+  keys.push_back("google.protobuf.DescriptorProto.ExtensionRange");
+  keys.push_back("google.protobuf.FieldDescriptorProto");
+  keys.push_back("google.protobuf.EnumDescriptorProto");
+  keys.push_back("google.protobuf.EnumValueDescriptorProto");
+  keys.push_back("google.protobuf.ServiceDescriptorProto");
+  keys.push_back("google.protobuf.MethodDescriptorProto");
+  keys.push_back("google.protobuf.FileOptions");
+  keys.push_back("google.protobuf.MessageOptions");
+  keys.push_back("google.protobuf.FieldOptions");
+  keys.push_back("google.protobuf.EnumOptions");
+  keys.push_back("google.protobuf.EnumValueOptions");
+  keys.push_back("google.protobuf.ServiceOptions");
+  keys.push_back("google.protobuf.MethodOptions");
+  keys.push_back("google.protobuf.UninterpretedOption");
+  keys.push_back("google.protobuf.UninterpretedOption.NamePart");
   keys.push_back("A");
   keys.push_back("B");
   keys.push_back("C");
   keys.push_back("D");
   keys.push_back("E");
   keys.push_back("F");
-  test_strtable(keys, 5);
+
+  test_strtable(keys, 18);
   return 0;
   int32_t *keys1 = get_contiguous_keys(8);
   printf("Contiguous 1-8 ====\n");

@@ -173,6 +173,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
   }
   memcpy(table_e, e, t->t.entry_size);
   table_e->next = UPB_END_OF_CHAIN;
+  assert(upb_strtable_lookup(t, &e->key) == table_e);
 }
 
 void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
