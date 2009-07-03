@@ -16,6 +16,8 @@
 #include "upb.h"
 #include "upb_table.h"
 
+struct google_protobuf_FileDescriptorProto;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,7 +36,7 @@ struct upb_context {
   /* A list of the FileDescriptorProtos we own (from having parsed them
    * ourselves) and must free on destruction. */
   size_t fd_size, fd_len;
-  google_protobuf_FileDescriptorProto **fd;
+  struct google_protobuf_FileDescriptorProto **fd;
 };
 
 /* Initializes and frees a upb_context, respectively.  Newly initialized
@@ -89,7 +91,7 @@ INLINE struct upb_symtab_entry *upb_context_symnext(
  * about what happened in the case of failure.  This is because the descriptor
  * is expected to have been validated at the time it was parsed/generated. */
 bool upb_context_addfd(struct upb_context *c,
-                       google_protobuf_FileDescriptorProto *fd);
+                       struct google_protobuf_FileDescriptorProto *fd);
 
 /* Like the previous, but takes a serialized FileDescriptorProto and parses
  * it before adding to the context. */

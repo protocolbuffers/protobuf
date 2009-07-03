@@ -26,7 +26,9 @@ extern "C" {
 #endif
 
 /* inline if possible, emit standalone code if required. */
+#ifndef INLINE
 #define INLINE static inline
+#endif
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit. */
 #define UPB_MAX_NESTING 64
