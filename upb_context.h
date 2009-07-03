@@ -70,8 +70,8 @@ INLINE struct upb_symtab_entry *upb_context_symbegin(struct upb_context *c) {
 }
 
 INLINE struct upb_symtab_entry *upb_context_symnext(
-    struct upb_context *c, struct upb_inttable_entry *cur) {
-  return upb_strtable_next(&c->symtab, cur);
+    struct upb_context *c, struct upb_symtab_entry *cur) {
+  return upb_strtable_next(&c->symtab, &cur->e);
 }
 
 /* Adding symbols. ************************************************************/

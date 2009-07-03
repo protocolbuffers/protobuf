@@ -25,8 +25,8 @@ struct upb_parse_state;
 /* Initialize and free (respectively) the given parse state, which must have
  * been previously allocated.  udata_size specifies how much space will be
  * available at parse_stack_frame.user_data in each frame for user data. */
-void upb_parse_state_init(struct upb_parse_state *state, size_t udata_size);
-void upb_parse_state_free(struct upb_parse_state *state);
+void upb_parse_init(struct upb_parse_state *state, size_t udata_size);
+void upb_parse_free(struct upb_parse_state *state);
 
 /* The callback that is called immediately after a tag has been parsed.  The
  * client should determine whether it wants to parse or skip the corresponding
@@ -48,13 +48,11 @@ typedef upb_field_type_t (*upb_tag_cb)(struct upb_parse_state *s,
  * call to tag_cb in the case of packed arrays. */
 typedef upb_status_t (*upb_value_cb)(struct upb_parse_state *s,
                                      void **buf, void *end,
-                                     upb_field_type_t type,
                                      void *user_field_desc);
 
 /* The callback that is called when a string is parsed. */
 typedef upb_status_t (*upb_str_cb)(struct upb_parse_state *s,
                                    struct upb_string *str,
-                                   upb_field_type_t type,
                                    void *user_field_desc);
 
 /* Callbacks that are called when a submessage begins and ends, respectively.

@@ -112,6 +112,7 @@ union upb_value_ptr {
   bool *_bool;
   struct upb_string **string;
   struct upb_array **array;
+  void **message;
   void *_void;
 };
 

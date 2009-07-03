@@ -113,7 +113,7 @@ struct mm_upb_array {
   char *data;
 };
 
-uint32_t round_up_to_pow2(uint32_t v)
+static uint32_t round_up_to_pow2(uint32_t v)
 {
 #ifdef __GNUC__
   return (1U<<31) >> (__builtin_clz(v-1)+1);
@@ -168,6 +168,14 @@ struct parse_frame_data {
   void *data;
 };
 
+static void set_frame_data(struct upb_parse_state *s, struct upb_msg *m,
+                           void *data)
+{
+  struct parse_frame_data *frame = (void*)s->top->user_data;
+  frame->m = m;
+  frame->data = data;
+}
+
 static upb_field_type_t tag_cb(struct upb_parse_state *s, struct upb_tag *tag,
                                void **user_field_desc)
 {
@@ -179,32 +187,36 @@ static upb_field_type_t tag_cb(struct upb_parse_state *s, struct upb_tag *tag,
   return f->type;
 }
 
+static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
+{
+  union upb_value_ptr p = upb_msg_get_ptr(data, f);
+  if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+    size_t len = upb_msg_is_set(data, f) ? (*p.array)->len : 0;
+    upb_msg_reuse_array(p.array, len, f->type);
+    (*p.array)->len = len + 1;
+    p = upb_array_getelementptr(*p.array, len, f->type);
+  }
+  return p;
+}
+
 static upb_status_t value_cb(struct upb_parse_state *s, void **buf, void *end,
-                             upb_field_type_t type, void *user_field_desc)
+                             void *user_field_desc)
 {
   struct parse_frame_data *frame = (void*)s->top->user_data;
   struct upb_msg_field *f = user_field_desc;
-  union upb_value_ptr p = upb_msg_get_ptr(frame->data, f);
-  if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
-    upb_msg_reuse_array(p.array, (*p.array)->len, type);
-    p = upb_array_getelementptr(*p.array, (*p.array)->len++, type);
-  }
-  UPB_CHECK(upb_parse_value(buf, end, type, p));
+  union upb_value_ptr p = get_value_ptr(frame->data, f);
+  UPB_CHECK(upb_parse_value(buf, end, f->type, p));
   return UPB_STATUS_OK;
 }
 
-static upb_status_t str_cb(struct upb_parse_state *s, struct upb_string *str,
-                           upb_field_type_t type, void *user_field_desc)
+static upb_status_t str_cb(struct upb_parse_state *_s, struct upb_string *str,
+                           void *user_field_desc)
 {
-  struct parse_frame_data *frame = (void*)s->top->user_data;
+  struct upb_msg_parse_state *s = (void*)_s;
+  struct parse_frame_data *frame = (void*)s->s.top->user_data;
   struct upb_msg_field *f = user_field_desc;
-  union upb_value_ptr p = upb_msg_get_ptr(frame->data, f);
-  if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
-    upb_msg_reuse_array(p.array, (*p.array)->len, type);
-    p = upb_array_getelementptr(*p.array, (*p.array)->len++, type);
-  }
-  bool byref = false;
-  if(byref) {
+  union upb_value_ptr p = get_value_ptr(frame->data, f);
+  if(s->byref) {
     upb_msg_reuse_strref(p.string);
     **p.string = *str;
   } else {
@@ -214,33 +226,39 @@ static upb_status_t str_cb(struct upb_parse_state *s, struct upb_string *str,
   return UPB_STATUS_OK;
 }
 
-static void set_frame_data(struct upb_parse_state *s, struct upb_msg *m,
-                           void *data)
+static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
 {
-  struct parse_frame_data *frame = (void*)s->top->user_data;
-  frame->m = m;
-  frame->data = data;
-}
-
-static void submsg_start_cb(struct upb_parse_state *s, void *user_field_desc)
-{
+  struct upb_msg_parse_state *s = (void*)_s;
   struct upb_msg_field *f = user_field_desc;
-  struct parse_frame_data *frame = (void*)s->top->user_data;
-  void **submsg = upb_msg_get_submsg_ptr(frame->data, f);
-  upb_msg_reuse_submsg(submsg, f->ref.msg);
-  set_frame_data(s, f->ref.msg, *submsg);
+  struct parse_frame_data *frame = (void*)s->s.top->user_data;
+  union upb_value_ptr p = upb_msg_get_ptr(frame->data, f);
+  upb_msg_reuse_submsg(*p.message, f->ref.msg);
+  if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
+  set_frame_data(&s->s, f->ref.msg, *p.message);
 }
 
-upb_status_t upb_msg_merge(void *data, struct upb_msg *m, struct upb_string *str)
+
+void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
+                        struct upb_msg *m, bool merge, bool byref)
 {
-  struct upb_parse_state s;
-  upb_parse_state_init(&s, sizeof(struct parse_frame_data));
-  set_frame_data(&s, m, data);
-  s.tag_cb = tag_cb;
-  s.value_cb = value_cb;
-  s.str_cb = str_cb;
-  s.submsg_start_cb = submsg_start_cb;
-  size_t read;
-  UPB_CHECK(upb_parse(&s, str->ptr, str->byte_len, &read));
-  return UPB_STATUS_OK;
+  upb_parse_init(&s->s, sizeof(struct parse_frame_data));
+  s->merge = merge;
+  s->byref = byref;
+  if(!merge && msg == NULL) msg = upb_msg_new(m);
+  set_frame_data(&s->s, m, msg);
+  s->s.tag_cb = tag_cb;
+  s->s.value_cb = value_cb;
+  s->s.str_cb = str_cb;
+  s->s.submsg_start_cb = submsg_start_cb;
+}
+
+void upb_msg_parse_free(struct upb_msg_parse_state *s)
+{
+  upb_parse_free(&s->s);
+}
+
+upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
+                           void *data, size_t len, size_t *read)
+{
+  return upb_parse(&s->s, data, len, read);
 }

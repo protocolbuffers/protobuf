@@ -308,12 +308,12 @@ static upb_status_t parse_delimited(struct upb_parse_state *s,
     if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING ||
        ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES) {
       struct upb_string str = {.ptr = *buf, .byte_len = delim_len};
-      s->str_cb(s, &str, ft, user_field_desc);
+      s->str_cb(s, &str, user_field_desc);
       *buf = delim_end;
     } else {
       /* Packed Array. */
       while(*buf < delim_end)
-        UPB_CHECK(s->value_cb(s, buf, end, ft, user_field_desc));
+        UPB_CHECK(s->value_cb(s, buf, end, user_field_desc));
     }
   }
   return UPB_STATUS_OK;
@@ -332,7 +332,7 @@ static upb_status_t parse_nondelimited(struct upb_parse_state *s,
     /* No length specified, an "end group" tag will mark the end. */
     UPB_CHECK(push_stack_frame(s, 0, user_field_desc));
   } else {
-    UPB_CHECK(s->value_cb(s, buf, end, ft, user_field_desc));
+    UPB_CHECK(s->value_cb(s, buf, end, user_field_desc));
   }
   return UPB_STATUS_OK;
 }

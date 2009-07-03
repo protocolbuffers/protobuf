@@ -46,6 +46,7 @@
 
 #include "upb.h"
 #include "upb_table.h"
+#include "upb_parse.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,13 +58,14 @@ struct google_protobuf_FieldDescriptorProto;
 
 /* Message definition. ********************************************************/
 
-/* Structure that describes a single field in a message. */
+/* Structure that describes a single field in a message.  This structure is very
+ * consciously designed to fit into 12/16 bytes (32/64 bit, respectively). */
 struct upb_msg_field {
+  union upb_symbol_ref ref;
   uint32_t byte_offset;     /* Where to find the data. */
   uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
   upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
   upb_label_t label;
-  union upb_symbol_ref ref;
 };
 
 /* Structure that describes a single .proto message type. */
@@ -155,8 +157,8 @@ struct upb_array {
     uint32_t len; \
   };
 
-union upb_value_ptr upb_array_getelementptr(struct upb_array *arr, uint32_t n,
-                                            upb_field_type_t type)
+INLINE union upb_value_ptr upb_array_getelementptr(
+    struct upb_array *arr, uint32_t n, upb_field_type_t type)
 {
   union upb_value_ptr ptr = {
     ._void = ((char*)arr->elements._void + n*upb_type_info[type].size)
@@ -226,7 +228,21 @@ INLINE union upb_value_ptr upb_msg_get_ptr(
 /* Memory management  *********************************************************/
 
 void *upb_msg_new(struct upb_msg *m);
-//void upb_msg_free(void *msg, struct upb_msg *m, bool free_submsgs);
+
+struct upb_msg_parse_state {
+  struct upb_parse_state s;
+  bool merge;
+  bool byref;
+  struct upb_msg *m;
+};
+
+void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
+                        struct upb_msg *m, bool merge, bool byref);
+void upb_msg_parse_free(struct upb_msg_parse_state *s);
+upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
+                           void *data, size_t len, size_t *read);
+
+void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *s);
 
 /* Note!  These two may not be use on a upb_string* that was initialized by
  * means other than these functions. */

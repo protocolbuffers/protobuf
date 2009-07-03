@@ -232,7 +232,7 @@ error:
 }
 
 bool upb_context_parsefd(struct upb_context *c, struct upb_string *fd_str) {
-  google_protobuf_FileDescriptorProto *fd = upb_msg_parse(c->fd_msg, fd_str);
+  google_protobuf_FileDescriptorProto *fd = upb_alloc_and_parse(c->fd_msg, fd_str);
   if(!fd) return false;
   if(!upb_context_addfd(c, fd)) return false;
   c->fd[c->fd_len++] = fd;  /* Need to keep a ref since we own it. */
