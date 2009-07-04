@@ -38,33 +38,6 @@ extern "C" {
 
 INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 
-/* Represents a string or bytes. */
-struct upb_string {
-  /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
-   * ingrained convention that we follow it. */
-  char *ptr;
-  uint32_t byte_len;
-};
-
-INLINE bool upb_streql(struct upb_string *s1, struct upb_string *s2) {
-  return s1->byte_len == s2->byte_len &&
-         memcmp(s1->ptr, s2->ptr, s1->byte_len) == 0;
-}
-
-INLINE void upb_strcpy(struct upb_string *dest, struct upb_string *src) {
-  memcpy(dest->ptr, src->ptr, dest->byte_len);
-  dest->byte_len = src->byte_len;
-}
-
-INLINE void upb_print(struct upb_string *str) {
-  fwrite(str->ptr, str->byte_len, 1, stdout);
-  fputc('\n', stdout);
-}
-
-#define UPB_STRLIT(strlit) {.ptr=strlit, .byte_len=sizeof(strlit)-1}
-#define UPB_STRFARG(str) (str).byte_len, (str).ptr
-#define UPB_STRFMT "%.*s"
-
 /* A list of types as they are encoded on-the-wire. */
 enum upb_wire_type {
   UPB_WIRE_TYPE_VARINT      = 0,
