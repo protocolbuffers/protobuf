@@ -31,12 +31,12 @@ struct upb_symtab_entry {
 struct upb_context {
   struct upb_strtable symtab;   /* The context's symbol table. */
   struct upb_strtable psymtab;  /* Private symbols, for internal use. */
-  struct upb_msg *fd_msg;    /* This is in psymtab, ptr here for convenience. */
+  struct upb_msg *fds_msg;   /* This is in psymtab, ptr here for convenience. */
 
   /* A list of the FileDescriptorProtos we own (from having parsed them
    * ourselves) and must free on destruction. */
-  size_t fd_size, fd_len;
-  struct google_protobuf_FileDescriptorProto **fd;
+  size_t fds_size, fds_len;
+  struct google_protobuf_FileDescriptorSet **fds;
 };
 
 /* Initializes and frees a upb_context, respectively.  Newly initialized
@@ -93,9 +93,7 @@ INLINE struct upb_symtab_entry *upb_context_symnext(
 bool upb_context_addfd(struct upb_context *c,
                        struct google_protobuf_FileDescriptorProto *fd);
 
-/* Like the previous, but takes a serialized FileDescriptorProto and parses
- * it before adding to the context. */
-bool upb_context_parsefd(struct upb_context *c, struct upb_string *fd);
+bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds);
 
 #ifdef __cplusplus
 }  /* extern "C" */

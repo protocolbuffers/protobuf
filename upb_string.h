@@ -59,6 +59,23 @@ INLINE void upb_strfree(struct upb_string s) {
   free(s.ptr);
 }
 
+INLINE bool upb_strreadfile(const char *filename, struct upb_string *data) {
+  FILE *f = fopen(filename, "rb");
+  if(!f) return false;
+  if(fseek(f, 0, SEEK_END) != 0) return false;
+  long size = ftell(f);
+  if(size < 0) return false;
+  if(fseek(f, 0, SEEK_SET) != 0) return false;
+  data->ptr = (char*)malloc(size);
+  data->byte_len = size;
+  if(fread(data->ptr, size, 1, f) != 1) {
+    free(data->ptr);
+    return false;
+  }
+  fclose(f);
+  return true;
+}
+
 #define UPB_STRLIT(strlit) {.ptr=strlit, .byte_len=sizeof(strlit)-1}
 #define UPB_STRARG(str) (str).byte_len, (str).ptr
 #define UPB_STRFMT "%.*s"
