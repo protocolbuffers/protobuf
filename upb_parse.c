@@ -253,6 +253,8 @@ void upb_parse_init(struct upb_parse_state *state, size_t udata_size)
   state->offset = 0;
   size_t stack_bytes = (sizeof(*state->stack) + udata_size) * UPB_MAX_NESTING;
   state->stack = state->top = malloc(stack_bytes);
+  /* The top-level message is not delimited (we can keep receiving data for
+   * it indefinitely). */
   state->top->end_offset = SIZE_MAX;
   state->limit = (struct upb_parse_stack_frame*)((char*)state->stack + stack_bytes);
   state->udata_size = udata_size;
