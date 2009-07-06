@@ -1,6 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+
  * Defines a delimited (as opposed to null-terminated) string type and some
  * library functions for manipulating them.
  *
@@ -16,8 +18,6 @@
  * string data.  With NULL-termination I would be forced to write a NULL
  * into the middle of the protobuf's data, which is less than ideal and in
  * some cases not practical or possible.
- *
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_STRING_H_
@@ -29,6 +29,7 @@ extern "C" {
 
 #include <stdlib.h>
 #include <string.h>
+#include "upb.h"
 
 struct upb_string {
   /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
@@ -59,24 +60,17 @@ INLINE void upb_strfree(struct upb_string s) {
   free(s.ptr);
 }
 
-INLINE bool upb_strreadfile(const char *filename, struct upb_string *data) {
-  FILE *f = fopen(filename, "rb");
-  if(!f) return false;
-  if(fseek(f, 0, SEEK_END) != 0) return false;
-  long size = ftell(f);
-  if(size < 0) return false;
-  if(fseek(f, 0, SEEK_SET) != 0) return false;
-  data->ptr = (char*)malloc(size);
-  data->byte_len = size;
-  if(fread(data->ptr, size, 1, f) != 1) {
-    free(data->ptr);
-    return false;
-  }
-  fclose(f);
-  return true;
-}
+/* Reads an entire file into a newly-allocated string. */
+bool upb_strreadfile(const char *filename, struct upb_string *data);
 
+/* Allows defining upb_strings as literals, ie:
+ *   struct upb_string str = UPB_STRLIT("Hello, World!\n");
+ */
 #define UPB_STRLIT(strlit) {.ptr=strlit, .byte_len=sizeof(strlit)-1}
+
+/* Allows using upb_strings in printf, ie:
+ *   struct upb_string str = UPB_STRLIT("Hello, World!\n");
+ *   printf("String is: " UPB_STRFMT, UPB_STRARG(str)); */
 #define UPB_STRARG(str) (str).byte_len, (str).ptr
 #define UPB_STRFMT "%.*s"
 

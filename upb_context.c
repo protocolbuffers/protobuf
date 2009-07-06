@@ -11,6 +11,7 @@
 #include "upb_enum.h"
 #include "upb_msg.h"
 
+/* Search for a character in a string, in reverse. */
 static int memrchr(char *data, char c, size_t len)
 {
   int off = len-1;
@@ -70,6 +71,8 @@ struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
   return upb_strtable_lookup(&c->symtab, symbol);
 }
 
+/* Given a symbol and the base symbol inside which it is defined, find the
+ * symbol's definition in t. */
 static struct upb_symtab_entry *resolve(struct upb_strtable *t,
                                         struct upb_string *base,
                                         struct upb_string *symbol)
@@ -103,6 +106,7 @@ static struct upb_symtab_entry *resolve(struct upb_strtable *t,
   }
 }
 
+/* Tries to resolve a symbol in two different tables. */
 union upb_symbol_ref resolve2(struct upb_strtable *t1, struct upb_strtable *t2,
                               struct upb_string *base, struct upb_string *sym,
                                  enum upb_symbol_type expected_type) {
@@ -121,8 +125,9 @@ struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
   return resolve(&c->symtab, base, symbol);
 }
 
-/* join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
- * join("", "Baz") -> "Baz"
+/* Joins strings together, for example:
+ *   join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
+ *   join("", "Baz") -> "Baz"
  * Caller owns the returned string and must free it. */
 static struct upb_string join(struct upb_string *base, struct upb_string *name) {
   size_t len = base->byte_len + name->byte_len;
@@ -192,7 +197,7 @@ static bool insert_message(struct upb_strtable *t,
   upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
-  //if(d->set_flags.has.nested_type)
+  //if(d->set_flags.has.nested_type)  (re-enable when protoc sets)
   if(d->nested_type)
     for(unsigned int i = 0; i < d->nested_type->len; i++)
       if(!insert_message(t, d->nested_type->elements[i], &fqname))
@@ -268,7 +273,10 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
   google_protobuf_FileDescriptorSet *fds =
       upb_alloc_and_parse(c->fds_msg, fds_str, true);
   if(!fds) return false;
+
   if(fds->set_flags.has.file) {
+    /* Insert new symbols into a temporary table until we have verified that
+     * the descriptor is valid. */
     struct upb_strtable tmp;
     upb_strtable_init(&tmp, 0, sizeof(struct upb_symtab_entry));
     for(uint32_t i = 0; i < fds->file->len; i++) {
@@ -284,10 +292,12 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
       upb_strtable_insert(&c->symtab, &e->e);
     upb_strtable_free(&tmp);
   }
+
+  /* We own fds now, need to keep a ref so we can free it later. */
   if(c->fds_size == c->fds_len) {
     c->fds_size *= 2;
     c->fds = realloc(c->fds, c->fds_size);
   }
-  c->fds[c->fds_len++] = fds;  /* Need to keep a ref since we own it. */
+  c->fds[c->fds_len++] = fds;
   return true;
 }

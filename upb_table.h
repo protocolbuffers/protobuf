@@ -23,6 +23,7 @@
 extern "C" {
 #endif
 
+/* Note: the key cannot be zero!  Zero is used by the implementation. */
 typedef uint32_t upb_inttable_key_t;
 
 #define UPB_END_OF_CHAIN (uint32_t)0

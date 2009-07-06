@@ -17,6 +17,7 @@ static int div_round_up(int numerator, int denominator) {
   return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
 }
 
+/* Callback for sorting fields. */
 static int compare_fields(const void *e1, const void *e2) {
   const google_protobuf_FieldDescriptorProto *fd1 = *(void**)e1;
   const google_protobuf_FieldDescriptorProto *fd2 = *(void**)e2;
@@ -243,6 +244,7 @@ void upb_msg_reuse_submsg(void **msg, struct upb_msg *m)
 
 /* Serialization/Deserialization.  ********************************************/
 
+/* We use this as our "user_data" for each frame of the parsing stack. */
 struct parse_frame_data {
   struct upb_msg *m;
   void *data;
@@ -267,6 +269,8 @@ static upb_field_type_t tag_cb(struct upb_parse_state *s, struct upb_tag *tag,
   return f->type;
 }
 
+/* Returns a pointer to where the next value for field "f" should be stored,
+ * taking into account whether f is an array that may need to be reallocatd. */
 static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
 {
   union upb_value_ptr p = upb_msg_getptr(data, f);
@@ -315,6 +319,7 @@ static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
   struct upb_msg_parse_state *s = (void*)_s;
   struct upb_msg_field *f = user_field_desc;
   struct parse_frame_data *frame = (void*)&s->s.top->user_data;
+  // TODO: find a non-hacky way to get a pointer to the old frame.
   struct parse_frame_data *oldframe = (void*)((char*)s->s.top - s->s.udata_size);
   union upb_value_ptr p = get_value_ptr(oldframe->data, f);
   upb_msg_reuse_submsg(p.message, f->ref.msg);
@@ -363,74 +368,3 @@ void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *str, bool byref)
   }
 }
 
-static void dump_value(union upb_value_ptr p, upb_field_type_t type, FILE *stream)
-{
-  switch(type) {
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
-      fprintf(stream, "%f", *p._double); break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT:
-      fprintf(stream, "%f", *p._float); break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
-      fprintf(stream, "%" PRIu64, *p.uint64); break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32:
-      fprintf(stream, "%" PRIu32, *p.uint32); break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
-      if(*p._bool) fputs("true", stream);
-      else fputs("false", stream);
-      break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP:
-      break; /* can't actually be stored */
-
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
-      fprintf(stream, "%p", (void*)*p.message); break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
-      if(*p.string)
-        fprintf(stream, "\"" UPB_STRFMT "\"", UPB_STRARG(**p.string));
-      else
-        fputs("(null)", stream);
-      break;
-
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
-      fprintf(stream, "%" PRId32, *p.int32); break;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
-      fprintf(stream, "%" PRId64, *p.int64); break;
-  }
-}
-
-void upb_msg_print(void *data, struct upb_msg *m, FILE *stream)
-{
-  fprintf(stream, "Message <" UPB_STRFMT ">\n", UPB_STRARG(*m->descriptor->name));
-  for(uint32_t i = 0; i < m->num_fields; i++) {
-    struct upb_msg_field *f = &m->fields[i];
-    google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
-    fprintf(stream, "  " UPB_STRFMT, UPB_STRARG(*fd->name));
-
-    if(upb_msg_is_set(data, f)) fputs(" (set): ", stream);
-    else fputs(" (NOT set): ", stream);
-
-    union upb_value_ptr p = upb_msg_getptr(data, f);
-    if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
-      if(*p.array) {
-        fputc('[', stream);
-        for(uint32_t j = 0; j < (*p.array)->len; j++) {
-          dump_value(upb_array_getelementptr(*p.array, j, f->type), f->type, stream);
-          if(j != (*p.array)->len - 1) fputs(", ", stream);
-        }
-        fputs("]\n", stream);
-      } else {
-        fputs("<null>\n", stream);
-      }
-    } else {
-      dump_value(p, f->type, stream);
-      fputc('\n', stream);
-    }
-  }
-}

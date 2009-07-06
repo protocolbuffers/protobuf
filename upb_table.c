@@ -77,8 +77,12 @@ static uint32_t empty_intbucket(struct upb_inttable *table)
   return 0;
 }
 
+/* The insert routines have a lot more code duplication between int/string
+ * variants than I would like, but there's just a bit too much that varies to
+ * parameterize them. */
 static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
 {
+  assert(upb_inttable_lookup(t, e->key, t->t.entry_size) == NULL);
   uint32_t bucket = upb_inttable_bucket(t, e->key);
   struct upb_inttable_entry *table_e = intent(t, bucket);
   if(table_e->key != EMPTYENT) {  /* Collision. */
@@ -110,6 +114,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
   }
   memcpy(table_e, e, t->t.entry_size);
   table_e->next = UPB_END_OF_CHAIN;
+  assert(upb_inttable_lookup(t, e->key, t->t.entry_size) == table_e);
 }
 
 void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
@@ -141,6 +146,7 @@ static uint32_t empty_strbucket(struct upb_strtable *table)
 
 static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
 {
+  assert(upb_strtable_lookup(t, &e->key) == NULL);
   uint32_t bucket = strtable_bucket(t, &e->key);
   struct upb_strtable_entry *table_e = strent(t, bucket);
   if(table_e->key.byte_len != 0) {  /* Collision. */

@@ -247,7 +247,7 @@ int main()
   keys.push_back("google.protobuf.UninterpretedOption.NamePart");
 
   test_strtable(keys, 18);
-  return 0;
+
   int32_t *keys1 = get_contiguous_keys(8);
   printf("Contiguous 1-8 ====\n");
   test_inttable(keys1, 8);
