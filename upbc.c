@@ -65,7 +65,7 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
 
     struct upb_string enum_val_prefix = upb_strdup(entry->e.key);
     enum_val_prefix.byte_len = memrchr(enum_val_prefix.ptr,
-                                       UPB_CONTEXT_SEPARATOR,
+                                       UPB_SYMBOL_SEPARATOR,
                                        enum_val_prefix.byte_len);
     enum_val_prefix.byte_len++;
     to_preproc(enum_val_prefix);
@@ -135,7 +135,7 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
         /* Submessages get special treatment, since we have to use the message
          * name directly. */
         struct upb_string type_name_ref = *fd->type_name;
-        if(type_name_ref.ptr[0] == UPB_CONTEXT_SEPARATOR) {
+        if(type_name_ref.ptr[0] == UPB_SYMBOL_SEPARATOR) {
           /* Omit leading '.'. */
           type_name_ref.ptr++;
           type_name_ref.byte_len--;
@@ -207,5 +207,6 @@ int main()
   struct upb_string name = UPB_STRLIT("descriptor.proto");
   write_header(entries, symcount, name, stdout);
   upb_context_free(&c);
+  upb_strfree(fds);
 }
 

@@ -58,8 +58,9 @@ static void free_symtab(struct upb_strtable *t)
 void upb_context_free(struct upb_context *c)
 {
   free_symtab(&c->symtab);
+  for(size_t i = 0; i < c->fds_len; i++)
+    upb_msgdata_free(c->fds[i], c->fds_msg, true);
   free_symtab(&c->psymtab);
-  for(size_t i = 0; i < c->fds_len; i++) free(c->fds[i]);
   free(c->fds);
 }
 
@@ -73,23 +74,23 @@ static struct upb_symtab_entry *resolve(struct upb_strtable *t,
                                         struct upb_string *base,
                                         struct upb_string *symbol)
 {
-  if(base->byte_len + symbol->byte_len + 1 >= UPB_SYM_MAX_LENGTH ||
+  if(base->byte_len + symbol->byte_len + 1 >= UPB_SYMBOL_MAX_LENGTH ||
      symbol->byte_len == 0) return NULL;
 
-  if(symbol->ptr[0] == UPB_CONTEXT_SEPARATOR) {
+  if(symbol->ptr[0] == UPB_SYMBOL_SEPARATOR) {
     /* Symbols starting with '.' are absolute, so we do a single lookup. */
     struct upb_string sym_str = {.ptr = symbol->ptr+1,
                                  .byte_len = symbol->byte_len-1};
     return upb_strtable_lookup(t, &sym_str);
   } else {
     /* Remove components from base until we find an entry or run out. */
-    char sym[UPB_SYM_MAX_LENGTH+1];
+    char sym[UPB_SYMBOL_MAX_LENGTH+1];
     struct upb_string sym_str = {.ptr = sym};
     int baselen = base->byte_len;
     while(1) {
-      /* sym_str = base[0...base_len] + UPB_CONTEXT_SEPARATOR + symbol */
+      /* sym_str = base[0...base_len] + UPB_SYMBOL_SEPARATOR + symbol */
       memcpy(sym, base->ptr, baselen);
-      sym[baselen] = UPB_CONTEXT_SEPARATOR;
+      sym[baselen] = UPB_SYMBOL_SEPARATOR;
       memcpy(sym + baselen + 1, symbol->ptr, symbol->byte_len);
       sym_str.byte_len = baselen + symbol->byte_len + 1;
 
@@ -97,7 +98,7 @@ static struct upb_symtab_entry *resolve(struct upb_strtable *t,
       if (e) return e;
       else if(baselen == 0) return NULL;  /* No more scopes to try. */
 
-      baselen = memrchr(base->ptr, UPB_CONTEXT_SEPARATOR, baselen);
+      baselen = memrchr(base->ptr, UPB_SYMBOL_SEPARATOR, baselen);
     }
   }
 }
@@ -130,7 +131,7 @@ static struct upb_string join(struct upb_string *base, struct upb_string *name) 
   if(base->byte_len > 0) {
     /* nested_base = base + '.' +  d->name */
     memcpy(joined.ptr, base->ptr, base->byte_len);
-    joined.ptr[base->byte_len] = UPB_CONTEXT_SEPARATOR;
+    joined.ptr[base->byte_len] = UPB_SYMBOL_SEPARATOR;
     memcpy(&joined.ptr[base->byte_len+1], name->ptr, name->byte_len);
   } else {
     memcpy(joined.ptr, name->ptr, name->byte_len);

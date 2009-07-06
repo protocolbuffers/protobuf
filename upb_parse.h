@@ -18,6 +18,33 @@
 extern "C" {
 #endif
 
+/* Definitions. ***************************************************************/
+
+/* A list of types as they are encoded on-the-wire. */
+enum upb_wire_type {
+  UPB_WIRE_TYPE_VARINT      = 0,
+  UPB_WIRE_TYPE_64BIT       = 1,
+  UPB_WIRE_TYPE_DELIMITED   = 2,
+  UPB_WIRE_TYPE_START_GROUP = 3,
+  UPB_WIRE_TYPE_END_GROUP   = 4,
+  UPB_WIRE_TYPE_32BIT       = 5
+};
+typedef uint8_t upb_wire_type_t;
+
+/* A value as it is encoded on-the-wire, except delimited, which is handled
+ * separately. */
+union upb_wire_value {
+  uint64_t varint;
+  uint64_t _64bit;
+  uint32_t _32bit;
+};
+
+/* A tag occurs before each value on-the-wire. */
+struct upb_tag {
+  upb_field_number_t field_number;
+  upb_wire_type_t wire_type;
+};
+
 /* High-level parsing interface. **********************************************/
 
 struct upb_parse_state;

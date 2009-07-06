@@ -9,6 +9,7 @@
 #include "upb_msg.h"
 #include "upb_parse.h"
 
+/* Rounds p up to the next multiple of t. */
 #define ALIGN_UP(p, t) (p % t == 0 ? p : p + (t - (p % t)))
 
 static int div_round_up(int numerator, int denominator) {
@@ -55,6 +56,7 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
     /* We count on the caller to keep this pointer alive. */
     m->field_descriptors[i] = d->field->elements[i];
   }
+  /* TODO: re-enable proper sorting once the compiler is sorted out. */
   //qsort(m->field_descriptors, m->num_fields, sizeof(void*), compare_fields);
 
   size_t max_align = 0;
@@ -77,7 +79,7 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
 
     /* Insert into the tables.  Note that f->ref will be uninitialized, even in
      * the tables' copies of *f, which is why we must update them separately
-     * when the references are resolved. */
+     * in upb_msg_ref() below. */
     struct upb_fieldsbynum_entry nument = {.e = {.key = fd->number}, .f = *f};
     struct upb_fieldsbyname_entry strent = {.e = {.key = *fd->name}, .f = *f};
     upb_inttable_insert(&m->fields_by_num, &nument.e);
@@ -96,15 +98,6 @@ void upb_msg_free(struct upb_msg *m)
   free(m->field_descriptors);
 }
 
-void *upb_msg_new(struct upb_msg *m)
-{
-  void *msg = malloc(m->size);
-  memset(msg, 0, m->size);  /* Clear all pointers, values, and set bits. */
-  return msg;
-}
-
-//void upb_msg_free(void *msg, struct upb_msg *m, bool free_submsgs);
-
 void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f,
                  union upb_symbol_ref ref) {
   struct google_protobuf_FieldDescriptorProto *d =
@@ -119,23 +112,35 @@ void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f,
   str_e->f.ref = ref;
 }
 
+/* Memory management  *********************************************************/
+
+/* Our memory management scheme is as follows:
+ *
+ * All pointers to dynamic memory (strings, arrays, and submessages) are
+ * expected to be good pointers if they are non-zero, *regardless* of whether
+ * that field's bit is set!  That way we can reuse the memory even if the field
+ * is unset and then set later. */
+
+/* For our memory-managed strings and arrays we store extra information
+ * (compared to a plain upb_string or upb_array).  But the data starts with
+ * a upb_string and upb_array, so we can overlay onto the regular types. */
 struct mm_upb_string {
   struct upb_string s;
+  /* Track the allocated size, so we know when we need to reallocate. */
   uint32_t size;
+  /* Our allocated data.  Stored separately so that clients can point s.ptr to
+   * a referenced string, but we can reuse this data later. */
   char *data;
 };
 
 struct mm_upb_array {
   struct upb_array a;
+  /* Track the allocated size, so we know when we need to reallocate. */
   uint32_t size;
-  char *data;
 };
 
 static uint32_t round_up_to_pow2(uint32_t v)
 {
-#if 0 // __GNUC__
-  return (1U<<31) >> (__builtin_clz(v-1)+1);
-#else
   /* cf. http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 */
   v--;
   v |= v >> 1;
@@ -145,7 +150,54 @@ static uint32_t round_up_to_pow2(uint32_t v)
   v |= v >> 16;
   v++;
   return v;
-#endif
+}
+
+void *upb_msgdata_new(struct upb_msg *m)
+{
+  void *msg = malloc(m->size);
+  memset(msg, 0, m->size);  /* Clear all pointers, values, and set bits. */
+  return msg;
+}
+
+static void free_value(union upb_value_ptr p, struct upb_msg_field *f,
+                       bool free_submsgs)
+{
+  switch(f->type) {
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES: {
+      struct mm_upb_string *mm_str = (void*)*p.string;
+      if(mm_str) {
+        free(mm_str->data);
+        free(mm_str);
+      }
+      break;
+    }
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
+      if(free_submsgs) upb_msgdata_free(*p.message, f->ref.msg, free_submsgs);
+      break;
+    default: break;  /* For non-dynamic types, do nothing. */
+  }
+}
+
+void upb_msgdata_free(void *data, struct upb_msg *m, bool free_submsgs)
+{
+  if(!data) return;  /* A very free-like thing to do. */
+  for(unsigned int i = 0; i < m->num_fields; i++) {
+    struct upb_msg_field *f = &m->fields[i];
+    union upb_value_ptr p = upb_msg_getptr(data, f);
+    if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+      if(*p.array) {
+        for(uint32_t j = 0; j < (*p.array)->len; j++)
+          free_value(upb_array_getelementptr(*p.array, j, f->type),
+                     f, free_submsgs);
+        free((*p.array)->elements._void);
+        free(*p.array);
+      }
+    } else {
+      free_value(p, f, free_submsgs);
+    }
+  }
+  free(data);
 }
 
 void upb_msg_reuse_str(struct upb_string **str, uint32_t size)
@@ -185,11 +237,11 @@ void upb_msg_reuse_strref(struct upb_string **str) { upb_msg_reuse_str(str, 0); 
 
 void upb_msg_reuse_submsg(void **msg, struct upb_msg *m)
 {
-  if(!*msg) *msg = upb_msg_new(m);
+  if(!*msg) *msg = upb_msgdata_new(m);
   else upb_msg_clear(*msg, m); /* Clears set bits, leaves pointers. */
 }
 
-/* Parser. */
+/* Serialization/Deserialization.  ********************************************/
 
 struct parse_frame_data {
   struct upb_msg *m;
@@ -217,7 +269,7 @@ static upb_field_type_t tag_cb(struct upb_parse_state *s, struct upb_tag *tag,
 
 static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
 {
-  union upb_value_ptr p = upb_msg_get_ptr(data, f);
+  union upb_value_ptr p = upb_msg_getptr(data, f);
   if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
     size_t len = upb_msg_is_set(data, f) ? (*p.array)->len : 0;
     upb_msg_reuse_array(p.array, len+1, f->type);
@@ -270,25 +322,18 @@ static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
   if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
 }
 
-static void submsg_end_cb(struct upb_parse_state *s)
-{
-  struct parse_frame_data *frame = (void*)&s->top->user_data;
-}
-
-
 void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
                         struct upb_msg *m, bool merge, bool byref)
 {
   upb_parse_init(&s->s, sizeof(struct parse_frame_data));
   s->merge = merge;
   s->byref = byref;
-  if(!merge && msg == NULL) msg = upb_msg_new(m);
+  if(!merge && msg == NULL) msg = upb_msgdata_new(m);
   set_frame_data(&s->s, m, msg);
   s->s.tag_cb = tag_cb;
   s->s.value_cb = value_cb;
   s->s.str_cb = str_cb;
   s->s.submsg_start_cb = submsg_start_cb;
-  s->s.submsg_end_cb = submsg_end_cb;
 }
 
 void upb_msg_parse_free(struct upb_msg_parse_state *s)
@@ -305,10 +350,11 @@ upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
 void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *str, bool byref)
 {
   struct upb_msg_parse_state s;
-  void *msg = upb_msg_new(m);
+  void *msg = upb_msgdata_new(m);
   upb_msg_parse_init(&s, msg, m, false, byref);
   size_t read;
   upb_status_t status = upb_msg_parse(&s, str->ptr, str->byte_len, &read);
+  upb_msg_parse_free(&s);
   if(status == UPB_STATUS_OK && read == str->byte_len) {
     return msg;
   } else {
@@ -370,7 +416,7 @@ void upb_msg_print(void *data, struct upb_msg *m, FILE *stream)
     if(upb_msg_is_set(data, f)) fputs(" (set): ", stream);
     else fputs(" (NOT set): ", stream);
 
-    union upb_value_ptr p = upb_msg_get_ptr(data, f);
+    union upb_value_ptr p = upb_msg_getptr(data, f);
     if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
       if(*p.array) {
         fputc('[', stream);
