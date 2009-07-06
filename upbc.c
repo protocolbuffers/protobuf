@@ -28,6 +28,13 @@ static void to_preproc(struct upb_string str)
     str.ptr[i] = toupper(str.ptr[i]);
 }
 
+static int memrchr(char *data, char c, size_t len)
+{
+  int off = len-1;
+  while(off > 0 && data[off] != c) --off;
+  return off;
+}
+
 /* The .h file defines structs for the types defined in the .proto file.  It
  * also defines constants for the enum values.
  *
@@ -55,6 +62,14 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
     /* We use entry->e.key (the fully qualified name) instead of ed->name. */
     struct upb_string enum_name = upb_strdup(entry->e.key);
     to_cident(enum_name);
+
+    struct upb_string enum_val_prefix = upb_strdup(entry->e.key);
+    enum_val_prefix.byte_len = memrchr(enum_val_prefix.ptr,
+                                       UPB_CONTEXT_SEPARATOR,
+                                       enum_val_prefix.byte_len);
+    enum_val_prefix.byte_len++;
+    to_preproc(enum_val_prefix);
+
     fprintf(stream, "typedef enum " UPB_STRFMT " {\n", UPB_STRARG(enum_name));
     if(ed->set_flags.has.value) {
       for(uint32_t j = 0; j < ed->value->len; j++) {  /* Foreach enum value. */
@@ -62,8 +77,8 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
         struct upb_string value_name = upb_strdup(*v->name);
         to_preproc(value_name);
         /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13," */
-        fprintf(stream, "  " UPB_STRFMT " = %" PRIu32,
-                UPB_STRARG(value_name), v->number);
+        fprintf(stream, "  " UPB_STRFMT UPB_STRFMT " = %" PRIu32,
+                UPB_STRARG(enum_val_prefix), UPB_STRARG(value_name), v->number);
         if(j != ed->value->len-1) fputc(',', stream);
         fputc('\n', stream);
         upb_strfree(value_name);
@@ -71,6 +86,7 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
     }
     fprintf(stream, "} " UPB_STRFMT ";\n\n", UPB_STRARG(enum_name));
     upb_strfree(enum_name);
+    upb_strfree(enum_val_prefix);
   }
 
   /* Epilogue. */
@@ -98,5 +114,6 @@ int main()
   assert(e == NULL && i == symcount);
   struct upb_string name = UPB_STRLIT("descriptor.proto");
   write_header(entries, symcount, name, stdout);
+  upb_context_free(&c);
 }
 

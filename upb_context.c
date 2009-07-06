@@ -188,7 +188,6 @@ static bool insert_message(struct upb_strtable *t,
     free(fqname.ptr);
     return false;
   }
-  printf("Inserting: " UPB_STRFMT ", len=%d\n", UPB_STRARG(e.e.key), e.e.key.byte_len);
   upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
@@ -227,15 +226,9 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
 
   /* Attempt to resolve all references. */
   struct upb_symtab_entry *e;
-  printf("Table dump:\n");
   for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-    printf("  key: " UPB_STRFMT "\n", UPB_STRARG(e->e.key));
-  }
-  for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-    if(upb_strtable_lookup(existingdefs, &e->e.key)) {
-      printf("Redef!\n");
+    if(upb_strtable_lookup(existingdefs, &e->e.key))
       return false;  /* Redefinition prohibited. */
-    }
     if(e->type == UPB_SYM_MESSAGE) {
       struct upb_msg *m = e->ref.msg;
       for(unsigned int i = 0; i < m->num_fields; i++) {
@@ -250,9 +243,7 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
                          UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
-        printf("Resolving '" UPB_STRFMT "'...", UPB_STRARG(*fd->type_name));
-        if(!ref.msg) { printf("undefined: " UPB_STRFMT ", len=%d\n", UPB_STRARG(*fd->type_name), fd->type_name->byte_len);return false;}  /* Ref. to undefined symbol. */
-          printf("OK!\n");
+        if(!ref.msg) return false;  /* Ref. to undefined symbol. */
         upb_msg_ref(m, f, ref);
       }
     }
