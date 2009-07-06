@@ -36,6 +36,8 @@ extern "C" {
 /* The maximum number of fields that any one .proto type can have. */
 #define UPB_MAX_FIELDS (1<<16)
 
+#define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
+
 INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 
 /* A list of types as they are encoded on-the-wire. */

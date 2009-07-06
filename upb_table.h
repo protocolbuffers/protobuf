@@ -27,7 +27,6 @@ typedef uint32_t upb_inttable_key_t;
 
 #define UPB_END_OF_CHAIN (uint32_t)0
 #define UPB_EMPTY_ENTRY (uint32_t)0
-#define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
 struct upb_inttable_entry {
   upb_inttable_key_t key;

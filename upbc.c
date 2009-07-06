@@ -58,7 +58,7 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
     fprintf(stream, "typedef enum " UPB_STRFMT " {\n", UPB_STRARG(enum_name));
     if(ed->set_flags.has.value) {
       for(uint32_t j = 0; j < ed->value->len; j++) {  /* Foreach enum value. */
-        google_protobuf_EnumValueDescriptorProto *v = ed->value->elements[i];
+        google_protobuf_EnumValueDescriptorProto *v = ed->value->elements[j];
         struct upb_string value_name = upb_strdup(*v->name);
         to_preproc(value_name);
         /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13," */

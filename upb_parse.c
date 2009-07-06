@@ -182,8 +182,8 @@ struct upb_type_info upb_type_info[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64]= {alignof(int64_t),  sizeof(int64_t),  UPB_WIRE_TYPE_64BIT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32]  = {alignof(int32_t),  sizeof(int32_t),  UPB_WIRE_TYPE_VARINT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64]  = {alignof(int64_t),  sizeof(int64_t),  UPB_WIRE_TYPE_VARINT},
-  [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING]  = {alignof(struct upb_string), sizeof(struct upb_string), UPB_WIRE_TYPE_DELIMITED},
-  [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES]   = {alignof(struct upb_string), sizeof(struct upb_string), UPB_WIRE_TYPE_DELIMITED},
+  [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING]  = {alignof(struct upb_string*), sizeof(struct upb_string*), UPB_WIRE_TYPE_DELIMITED},
+  [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES]   = {alignof(struct upb_string*), sizeof(struct upb_string*), UPB_WIRE_TYPE_DELIMITED},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP]   = {0,0,0},
 };
 
@@ -249,9 +249,11 @@ upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
 
 void upb_parse_init(struct upb_parse_state *state, size_t udata_size)
 {
+  memset(state, 0, sizeof(struct upb_parse_state));
   state->offset = 0;
   size_t stack_bytes = (sizeof(*state->stack) + udata_size) * UPB_MAX_NESTING;
   state->stack = state->top = malloc(stack_bytes);
+  state->top->end_offset = SIZE_MAX;
   state->limit = (struct upb_parse_stack_frame*)((char*)state->stack + stack_bytes);
   state->udata_size = udata_size;
 }
@@ -263,7 +265,7 @@ void upb_parse_free(struct upb_parse_state *state)
 
 static void pop_stack_frame(struct upb_parse_state *s)
 {
-  s->submsg_end_cb(s);
+  if(s->submsg_end_cb) s->submsg_end_cb(s);
   s->top--;
   s->top = (struct upb_parse_stack_frame*)((char*)s->top - s->udata_size);
 }
@@ -275,7 +277,7 @@ static upb_status_t push_stack_frame(struct upb_parse_state *s, size_t end,
   s->top = (struct upb_parse_stack_frame*)((char*)s->top + s->udata_size);
   if(unlikely(s->top > s->limit)) return UPB_ERROR_STACK_OVERFLOW;
   s->top->end_offset = end;
-  s->submsg_start_cb(s, user_field_desc);
+  if(s->submsg_start_cb) s->submsg_start_cb(s, user_field_desc);
   return UPB_STATUS_OK;
 }
 
@@ -302,6 +304,7 @@ static upb_status_t parse_delimited(struct upb_parse_state *s,
   }
 
   if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
+    base_offset += ((char*)*buf - (char*)bufstart);
     UPB_CHECK(push_stack_frame(s, base_offset + delim_len, user_field_desc));
   } else {
     void *delim_end = (char*)*buf + delim_len;

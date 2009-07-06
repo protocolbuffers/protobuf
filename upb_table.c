@@ -119,10 +119,9 @@ void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
     /* Need to resize.  New table of double the size, add old elements to it. */
     struct upb_inttable new_table;
     upb_inttable_init(&new_table, upb_inttable_size(t)*2, t->t.entry_size);
-    for(uint32_t i = 1; i <= upb_inttable_size(t)/2; i++) {
-      struct upb_inttable_entry *old_e = intent(t, i);
-      if(old_e->key != EMPTYENT) intinsert(&new_table, old_e);
-    }
+    struct upb_inttable_entry *old_e;
+    for(old_e = upb_inttable_begin(t); old_e; old_e = upb_inttable_next(t, old_e))
+      intinsert(&new_table, old_e);
     upb_inttable_free(t);
     *t = new_table;
   }
@@ -167,6 +166,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
           evictee_e->next = empty_bucket;
           break;
         }
+        evictee_e = strent(t, evictee_e->next);
       }
       /* table_e remains set to our mainpos. */
     }
@@ -182,10 +182,9 @@ void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
     /* Need to resize.  New table of double the size, add old elements to it. */
     struct upb_strtable new_table;
     upb_strtable_init(&new_table, upb_strtable_size(t)*2, t->t.entry_size);
-    for(uint32_t i = 1; i <= upb_strtable_size(t)/2; i++) {
-      struct upb_strtable_entry *old_e = strent(t, i);
-      if(old_e->key.byte_len != 0) strinsert(&new_table, old_e);
-    }
+    struct upb_strtable_entry *old_e;
+    for(old_e = upb_strtable_begin(t); old_e; old_e = upb_strtable_next(t, old_e))
+      strinsert(&new_table, old_e);
     upb_strtable_free(t);
     *t = new_table;
   }
@@ -197,7 +196,7 @@ void *upb_inttable_begin(struct upb_inttable *t) {
 }
 
 void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur) {
-  struct upb_inttable_entry *end = intent(t, upb_inttable_size(t));
+  struct upb_inttable_entry *end = intent(t, upb_inttable_size(t)+1);
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;
@@ -210,7 +209,7 @@ void *upb_strtable_begin(struct upb_strtable *t) {
 }
 
 void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) {
-  struct upb_strtable_entry *end = strent(t, upb_strtable_size(t));
+  struct upb_strtable_entry *end = strent(t, upb_strtable_size(t)+1);
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;

@@ -43,7 +43,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   /* Initialize structures. */
   struct upb_strtable table;
   std::map<string, int32_t> m;
-  upb_strtable_init(&table, num_to_insert, sizeof(struct strtable_entry));
+  upb_strtable_init(&table, 0, sizeof(struct strtable_entry));
   std::set<string> all;
   for(size_t i = 0; i < num_to_insert; i++) {
     const string& key = keys[i];
@@ -245,12 +245,6 @@ int main()
   keys.push_back("google.protobuf.MethodOptions");
   keys.push_back("google.protobuf.UninterpretedOption");
   keys.push_back("google.protobuf.UninterpretedOption.NamePart");
-  keys.push_back("A");
-  keys.push_back("B");
-  keys.push_back("C");
-  keys.push_back("D");
-  keys.push_back("E");
-  keys.push_back("F");
 
   test_strtable(keys, 18);
   return 0;

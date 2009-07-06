@@ -3,12 +3,13 @@
  *
  */
 
+#include <inttypes.h>
 #include <stdlib.h>
 #include "descriptor.h"
 #include "upb_msg.h"
 #include "upb_parse.h"
 
-#define ALIGN_UP(p, t) (t + ((p - 1) & (~t - 1)))
+#define ALIGN_UP(p, t) (p % t == 0 ? p : p + (t - (p % t)))
 
 static int div_round_up(int numerator, int denominator) {
   /* cf. http://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division */
@@ -54,10 +55,9 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
     /* We count on the caller to keep this pointer alive. */
     m->field_descriptors[i] = d->field->elements[i];
   }
-  qsort(m->field_descriptors, m->num_fields, sizeof(void*), compare_fields);
+  //qsort(m->field_descriptors, m->num_fields, sizeof(void*), compare_fields);
 
   size_t max_align = 0;
-
   for(unsigned int i = 0; i < m->num_fields; i++) {
     struct upb_msg_field *f = &m->fields[i];
     google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
@@ -68,6 +68,8 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
      * a whole must be a multiple of the greatest alignment of any member. */
     f->field_index = i;
     f->byte_offset = ALIGN_UP(m->size, type_info->align);
+    f->type = fd->type;
+    f->label = fd->label;
     m->size = f->byte_offset + type_info->size;
     max_align = max(max_align, type_info->align);
     if(fd->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REQUIRED)
@@ -131,7 +133,7 @@ struct mm_upb_array {
 
 static uint32_t round_up_to_pow2(uint32_t v)
 {
-#ifdef __GNUC__
+#if 0 // __GNUC__
   return (1U<<31) >> (__builtin_clz(v-1)+1);
 #else
   /* cf. http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 */
@@ -148,7 +150,10 @@ static uint32_t round_up_to_pow2(uint32_t v)
 
 void upb_msg_reuse_str(struct upb_string **str, uint32_t size)
 {
-  if(!*str) *str = malloc(sizeof(struct mm_upb_string));
+  if(!*str) {
+    *str = malloc(sizeof(struct mm_upb_string));
+    memset(*str, 0, sizeof(struct mm_upb_string));
+  }
   struct mm_upb_string *s = (void*)*str;
   if(s->size < size) {
     size = max(16, round_up_to_pow2(size));
@@ -158,14 +163,21 @@ void upb_msg_reuse_str(struct upb_string **str, uint32_t size)
   s->s.ptr = s->data;
 }
 
-void upb_msg_reuse_array(struct upb_array **arr, uint32_t n, upb_field_type_t t)
+void upb_msg_reuse_array(struct upb_array **arr, uint32_t size, upb_field_type_t t)
 {
-  if(!*arr) *arr = malloc(sizeof(struct mm_upb_array));
+  if(!*arr) {
+    *arr = malloc(sizeof(struct mm_upb_array));
+    memset(*arr, 0, sizeof(struct mm_upb_array));
+  }
   struct mm_upb_array *a = (void*)*arr;
-  if(a->size < n) {
-    n = max(16, round_up_to_pow2(n));
-    a->a.elements._void = realloc(a->a.elements._void, n*upb_type_info[t].size);
-    a->size = n;
+  if(a->size < size) {
+    size = max(16, round_up_to_pow2(size));
+    size_t type_size = upb_type_info[t].size;
+    a->a.elements._void = realloc(a->a.elements._void, size * type_size);
+    /* Zero any newly initialized memory. */
+    memset(UPB_INDEX(a->a.elements._void, a->size, type_size), 0,
+           (size - a->size) * type_size);
+    a->size = size;
   }
 }
 
@@ -173,8 +185,8 @@ void upb_msg_reuse_strref(struct upb_string **str) { upb_msg_reuse_str(str, 0); 
 
 void upb_msg_reuse_submsg(void **msg, struct upb_msg *m)
 {
-  if(!*msg) *msg = malloc(m->size);
-  upb_msg_clear(*msg, m);  /* Clears set bits, leaves pointers. */
+  if(!*msg) *msg = upb_msg_new(m);
+  else upb_msg_clear(*msg, m); /* Clears set bits, leaves pointers. */
 }
 
 /* Parser. */
@@ -187,7 +199,7 @@ struct parse_frame_data {
 static void set_frame_data(struct upb_parse_state *s, struct upb_msg *m,
                            void *data)
 {
-  struct parse_frame_data *frame = (void*)s->top->user_data;
+  struct parse_frame_data *frame = (void*)&s->top->user_data;
   frame->m = m;
   frame->data = data;
 }
@@ -195,7 +207,7 @@ static void set_frame_data(struct upb_parse_state *s, struct upb_msg *m,
 static upb_field_type_t tag_cb(struct upb_parse_state *s, struct upb_tag *tag,
                                void **user_field_desc)
 {
-  struct parse_frame_data *frame = (void*)s->top->user_data;
+  struct parse_frame_data *frame = (void*)&s->top->user_data;
   struct upb_msg_field *f = upb_msg_fieldbynum(frame->m, tag->field_number);
   if(!f || !upb_check_type(tag->wire_type, f->type))
     return 0;  /* Skip unknown or fields of the wrong type. */
@@ -208,17 +220,21 @@ static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
   union upb_value_ptr p = upb_msg_get_ptr(data, f);
   if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
     size_t len = upb_msg_is_set(data, f) ? (*p.array)->len : 0;
-    upb_msg_reuse_array(p.array, len, f->type);
+    upb_msg_reuse_array(p.array, len+1, f->type);
     (*p.array)->len = len + 1;
+    assert(p._void);
     p = upb_array_getelementptr(*p.array, len, f->type);
+    assert(p._void);
   }
+  upb_msg_set(data, f);
+  assert(p._void);
   return p;
 }
 
 static upb_status_t value_cb(struct upb_parse_state *s, void **buf, void *end,
                              void *user_field_desc)
 {
-  struct parse_frame_data *frame = (void*)s->top->user_data;
+  struct parse_frame_data *frame = (void*)&s->top->user_data;
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(frame->data, f);
   UPB_CHECK(upb_parse_value(buf, end, f->type, p));
@@ -229,7 +245,7 @@ static upb_status_t str_cb(struct upb_parse_state *_s, struct upb_string *str,
                            void *user_field_desc)
 {
   struct upb_msg_parse_state *s = (void*)_s;
-  struct parse_frame_data *frame = (void*)s->s.top->user_data;
+  struct parse_frame_data *frame = (void*)&s->s.top->user_data;
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(frame->data, f);
   if(s->byref) {
@@ -246,11 +262,17 @@ static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
 {
   struct upb_msg_parse_state *s = (void*)_s;
   struct upb_msg_field *f = user_field_desc;
-  struct parse_frame_data *frame = (void*)s->s.top->user_data;
-  union upb_value_ptr p = upb_msg_get_ptr(frame->data, f);
-  upb_msg_reuse_submsg(*p.message, f->ref.msg);
-  if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
+  struct parse_frame_data *frame = (void*)&s->s.top->user_data;
+  struct parse_frame_data *oldframe = (void*)((char*)s->s.top - s->s.udata_size);
+  union upb_value_ptr p = get_value_ptr(oldframe->data, f);
+  upb_msg_reuse_submsg(p.message, f->ref.msg);
   set_frame_data(&s->s, f->ref.msg, *p.message);
+  if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
+}
+
+static void submsg_end_cb(struct upb_parse_state *s)
+{
+  struct parse_frame_data *frame = (void*)&s->top->user_data;
 }
 
 
@@ -266,6 +288,7 @@ void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
   s->s.value_cb = value_cb;
   s->s.str_cb = str_cb;
   s->s.submsg_start_cb = submsg_start_cb;
+  s->s.submsg_end_cb = submsg_end_cb;
 }
 
 void upb_msg_parse_free(struct upb_msg_parse_state *s)
@@ -291,5 +314,77 @@ void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *str, bool byref)
   } else {
     upb_msg_free(msg);
     return NULL;
+  }
+}
+
+static void dump_value(union upb_value_ptr p, upb_field_type_t type, FILE *stream)
+{
+  switch(type) {
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
+      fprintf(stream, "%f", *p._double); break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT:
+      fprintf(stream, "%f", *p._float); break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
+      fprintf(stream, "%" PRIu64, *p.uint64); break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32:
+      fprintf(stream, "%" PRIu32, *p.uint32); break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
+      if(*p._bool) fputs("true", stream);
+      else fputs("false", stream);
+      break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP:
+      break; /* can't actually be stored */
+
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
+      fprintf(stream, "%p", (void*)*p.message); break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
+      if(*p.string)
+        fprintf(stream, "\"" UPB_STRFMT "\"", UPB_STRARG(**p.string));
+      else
+        fputs("(null)", stream);
+      break;
+
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
+      fprintf(stream, "%" PRId32, *p.int32); break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
+      fprintf(stream, "%" PRId64, *p.int64); break;
+  }
+}
+
+void upb_msg_print(void *data, struct upb_msg *m, FILE *stream)
+{
+  fprintf(stream, "Message <" UPB_STRFMT ">\n", UPB_STRARG(*m->descriptor->name));
+  for(uint32_t i = 0; i < m->num_fields; i++) {
+    struct upb_msg_field *f = &m->fields[i];
+    google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
+    fprintf(stream, "  " UPB_STRFMT, UPB_STRARG(*fd->name));
+
+    if(upb_msg_is_set(data, f)) fputs(" (set): ", stream);
+    else fputs(" (NOT set): ", stream);
+
+    union upb_value_ptr p = upb_msg_get_ptr(data, f);
+    if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+      if(*p.array) {
+        fputc('[', stream);
+        for(uint32_t j = 0; j < (*p.array)->len; j++) {
+          dump_value(upb_array_getelementptr(*p.array, j, f->type), f->type, stream);
+          if(j != (*p.array)->len - 1) fputs(", ", stream);
+        }
+        fputs("]\n", stream);
+      } else {
+        fputs("<null>\n", stream);
+      }
+    } else {
+      dump_value(p, f->type, stream);
+      fputc('\n', stream);
+    }
   }
 }

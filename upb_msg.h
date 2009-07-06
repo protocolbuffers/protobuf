@@ -301,6 +301,10 @@ INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 /* Parses the string data in s according to the message description in m. */
 upb_status_t upb_msg_merge(void *data, struct upb_msg *m, struct upb_string *s);
 
+/* Text dump  *****************************************************************/
+
+void upb_msg_print(void *data, struct upb_msg *m, FILE *stream);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

@@ -26,13 +26,14 @@ bool upb_context_init(struct upb_context *c)
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
   upb_strtable_init(&c->psymtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
-  if(!addfd(&c->psymtab, &c->psymtab, &google_protobuf_filedescriptor)) {
+  if(!addfd(&c->psymtab, &c->symtab, &google_protobuf_filedescriptor)) {
     assert(false);
     return false;  /* Indicates that upb is buggy or corrupt. */
   }
   struct upb_string name = UPB_STRLIT("google.protobuf.FileDescriptorSet");
-  c->fds_msg = upb_strtable_lookup(&c->psymtab, &name);
-  assert(c->fds_msg);
+  struct upb_symtab_entry *e = upb_strtable_lookup(&c->psymtab, &name);
+  assert(e);
+  c->fds_msg = e->ref.msg;
   c->fds_size = 16;
   c->fds_len = 0;
   c->fds = malloc(sizeof(*c->fds));
@@ -187,6 +188,7 @@ static bool insert_message(struct upb_strtable *t,
     free(fqname.ptr);
     return false;
   }
+  printf("Inserting: " UPB_STRFMT ", len=%d\n", UPB_STRARG(e.e.key), e.e.key.byte_len);
   upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
@@ -225,9 +227,15 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
 
   /* Attempt to resolve all references. */
   struct upb_symtab_entry *e;
+  printf("Table dump:\n");
   for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-    if(upb_strtable_lookup(existingdefs, &e->e.key))
+    printf("  key: " UPB_STRFMT "\n", UPB_STRARG(e->e.key));
+  }
+  for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
+    if(upb_strtable_lookup(existingdefs, &e->e.key)) {
+      printf("Redef!\n");
       return false;  /* Redefinition prohibited. */
+    }
     if(e->type == UPB_SYM_MESSAGE) {
       struct upb_msg *m = e->ref.msg;
       for(unsigned int i = 0; i < m->num_fields; i++) {
@@ -242,7 +250,9 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
                          UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
-        if(!ref.msg) return false;  /* Ref. to undefined symbol. */
+        printf("Resolving '" UPB_STRFMT "'...", UPB_STRARG(*fd->type_name));
+        if(!ref.msg) { printf("undefined: " UPB_STRFMT ", len=%d\n", UPB_STRARG(*fd->type_name), fd->type_name->byte_len);return false;}  /* Ref. to undefined symbol. */
+          printf("OK!\n");
         upb_msg_ref(m, f, ref);
       }
     }
@@ -271,6 +281,7 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
     upb_strtable_init(&tmp, 0, sizeof(struct upb_symtab_entry));
     for(uint32_t i = 0; i < fds->file->len; i++) {
       if(!addfd(&tmp, &c->symtab, fds->file->elements[i])) {
+        printf("Not added successfully!\n");
         free_symtab(&tmp);
         return false;
       }
