@@ -89,6 +89,98 @@ static void write_header(struct upb_symtab_entry entries[], int num_entries,
     upb_strfree(enum_val_prefix);
   }
 
+  /* Forward declarations. */
+  fputs("/* Forward declarations of all message types.\n", stream);
+  fputs(" * So they can refer to each other in ", stream);
+  fputs("possibly-recursive ways. */\n\n", stream);
+
+  for(int i = 0; i < num_entries; i++) {  /* Foreach message */
+    if(entries[i].type != UPB_SYM_MESSAGE) continue;
+    struct upb_symtab_entry *entry = &entries[i];
+    /* We use entry->e.key (the fully qualified name). */
+    struct upb_string msg_name = upb_strdup(entry->e.key);
+    to_cident(msg_name);
+    fprintf(stream, "struct " UPB_STRFMT ";\n", UPB_STRARG(msg_name));
+    fprintf(stream, "typedef struct " UPB_STRFMT "\n  " UPB_STRFMT ";\n\n",
+            UPB_STRARG(msg_name), UPB_STRARG(msg_name));
+    upb_strfree(msg_name);
+  }
+
+  /* Message Declarations. */
+  fputs("/* The message definitions themselves. */\n\n", stream);
+  for(int i = 0; i < num_entries; i++) {  /* Foreach message */
+    if(entries[i].type != UPB_SYM_MESSAGE) continue;
+    struct upb_symtab_entry *entry = &entries[i];
+    struct upb_msg *m = entry->ref.msg;
+    /* We use entry->e.key (the fully qualified name). */
+    struct upb_string msg_name = upb_strdup(entry->e.key);
+    to_cident(msg_name);
+    fprintf(stream, "struct " UPB_STRFMT " {\n", UPB_STRARG(msg_name));
+    fputs("  union {\n", stream);
+    fprintf(stream, "    uint8_t bytes[%" PRIu32 "];\n", m->set_flags_bytes);
+    fputs("    struct {\n", stream);
+    for(uint32_t j = 0; j < m->num_fields; j++) {
+      static char* labels[] = {"", "optional", "required", "repeated"};
+      struct google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
+      fprintf(stream, "      bool " UPB_STRFMT ":1;  /* = %" PRIu32 ", %s. */\n",
+              UPB_STRARG(*fd->name), fd->number, labels[fd->label]);
+    }
+    fputs("    } has;\n", stream);
+    fputs("  } set_flags;\n", stream);
+    for(uint32_t j = 0; j < m->num_fields; j++) {
+      struct upb_msg_field *f = &m->fields[j];
+      struct google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
+      if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP ||
+         f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
+        /* Submessages get special treatment, since we have to use the message
+         * name directly. */
+        struct upb_string type_name_ref = *fd->type_name;
+        if(type_name_ref.ptr[0] == UPB_CONTEXT_SEPARATOR) {
+          /* Omit leading '.'. */
+          type_name_ref.ptr++;
+          type_name_ref.byte_len--;
+        }
+        struct upb_string type_name = upb_strdup(type_name_ref);
+        to_cident(type_name);
+        if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+          fprintf(stream, "  UPB_MSG_ARRAY(" UPB_STRFMT ")* " UPB_STRFMT ";\n",
+                  UPB_STRARG(type_name), UPB_STRARG(*fd->name));
+        } else {
+          fprintf(stream, "  " UPB_STRFMT "* " UPB_STRFMT ";\n",
+                  UPB_STRARG(type_name), UPB_STRARG(*fd->name));
+        }
+        upb_strfree(type_name);
+      } else if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+        static char* c_types[] = {
+          "", "struct upb_double_array*", "struct upb_float_array*",
+          "struct upb_int64_array*", "struct upb_uint64_array*",
+          "struct upb_int32_array*", "struct upb_uint64_array*",
+          "struct upb_uint32_array*", "struct upb_bool_array*",
+          "struct upb_string_array*", "", "",
+          "struct upb_string_array*", "struct upb_uint32_array*",
+          "struct upb_uint32_array*", "struct upb_int32_array*",
+          "struct upb_int64_array*", "struct upb_int32_array*",
+          "struct upb_int64_array*"
+        };
+        fprintf(stream, "  %s " UPB_STRFMT ";\n",
+                c_types[fd->type], UPB_STRARG(*fd->name));
+      } else {
+        static char* c_types[] = {
+          "", "double", "float", "int64_t", "uint64_t", "int32_t", "uint64_t",
+          "uint32_t", "bool", "struct upb_string*", "", "",
+          "struct upb_string*", "uint32_t", "uint32_t", "int32_t", "int64_t",
+          "int32_t", "int64_t"
+        };
+        fprintf(stream, "  %s " UPB_STRFMT ";\n",
+                c_types[fd->type], UPB_STRARG(*fd->name));
+      }
+    }
+    fputs("};\n", stream);
+    fprintf(stream, "UPB_DEFINE_MSG_ARRAY(" UPB_STRFMT ")\n\n",
+            UPB_STRARG(msg_name));
+    upb_strfree(msg_name);
+  }
+
   /* Epilogue. */
   fputs("#ifdef __cplusplus\n", stream);
   fputs("}  /* extern \"C\" */\n", stream);

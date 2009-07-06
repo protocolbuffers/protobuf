@@ -152,7 +152,7 @@ struct upb_array {
 
 /* These are all overlays on upb_array, pointers between them can be cast. */
 #define UPB_DEFINE_ARRAY_TYPE(name, type) \
-  struct upb_ ## name ## _array { \
+  struct name ## _array { \
     type *elements; \
     uint32_t len; \
   };
