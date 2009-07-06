@@ -1,8 +1,10 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * This file contains parsing routines; both stream-oriented and tree-oriented
- * models are supported.
+ * upb_parse implements a high performance, callback-based, stream-oriented
+ * parser (comparable to the SAX model in XML parsers).  For parsing protobufs
+ * into in-memory messages (a more DOM-like model), see the routines in
+ * upb_msg.h, which are layered on top of this parser.
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
@@ -46,6 +48,15 @@ struct upb_tag {
 };
 
 /* High-level parsing interface. **********************************************/
+
+/* The general scheme is that the client registers callbacks that will be
+ * called at the appropriate times.  These callbacks provide the client with
+ * data and let the client make decisions (like whether to parse or to skip
+ * a value).
+ *
+ * After initializing the parse state, the client can repeatedly call upb_parse
+ * as data becomes available.  The parser is fully streaming-capable, so the
+ * data need not all be available at the same time. */
 
 struct upb_parse_state;
 
@@ -116,7 +127,13 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
 extern upb_wire_type_t upb_expected_wire_types[];
 /* Returns true if wt is the correct on-the-wire type for ft. */
 INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-  return upb_type_info[ft].expected_wire_type == wt;
+  if(ft == 10) { // GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
+    return wt == UPB_WIRE_TYPE_START_GROUP;
+  } else {
+    /* With packed arrays, anything can be delimited. */
+    return wt == UPB_WIRE_TYPE_DELIMITED ||
+           upb_type_info[ft].expected_wire_type == wt;
+ }
 }
 
 /* Data-consuming functions (to be called from value cb). *********************/
