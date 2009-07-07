@@ -1,0 +1,130 @@
+
+ï
+google_speed.proto
+benchmarks"ø
+SpeedMessage1
+field1 (	
+field9	 (	
+field18 (	
+field80P (:false
+field81Q (:true
+field2 (
+field3 (
+field280˜ (
+field6 (:0
+field22 (
+field4 (	
+field5 (
+field59; (:false
+field7 (	
+field16 (
+field130‚ (:0
+field12 (:true
+field17 (:true
+field13 (:true
+field14 (:true
+field104h (:0
+field100d (:0
+field101e (:0
+field102f (	
+field103g (	
+field29 (:0
+field30 (:false
+field60< (:-1
+field271 (:-1
+field272 (:-1
+field150– (
+field23 (:0
+field24 (:false
+field25 (:04
+field15 (2#.benchmarks.SpeedMessage1SubMessage
+field78N (
+field67C (:0
+field68D (
+field128€ (:0(
+field129 (	:xxxxxxxxxxxxxxxxxxxxx
+field131ƒ (:0"¢
+SpeedMessage1SubMessage
+field1 (:0
+field2 (:0
+field3 (:0
+field15 (	
+field12 (:true
+field13 (
+field14 (
+field16 (
+field19 (:2
+field20 (:true
+field28 (:true
+field21 (
+field22 (
+field23 (:false
+field206Î (:false
+field203Ë (
+field204Ì (
+field205Í (	
+field207Ï (
+field300¬ ("Ê
+SpeedMessage2
+field1 (	
+field3 (
+field4 (
+field30 (
+field75K (:false
+field6 (	
+field2 (
+field21 (:0
+field71G (
+field25 (
+field109m (:0
+field210Ò (:0
+field211Ó (:0
+field212Ô (:0
+field213Õ (:0
+field216Ø (:0
+field217Ù (:0
+field218Ú (:0
+field220Ü (:0
+field221Ý (:0
+field222Þ (:0
+field63? (0
+group1
+ (
+2 .benchmarks.SpeedMessage2.Group1
+field128€ (	
+field131ƒ (
+field127 (	
+field129 (
+field130‚ (
+field205Í (:false
+field206Î (:falseÃ
+Group1
+field11 (
+field26 (
+field12 (	
+field13 (	
+field14 (	
+field15 (
+field5 (
+field27 (	
+field28 (
+field29 (	
+field16 (	
+field22 (	
+field73I (
+field20 (:0
+field24 (	8
+field31 (2'.benchmarks.SpeedMessage2GroupedMessage"ß
+SpeedMessage2GroupedMessage
+field1 (
+field2 (
+field3 (:0
+field4 (
+field5 (
+field6 (:true
+field7 (:false
+field8 (
+field9	 (
+field10
+ (
+field11 (
