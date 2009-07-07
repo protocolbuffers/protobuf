@@ -130,7 +130,7 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
   if(ft == 10) { // GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
     return wt == UPB_WIRE_TYPE_START_GROUP;
   } else {
-    /* With packed arrays, anything can be delimited. */
+    /* With packed arrays, anything can be delimited (except groups). */
     return wt == UPB_WIRE_TYPE_DELIMITED ||
            upb_type_info[ft].expected_wire_type == wt;
  }

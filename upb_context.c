@@ -241,7 +241,8 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
         struct upb_msg_field *f = &m->fields[i];
         google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
-        if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE)
+        if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE ||
+           fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
           ref = resolve2(existingdefs, addto, &e->e.key, fd->type_name,
                          UPB_SYM_MESSAGE);
         else if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM)

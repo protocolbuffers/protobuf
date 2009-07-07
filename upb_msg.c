@@ -10,7 +10,7 @@
 #include "upb_parse.h"
 
 /* Rounds p up to the next multiple of t. */
-#define ALIGN_UP(p, t) (p % t == 0 ? p : p + (t - (p % t)))
+#define ALIGN_UP(p, t) ((p) % (t) == 0 ? (p) : (p) + ((t) - ((p) % (t))))
 
 static int div_round_up(int numerator, int denominator) {
   /* cf. http://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division */
@@ -174,6 +174,7 @@ static void free_value(union upb_value_ptr p, struct upb_msg_field *f,
       break;
     }
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP:
       if(free_submsgs) upb_msgdata_free(*p.message, f->ref.msg, free_submsgs);
       break;
     default: break;  /* For non-dynamic types, do nothing. */
@@ -322,6 +323,7 @@ static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
   // TODO: find a non-hacky way to get a pointer to the old frame.
   struct parse_frame_data *oldframe = (void*)((char*)s->s.top - s->s.udata_size);
   union upb_value_ptr p = get_value_ptr(oldframe->data, f);
+  assert(f->ref.msg);
   upb_msg_reuse_submsg(p.message, f->ref.msg);
   set_frame_data(&s->s, f->ref.msg, *p.message);
   if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
@@ -367,4 +369,3 @@ void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *str, bool byref)
     return NULL;
   }
 }
-

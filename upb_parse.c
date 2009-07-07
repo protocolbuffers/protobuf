@@ -60,15 +60,21 @@ static upb_status_t skip_v_uint64_t(void **buf, void *end)
 static upb_status_t get_v_uint32_t(void *restrict *buf, void *end,
                                    uint32_t *restrict val)
 {
-  uint8_t *b = *buf;
+  uint8_t *b = *buf, *dend;
   upb_status_t bound_error;
-  end = check_end(b, end, 5, &bound_error);  /* 2**32 is a 5-byte varint. */
+  dend = check_end(b, end, 5, &bound_error);  /* 2**32 is a 5-byte varint. */
+  end = check_end(b, end, 10, &bound_error);  /* May have to discard bytes. */
   uint8_t last = 0x80;
   *val = 0;
-  for(int bitpos = 0; b < (uint8_t*)end && (last & 0x80); b++, bitpos += 7)
+  for(int bitpos = 0; b < dend && (last & 0x80); b++, bitpos += 7)
     *val |= ((uint32_t)((last = *b) & 0x7F)) << bitpos;
 
-  if(unlikely(last & 0x80)) return bound_error;
+  /* Discard high bytes until varint ends. */
+  for(; b < (uint8_t*)end && (last & 0x80); b++)
+    last = *b;
+
+  if(unlikely(last & 0x80))
+    return bound_error;
   *buf = b;
   return UPB_STATUS_OK;
 }
@@ -176,6 +182,7 @@ struct upb_type_info upb_type_info[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32] = {alignof(uint32_t), sizeof(uint32_t), UPB_WIRE_TYPE_32BIT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL]    = {alignof(bool),     sizeof(bool),     UPB_WIRE_TYPE_VARINT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE] = {alignof(void*),    sizeof(void*),    UPB_WIRE_TYPE_DELIMITED},
+  [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP]   = {alignof(void*),    sizeof(void*),    UPB_WIRE_TYPE_START_GROUP},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32]  = {alignof(uint32_t), sizeof(uint32_t), UPB_WIRE_TYPE_VARINT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM]    = {alignof(uint32_t), sizeof(uint32_t), UPB_WIRE_TYPE_VARINT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32]= {alignof(int32_t),  sizeof(int32_t),  UPB_WIRE_TYPE_32BIT},
@@ -184,7 +191,6 @@ struct upb_type_info upb_type_info[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64]  = {alignof(int64_t),  sizeof(int64_t),  UPB_WIRE_TYPE_VARINT},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING]  = {alignof(struct upb_string*), sizeof(struct upb_string*), UPB_WIRE_TYPE_DELIMITED},
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES]   = {alignof(struct upb_string*), sizeof(struct upb_string*), UPB_WIRE_TYPE_DELIMITED},
-  [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP]   = {0,0,0},
 };
 
 static upb_status_t parse_tag(void **buf, void *end, struct upb_tag *tag)
@@ -335,7 +341,7 @@ static upb_status_t parse_nondelimited(struct upb_parse_state *s,
     UPB_CHECK(skip_wire_value(buf, end, tag->wire_type));
   } else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
     /* No length specified, an "end group" tag will mark the end. */
-    UPB_CHECK(push_stack_frame(s, 0, user_field_desc));
+    UPB_CHECK(push_stack_frame(s, UINT32_MAX, user_field_desc));
   } else {
     UPB_CHECK(s->value_cb(s, buf, end, user_field_desc));
   }
@@ -357,7 +363,8 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
     void *bufstart = buf;
     UPB_CHECK(parse_tag(&buf, end, &tag));
     if(unlikely(tag.wire_type == UPB_WIRE_TYPE_END_GROUP)) {
-      if(unlikely(s->top->end_offset != 0)) return UPB_ERROR_SPURIOUS_END_GROUP;
+      if(unlikely(s->top->end_offset != UINT32_MAX))
+        return UPB_ERROR_SPURIOUS_END_GROUP;
       pop_stack_frame(s);
     } else if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       parse_delimited(s, &tag, &buf, end, s->offset + (char*)buf - (char*)bufstart);
