@@ -29,7 +29,6 @@ void upb_table_init(struct upb_table *t, uint32_t size, uint16_t entry_size)
   t->entry_size = entry_size;
   t->size_lg2 = 1;
   while(size >>= 1) t->size_lg2++;
-  t->size_lg2 = max(t->size_lg2, 4);  /* Min size of 16. */
   size_t bytes = upb_table_size(t) * t->entry_size;
   t->entries = malloc(bytes);
   memset(t->entries, 0, bytes);  /* Both tables consider 0's an empty entry. */
