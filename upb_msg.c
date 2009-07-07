@@ -329,10 +329,10 @@ static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
   if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
 }
 
-void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
-                        struct upb_msg *m, bool merge, bool byref)
+void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
+                         struct upb_msg *m, bool merge, bool byref)
 {
-  upb_parse_init(&s->s, sizeof(struct parse_frame_data));
+  upb_parse_reset(&s->s);
   s->merge = merge;
   s->byref = byref;
   if(!merge && msg == NULL) msg = upb_msgdata_new(m);
@@ -341,6 +341,13 @@ void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
   s->s.value_cb = value_cb;
   s->s.str_cb = str_cb;
   s->s.submsg_start_cb = submsg_start_cb;
+}
+
+void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
+                        struct upb_msg *m, bool merge, bool byref)
+{
+  upb_parse_init(&s->s, sizeof(struct parse_frame_data));
+  upb_msg_parse_reset(s, msg, m, merge, byref);
 }
 
 void upb_msg_parse_free(struct upb_msg_parse_state *s)

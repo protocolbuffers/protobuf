@@ -1,4 +1,5 @@
 
+#include "test_util.h"
 #include "upb_context.h"
 #include "upb_msg.h"
 
@@ -7,7 +8,7 @@ int main ()
   struct upb_context c;
   upb_context_init(&c);
   struct upb_string fds;
-  if(!upb_strreadfile("google_speed.proto.bin", &fds)) {
+  if(!upb_strreadfile("google_messages.proto.bin", &fds)) {
     fprintf(stderr, "Couldn't read google_speed.proto.bin.\n");
     return 1;
   }
@@ -34,16 +35,19 @@ int main ()
     fprintf(stderr, "Error reading google_message2.dat\n");
     return 1;
   }
-  upb_status_t status = upb_msg_parse(&s, str.ptr, str.byte_len, &read);
+  size_t total = 0;
+  for(int i = 0; i < 1000; i++) {
+    upb_msg_parse_reset(&s, data, m, false, true);
+    upb_status_t status = upb_msg_parse(&s, str.ptr, str.byte_len, &read);
+    if(status != UPB_STATUS_OK && read != str.byte_len) {
+      fprintf(stderr, "Error. :(  error=%d, read=%d\n", status, read);
+      return 1;
+    }
+    total += str.byte_len;
+  }
+  fprintf(stderr, "Parsed %sB\n", eng(total, 3, false));
   upb_msg_parse_free(&s);
   upb_msgdata_free(data, m, true);
   upb_context_free(&c);
   upb_strfree(str);
-  if(status == UPB_STATUS_OK && read == str.byte_len) {
-    fprintf(stderr, "Success!\n");
-    return 0;
-  } else {
-    fprintf(stderr, "Error. :(  error=%d, read=%d\n", status, read);
-    return 1;
-  }
 }

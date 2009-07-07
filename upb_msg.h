@@ -340,6 +340,8 @@ struct upb_msg_parse_state {
  * must remain unchanged and must outlive data. */
 void upb_msg_parse_init(struct upb_msg_parse_state *s, void *data,
                         struct upb_msg *m, bool merge, bool byref);
+void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *data,
+                         struct upb_msg *m, bool merge, bool byref);
 void upb_msg_parse_free(struct upb_msg_parse_state *s);
 
 /* Parses a protobuf fragment, writing the data to the message that was passed

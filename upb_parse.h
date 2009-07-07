@@ -64,6 +64,7 @@ struct upb_parse_state;
  * been previously allocated.  udata_size specifies how much space will be
  * available at parse_stack_frame.user_data in each frame for user data. */
 void upb_parse_init(struct upb_parse_state *state, size_t udata_size);
+void upb_parse_reset(struct upb_parse_state *state);
 void upb_parse_free(struct upb_parse_state *state);
 
 /* The callback that is called immediately after a tag has been parsed.  The
@@ -140,15 +141,13 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
 
 /* Parses and converts a value from the character data starting at buf.  The
  * caller must have previously checked that the wire type is appropriate for
- * this field type.  For delimited data, buf is advanced to the beginning of
- * the delimited data, not the end. */
+ * this field type. */
 upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
                              union upb_value_ptr v);
 
 /* Parses a wire value with the given type (which must have been obtained from
  * a tag that was just parsed) and adds the number of bytes that were consumed
- * to *offset.  For delimited types, offset is advanced past the delimited
- * data.  */
+ * to *offset. */
 upb_status_t upb_parse_wire_value(void **buf, void *end, upb_wire_type_t wt,
                                   union upb_wire_value *wv);
 
