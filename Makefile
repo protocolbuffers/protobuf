@@ -3,18 +3,20 @@
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
-CPPFLAGS=-O3 -Wall -Wextra -pedantic -g -DUPB_UNALIGNED_READS_OK -fomit-frame-pointer
-OBJ=upb_parse.o upb_table.o upb_msg.o upb_enum.o upb_context.o upb_string.o descriptor.o
-all: $(OBJ) test_table tests upbc
+CPPFLAGS=-O3 -Wall -Wextra -pedantic -g -DUPB_UNALIGNED_READS_OK -fomit-frame-pointer -Idescriptor -Isrc
+OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \
+    src/upb_string.o descriptor/descriptor.o
+ALL=$(OBJ) src/libupb.a tests/test_table tests/tests tools/upbc
+all: $(ALL)
 clean:
-	rm -f *.o test_table tests
+	rm -f $(ALL) deps
 
-libupb.a: $(OBJ)
-	ar rcs libupb.a $(OBJ)
-test_table: libupb.a
-upbc: libupb.a
-benchmark: libupb.a -lm
+src/libupb.a: $(OBJ)
+	ar rcs src/libupb.a $(OBJ)
+tests/test_table: src/libupb.a
+tools/upbc: src/libupb.a
+benchmark/benchmark: src/libupb.a -lm
 
 -include deps
-deps: *.c *.h
+deps: src/*.c src/*.h descriptor/*.c descriptor/*.h tests/*.c tests/*.h tools/*.c tools/*.h
 	gcc -MM *.c > deps
