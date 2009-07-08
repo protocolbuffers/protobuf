@@ -1,4 +1,6 @@
 
+#include <time.h>
+#include "google_speed.pb.h"
 #include "test_util.h"
 #include "upb_context.h"
 #include "upb_msg.h"
@@ -17,7 +19,10 @@ int main ()
     return 1;
   }
   upb_strfree(fds);
-  struct upb_string proto_name = UPB_STRLIT("benchmarks.SpeedMessage2");
+  char class_name[] = "benchmarks.SpeedMessage2";
+  struct upb_string proto_name;
+  proto_name.ptr = class_name;
+  proto_name.byte_len = sizeof(class_name)-1;
   struct upb_symtab_entry *e = upb_context_lookup(&c, &proto_name);
   if(!e || e->type != UPB_SYM_MESSAGE) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
@@ -36,18 +41,32 @@ int main ()
     return 1;
   }
   size_t total = 0;
-  for(int i = 0; i < 1000; i++) {
+  clock_t before = clock();
+  for(int i = 0; i < 2000; i++) {
     upb_msg_parse_reset(&s, data, m, false, true);
     upb_status_t status = upb_msg_parse(&s, str.ptr, str.byte_len, &read);
     if(status != UPB_STATUS_OK && read != str.byte_len) {
-      fprintf(stderr, "Error. :(  error=%d, read=%d\n", status, read);
+      fprintf(stderr, "Error. :(  error=%d, read=%lu\n", status, read);
       return 1;
     }
     total += str.byte_len;
   }
-  fprintf(stderr, "Parsed %sB\n", eng(total, 3, false));
+  double elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
+  fprintf(stderr, "Parsed %sB, ", eng(total, 3, false));
+  fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
   upb_msg_parse_free(&s);
   upb_msgdata_free(data, m, true);
   upb_context_free(&c);
   upb_strfree(str);
+
+  //benchmarks::SpeedMessage2 msg;
+  //std::string stlstr(str.ptr, str.byte_len);
+  //before = clock();
+  //for(int i = 0; i < 2000; i++) {
+  //  msg.ParseFromString(stlstr);
+  //  total += str.byte_len;
+  //}
+  //elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
+  //fprintf(stderr, "Parsed %sB, ", eng(total, 3, false));
+  //fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
 }
