@@ -206,6 +206,7 @@ Key bindings:
         abbrev-mode t)
   (use-local-map protobuf-mode-map)
   (c-initialize-cc-mode t)
+  (c-make-emacs-variables-local)
   (c-init-language-vars protobuf-mode)
   (c-common-init 'protobuf-mode)
   (easy-menu-add protobuf-menu)
