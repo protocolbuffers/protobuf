@@ -20,14 +20,14 @@ static int memrchr(char *data, char c, size_t len)
 }
 
 bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
-           google_protobuf_FileDescriptorProto *fd);
+           google_protobuf_FileDescriptorProto *fd, bool sort);
 
 bool upb_context_init(struct upb_context *c)
 {
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
   upb_strtable_init(&c->psymtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
-  if(!addfd(&c->psymtab, &c->symtab, &google_protobuf_filedescriptor)) {
+  if(!addfd(&c->psymtab, &c->symtab, &google_protobuf_filedescriptor, false)) {
     assert(false);
     return false;  /* Indicates that upb is buggy or corrupt. */
   }
@@ -172,7 +172,7 @@ static bool insert_enum(struct upb_strtable *t,
 
 static bool insert_message(struct upb_strtable *t,
                            google_protobuf_DescriptorProto *d,
-                           struct upb_string *base)
+                           struct upb_string *base, bool sort)
 {
   /* TODO: re-enable when compiler sets this flag. */
   //if(!d->set_flags.has.name) return false;
@@ -190,7 +190,7 @@ static bool insert_message(struct upb_strtable *t,
   e.e.key = fqname;
   e.type = UPB_SYM_MESSAGE;
   e.ref.msg = malloc(sizeof(*e.ref.msg));
-  if(!upb_msg_init(e.ref.msg, d)) {
+  if(!upb_msg_init(e.ref.msg, d, sort)) {
     free(fqname.ptr);
     return false;
   }
@@ -200,7 +200,7 @@ static bool insert_message(struct upb_strtable *t,
   //if(d->set_flags.has.nested_type)  (re-enable when protoc sets)
   if(d->nested_type)
     for(unsigned int i = 0; i < d->nested_type->len; i++)
-      if(!insert_message(t, d->nested_type->elements[i], &fqname))
+      if(!insert_message(t, d->nested_type->elements[i], &fqname, sort))
         return false;
 
   //if(d->set_flags.has.enum_type)
@@ -213,14 +213,14 @@ static bool insert_message(struct upb_strtable *t,
 }
 
 bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
-           google_protobuf_FileDescriptorProto *fd)
+           google_protobuf_FileDescriptorProto *fd, bool sort)
 {
   struct upb_string package = {.byte_len=0};
   if(fd->set_flags.has.package) package = *fd->package;
 
   if(fd->set_flags.has.message_type)
     for(unsigned int i = 0; i < fd->message_type->len; i++)
-      if(!insert_message(addto, fd->message_type->elements[i], &package))
+      if(!insert_message(addto, fd->message_type->elements[i], &package, sort))
         return false;
 
   if(fd->set_flags.has.enum_type)
@@ -262,7 +262,7 @@ bool upb_context_addfd(struct upb_context *c,
                        google_protobuf_FileDescriptorProto *fd)
 {
   struct upb_strtable tmp;
-  if(!addfd(&tmp, &c->symtab, fd)) {
+  if(!addfd(&tmp, &c->symtab, fd, false)) {
     free_symtab(&tmp);
     return false;
   }
@@ -281,7 +281,7 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
     struct upb_strtable tmp;
     upb_strtable_init(&tmp, 0, sizeof(struct upb_symtab_entry));
     for(uint32_t i = 0; i < fds->file->len; i++) {
-      if(!addfd(&tmp, &c->symtab, fds->file->elements[i])) {
+      if(!addfd(&tmp, &c->symtab, fds->file->elements[i], true)) {
         printf("Not added successfully!\n");
         free_symtab(&tmp);
         return false;

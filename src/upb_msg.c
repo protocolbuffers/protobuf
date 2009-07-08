@@ -33,7 +33,8 @@ static int compare_fields(const void *e1, const void *e2) {
   }
 }
 
-bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
+bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
+                  bool sort)
 {
   /* TODO: more complete validation.
    * TODO: re-enable this check when we properly set this flag. */
@@ -57,8 +58,8 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d)
     /* We count on the caller to keep this pointer alive. */
     m->field_descriptors[i] = d->field->elements[i];
   }
-  /* TODO: re-enable proper sorting once the compiler is sorted out. */
-  //qsort(m->field_descriptors, m->num_fields, sizeof(void*), compare_fields);
+  if(sort)
+    qsort(m->field_descriptors, m->num_fields, sizeof(void*), compare_fields);
 
   size_t max_align = 0;
   for(unsigned int i = 0; i < m->num_fields; i++) {

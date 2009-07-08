@@ -159,11 +159,19 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
   return m->field_descriptors[f->field_index];
 }
 
-/* Initializes/frees a upb_msg.  Caller retains ownership of d, but the msg
- * will contain references to it, so it must outlive the msg.  Note that init
- * does not resolve upb_msg_field.ref -- the caller should do that
- * post-initialization by calling upb_msg_ref() below. */
-bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d);
+/* Initializes/frees a upb_msg.  Usually this will be called by upb_context, and
+ * clients will not have to construct one directly.
+ *
+ * Caller retains ownership of d, but the msg will contain references to it, so
+ * it must outlive the msg.  Note that init does not resolve upb_msg_field.ref
+ * the caller should do that post-initialization by calling upb_msg_ref()
+ * below.
+ *
+ * sort indicates whether or not it is safe to reorder the fields from the order
+ * they appear in d.  This should be false if code has been compiled against a
+ * header for this type that expects the given order. */
+bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
+                  bool sort);
 void upb_msg_free(struct upb_msg *m);
 
 /* Clients use this function on a previously initialized upb_msg to resolve the
