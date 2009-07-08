@@ -336,6 +336,7 @@ void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
   s->merge = merge;
   s->byref = byref;
   if(!merge && msg == NULL) msg = upb_msgdata_new(m);
+  upb_msg_clear(msg, m);
   set_frame_data(&s->s, m, msg);
   s->s.tag_cb = tag_cb;
   s->s.value_cb = value_cb;
