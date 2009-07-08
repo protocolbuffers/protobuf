@@ -38,7 +38,7 @@ static upb_status_t get_v_uint64_t(void *restrict *buf, void *end,
   for(int bitpos = 0; b < (uint8_t*)end && (last & 0x80); b++, bitpos += 7)
     *val |= ((uint64_t)((last = *b) & 0x7F)) << bitpos;
 
-  if(unlikely(last & 0x80)) return bound_error;
+  if(last & 0x80) return bound_error;
   *buf = b;
   return UPB_STATUS_OK;
 }
@@ -52,7 +52,7 @@ static upb_status_t skip_v_uint64_t(void **buf, void *end)
   for(; b < (uint8_t*)end && (last & 0x80); b++)
     last = *b;
 
-  if(unlikely(last & 0x80)) return bound_error;
+  if(last & 0x80) return bound_error;
   *buf = b;
   return UPB_STATUS_OK;
 }
@@ -73,7 +73,7 @@ static upb_status_t get_v_uint32_t(void *restrict *buf, void *end,
   for(; b < (uint8_t*)end && (last & 0x80); b++)
     last = *b;
 
-  if(unlikely(last & 0x80))
+  if(last & 0x80)
     return bound_error;
   *buf = b;
   return UPB_STATUS_OK;
@@ -84,7 +84,7 @@ static upb_status_t get_f_uint32_t(void *restrict *buf, void *end,
 {
   uint8_t *b = *buf;
   void *uint32_end = (uint8_t*)*buf + sizeof(uint32_t);
-  if(unlikely(uint32_end > end)) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint32_t*)b;
 #else
@@ -100,7 +100,7 @@ static upb_status_t get_f_uint64_t(void *restrict *buf, void *end,
                                    uint64_t *restrict val)
 {
   void *uint64_end = (uint8_t*)*buf + sizeof(uint64_t);
-  if(unlikely(uint64_end > end)) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint64_t*)*buf;
   *buf = uint64_end;
@@ -116,7 +116,7 @@ static upb_status_t get_f_uint64_t(void *restrict *buf, void *end,
 static upb_status_t skip_f_uint32_t(void **buf, void *end)
 {
   void *uint32_end = (uint8_t*)*buf + sizeof(uint32_t);
-  if(unlikely(uint32_end > end)) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
   *buf = uint32_end;
   return UPB_STATUS_OK;
 }
@@ -124,7 +124,7 @@ static upb_status_t skip_f_uint32_t(void **buf, void *end)
 static upb_status_t skip_f_uint64_t(void **buf, void *end)
 {
   void *uint64_end = (uint8_t*)*buf + sizeof(uint64_t);
-  if(unlikely(uint64_end > end)) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
   *buf = uint64_end;
   return UPB_STATUS_OK;
 }
@@ -289,7 +289,7 @@ static upb_status_t push_stack_frame(struct upb_parse_state *s, size_t end,
 {
   s->top++;
   s->top = (struct upb_parse_stack_frame*)((char*)s->top + s->udata_size);
-  if(unlikely(s->top > s->limit)) return UPB_ERROR_STACK_OVERFLOW;
+  if(s->top > s->limit) return UPB_ERROR_STACK_OVERFLOW;
   s->top->end_offset = end;
   if(s->submsg_start_cb) s->submsg_start_cb(s, user_field_desc);
   return UPB_STATUS_OK;
@@ -308,9 +308,8 @@ static upb_status_t parse_delimited(struct upb_parse_state *s,
    * the length. */
   UPB_CHECK(get_INT32(buf, end, &delim_len));
   upb_field_type_t ft = s->tag_cb(s, tag, &user_field_desc);
-  if(unlikely(*buf < bufstart)) return UPB_ERROR_OVERFLOW;
-  if(unlikely(*buf > end &&
-     ft != GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE)) {
+  if(*buf < bufstart) return UPB_ERROR_OVERFLOW;
+  if(*buf > end && ft != GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
     /* Streaming submessages is ok, but for other delimited types (string,
      * bytes, and packed arrays) we require that all the delimited data is
      * available.  This could be relaxed if desired. */
@@ -354,8 +353,8 @@ static upb_status_t parse_nondelimited(struct upb_parse_state *s,
   return UPB_STATUS_OK;
 }
 
-upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
-                       size_t *read)
+upb_status_t upb_parse(struct upb_parse_state *restrict s, void *buf, size_t len,
+                       size_t *restrict read)
 {
   void *end = (char*)buf + len;
   *read = 0;
@@ -368,8 +367,8 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
     struct upb_tag tag;
     void *bufstart = buf;
     UPB_CHECK(parse_tag(&buf, end, &tag));
-    if(unlikely(tag.wire_type == UPB_WIRE_TYPE_END_GROUP)) {
-      if(unlikely(s->top->end_offset != UINT32_MAX))
+    if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
+      if(s->top->end_offset != UINT32_MAX)
         return UPB_ERROR_SPURIOUS_END_GROUP;
       pop_stack_frame(s);
     } else if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
