@@ -73,12 +73,12 @@ struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
                                             struct upb_string *symbol);
 
 INLINE struct upb_symtab_entry *upb_context_symbegin(struct upb_context *c) {
-  return upb_strtable_begin(&c->symtab);
+  return (struct upb_symtab_entry*)upb_strtable_begin(&c->symtab);
 }
 
 INLINE struct upb_symtab_entry *upb_context_symnext(
     struct upb_context *c, struct upb_symtab_entry *cur) {
-  return upb_strtable_next(&c->symtab, &cur->e);
+  return (struct upb_symtab_entry*)upb_strtable_next(&c->symtab, &cur->e);
 }
 
 /* Adding symbols. ************************************************************/

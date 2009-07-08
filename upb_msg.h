@@ -176,14 +176,16 @@ void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f, union upb_symbol_re
  * possible.  These return NULL if no such field is found. */
 INLINE struct upb_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
                                                 uint32_t number) {
-  struct upb_fieldsbynum_entry *e = upb_inttable_lookup(
-      &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
+  struct upb_fieldsbynum_entry *e =
+      (struct upb_fieldsbynum_entry*)upb_inttable_lookup(
+          &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
   return e ? &e->f : NULL;
 }
 INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
                                                  struct upb_string *name) {
   struct upb_fieldsbyname_entry *e =
-      upb_strtable_lookup(&m->fields_by_name, name);
+      (struct upb_fieldsbyname_entry*)upb_strtable_lookup(
+          &m->fields_by_name, name);
   return e ? &e->f : NULL;
 }
 
@@ -236,7 +238,8 @@ INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 
 /* Returns a pointer to a specific field in a message. */
 INLINE union upb_value_ptr upb_msg_getptr(void *data, struct upb_msg_field *f) {
-  union upb_value_ptr p = {._void = ((char*)data + f->byte_offset)};
+  union upb_value_ptr p;
+  p._void = ((char*)data + f->byte_offset);
   return p;
 }
 
@@ -253,9 +256,8 @@ struct upb_array {
 INLINE union upb_value_ptr upb_array_getelementptr(
     struct upb_array *arr, uint32_t n, upb_field_type_t type)
 {
-  union upb_value_ptr ptr = {
-    ._void = ((char*)arr->elements._void + n*upb_type_info[type].size)
-  };
+  union upb_value_ptr ptr;
+  ptr._void = (void*)((char*)arr->elements._void + n*upb_type_info[type].size);
   return ptr;
 }
 

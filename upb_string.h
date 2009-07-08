@@ -65,6 +65,7 @@ bool upb_strreadfile(const char *filename, struct upb_string *data);
 
 /* Allows defining upb_strings as literals, ie:
  *   struct upb_string str = UPB_STRLIT("Hello, World!\n");
+ * Doesn't work with C++ due to lack of struct initializer syntax.
  */
 #define UPB_STRLIT(strlit) {.ptr=strlit, .byte_len=sizeof(strlit)-1}
 
