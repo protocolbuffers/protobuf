@@ -48,6 +48,7 @@ struct upb_table {
   uint32_t count;       /* How many elements are currently in the table? */
   uint16_t entry_size;  /* How big is each entry? */
   uint8_t size_lg2;     /* The table is 2^size_lg2 in size. */
+  uint32_t mask;
 };
 
 struct upb_strtable {
@@ -85,7 +86,7 @@ void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e);
 void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e);
 
 INLINE uint32_t upb_inttable_bucket(struct upb_inttable *t, upb_inttable_key_t k) {
-  return (k & (upb_inttable_size(t)-1)) + 1;  /* Identity hash for ints. */
+  return (k & t->t.mask) + 1;  /* Identity hash for ints. */
 }
 
 /* Looks up key in this table.  Inlined because this is in the critical path
