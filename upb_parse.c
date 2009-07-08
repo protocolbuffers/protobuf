@@ -359,11 +359,6 @@ upb_status_t upb_parse(struct upb_parse_state *restrict s, void *buf, size_t len
   void *end = (char*)buf + len;
   *read = 0;
   while(buf < end) {
-    while(s->offset >= s->top->end_offset) {
-      if(s->offset != s->top->end_offset) return UPB_ERROR_BAD_SUBMESSAGE_END;
-      pop_stack_frame(s);
-    }
-
     struct upb_tag tag;
     void *bufstart = buf;
     UPB_CHECK(parse_tag(&buf, end, &tag));
@@ -379,6 +374,10 @@ upb_status_t upb_parse(struct upb_parse_state *restrict s, void *buf, size_t len
     size_t bytes_read = ((char*)buf - (char*)bufstart);
     *read += bytes_read;
     s->offset += bytes_read;
+    while(s->offset >= s->top->end_offset) {
+      if(s->offset != s->top->end_offset) return UPB_ERROR_BAD_SUBMESSAGE_END;
+      pop_stack_frame(s);
+    }
   }
   return UPB_STATUS_OK;
 }
