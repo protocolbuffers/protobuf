@@ -104,7 +104,9 @@ typedef void (*upb_submsg_end_cb)(struct upb_parse_state *s);
  * where user_data has as many bytes allocated as specified when initialized. */
 struct upb_parse_stack_frame {
   size_t end_offset; /* 0 indicates that this is a group. */
+#ifndef __cplusplus  /* Temporary hack since C++ doesn't support flex arrays. */
   char user_data[];
+#endif
 };
 
 struct upb_parse_state {

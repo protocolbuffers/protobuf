@@ -1,6 +1,6 @@
 
 #include <time.h>
-#include "google_speed.pb.h"
+#include "google_messages.pb.h"
 #include "test_util.h"
 #include "upb_context.h"
 #include "upb_msg.h"
@@ -10,7 +10,7 @@ int main ()
   struct upb_context c;
   upb_context_init(&c);
   struct upb_string fds;
-  if(!upb_strreadfile("google_messages.proto.bin", &fds)) {
+  if(!upb_strreadfile("benchmark/google_messages.proto.pb", &fds)) {
     fprintf(stderr, "Couldn't read google_speed.proto.bin.\n");
     return 1;
   }
@@ -36,7 +36,7 @@ int main ()
   upb_msg_parse_init(&s, data, m, false, true);
   size_t read;
   struct upb_string str;
-  if(!upb_strreadfile("google_message2.dat", &str)) {
+  if(!upb_strreadfile("benchmark/google_message2.dat", &str)) {
     fprintf(stderr, "Error reading google_message2.dat\n");
     return 1;
   }

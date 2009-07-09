@@ -272,7 +272,7 @@ bool upb_context_addfd(struct upb_context *c,
 
 bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
   google_protobuf_FileDescriptorSet *fds =
-      upb_alloc_and_parse(c->fds_msg, fds_str, true);
+      upb_alloc_and_parse(c->fds_msg, fds_str, false);
   if(!fds) return false;
 
   if(fds->set_flags.has.file) {
