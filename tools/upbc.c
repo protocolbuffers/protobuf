@@ -205,7 +205,7 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
 
 struct strtable_entry {
   struct upb_strtable_entry e;
-  size_t offset;
+  int offset;
   int num;
 };
 
@@ -275,7 +275,7 @@ static void write_c(struct upb_symtab_entry *entries[], int num_entries,
   qsort(str_entries, size, sizeof(void*), compare_entries);
 
   /* Emit strings. */
-  fputs("static const char strings[] =\n  \"", stream);
+  fputs("static char strdata[] =\n  \"", stream);
   int col = 2;
   int offset = 0;
   for(int i = 0; i < size; i++) {
@@ -291,7 +291,16 @@ static void write_c(struct upb_symtab_entry *entries[], int num_entries,
     }
     offset += s->byte_len;
   }
-  fputs("\"\n\n", stream);
+  fputs("\";\n\n", stream);
+
+  fputs("static struct upb_string strings[] = {\n", stream);
+  for(int i = 0; i < size; i++) {
+    struct strtable_entry *e = str_entries[i];
+    fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d}", e->offset, e->e.key.byte_len);
+    if(i+1 != size) fputc(',', stream);
+    fputc('\n', stream);
+  }
+  fputs("};\n\n", stream);
 }
 
 const char usage[] =
