@@ -36,6 +36,7 @@ extern "C" {
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
 INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
+INLINE uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
 
 /* Value type as defined in a .proto file.  The values of this are defined by
  * google_protobuf_FieldDescriptorProto_Type (from descriptor.proto).

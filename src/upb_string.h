@@ -43,8 +43,15 @@ INLINE bool upb_streql(struct upb_string *s1, struct upb_string *s2) {
          memcmp(s1->ptr, s2->ptr, s1->byte_len) == 0;
 }
 
+INLINE int upb_strcmp(struct upb_string s1, struct upb_string s2) {
+  size_t common_length = min(s1.byte_len, s2.byte_len);
+  int common_diff = memcmp(s1.ptr, s2.ptr, common_length);
+  if(common_diff == 0) return s1.byte_len - s2.byte_len;
+  else return common_diff;
+}
+
 INLINE void upb_strcpy(struct upb_string *dest, struct upb_string *src) {
-  memcpy(dest->ptr, src->ptr, dest->byte_len);
+  memcpy(dest->ptr, src->ptr, src->byte_len);
   dest->byte_len = src->byte_len;
 }
 
@@ -53,6 +60,14 @@ INLINE struct upb_string upb_strdup(struct upb_string s) {
   copy.ptr = (char*)malloc(s.byte_len);
   copy.byte_len = s.byte_len;
   memcpy(copy.ptr, s.ptr, s.byte_len);
+  return copy;
+}
+
+INLINE struct upb_string upb_strdupc(char *s) {
+  struct upb_string copy;
+  copy.byte_len = strlen(s);
+  copy.ptr = (char*)malloc(copy.byte_len);
+  memcpy(copy.ptr, s, copy.byte_len);
   return copy;
 }
 
