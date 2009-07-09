@@ -83,6 +83,7 @@ static uint32_t empty_intbucket(struct upb_inttable *table)
 static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
 {
   assert(upb_inttable_lookup(t, e->key, t->t.entry_size) == NULL);
+  t->t.count++;
   uint32_t bucket = upb_inttable_bucket(t, e->key);
   struct upb_inttable_entry *table_e = intent(t, bucket);
   if(table_e->key != EMPTYENT) {  /* Collision. */
@@ -120,10 +121,11 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
 void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
 {
   assert(e->key != 0);
-  if((double)++t->t.count / upb_inttable_size(t) > MAX_LOAD) {
+  if((double)(t->t.count + 1) / upb_inttable_size(t) > MAX_LOAD) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     struct upb_inttable new_table;
     upb_inttable_init(&new_table, upb_inttable_size(t)*2, t->t.entry_size);
+    new_table.t.count = t->t.count;
     struct upb_inttable_entry *old_e;
     for(old_e = upb_inttable_begin(t); old_e; old_e = upb_inttable_next(t, old_e))
       intinsert(&new_table, old_e);
@@ -147,6 +149,7 @@ static uint32_t empty_strbucket(struct upb_strtable *table)
 static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
 {
   assert(upb_strtable_lookup(t, &e->key) == NULL);
+  t->t.count++;
   uint32_t bucket = strtable_bucket(t, &e->key);
   struct upb_strtable_entry *table_e = strent(t, bucket);
   if(table_e->key.byte_len != 0) {  /* Collision. */
@@ -184,7 +187,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
 
 void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
 {
-  if((double)++t->t.count / upb_strtable_size(t) > MAX_LOAD) {
+  if((double)(t->t.count + 1) / upb_strtable_size(t) > MAX_LOAD) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     struct upb_strtable new_table;
     upb_strtable_init(&new_table, upb_strtable_size(t)*2, t->t.entry_size);
