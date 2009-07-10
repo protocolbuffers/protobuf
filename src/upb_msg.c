@@ -17,6 +17,16 @@ static int div_round_up(int numerator, int denominator) {
   return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
 }
 
+static bool issubmsgtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
+}
+
+static bool isstringtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
+}
+
 /* Callback for sorting fields. */
 static int compare_fields(const void *e1, const void *e2) {
   const google_protobuf_FieldDescriptorProto *fd1 = *(void**)e1;
@@ -167,7 +177,7 @@ static void free_value(union upb_value_ptr p, struct upb_msg_field *f,
   switch(f->type) {
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES: {
-      struct mm_upb_string *mm_str = (void*)*p.string;
+      struct mm_upb_string *mm_str = (void*)*p.str;
       if(mm_str) {
         free(mm_str->data);
         free(mm_str);
@@ -176,7 +186,7 @@ static void free_value(union upb_value_ptr p, struct upb_msg_field *f,
     }
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP:
-      if(free_submsgs) upb_msgdata_free(*p.message, f->ref.msg, free_submsgs);
+      if(free_submsgs) upb_msgdata_free(*p.msg, f->ref.msg, free_submsgs);
       break;
     default: break;  /* For non-dynamic types, do nothing. */
   }
@@ -189,12 +199,12 @@ void upb_msgdata_free(void *data, struct upb_msg *m, bool free_submsgs)
     struct upb_msg_field *f = &m->fields[i];
     union upb_value_ptr p = upb_msg_getptr(data, f);
     if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
-      if(*p.array) {
-        for(uint32_t j = 0; j < (*p.array)->len; j++)
-          free_value(upb_array_getelementptr(*p.array, j, f->type),
+      if(*p.arr) {
+        for(uint32_t j = 0; j < (*p.arr)->len; j++)
+          free_value(upb_array_getelementptr(*p.arr, j, f->type),
                      f, free_submsgs);
-        free((*p.array)->elements._void);
-        free(*p.array);
+        free((*p.arr)->elements._void);
+        free(*p.arr);
       }
     } else {
       free_value(p, f, free_submsgs);
@@ -277,11 +287,11 @@ static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
 {
   union upb_value_ptr p = upb_msg_getptr(data, f);
   if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
-    size_t len = upb_msg_is_set(data, f) ? (*p.array)->len : 0;
-    upb_msg_reuse_array(p.array, len+1, f->type);
-    (*p.array)->len = len + 1;
+    size_t len = upb_msg_is_set(data, f) ? (*p.arr)->len : 0;
+    upb_msg_reuse_array(p.arr, len+1, f->type);
+    (*p.arr)->len = len + 1;
     assert(p._void);
-    p = upb_array_getelementptr(*p.array, len, f->type);
+    p = upb_array_getelementptr(*p.arr, len, f->type);
     assert(p._void);
   }
   upb_msg_set(data, f);
@@ -307,11 +317,11 @@ static upb_status_t str_cb(struct upb_parse_state *_s, struct upb_string *str,
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(frame->data, f);
   if(s->byref) {
-    upb_msg_reuse_strref(p.string);
-    **p.string = *str;
+    upb_msg_reuse_strref(p.str);
+    **p.str = *str;
   } else {
-    upb_msg_reuse_str(p.string, str->byte_len);
-    upb_strcpy(*p.string, str);
+    upb_msg_reuse_str(p.str, str->byte_len);
+    upb_strcpy(*p.str, str);
   }
   return UPB_STATUS_OK;
 }
@@ -325,8 +335,8 @@ static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
   struct parse_frame_data *oldframe = (void*)((char*)s->s.top - s->s.udata_size);
   union upb_value_ptr p = get_value_ptr(oldframe->data, f);
   assert(f->ref.msg);
-  upb_msg_reuse_submsg(p.message, f->ref.msg);
-  set_frame_data(&s->s, f->ref.msg, *p.message);
+  upb_msg_reuse_submsg(p.msg, f->ref.msg);
+  set_frame_data(&s->s, f->ref.msg, *p.msg);
   if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
 }
 
@@ -377,4 +387,88 @@ void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *str, bool byref)
     upb_msg_free(msg);
     return NULL;
   }
+}
+
+bool upb_value_eql(union upb_value_ptr p1, union upb_value_ptr p2,
+                   upb_field_type_t type)
+{
+#define CMP(type) return *p1.type == *p2.type;
+  switch(type) {
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
+      CMP(_double)
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT:
+      CMP(_float)
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
+      CMP(int64)
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64:
+      CMP(uint64)
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
+      CMP(int32)
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM:
+      CMP(uint32);
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
+      CMP(_bool);
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
+      return upb_streql(*p1.str, *p2.str);
+    default: return false;
+  }
+}
+
+bool upb_array_eql(struct upb_array *arr1, struct upb_array *arr2,
+                   struct upb_msg_field *f, bool recursive)
+{
+  if(arr1->len != arr2->len) return false;
+  if(issubmsgtype(f->type)) {
+    if(!recursive) return true;
+    for(uint32_t i = 0; i < arr1->len; i++)
+      if(!upb_msg_eql(arr1->elements.msg[i], arr2->elements.msg[i],
+         f->ref.msg, recursive))
+        return false;
+  } else if(isstringtype(f->type)) {
+    for(uint32_t i = 0; i < arr1->len; i++)
+      if(!upb_streql(arr1->elements.str[i], arr2->elements.str[i]))
+        return false;
+  } else {
+    /* For primitive types we can compare the memory directly. */
+    return memcmp(arr1->elements._void, arr2->elements._void,
+                  arr1->len * upb_type_info[f->type].size) == 0;
+  }
+  return true;
+}
+
+bool upb_msg_eql(void *data1, void *data2, struct upb_msg *m, bool recursive)
+{
+  /* Must have the same fields set. */
+  if(memcmp(data1, data2, m->set_flags_bytes) != 0)
+    return false;
+
+  /* Possible optimization: create a mask of the bytes in the messages that
+   * contain only primitive values (not strings, arrays, submessages, or
+   * padding) and memcmp the masked messages. */
+
+  for(uint32_t i = 0; i < m->num_fields; i++) {
+    struct upb_msg_field *f = &m->fields[i];
+    if(!upb_msg_is_set(data1, f)) continue;
+    union upb_value_ptr p1 = upb_msg_getptr(data1, f);
+    union upb_value_ptr p2 = upb_msg_getptr(data2, f);
+    if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+      if(!upb_array_eql(*p1.arr, *p2.arr, f, recursive)) return false;
+    } else {
+      if(issubmsgtype(f->type)) {
+        if(recursive && !upb_msg_eql(p1.msg, p2.msg, f->ref.msg, recursive))
+          return false;
+      } else if(!upb_value_eql(p1, p2, f->type)) {
+        return false;
+      }
+    }
+  }
+  return true;
 }

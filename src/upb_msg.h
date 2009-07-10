@@ -284,6 +284,7 @@ UPB_DEFINE_ARRAY_TYPE(upb_uint32, uint32_t)
 UPB_DEFINE_ARRAY_TYPE(upb_uint64, uint64_t)
 UPB_DEFINE_ARRAY_TYPE(upb_bool,   bool)
 UPB_DEFINE_ARRAY_TYPE(upb_string, struct upb_string*)
+UPB_DEFINE_ARRAY_TYPE(upb_msg,    void*)
 
 /* Defines an array of a specific message type. */
 #define UPB_MSG_ARRAY(msg_type) struct msg_type ## _array
@@ -368,6 +369,7 @@ void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *s, bool byref);
 
 /* Text dump  *****************************************************************/
 
+bool upb_msg_eql(void *data1, void *data2, struct upb_msg *m, bool recursive);
 void upb_msg_print(void *data, struct upb_msg *m, FILE *stream);
 
 #ifdef __cplusplus

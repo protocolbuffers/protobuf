@@ -70,7 +70,7 @@ union upb_value {
   bool     _bool;
   struct upb_string **string;
   struct upb_array **array;
-  void     *message;
+  void     *msg;
 };
 
 union upb_value_ptr {
@@ -81,9 +81,9 @@ union upb_value_ptr {
   uint32_t *uint32;
   uint64_t *uint64;
   bool     *_bool;
-  struct upb_string **string;
-  struct upb_array **array;
-  void     **message;
+  struct upb_string **str;
+  struct upb_array **arr;
+  void     **msg;
   void     *_void;
 };
 
