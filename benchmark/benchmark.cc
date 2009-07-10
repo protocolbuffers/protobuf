@@ -52,21 +52,25 @@ int main ()
     total += str.byte_len;
   }
   double elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
-  fprintf(stderr, "Parsed %sB, ", eng(total, 3, false));
+  fprintf(stderr, "upb parsed %sB, ", eng(total, 3, false));
   fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
   upb_msg_parse_free(&s);
   upb_msgdata_free(data, m, true);
   upb_context_free(&c);
-  upb_strfree(str);
 
-  //benchmarks::SpeedMessage2 msg;
-  //std::string stlstr(str.ptr, str.byte_len);
-  //before = clock();
-  //for(int i = 0; i < 2000; i++) {
-  //  msg.ParseFromString(stlstr);
-  //  total += str.byte_len;
-  //}
-  //elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
-  //fprintf(stderr, "Parsed %sB, ", eng(total, 3, false));
-  //fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
+  benchmarks::SpeedMessage2 msg;
+  std::string stlstr(str.ptr, str.byte_len);
+  upb_strfree(str);
+  total = 0;
+  before = clock();
+  for(int i = 0; i < 2000; i++) {
+    if(!msg.ParseFromString(stlstr)) {
+      fprintf(stderr, "Error parsing with proto2.\n");
+      return 1;
+    }
+    total += str.byte_len;
+  }
+  elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
+  fprintf(stderr, "proto2 parsed %sB, ", eng(total, 3, false));
+  fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
 }
