@@ -27,20 +27,53 @@ static void *check_end(uint8_t *buf, void *end, size_t maxlen,
   }
 }
 
-static upb_status_t get_v_uint64_t(void *restrict *buf, void *end,
+inline static upb_status_t get_v_uint64_t(void *restrict *buf, void *end,
                                    uint64_t *restrict val)
 {
   uint8_t *b = *buf;
-  upb_status_t bound_error;
-  end = check_end(b, end, 10, &bound_error);  /* 2**64 is a 10-byte varint. */
-  uint8_t last = 0x80;
-  *val = 0;
-  for(int bitpos = 0; b < (uint8_t*)end && (last & 0x80); b++, bitpos += 7)
-    *val |= ((uint64_t)((last = *b) & 0x7F)) << bitpos;
 
-  if(last & 0x80) return bound_error;
-  *buf = b;
-  return UPB_STATUS_OK;
+  if((*b & 0x80) == 0) {
+    /* Single-byte varint -- very common case. */
+    *buf = b + 1;
+    *val = *b & 0x7f;
+    return UPB_STATUS_OK;
+  } else if(b <= (uint8_t*)end && (*(b+1) & 0x80) == 0) {
+    /* Two-byte varint. */
+    *buf = b + 2;
+    *val = (b[0] & 0x7f) | ((b[1] & 0x7f) << 7);
+    return UPB_STATUS_OK;
+  } else if(b + 10 <= (uint8_t*)end) {
+    /* >2-byte varint, fast path. */
+    uint64_t cont = *(uint64_t*)(b+2) | 0x7f7f7f7f7f7f7f7fULL;
+    int num_bytes = __builtin_ffsll(~cont) / 8;
+    uint32_t part0 = 0, part1 = 0, part2 = 0;
+
+    switch(num_bytes) {
+      default: return UPB_ERROR_UNTERMINATED_VARINT;
+      case 8: part2 |= (b[9] & 0x7F) << 7;
+      case 7: part2 |= (b[8] & 0x7F);
+      case 6: part1 |= (b[7] & 0x7F) << 21;
+      case 5: part1 |= (b[6] & 0x7F) << 14;
+      case 4: part1 |= (b[5] & 0x7F) << 7;
+      case 3: part1 |= (b[4] & 0x7F);
+      case 2: part0 |= (b[3] & 0x7F) << 21;
+      case 1: part0 |= (b[2] & 0x7F) << 14;
+              part0 |= (b[1] & 0x7F) << 7;
+              part0 |= (b[0] & 0x7F);
+    }
+    *buf = b + num_bytes + 2;
+    *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
+    return UPB_STATUS_OK;
+  } else {
+    /* >2-byte varint, slow path. */
+    uint8_t last = 0x80;
+    *val = 0;
+    for(int bitpos = 0; b < (uint8_t*)end && (last & 0x80); b++, bitpos += 7)
+      *val |= ((uint64_t)((last = *b) & 0x7F)) << bitpos;
+    if(last & 0x80) return UPB_STATUS_NEED_MORE_DATA;
+    *buf = b;
+    return UPB_STATUS_OK;
+  }
 }
 
 static upb_status_t skip_v_uint64_t(void **buf, void *end)
@@ -60,22 +93,9 @@ static upb_status_t skip_v_uint64_t(void **buf, void *end)
 static upb_status_t get_v_uint32_t(void *restrict *buf, void *end,
                                    uint32_t *restrict val)
 {
-  uint8_t *b = *buf, *dend;
-  upb_status_t bound_error;
-  dend = check_end(b, end, 5, &bound_error);  /* 2**32 is a 5-byte varint. */
-  end = check_end(b, end, 10, &bound_error);  /* May have to discard bytes. */
-  uint8_t last = 0x80;
-  *val = 0;
-  for(int bitpos = 0; b < dend && (last & 0x80); b++, bitpos += 7)
-    *val |= ((uint32_t)((last = *b) & 0x7F)) << bitpos;
-
-  /* Discard high bytes until varint ends. */
-  for(; b < (uint8_t*)end && (last & 0x80); b++)
-    last = *b;
-
-  if(last & 0x80)
-    return bound_error;
-  *buf = b;
+  uint64_t val64;
+  UPB_CHECK(get_v_uint64_t(buf, end, &val64));
+  *val = (uint32_t)val64;
   return UPB_STATUS_OK;
 }
 
@@ -277,20 +297,22 @@ void upb_parse_free(struct upb_parse_state *state)
   free(state->stack);
 }
 
-static void pop_stack_frame(struct upb_parse_state *s)
+static size_t pop_stack_frame(struct upb_parse_state *s)
 {
   if(s->submsg_end_cb) s->submsg_end_cb(s);
   s->top--;
   s->top = (struct upb_parse_stack_frame*)((char*)s->top - s->udata_size);
+  return s->top->end_offset;
 }
 
 static upb_status_t push_stack_frame(struct upb_parse_state *s, size_t end,
-                                     void *user_field_desc)
+                                     void *user_field_desc, size_t *end_offset)
 {
   s->top++;
   s->top = (struct upb_parse_stack_frame*)((char*)s->top + s->udata_size);
   if(s->top > s->limit) return UPB_ERROR_STACK_OVERFLOW;
   s->top->end_offset = end;
+  *end_offset = end;
   if(s->submsg_start_cb) s->submsg_start_cb(s, user_field_desc);
   return UPB_STATUS_OK;
 }
@@ -298,7 +320,7 @@ static upb_status_t push_stack_frame(struct upb_parse_state *s, size_t end,
 static upb_status_t parse_delimited(struct upb_parse_state *s,
                                     struct upb_tag *tag,
                                     void **buf, void *end,
-                                    size_t base_offset)
+                                    size_t base_offset, size_t *end_offset)
 {
   int32_t delim_len;
   void *user_field_desc;
@@ -318,7 +340,7 @@ static upb_status_t parse_delimited(struct upb_parse_state *s,
 
   if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
     base_offset += ((char*)*buf - (char*)bufstart);
-    UPB_CHECK(push_stack_frame(s, base_offset + delim_len, user_field_desc));
+    UPB_CHECK(push_stack_frame(s, base_offset + delim_len, user_field_desc, end_offset));
   } else {
     void *delim_end = (char*)*buf + delim_len;
     if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING ||
@@ -337,7 +359,8 @@ static upb_status_t parse_delimited(struct upb_parse_state *s,
 
 static upb_status_t parse_nondelimited(struct upb_parse_state *s,
                                        struct upb_tag *tag,
-                                       void **buf, void *end)
+                                       void **buf, void *end,
+                                       size_t *end_offset)
 {
   /* Simple value or begin group. */
   void *user_field_desc;
@@ -346,7 +369,7 @@ static upb_status_t parse_nondelimited(struct upb_parse_state *s,
     UPB_CHECK(skip_wire_value(buf, end, tag->wire_type));
   } else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
     /* No length specified, an "end group" tag will mark the end. */
-    UPB_CHECK(push_stack_frame(s, UINT32_MAX, user_field_desc));
+    UPB_CHECK(push_stack_frame(s, UINT32_MAX, user_field_desc, end_offset));
   } else {
     UPB_CHECK(s->value_cb(s, buf, end, user_field_desc));
   }
@@ -357,27 +380,29 @@ upb_status_t upb_parse(struct upb_parse_state *restrict s, void *buf, size_t len
                        size_t *restrict read)
 {
   void *end = (char*)buf + len;
-  *read = 0;
+  size_t offset = s->offset;
+  size_t end_offset = s->top->end_offset;
   while(buf < end) {
     struct upb_tag tag;
     void *bufstart = buf;
     UPB_CHECK(parse_tag(&buf, end, &tag));
     if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
-      if(s->top->end_offset != UINT32_MAX)
+      if(end_offset != UINT32_MAX)
         return UPB_ERROR_SPURIOUS_END_GROUP;
-      pop_stack_frame(s);
+      end_offset = pop_stack_frame(s);
     } else if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
-      parse_delimited(s, &tag, &buf, end, s->offset + (char*)buf - (char*)bufstart);
+      UPB_CHECK(parse_delimited(
+          s, &tag, &buf, end, offset + (char*)buf - (char*)bufstart, &end_offset));
     } else {
-      parse_nondelimited(s, &tag, &buf, end);
+      UPB_CHECK(parse_nondelimited(s, &tag, &buf, end, &end_offset));
     }
-    size_t bytes_read = ((char*)buf - (char*)bufstart);
-    *read += bytes_read;
-    s->offset += bytes_read;
-    while(s->offset >= s->top->end_offset) {
-      if(s->offset != s->top->end_offset) return UPB_ERROR_BAD_SUBMESSAGE_END;
-      pop_stack_frame(s);
+    offset += ((char*)buf - (char*)bufstart);
+    while(offset >= end_offset) {
+      if(offset != end_offset) return UPB_ERROR_BAD_SUBMESSAGE_END;
+      end_offset = pop_stack_frame(s);
     }
   }
+  *read = offset - s->offset;
+  s->offset = offset;
   return UPB_STATUS_OK;
 }

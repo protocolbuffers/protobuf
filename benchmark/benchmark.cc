@@ -43,7 +43,7 @@ int main ()
   size_t total = 0;
   clock_t before = clock();
   for(int i = 0; i < 2000; i++) {
-    upb_msg_parse_reset(&s, data, m, false, true);
+    upb_msg_parse_reset(&s, data, m, false, false);
     upb_status_t status = upb_msg_parse(&s, str.ptr, str.byte_len, &read);
     if(status != UPB_STATUS_OK && read != str.byte_len) {
       fprintf(stderr, "Error. :(  error=%d, read=%lu\n", status, read);
@@ -53,6 +53,21 @@ int main ()
   }
   double elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
   fprintf(stderr, "upb parsed %sB, ", eng(total, 3, false));
+  fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
+
+  total = 0;
+  before = clock();
+  for(int i = 0; i < 2000; i++) {
+    upb_msg_parse_reset(&s, data, m, false, true);
+    upb_status_t status = upb_msg_parse(&s, str.ptr, str.byte_len, &read);
+    if(status != UPB_STATUS_OK && read != str.byte_len) {
+      fprintf(stderr, "Error. :(  error=%d, read=%lu\n", status, read);
+      return 1;
+    }
+    total += str.byte_len;
+  }
+  elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
+  fprintf(stderr, "upb(byref) parsed %sB, ", eng(total, 3, false));
   fprintf(stderr, "%sB/s\n", eng(total/elapsed, 3, false));
   upb_msg_parse_free(&s);
   upb_msgdata_free(data, m, true);
