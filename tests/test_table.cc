@@ -1,4 +1,5 @@
 
+#undef NDEBUG  /* ensure tests always assert. */
 #include "upb_table.h"
 #include "test_util.h"
 #include <assert.h>

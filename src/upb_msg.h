@@ -331,11 +331,17 @@ void upb_msg_reuse_submsg(void **msg, struct upb_msg *m);
 /* This is all just a layer on top of the stream-oriented facility in
  * upb_parse.h. */
 
+struct upb_msg_parse_frame {
+  struct upb_msg *m;
+  void *data;
+};
+
 struct upb_msg_parse_state {
   struct upb_parse_state s;
   bool merge;
   bool byref;
   struct upb_msg *m;
+  struct upb_msg_parse_frame stack[UPB_MAX_NESTING], *top;
 };
 
 /* Initializes/frees a message parser.  The parser will write the data to the

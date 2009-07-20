@@ -256,26 +256,12 @@ void upb_msg_reuse_submsg(void **msg, struct upb_msg *m)
 
 /* Serialization/Deserialization.  ********************************************/
 
-/* We use this as our "user_data" for each frame of the parsing stack. */
-struct parse_frame_data {
-  struct upb_msg *m;
-  void *data;
-};
-
-static void set_frame_data(struct upb_parse_state *s, struct upb_msg *m,
-                           void *data)
-{
-  struct parse_frame_data *frame = (void*)&s->top->user_data;
-  frame->m = m;
-  frame->data = data;
-}
-
-static upb_field_type_t tag_cb(struct upb_parse_state *s, struct upb_tag *tag,
+static upb_field_type_t tag_cb(void *udata, struct upb_tag tag,
                                void **user_field_desc)
 {
-  struct parse_frame_data *frame = (void*)&s->top->user_data;
-  struct upb_msg_field *f = upb_msg_fieldbynum(frame->m, tag->field_number);
-  if(!f || !upb_check_type(tag->wire_type, f->type))
+  struct upb_msg_parse_state *s = udata;
+  struct upb_msg_field *f = upb_msg_fieldbynum(s->top->m, tag.field_number);
+  if(!f || !upb_check_type(tag.wire_type, f->type))
     return 0;  /* Skip unknown or fields of the wrong type. */
   *user_field_desc = f;
   return f->type;
@@ -299,23 +285,21 @@ static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
   return p;
 }
 
-static upb_status_t value_cb(struct upb_parse_state *s, void **buf, void *end,
-                             void *user_field_desc)
+static void *value_cb(void *udata, void *buf, void *end,
+                      void *user_field_desc, jmp_buf errjmp)
 {
-  struct parse_frame_data *frame = (void*)&s->top->user_data;
+  struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
-  union upb_value_ptr p = get_value_ptr(frame->data, f);
-  UPB_CHECK(upb_parse_value(buf, end, f->type, p));
-  return UPB_STATUS_OK;
+  union upb_value_ptr p = get_value_ptr(s->top->data, f);
+  return upb_parse_value(buf, end, f->type, p, errjmp);
 }
 
-static upb_status_t str_cb(struct upb_parse_state *_s, struct upb_string *str,
+static upb_status_t str_cb(void *udata, struct upb_string *str,
                            void *user_field_desc)
 {
-  struct upb_msg_parse_state *s = (void*)_s;
-  struct parse_frame_data *frame = (void*)&s->s.top->user_data;
+  struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
-  union upb_value_ptr p = get_value_ptr(frame->data, f);
+  union upb_value_ptr p = get_value_ptr(s->top->data, f);
   if(s->byref) {
     upb_msg_reuse_strref(p.str);
     **p.str = *str;
@@ -326,29 +310,30 @@ static upb_status_t str_cb(struct upb_parse_state *_s, struct upb_string *str,
   return UPB_STATUS_OK;
 }
 
-static void submsg_start_cb(struct upb_parse_state *_s, void *user_field_desc)
+static void submsg_start_cb(void *udata, void *user_field_desc)
 {
-  struct upb_msg_parse_state *s = (void*)_s;
+  struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
-  struct parse_frame_data *frame = (void*)&s->s.top->user_data;
-  // TODO: find a non-hacky way to get a pointer to the old frame.
-  struct parse_frame_data *oldframe = (void*)((char*)s->s.top - s->s.udata_size);
-  union upb_value_ptr p = get_value_ptr(oldframe->data, f);
+  union upb_value_ptr p = get_value_ptr(s->top->data, f);
   assert(f->ref.msg);
   upb_msg_reuse_submsg(p.msg, f->ref.msg);
-  set_frame_data(&s->s, f->ref.msg, *p.msg);
-  if(!s->merge) upb_msg_clear(frame->data, f->ref.msg);
+  s->top++;
+  s->top->m = f->ref.msg;
+  s->top->data = *p.msg;
+  if(!s->merge) upb_msg_clear(s->top->data, s->top->m);
 }
 
 void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
                          struct upb_msg *m, bool merge, bool byref)
 {
-  upb_parse_reset(&s->s);
+  upb_parse_reset(&s->s, s);
   s->merge = merge;
   s->byref = byref;
   if(!merge && msg == NULL) msg = upb_msgdata_new(m);
   upb_msg_clear(msg, m);
-  set_frame_data(&s->s, m, msg);
+  s->top = s->stack;
+  s->top->m = m;
+  s->top->data = msg;
   s->s.tag_cb = tag_cb;
   s->s.value_cb = value_cb;
   s->s.str_cb = str_cb;
@@ -358,7 +343,7 @@ void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
 void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,
                         struct upb_msg *m, bool merge, bool byref)
 {
-  upb_parse_init(&s->s, sizeof(struct parse_frame_data));
+  upb_parse_init(&s->s, s);
   upb_msg_parse_reset(s, msg, m, merge, byref);
 }
 

@@ -3,7 +3,7 @@
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
-CPPFLAGS=-O3 -Wall -Wextra -pedantic -g -DUPB_UNALIGNED_READS_OK -fomit-frame-pointer -Idescriptor -Isrc -Itests -I.
+CPPFLAGS=-O0 -Wall -Wextra -pedantic -g -DUPB_UNALIGNED_READS_OK -DNDEBUG -Idescriptor -Isrc -Itests -I.
 OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \
     src/upb_string.o descriptor/descriptor.o
 SRC=src/*.c src/*.h descriptor/*.c descriptor/*.h tests/*.c tests/*.h tools/*.c tools/*.h

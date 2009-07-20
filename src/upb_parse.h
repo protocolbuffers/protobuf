@@ -12,8 +12,9 @@
 #ifndef UPB_PARSE_H_
 #define UPB_PARSE_H_
 
-#include <stdint.h>
+#include <setjmp.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "upb.h"
 
 #ifdef __cplusplus
@@ -63,8 +64,8 @@ struct upb_parse_state;
 /* Initialize and free (respectively) the given parse state, which must have
  * been previously allocated.  udata_size specifies how much space will be
  * available at parse_stack_frame.user_data in each frame for user data. */
-void upb_parse_init(struct upb_parse_state *state, size_t udata_size);
-void upb_parse_reset(struct upb_parse_state *state);
+void upb_parse_init(struct upb_parse_state *state, void *udata);
+void upb_parse_reset(struct upb_parse_state *state, void *udata);
 void upb_parse_free(struct upb_parse_state *state);
 
 /* The callback that is called immediately after a tag has been parsed.  The
@@ -74,8 +75,8 @@ void upb_parse_free(struct upb_parse_state *state);
  * type is appropriate for the .proto type.  To skip the value (which means
  * skipping all submessages, in the case of a submessage), the callback should
  * return zero. */
-typedef upb_field_type_t (*upb_tag_cb)(struct upb_parse_state *s,
-                                       struct upb_tag *tag,
+typedef upb_field_type_t (*upb_tag_cb)(void *udata,
+                                       struct upb_tag tag,
                                        void **user_field_desc);
 
 /* The callback that is called when a regular value (ie. not a string or
@@ -85,34 +86,25 @@ typedef upb_field_type_t (*upb_tag_cb)(struct upb_parse_state *s,
  *
  * Note that this callback can be called several times in a row for a single
  * call to tag_cb in the case of packed arrays. */
-typedef upb_status_t (*upb_value_cb)(struct upb_parse_state *s,
-                                     void **buf, void *end,
-                                     void *user_field_desc);
+typedef void *(*upb_value_cb)(void *udata, void *buf, void *end,
+                              void *user_field_desc, jmp_buf errjmp);
 
 /* The callback that is called when a string is parsed. */
-typedef upb_status_t (*upb_str_cb)(struct upb_parse_state *s,
+typedef upb_status_t (*upb_str_cb)(void *udata,
                                    struct upb_string *str,
                                    void *user_field_desc);
 
 /* Callbacks that are called when a submessage begins and ends, respectively.
  * Both are called with the submessage's stack frame at the top of the stack. */
-typedef void (*upb_submsg_start_cb)(struct upb_parse_state *s,
+typedef void (*upb_submsg_start_cb)(void *udata,
                                     void *user_field_desc);
-typedef void (*upb_submsg_end_cb)(struct upb_parse_state *s);
-
-/* Each stack frame (one for each level of submessages/groups) has this format,
- * where user_data has as many bytes allocated as specified when initialized. */
-struct upb_parse_stack_frame {
-  size_t end_offset; /* 0 indicates that this is a group. */
-#ifndef __cplusplus  /* Temporary hack since C++ doesn't support flex arrays. */
-  char user_data[];
-#endif
-};
+typedef void (*upb_submsg_end_cb)(void *udata);
 
 struct upb_parse_state {
-  size_t offset;
-  struct upb_parse_stack_frame *stack, *top, *limit;
-  size_t udata_size;  /* How many bytes the user gets in each frame. */
+  /* For delimited submsgs, counts from the submsg len down to zero.
+   * For group submsgs, counts from zero down to the negative len. */
+  int32_t stack[UPB_MAX_NESTING], *top, *limit;
+  void *udata;
   upb_tag_cb          tag_cb;
   upb_value_cb        value_cb;
   upb_str_cb          str_cb;
@@ -144,14 +136,14 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
 /* Parses and converts a value from the character data starting at buf.  The
  * caller must have previously checked that the wire type is appropriate for
  * this field type. */
-upb_status_t upb_parse_value(void **buf, void *end, upb_field_type_t ft,
-                             union upb_value_ptr v);
+void *upb_parse_value(void *buf, void *end, upb_field_type_t ft,
+                      union upb_value_ptr v, jmp_buf errjmp);
 
 /* Parses a wire value with the given type (which must have been obtained from
  * a tag that was just parsed) and adds the number of bytes that were consumed
  * to *offset. */
-upb_status_t upb_parse_wire_value(void **buf, void *end, upb_wire_type_t wt,
-                                  union upb_wire_value *wv);
+void *upb_parse_wire_value(void *buf, void *end, upb_wire_type_t wt,
+                           union upb_wire_value *wv, jmp_buf errjmp);
 
 #ifdef __cplusplus
 }  /* extern "C" */
