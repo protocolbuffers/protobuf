@@ -1,6 +1,8 @@
 
 package benchmarks;
 
+option optimize_for = SPEED;
+
 message SpeedMessage1 {
   required string field1 = 1;
   optional string field9 = 9;
