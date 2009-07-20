@@ -269,7 +269,6 @@ void upb_parse_init(struct upb_parse_state *state, void *udata)
 
 void upb_parse_free(struct upb_parse_state *state)
 {
-  free(state->stack);
 }
 
 static void *pop_stack_frame(struct upb_parse_state *s, uint8_t *buf)
