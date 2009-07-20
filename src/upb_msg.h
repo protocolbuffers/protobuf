@@ -101,14 +101,11 @@
 #include "upb.h"
 #include "upb_table.h"
 #include "upb_parse.h"
+#include "descriptor.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* Forward declarations from descriptor.h. */
-struct google_protobuf_DescriptorProto;
-struct google_protobuf_FieldDescriptorProto;
 
 /* Message definition. ********************************************************/
 
@@ -128,6 +125,7 @@ struct upb_msg_field {
 /* Structure that describes a single .proto message type. */
 struct upb_msg {
   struct google_protobuf_DescriptorProto *descriptor;
+  struct upb_string fqname;      /* Fully qualified. */
   size_t size;
   uint32_t num_fields;
   uint32_t set_flags_bytes;
@@ -197,6 +195,26 @@ INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
   return e ? &e->f : NULL;
 }
 
+INLINE bool upb_issubmsgtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
+}
+
+INLINE bool upb_isstringtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
+}
+
+INLINE bool upb_issubmsg(struct upb_msg_field *f) {
+  return upb_issubmsgtype(f->type);
+}
+INLINE bool upb_isstring(struct upb_msg_field *f) {
+  return upb_isstringtype(f->type);
+}
+INLINE bool upb_isarray(struct upb_msg_field *f) {
+  return f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED;
+}
+
 /* "Set" flag reading and writing.  *******************************************/
 
 INLINE size_t upb_isset_offset(uint32_t field_index) {
@@ -250,49 +268,6 @@ INLINE union upb_value_ptr upb_msg_getptr(void *data, struct upb_msg_field *f) {
   p._void = ((char*)data + f->byte_offset);
   return p;
 }
-
-/* Arrays. ********************************************************************/
-
-/* Represents an array (a repeated field) of any type.  The interpretation of
- * the data in the array depends on the type. */
-struct upb_array {
-  union upb_value_ptr elements;
-  uint32_t len;     /* Measured in elements. */
-};
-
-/* Returns a pointer to an array element. */
-INLINE union upb_value_ptr upb_array_getelementptr(
-    struct upb_array *arr, uint32_t n, upb_field_type_t type)
-{
-  union upb_value_ptr ptr;
-  ptr._void = (void*)((char*)arr->elements._void + n*upb_type_info[type].size);
-  return ptr;
-}
-
-/* These are all overlays on upb_array, pointers between them can be cast. */
-#define UPB_DEFINE_ARRAY_TYPE(name, type) \
-  struct name ## _array { \
-    type *elements; \
-    uint32_t len; \
-  };
-
-UPB_DEFINE_ARRAY_TYPE(upb_double, double)
-UPB_DEFINE_ARRAY_TYPE(upb_float,  float)
-UPB_DEFINE_ARRAY_TYPE(upb_int32,  int32_t)
-UPB_DEFINE_ARRAY_TYPE(upb_int64,  int64_t)
-UPB_DEFINE_ARRAY_TYPE(upb_uint32, uint32_t)
-UPB_DEFINE_ARRAY_TYPE(upb_uint64, uint64_t)
-UPB_DEFINE_ARRAY_TYPE(upb_bool,   bool)
-UPB_DEFINE_ARRAY_TYPE(upb_string, struct upb_string*)
-UPB_DEFINE_ARRAY_TYPE(upb_msg,    void*)
-
-/* Defines an array of a specific message type. */
-#define UPB_MSG_ARRAY(msg_type) struct msg_type ## _array
-#define UPB_DEFINE_MSG_ARRAY(msg_type) \
-  UPB_MSG_ARRAY(msg_type) { \
-    msg_type **elements; \
-    uint32_t len; \
-  };
 
 /* Memory management  *********************************************************/
 

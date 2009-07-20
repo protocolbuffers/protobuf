@@ -258,23 +258,9 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
   return true;
 }
 
-bool upb_context_addfd(struct upb_context *c,
-                       google_protobuf_FileDescriptorProto *fd)
+bool upb_context_addfds(struct upb_context *c,
+                        google_protobuf_FileDescriptorSet *fds)
 {
-  struct upb_strtable tmp;
-  if(!addfd(&tmp, &c->symtab, fd, false)) {
-    free_symtab(&tmp);
-    return false;
-  }
-  upb_strtable_free(&tmp);
-  return true;
-}
-
-bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
-  google_protobuf_FileDescriptorSet *fds =
-      upb_alloc_and_parse(c->fds_msg, fds_str, false);
-  if(!fds) return false;
-
   if(fds->set_flags.has.file) {
     /* Insert new symbols into a temporary table until we have verified that
      * the descriptor is valid. */
@@ -293,6 +279,14 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
       upb_strtable_insert(&c->symtab, &e->e);
     upb_strtable_free(&tmp);
   }
+  return true;
+}
+
+bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
+  google_protobuf_FileDescriptorSet *fds =
+      upb_alloc_and_parse(c->fds_msg, fds_str, false);
+  if(!fds) return false;
+  if(!upb_context_addfds(c, fds)) return false;
 
   /* We own fds now, need to keep a ref so we can free it later. */
   if(c->fds_size == c->fds_len) {

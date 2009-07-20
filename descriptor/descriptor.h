@@ -3,7 +3,8 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H_
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H_
 
-#include "upb_msg.h"
+#include "upb_string.h"
+#include "upb_array.h"
 
 /* Enums. */
 
@@ -25,23 +26,23 @@ typedef enum google_protobuf_FieldDescriptorProto_Type {
   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32 = 15,
   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64 = 16,
   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32 = 17,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64 = 18,
+  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64 = 18
 } google_protobuf_FieldDescriptorProto_Type;
 
 typedef enum google_protobuf_FieldDescriptorProto_Label {
   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_OPTIONAL = 1,
   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REQUIRED = 2,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED = 3,
+  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED = 3
 } google_protobuf_FieldDescriptorProto_Label;
 
 typedef enum google_protobuf_FileOptions_OptimizeMode {
   GOOGLE_PROTOBUF_FILEOPTIONS_SPEED = 1,
-  GOOGLE_PROTOBUF_FILEOPTIONS_CODE_SIZE = 2,
+  GOOGLE_PROTOBUF_FILEOPTIONS_CODE_SIZE = 2
 } google_protobuf_FileOptions_OptimizeMode;
 
 typedef enum google_protobuf_FieldOptions_CType {
   GOOGLE_PROTOBUF_FIELDOPTIONS_CORD = 1,
-  GOOGLE_PROTOBUF_FIELDOPTIONS_STRING_PIECE = 2,
+  GOOGLE_PROTOBUF_FIELDOPTIONS_STRING_PIECE = 2
 } google_protobuf_FieldOptions_CType;
 
 /* Forward declarations of all message types.

@@ -11,10 +11,7 @@
 
 #include <stdint.h>
 #include "upb_table.h"
-
-/* Forward declaration from descriptor.h. */
-struct google_protobuf_EnumDescriptorProto;
-struct google_protobuf_EnumValueDescriptorProto;
+#include "descriptor.h"
 
 struct upb_enum {
   struct google_protobuf_EnumDescriptorProto *descriptor;

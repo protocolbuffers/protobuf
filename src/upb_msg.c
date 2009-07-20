@@ -17,16 +17,6 @@ static int div_round_up(int numerator, int denominator) {
   return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
 }
 
-static bool issubmsgtype(upb_field_type_t type) {
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
-}
-
-static bool isstringtype(upb_field_type_t type) {
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
-}
-
 /* Callback for sorting fields. */
 static int compare_fields(const void *e1, const void *e2) {
   const google_protobuf_FieldDescriptorProto *fd1 = *(void**)e1;
@@ -272,7 +262,7 @@ static upb_field_type_t tag_cb(void *udata, struct upb_tag tag,
 static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
 {
   union upb_value_ptr p = upb_msg_getptr(data, f);
-  if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
+  if(upb_isarray(f)) {
     size_t len = upb_msg_is_set(data, f) ? (*p.arr)->len : 0;
     upb_msg_reuse_array(p.arr, len+1, f->type);
     (*p.arr)->len = len + 1;
@@ -411,13 +401,13 @@ bool upb_array_eql(struct upb_array *arr1, struct upb_array *arr2,
                    struct upb_msg_field *f, bool recursive)
 {
   if(arr1->len != arr2->len) return false;
-  if(issubmsgtype(f->type)) {
+  if(upb_issubmsg(f)) {
     if(!recursive) return true;
     for(uint32_t i = 0; i < arr1->len; i++)
       if(!upb_msg_eql(arr1->elements.msg[i], arr2->elements.msg[i],
          f->ref.msg, recursive))
         return false;
-  } else if(isstringtype(f->type)) {
+  } else if(upb_isstring(f)) {
     for(uint32_t i = 0; i < arr1->len; i++)
       if(!upb_streql(arr1->elements.str[i], arr2->elements.str[i]))
         return false;
@@ -431,7 +421,8 @@ bool upb_array_eql(struct upb_array *arr1, struct upb_array *arr2,
 
 bool upb_msg_eql(void *data1, void *data2, struct upb_msg *m, bool recursive)
 {
-  /* Must have the same fields set. */
+  /* Must have the same fields set.  TODO: is this wrong?  Should we also
+   * consider absent defaults equal to explicitly set defaults? */
   if(memcmp(data1, data2, m->set_flags_bytes) != 0)
     return false;
 
@@ -447,7 +438,7 @@ bool upb_msg_eql(void *data1, void *data2, struct upb_msg *m, bool recursive)
     if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
       if(!upb_array_eql(*p1.arr, *p2.arr, f, recursive)) return false;
     } else {
-      if(issubmsgtype(f->type)) {
+      if(upb_issubmsg(f)) {
         if(recursive && !upb_msg_eql(p1.msg, p2.msg, f->ref.msg, recursive))
           return false;
       } else if(!upb_value_eql(p1, p2, f->type)) {

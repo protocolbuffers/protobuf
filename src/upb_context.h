@@ -94,8 +94,11 @@ INLINE struct upb_symtab_entry *upb_context_symnext(
  * upb_context_addfd only returns true or false; it does not give any hint
  * about what happened in the case of failure.  This is because the descriptor
  * is expected to have been validated at the time it was parsed/generated. */
-bool upb_context_addfd(struct upb_context *c,
-                       struct google_protobuf_FileDescriptorProto *fd);
+bool upb_context_addfds(struct upb_context *c,
+                        struct google_protobuf_FileDescriptorSet *fds);
+
+bool upb_context_addfds(struct upb_context *c,
+                        struct google_protobuf_FileDescriptorSet *fds);
 
 bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds);
 
