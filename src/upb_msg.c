@@ -247,12 +247,12 @@ void upb_msg_reuse_submsg(void **msg, struct upb_msg *m)
 
 /* Serialization/Deserialization.  ********************************************/
 
-static upb_field_type_t tag_cb(void *udata, struct upb_tag tag,
+static upb_field_type_t tag_cb(void *udata, struct upb_tag *tag,
                                void **user_field_desc)
 {
   struct upb_msg_parse_state *s = udata;
-  struct upb_msg_field *f = upb_msg_fieldbynum(s->top->m, tag.field_number);
-  if(!f || !upb_check_type(tag.wire_type, f->type))
+  struct upb_msg_field *f = upb_msg_fieldbynum(s->top->m, tag->field_number);
+  if(!f || !upb_check_type(tag->wire_type, f->type))
     return 0;  /* Skip unknown or fields of the wrong type. */
   *user_field_desc = f;
   return f->type;

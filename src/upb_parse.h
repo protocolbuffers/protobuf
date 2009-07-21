@@ -87,7 +87,7 @@ void upb_parse_free(struct upb_parse_state *state);
  * skipping all submessages, in the case of a submessage), the callback should
  * return zero. */
 typedef upb_field_type_t (*upb_tag_cb)(void *udata,
-                                       struct upb_tag tag,
+                                       struct upb_tag *tag,
                                        void **user_field_desc);
 
 /* The callback that is called when a regular value (ie. not a string or
@@ -133,13 +133,9 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
 extern upb_wire_type_t upb_expected_wire_types[];
 /* Returns true if wt is the correct on-the-wire type for ft. */
 INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-  if(ft == 10) { // GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
-    return wt == UPB_WIRE_TYPE_START_GROUP;
-  } else {
     /* With packed arrays, anything can be delimited (except groups). */
-    return wt == UPB_WIRE_TYPE_DELIMITED ||
-           upb_type_info[ft].expected_wire_type == wt;
- }
+    return (wt == UPB_WIRE_TYPE_DELIMITED) || upb_type_info[ft].expected_wire_type == wt;
+           ; // && ft != GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP );
 }
 
 /* Data-consuming functions (to be called from value cb). *********************/
