@@ -1,6 +1,7 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
 #include <inttypes.h>
@@ -281,10 +282,13 @@ static void *value_cb(void *udata, void *buf, void *end,
   struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(s->top->data, f);
-  return upb_parse_value(buf, end, f->type, p, errjmp);
+  void *ret = upb_parse_value(buf, end, f->type, p, errjmp);
+  google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
+  //upb_text_printfield(&s->p, *fd->name, f->type, p, stdout);
+  return ret;
 }
 
-static upb_status_t str_cb(void *udata, struct upb_string *str,
+static void str_cb(void *udata, struct upb_string *str,
                            void *user_field_desc)
 {
   struct upb_msg_parse_state *s = udata;
@@ -297,7 +301,8 @@ static upb_status_t str_cb(void *udata, struct upb_string *str,
     upb_msg_reuse_str(p.str, str->byte_len);
     upb_strcpy(*p.str, str);
   }
-  return UPB_STATUS_OK;
+  google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
+  //upb_text_printfield(&s->p, *fd->name, f->type, p, stdout);
 }
 
 static void submsg_start_cb(void *udata, void *user_field_desc)
@@ -311,12 +316,21 @@ static void submsg_start_cb(void *udata, void *user_field_desc)
   s->top->m = f->ref.msg;
   s->top->data = *p.msg;
   if(!s->merge) upb_msg_clear(s->top->data, s->top->m);
+  //upb_text_push(&s->p, *s->top->m->descriptor->name, stdout);
+}
+
+static void submsg_end_cb(void *udata)
+{
+  struct upb_msg_parse_state *s = udata;
+  s->top--;
+  //upb_text_pop(&s->p, stdout);
 }
 
 void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
                          struct upb_msg *m, bool merge, bool byref)
 {
   upb_parse_reset(&s->s, s);
+  //upb_text_printer_init(&s->p, false);
   s->merge = merge;
   s->byref = byref;
   if(!merge && msg == NULL) msg = upb_msgdata_new(m);
@@ -328,6 +342,7 @@ void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
   s->s.value_cb = value_cb;
   s->s.str_cb = str_cb;
   s->s.submsg_start_cb = submsg_start_cb;
+  s->s.submsg_end_cb = submsg_end_cb;
 }
 
 void upb_msg_parse_init(struct upb_msg_parse_state *s, void *msg,

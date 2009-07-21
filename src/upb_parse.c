@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 /* May want to move this to upb.c if enough other things warrant it. */
-#include "descriptor.h"
 #define alignof(t) offsetof(struct { char c; t x; }, x)
 struct upb_type_info upb_type_info[] = {
   [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE]  = {alignof(double),   sizeof(double),   UPB_WIRE_TYPE_64BIT},
@@ -258,6 +257,7 @@ void upb_parse_reset(struct upb_parse_state *state, void *udata)
   /* The top-level message is not delimited (we can keep receiving data for
    * it indefinitely), so we treat it like a group. */
   *state->top = 0;
+  state->completed_offset = 0;
   state->udata = udata;
 }
 
@@ -272,34 +272,23 @@ void upb_parse_free(struct upb_parse_state *state)
   free(state->stack);
 }
 
-static void *pop_stack_frame(struct upb_parse_state *s,
-                             uint8_t *buf, uint8_t *submsg_end)
+static void *pop_stack_frame(struct upb_parse_state *s, uint8_t *buf)
 {
   if(s->submsg_end_cb) s->submsg_end_cb(s->udata);
-  uint32_t final_submsg_len = *s->top - (buf - submsg_end);
   s->top--;
-  *s->top -= final_submsg_len;
-  return (char*)buf + (*s->top > 0 ? *s->top : 0);
+  return (char*)buf + (*s->top > 0 ? (*s->top - s->completed_offset) : 0);
 }
 
 /* Returns the next end offset. */
 static void *push_stack_frame(struct upb_parse_state *s,
-                              uint8_t *buf, uint8_t *submsg_end, uint32_t len,
+                              uint8_t *buf, uint32_t len,
                               void *user_field_desc, jmp_buf errjmp)
 {
-  *s->top -= len;
-  if(*s->top < 0) *s->top -= (buf - submsg_end);
   s->top++;
   if(s->top > s->limit) longjmp(errjmp, UPB_ERROR_STACK_OVERFLOW);
-  *s->top = len;
+  *s->top = s->completed_offset + len;
   if(s->submsg_start_cb) s->submsg_start_cb(s->udata, user_field_desc);
-  return (char*)buf + *s->top;
-}
-
-upb_status_t upb_isstringtype(upb_field_type_t type)
-{
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
+  return (char*)buf + (*s->top > 0 ? (*s->top - s->completed_offset) : 0);
 }
 
 upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
@@ -320,7 +309,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
     struct upb_tag tag;
     buf = parse_tag(buf, end, &tag, errjmp);
     if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
-      submsg_end = pop_stack_frame(s, buf, submsg_end);
+      submsg_end = pop_stack_frame(s, start);
       completed = buf;
       continue;
     }
@@ -344,7 +333,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
       }
 
       if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
-        submsg_end = push_stack_frame(s, buf, submsg_end, delim_len, user_field_desc, errjmp);
+        submsg_end = push_stack_frame(s, start, delim_end - start, user_field_desc, errjmp);
       } else {  /* Delimited data for which we require (and have) all data. */
         if(ft == 0) {
           /* Do nothing -- client has elected to skip. */
@@ -361,16 +350,17 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
       if(ft == 0)  /* Client elected to skip. */
         buf = skip_wire_value(buf, end, tag.wire_type, errjmp);
       else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
-        submsg_end = push_stack_frame(s, buf, submsg_end, 0, user_field_desc, errjmp);
+        submsg_end = push_stack_frame(s, start, 0, user_field_desc, errjmp);
       else
         buf = s->value_cb(s->udata, buf, end, user_field_desc, errjmp);
     }
 
-    while(buf == submsg_end) submsg_end = pop_stack_frame(s, buf, submsg_end);
+    while(buf == submsg_end) submsg_end = pop_stack_frame(s, start);
     completed = buf;
   }
 
 done:
   *read = (char*)completed - (char*)start;
+  s->completed_offset += *read;
   return status;
 }

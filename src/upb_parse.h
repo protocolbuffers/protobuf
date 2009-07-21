@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "upb.h"
+#include "descriptor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +48,16 @@ struct upb_tag {
   upb_field_number_t field_number;
   upb_wire_type_t wire_type;
 };
+
+INLINE bool upb_issubmsgtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
+}
+
+INLINE bool upb_isstringtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
+}
 
 /* High-level parsing interface. **********************************************/
 
@@ -90,9 +101,8 @@ typedef void *(*upb_value_cb)(void *udata, void *buf, void *end,
                               void *user_field_desc, jmp_buf errjmp);
 
 /* The callback that is called when a string is parsed. */
-typedef upb_status_t (*upb_str_cb)(void *udata,
-                                   struct upb_string *str,
-                                   void *user_field_desc);
+typedef void (*upb_str_cb)(void *udata, struct upb_string *str,
+                           void *user_field_desc);
 
 /* Callbacks that are called when a submessage begins and ends, respectively.
  * Both are called with the submessage's stack frame at the top of the stack. */
@@ -103,7 +113,8 @@ typedef void (*upb_submsg_end_cb)(void *udata);
 struct upb_parse_state {
   /* For delimited submsgs, counts from the submsg len down to zero.
    * For group submsgs, counts from zero down to the negative len. */
-  int32_t stack[UPB_MAX_NESTING], *top, *limit;
+  uint32_t stack[UPB_MAX_NESTING], *top, *limit;
+  size_t completed_offset;
   void *udata;
   upb_tag_cb          tag_cb;
   upb_value_cb        value_cb;

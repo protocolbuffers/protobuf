@@ -101,7 +101,6 @@
 #include "upb.h"
 #include "upb_table.h"
 #include "upb_parse.h"
-#include "descriptor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -193,16 +192,6 @@ INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
       (struct upb_fieldsbyname_entry*)upb_strtable_lookup(
           &m->fields_by_name, name);
   return e ? &e->f : NULL;
-}
-
-INLINE bool upb_issubmsgtype(upb_field_type_t type) {
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
-}
-
-INLINE bool upb_isstringtype(upb_field_type_t type) {
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
 }
 
 INLINE bool upb_issubmsg(struct upb_msg_field *f) {
@@ -311,12 +300,14 @@ struct upb_msg_parse_frame {
   void *data;
 };
 
+//#include "upb_text.h"
 struct upb_msg_parse_state {
   struct upb_parse_state s;
   bool merge;
   bool byref;
   struct upb_msg *m;
   struct upb_msg_parse_frame stack[UPB_MAX_NESTING], *top;
+  //struct upb_text_printer p;
 };
 
 /* Initializes/frees a message parser.  The parser will write the data to the
