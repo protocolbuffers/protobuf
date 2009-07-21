@@ -302,6 +302,11 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
   upb_status_t status = UPB_STATUS_OK;
   if((status = setjmp(errjmp)) != 0) goto done;
 
+  upb_tag_cb tag_cb = s->tag_cb;
+  upb_str_cb str_cb = s->str_cb;
+  upb_value_cb value_cb = s->value_cb;
+  void *udata = s->udata;
+
   uint8_t *end = buf + len;
   uint8_t *submsg_end = buf + (*s->top > 0 ? *s->top : 0);
   while(buf < end) {
@@ -315,7 +320,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
     /* Don't handle START_GROUP here, so client can skip group via tag_cb. */
     void *user_field_desc;
 
-    upb_field_type_t ft = s->tag_cb(s->udata, tag, &user_field_desc);
+    upb_field_type_t ft = tag_cb(udata, &tag, &user_field_desc);
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
       buf = get_INT32(buf, end, &delim_len, errjmp);
@@ -338,10 +343,10 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
           /* Do nothing -- client has elected to skip. */
         } else if(upb_isstringtype(ft)) {
           struct upb_string str = {.ptr = (char*)buf, .byte_len = delim_len};
-          s->str_cb(s->udata, &str, user_field_desc);
+          str_cb(udata, &str, user_field_desc);
         } else {  /* Packed Array. */
           while(buf < delim_end)
-            buf = s->value_cb(s->udata, buf, end, user_field_desc, errjmp);
+            buf = value_cb(udata, buf, end, user_field_desc, errjmp);
         }
         buf = delim_end;
       }
@@ -351,7 +356,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
       else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
         submsg_end = push_stack_frame(s, start, 0, user_field_desc, errjmp);
       else
-        buf = s->value_cb(s->udata, buf, end, user_field_desc, errjmp);
+        buf = value_cb(udata, buf, end, user_field_desc, errjmp);
     }
 
     while(buf == submsg_end) submsg_end = pop_stack_frame(s, start);
