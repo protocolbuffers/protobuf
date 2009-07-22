@@ -109,6 +109,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
           evictee_e->next = empty_bucket;
           break;
         }
+        evictee_e = intent(t, evictee_e->next);
       }
       /* table_e remains set to our mainpos. */
     }
