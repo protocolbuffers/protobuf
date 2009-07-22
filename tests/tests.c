@@ -21,9 +21,9 @@ static void test_get_v_uint64_t()
 #define TEST(name, bytes, val) {\
     upb_status_t status; \
     uint8_t name[] = bytes; \
-    void *name ## _buf = name; \
+    uint8_t *name ## _buf = name; \
     uint64_t name ## _val = 0; \
-    status = get_v_uint64_t(&name ## _buf, name + sizeof(name), &name ## _val); \
+    status = get_v_uint64_t(name ## _buf, name + sizeof(name), &name ## _val, &name ## _buf); \
     ASSERT(status == UPB_STATUS_OK); \
     ASSERT(name ## _val == val); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
@@ -42,14 +42,14 @@ static void test_get_v_uint64_t()
   TEST(tenb,   "\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07", 0x8303fdf9f1e1c181ULL);
 
   uint8_t elevenbyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01};
-  void *elevenbyte_buf = elevenbyte;
+  uint8_t *elevenbyte_buf = elevenbyte;
   uint64_t elevenbyte_val = 0;
-  upb_status_t status = get_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte), &elevenbyte_val);
+  upb_status_t status = get_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte), &elevenbyte_val, &elevenbyte_buf);
   ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
-  status = get_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-1, &elevenbyte_val);
+  status = get_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-1, &elevenbyte_val, &elevenbyte_buf);
   /* Byte 10 is 0x80, so we know it's unterminated. */
   ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
-  status = get_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-2, &elevenbyte_val);
+  status = get_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-2, &elevenbyte_val, &elevenbyte_buf);
   ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
 #undef TEST
 }
@@ -59,9 +59,9 @@ static void test_get_v_uint32_t()
 #define TEST(name, bytes, val) {\
     upb_status_t status; \
     uint8_t name[] = bytes; \
-    void *name ## _buf = name; \
+    uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
-    status = get_v_uint32_t(&name ## _buf, name + sizeof(name), &name ## _val); \
+    status = get_v_uint32_t(name ## _buf, name + sizeof(name), &name ## _val, &name ## _buf); \
     ASSERT(status == UPB_STATUS_OK); \
     ASSERT(name ## _val == val); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
@@ -81,14 +81,14 @@ static void test_get_v_uint32_t()
   TEST(tenb,   "\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07", 0xf1e1c181UL);
 
   uint8_t elevenbyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01};
-  void *elevenbyte_buf = elevenbyte;
+  uint8_t *elevenbyte_buf = elevenbyte;
   uint64_t elevenbyte_val = 0;
-  upb_status_t status = get_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte), &elevenbyte_val);
+  upb_status_t status = get_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte), &elevenbyte_val, &elevenbyte_buf);
   ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
-  status = get_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-1, &elevenbyte_val);
+  status = get_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-1, &elevenbyte_val, &elevenbyte_buf);
   /* Byte 10 is 0x80, so we know it's unterminated. */
   ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
-  status = get_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-2, &elevenbyte_val);
+  status = get_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-2, &elevenbyte_val, &elevenbyte_buf);
   ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
 #undef TEST
 }
@@ -98,8 +98,8 @@ static void test_skip_v_uint64_t()
 #define TEST(name, bytes) {\
     upb_status_t status; \
     uint8_t name[] = bytes; \
-    void *name ## _buf = name; \
-    status = skip_v_uint64_t(&name ## _buf, name + sizeof(name)); \
+    uint8_t *name ## _buf = name; \
+    status = skip_v_uint64_t(name ## _buf, name + sizeof(name), &name ## _buf); \
     ASSERT(status == UPB_STATUS_OK); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
   }
@@ -117,13 +117,14 @@ static void test_skip_v_uint64_t()
   TEST(tenb,   "\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07");
 
   uint8_t elevenbyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01};
-  void *elevenbyte_buf = elevenbyte;
-  upb_status_t status = skip_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte));
+  uint8_t *elevenbyte_buf = elevenbyte;
+  upb_status_t status = skip_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte), &elevenbyte_buf);
+  printf("%d\n", status);
   ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
-  status = skip_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-1);
+  status = skip_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-1, &elevenbyte_buf);
   /* Byte 10 is 0x80, so we know it's unterminated. */
   ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
-  status = skip_v_uint64_t(&elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-2);
+  status = skip_v_uint64_t(elevenbyte_buf, elevenbyte + sizeof(elevenbyte)-2, &elevenbyte_buf);
   ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
 #undef TEST
 }
@@ -133,9 +134,9 @@ static void test_get_f_uint32_t()
 #define TEST(name, bytes, val) {\
     upb_status_t status; \
     uint8_t name[] = bytes; \
-    void *name ## _buf = name; \
+    uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
-    status = get_f_uint32_t(&name ## _buf, name + sizeof(name), &name ## _val); \
+    status = get_f_uint32_t(name ## _buf, name + sizeof(name), &name ## _val, &name ## _buf); \
     ASSERT(status == UPB_STATUS_OK); \
     ASSERT(name ## _val == val); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
@@ -145,9 +146,9 @@ static void test_get_f_uint32_t()
   TEST(one,   "\x01\x00\x00\x00",                                0x1UL);
 
   uint8_t threeb[] = {0x00, 0x00, 0x00};
-  void *threeb_buf = threeb;
+  uint8_t *threeb_buf = threeb;
   uint32_t threeb_val;
-  upb_status_t status = get_f_uint32_t(&threeb_buf, threeb + sizeof(threeb), &threeb_val);
+  upb_status_t status = get_f_uint32_t(threeb_buf, threeb + sizeof(threeb), &threeb_val, &threeb_buf);
   ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
 
 #undef TEST
