@@ -35,7 +35,7 @@ static int compare_fields(const void *e1, const void *e2) {
 }
 
 bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
-                  bool sort)
+                  struct upb_string fqname, bool sort)
 {
   /* TODO: more complete validation.
    * TODO: re-enable this check when we properly set this flag. */
@@ -47,6 +47,7 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
                     sizeof(struct upb_fieldsbyname_entry));
 
   m->descriptor = d;
+  m->fqname = fqname;
   m->num_fields = d->field->len;
   m->set_flags_bytes = div_round_up(m->num_fields, 8);
   /* These are incremented in the loop. */
@@ -105,7 +106,7 @@ void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f,
                  union upb_symbol_ref ref) {
   struct google_protobuf_FieldDescriptorProto *d =
       upb_msg_field_descriptor(f, m);
-  struct upb_fieldsbynum_entry *int_e = upb_inttable_lookup(
+  struct upb_fieldsbynum_entry *int_e = upb_inttable_fast_lookup(
       &m->fields_by_num, d->number, sizeof(struct upb_fieldsbynum_entry));
   struct upb_fieldsbyname_entry *str_e =
       upb_strtable_lookup(&m->fields_by_name, d->name);

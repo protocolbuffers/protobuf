@@ -77,6 +77,14 @@ INLINE uint32_t upb_strtable_size(struct upb_strtable *t) {
   return upb_table_size(&t->t);
 }
 
+INLINE uint32_t upb_table_count(struct upb_table *t) { return t->count; }
+INLINE uint32_t upb_inttable_count(struct upb_inttable *t) {
+  return upb_table_count(&t->t);
+}
+INLINE uint32_t upb_strtable_count(struct upb_strtable *t) {
+  return upb_table_count(&t->t);
+}
+
 /* Inserts the given key into the hashtable with the given value.  The key must
  * not already exist in the hash table.  The data will be copied from e into
  * the hashtable (the amount of data copied comes from entry_size when the
@@ -93,8 +101,8 @@ INLINE uint32_t upb_inttable_bucket(struct upb_inttable *t, upb_inttable_key_t k
  * of parsing.  We have the caller specify the entry_size because fixing
  * this as a literal (instead of reading table->entry_size) gives the
  * compiler more ability to optimize. */
-INLINE void *upb_inttable_lookup(struct upb_inttable *t,
-                                 uint32_t key, uint32_t entry_size) {
+INLINE void *upb_inttable_fast_lookup(struct upb_inttable *t,
+                                      uint32_t key, uint32_t entry_size) {
   assert(key != 0);
   uint32_t bucket = upb_inttable_bucket(t, key);
   struct upb_inttable_entry *e;
@@ -103,6 +111,10 @@ INLINE void *upb_inttable_lookup(struct upb_inttable *t,
     if(e->key == key) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;  /* Not found. */
+}
+
+INLINE void *upb_inttable_lookup(struct upb_inttable *t, uint32_t key) {
+  return upb_inttable_fast_lookup(t, key, t->t.entry_size);
 }
 
 void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key);

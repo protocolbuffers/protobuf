@@ -164,11 +164,15 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
  * the caller should do that post-initialization by calling upb_msg_ref()
  * below.
  *
+ * fqname indicates the fully-qualified name of this message.  Ownership of
+ * fqname passes to the msg, but the msg will contain references to it, so it
+ * must outlive the msg.
+ *
  * sort indicates whether or not it is safe to reorder the fields from the order
  * they appear in d.  This should be false if code has been compiled against a
  * header for this type that expects the given order. */
 bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
-                  bool sort);
+                  struct upb_string fqname, bool sort);
 void upb_msg_free(struct upb_msg *m);
 
 /* Clients use this function on a previously initialized upb_msg to resolve the
@@ -182,7 +186,7 @@ void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f, union upb_symbol_re
 INLINE struct upb_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
                                                 uint32_t number) {
   struct upb_fieldsbynum_entry *e =
-      (struct upb_fieldsbynum_entry*)upb_inttable_lookup(
+      (struct upb_fieldsbynum_entry*)upb_inttable_fast_lookup(
           &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
   return e ? &e->f : NULL;
 }

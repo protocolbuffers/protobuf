@@ -190,7 +190,7 @@ static bool insert_message(struct upb_strtable *t,
   e.e.key = fqname;
   e.type = UPB_SYM_MESSAGE;
   e.ref.msg = malloc(sizeof(*e.ref.msg));
-  if(!upb_msg_init(e.ref.msg, d, sort)) {
+  if(!upb_msg_init(e.ref.msg, d, fqname, sort)) {
     free(fqname.ptr);
     return false;
   }

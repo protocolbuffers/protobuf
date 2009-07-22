@@ -82,7 +82,7 @@ static uint32_t empty_intbucket(struct upb_inttable *table)
  * parameterize them. */
 static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
 {
-  assert(upb_inttable_lookup(t, e->key, t->t.entry_size) == NULL);
+  assert(upb_inttable_lookup(t, e->key) == NULL);
   t->t.count++;
   uint32_t bucket = upb_inttable_bucket(t, e->key);
   struct upb_inttable_entry *table_e = intent(t, bucket);
@@ -115,7 +115,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
   }
   memcpy(table_e, e, t->t.entry_size);
   table_e->next = UPB_END_OF_CHAIN;
-  assert(upb_inttable_lookup(t, e->key, t->t.entry_size) == table_e);
+  assert(upb_inttable_lookup(t, e->key) == table_e);
 }
 
 void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
