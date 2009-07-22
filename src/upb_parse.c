@@ -35,18 +35,17 @@ struct upb_type_info upb_type_info[] = {
 /* Lowest-level functions -- these read integers from the input buffer. */
 
 inline
-static void *get_v_uint64_t(void *restrict _buf, void *_end,
-                            uint64_t *restrict val, jmp_buf errjmp)
+static upb_status_t get_v_uint64_t(uint8_t *restrict buf, uint8_t *end,
+                                   uint64_t *restrict val, uint8_t **outbuf)
 {
-  uint8_t *buf = _buf, *end = _end;
   if((*buf & 0x80) == 0) {
     /* Single-byte varint -- very common case. */
     *val = *buf & 0x7f;
-    return buf + 1;
+    *outbuf = buf + 1;
   } else if(buf <= end && (*(buf+1) & 0x80) == 0) {
     /* Two-byte varint. */
     *val = (buf[0] & 0x7f) | ((buf[1] & 0x7f) << 7);
-    return buf + 2;
+    *outbuf = buf + 2;
   } else if(buf + 10 <= end) {
     /* >2-byte varint, fast path. */
     uint64_t cont = *(uint64_t*)(buf+2) | 0x7f7f7f7f7f7f7f7fULL;
@@ -54,7 +53,7 @@ static void *get_v_uint64_t(void *restrict _buf, void *_end,
     uint32_t part0 = 0, part1 = 0, part2 = 0;
 
     switch(num_bytes) {
-      default: longjmp(errjmp, UPB_ERROR_UNTERMINATED_VARINT);
+      default: return UPB_ERROR_UNTERMINATED_VARINT;
       case 8: part2 |= (buf[9] & 0x7F) << 7;
       case 7: part2 |= (buf[8] & 0x7F);
       case 6: part1 |= (buf[7] & 0x7F) << 21;
@@ -67,49 +66,49 @@ static void *get_v_uint64_t(void *restrict _buf, void *_end,
               part0 |= (buf[0] & 0x7F);
     }
     *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
-    return buf + num_bytes + 2;
+    *outbuf = buf + num_bytes + 2;
   } else {
     /* >2-byte varint, slow path. */
     uint8_t last = 0x80;
     *val = 0;
     for(int bitpos = 0; buf < (uint8_t*)end && (last & 0x80); buf++, bitpos += 7)
       *val |= ((uint64_t)((last = *buf) & 0x7F)) << bitpos;
-    if(last & 0x80) longjmp(errjmp, UPB_STATUS_NEED_MORE_DATA);
-    return buf;
+    if(last & 0x80) return UPB_STATUS_NEED_MORE_DATA;
+    *outbuf = buf;
   }
+  return UPB_STATUS_OK;
 }
 
-static void *skip_v_uint64_t(void *_buf, void *_end, jmp_buf errjmp)
+static upb_status_t skip_v_uint64_t(uint8_t *buf, uint8_t *end, uint8_t **outbuf)
 {
-  /* TODO: optimize. */
-  uint8_t *buf = _buf, *end = _end;
+  /* TODO: fix and optimize. */
   uint8_t last = 0x80;
-  for(; buf < end && (last & 0x80); buf++)
+  for(; buf < end && (last & 0x80); buf++) {
     last = *buf;
+  }
 
   if(last & 0x80) {
-    upb_status_t err =
-        buf == end ? UPB_STATUS_NEED_MORE_DATA : UPB_ERROR_UNTERMINATED_VARINT;
-    longjmp(errjmp, err);
+    return UPB_ERROR_UNTERMINATED_VARINT;
   }
-  return buf;
+  *outbuf = buf;
+  return UPB_STATUS_OK;
 }
 
-static void *get_v_uint32_t(void *restrict buf, void *end,
-                            uint32_t *restrict val, jmp_buf errjmp)
+static upb_status_t get_v_uint32_t(uint8_t *restrict buf, uint8_t *end,
+                                   uint32_t *restrict val, uint8_t **outbuf)
 {
   uint64_t val64;
-  void *outbuf = get_v_uint64_t(buf, end, &val64, errjmp);
+  UPB_CHECK(get_v_uint64_t(buf, end, &val64, outbuf));
   /* TODO: should we throw an error if any of the high bits in val64 are set? */
   *val = (uint32_t)val64;
-  return outbuf;
+  return UPB_STATUS_OK;
 }
 
-static void *get_f_uint32_t(void *restrict buf, void *end,
-                            uint32_t *restrict val, jmp_buf errjmp)
+static upb_status_t get_f_uint32_t(uint8_t *restrict buf, uint8_t *end,
+                                   uint32_t *restrict val, uint8_t **outbuf)
 {
-  void *uint32_end = (uint8_t*)buf + sizeof(uint32_t);
-  if(uint32_end > end) longjmp(errjmp, UPB_STATUS_NEED_MORE_DATA);
+  uint8_t *uint32_end = buf + sizeof(uint32_t);
+  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint32_t*)buf;
 #else
@@ -117,14 +116,15 @@ static void *get_f_uint32_t(void *restrict buf, void *end,
   *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
 #undef SHL
 #endif
-  return uint32_end;
+  *outbuf = uint32_end;
+  return UPB_STATUS_OK;
 }
 
-static void *get_f_uint64_t(void *restrict buf, void *end,
-                            uint64_t *restrict val, jmp_buf errjmp)
+static upb_status_t get_f_uint64_t(uint8_t *restrict buf, uint8_t *end,
+                                   uint64_t *restrict val, uint8_t **outbuf)
 {
-  void *uint64_end = (uint8_t*)buf + sizeof(uint64_t);
-  if(uint64_end > end) longjmp(errjmp, UPB_STATUS_NEED_MORE_DATA);
+  uint8_t *uint64_end = buf + sizeof(uint64_t);
+  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint64_t*)buf;
 #else
@@ -133,21 +133,24 @@ static void *get_f_uint64_t(void *restrict buf, void *end,
          SHL(b[4], 32) | SHL(b[5], 40) | SHL(b[6], 48) | SHL(b[7], 56) |
 #undef SHL
 #endif
-  return uint64_end;
+  *outbuf = uint64_end;
+  return UPB_STATUS_OK;
 }
 
-static void *skip_f_uint32_t(void *buf, void *end, jmp_buf errjmp)
+static upb_status_t skip_f_uint32_t(uint8_t *buf, uint8_t *end, uint8_t **outbuf)
 {
-  void *uint32_end = (uint8_t*)buf + sizeof(uint32_t);
-  if(uint32_end > end) longjmp(errjmp, UPB_STATUS_NEED_MORE_DATA);
-  return uint32_end;
+  uint8_t *uint32_end = buf + sizeof(uint32_t);
+  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  *outbuf = uint32_end;
+  return UPB_STATUS_OK;
 }
 
-static void *skip_f_uint64_t(void *buf, void *end, jmp_buf errjmp)
+static upb_status_t skip_f_uint64_t(uint8_t *buf, uint8_t *end, uint8_t **outbuf)
 {
-  void *uint64_end = (uint8_t*)buf + sizeof(uint64_t);
-  if(uint64_end > end) longjmp(errjmp, UPB_STATUS_NEED_MORE_DATA);
-  return uint64_end;
+  uint8_t *uint64_end = buf + sizeof(uint64_t);
+  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  *outbuf = uint64_end;
+  return UPB_STATUS_OK;
 }
 
 static int32_t zz_decode_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
@@ -160,11 +163,11 @@ static int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   static void wvtov_ ## type(wire_t s, val_t *d)
 
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  static void *get_ ## type(void *buf, void *end, val_t *d, jmp_buf errjmp) { \
+  static upb_status_t get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, uint8_t **outbuf) { \
     wire_t tmp; \
-    void *outbuf = get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, errjmp); \
+    UPB_CHECK(get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, outbuf)); \
     wvtov_ ## type(tmp, d); \
-    return outbuf; \
+    return UPB_STATUS_OK; \
   }
 
 #define T(type, v_or_f, wire_t, val_t, member_name) \
@@ -190,46 +193,45 @@ T(ENUM,     v, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
 #undef GET
 #undef T
 
-static void *parse_tag(void *buf, void *end, struct upb_tag *tag, jmp_buf errjmp)
+static upb_status_t parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag, uint8_t **outbuf)
 {
   uint32_t tag_int;
-  void *outbuf = get_v_uint32_t(buf, end, &tag_int, errjmp);
+  UPB_CHECK(get_v_uint32_t(buf, end, &tag_int, outbuf));
   tag->wire_type    = (upb_wire_type_t)(tag_int & 0x07);
   tag->field_number = tag_int >> 3;
-  return outbuf;
+  return UPB_STATUS_OK;
 }
 
-void *upb_parse_wire_value(void *buf, void *end, upb_wire_type_t wt,
-                           union upb_wire_value *wv, jmp_buf errjmp)
+upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
+                                  union upb_wire_value *wv, uint8_t **outbuf)
 {
   switch(wt) {
-    case UPB_WIRE_TYPE_VARINT: return get_v_uint64_t(buf, end, &wv->varint, errjmp);
-    case UPB_WIRE_TYPE_64BIT:  return get_f_uint64_t(buf, end, &wv->_64bit, errjmp);
-    case UPB_WIRE_TYPE_32BIT:  return get_f_uint32_t(buf, end, &wv->_32bit, errjmp);
-    default: longjmp(errjmp, UPB_ERROR_ILLEGAL); /* Doesn't handle delimited, groups. */
+    case UPB_WIRE_TYPE_VARINT: return get_v_uint64_t(buf, end, &wv->varint, outbuf);
+    case UPB_WIRE_TYPE_64BIT:  return get_f_uint64_t(buf, end, &wv->_64bit, outbuf);
+    case UPB_WIRE_TYPE_32BIT:  return get_f_uint32_t(buf, end, &wv->_32bit, outbuf);
+    default: return UPB_ERROR_ILLEGAL; /* Doesn't handle delimited, groups. */
   }
 }
 
-static void *skip_wire_value(void *buf, void *end, upb_wire_type_t wt,
-                             jmp_buf errjmp)
+static upb_status_t skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
+                                    uint8_t **outbuf)
 {
   switch(wt) {
-    case UPB_WIRE_TYPE_VARINT: return skip_v_uint64_t(buf, end, errjmp);
-    case UPB_WIRE_TYPE_64BIT:  return skip_f_uint64_t(buf, end, errjmp);
-    case UPB_WIRE_TYPE_32BIT:  return skip_f_uint32_t(buf, end, errjmp);
+    case UPB_WIRE_TYPE_VARINT: return skip_v_uint64_t(buf, end, outbuf);
+    case UPB_WIRE_TYPE_64BIT:  return skip_f_uint64_t(buf, end, outbuf);
+    case UPB_WIRE_TYPE_32BIT:  return skip_f_uint32_t(buf, end, outbuf);
     case UPB_WIRE_TYPE_START_GROUP: /* TODO: skip to matching end group. */
-    case UPB_WIRE_TYPE_END_GROUP: break;
-    default: longjmp(errjmp, UPB_ERROR_ILLEGAL);
+    case UPB_WIRE_TYPE_END_GROUP: return UPB_STATUS_OK;
+    default: return UPB_ERROR_ILLEGAL;
   }
-  return buf;
 }
 
-void *upb_parse_value(void *buf, void *end, upb_field_type_t ft,
-                      union upb_value_ptr v, jmp_buf errjmp)
+upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                             union upb_value_ptr v, uint8_t **outbuf)
 {
 #define CASE(t, member_name) \
   case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: \
-    return get_ ## t(buf, end, v.member_name, errjmp);
+    return get_ ## t(buf, end, v.member_name, outbuf);
   switch(ft) {
     CASE(DOUBLE,   _double)
     CASE(FLOAT,    _float)
@@ -245,7 +247,7 @@ void *upb_parse_value(void *buf, void *end, upb_field_type_t ft,
     CASE(SFIXED64, int64)
     CASE(BOOL,     _bool)
     CASE(ENUM,     int32)
-    default: longjmp(errjmp, UPB_ERROR_ILLEGAL);
+    default: return UPB_ERROR_ILLEGAL;
   }
 #undef CASE
 }
@@ -269,6 +271,7 @@ void upb_parse_init(struct upb_parse_state *state, void *udata)
 
 void upb_parse_free(struct upb_parse_state *state)
 {
+  (void)state;
 }
 
 static void *pop_stack_frame(struct upb_parse_state *s, uint8_t *buf)
@@ -279,29 +282,26 @@ static void *pop_stack_frame(struct upb_parse_state *s, uint8_t *buf)
 }
 
 /* Returns the next end offset. */
-static void *push_stack_frame(struct upb_parse_state *s,
-                              uint8_t *buf, uint32_t len,
-                              void *user_field_desc, jmp_buf errjmp)
+static upb_status_t push_stack_frame(struct upb_parse_state *s,
+                                     uint8_t *buf, uint32_t len,
+                                     void *user_field_desc, uint8_t **submsg_end)
 {
   s->top++;
-  if(s->top > s->limit) longjmp(errjmp, UPB_ERROR_STACK_OVERFLOW);
+  if(s->top > s->limit) return UPB_ERROR_STACK_OVERFLOW;
   *s->top = s->completed_offset + len;
   if(s->submsg_start_cb) s->submsg_start_cb(s->udata, user_field_desc);
-  return (char*)buf + (*s->top > 0 ? (*s->top - s->completed_offset) : 0);
+  *submsg_end = buf + (*s->top > 0 ? (*s->top - s->completed_offset) : 0);
+  return UPB_STATUS_OK;
 }
 
 upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
                        size_t *read)
 {
   uint8_t *buf = _buf;
-  uint8_t *volatile completed = buf;
+  uint8_t *completed = buf;
   uint8_t *const start = buf;
-  /* Error handling with setjmp/longjmp (saves repeated error code checks, and
-   * lets us use function return values for something more useful). */
-  jmp_buf errjmp;
-  upb_status_t status = UPB_STATUS_OK;
-  if((status = setjmp(errjmp)) != 0) goto done;
 
+  upb_status_t status = UPB_STATUS_OK;
   upb_tag_cb tag_cb = s->tag_cb;
   upb_str_cb str_cb = s->str_cb;
   upb_value_cb value_cb = s->value_cb;
@@ -311,7 +311,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
   uint8_t *submsg_end = buf + (*s->top > 0 ? *s->top : 0);
   while(buf < end) {
     struct upb_tag tag;
-    buf = parse_tag(buf, end, &tag, errjmp);
+    UPB_CHECK(parse_tag(buf, end, &tag, &buf));
     if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
       submsg_end = pop_stack_frame(s, start);
       completed = buf;
@@ -323,7 +323,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
     upb_field_type_t ft = tag_cb(udata, &tag, &user_field_desc);
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
-      buf = get_INT32(buf, end, &delim_len, errjmp);
+      UPB_CHECK(get_INT32(buf, end, &delim_len, &buf));
       uint8_t *delim_end = buf + delim_len;
 
       if(delim_end > end) { /* String ends beyond the data we have. */
@@ -337,7 +337,7 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
       }
 
       if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
-        submsg_end = push_stack_frame(s, start, delim_end - start, user_field_desc, errjmp);
+        UPB_CHECK(push_stack_frame(s, start, delim_end - start, user_field_desc, &submsg_end));
       } else {  /* Delimited data for which we require (and have) all data. */
         if(ft == 0) {
           /* Do nothing -- client has elected to skip. */
@@ -346,17 +346,17 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
           str_cb(udata, &str, user_field_desc);
         } else {  /* Packed Array. */
           while(buf < delim_end)
-            buf = value_cb(udata, buf, end, user_field_desc, errjmp);
+            UPB_CHECK(value_cb(udata, buf, end, user_field_desc, &buf));
         }
         buf = delim_end;
       }
     } else {  /* Scalar (non-delimited) value. */
       if(ft == 0)  /* Client elected to skip. */
-        buf = skip_wire_value(buf, end, tag.wire_type, errjmp);
+        UPB_CHECK(skip_wire_value(buf, end, tag.wire_type, &buf));
       else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
-        submsg_end = push_stack_frame(s, start, 0, user_field_desc, errjmp);
+        UPB_CHECK(push_stack_frame(s, start, 0, user_field_desc, &submsg_end));
       else
-        buf = value_cb(udata, buf, end, user_field_desc, errjmp);
+        UPB_CHECK(value_cb(udata, buf, end, user_field_desc, &buf));
     }
 
     while(buf == submsg_end) submsg_end = pop_stack_frame(s, start);

@@ -12,7 +12,6 @@
 #ifndef UPB_PARSE_H_
 #define UPB_PARSE_H_
 
-#include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "upb.h"
@@ -97,8 +96,8 @@ typedef upb_field_type_t (*upb_tag_cb)(void *udata,
  *
  * Note that this callback can be called several times in a row for a single
  * call to tag_cb in the case of packed arrays. */
-typedef void *(*upb_value_cb)(void *udata, void *buf, void *end,
-                              void *user_field_desc, jmp_buf errjmp);
+typedef upb_status_t (*upb_value_cb)(void *udata, uint8_t *buf, uint8_t *end,
+                                     void *user_field_desc, uint8_t **outbuf);
 
 /* The callback that is called when a string is parsed. */
 typedef void (*upb_str_cb)(void *udata, struct upb_string *str,
@@ -143,14 +142,14 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
 /* Parses and converts a value from the character data starting at buf.  The
  * caller must have previously checked that the wire type is appropriate for
  * this field type. */
-void *upb_parse_value(void *buf, void *end, upb_field_type_t ft,
-                      union upb_value_ptr v, jmp_buf errjmp);
+upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                             union upb_value_ptr v, uint8_t **outbuf);
 
 /* Parses a wire value with the given type (which must have been obtained from
  * a tag that was just parsed) and adds the number of bytes that were consumed
  * to *offset. */
-void *upb_parse_wire_value(void *buf, void *end, upb_wire_type_t wt,
-                           union upb_wire_value *wv, jmp_buf errjmp);
+upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
+                                  union upb_wire_value *wv, uint8_t **outbuf);
 
 #ifdef __cplusplus
 }  /* extern "C" */

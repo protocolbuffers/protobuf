@@ -276,16 +276,16 @@ static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
   return p;
 }
 
-static void *value_cb(void *udata, void *buf, void *end,
-                      void *user_field_desc, jmp_buf errjmp)
+static upb_status_t value_cb(void *udata, uint8_t *buf, uint8_t *end,
+                             void *user_field_desc, uint8_t **outbuf)
 {
   struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(s->top->data, f);
-  void *ret = upb_parse_value(buf, end, f->type, p, errjmp);
-  google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
+  UPB_CHECK(upb_parse_value(buf, end, f->type, p, outbuf));
+  //google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
   //upb_text_printfield(&s->p, *fd->name, f->type, p, stdout);
-  return ret;
+  return UPB_STATUS_OK;
 }
 
 static void str_cb(void *udata, struct upb_string *str,
@@ -301,7 +301,7 @@ static void str_cb(void *udata, struct upb_string *str,
     upb_msg_reuse_str(p.str, str->byte_len);
     upb_strcpy(*p.str, str);
   }
-  google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
+  //google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
   //upb_text_printfield(&s->p, *fd->name, f->type, p, stdout);
 }
 
