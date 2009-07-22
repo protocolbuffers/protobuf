@@ -62,7 +62,8 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
         "Do not edit. */\n\n", stream),
   fprintf(stream, "#ifndef " UPB_STRFMT "\n", UPB_STRARG(include_guard_name));
   fprintf(stream, "#define " UPB_STRFMT "\n\n", UPB_STRARG(include_guard_name));
-  fputs("#include <upb_msg.h>\n\n", stream);
+  fputs("#include <upb_string.h>\n\n", stream);
+  fputs("#include <upb_array.h>\n\n", stream);
   fputs("#ifdef __cplusplus\n", stream);
   fputs("extern \"C\" {\n", stream);
   fputs("#endif\n\n", stream);
@@ -214,7 +215,9 @@ struct strtable_entry {
 
 struct typetable_entry {
   struct upb_strtable_entry e;
-  struct upb_inttable msgs;  /* Stores msgs of this type, keyed by addr. */
+  struct upb_msg *msg;
+  void **msgs;  /* A list of all msgs of this type, in an established order. */
+  int msgs_size, msgs_len;
   struct array {
     int offset;
     int len;
@@ -280,16 +283,18 @@ static void add_strings_from_msg(void *data, struct upb_msg *m,
 
 
 struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
-                                                struct upb_string fqname)
+                                                struct upb_msg *m)
 {
-  struct typetable_entry *type_e = upb_strtable_lookup(t, &fqname);
+  struct typetable_entry *type_e = upb_strtable_lookup(t, &m->fqname);
   if(type_e == NULL) {
-    struct typetable_entry new_type_e = {.e = {.key = fqname},
+    struct typetable_entry new_type_e = {.e = {.key = m->fqname},
+                                         .msg = m,
+                                         .msgs = NULL,
+                                         .msgs_size = 0, .msgs_len = 0,
                                          .arrays = NULL,
                                          .arrays_size = 0, .arrays_len = 0};
-    upb_inttable_init(&new_type_e.msgs, 16, sizeof(struct msgtable_entry));
     upb_strtable_insert(t, &new_type_e.e);
-    type_e = upb_strtable_lookup(t, &fqname);
+    type_e = upb_strtable_lookup(t, &m->fqname);
     assert(type_e);
   }
   return type_e;
@@ -297,20 +302,16 @@ struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
 
 static void add_msg(void *data, struct upb_msg *m, struct upb_strtable *t)
 {
-  struct typetable_entry *type_e = get_or_insert_typeentry(t, m->fqname);
-  /* It is possible, though very unlikely, that this assertion will fail on
-   * 64-bit architectures, since we are only hashing by the low 32 bits of their
-   * address.  Egad.  At least this is only the compiler. */
-  if(upb_inttable_lookup(&type_e->msgs, (upb_inttable_key_t)data)) {
-    fprintf(stderr, "You are unlucky.  Don't buy a lottery ticket today.\n");
-    exit(1);
+  struct typetable_entry *type_e = get_or_insert_typeentry(t, m);
+  if(type_e->msgs_size == type_e->msgs_len) {
+    type_e->msgs_size = max(type_e->msgs_size * 2, 4);
+    type_e->msgs = realloc(type_e->msgs, sizeof(*type_e->msgs) * type_e->msgs_size);
   }
-  struct msgtable_entry new_msg_e = {.e = {.key = (upb_inttable_key_t)data},
-                                     .msg = data,
-                                     .num = upb_inttable_count(&type_e->msgs)};
-  upb_inttable_insert(&type_e->msgs, &new_msg_e.e);
+  type_e->msgs[type_e->msgs_len++] = data;
+}
 
-  /* Add submessages. */
+static void add_submsgs(void *data, struct upb_msg *m, struct upb_strtable *t)
+{
   for(uint32_t i = 0; i < m->num_fields; i++) {
     struct upb_msg_field *f = &m->fields[i];
     if(!upb_issubmsg(f) || !upb_msg_is_set(data, f)) continue;
@@ -320,12 +321,13 @@ static void add_msg(void *data, struct upb_msg *m, struct upb_strtable *t)
 
       /* Add to our list of arrays for this type. */
       struct typetable_entry *arr_type_e =
-          get_or_insert_typeentry(t, f->ref.msg->fqname);
+          get_or_insert_typeentry(t, f->ref.msg);
       if(arr_type_e->arrays_len == arr_type_e->arrays_size) {
         arr_type_e->arrays_size = max(arr_type_e->arrays_size * 2, 4);
-        arr_type_e->arrays = realloc(arr_type_e->arrays, arr_type_e->arrays_size);
+        arr_type_e->arrays = realloc(arr_type_e->arrays,
+                                     sizeof(*arr_type_e->arrays)*arr_type_e->arrays_size);
       }
-      arr_type_e->arrays[arr_type_e->arrays_len].offset = upb_inttable_count(&arr_type_e->msgs);
+      arr_type_e->arrays[arr_type_e->arrays_len].offset = arr_type_e->msgs_len;
       arr_type_e->arrays[arr_type_e->arrays_len].len = arr->len;
       arr_type_e->arrays[arr_type_e->arrays_len].elem0 =
           *upb_array_getelementptr(arr, 0, f->type).msg;
@@ -334,8 +336,15 @@ static void add_msg(void *data, struct upb_msg *m, struct upb_strtable *t)
       /* Add the individual messages in the array. */
       for(uint32_t j = 0; j < arr->len; j++)
         add_msg(*upb_array_getelementptr(arr, j, f->type).msg, f->ref.msg, t);
+
+      /* Add submsgs.  We must do this separately so that the msgs in this
+       * array are contiguous (and don't have submsgs of the same type
+       * interleaved). */
+      for(uint32_t j = 0; j < arr->len; j++)
+        add_submsgs(*upb_array_getelementptr(arr, j, f->type).msg, f->ref.msg, t);
     } else {
       add_msg(*p.msg, f->ref.msg, t);
+      add_submsgs(*p.msg, f->ref.msg, t);
     }
   }
 }
@@ -391,27 +400,66 @@ static void write_messages_c(void *data, struct upb_msg *m,
   struct upb_strtable types;
   upb_strtable_init(&types, 16, sizeof(struct typetable_entry));
   add_msg(data, m, &types);
+  add_submsgs(data, m, &types);
 
-  /* Emit foward declarations for all msgs of all types. */
+  /* Emit foward declarations for all msgs of all types, and define arrays. */
   fprintf(stream, "/* Forward declarations of messages, and array decls. */\n");
   struct typetable_entry *e = upb_strtable_begin(&types);
   for(; e; e = upb_strtable_next(&types, &e->e)) {
     struct upb_string s = upb_strdup(e->e.key);
     to_cident(s);
-    fprintf(stream, UPB_STRFMT " " UPB_STRFMT "_msgs[%d];\n\n",
-            UPB_STRARG(s), UPB_STRARG(s), upb_inttable_count(&e->msgs));
+    fprintf(stream, "static " UPB_STRFMT " " UPB_STRFMT "_msgs[%d];\n\n",
+            UPB_STRARG(s), UPB_STRARG(s), e->msgs_len);
     if(e->arrays_len > 0) {
-      fprintf(stream, UPB_STRFMT " " UPB_STRFMT "_arrays[%d] =\n",
+      fprintf(stream, "static " UPB_STRFMT " *" UPB_STRFMT "_array_elems[] = {\n",
+              UPB_STRARG(s), UPB_STRARG(s));
+      for(int i = 0; i < e->arrays_len; i++) {
+        struct array *arr = &e->arrays[i];
+        for(int j = 0; j < arr->len; j++)
+          fprintf(stream, "    &" UPB_STRFMT "_msgs[%d],\n", UPB_STRARG(s), arr->offset + j);
+      }
+      fprintf(stream, "};\n");
+
+      int cum_offset = 0;
+      fprintf(stream, "static UPB_MSG_ARRAY(" UPB_STRFMT ") " UPB_STRFMT "_arrays[%d] = {\n",
               UPB_STRARG(s), UPB_STRARG(s), e->arrays_len);
       for(int i = 0; i < e->arrays_len; i++) {
         struct array *arr = &e->arrays[i];
-        fprintf(stream, "  {.elements = {\n");
-        for(int j = 0; j < arr->len; j++)
-          fprintf(stream, "    " UPB_STRFMT "_msgs[%d],\n", UPB_STRARG(s), arr->offset + j);
-        fprintf(stream, "    }, .len = %d},\n", arr->len);
+        fprintf(stream, "  {.elements = &" UPB_STRFMT "_array_elems[%d], .len=%d},\n",
+                UPB_STRARG(s), cum_offset, arr->len);
+        cum_offset += arr->len;
       }
       fprintf(stream, "};\n");
     }
+    upb_strfree(s);
+  }
+
+  /* Emit definitions. */
+  for(e = upb_strtable_begin(&types); e; e = upb_strtable_next(&types, &e->e)) {
+    struct upb_string s = upb_strdup(e->e.key);
+    to_cident(s);
+    fprintf(stream, "static " UPB_STRFMT " " UPB_STRFMT "_msgs[%d] = {\n\n",
+            UPB_STRARG(s), UPB_STRARG(s), e->msgs_len);
+    for(int i = 0; i < e->msgs_len; i++) {
+      void *msgdata = e->msgs[i];
+      /* Print set flags. */
+      fprintf(stream, "  {.set_flags = {.bytes = {");
+      for(unsigned int j = 0; j < e->msg->set_flags_bytes; j++) {
+        fprintf(stream, "0x%02hhx", *(uint8_t*)(msgdata + j));
+        if(j < e->msg->set_flags_bytes - 1) fprintf(stream, ", ");
+      }
+      fprintf(stream, "}},\n");
+      /* Print msg data. */
+      for(unsigned int j = 0; j < e->msg->num_fields; j++) {
+        struct upb_msg_field *f = &e->msg->fields[j];
+        struct google_protobuf_FieldDescriptorProto *fd =
+            e->msg->field_descriptors[j];
+        fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(*fd->name));
+        fprintf(stream, "\n");
+      }
+      fprintf(stream, "  },\n");
+    }
+    fprintf(stream, "};\n");
   }
 }
 
