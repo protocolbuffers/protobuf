@@ -108,7 +108,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
   /* Test correctness. */
   for(uint32_t i = 1; i <= largest_key; i++) {
     struct inttable_entry *e = (struct inttable_entry*)upb_inttable_lookup(
-        &table, i, sizeof(struct inttable_entry));
+        &table, i);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
       assert(e->e.key == i);
@@ -151,7 +151,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
   for(unsigned int i = 0; i < iterations; i++) {
     int32_t key = keys[i & mask];
     struct inttable_entry *e = (struct inttable_entry*)upb_inttable_lookup(
-        &table, key, sizeof(struct inttable_entry));
+        &table, key);
     x += (uintptr_t)e;
   }
   double total = get_usertime() - before;
@@ -164,7 +164,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
   for(unsigned int i = 0; i < iterations; i++) {
     int32_t key = keys[rand() & mask];
     struct inttable_entry *e = (struct inttable_entry*)upb_inttable_lookup(
-        &table, key, sizeof(struct inttable_entry));
+        &table, key);
     x += (uintptr_t)e;
   }
   total = get_usertime() - before;
