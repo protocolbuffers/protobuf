@@ -11,6 +11,7 @@
 #include "descriptor.h"
 #include "upb_context.h"
 #include "upb_enum.h"
+#include "upb_msg.h"
 
 /* These are in-place string transformations that do not change the length of
  * the string (and thus never need to re-allocate). */
@@ -203,10 +204,29 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
   upb_strfree(include_guard_name);
 }
 
+/* Format of table entries that we use when analyzing data structures for
+ * write_messages_c. */
 struct strtable_entry {
   struct upb_strtable_entry e;
   int offset;
   int num;
+};
+
+struct typetable_entry {
+  struct upb_strtable_entry e;
+  struct upb_inttable msgs;  /* Stores msgs of this type, keyed by addr. */
+  struct array {
+    int offset;
+    int len;
+    void *elem0;
+  } *arrays;
+  int arrays_size, arrays_len;
+};
+
+struct msgtable_entry {
+  struct upb_inttable_entry e;
+  void *msg;
+  int num;  /* Unique offset into the list of all msgs of this type. */
 };
 
 int compare_entries(const void *_e1, const void *_e2)
@@ -215,62 +235,128 @@ int compare_entries(const void *_e1, const void *_e2)
   return upb_strcmp((*e1)->e.key, (*e2)->e.key);
 }
 
-/* The .c file defines the descriptor as data (in C structs).
+/* Mutually recursive functions to recurse over a set of possibly nested
+ * messages and extract all the strings.
  *
- * Assumes that d has been validated. */
-static void write_c(struct upb_symtab_entry *entries[], int num_entries,
-                    char *hfile_name, char *outfile_name, FILE *stream)
+ * TODO: make these use a generic msg visitor. */
+
+static void add_strings_from_msg(void *data, struct upb_msg *m,
+                                 struct upb_strtable *t);
+
+static void add_strings_from_value(union upb_value_ptr p,
+                                   struct upb_msg_field *f,
+                                   struct upb_strtable *t)
 {
-  (void)outfile_name;
+  if(upb_isstringtype(f->type)) {
+    struct strtable_entry e = {.e = {.key = **p.str}};
+    if(upb_strtable_lookup(t, &e.e.key) == NULL)
+      upb_strtable_insert(t, &e.e);
+  } else if(upb_issubmsg(f)) {
+    add_strings_from_msg(*p.msg, f->ref.msg, t);
+  }
+}
+
+static void add_strings_from_msg(void *data, struct upb_msg *m,
+                                 struct upb_strtable *t)
+{
+  for(uint32_t i = 0; i < m->num_fields; i++) {
+    struct upb_msg_field *f = &m->fields[i];
+    if(!upb_msg_is_set(data, f)) continue;
+    union upb_value_ptr p = upb_msg_getptr(data, f);
+    if(upb_isarray(f)) {
+      struct upb_array *arr = *p.arr;
+      for(uint32_t j = 0; j < arr->len; j++)
+        add_strings_from_value(upb_array_getelementptr(arr, j, f->type), f, t);
+    } else {
+      add_strings_from_value(p, f, t);
+    }
+  }
+}
+
+/* Mutually recursive functions to recurse over a set of possibly nested
+ * messages and extract all the messages (keyed by type).
+ *
+ * TODO: make these use a generic msg visitor. */
+
+
+struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
+                                                struct upb_string fqname)
+{
+  struct typetable_entry *type_e = upb_strtable_lookup(t, &fqname);
+  if(type_e == NULL) {
+    struct typetable_entry new_type_e = {.e = {.key = fqname},
+                                         .arrays = NULL,
+                                         .arrays_size = 0, .arrays_len = 0};
+    upb_inttable_init(&new_type_e.msgs, 16, sizeof(struct msgtable_entry));
+    upb_strtable_insert(t, &new_type_e.e);
+    type_e = upb_strtable_lookup(t, &fqname);
+    assert(type_e);
+  }
+  return type_e;
+}
+
+static void add_msg(void *data, struct upb_msg *m, struct upb_strtable *t)
+{
+  struct typetable_entry *type_e = get_or_insert_typeentry(t, m->fqname);
+  /* It is possible, though very unlikely, that this assertion will fail on
+   * 64-bit architectures, since we are only hashing by the low 32 bits of their
+   * address.  Egad.  At least this is only the compiler. */
+  if(upb_inttable_lookup(&type_e->msgs, (upb_inttable_key_t)data)) {
+    fprintf(stderr, "You are unlucky.  Don't buy a lottery ticket today.\n");
+    exit(1);
+  }
+  struct msgtable_entry new_msg_e = {.e = {.key = (upb_inttable_key_t)data},
+                                     .msg = data,
+                                     .num = upb_inttable_count(&type_e->msgs)};
+  upb_inttable_insert(&type_e->msgs, &new_msg_e.e);
+
+  /* Add submessages. */
+  for(uint32_t i = 0; i < m->num_fields; i++) {
+    struct upb_msg_field *f = &m->fields[i];
+    if(!upb_issubmsg(f) || !upb_msg_is_set(data, f)) continue;
+    union upb_value_ptr p = upb_msg_getptr(data, f);
+    if(upb_isarray(f)) {
+      struct upb_array *arr = *p.arr;
+
+      /* Add to our list of arrays for this type. */
+      struct typetable_entry *arr_type_e =
+          get_or_insert_typeentry(t, f->ref.msg->fqname);
+      if(arr_type_e->arrays_len == arr_type_e->arrays_size) {
+        arr_type_e->arrays_size = max(arr_type_e->arrays_size * 2, 4);
+        arr_type_e->arrays = realloc(arr_type_e->arrays, arr_type_e->arrays_size);
+      }
+      arr_type_e->arrays[arr_type_e->arrays_len].offset = upb_inttable_count(&arr_type_e->msgs);
+      arr_type_e->arrays[arr_type_e->arrays_len].len = arr->len;
+      arr_type_e->arrays[arr_type_e->arrays_len].elem0 =
+          *upb_array_getelementptr(arr, 0, f->type).msg;
+      arr_type_e->arrays_len++;
+
+      /* Add the individual messages in the array. */
+      for(uint32_t j = 0; j < arr->len; j++)
+        add_msg(*upb_array_getelementptr(arr, j, f->type).msg, f->ref.msg, t);
+    } else {
+      add_msg(*p.msg, f->ref.msg, t);
+    }
+  }
+}
+
+/* write_messages_c emits a .c file that contains the data of a protobuf,
+ * serialized as C structures. */
+static void write_messages_c(void *data, struct upb_msg *m,
+                             char *hfile_name, FILE *stream)
+{
   fputs("/* This file was generated by upbc (the upb compiler).  "
         "Do not edit. */\n\n", stream),
   fprintf(stream, "#include \"%s\"\n\n", hfile_name);
 
-  /* Gather all strings into a giant string.  Use a hash */
-  struct upb_strtable t;
-
-#define ADDSTR(msg, field) \
-  if(msg->set_flags.has.field) { \
-    struct strtable_entry e = {.e = {.key = *msg->field}}; \
-    if(upb_strtable_lookup(&t, &e.e.key) == NULL) upb_strtable_insert(&t, &e.e); \
-  }
-
-  upb_strtable_init(&t, 16, sizeof(struct strtable_entry));
-  for(int i = 0; i < num_entries; i++) {
-    struct strtable_entry e = {.e = {.key = entries[i]->e.key}};
-    if(upb_strtable_lookup(&t, &e.e.key) == NULL) upb_strtable_insert(&t, &e.e);
-    switch(entries[i]->type) {
-      case UPB_SYM_MESSAGE: {
-        struct upb_msg *m = entries[i]->ref.msg;
-        ADDSTR(m->descriptor, name);
-        for(uint32_t i = 0; i < m->num_fields; i++) {
-          google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
-          ADDSTR(fd, name);
-          ADDSTR(fd, type_name);
-          //ADDSTR(fd, extendee);
-          //ADDSTR(fd, default_value);
-          /* Neglect fd->options, doubtful that they're needed. */
-        }
-      }
-
-      case UPB_SYM_ENUM: {
-        google_protobuf_EnumDescriptorProto *ed = entries[i]->ref._enum->descriptor;
-        ADDSTR(ed, name);
-        if(ed->set_flags.has.value) {
-          for(uint32_t i = 0; i < ed->value->len; i++) {
-            ADDSTR(ed->value->elements[i], name);
-            /* Neglect ed->value[i]->options, doubtful that they're needed. */
-          }
-        }
-      }
-
-      case UPB_SYM_SERVICE:
-      case UPB_SYM_EXTENSION: break;  /* TODO */
-    }
-  }
+  /* Gather all strings into a giant string.  Use a hash to prevent adding the
+   * same string more than once. */
+  struct upb_strtable strings;
+  upb_strtable_init(&strings, 16, sizeof(struct strtable_entry));
+  add_strings_from_msg(data, m, &strings);
 
   int size;
-  struct strtable_entry **str_entries = strtable_to_array(&t, &size);
+  struct strtable_entry **str_entries = strtable_to_array(&strings, &size);
   /* Sort for nice size and reproduceability. */
   qsort(str_entries, size, sizeof(void*), compare_entries);
 
@@ -300,58 +386,33 @@ static void write_c(struct upb_symtab_entry *entries[], int num_entries,
   }
   fputs("};\n\n", stream);
 
-  /* Emit fields. */
-  fputs("static google_protobuf_FieldDescriptorProto fields[] = {\n", stream);
-  int total = 0;
-  for(int i = 0; i < num_entries; i++) {
-    if(entries[i]->type != UPB_SYM_MESSAGE) continue;
-    struct upb_msg *m = entries[i]->ref.msg;
-    for(uint32_t j = 0; j < m->num_fields; j++) {
-      struct google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
-      struct strtable_entry *e = upb_strtable_lookup(&t, fd->name);
-      fprintf(stream, "  {.set_flags = {.bytes={0x%02hhx}}, .name=&strings[%3d], .number=%d, .label=%d, .type=%2d, .type_name=NULL},\n",
-              fd->set_flags.bytes[0], e->num, fd->number, fd->label, fd->type);
-      total ++;
+  /* Gather a list of types for which we are emitting data, and give each msg
+   * a unique number within its type. */
+  struct upb_strtable types;
+  upb_strtable_init(&types, 16, sizeof(struct typetable_entry));
+  add_msg(data, m, &types);
+
+  /* Emit foward declarations for all msgs of all types. */
+  fprintf(stream, "/* Forward declarations of messages, and array decls. */\n");
+  struct typetable_entry *e = upb_strtable_begin(&types);
+  for(; e; e = upb_strtable_next(&types, &e->e)) {
+    struct upb_string s = upb_strdup(e->e.key);
+    to_cident(s);
+    fprintf(stream, UPB_STRFMT " " UPB_STRFMT "_msgs[%d];\n\n",
+            UPB_STRARG(s), UPB_STRARG(s), upb_inttable_count(&e->msgs));
+    if(e->arrays_len > 0) {
+      fprintf(stream, UPB_STRFMT " " UPB_STRFMT "_arrays[%d] =\n",
+              UPB_STRARG(s), UPB_STRARG(s), e->arrays_len);
+      for(int i = 0; i < e->arrays_len; i++) {
+        struct array *arr = &e->arrays[i];
+        fprintf(stream, "  {.elements = {\n");
+        for(int j = 0; j < arr->len; j++)
+          fprintf(stream, "    " UPB_STRFMT "_msgs[%d],\n", UPB_STRARG(s), arr->offset + j);
+        fprintf(stream, "    }, .len = %d},\n", arr->len);
+      }
+      fprintf(stream, "};\n");
     }
   }
-  fputs("};\n\n", stream);
-
-  fputs("static google_protobuf_FieldDescriptorProto *field_pointers[] = {\n", stream);
-  for(int i = 0; i < total; i++) {
-    fprintf(stream, "  &fields[%d],\n", i);
-  }
-  fputs("};\n\n", stream);
-
-  offset = 0;
-  fputs("static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) field_arrays[] = {\n", stream);
-  for(int i = 0; i < num_entries; i++) {
-    if(entries[i]->type != UPB_SYM_MESSAGE) continue;
-    struct upb_msg *m = entries[i]->ref.msg;
-    fprintf(stream, "  {.elements=&field_pointers[%d], .len=%d},\n", offset, m->num_fields);
-    offset += m->num_fields;
-  }
-  fputs("};\n\n", stream);
-
-  /* Emit messages. */
-  fputs("static google_protobuf_DescriptorProto messages[] = {\n", stream);
-  offset = 0;
-  for(int i = 0; i < num_entries; i++) {
-    if(entries[i]->type != UPB_SYM_MESSAGE) continue;
-    struct upb_msg *m = entries[i]->ref.msg;
-    struct google_protobuf_DescriptorProto *d = m->descriptor;
-    struct strtable_entry *e = upb_strtable_lookup(&t, d->name);
-    fprintf(stream, "  {.set_flags = {.bytes={0x%02hhx}}, .name=&strings[%3d], .field=&field_arrays[%d]},\n",
-            d->set_flags.bytes[0], e->num, offset);
-  }
-  fputs("};\n\n", stream);
-
-  fputs("static google_protobuf_DescriptorProto *message_pointers[] = {\n", stream);
-  offset = 0;
-  for(int i = 0; i < num_entries; i++) {
-    if(entries[i]->type != UPB_SYM_MESSAGE) continue;
-    fprintf(stream, "  &messages[%d],\n", offset);
-  }
-  fputs("};\n\n", stream);
 }
 
 const char usage[] =
@@ -405,8 +466,12 @@ int main(int argc, char *argv[])
   /* Parse input file. */
   struct upb_context c;
   upb_context_init(&c);
-  if(!upb_context_parsefds(&c, &descriptor))
+  google_protobuf_FileDescriptorSet *fds =
+      upb_alloc_and_parse(c.fds_msg, &descriptor, false);
+  if(!fds)
     error("Failed to parse input file descriptor.");
+  if(!upb_context_addfds(&c, fds))
+    error("Failed to resolve symbols in descriptor.\n");
 
   /* Emit output files. */
   const int maxsize = 256;
@@ -422,7 +487,7 @@ int main(int argc, char *argv[])
   int symcount;
   struct upb_symtab_entry **entries = strtable_to_array(&c.symtab, &symcount);
   write_h(entries, symcount, h_filename, h_file);
-  write_c(entries, symcount, h_filename, c_filename, c_file);
+  write_messages_c(fds, c.fds_msg, h_filename, c_file);
   upb_context_free(&c);
   upb_strfree(descriptor);
   fclose(h_file);
