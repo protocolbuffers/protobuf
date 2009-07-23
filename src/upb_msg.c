@@ -42,9 +42,8 @@ void upb_msg_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
 bool upb_msg_init(struct upb_msg *m, google_protobuf_DescriptorProto *d,
                   struct upb_string fqname, bool sort)
 {
-  /* TODO: more complete validation.
-   * TODO: re-enable this check when we properly set this flag. */
-  //if(!d->set_flags.has.field) return false;
+  /* TODO: more complete validation. */
+  if(!d->set_flags.has.field) return false;
 
   upb_inttable_init(&m->fields_by_num, d->field->len,
                     sizeof(struct upb_fieldsbynum_entry));

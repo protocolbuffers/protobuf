@@ -28,7 +28,6 @@ bool upb_context_init(struct upb_context *c)
   upb_strtable_init(&c->psymtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
   if(!addfd(&c->psymtab, &c->symtab, upb_file_descriptor_set->file->elements[0], false)) {
-  //if(!addfd(&c->psymtab, &c->symtab, &google_protobuf_filedescriptor, false)) {
     assert(false);
     return false;  /* Indicates that upb is buggy or corrupt. */
   }
@@ -149,8 +148,7 @@ static bool insert_enum(struct upb_strtable *t,
                         google_protobuf_EnumDescriptorProto *ed,
                         struct upb_string *base)
 {
-  // TODO: re-enable when compiler sets this flag
-  //if(!ed->set_flags.has.name) return false;
+  if(!ed->set_flags.has.name) return false;
 
   /* We own this and must free it on destruct. */
   struct upb_string fqname = join(base, ed->name);
@@ -175,8 +173,7 @@ static bool insert_message(struct upb_strtable *t,
                            google_protobuf_DescriptorProto *d,
                            struct upb_string *base, bool sort)
 {
-  /* TODO: re-enable when compiler sets this flag. */
-  //if(!d->set_flags.has.name) return false;
+  if(!d->set_flags.has.name) return false;
 
   /* We own this and must free it on destruct. */
   struct upb_string fqname = join(base, d->name);
