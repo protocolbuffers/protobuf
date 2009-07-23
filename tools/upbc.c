@@ -571,6 +571,14 @@ void error(char *err)
   exit(1);
 }
 
+void sort_fields_in_descriptor(google_protobuf_DescriptorProto *d)
+{
+  if(d->set_flags.has.field) upb_msg_sortfds(d->field->elements, d->field->len);
+  if(d->set_flags.has.nested_type)
+    for(uint32_t i = 0; i < d->nested_type->len; i++)
+      sort_fields_in_descriptor(d->nested_type->elements[i]);
+}
+
 int main(int argc, char *argv[])
 {
   /* Parse arguments. */
@@ -611,6 +619,16 @@ int main(int argc, char *argv[])
     error("Failed to parse input file descriptor.");
   if(!upb_context_addfds(&c, fds))
     error("Failed to resolve symbols in descriptor.\n");
+
+  /* We need to sort the fields of all the descriptors.  They will already be
+   * sorted in the upb_msgs that we base our header file output on, so we must
+   * sort here to match. */
+  for(uint32_t i = 0; i < fds->file->len; i++) {
+    google_protobuf_FileDescriptorProto *fd = fds->file->elements[i];
+    if(!fd->set_flags.has.message_type) continue;
+    for(uint32_t j = 0; j < fd->message_type->len; j++)
+      sort_fields_in_descriptor(fd->message_type->elements[j]);
+  }
 
   /* Emit output files. */
   const int maxsize = 256;

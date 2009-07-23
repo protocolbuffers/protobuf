@@ -175,6 +175,11 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
                   struct upb_string fqname, bool sort);
 void upb_msg_free(struct upb_msg *m);
 
+/* Sort the given field descriptors in-place, according to what we think is an
+ * optimal ordering of fields.  This can change from upb release to upb release.
+ * This is meant for internal use. */
+void upb_msg_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num);
+
 /* Clients use this function on a previously initialized upb_msg to resolve the
  * "ref" field in the upb_msg_field.  Since messages can refer to each other in
  * mutually-recursive ways, this step must be separated from initialization. */
@@ -309,14 +314,14 @@ struct upb_msg_parse_frame {
   void *data;
 };
 
-//#include "upb_text.h"
+#include "upb_text.h"
 struct upb_msg_parse_state {
   struct upb_parse_state s;
   bool merge;
   bool byref;
   struct upb_msg *m;
   struct upb_msg_parse_frame stack[UPB_MAX_NESTING], *top;
-  //struct upb_text_printer p;
+  struct upb_text_printer p;
 };
 
 /* Initializes/frees a message parser.  The parser will write the data to the

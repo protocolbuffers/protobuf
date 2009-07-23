@@ -9,6 +9,7 @@
 #include "upb_context.c"
 #include "upb_msg.c"
 #include "upb_table.c"
+#include "upb_text.c"
 
 int num_assertions = 0;
 #define ASSERT(expr) do { \

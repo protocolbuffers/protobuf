@@ -27,7 +27,8 @@ bool upb_context_init(struct upb_context *c)
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
   upb_strtable_init(&c->psymtab, 16, sizeof(struct upb_symtab_entry));
   /* Add all the types in descriptor.proto so we can parse descriptors. */
-  if(!addfd(&c->psymtab, &c->symtab, &google_protobuf_filedescriptor, false)) {
+  if(!addfd(&c->psymtab, &c->symtab, upb_file_descriptor_set->file->elements[0], false)) {
+  //if(!addfd(&c->psymtab, &c->symtab, &google_protobuf_filedescriptor, false)) {
     assert(false);
     return false;  /* Indicates that upb is buggy or corrupt. */
   }

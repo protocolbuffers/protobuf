@@ -34,7 +34,12 @@ static int compare_fields(const void *e1, const void *e2) {
   }
 }
 
-bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
+void upb_msg_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
+{
+  qsort(fds, num, sizeof(void*), compare_fields);
+}
+
+bool upb_msg_init(struct upb_msg *m, google_protobuf_DescriptorProto *d,
                   struct upb_string fqname, bool sort)
 {
   /* TODO: more complete validation.
@@ -60,8 +65,7 @@ bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
     /* We count on the caller to keep this pointer alive. */
     m->field_descriptors[i] = d->field->elements[i];
   }
-  if(sort)
-    qsort(m->field_descriptors, m->num_fields, sizeof(void*), compare_fields);
+  if(sort) upb_msg_sortfds(m->field_descriptors, m->num_fields);
 
   size_t max_align = 0;
   for(unsigned int i = 0; i < m->num_fields; i++) {
@@ -284,13 +288,12 @@ static upb_status_t value_cb(void *udata, uint8_t *buf, uint8_t *end,
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(s->top->data, f);
   UPB_CHECK(upb_parse_value(buf, end, f->type, p, outbuf));
-  //google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
-  //upb_text_printfield(&s->p, *fd->name, f->type, p, stdout);
+  google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
+  //upb_text_printfield(&s->p, *fd->name, f->type, upb_deref(p, f->type), stdout);
   return UPB_STATUS_OK;
 }
 
-static void str_cb(void *udata, struct upb_string *str,
-                           void *user_field_desc)
+static void str_cb(void *udata, struct upb_string *str, void *user_field_desc)
 {
   struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
@@ -303,7 +306,7 @@ static void str_cb(void *udata, struct upb_string *str,
     upb_strcpy(*p.str, str);
   }
   //google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
-  //upb_text_printfield(&s->p, *fd->name, f->type, p, stdout);
+  //upb_text_printfield(&s->p, *fd->name, f->type, upb_deref(p, fd->type), stdout);
 }
 
 static void submsg_start_cb(void *udata, void *user_field_desc)
@@ -331,7 +334,7 @@ void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *msg,
                          struct upb_msg *m, bool merge, bool byref)
 {
   upb_parse_reset(&s->s, s);
-  //upb_text_printer_init(&s->p, false);
+  upb_text_printer_init(&s->p, false);
   s->merge = merge;
   s->byref = byref;
   if(!merge && msg == NULL) msg = upb_msgdata_new(m);
