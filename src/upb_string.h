@@ -27,9 +27,15 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "upb.h"
+
+/* inline if possible, emit standalone code if required. */
+#ifndef INLINE
+#define INLINE static inline
+#endif
 
 struct upb_string {
   /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
@@ -37,6 +43,8 @@ struct upb_string {
   char *ptr;
   uint32_t byte_len;
 };
+
+INLINE uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
 
 INLINE bool upb_streql(struct upb_string *s1, struct upb_string *s2) {
   return s1->byte_len == s2->byte_len &&

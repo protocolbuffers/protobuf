@@ -22,9 +22,9 @@ INLINE void upb_text_printer_init(struct upb_text_printer *p, bool single_line) 
   p->indent_depth = 0;
   p->single_line = single_line;
 }
-void upb_text_printval(upb_field_type_t type, union upb_value_ptr p, FILE *file);
+void upb_text_printval(upb_field_type_t type, union upb_value p, FILE *file);
 void upb_text_printfield(struct upb_text_printer *p, struct upb_string name,
-                         upb_field_type_t valtype, union upb_value_ptr val,
+                         upb_field_type_t valtype, union upb_value val,
                          FILE *stream);
 void upb_text_push(struct upb_text_printer *p, struct upb_string submsg_type,
                    FILE *stream);

@@ -265,7 +265,7 @@ static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
 {
   union upb_value_ptr p = upb_msg_getptr(data, f);
   if(upb_isarray(f)) {
-    size_t len = upb_msg_is_set(data, f) ? (*p.arr)->len : 0;
+    size_t len = upb_msg_isset(data, f) ? (*p.arr)->len : 0;
     upb_msg_reuse_array(p.arr, len+1, f->type);
     (*p.arr)->len = len + 1;
     assert(p._void);
@@ -448,7 +448,7 @@ bool upb_msg_eql(void *data1, void *data2, struct upb_msg *m, bool recursive)
 
   for(uint32_t i = 0; i < m->num_fields; i++) {
     struct upb_msg_field *f = &m->fields[i];
-    if(!upb_msg_is_set(data1, f)) continue;
+    if(!upb_msg_isset(data1, f)) continue;
     union upb_value_ptr p1 = upb_msg_getptr(data1, f);
     union upb_value_ptr p2 = upb_msg_getptr(data2, f);
     if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {

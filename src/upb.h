@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>  /* for size_t. */
+#include "upb_string.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +36,6 @@ extern "C" {
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
 INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
-INLINE uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
 
 /* Value type as defined in a .proto file.  The values of this are defined by
  * google_protobuf_FieldDescriptorProto_Type (from descriptor.proto).
@@ -43,19 +43,20 @@ INLINE uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
  * represent exceptional circumstances. */
 typedef uint8_t upb_field_type_t;
 
-/* Label (optional, repeated, required) as defined in a .proto file.  The values
- * of this are defined by google.protobuf.FieldDescriptorProto.Label (from
- * descriptor.proto). */
-typedef uint8_t  upb_label_t;
-
 struct upb_type_info {
   uint8_t align;
   uint8_t size;
   uint8_t expected_wire_type;
+  struct upb_string ctype;
 };
 
 /* Contains information for all .proto types.  Indexed by upb_field_type_t. */
 extern struct upb_type_info upb_type_info[];
+
+/* Label (optional, repeated, required) as defined in a .proto file.  The values
+ * of this are defined by google.protobuf.FieldDescriptorProto.Label (from
+ * descriptor.proto). */
+typedef uint8_t  upb_label_t;
 
 /* A pointer to a .proto value.  The owner must have an out-of-band way of
  * knowing the type, so it knows which union member to use. */
@@ -67,8 +68,8 @@ union upb_value {
   uint32_t uint32;
   uint64_t uint64;
   bool     _bool;
-  struct upb_string **string;
-  struct upb_array **array;
+  struct upb_string *str;
+  struct upb_array *arr;
   void     *msg;
 };
 
@@ -85,6 +86,12 @@ union upb_value_ptr {
   void     **msg;
   void     *_void;
 };
+
+INLINE union upb_value upb_deref(union upb_value_ptr ptr, upb_field_type_t t) {
+  union upb_value val;
+  memcpy(&val, ptr._void, upb_type_info[t].size);
+  return val;
+}
 
 union upb_symbol_ref {
   struct upb_msg *msg;

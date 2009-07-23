@@ -231,7 +231,7 @@ INLINE void upb_msg_unset(void *s, struct upb_msg_field *f)
   ((char*)s)[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
 }
 
-INLINE bool upb_msg_is_set(void *s, struct upb_msg_field *f)
+INLINE bool upb_msg_isset(void *s, struct upb_msg_field *f)
 {
   return ((char*)s)[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
 }
@@ -260,6 +260,11 @@ INLINE union upb_value_ptr upb_msg_getptr(void *data, struct upb_msg_field *f) {
   union upb_value_ptr p;
   p._void = ((char*)data + f->byte_offset);
   return p;
+}
+
+/* Returns a a specific field in a message. */
+INLINE union upb_value upb_msg_get(void *data, struct upb_msg_field *f) {
+  return upb_deref(upb_msg_getptr(data, f), f->type);
 }
 
 /* Memory management  *********************************************************/

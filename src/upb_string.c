@@ -4,6 +4,7 @@
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
+#include <stdio.h>
 #include "upb_string.h"
 
 bool upb_strreadfile(const char *filename, struct upb_string *data) {

@@ -8,9 +8,9 @@
 #include "upb_text.h"
 #include "descriptor.h"
 
-void upb_text_printval(upb_field_type_t type, union upb_value_ptr p, FILE *file)
+void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
 {
-#define CASE(fmtstr, member) fprintf(file, fmtstr, *p.member); break;
+#define CASE(fmtstr, member) fprintf(file, fmtstr, val.member); break;
   switch(type) {
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
       CASE("%0.f", _double);
@@ -36,7 +36,7 @@ void upb_text_printval(upb_field_type_t type, union upb_value_ptr p, FILE *file)
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
       /* TODO: escaping. */
-      fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(**p.str)); break;
+      fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(*val.str)); break;
   }
 }
 
@@ -49,7 +49,7 @@ static void print_indent(struct upb_text_printer *p, FILE *stream)
 
 void upb_text_printfield(struct upb_text_printer *p,
                          struct upb_string name,
-                         upb_field_type_t valtype, union upb_value_ptr val,
+                         upb_field_type_t valtype, union upb_value val,
                          FILE *stream)
 {
   print_indent(p, stream);

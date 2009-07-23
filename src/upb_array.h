@@ -34,6 +34,12 @@ INLINE union upb_value_ptr upb_array_getelementptr(
   return ptr;
 }
 
+INLINE union upb_value upb_array_getelement(
+    struct upb_array *arr, uint32_t n, upb_field_type_t type)
+{
+  return upb_deref(upb_array_getelementptr(arr, n, type), type);
+}
+
 /* These are all overlays on upb_array, pointers between them can be cast. */
 #define UPB_DEFINE_ARRAY_TYPE(name, type) \
   struct name ## _array { \
