@@ -7,6 +7,9 @@
   * Added RemoveLast and SwapElements(index1, index2) to Reflection
     interface for repeated elements.
   * Added Swap(Message) to Reflection interface.
+  * Floating-point literals in generated code that are intended to be
+    single-precision now explicitly have 'f' suffix to avoid pedantic warnings
+    produced by some compilers.
 
 2009-05-13 version 2.1.0:
 

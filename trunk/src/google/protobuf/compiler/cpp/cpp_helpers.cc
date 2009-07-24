@@ -227,7 +227,15 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return SimpleDtoa(field->default_value_double());
     case FieldDescriptor::CPPTYPE_FLOAT:
-      return SimpleFtoa(field->default_value_float());
+      {
+        // If floating point value contains a period (.) or an exponent (either
+        // E or e), then append suffix 'f' to make it a floating-point literal.
+        string float_value = SimpleFtoa(field->default_value_float());
+        if (float_value.find_first_of(".eE") != string::npos) {
+          float_value.push_back('f');
+        }
+        return float_value;
+      }
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case FieldDescriptor::CPPTYPE_ENUM:
