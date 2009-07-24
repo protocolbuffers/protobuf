@@ -50,9 +50,11 @@
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -73,6 +75,18 @@ namespace cpp {
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace cpp_unittest {
 
+TEST(ExtremeDefaultValues, FloatingPoint) {
+  const unittest::TestExtremeDefaultValues& extreme_default =
+      unittest::TestExtremeDefaultValues::default_instance();
+
+  EXPECT_EQ(0.0f, extreme_default.zero_float());
+  EXPECT_EQ(1.0f, extreme_default.one_float());
+  EXPECT_EQ(1.5f, extreme_default.small_float());
+  EXPECT_EQ(-1.0f, extreme_default.negative_one_float());
+  EXPECT_EQ(-1.5f, extreme_default.negative_float());
+  EXPECT_EQ(2.0e8f, extreme_default.large_float());
+  EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
+}
 
 class MockErrorCollector : public MultiFileErrorCollector {
  public:

@@ -458,6 +458,16 @@ message TestExtremeDefaultValues {
   // the UTF-8 text directly into this text file rather than escape it, but
   // lots of people use editors that would be confused by this.)
   optional string utf8_string = 6 [default = "\341\210\264"];
+
+  // Tests for single-precision floating-point values.
+  optional float zero_float = 7 [default = 0];
+  optional float one_float = 8 [default = 1];
+  optional float small_float = 9 [default = 1.5];
+  optional float negative_one_float = 10 [default = -1];
+  optional float negative_float = 11 [default = -1.5];
+  // Using exponents
+  optional float large_float = 12 [default = 2E8];
+  optional float small_negative_float = 13 [default = -8e-28];
 }
 
 // Test String and Bytes: string is for valid UTF-8 strings

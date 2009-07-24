@@ -808,7 +808,6 @@ public final class CodedOutputStream {
    * field of arbitrary type, excluding tag, to the stream.
    *
    * @param type   The field's type.
-   * @param number The field's number.
    * @param value  Object representing the field's value.  Must be of the exact
    *               type which would be returned by
    *               {@link Message#getField(Descriptors.FieldDescriptor)} for

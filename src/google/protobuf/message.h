@@ -223,6 +223,11 @@ class LIBPROTOBUF_EXPORT Message {
   // See Reflection::GetUnknownFields() for more on unknown fields.
   virtual void DiscardUnknownFields();
 
+  // Computes (an estimate of) the total number of bytes currently used for
+  // storing the message in memory.  The default implementation calls the
+  // Reflection object's SpaceUsed() method.
+  virtual int SpaceUsed() const;
+
   // Debugging -------------------------------------------------------
 
   // Generates a human readable form of this message, useful for debugging
@@ -361,11 +366,6 @@ class LIBPROTOBUF_EXPORT Message {
   // ByteSize() on all embedded messages.  If a subclass does not override
   // this, it MUST override SetCachedSize().
   virtual int ByteSize() const;
-
-  // Computes (an estimate of) the total number of bytes currently used for
-  // storing the message in memory.  The default implementation calls the
-  // Reflection object's SpaceUsed() method.
-  virtual int SpaceUsed() const;
 
   // Serializes the message without recomputing the size.  The message must
   // not have changed since the last call to ByteSize(); if it has, the results
