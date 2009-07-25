@@ -132,9 +132,8 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
 extern upb_wire_type_t upb_expected_wire_types[];
 /* Returns true if wt is the correct on-the-wire type for ft. */
 INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-    /* With packed arrays, anything can be delimited (except groups). */
-    return (wt == UPB_WIRE_TYPE_DELIMITED) || upb_type_info[ft].expected_wire_type == wt;
-           ; // && ft != GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP );
+  /* This doesn't currently support packed arrays. */
+  return upb_type_info[ft].expected_wire_type == wt;
 }
 
 /* Data-consuming functions (to be called from value cb). *********************/
@@ -150,6 +149,122 @@ upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
  * to *offset. */
 upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
                                   union upb_wire_value *wv, uint8_t **outbuf);
+
+/* Low-level parsing functions. **********************************************/
+
+upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
+                                     uint8_t **outbuf);
+
+INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
+                                       uint8_t **outbuf)
+{
+  /* We inline these two common cases (short varints), if that fails we
+   * dispatch to the full (non-inlined) version. */
+  if((*buf & 0x80) == 0) {
+    /* Single-byte varint -- very common case. */
+    *val = *buf & 0x7f;
+    *outbuf = buf + 1;
+    return UPB_STATUS_OK;
+  } else if(buf <= end && (*(buf+1) & 0x80) == 0) {
+    /* Two-byte varint. */
+    *val = (buf[0] & 0x7f) | ((buf[1] & 0x7f) << 7);
+    *outbuf = buf + 2;
+    return UPB_STATUS_OK;
+  } else {
+    return upb_get_v_uint64_t_full(buf, end, val, outbuf);
+  }
+}
+
+INLINE upb_status_t upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
+                                       uint32_t *val, uint8_t **outbuf)
+{
+  uint64_t val64;
+  UPB_CHECK(upb_get_v_uint64_t(buf, end, &val64, outbuf));
+  /* TODO: should we throw an error if any of the high bits in val64 are set? */
+  *val = (uint32_t)val64;
+  return UPB_STATUS_OK;
+}
+
+INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
+                                       uint32_t *val, uint8_t **outbuf)
+{
+  uint8_t *uint32_end = buf + sizeof(uint32_t);
+  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
+#if UPB_UNALIGNED_READS_OK
+  *val = *(uint32_t*)buf;
+#else
+#define SHL(val, bits) ((uint32_t)val << bits)
+  *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
+#undef SHL
+#endif
+  *outbuf = uint32_end;
+  return UPB_STATUS_OK;
+}
+
+INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
+                                       uint64_t *val, uint8_t **outbuf)
+{
+  uint8_t *uint64_end = buf + sizeof(uint64_t);
+  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
+#if UPB_UNALIGNED_READS_OK
+  *val = *(uint64_t*)buf;
+#else
+#define SHL(val, bits) ((uint64_t)val << bits)
+  *val = SHL(b[0],  0) | SHL(b[1],  8) | SHL(b[2], 16) | SHL(b[3], 24) |
+         SHL(b[4], 32) | SHL(b[5], 40) | SHL(b[6], 48) | SHL(b[7], 56) |
+#undef SHL
+#endif
+  *outbuf = uint64_end;
+  return UPB_STATUS_OK;
+}
+
+INLINE int32_t zz_decode_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
+INLINE int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
+
+
+#define WVTOV(type, wire_t, val_t) \
+  INLINE void upb_wvtov_ ## type(wire_t s, val_t *d)
+
+#define GET(type, v_or_f, wire_t, val_t, member_name) \
+  INLINE upb_status_t upb_get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, uint8_t **outbuf) { \
+    wire_t tmp; \
+    UPB_CHECK(upb_get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, outbuf)); \
+    upb_wvtov_ ## type(tmp, d); \
+    return UPB_STATUS_OK; \
+  }
+
+#define T(type, v_or_f, wire_t, val_t, member_name) \
+  WVTOV(type, wire_t, val_t);  /* prototype for GET below */ \
+  GET(type, v_or_f, wire_t, val_t, member_name) \
+  WVTOV(type, wire_t, val_t)
+
+T(DOUBLE,   f, uint64_t, double,   _double) { memcpy(d, &s, sizeof(double)); }
+T(FLOAT,    f, uint32_t, float,    _float)  { memcpy(d, &s, sizeof(float));  }
+T(INT32,    v, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
+T(INT64,    v, uint64_t, int64_t,  int64)   { *d = (int64_t)s;               }
+T(UINT32,   v, uint32_t, uint32_t, uint32)  { *d = s;                        }
+T(UINT64,   v, uint64_t, uint64_t, uint64)  { *d = s;                        }
+T(SINT32,   v, uint32_t, int32_t,  int32)   { *d = zz_decode_32(s);          }
+T(SINT64,   v, uint64_t, int64_t,  int64)   { *d = zz_decode_64(s);          }
+T(FIXED32,  f, uint32_t, uint32_t, uint32)  { *d = s;                        }
+T(FIXED64,  f, uint64_t, uint64_t, uint64)  { *d = s;                        }
+T(SFIXED32, f, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
+T(SFIXED64, f, uint64_t, int64_t,  int64)   { *d = (int64_t)s;               }
+T(BOOL,     v, uint32_t, bool,     _bool)   { *d = (bool)s;                  }
+T(ENUM,     v, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
+#undef WVTOV
+#undef GET
+#undef T
+
+INLINE upb_status_t parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
+                              uint8_t **outbuf)
+{
+  uint32_t tag_int;
+  UPB_CHECK(upb_get_v_uint32_t(buf, end, &tag_int, outbuf));
+  tag->wire_type    = (upb_wire_type_t)(tag_int & 0x07);
+  tag->field_number = tag_int >> 3;
+  return UPB_STATUS_OK;
+}
 
 #ifdef __cplusplus
 }  /* extern "C" */

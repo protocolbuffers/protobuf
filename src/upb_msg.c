@@ -231,7 +231,7 @@ void upb_msg_reuse_array(struct upb_array **arr, uint32_t size, upb_field_type_t
   }
   struct mm_upb_array *a = (void*)*arr;
   if(a->size < size) {
-    size = max(16, round_up_to_pow2(size));
+    size = max(4, round_up_to_pow2(size));
     size_t type_size = upb_type_info[t].size;
     a->a.elements._void = realloc(a->a.elements._void, size * type_size);
     /* Zero any newly initialized memory. */
@@ -246,7 +246,6 @@ void upb_msg_reuse_strref(struct upb_string **str) { upb_msg_reuse_str(str, 0); 
 void upb_msg_reuse_submsg(void **msg, struct upb_msg *m)
 {
   if(!*msg) *msg = upb_msgdata_new(m);
-  else upb_msg_clear(*msg, m); /* Clears set bits, leaves pointers. */
 }
 
 /* Serialization/Deserialization.  ********************************************/
@@ -275,7 +274,6 @@ static union upb_value_ptr get_value_ptr(void *data, struct upb_msg_field *f)
     p = upb_array_getelementptr(*p.arr, len, f->type);
     assert(p._void);
   }
-  upb_msg_set(data, f);
   assert(p._void);
   return p;
 }
@@ -286,8 +284,9 @@ static upb_status_t value_cb(void *udata, uint8_t *buf, uint8_t *end,
   struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(s->top->data, f);
+  upb_msg_set(s->top->data, f);
   UPB_CHECK(upb_parse_value(buf, end, f->type, p, outbuf));
-  google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
+  //google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
   //upb_text_printfield(&s->p, *fd->name, f->type, upb_deref(p, f->type), stdout);
   return UPB_STATUS_OK;
 }
@@ -297,6 +296,7 @@ static void str_cb(void *udata, struct upb_string *str, void *user_field_desc)
   struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
   union upb_value_ptr p = get_value_ptr(s->top->data, f);
+  upb_msg_set(s->top->data, f);
   if(s->byref) {
     upb_msg_reuse_strref(p.str);
     **p.str = *str;
@@ -312,13 +312,16 @@ static void submsg_start_cb(void *udata, void *user_field_desc)
 {
   struct upb_msg_parse_state *s = udata;
   struct upb_msg_field *f = user_field_desc;
-  union upb_value_ptr p = get_value_ptr(s->top->data, f);
-  assert(f->ref.msg);
-  upb_msg_reuse_submsg(p.msg, f->ref.msg);
+  struct upb_msg *m = f->ref.msg;
+  void *data = s->top->data;  /* The message from the existing frame. */
+  union upb_value_ptr p = get_value_ptr(data, f);
+  upb_msg_reuse_submsg(p.msg, m);
+  if(!upb_msg_isset(data, f) || !s->merge)
+    upb_msg_clear(*p.msg, m);
+  upb_msg_set(data, f);
   s->top++;
-  s->top->m = f->ref.msg;
+  s->top->m = m;
   s->top->data = *p.msg;
-  if(!s->merge) upb_msg_clear(s->top->data, s->top->m);
   //upb_text_push(&s->p, *s->top->m->descriptor->name, stdout);
 }
 
