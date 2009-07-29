@@ -219,8 +219,8 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
  *                             uint8_t **outbuf);
  *
  *  // Given an already read wire value s (source), convert it to a .proto
- *  // value and store it in *d (destination).
- *  void upb_wvtov_INT32(uint32_t s, int32_t *d);
+ *  // value and return it.
+ *  int32_t upb_wvtov_INT32(uint32_t s);
  */
 
 #define WVTOV(type, wire_t, val_t) \
