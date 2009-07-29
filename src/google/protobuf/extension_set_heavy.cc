@@ -1,0 +1,218 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// http://code.google.com/p/protobuf/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// Contains methods defined in extension_set.h which cannot be part of the
+// lite library because they use descriptors or reflection.
+
+#include <google/protobuf/extension_set.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/wire_format.h>
+
+namespace google {
+namespace protobuf {
+namespace internal {
+
+void ExtensionSet::AppendToList(const Descriptor* containing_type,
+                                const DescriptorPool* pool,
+                                vector<const FieldDescriptor*>* output) const {
+  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    bool has = false;
+    if (iter->second.is_repeated) {
+      has = iter->second.GetSize() > 0;
+    } else {
+      has = !iter->second.is_cleared;
+    }
+
+    if (has) {
+      output->push_back(
+          pool->FindExtensionByNumber(containing_type, iter->first));
+    }
+  }
+}
+
+inline FieldDescriptor::CppType cpp_type(FieldType type) {
+  return FieldDescriptor::TypeToCppType(
+      static_cast<FieldDescriptor::Type>(type));
+}
+
+#define GOOGLE_DCHECK_TYPE(EXTENSION, LABEL, CPPTYPE)                            \
+  GOOGLE_DCHECK_EQ((EXTENSION).is_repeated ? FieldDescriptor::LABEL_REPEATED     \
+                                  : FieldDescriptor::LABEL_OPTIONAL,      \
+            FieldDescriptor::LABEL_##LABEL);                              \
+  GOOGLE_DCHECK_EQ(cpp_type((EXTENSION).type), FieldDescriptor::CPPTYPE_##CPPTYPE)
+
+const MessageLite& ExtensionSet::GetMessage(int number,
+                                            const Descriptor* message_type,
+                                            MessageFactory* factory) const {
+  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  if (iter == extensions_.end() || iter->second.is_cleared) {
+    // Not present.  Return the default value.
+    return *factory->GetPrototype(message_type);
+  } else {
+    GOOGLE_DCHECK_TYPE(iter->second, OPTIONAL, MESSAGE);
+    return *iter->second.message_value;
+  }
+}
+
+MessageLite* ExtensionSet::MutableMessage(int number, FieldType type,
+                                          const Descriptor* message_type,
+                                          MessageFactory* factory) {
+  Extension* extension;
+  if (MaybeNewExtension(number, &extension)) {
+    extension->type = type;
+    GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
+    extension->is_repeated = false;
+    extension->is_packed = false;
+    const MessageLite* prototype = factory->GetPrototype(message_type);
+    GOOGLE_CHECK(prototype != NULL);
+    extension->message_value = prototype->New();
+  } else {
+    GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
+  }
+  extension->is_cleared = false;
+  return extension->message_value;
+}
+
+MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
+                                      const Descriptor* message_type,
+                                      MessageFactory* factory) {
+  Extension* extension;
+  if (MaybeNewExtension(number, &extension)) {
+    extension->type = type;
+    GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
+    extension->is_repeated = true;
+    extension->repeated_message_value =
+      new RepeatedPtrField<MessageLite>();
+  } else {
+    GOOGLE_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
+  }
+
+  // RepeatedPtrField<Message> does not know how to Add() since it cannot
+  // allocate an abstract object, so we have to be tricky.
+  MessageLite* result = extension->repeated_message_value
+      ->AddFromCleared<internal::GenericTypeHandler<MessageLite> >();
+  if (result == NULL) {
+    const MessageLite* prototype;
+    if (extension->repeated_message_value->size() == 0) {
+      prototype = factory->GetPrototype(message_type);
+      GOOGLE_CHECK(prototype != NULL);
+    } else {
+      prototype = &extension->repeated_message_value->Get(0);
+    }
+    result = prototype->New();
+    extension->repeated_message_value->AddAllocated(result);
+  }
+  return result;
+}
+
+bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
+                              const MessageLite* containing_type,
+                              UnknownFieldSet* unknown_fields) {
+  UnknownFieldSetFieldSkipper skipper(unknown_fields);
+  return ParseField(tag, input, containing_type, &skipper);
+}
+
+bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
+                                   const MessageLite* containing_type,
+                                   UnknownFieldSet* unknown_fields) {
+  UnknownFieldSetFieldSkipper skipper(unknown_fields);
+  return ParseMessageSet(input, containing_type, &skipper);
+}
+
+int ExtensionSet::SpaceUsedExcludingSelf() const {
+  int total_size =
+      extensions_.size() * sizeof(map<int, Extension>::value_type);
+  for (map<int, Extension>::const_iterator iter = extensions_.begin(),
+       end = extensions_.end();
+       iter != end;
+       ++iter) {
+    total_size += iter->second.SpaceUsedExcludingSelf();
+  }
+  return total_size;
+}
+
+int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
+  int total_size = 0;
+  if (is_repeated) {
+    switch (cpp_type(type)) {
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
+      case WireFormatLite::CPPTYPE_##UPPERCASE:                    \
+        total_size += sizeof(*repeated_##LOWERCASE##_value) +      \
+            repeated_##LOWERCASE##_value->SpaceUsedExcludingSelf();\
+        break
+
+      HANDLE_TYPE(  INT32,   int32);
+      HANDLE_TYPE(  INT64,   int64);
+      HANDLE_TYPE( UINT32,  uint32);
+      HANDLE_TYPE( UINT64,  uint64);
+      HANDLE_TYPE(  FLOAT,   float);
+      HANDLE_TYPE( DOUBLE,  double);
+      HANDLE_TYPE(   BOOL,    bool);
+      HANDLE_TYPE(   ENUM,    enum);
+      HANDLE_TYPE( STRING,  string);
+
+      case WireFormatLite::CPPTYPE_MESSAGE:
+        // repeated_message_value is actually a RepeatedPtrField<MessageLite>,
+        // but MessageLite has no SpaceUsed(), so we must directly call
+        // RepeatedPtrFieldBase::SpaceUsedExcludingSelf() with a different type
+        // handler.
+        total_size += sizeof(*repeated_message_value) +
+            repeated_message_value->
+              RepeatedPtrFieldBase::SpaceUsedExcludingSelf<
+                GenericTypeHandler<Message> >();
+        break;
+    }
+  } else {
+    switch (cpp_type(type)) {
+      case WireFormatLite::CPPTYPE_STRING:
+        total_size += sizeof(*string_value) +
+                      StringSpaceUsedExcludingSelf(*string_value);
+        break;
+      case WireFormatLite::CPPTYPE_MESSAGE:
+        total_size += down_cast<Message*>(message_value)->SpaceUsed();
+        break;
+      default:
+        // No extra storage costs for primitive types.
+        break;
+    }
+  }
+  return total_size;
+}
+
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

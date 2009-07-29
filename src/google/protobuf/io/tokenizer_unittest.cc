@@ -487,6 +487,7 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(0xabcdef12u, ParseInteger("0xABCDEF12"));
   EXPECT_EQ(kuint64max, ParseInteger("0xFFFFFFFFFFFFFFFF"));
   EXPECT_EQ(01234567, ParseInteger("01234567"));
+  EXPECT_EQ(0X123, ParseInteger("0X123"));
 
   // Test invalid integers that may still be tokenized as integers.
   EXPECT_EQ(0, ParseInteger("0x"));

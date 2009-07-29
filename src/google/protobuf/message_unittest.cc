@@ -248,36 +248,6 @@ TEST(MessageTest, ParseFailsOnInvalidMessageEnd) {
   EXPECT_FALSE(message.ParseFromArray("\014", 1));
 }
 
-TEST(MessageTest, FieldConstantValues) {
-  unittest::TestRequired message;
-  EXPECT_EQ(protobuf_unittest::TestAllTypes_NestedMessage::kBbFieldNumber, 1);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kOptionalInt32FieldNumber, 1);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kOptionalgroupFieldNumber, 16);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kOptionalNestedMessageFieldNumber,
-    18);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kOptionalNestedEnumFieldNumber,
-    21);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kRepeatedInt32FieldNumber, 31);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kRepeatedgroupFieldNumber, 46);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kRepeatedNestedMessageFieldNumber,
-    48);
-  EXPECT_EQ(protobuf_unittest::TestAllTypes::kRepeatedNestedEnumFieldNumber,
-    51);
-}
-
-TEST(MessageTest, ExtensionConstantValues) {
-  EXPECT_EQ(protobuf_unittest::TestRequired::kSingleFieldNumber, 1000);
-  EXPECT_EQ(protobuf_unittest::TestRequired::kMultiFieldNumber, 1001);
-  EXPECT_EQ(protobuf_unittest::kOptionalInt32ExtensionFieldNumber, 1);
-  EXPECT_EQ(protobuf_unittest::kOptionalgroupExtensionFieldNumber, 16);
-  EXPECT_EQ(protobuf_unittest::kOptionalNestedMessageExtensionFieldNumber, 18);
-  EXPECT_EQ(protobuf_unittest::kOptionalNestedEnumExtensionFieldNumber, 21);
-  EXPECT_EQ(protobuf_unittest::kRepeatedInt32ExtensionFieldNumber, 31);
-  EXPECT_EQ(protobuf_unittest::kRepeatedgroupExtensionFieldNumber, 46);
-  EXPECT_EQ(protobuf_unittest::kRepeatedNestedMessageExtensionFieldNumber, 48);
-  EXPECT_EQ(protobuf_unittest::kRepeatedNestedEnumExtensionFieldNumber, 51);
-}
-
 TEST(MessageFactoryTest, GeneratedFactoryLookup) {
   EXPECT_EQ(
     MessageFactory::generated_factory()->GetPrototype(

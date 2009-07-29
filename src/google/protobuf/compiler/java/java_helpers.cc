@@ -37,6 +37,7 @@
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 
 namespace google {
 namespace protobuf {
@@ -241,6 +242,72 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
+}
+
+bool AllAscii(const string& text) {
+  for (int i = 0; i < text.size(); i++) {
+    if ((text[i] & 0x80) != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+string DefaultValue(const FieldDescriptor* field) {
+  // Switch on cpp_type since we need to know which default_value_* method
+  // of FieldDescriptor to call.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return SimpleItoa(field->default_value_int32());
+    case FieldDescriptor::CPPTYPE_UINT32:
+      // Need to print as a signed int since Java has no unsigned.
+      return SimpleItoa(static_cast<int32>(field->default_value_uint32()));
+    case FieldDescriptor::CPPTYPE_INT64:
+      return SimpleItoa(field->default_value_int64()) + "L";
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return SimpleItoa(static_cast<int64>(field->default_value_uint64())) +
+             "L";
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return SimpleDtoa(field->default_value_double()) + "D";
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return SimpleFtoa(field->default_value_float()) + "F";
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() ? "true" : "false";
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (field->type() == FieldDescriptor::TYPE_BYTES) {
+        if (field->has_default_value()) {
+          // See comments in Internal.java for gory details.
+          return strings::Substitute(
+            "com.google.protobuf.Internal.bytesDefaultValue(\"$0\")",
+            CEscape(field->default_value_string()));
+        } else {
+          return "com.google.protobuf.ByteString.EMPTY";
+        }
+      } else {
+        if (AllAscii(field->default_value_string())) {
+          // All chars are ASCII.  In this case CEscape() works fine.
+          return "\"" + CEscape(field->default_value_string()) + "\"";
+        } else {
+          // See comments in Internal.java for gory details.
+          return strings::Substitute(
+            "com.google.protobuf.Internal.stringDefaultValue(\"$0\")",
+            CEscape(field->default_value_string()));
+        }
+      }
+
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return ClassName(field->enum_type()) + "." +
+             field->default_value_enum()->name();
+
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return ClassName(field->message_type()) + ".getDefaultInstance()";
+
+    // No default because we want the compiler to complain if any new
+    // types are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return "";
 }
 
 }  // namespace java

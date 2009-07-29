@@ -102,7 +102,8 @@ class TestUtil {
   static void ExpectLastRepeatedExtensionsRemoved(
       const unittest::TestAllExtensions& message);
 
-  // Check that all repeated fields have had their first and last elements swapped.
+  // Check that all repeated fields have had their first and last elements
+  // swapped.
   static void ExpectRepeatedsSwapped(const unittest::TestAllTypes& message);
   static void ExpectRepeatedExtensionsSwapped(
       const unittest::TestAllExtensions& message);

@@ -43,6 +43,8 @@ import protobuf_unittest.MultipleFilesTestProto;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.EnumWithNoOuter;
 import protobuf_unittest.ServiceWithNoOuter;
+import com.google.protobuf.UnittestLite;
+import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 
 import junit.framework.TestCase;
 import java.util.Arrays;
@@ -76,6 +78,17 @@ public class GeneratedMessageTest extends TestCase {
     builder.build();
     try {
       builder.build();
+      fail("Should have thrown exception.");
+    } catch (IllegalStateException e) {
+      // Success.
+    }
+  }
+
+  public void testClearAfterBuildError() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    builder.build();
+    try {
+      builder.clear();
       fail("Should have thrown exception.");
     } catch (IllegalStateException e) {
       // Success.
@@ -338,6 +351,16 @@ public class GeneratedMessageTest extends TestCase {
         instanceof ProtocolMessageEnum);
   }
 
+  public void testEnumMap() throws Exception {
+    Internal.EnumLiteMap<ForeignEnum> map = ForeignEnum.internalGetValueMap();
+
+    for (ForeignEnum value : ForeignEnum.values()) {
+      assertEquals(value, map.findValueByNumber(value.getNumber()));
+    }
+
+    assertTrue(map.findValueByNumber(12345) == null);
+  }
+
   // =================================================================
   // Extensions.
 
@@ -420,6 +443,12 @@ public class GeneratedMessageTest extends TestCase {
         .getExtensionCount(UnittestProto.repeatedInt32Extension));
   }
 
+  public void testExtensionCopy() throws Exception {
+    TestAllExtensions original = TestUtil.getAllExtensionsSet();
+    TestAllExtensions copy = TestAllExtensions.newBuilder(original).build();
+    TestUtil.assertAllExtensionsSet(copy);
+  }
+
   public void testExtensionMergeFrom() throws Exception {
     TestAllExtensions original =
       TestAllExtensions.newBuilder()
@@ -429,6 +458,66 @@ public class GeneratedMessageTest extends TestCase {
     assertTrue(merged.hasExtension(UnittestProto.optionalInt32Extension));
     assertEquals(
         1, (int) merged.getExtension(UnittestProto.optionalInt32Extension));
+  }
+
+  // =================================================================
+  // Lite Extensions.
+
+  // We test lite extensions directly because they have a separate
+  // implementation from full extensions.  In contrast, we do not test
+  // lite fields directly since they are implemented exactly the same as
+  // regular fields.
+
+  public void testLiteExtensionAccessors() throws Exception {
+    TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.newBuilder();
+    TestUtil.setAllExtensions(builder);
+    TestAllExtensionsLite message = builder.build();
+    TestUtil.assertAllExtensionsSet(message);
+  }
+
+  public void testLiteExtensionRepeatedSetters() throws Exception {
+    TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.newBuilder();
+    TestUtil.setAllExtensions(builder);
+    TestUtil.modifyRepeatedExtensions(builder);
+    TestAllExtensionsLite message = builder.build();
+    TestUtil.assertRepeatedExtensionsModified(message);
+  }
+
+  public void testLiteExtensionDefaults() throws Exception {
+    TestUtil.assertExtensionsClear(TestAllExtensionsLite.getDefaultInstance());
+    TestUtil.assertExtensionsClear(TestAllExtensionsLite.newBuilder().build());
+  }
+
+  public void testClearLiteExtension() throws Exception {
+    // clearExtension() is not actually used in TestUtil, so try it manually.
+    assertFalse(
+      TestAllExtensionsLite.newBuilder()
+        .setExtension(UnittestLite.optionalInt32ExtensionLite, 1)
+        .clearExtension(UnittestLite.optionalInt32ExtensionLite)
+        .hasExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertEquals(0,
+      TestAllExtensionsLite.newBuilder()
+        .addExtension(UnittestLite.repeatedInt32ExtensionLite, 1)
+        .clearExtension(UnittestLite.repeatedInt32ExtensionLite)
+        .getExtensionCount(UnittestLite.repeatedInt32ExtensionLite));
+  }
+
+  public void testLiteExtensionCopy() throws Exception {
+    TestAllExtensionsLite original = TestUtil.getAllLiteExtensionsSet();
+    TestAllExtensionsLite copy =
+        TestAllExtensionsLite.newBuilder(original).build();
+    TestUtil.assertAllExtensionsSet(copy);
+  }
+
+  public void testLiteExtensionMergeFrom() throws Exception {
+    TestAllExtensionsLite original =
+      TestAllExtensionsLite.newBuilder()
+        .setExtension(UnittestLite.optionalInt32ExtensionLite, 1).build();
+    TestAllExtensionsLite merged =
+        TestAllExtensionsLite.newBuilder().mergeFrom(original).build();
+    assertTrue(merged.hasExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertEquals(
+        1, (int) merged.getExtension(UnittestLite.optionalInt32ExtensionLite));
   }
 
   // =================================================================

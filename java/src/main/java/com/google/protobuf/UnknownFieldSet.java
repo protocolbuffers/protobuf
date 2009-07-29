@@ -30,15 +30,17 @@
 
 package com.google.protobuf;
 
-import java.io.InputStream;
+import com.google.protobuf.Internal.ThreadLocalQuickQueue;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * {@code UnknownFieldSet} is used to keep track of fields which were seen when
@@ -48,56 +50,59 @@ import java.util.Map;
  * compiled before the new types were added.
  *
  * <p>Every {@link Message} contains an {@code UnknownFieldSet} (and every
- * {@link Message.Builder} contains an {@link UnknownFieldSet.Builder}).
+ * {@link Message.Builder} contains an {@link Builder}).
  *
  * <p>Most users will never need to use this class.
  *
  * @author kenton@google.com Kenton Varda
  */
-public final class UnknownFieldSet {
+public final class UnknownFieldSet implements MessageLite {
   private UnknownFieldSet() {}
 
-  /** Create a new {@link UnknownFieldSet.Builder}. */
+  /** Create a new {@link Builder}. */
   public static Builder newBuilder() {
-    return new Builder();
+    return Builder.create();
   }
 
   /**
-   * Create a new {@link UnknownFieldSet.Builder} and initialize it to be a copy
+   * Create a new {@link Builder} and initialize it to be a copy
    * of {@code copyFrom}.
    */
-  public static Builder newBuilder(UnknownFieldSet copyFrom) {
-    return new Builder().mergeFrom(copyFrom);
+  public static Builder newBuilder(final UnknownFieldSet copyFrom) {
+    return newBuilder().mergeFrom(copyFrom);
   }
 
   /** Get an empty {@code UnknownFieldSet}. */
   public static UnknownFieldSet getDefaultInstance() {
     return defaultInstance;
   }
-  private static UnknownFieldSet defaultInstance =
+  public UnknownFieldSet getDefaultInstanceForType() {
+    return defaultInstance;
+  }
+  private static final UnknownFieldSet defaultInstance =
     new UnknownFieldSet(Collections.<Integer, Field>emptyMap());
 
   /**
    * Construct an {@code UnknownFieldSet} around the given map.  The map is
    * expected to be immutable.
    */
-  private UnknownFieldSet(Map<Integer, Field> fields) {
+  private UnknownFieldSet(final Map<Integer, Field> fields) {
     this.fields = fields;
   }
   private Map<Integer, Field> fields;
 
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(final Object other) {
     if (this == other) {
       return true;
     }
     return (other instanceof UnknownFieldSet) &&
-        this.fields.equals(((UnknownFieldSet) other).fields);
+           fields.equals(((UnknownFieldSet) other).fields);
   }
 
   @Override
   public int hashCode() {
-    return this.fields.hashCode();
+    return fields.hashCode();
   }
 
   /** Get a map of fields in the set by number. */
@@ -106,7 +111,7 @@ public final class UnknownFieldSet {
   }
 
   /** Check if the given field number is present in the set. */
-  public boolean hasField(int number) {
+  public boolean hasField(final int number) {
     return fields.containsKey(number);
   }
 
@@ -114,14 +119,14 @@ public final class UnknownFieldSet {
    * Get a field by number.  Returns an empty field if not present.  Never
    * returns {@code null}.
    */
-  public Field getField(int number) {
-    Field result = fields.get(number);
+  public Field getField(final int number) {
+    final Field result = fields.get(number);
     return (result == null) ? Field.getDefaultInstance() : result;
   }
 
   /** Serializes the set and writes it to {@code output}. */
-  public void writeTo(CodedOutputStream output) throws IOException {
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+  public void writeTo(final CodedOutputStream output) throws IOException {
+    for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
       entry.getValue().writeTo(entry.getKey(), output);
     }
   }
@@ -131,7 +136,8 @@ public final class UnknownFieldSet {
    * just a trivial wrapper around
    * {@link TextFormat#printToString(UnknownFieldSet)}.
    */
-  public final String toString() {
+  @Override
+  public String toString() {
     return TextFormat.printToString(this);
   }
 
@@ -139,13 +145,13 @@ public final class UnknownFieldSet {
    * Serializes the message to a {@code ByteString} and returns it. This is
    * just a trivial wrapper around {@link #writeTo(CodedOutputStream)}.
    */
-  public final ByteString toByteString() {
+  public ByteString toByteString() {
     try {
-      ByteString.CodedBuilder out =
+      final ByteString.CodedBuilder out =
         ByteString.newCodedBuilder(getSerializedSize());
       writeTo(out.getCodedOutput());
       return out.build();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(
         "Serializing to a ByteString threw an IOException (should " +
         "never happen).", e);
@@ -156,14 +162,14 @@ public final class UnknownFieldSet {
    * Serializes the message to a {@code byte} array and returns it.  This is
    * just a trivial wrapper around {@link #writeTo(CodedOutputStream)}.
    */
-  public final byte[] toByteArray() {
+  public byte[] toByteArray() {
     try {
-      byte[] result = new byte[getSerializedSize()];
-      CodedOutputStream output = CodedOutputStream.newInstance(result);
+      final byte[] result = new byte[getSerializedSize()];
+      final CodedOutputStream output = CodedOutputStream.newInstance(result);
       writeTo(output);
       output.checkNoSpaceLeft();
       return result;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(
         "Serializing to a byte array threw an IOException " +
         "(should never happen).", e);
@@ -174,8 +180,15 @@ public final class UnknownFieldSet {
    * Serializes the message and writes it to {@code output}.  This is just a
    * trivial wrapper around {@link #writeTo(CodedOutputStream)}.
    */
-  public final void writeTo(OutputStream output) throws IOException {
-    CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+  public void writeTo(final OutputStream output) throws IOException {
+    final CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    writeTo(codedOutput);
+    codedOutput.flush();
+  }
+
+  public void writeDelimitedTo(OutputStream output) throws IOException {
+    final CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    codedOutput.writeRawVarint32(getSerializedSize());
     writeTo(codedOutput);
     codedOutput.flush();
   }
@@ -183,7 +196,7 @@ public final class UnknownFieldSet {
   /** Get the number of bytes required to encode this set. */
   public int getSerializedSize() {
     int result = 0;
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+    for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
       result += entry.getValue().getSerializedSize(entry.getKey());
     }
     return result;
@@ -193,9 +206,9 @@ public final class UnknownFieldSet {
    * Serializes the set and writes it to {@code output} using
    * {@code MessageSet} wire format.
    */
-  public void writeAsMessageSetTo(CodedOutputStream output)
+  public void writeAsMessageSetTo(final CodedOutputStream output)
       throws IOException {
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+    for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
       entry.getValue().writeAsMessageSetExtensionTo(
         entry.getKey(), output);
     }
@@ -207,35 +220,49 @@ public final class UnknownFieldSet {
    */
   public int getSerializedSizeAsMessageSet() {
     int result = 0;
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+    for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
       result += entry.getValue().getSerializedSizeAsMessageSetExtension(
         entry.getKey());
     }
     return result;
   }
 
+  public boolean isInitialized() {
+    // UnknownFieldSets do not have required fields, so they are always
+    // initialized.
+    return true;
+  }
+
   /** Parse an {@code UnknownFieldSet} from the given input stream. */
-  static public UnknownFieldSet parseFrom(CodedInputStream input)
+  public static UnknownFieldSet parseFrom(final CodedInputStream input)
                                           throws IOException {
     return newBuilder().mergeFrom(input).build();
   }
 
   /** Parse {@code data} as an {@code UnknownFieldSet} and return it. */
-  public static UnknownFieldSet parseFrom(ByteString data)
+  public static UnknownFieldSet parseFrom(final ByteString data)
       throws InvalidProtocolBufferException {
     return newBuilder().mergeFrom(data).build();
   }
 
   /** Parse {@code data} as an {@code UnknownFieldSet} and return it. */
-  public static UnknownFieldSet parseFrom(byte[] data)
+  public static UnknownFieldSet parseFrom(final byte[] data)
       throws InvalidProtocolBufferException {
     return newBuilder().mergeFrom(data).build();
   }
 
   /** Parse an {@code UnknownFieldSet} from {@code input} and return it. */
-  public static UnknownFieldSet parseFrom(InputStream input)
+  public static UnknownFieldSet parseFrom(final InputStream input)
                                           throws IOException {
     return newBuilder().mergeFrom(input).build();
+  }
+
+  public Builder newBuilderForType() {
+    return newBuilder();
+  }
+
+  public Builder toBuilder() {
+    return newBuilder().mergeFrom(this);
   }
 
   /**
@@ -250,21 +277,35 @@ public final class UnknownFieldSet {
    *
    * <p>Use {@link UnknownFieldSet#newBuilder()} to construct a {@code Builder}.
    */
-  public static final class Builder {
+  public static final class Builder implements MessageLite.Builder {
+    private static ThreadLocalQuickQueue<Builder> builders =
+      new ThreadLocalQuickQueue<Builder>();
+
+    // This constructor should never be called directly (except from 'create').
     private Builder() {}
-    private Map<Integer, Field> fields = new TreeMap<Integer, Field>();
+
+    private Map<Integer, Field> fields;
 
     // Optimization:  We keep around a builder for the last field that was
     //   modified so that we can efficiently add to it multiple times in a
     //   row (important when parsing an unknown repeated field).
-    int lastFieldNumber = 0;
-    Field.Builder lastField = null;
+    private int lastFieldNumber;
+    private Field.Builder lastField;
+
+    private static Builder create() {
+      Builder builder = builders.get().poll();
+      if (builder == null) {
+        builder = new Builder();
+      }
+      builder.reinitialize();
+      return builder;
+    }
 
     /**
      * Get a field builder for the given field number which includes any
      * values that already exist.
      */
-    private Field.Builder getFieldBuilder(int number) {
+    private Field.Builder getFieldBuilder(final int number) {
       if (lastField != null) {
         if (number == lastFieldNumber) {
           return lastField;
@@ -275,7 +316,7 @@ public final class UnknownFieldSet {
       if (number == 0) {
         return null;
       } else {
-        Field existing = fields.get(number);
+        final Field existing = fields.get(number);
         lastFieldNumber = number;
         lastField = Field.newBuilder();
         if (existing != null) {
@@ -289,26 +330,48 @@ public final class UnknownFieldSet {
      * Build the {@link UnknownFieldSet} and return it.
      *
      * <p>Once {@code build()} has been called, the {@code Builder} will no
-     * longer be usable.  Calling any method after {@code build()} will throw
-     * {@code NullPointerException}.
+     * longer be usable.  Calling any method after {@code build()} will result
+     * in undefined behavior and can cause a {@code NullPointerException} to be
+     * thrown.
      */
     public UnknownFieldSet build() {
       getFieldBuilder(0);  // Force lastField to be built.
-      UnknownFieldSet result;
+      final UnknownFieldSet result;
       if (fields.isEmpty()) {
         result = getDefaultInstance();
       } else {
         result = new UnknownFieldSet(Collections.unmodifiableMap(fields));
       }
       fields = null;
+      builders.get().offer(this);
       return result;
+    }
+
+    public UnknownFieldSet buildPartial() {
+      // No required fields, so this is the same as build().
+      return build();
+    }
+
+    @Override
+    public Builder clone() {
+      getFieldBuilder(0);  // Force lastField to be built.
+      return UnknownFieldSet.newBuilder().mergeFrom(
+          new UnknownFieldSet(fields));
+    }
+
+    public UnknownFieldSet getDefaultInstanceForType() {
+      return UnknownFieldSet.getDefaultInstance();
+    }
+
+    private void reinitialize() {
+      fields = Collections.emptyMap();
+      lastFieldNumber = 0;
+      lastField = null;
     }
 
     /** Reset the builder to an empty set. */
     public Builder clear() {
-      fields = new TreeMap<Integer, Field>();
-      lastFieldNumber = 0;
-      lastField = null;
+      reinitialize();
       return this;
     }
 
@@ -317,9 +380,9 @@ public final class UnknownFieldSet {
      * exists in both sets, {@code other}'s values for that field will be
      * appended to the values in this set.
      */
-    public Builder mergeFrom(UnknownFieldSet other) {
+    public Builder mergeFrom(final UnknownFieldSet other) {
       if (other != getDefaultInstance()) {
-        for (Map.Entry<Integer, Field> entry : other.fields.entrySet()) {
+        for (final Map.Entry<Integer, Field> entry : other.fields.entrySet()) {
           mergeField(entry.getKey(), entry.getValue());
         }
       }
@@ -330,7 +393,7 @@ public final class UnknownFieldSet {
      * Add a field to the {@code UnknownFieldSet}.  If a field with the same
      * number already exists, the two are merged.
      */
-    public Builder mergeField(int number, Field field) {
+    public Builder mergeField(final int number, final Field field) {
       if (number == 0) {
         throw new IllegalArgumentException("Zero is not a valid field number.");
       }
@@ -350,7 +413,7 @@ public final class UnknownFieldSet {
      * value.  This is used in particular when an unknown enum value is
      * encountered.
      */
-    public Builder mergeVarintField(int number, int value) {
+    public Builder mergeVarintField(final int number, final int value) {
       if (number == 0) {
         throw new IllegalArgumentException("Zero is not a valid field number.");
       }
@@ -359,7 +422,7 @@ public final class UnknownFieldSet {
     }
 
     /** Check if the given field number is present in the set. */
-    public boolean hasField(int number) {
+    public boolean hasField(final int number) {
       if (number == 0) {
         throw new IllegalArgumentException("Zero is not a valid field number.");
       }
@@ -370,7 +433,7 @@ public final class UnknownFieldSet {
      * Add a field to the {@code UnknownFieldSet}.  If a field with the same
      * number already exists, it is removed.
      */
-    public Builder addField(int number, Field field) {
+    public Builder addField(final int number, final Field field) {
       if (number == 0) {
         throw new IllegalArgumentException("Zero is not a valid field number.");
       }
@@ -378,6 +441,9 @@ public final class UnknownFieldSet {
         // Discard this.
         lastField = null;
         lastFieldNumber = 0;
+      }
+      if (fields.isEmpty()) {
+        fields = new TreeMap<Integer,Field>();
       }
       fields.put(number, field);
       return this;
@@ -396,9 +462,9 @@ public final class UnknownFieldSet {
      * Parse an entire message from {@code input} and merge its fields into
      * this set.
      */
-    public Builder mergeFrom(CodedInputStream input) throws IOException {
+    public Builder mergeFrom(final CodedInputStream input) throws IOException {
       while (true) {
-        int tag = input.readTag();
+        final int tag = input.readTag();
         if (tag == 0 || !mergeFieldFrom(tag, input)) {
           break;
         }
@@ -411,9 +477,9 @@ public final class UnknownFieldSet {
      * @param tag The field's tag number, which was already parsed.
      * @return {@code false} if the tag is an engroup tag.
      */
-    public boolean mergeFieldFrom(int tag, CodedInputStream input)
+    public boolean mergeFieldFrom(final int tag, final CodedInputStream input)
                                   throws IOException {
-      int number = WireFormat.getTagFieldNumber(tag);
+      final int number = WireFormat.getTagFieldNumber(tag);
       switch (WireFormat.getTagWireType(tag)) {
         case WireFormat.WIRETYPE_VARINT:
           getFieldBuilder(number).addVarint(input.readInt64());
@@ -424,12 +490,12 @@ public final class UnknownFieldSet {
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
           getFieldBuilder(number).addLengthDelimited(input.readBytes());
           return true;
-        case WireFormat.WIRETYPE_START_GROUP: {
-          UnknownFieldSet.Builder subBuilder = UnknownFieldSet.newBuilder();
-          input.readUnknownGroup(number, subBuilder);
+        case WireFormat.WIRETYPE_START_GROUP:
+          final Builder subBuilder = newBuilder();
+          input.readGroup(number, subBuilder,
+                          ExtensionRegistry.getEmptyRegistry());
           getFieldBuilder(number).addGroup(subBuilder.build());
           return true;
-        }
         case WireFormat.WIRETYPE_END_GROUP:
           return false;
         case WireFormat.WIRETYPE_FIXED32:
@@ -445,16 +511,16 @@ public final class UnknownFieldSet {
      * set being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream)}.
      */
-    public Builder mergeFrom(ByteString data)
+    public Builder mergeFrom(final ByteString data)
         throws InvalidProtocolBufferException {
       try {
-        CodedInputStream input = data.newCodedInput();
+        final CodedInputStream input = data.newCodedInput();
         mergeFrom(input);
         input.checkLastTagWas(0);
         return this;
-      } catch (InvalidProtocolBufferException e) {
+      } catch (final InvalidProtocolBufferException e) {
         throw e;
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new RuntimeException(
           "Reading from a ByteString threw an IOException (should " +
           "never happen).", e);
@@ -466,10 +532,69 @@ public final class UnknownFieldSet {
      * set being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream)}.
      */
-    public Builder mergeFrom(byte[] data)
+    public Builder mergeFrom(final byte[] data)
         throws InvalidProtocolBufferException {
       try {
-        CodedInputStream input = CodedInputStream.newInstance(data);
+        final CodedInputStream input = CodedInputStream.newInstance(data);
+        mergeFrom(input);
+        input.checkLastTagWas(0);
+        return this;
+      } catch (final InvalidProtocolBufferException e) {
+        throw e;
+      } catch (final IOException e) {
+        throw new RuntimeException(
+          "Reading from a byte array threw an IOException (should " +
+          "never happen).", e);
+      }
+    }
+
+    /**
+     * Parse an {@code UnknownFieldSet} from {@code input} and merge it with the
+     * set being built.  This is just a small wrapper around
+     * {@link #mergeFrom(CodedInputStream)}.
+     */
+    public Builder mergeFrom(final InputStream input) throws IOException {
+      final CodedInputStream codedInput = CodedInputStream.newInstance(input);
+      mergeFrom(codedInput);
+      codedInput.checkLastTagWas(0);
+      return this;
+    }
+
+    public Builder mergeDelimitedFrom(InputStream input)
+        throws IOException {
+      final int size = CodedInputStream.readRawVarint32(input);
+      final InputStream limitedInput =
+        new AbstractMessage.Builder.LimitedInputStream(input, size);
+      return mergeFrom(limitedInput, null);
+    }
+
+    public Builder mergeDelimitedFrom(
+        InputStream input,
+        ExtensionRegistryLite extensionRegistry) throws IOException {
+      // UnknownFieldSet has no extensions.
+      return mergeFrom(input);
+    }
+
+    public Builder mergeFrom(
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry) throws IOException {
+      // UnknownFieldSet has no extensions.
+      return mergeFrom(input);
+    }
+
+    public Builder mergeFrom(
+        ByteString data,
+        ExtensionRegistryLite extensionRegistry)
+        throws InvalidProtocolBufferException {
+      // UnknownFieldSet has no extensions.
+      return mergeFrom(data);
+    }
+
+    public Builder mergeFrom(byte[] data, int off, int len)
+        throws InvalidProtocolBufferException {
+      try {
+        final CodedInputStream input =
+            CodedInputStream.newInstance(data, off, len);
         mergeFrom(input);
         input.checkLastTagWas(0);
         return this;
@@ -482,16 +607,33 @@ public final class UnknownFieldSet {
       }
     }
 
-    /**
-     * Parse an {@code UnknownFieldSet} from {@code input} and merge it with the
-     * set being built.  This is just a small wrapper around
-     * {@link #mergeFrom(CodedInputStream)}.
-     */
-    public Builder mergeFrom(InputStream input) throws IOException {
-      CodedInputStream codedInput = CodedInputStream.newInstance(input);
-      mergeFrom(codedInput);
-      codedInput.checkLastTagWas(0);
-      return this;
+    public Builder mergeFrom(
+        byte[] data,
+        ExtensionRegistryLite extensionRegistry)
+        throws InvalidProtocolBufferException {
+      // UnknownFieldSet has no extensions.
+      return mergeFrom(data);
+    }
+
+    public Builder mergeFrom(
+        byte[] data, int off, int len,
+        ExtensionRegistryLite extensionRegistry)
+        throws InvalidProtocolBufferException {
+      // UnknownFieldSet has no extensions.
+      return mergeFrom(data, off, len);
+    }
+
+    public Builder mergeFrom(
+        InputStream input,
+        ExtensionRegistryLite extensionRegistry) throws IOException {
+      // UnknownFieldSet has no extensions.
+      return mergeFrom(input);
+    }
+
+    public boolean isInitialized() {
+      // UnknownFieldSets do not have required fields, so they are always
+      // initialized.
+      return true;
     }
   }
 
@@ -510,7 +652,7 @@ public final class UnknownFieldSet {
    * wire types.
    *
    * <p>{@code Field} is an immutable class.  To construct one, you must use a
-   * {@link Field.Builder}.
+   * {@link Builder}.
    *
    * @see UnknownFieldSet
    */
@@ -519,22 +661,22 @@ public final class UnknownFieldSet {
 
     /** Construct a new {@link Builder}. */
     public static Builder newBuilder() {
-      return new Builder();
+      return Builder.create();
     }
 
     /**
      * Construct a new {@link Builder} and initialize it to a copy of
      * {@code copyFrom}.
      */
-    public static Builder newBuilder(Field copyFrom) {
-      return new Builder().mergeFrom(copyFrom);
+    public static Builder newBuilder(final Field copyFrom) {
+      return newBuilder().mergeFrom(copyFrom);
     }
 
     /** Get an empty {@code Field}. */
     public static Field getDefaultInstance() {
-      return defaultInstance;
+      return fieldDefaultInstance;
     }
-    private static Field defaultInstance = newBuilder().build();
+    private static final Field fieldDefaultInstance = newBuilder().build();
 
     /** Get the list of varint values for this field. */
     public List<Long> getVarintList()               { return varint;          }
@@ -556,14 +698,14 @@ public final class UnknownFieldSet {
     public List<UnknownFieldSet> getGroupList()      { return group;           }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(final Object other) {
       if (this == other) {
         return true;
       }
       if (!(other instanceof Field)) {
         return false;
       }
-      return Arrays.equals(this.getIdentityArray(),
+      return Arrays.equals(getIdentityArray(),
           ((Field) other).getIdentityArray());
     }
 
@@ -574,37 +716,37 @@ public final class UnknownFieldSet {
 
     /**
      * Returns the array of objects to be used to uniquely identify this
-     * {@link UnknownFieldSet.Field} instance.
+     * {@link Field} instance.
      */
     private Object[] getIdentityArray() {
       return new Object[] {
-          this.varint,
-          this.fixed32,
-          this.fixed64,
-          this.lengthDelimited,
-          this.group};
+          varint,
+          fixed32,
+          fixed64,
+          lengthDelimited,
+          group};
     }
 
     /**
      * Serializes the field, including field number, and writes it to
      * {@code output}.
      */
-    public void writeTo(int fieldNumber, CodedOutputStream output)
+    public void writeTo(final int fieldNumber, final CodedOutputStream output)
                         throws IOException {
-      for (long value : varint) {
+      for (final long value : varint) {
         output.writeUInt64(fieldNumber, value);
       }
-      for (int value : fixed32) {
+      for (final int value : fixed32) {
         output.writeFixed32(fieldNumber, value);
       }
-      for (long value : fixed64) {
+      for (final long value : fixed64) {
         output.writeFixed64(fieldNumber, value);
       }
-      for (ByteString value : lengthDelimited) {
+      for (final ByteString value : lengthDelimited) {
         output.writeBytes(fieldNumber, value);
       }
-      for (UnknownFieldSet value : group) {
-        output.writeUnknownGroup(fieldNumber, value);
+      for (final UnknownFieldSet value : group) {
+        output.writeGroup(fieldNumber, value);
       }
     }
 
@@ -612,22 +754,22 @@ public final class UnknownFieldSet {
      * Get the number of bytes required to encode this field, including field
      * number.
      */
-    public int getSerializedSize(int fieldNumber) {
+    public int getSerializedSize(final int fieldNumber) {
       int result = 0;
-      for (long value : varint) {
+      for (final long value : varint) {
         result += CodedOutputStream.computeUInt64Size(fieldNumber, value);
       }
-      for (int value : fixed32) {
+      for (final int value : fixed32) {
         result += CodedOutputStream.computeFixed32Size(fieldNumber, value);
       }
-      for (long value : fixed64) {
+      for (final long value : fixed64) {
         result += CodedOutputStream.computeFixed64Size(fieldNumber, value);
       }
-      for (ByteString value : lengthDelimited) {
+      for (final ByteString value : lengthDelimited) {
         result += CodedOutputStream.computeBytesSize(fieldNumber, value);
       }
-      for (UnknownFieldSet value : group) {
-        result += CodedOutputStream.computeUnknownGroupSize(fieldNumber, value);
+      for (final UnknownFieldSet value : group) {
+        result += CodedOutputStream.computeGroupSize(fieldNumber, value);
       }
       return result;
     }
@@ -637,10 +779,10 @@ public final class UnknownFieldSet {
      * {@code output}, using {@code MessageSet} wire format.
      */
     public void writeAsMessageSetExtensionTo(
-        int fieldNumber,
-        CodedOutputStream output)
+        final int fieldNumber,
+        final CodedOutputStream output)
         throws IOException {
-      for (ByteString value : lengthDelimited) {
+      for (final ByteString value : lengthDelimited) {
         output.writeRawMessageSetExtension(fieldNumber, value);
       }
     }
@@ -649,9 +791,9 @@ public final class UnknownFieldSet {
      * Get the number of bytes required to encode this field, including field
      * number, using {@code MessageSet} wire format.
      */
-    public int getSerializedSizeAsMessageSetExtension(int fieldNumber) {
+    public int getSerializedSizeAsMessageSetExtension(final int fieldNumber) {
       int result = 0;
-      for (ByteString value : lengthDelimited) {
+      for (final ByteString value : lengthDelimited) {
         result += CodedOutputStream.computeRawMessageSetExtensionSize(
           fieldNumber, value);
       }
@@ -670,13 +812,29 @@ public final class UnknownFieldSet {
      * <p>Use {@link Field#newBuilder()} to construct a {@code Builder}.
      */
     public static final class Builder {
+      private static ThreadLocalQuickQueue<Builder> builders =
+        new ThreadLocalQuickQueue<Builder>();
+
+      // This constructor should never be called directly (except from 'create').
       private Builder() {}
-      private Field result = new Field();
+
+      private static Builder create() {
+        Builder builder = builders.get().poll();
+        if (builder == null) {
+          builder = new Builder();
+        }
+
+        builder.result = new Field();
+        return builder;
+      }
+
+      private Field result;
 
       /**
        * Build the field.  After {@code build()} has been called, the
        * {@code Builder} is no longer usable.  Calling any other method will
-       * throw a {@code NullPointerException}.
+       * result in undefined behavior and can cause a
+       * {@code NullPointerException} to be thrown.
        */
       public Field build() {
         if (result.varint == null) {
@@ -706,8 +864,9 @@ public final class UnknownFieldSet {
           result.group = Collections.unmodifiableList(result.group);
         }
 
-        Field returnMe = result;
+        final Field returnMe = result;
         result = null;
+        builders.get().offer(this);
         return returnMe;
       }
 
@@ -722,7 +881,7 @@ public final class UnknownFieldSet {
        * of values, {@code other}'s values are append to the ones in this
        * field.
        */
-      public Builder mergeFrom(Field other) {
+      public Builder mergeFrom(final Field other) {
         if (!other.varint.isEmpty()) {
           if (result.varint == null) {
             result.varint = new ArrayList<Long>();
@@ -757,7 +916,7 @@ public final class UnknownFieldSet {
       }
 
       /** Add a varint value. */
-      public Builder addVarint(long value) {
+      public Builder addVarint(final long value) {
         if (result.varint == null) {
           result.varint = new ArrayList<Long>();
         }
@@ -766,7 +925,7 @@ public final class UnknownFieldSet {
       }
 
       /** Add a fixed32 value. */
-      public Builder addFixed32(int value) {
+      public Builder addFixed32(final int value) {
         if (result.fixed32 == null) {
           result.fixed32 = new ArrayList<Integer>();
         }
@@ -775,7 +934,7 @@ public final class UnknownFieldSet {
       }
 
       /** Add a fixed64 value. */
-      public Builder addFixed64(long value) {
+      public Builder addFixed64(final long value) {
         if (result.fixed64 == null) {
           result.fixed64 = new ArrayList<Long>();
         }
@@ -784,7 +943,7 @@ public final class UnknownFieldSet {
       }
 
       /** Add a length-delimited value. */
-      public Builder addLengthDelimited(ByteString value) {
+      public Builder addLengthDelimited(final ByteString value) {
         if (result.lengthDelimited == null) {
           result.lengthDelimited = new ArrayList<ByteString>();
         }
@@ -793,7 +952,7 @@ public final class UnknownFieldSet {
       }
 
       /** Add an embedded group. */
-      public Builder addGroup(UnknownFieldSet value) {
+      public Builder addGroup(final UnknownFieldSet value) {
         if (result.group == null) {
           result.group = new ArrayList<UnknownFieldSet>();
         }

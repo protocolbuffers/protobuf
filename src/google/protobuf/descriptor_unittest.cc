@@ -2135,6 +2135,83 @@ TEST(CustomOptions, OptionsFromOtherFile) {
   EXPECT_EQ(FileOptions::SPEED, file->options().optimize_for());
 }
 
+TEST(CustomOptions, MessageOptionThreeFieldsSet) {
+  // This tests a bug which previously existed in custom options parsing.  The
+  // bug occurred when you defined a custom option with message type and then
+  // set three fields of that option on a single definition (see the example
+  // below).  The bug is a bit hard to explain, so check the change history if
+  // you want to know more.
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
+
+  protobuf_unittest::TestMessageWithCustomOptions::descriptor()
+    ->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
+
+  // The following represents the definition:
+  //
+  //   import "google/protobuf/unittest_custom_options.proto"
+  //   package protobuf_unittest;
+  //   message Foo {
+  //     option (complex_opt1).foo  = 1234;
+  //     option (complex_opt1).foo2 = 1234;
+  //     option (complex_opt1).foo3 = 1234;
+  //   }
+  ASSERT_TRUE(TextFormat::ParseFromString(
+    "name: \"custom_options_import.proto\" "
+    "package: \"protobuf_unittest\" "
+    "dependency: \"google/protobuf/unittest_custom_options.proto\" "
+    "message_type { "
+    "  name: \"Foo\" "
+    "  options { "
+    "    uninterpreted_option { "
+    "      name { "
+    "        name_part: \"complex_opt1\" "
+    "        is_extension: true "
+    "      } "
+    "      name { "
+    "        name_part: \"foo\" "
+    "        is_extension: false "
+    "      } "
+    "      positive_int_value: 1234 "
+    "    } "
+    "    uninterpreted_option { "
+    "      name { "
+    "        name_part: \"complex_opt1\" "
+    "        is_extension: true "
+    "      } "
+    "      name { "
+    "        name_part: \"foo2\" "
+    "        is_extension: false "
+    "      } "
+    "      positive_int_value: 1234 "
+    "    } "
+    "    uninterpreted_option { "
+    "      name { "
+    "        name_part: \"complex_opt1\" "
+    "        is_extension: true "
+    "      } "
+    "      name { "
+    "        name_part: \"foo3\" "
+    "        is_extension: false "
+    "      } "
+    "      positive_int_value: 1234 "
+    "    } "
+    "  } "
+    "}",
+    &file_proto));
+
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_TRUE(file != NULL);
+  ASSERT_EQ(1, file->message_type_count());
+
+  const MessageOptions& options = file->message_type(0)->options();
+  EXPECT_EQ(1234, options.GetExtension(protobuf_unittest::complex_opt1).foo());
+}
+
 
 // ===================================================================
 
@@ -2333,6 +2410,30 @@ TEST_F(ValidationErrorTest, UnknownDependency) {
     "dependency: \"foo.proto\" ",
 
     "bar.proto: bar.proto: OTHER: Import \"foo.proto\" has not been loaded.\n");
+}
+
+TEST_F(ValidationErrorTest, ForeignUnimportedPackageNoCrash) {
+  // Used to crash:  If we depend on a non-existent file and then refer to a
+  // package defined in a file that we didn't import, and that package is
+  // nested within a parent package which this file is also in, and we don't
+  // include that parent package in the name (i.e. we do a relative lookup)...
+  // Yes, really.
+  BuildFile(
+    "name: 'foo.proto' "
+    "package: 'outer.foo' ");
+  BuildFileWithErrors(
+    "name: 'bar.proto' "
+    "dependency: 'baz.proto' "
+    "package: 'outer.bar' "
+    "message_type { "
+    "  name: 'Bar' "
+    "  field { name:'bar' number:1 label:LABEL_OPTIONAL type_name:'foo.Foo' }"
+    "}",
+
+    "bar.proto: bar.proto: OTHER: Import \"baz.proto\" has not been loaded.\n"
+    "bar.proto: outer.bar.Bar.bar: TYPE: \"outer.foo\" seems to be defined in "
+      "\"foo.proto\", which is not imported by \"bar.proto\".  To use it here, "
+      "please add the necessary import.\n");
 }
 
 TEST_F(ValidationErrorTest, DupeFile) {
@@ -3343,6 +3444,50 @@ TEST_F(ValidationErrorTest, TryingToSetMessageValuedOption) {
 
     "foo.proto: foo.proto: OPTION_NAME: Option field \"(bar)\" cannot be of "
     "message type.\n");
+}
+
+TEST_F(ValidationErrorTest, NotLiteImportsLite) {
+  BuildFile(
+    "name: \"bar.proto\" "
+    "options { optimize_for: LITE_RUNTIME } ");
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"bar.proto\" ",
+
+    "foo.proto: foo.proto: OTHER: Files that do not use optimize_for = "
+      "LITE_RUNTIME cannot import files which do use this option.  This file "
+      "is not lite, but it imports \"bar.proto\" which is.\n");
+}
+
+TEST_F(ValidationErrorTest, LiteExtendsNotLite) {
+  BuildFile(
+    "name: \"bar.proto\" "
+    "message_type: {"
+    "  name: \"Bar\""
+    "  extension_range { start: 1 end: 1000 }"
+    "}");
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"bar.proto\" "
+    "options { optimize_for: LITE_RUNTIME } "
+    "extension { name: \"ext\" number: 123 label: LABEL_OPTIONAL "
+    "            type: TYPE_INT32 extendee: \"Bar\" }",
+
+    "foo.proto: ext: EXTENDEE: Extensions to non-lite types can only be "
+      "declared in non-lite files.  Note that you cannot extend a non-lite "
+      "type to contain a lite type, but the reverse is allowed.\n");
+}
+
+TEST_F(ValidationErrorTest, NoLiteServices) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "options { optimize_for: LITE_RUNTIME } "
+    "service { name: \"Foo\" }",
+
+    "foo.proto: Foo: NAME: Files with optimize_for = LITE_RUNTIME cannot "
+    "define services.\n");
 }
 
 TEST_F(ValidationErrorTest, RollbackAfterError) {

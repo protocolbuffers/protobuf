@@ -69,6 +69,10 @@ class MessageGenerator {
   // definitions because those classes use the enums definitions).
   void GenerateEnumDefinitions(io::Printer* printer);
 
+  // Generate specializations of GetEnumDescriptor<MyEnum>().
+  // Precondition: in ::google::protobuf namespace.
+  void GenerateGetEnumDescriptorSpecializations(io::Printer* printer);
+
   // Generate definitions for this class and all its nested types.
   void GenerateClassDefinition(io::Printer* printer);
 
@@ -124,11 +128,6 @@ class MessageGenerator {
   void GenerateSharedConstructorCode(io::Printer* printer);
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* printer);
-
-  // Generate the member initializer list for the constructors. The member
-  // initializer list is shared between the default constructor and the copy
-  // constructor.
-  void GenerateInitializerList(io::Printer* printer);
 
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);

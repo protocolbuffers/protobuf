@@ -80,17 +80,48 @@ CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
     total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
     recursion_depth_(0),
     recursion_limit_(kDefaultRecursionLimit) {
+  // Eagerly Refresh() so buffer space is immediately available.
+  Refresh();
+}
+
+CodedInputStream::CodedInputStream(const uint8* buffer, int size)
+  : input_(NULL),
+    buffer_(buffer),
+    buffer_size_(size),
+    total_bytes_read_(size),
+    overflow_bytes_(0),
+    last_tag_(0),
+    legitimate_message_end_(false),
+    aliasing_enabled_(false),
+    current_limit_(size),
+    buffer_size_after_limit_(0),
+    total_bytes_limit_(kDefaultTotalBytesLimit),
+    total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
+    recursion_depth_(0),
+    recursion_limit_(kDefaultRecursionLimit) {
+  // Note that setting current_limit_ == size is important to prevent some
+  // code paths from trying to access input_ and segfaulting.
 }
 
 CodedInputStream::~CodedInputStream() {
-  int backup_bytes = buffer_size_ + buffer_size_after_limit_ + overflow_bytes_;
-  if (backup_bytes > 0) {
-    // We still have bytes left over from the last buffer.  Back up over
-    // them.
-    input_->BackUp(backup_bytes);
+  if (input_ != NULL) {
+    BackUpInputToCurrentPosition();
   }
 }
 
+
+void CodedInputStream::BackUpInputToCurrentPosition() {
+  int backup_bytes = buffer_size_ + buffer_size_after_limit_ + overflow_bytes_;
+  if (backup_bytes > 0) {
+    input_->BackUp(backup_bytes);
+
+    // total_bytes_read_ doesn't include overflow_bytes_.
+    total_bytes_read_ -= buffer_size_ + buffer_size_after_limit_;
+    buffer_size_ = 0;
+    buffer_size_after_limit_ = 0;
+    overflow_bytes_ = 0;
+  }
+}
 
 inline void CodedInputStream::RecomputeBufferLimits() {
   buffer_size_ += buffer_size_after_limit_;
@@ -193,8 +224,10 @@ bool CodedInputStream::Skip(int count) {
   int bytes_until_limit = closest_limit - total_bytes_read_;
   if (bytes_until_limit < count) {
     // We hit the limit.  Skip up to it then fail.
-    total_bytes_read_ = closest_limit;
-    input_->Skip(bytes_until_limit);
+    if (bytes_until_limit > 0) {
+      total_bytes_read_ = closest_limit;
+      input_->Skip(bytes_until_limit);
+    }
     return false;
   }
 
@@ -216,6 +249,7 @@ bool CodedInputStream::ReadRaw(void* buffer, int size) {
     memcpy(buffer, buffer_, buffer_size_);
     buffer = reinterpret_cast<uint8*>(buffer) + buffer_size_;
     size -= buffer_size_;
+    Advance(buffer_size_);
     if (!Refresh()) return false;
   }
 
@@ -247,6 +281,7 @@ bool CodedInputStream::ReadString(string* buffer, int size) {
       buffer->append(reinterpret_cast<const char*>(buffer_), buffer_size_);
     }
     size -= buffer_size_;
+    Advance(buffer_size_);
     if (!Refresh()) return false;
   }
 
@@ -441,11 +476,11 @@ bool CodedInputStream::ReadVarint64(uint64* value) {
 }
 
 bool CodedInputStream::Refresh() {
-  if (buffer_size_after_limit_ > 0 || overflow_bytes_ > 0) {
-    // We've hit a limit.  Stop.
-    buffer_ += buffer_size_;
-    buffer_size_ = 0;
+  GOOGLE_DCHECK_EQ(buffer_size_, 0);
 
+  if (buffer_size_after_limit_ > 0 || overflow_bytes_ > 0 ||
+      total_bytes_read_ == current_limit_) {
+    // We've hit a limit.  Stop.
     int current_position = total_bytes_read_ - buffer_size_after_limit_;
 
     if (current_position >= total_bytes_limit_ &&
@@ -570,67 +605,28 @@ void CodedOutputStream::WriteLittleEndian32(uint32 value) {
   bool use_fast = buffer_size_ >= sizeof(value);
   uint8* ptr = use_fast ? buffer_ : bytes;
 
-  ptr[0] = static_cast<uint8>(value      );
-  ptr[1] = static_cast<uint8>(value >>  8);
-  ptr[2] = static_cast<uint8>(value >> 16);
-  ptr[3] = static_cast<uint8>(value >> 24);
+  WriteLittleEndian32ToArray(value, ptr);
 
   if (use_fast) {
     Advance(sizeof(value));
   } else {
     WriteRaw(bytes, sizeof(value));
   }
-}
-
-uint8* CodedOutputStream::WriteLittleEndian32ToArray(
-    uint32 value, uint8* target) {
-  target[0] = static_cast<uint8>(value      );
-  target[1] = static_cast<uint8>(value >>  8);
-  target[2] = static_cast<uint8>(value >> 16);
-  target[3] = static_cast<uint8>(value >> 24);
-  return target + sizeof(value);
 }
 
 void CodedOutputStream::WriteLittleEndian64(uint64 value) {
   uint8 bytes[sizeof(value)];
 
-  uint32 part0 = static_cast<uint32>(value);
-  uint32 part1 = static_cast<uint32>(value >> 32);
-
   bool use_fast = buffer_size_ >= sizeof(value);
   uint8* ptr = use_fast ? buffer_ : bytes;
 
-  ptr[0] = static_cast<uint8>(part0      );
-  ptr[1] = static_cast<uint8>(part0 >>  8);
-  ptr[2] = static_cast<uint8>(part0 >> 16);
-  ptr[3] = static_cast<uint8>(part0 >> 24);
-  ptr[4] = static_cast<uint8>(part1      );
-  ptr[5] = static_cast<uint8>(part1 >>  8);
-  ptr[6] = static_cast<uint8>(part1 >> 16);
-  ptr[7] = static_cast<uint8>(part1 >> 24);
+  WriteLittleEndian64ToArray(value, ptr);
 
   if (use_fast) {
     Advance(sizeof(value));
   } else {
     WriteRaw(bytes, sizeof(value));
   }
-}
-
-uint8* CodedOutputStream::WriteLittleEndian64ToArray(
-    uint64 value, uint8* target) {
-  uint32 part0 = static_cast<uint32>(value);
-  uint32 part1 = static_cast<uint32>(value >> 32);
-
-  target[0] = static_cast<uint8>(part0      );
-  target[1] = static_cast<uint8>(part0 >>  8);
-  target[2] = static_cast<uint8>(part0 >> 16);
-  target[3] = static_cast<uint8>(part0 >> 24);
-  target[4] = static_cast<uint8>(part1      );
-  target[5] = static_cast<uint8>(part1 >>  8);
-  target[6] = static_cast<uint8>(part1 >> 16);
-  target[7] = static_cast<uint8>(part1 >> 24);
-
-  return target + sizeof(value);
 }
 
 inline uint8* CodedOutputStream::WriteVarint32FallbackToArrayInline(

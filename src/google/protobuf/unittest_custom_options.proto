@@ -204,6 +204,8 @@ message SettingRealsFromNegativeInts {
 
 message ComplexOptionType1 {
   optional int32 foo = 1;
+  optional int32 foo2 = 2;
+  optional int32 foo3 = 3;
 
   extensions 100 to max;
 }

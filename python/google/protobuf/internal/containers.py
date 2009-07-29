@@ -112,9 +112,11 @@ class RepeatedScalarFieldContainer(BaseContainer):
       return
 
     orig_empty = len(self._values) == 0
+    new_values = []
     for elem in elem_seq:
       self._type_checker.CheckValue(elem)
-    self._values.extend(elem_seq)
+      new_values.append(elem)
+    self._values.extend(new_values)
     self._message_listener.ByteSizeDirty()
     if orig_empty:
       self._message_listener.TransitionToNonempty()
@@ -139,9 +141,11 @@ class RepeatedScalarFieldContainer(BaseContainer):
 
   def __setslice__(self, start, stop, values):
     """Sets the subset of items from between the specified indices."""
+    new_values = []
     for value in values:
       self._type_checker.CheckValue(value)
-    self._values[start:stop] = list(values)
+      new_values.append(value)
+    self._values[start:stop] = new_values
     self._message_listener.ByteSizeDirty()
 
   def __delitem__(self, key):

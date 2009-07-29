@@ -122,8 +122,10 @@ class UnicodeValueChecker(object):
       try:
         unicode(proposed_value, 'ascii')
       except UnicodeDecodeError:
-        raise ValueError('%.1024r isn\'t in 7-bit ASCII encoding.'
-                         % (proposed_value))
+        raise ValueError('%.1024r has type str, but isn\'t in 7-bit ASCII '
+                         'encoding. Non-ASCII strings must be converted to '
+                         'unicode objects before being added.' %
+                         (proposed_value))
 
 
 class Int32ValueChecker(IntValueChecker):

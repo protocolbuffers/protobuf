@@ -232,13 +232,14 @@ class ReflectionTest(unittest.TestCase):
     proto.repeated_string.extend(['foo', 'bar'])
     proto.repeated_string.extend([])
     proto.repeated_string.append('baz')
+    proto.repeated_string.extend(str(x) for x in xrange(2))
     proto.optional_int32 = 21
     self.assertEqual(
       [ (proto.DESCRIPTOR.fields_by_name['optional_int32'  ], 21),
         (proto.DESCRIPTOR.fields_by_name['repeated_int32'  ], [5, 11]),
         (proto.DESCRIPTOR.fields_by_name['repeated_fixed32'], [1]),
         (proto.DESCRIPTOR.fields_by_name['repeated_string' ],
-          ['foo', 'bar', 'baz']) ],
+          ['foo', 'bar', 'baz', '0', '1']) ],
       proto.ListFields())
 
   def testSingularListExtensions(self):
@@ -446,6 +447,10 @@ class ReflectionTest(unittest.TestCase):
     proto.repeated_int32.append(30)
     self.assertEqual([25, 20, 15], proto.repeated_int32[1:4])
     self.assertEqual([5, 25, 20, 15, 30], proto.repeated_int32[:])
+
+    # Test slice assignment with an iterator
+    proto.repeated_int32[1:4] = (i for i in xrange(3))
+    self.assertEqual([5, 0, 1, 2, 30], proto.repeated_int32)
 
     # Test slice assignment.
     proto.repeated_int32[1:4] = [35, 40, 45]
@@ -1739,13 +1744,14 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(2, proto2.b)
     self.assertEqual(3, proto2.c)
 
-  def testSerializedAllPackedFields(self):
+  def testSerializeAllPackedFields(self):
     first_proto = unittest_pb2.TestPackedTypes()
     second_proto = unittest_pb2.TestPackedTypes()
     test_util.SetAllPackedFields(first_proto)
     serialized = first_proto.SerializeToString()
     self.assertEqual(first_proto.ByteSize(), len(serialized))
-    second_proto.MergeFromString(serialized)
+    bytes_read = second_proto.MergeFromString(serialized)
+    self.assertEqual(second_proto.ByteSize(), bytes_read)
     self.assertEqual(first_proto, second_proto)
 
   def testSerializeAllPackedExtensions(self):
@@ -1753,7 +1759,8 @@ class SerializationTest(unittest.TestCase):
     second_proto = unittest_pb2.TestPackedExtensions()
     test_util.SetAllPackedExtensions(first_proto)
     serialized = first_proto.SerializeToString()
-    second_proto.MergeFromString(serialized)
+    bytes_read = second_proto.MergeFromString(serialized)
+    self.assertEqual(second_proto.ByteSize(), bytes_read)
     self.assertEqual(first_proto, second_proto)
 
   def testMergePackedFromStringWhenSomeFieldsAlreadySet(self):
@@ -1837,6 +1844,79 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(unittest_pb2.repeated_nested_enum_extension.number, 51)
     self.assertEqual(unittest_pb2.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER,
       51)
+
+  def testInitKwargs(self):
+    proto = unittest_pb2.TestAllTypes(
+        optional_int32=1,
+        optional_string='foo',
+        optional_bool=True,
+        optional_bytes='bar',
+        optional_nested_message=unittest_pb2.TestAllTypes.NestedMessage(bb=1),
+        optional_foreign_message=unittest_pb2.ForeignMessage(c=1),
+        optional_nested_enum=unittest_pb2.TestAllTypes.FOO,
+        optional_foreign_enum=unittest_pb2.FOREIGN_FOO,
+        repeated_int32=[1, 2, 3])
+    self.assertTrue(proto.IsInitialized())
+    self.assertTrue(proto.HasField('optional_int32'))
+    self.assertTrue(proto.HasField('optional_string'))
+    self.assertTrue(proto.HasField('optional_bool'))
+    self.assertTrue(proto.HasField('optional_bytes'))
+    self.assertTrue(proto.HasField('optional_nested_message'))
+    self.assertTrue(proto.HasField('optional_foreign_message'))
+    self.assertTrue(proto.HasField('optional_nested_enum'))
+    self.assertTrue(proto.HasField('optional_foreign_enum'))
+    self.assertEqual(1, proto.optional_int32)
+    self.assertEqual('foo', proto.optional_string)
+    self.assertEqual(True, proto.optional_bool)
+    self.assertEqual('bar', proto.optional_bytes)
+    self.assertEqual(1, proto.optional_nested_message.bb)
+    self.assertEqual(1, proto.optional_foreign_message.c)
+    self.assertEqual(unittest_pb2.TestAllTypes.FOO,
+                     proto.optional_nested_enum)
+    self.assertEqual(unittest_pb2.FOREIGN_FOO, proto.optional_foreign_enum)
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+
+  def testInitArgsUnknownFieldName(self):
+    def InitalizeEmptyMessageWithExtraKeywordArg():
+      unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
+    self._CheckRaises(ValueError,
+                      InitalizeEmptyMessageWithExtraKeywordArg,
+                      'Protocol message has no "unknown" field.')
+
+  def testInitRequiredKwargs(self):
+    proto = unittest_pb2.TestRequired(a=1, b=1, c=1)
+    self.assertTrue(proto.IsInitialized())
+    self.assertTrue(proto.HasField('a'))
+    self.assertTrue(proto.HasField('b'))
+    self.assertTrue(proto.HasField('c'))
+    self.assertTrue(not proto.HasField('dummy2'))
+    self.assertEqual(1, proto.a)
+    self.assertEqual(1, proto.b)
+    self.assertEqual(1, proto.c)
+
+  def testInitRequiredForeignKwargs(self):
+    proto = unittest_pb2.TestRequiredForeign(
+        optional_message=unittest_pb2.TestRequired(a=1, b=1, c=1))
+    self.assertTrue(proto.IsInitialized())
+    self.assertTrue(proto.HasField('optional_message'))
+    self.assertTrue(proto.optional_message.IsInitialized())
+    self.assertTrue(proto.optional_message.HasField('a'))
+    self.assertTrue(proto.optional_message.HasField('b'))
+    self.assertTrue(proto.optional_message.HasField('c'))
+    self.assertTrue(not proto.optional_message.HasField('dummy2'))
+    self.assertEqual(unittest_pb2.TestRequired(a=1, b=1, c=1),
+                     proto.optional_message)
+    self.assertEqual(1, proto.optional_message.a)
+    self.assertEqual(1, proto.optional_message.b)
+    self.assertEqual(1, proto.optional_message.c)
+
+  def testInitRepeatedKwargs(self):
+    proto = unittest_pb2.TestAllTypes(repeated_int32=[1, 2, 3])
+    self.assertTrue(proto.IsInitialized())
+    self.assertEqual(1, proto.repeated_int32[0])
+    self.assertEqual(2, proto.repeated_int32[1])
+    self.assertEqual(3, proto.repeated_int32[2])
+
 
 class OptionsTest(unittest.TestCase):
 

@@ -124,6 +124,9 @@
                     value="../src/google/protobuf/unittest_optimize_for.proto" />
                   <arg
                     value="../src/google/protobuf/unittest_custom_options.proto" />
+                  <arg value="../src/google/protobuf/unittest_lite.proto" />
+                  <arg value="../src/google/protobuf/unittest_import_lite.proto" />
+                  <arg value="../src/google/protobuf/unittest_lite_imports_nonlite.proto" />
                 </exec>
               </tasks>
               <testSourceRoot>target/generated-test-sources</testSourceRoot>

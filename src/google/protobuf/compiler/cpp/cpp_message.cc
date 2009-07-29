@@ -34,14 +34,17 @@
 
 #include <algorithm>
 #include <google/protobuf/stubs/hash.h>
+#include <map>
+#include <vector>
 #include <google/protobuf/compiler/cpp/cpp_message.h>
+#include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/wire_format_inl.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace google {
@@ -50,6 +53,7 @@ namespace compiler {
 namespace cpp {
 
 using internal::WireFormat;
+using internal::WireFormatLite;
 
 namespace {
 
@@ -196,6 +200,16 @@ GenerateEnumDefinitions(io::Printer* printer) {
 }
 
 void MessageGenerator::
+GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    nested_generators_[i]->GenerateGetEnumDescriptorSpecializations(printer);
+  }
+  for (int i = 0; i < descriptor_->enum_type_count(); i++) {
+    enum_generators_[i]->GenerateGetEnumDescriptorSpecializations(printer);
+  }
+}
+
+void MessageGenerator::
 GenerateFieldAccessorDeclarations(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -203,17 +217,16 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     PrintFieldComment(printer, field);
 
     map<string, string> vars;
-    vars["name"] = FieldName(field);
+    SetCommonFieldVariables(field, &vars);
     vars["constant_name"] = FieldConstantName(field);
-    vars["number"] = SimpleItoa(field->number());
 
     if (field->is_repeated()) {
-      printer->Print(vars, "inline int $name$_size() const;\n");
+      printer->Print(vars, "inline int $name$_size() const$deprecation$;\n");
     } else {
-      printer->Print(vars, "inline bool has_$name$() const;\n");
+      printer->Print(vars, "inline bool has_$name$() const$deprecation$;\n");
     }
 
-    printer->Print(vars, "inline void clear_$name$();\n");
+    printer->Print(vars, "inline void clear_$name$()$deprecation$;\n");
     printer->Print(vars, "static const int $constant_name$ = $number$;\n");
 
     // Generate type-specific accessor declarations.
@@ -241,9 +254,7 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     PrintFieldComment(printer, field);
 
     map<string, string> vars;
-    vars["name"] = FieldName(field);
-    vars["index"] = SimpleItoa(field->index());
-    vars["classname"] = classname_;
+    SetCommonFieldVariables(field, &vars);
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
@@ -297,9 +308,11 @@ GenerateClassDefinition(io::Printer* printer) {
   } else {
     vars["dllexport"] = dllexport_decl_ + " ";
   }
+  vars["superclass"] = HasDescriptorMethods(descriptor_->file()) ?
+                       "Message" : "MessageLite";
 
   printer->Print(vars,
-    "class $dllexport$$classname$ : public ::google::protobuf::Message {\n"
+    "class $dllexport$$classname$ : public ::google::protobuf::$superclass$ {\n"
     " public:\n");
   printer->Indent();
 
@@ -313,16 +326,28 @@ GenerateClassDefinition(io::Printer* printer) {
     "  CopyFrom(from);\n"
     "  return *this;\n"
     "}\n"
-    "\n"
-    "inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {\n"
-    "  return _unknown_fields_;\n"
-    "}\n"
-    "\n"
-    "inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {\n"
-    "  return &_unknown_fields_;\n"
-    "}\n"
-    "\n"
-    "static const ::google::protobuf::Descriptor* descriptor();\n"
+    "\n");
+
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print(
+      "inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {\n"
+      "  return _unknown_fields_;\n"
+      "}\n"
+      "\n"
+      "inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {\n"
+      "  return &_unknown_fields_;\n"
+      "}\n"
+      "\n");
+  }
+
+  // Only generate this member if it's not disabled.
+  if (HasDescriptorMethods(descriptor_->file()) &&
+      !descriptor_->options().no_standard_descriptor_accessor()) {
+    printer->Print(vars,
+      "static const ::google::protobuf::Descriptor* descriptor();\n");
+  }
+
+  printer->Print(vars,
     "static const $classname$& default_instance();\n"
     "void Swap($classname$* other);\n"
     "\n"
@@ -330,28 +355,29 @@ GenerateClassDefinition(io::Printer* printer) {
     "\n"
     "$classname$* New() const;\n");
 
-  if (descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
+  if (HasGeneratedMethods(descriptor_->file())) {
+    if (HasDescriptorMethods(descriptor_->file())) {
+      printer->Print(vars,
+        "void CopyFrom(const ::google::protobuf::Message& from);\n"
+        "void MergeFrom(const ::google::protobuf::Message& from);\n");
+    } else {
+      printer->Print(vars,
+        "void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);\n");
+    }
+
     printer->Print(vars,
-      "void CopyFrom(const ::google::protobuf::Message& from);\n"
-      "void MergeFrom(const ::google::protobuf::Message& from);\n"
       "void CopyFrom(const $classname$& from);\n"
       "void MergeFrom(const $classname$& from);\n"
       "void Clear();\n"
-      "bool IsInitialized() const;\n");
-
-    if (!descriptor_->options().message_set_wire_format()) {
-      // For message_set_wire_format, we don't generate parsing or
-      // serialization code even if optimize_for = SPEED, since MessageSet
-      // encoding is somewhat more complicated than normal extension encoding
-      // and we'd like to avoid having to implement it in multiple places.
-      // WireFormat's implementation is probably good enough.
-      printer->Print(vars,
-        "\n"
-        "int ByteSize() const;\n"
-        "bool MergePartialFromCodedStream(\n"
-        "    ::google::protobuf::io::CodedInputStream* input);\n"
-        "void SerializeWithCachedSizes(\n"
-        "    ::google::protobuf::io::CodedOutputStream* output) const;\n"
+      "bool IsInitialized() const;\n"
+      "\n"
+      "int ByteSize() const;\n"
+      "bool MergePartialFromCodedStream(\n"
+      "    ::google::protobuf::io::CodedInputStream* input);\n"
+      "void SerializeWithCachedSizes(\n"
+      "    ::google::protobuf::io::CodedOutputStream* output) const;\n");
+    if (HasFastArraySerialization(descriptor_->file())) {
+      printer->Print(
         "::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;\n");
     }
   }
@@ -363,10 +389,19 @@ GenerateClassDefinition(io::Printer* printer) {
     "void SharedDtor();\n"
     "void SetCachedSize(int size) const { _cached_size_ = size; }\n"
     "public:\n"
-    "\n"
-    "const ::google::protobuf::Descriptor* GetDescriptor() const;\n"
-    "const ::google::protobuf::Reflection* GetReflection() const;\n"
-    "\n"
+    "\n");
+
+  if (HasDescriptorMethods(descriptor_->file())) {
+    printer->Print(
+      "::google::protobuf::Metadata GetMetadata() const;\n"
+      "\n");
+  } else {
+    printer->Print(
+      "::std::string GetTypeName() const;\n"
+      "\n");
+  }
+
+  printer->Print(
     "// nested types ----------------------------------------------------\n"
     "\n");
 
@@ -411,9 +446,13 @@ GenerateClassDefinition(io::Printer* printer) {
       "::google::protobuf::internal::ExtensionSet _extensions_;\n");
   }
 
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print(
+      "::google::protobuf::UnknownFieldSet _unknown_fields_;\n");
+  }
+
   // TODO(kenton):  Make _cached_size_ an atomic<int> when C++ supports it.
   printer->Print(
-    "::google::protobuf::UnknownFieldSet _unknown_fields_;\n"
     "mutable int _cached_size_;\n"
     "\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -431,7 +470,8 @@ GenerateClassDefinition(io::Printer* printer) {
       GlobalAddDescriptorsName(descriptor_->file()->name()));
   printer->Print(
     "friend void $assigndescriptorsname$();\n"
-    "friend void $shutdownfilename$();\n",
+    "friend void $shutdownfilename$();\n"
+    "\n",
     "assigndescriptorsname",
       GlobalAssignDescriptorsName(descriptor_->file()->name()),
     "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
@@ -605,9 +645,14 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
 void MessageGenerator::
 GenerateShutdownCode(io::Printer* printer) {
   printer->Print(
-    "delete $classname$::default_instance_;\n"
-    "delete $classname$_reflection_;\n",
+    "delete $classname$::default_instance_;\n",
     "classname", classname_);
+
+  if (HasDescriptorMethods(descriptor_->file())) {
+    printer->Print(
+      "delete $classname$_reflection_;\n",
+      "classname", classname_);
+  }
 
   // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
@@ -655,28 +700,23 @@ GenerateClassMethods(io::Printer* printer) {
   GenerateStructors(printer);
   printer->Print("\n");
 
-  if (descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
+  if (HasGeneratedMethods(descriptor_->file())) {
     GenerateClear(printer);
     printer->Print("\n");
 
-    if (!descriptor_->options().message_set_wire_format()) {
-      // For message_set_wire_format, we don't generate parsing or
-      // serialization code even if optimize_for = SPEED, since MessageSet
-      // encoding is somewhat more complicated than normal extension encoding
-      // and we'd like to avoid having to implement it in multiple places.
-      // WireFormat's implementation is probably good enough.
-      GenerateMergeFromCodedStream(printer);
-      printer->Print("\n");
+    GenerateMergeFromCodedStream(printer);
+    printer->Print("\n");
 
-      GenerateSerializeWithCachedSizes(printer);
-      printer->Print("\n");
+    GenerateSerializeWithCachedSizes(printer);
+    printer->Print("\n");
 
+    if (HasFastArraySerialization(descriptor_->file())) {
       GenerateSerializeWithCachedSizesToArray(printer);
       printer->Print("\n");
-
-      GenerateByteSize(printer);
-      printer->Print("\n");
     }
+
+    GenerateByteSize(printer);
+    printer->Print("\n");
 
     GenerateMergeFrom(printer);
     printer->Print("\n");
@@ -691,16 +731,26 @@ GenerateClassMethods(io::Printer* printer) {
   GenerateSwap(printer);
   printer->Print("\n");
 
-  printer->Print(
-    "const ::google::protobuf::Descriptor* $classname$::GetDescriptor() const {\n"
-    "  return descriptor();\n"
-    "}\n"
-    "\n"
-    "const ::google::protobuf::Reflection* $classname$::GetReflection() const {\n"
-    "  protobuf_AssignDescriptorsOnce();\n"
-    "  return $classname$_reflection_;\n"
-    "}\n",
-    "classname", classname_);
+  if (HasDescriptorMethods(descriptor_->file())) {
+    printer->Print(
+      "::google::protobuf::Metadata $classname$::GetMetadata() const {\n"
+      "  protobuf_AssignDescriptorsOnce();\n"
+      "  ::google::protobuf::Metadata metadata;\n"
+      "  metadata.descriptor = $classname$_descriptor_;\n"
+      "  metadata.reflection = $classname$_reflection_;\n"
+      "  return metadata;\n"
+      "}\n"
+      "\n",
+      "classname", classname_);
+  } else {
+    printer->Print(
+      "::std::string $classname$::GetTypeName() const {\n"
+      "  return \"$type_name$\";\n"
+      "}\n"
+      "\n",
+      "classname", classname_,
+      "type_name", descriptor_->full_name());
+  }
 }
 
 void MessageGenerator::
@@ -721,18 +771,6 @@ GenerateOffsets(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print("};\n");
-}
-
-void MessageGenerator::
-GenerateInitializerList(io::Printer* printer) {
-  printer->Indent();
-  printer->Indent();
-
-  printer->Print(
-    "::google::protobuf::Message()");
-
-  printer->Outdent();
-  printer->Outdent();
 }
 
 void MessageGenerator::
@@ -797,17 +835,14 @@ void MessageGenerator::
 GenerateStructors(io::Printer* printer) {
   // Generate the default constructor.
   printer->Print(
-      "$classname$::$classname$()\n"
-      "  : ",
-      "classname", classname_);
-  GenerateInitializerList(printer);
-  printer->Print(" {\n"
+    "$classname$::$classname$() {\n"
     "  SharedCtor();\n"
-    "}\n");
+    "}\n",
+    "classname", classname_);
 
   printer->Print(
     "\n"
-    "void $classname$::InitAsDefaultInstance() {",
+    "void $classname$::InitAsDefaultInstance() {\n",
     "classname", classname_);
 
   // The default instance needs all of its embedded message pointers
@@ -833,15 +868,12 @@ GenerateStructors(io::Printer* printer) {
 
   // Generate the copy constructor.
   printer->Print(
-      "$classname$::$classname$(const $classname$& from)\n"
-      "  : ",
-      "classname", classname_);
-  GenerateInitializerList(printer);
-  printer->Print(" {\n"
+    "$classname$::$classname$(const $classname$& from) {\n"
     "  SharedCtor();\n"
     "  MergeFrom(from);\n"
     "}\n"
-    "\n");
+    "\n",
+    "classname", classname_);
 
   // Generate the shared constructor code.
   GenerateSharedConstructorCode(printer);
@@ -857,12 +889,21 @@ GenerateStructors(io::Printer* printer) {
   // Generate the shared destructor code.
   GenerateSharedDestructorCode(printer);
 
+  // Only generate this member if it's not disabled.
+  if (HasDescriptorMethods(descriptor_->file()) &&
+      !descriptor_->options().no_standard_descriptor_accessor()) {
+    printer->Print(
+      "const ::google::protobuf::Descriptor* $classname$::descriptor() {\n"
+      "  protobuf_AssignDescriptorsOnce();\n"
+      "  return $classname$_descriptor_;\n"
+      "}\n"
+      "\n",
+      "classname", classname_,
+      "adddescriptorsname",
+      GlobalAddDescriptorsName(descriptor_->file()->name()));
+  }
+
   printer->Print(
-    "const ::google::protobuf::Descriptor* $classname$::descriptor() {\n"
-    "  protobuf_AssignDescriptorsOnce();\n"
-    "  return $classname$_descriptor_;\n"
-    "}\n"
-    "\n"
     "const $classname$& $classname$::default_instance() {\n"
     "  if (default_instance_ == NULL) $adddescriptorsname$();"
     "  return *default_instance_;\n"
@@ -951,8 +992,12 @@ GenerateClear(io::Printer* printer) {
   }
 
   printer->Print(
-    "::memset(_has_bits_, 0, sizeof(_has_bits_));\n"
-    "mutable_unknown_fields()->Clear();\n");
+    "::memset(_has_bits_, 0, sizeof(_has_bits_));\n");
+
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print(
+      "mutable_unknown_fields()->Clear();\n");
+  }
 
   printer->Outdent();
   printer->Print("}\n");
@@ -967,7 +1012,7 @@ GenerateSwap(io::Printer* printer) {
   printer->Print("if (other != this) {\n");
   printer->Indent();
 
-  if ( descriptor_->file()->options().optimize_for() == FileOptions::SPEED ) {
+  if (HasGeneratedMethods(descriptor_->file())) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
       field_generators_.get(field).GenerateSwappingCode(printer);
@@ -978,7 +1023,9 @@ GenerateSwap(io::Printer* printer) {
                      "i", SimpleItoa(i));
     }
 
-    printer->Print("_unknown_fields_.Swap(&other->_unknown_fields_);\n");
+    if (HasUnknownFields(descriptor_->file())) {
+      printer->Print("_unknown_fields_.Swap(&other->_unknown_fields_);\n");
+    }
     printer->Print("std::swap(_cached_size_, other->_cached_size_);\n");
     if (descriptor_->extension_range_count() > 0) {
       printer->Print("_extensions_.Swap(&other->_extensions_);\n");
@@ -986,7 +1033,6 @@ GenerateSwap(io::Printer* printer) {
   } else {
     printer->Print("GetReflection()->Swap(this, other);");
   }
-
 
   printer->Outdent();
   printer->Print("}\n");
@@ -996,31 +1042,42 @@ GenerateSwap(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateMergeFrom(io::Printer* printer) {
-  // Generate the generalized MergeFrom (aka that which takes in the Message
-  // base class as a parameter).
-  printer->Print(
-    "void $classname$::MergeFrom(const ::google::protobuf::Message& from) {\n"
-    "  GOOGLE_CHECK_NE(&from, this);\n",
-    "classname", classname_);
-  printer->Indent();
+  if (HasDescriptorMethods(descriptor_->file())) {
+    // Generate the generalized MergeFrom (aka that which takes in the Message
+    // base class as a parameter).
+    printer->Print(
+      "void $classname$::MergeFrom(const ::google::protobuf::Message& from) {\n"
+      "  GOOGLE_CHECK_NE(&from, this);\n",
+      "classname", classname_);
+    printer->Indent();
 
-  // Cast the message to the proper type. If we find that the message is
-  // *not* of the proper type, we can still call Merge via the reflection
-  // system, as the GOOGLE_CHECK above ensured that we have the same descriptor
-  // for each message.
-  printer->Print(
-    "const $classname$* source =\n"
-    "  ::google::protobuf::internal::dynamic_cast_if_available<const $classname$*>(\n"
-    "    &from);\n"
-    "if (source == NULL) {\n"
-    "  ::google::protobuf::internal::ReflectionOps::Merge(from, this);\n"
-    "} else {\n"
-    "  MergeFrom(*source);\n"
-    "}\n",
-    "classname", classname_);
+    // Cast the message to the proper type. If we find that the message is
+    // *not* of the proper type, we can still call Merge via the reflection
+    // system, as the GOOGLE_CHECK above ensured that we have the same descriptor
+    // for each message.
+    printer->Print(
+      "const $classname$* source =\n"
+      "  ::google::protobuf::internal::dynamic_cast_if_available<const $classname$*>(\n"
+      "    &from);\n"
+      "if (source == NULL) {\n"
+      "  ::google::protobuf::internal::ReflectionOps::Merge(from, this);\n"
+      "} else {\n"
+      "  MergeFrom(*source);\n"
+      "}\n",
+      "classname", classname_);
 
-  printer->Outdent();
-  printer->Print("}\n\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
+  } else {
+    // Generate CheckTypeAndMergeFrom().
+    printer->Print(
+      "void $classname$::CheckTypeAndMergeFrom(\n"
+      "    const ::google::protobuf::MessageLite& from) {\n"
+      "  MergeFrom(*::google::protobuf::down_cast<const $classname$*>(&from));\n"
+      "}\n"
+      "\n",
+      "classname", classname_);
+  }
 
   // Generate the class-specific MergeFrom, which avoids the GOOGLE_CHECK and cast.
   printer->Print(
@@ -1082,8 +1139,10 @@ GenerateMergeFrom(io::Printer* printer) {
     printer->Print("_extensions_.MergeFrom(from._extensions_);\n");
   }
 
-  printer->Print(
-    "mutable_unknown_fields()->MergeFrom(from.unknown_fields());\n");
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print(
+      "mutable_unknown_fields()->MergeFrom(from.unknown_fields());\n");
+  }
 
   printer->Outdent();
   printer->Print("}\n");
@@ -1091,20 +1150,22 @@ GenerateMergeFrom(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateCopyFrom(io::Printer* printer) {
-  // Generate the generalized CopyFrom (aka that which takes in the Message
-  // base class as a parameter).
-  printer->Print(
-    "void $classname$::CopyFrom(const ::google::protobuf::Message& from) {\n",
-    "classname", classname_);
-  printer->Indent();
+  if (HasDescriptorMethods(descriptor_->file())) {
+    // Generate the generalized CopyFrom (aka that which takes in the Message
+    // base class as a parameter).
+    printer->Print(
+      "void $classname$::CopyFrom(const ::google::protobuf::Message& from) {\n",
+      "classname", classname_);
+    printer->Indent();
 
-  printer->Print(
-    "if (&from == this) return;\n"
-    "Clear();\n"
-    "MergeFrom(from);\n");
+    printer->Print(
+      "if (&from == this) return;\n"
+      "Clear();\n"
+      "MergeFrom(from);\n");
 
-  printer->Outdent();
-  printer->Print("}\n\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
 
   // Generate the class-specific CopyFrom.
   printer->Print(
@@ -1123,6 +1184,18 @@ GenerateCopyFrom(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) {
+  if (descriptor_->options().message_set_wire_format()) {
+    // Special-case MessageSet.
+    printer->Print(
+      "bool $classname$::MergePartialFromCodedStream(\n"
+      "    ::google::protobuf::io::CodedInputStream* input) {\n"
+      "  return _extensions_.ParseMessageSet(input, default_instance_,\n"
+      "                                      mutable_unknown_fields());\n"
+      "}\n",
+      "classname", classname_);
+    return;
+  }
+
   printer->Print(
     "bool $classname$::MergePartialFromCodedStream(\n"
     "    ::google::protobuf::io::CodedInputStream* input) {\n"
@@ -1144,7 +1217,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // creates a jump table that is 8x larger and sparser, and meanwhile the
     // if()s are highly predictable.
     printer->Print(
-      "switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {\n");
+      "switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {\n");
 
     printer->Indent();
 
@@ -1158,8 +1231,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
       printer->Print(
         "case $number$: {\n"
-        "  if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=\n"
-        "      ::google::protobuf::internal::WireFormat::WIRETYPE_$wiretype$) {\n"
+        "  if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=\n"
+        "      ::google::protobuf::internal::WireFormatLite::WIRETYPE_$wiretype$) {\n"
         "    goto handle_uninterpreted;\n"
         "  }\n",
         "number", SimpleItoa(field->number()),
@@ -1214,8 +1287,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
   // Is this an end-group tag?  If so, this must be the end of the message.
   printer->Print(
-    "if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==\n"
-    "    ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {\n"
+    "if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==\n"
+    "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {\n"
     "  return true;\n"
     "}\n");
 
@@ -1228,10 +1301,10 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
         descriptor_->extension_range(i);
       if (i > 0) printer->Print(" ||\n    ");
 
-      uint32 start_tag = WireFormat::MakeTag(
-        range->start, static_cast<WireFormat::WireType>(0));
-      uint32 end_tag = WireFormat::MakeTag(
-        range->end, static_cast<WireFormat::WireType>(0));
+      uint32 start_tag = WireFormatLite::MakeTag(
+        range->start, static_cast<WireFormatLite::WireType>(0));
+      uint32 end_tag = WireFormatLite::MakeTag(
+        range->end, static_cast<WireFormatLite::WireType>(0));
 
       if (range->end > FieldDescriptor::kMaxNumber) {
         printer->Print(
@@ -1244,17 +1317,29 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
           "end", SimpleItoa(end_tag));
       }
     }
-    printer->Print(") {\n"
-      "  DO_(_extensions_.ParseField(tag, input, default_instance_,\n"
-      "                              mutable_unknown_fields()));\n"
+    printer->Print(") {\n");
+    if (HasUnknownFields(descriptor_->file())) {
+      printer->Print(
+        "  DO_(_extensions_.ParseField(tag, input, default_instance_,\n"
+        "                              mutable_unknown_fields()));\n");
+    } else {
+      printer->Print(
+        "  DO_(_extensions_.ParseField(tag, input, default_instance_));\n");
+    }
+    printer->Print(
       "  continue;\n"
       "}\n");
   }
 
   // We really don't recognize this tag.  Skip it.
-  printer->Print(
-    "DO_(::google::protobuf::internal::WireFormat::SkipField(\n"
-    "      input, tag, mutable_unknown_fields()));\n");
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print(
+      "DO_(::google::protobuf::internal::WireFormat::SkipField(\n"
+      "      input, tag, mutable_unknown_fields()));\n");
+  } else {
+    printer->Print(
+      "DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));\n");
+  }
 
   if (descriptor_->field_count() > 0) {
     printer->Print("break;\n");
@@ -1319,21 +1404,41 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
 
 void MessageGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) {
+  if (descriptor_->options().message_set_wire_format()) {
+    // Special-case MessageSet.
+    printer->Print(
+      "void $classname$::SerializeWithCachedSizes(\n"
+      "    ::google::protobuf::io::CodedOutputStream* output) const {\n"
+      "  _extensions_.SerializeMessageSetWithCachedSizes(output);\n",
+      "classname", classname_);
+    if (HasUnknownFields(descriptor_->file())) {
+      printer->Print(
+        "  ::google::protobuf::internal::WireFormat::SerializeUnknownMessageSetItems(\n"
+        "      unknown_fields(), output);\n");
+    }
+    printer->Print(
+      "}\n");
+    return;
+  }
+
   printer->Print(
     "void $classname$::SerializeWithCachedSizes(\n"
     "    ::google::protobuf::io::CodedOutputStream* output) const {\n",
     "classname", classname_);
   printer->Indent();
 
-  printer->Print(
-    "::google::protobuf::uint8* raw_buffer = "
-      "output->GetDirectBufferForNBytesAndAdvance(_cached_size_);\n"
-    "if (raw_buffer != NULL) {\n"
-    "  $classname$::SerializeWithCachedSizesToArray(raw_buffer);\n"
-    "  return;\n"
-    "}\n"
-    "\n",
-    "classname", classname_);
+  if (HasFastArraySerialization(descriptor_->file())) {
+    printer->Print(
+      "::google::protobuf::uint8* raw_buffer = "
+        "output->GetDirectBufferForNBytesAndAdvance(_cached_size_);\n"
+      "if (raw_buffer != NULL) {\n"
+      "  $classname$::SerializeWithCachedSizesToArray(raw_buffer);\n"
+      "  return;\n"
+      "}\n"
+      "\n",
+      "classname", classname_);
+  }
+
   GenerateSerializeWithCachedSizesBody(printer, false);
 
   printer->Outdent();
@@ -1343,6 +1448,26 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
+  if (descriptor_->options().message_set_wire_format()) {
+    // Special-case MessageSet.
+    printer->Print(
+      "::google::protobuf::uint8* $classname$::SerializeWithCachedSizesToArray(\n"
+      "    ::google::protobuf::uint8* target) const {\n"
+      "  target =\n"
+      "      _extensions_.SerializeMessageSetWithCachedSizesToArray(target);\n",
+      "classname", classname_);
+    if (HasUnknownFields(descriptor_->file())) {
+      printer->Print(
+        "  target = ::google::protobuf::internal::WireFormat::\n"
+        "             SerializeUnknownMessageSetItemsToArray(\n"
+        "               unknown_fields(), target);\n");
+    }
+    printer->Print(
+      "  return target;\n"
+      "}\n");
+    return;
+  }
+
   printer->Print(
     "::google::protobuf::uint8* $classname$::SerializeWithCachedSizesToArray(\n"
     "    ::google::protobuf::uint8* target) const {\n",
@@ -1389,26 +1514,46 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
     }
   }
 
-  printer->Print("if (!unknown_fields().empty()) {\n");
-  printer->Indent();
-  if (to_array) {
-    printer->Print(
-      "target = "
-          "::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(\n"
-      "    unknown_fields(), target);\n");
-  } else {
-    printer->Print(
-      "::google::protobuf::internal::WireFormat::SerializeUnknownFields(\n"
-      "    unknown_fields(), output);\n");
-  }
-  printer->Outdent();
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print("if (!unknown_fields().empty()) {\n");
+    printer->Indent();
+    if (to_array) {
+      printer->Print(
+        "target = "
+            "::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(\n"
+        "    unknown_fields(), target);\n");
+    } else {
+      printer->Print(
+        "::google::protobuf::internal::WireFormat::SerializeUnknownFields(\n"
+        "    unknown_fields(), output);\n");
+    }
+    printer->Outdent();
 
-  printer->Print(
-    "}\n");
+    printer->Print(
+      "}\n");
+  }
 }
 
 void MessageGenerator::
 GenerateByteSize(io::Printer* printer) {
+  if (descriptor_->options().message_set_wire_format()) {
+    // Special-case MessageSet.
+    printer->Print(
+      "int $classname$::ByteSize() const {\n"
+      "  int total_size = _extensions_.MessageSetByteSize();\n",
+      "classname", classname_);
+    if (HasUnknownFields(descriptor_->file())) {
+      printer->Print(
+        "  total_size += ::google::protobuf::internal::WireFormat::\n"
+        "      ComputeUnknownMessageSetItemsSize(unknown_fields());\n");
+    }
+    printer->Print(
+      "  _cached_size_ = total_size;\n"
+      "  return total_size;\n"
+      "}\n");
+    return;
+  }
+
   printer->Print(
     "int $classname$::ByteSize() const {\n",
     "classname", classname_);
@@ -1478,14 +1623,16 @@ GenerateByteSize(io::Printer* printer) {
       "\n");
   }
 
-  printer->Print("if (!unknown_fields().empty()) {\n");
-  printer->Indent();
-  printer->Print(
-    "total_size +=\n"
-    "  ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(\n"
-    "    unknown_fields());\n");
-  printer->Outdent();
-  printer->Print("}\n");
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print("if (!unknown_fields().empty()) {\n");
+    printer->Indent();
+    printer->Print(
+      "total_size +=\n"
+      "  ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(\n"
+      "    unknown_fields());\n");
+    printer->Outdent();
+    printer->Print("}\n");
+  }
 
   // We update _cached_size_ even though this is a const method.  In theory,
   // this is not thread-compatible, because concurrent writes have undefined

@@ -36,12 +36,12 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import struct
 import unittest
-from google.protobuf.internal import wire_format
-from google.protobuf.internal import encoder
 from google.protobuf.internal import decoder
-import logging
+from google.protobuf.internal import encoder
 from google.protobuf.internal import input_stream
+from google.protobuf.internal import wire_format
 from google.protobuf import message
+import logging
 import mox
 
 
@@ -110,6 +110,10 @@ class DecoderTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
+  VAL = 1.125  # Perfectly representable as a float (no rounding error).
+  LITTLE_FLOAT_VAL = '\x00\x00\x90?'
+  LITTLE_DOUBLE_VAL = '\x00\x00\x00\x00\x00\x00\xf2?'
+
   def testReadScalars(self):
     test_string = 'I can feel myself getting sutpider.'
     scalar_tests = [
@@ -125,10 +129,10 @@ class DecoderTest(unittest.TestCase):
          'ReadLittleEndian32', long(0xffffffff)],
         ['sfixed64', decoder.Decoder.ReadSFixed64, long(-1),
          'ReadLittleEndian64', 0xffffffffffffffff],
-        ['float', decoder.Decoder.ReadFloat, 0.0,
-         'ReadBytes', struct.pack('f', 0.0), 4],
-        ['double', decoder.Decoder.ReadDouble, 0.0,
-         'ReadBytes', struct.pack('d', 0.0), 8],
+        ['float', decoder.Decoder.ReadFloat, self.VAL,
+         'ReadBytes', self.LITTLE_FLOAT_VAL, 4],
+        ['double', decoder.Decoder.ReadDouble, self.VAL,
+         'ReadBytes', self.LITTLE_DOUBLE_VAL, 8],
         ['bool', decoder.Decoder.ReadBool, True, 'ReadVarUInt32', 1],
         ['enum', decoder.Decoder.ReadEnum, 23, 'ReadVarUInt32', 23],
         ['string', decoder.Decoder.ReadString,

@@ -123,6 +123,10 @@ class EncoderTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
+  VAL = 1.125  # Perfectly representable as a float (no rounding error).
+  LITTLE_FLOAT_VAL = '\x00\x00\x90?'
+  LITTLE_DOUBLE_VAL = '\x00\x00\x00\x00\x00\x00\xf2?'
+
   def testAppendScalars(self):
     utf8_bytes = '\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82'
     utf8_string = unicode(utf8_bytes, 'utf-8')
@@ -144,9 +148,9 @@ class EncoderTest(unittest.TestCase):
         ['sfixed64', self.encoder.AppendSFixed64, 'AppendLittleEndian64',
          wire_format.WIRETYPE_FIXED64, -1, 0xffffffffffffffff],
         ['float', self.encoder.AppendFloat, 'AppendRawBytes',
-         wire_format.WIRETYPE_FIXED32, 0.0, struct.pack('f', 0.0)],
+         wire_format.WIRETYPE_FIXED32, self.VAL, self.LITTLE_FLOAT_VAL],
         ['double', self.encoder.AppendDouble, 'AppendRawBytes',
-         wire_format.WIRETYPE_FIXED64, 0.0, struct.pack('d', 0.0)],
+         wire_format.WIRETYPE_FIXED64, self.VAL, self.LITTLE_DOUBLE_VAL],
         ['bool', self.encoder.AppendBool, 'AppendVarint32',
          wire_format.WIRETYPE_VARINT, False],
         ['enum', self.encoder.AppendEnum, 'AppendVarint32',
@@ -185,9 +189,9 @@ class EncoderTest(unittest.TestCase):
         ['sfixed64', self.encoder.AppendSFixed64NoTag,
          'AppendLittleEndian64', None, 0],
         ['float', self.encoder.AppendFloatNoTag,
-         'AppendRawBytes', None, 0.0, struct.pack('f', 0.0)],
+         'AppendRawBytes', None, self.VAL, self.LITTLE_FLOAT_VAL],
         ['double', self.encoder.AppendDoubleNoTag,
-         'AppendRawBytes', None, 0.0, struct.pack('d', 0.0)],
+         'AppendRawBytes', None, self.VAL, self.LITTLE_DOUBLE_VAL],
         ['bool', self.encoder.AppendBoolNoTag, 'AppendVarint32', None, 0],
         ['enum', self.encoder.AppendEnumNoTag, 'AppendVarint32', None, 0],
         ['sint32', self.encoder.AppendSInt32NoTag,

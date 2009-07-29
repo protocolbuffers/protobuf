@@ -71,11 +71,11 @@ public final class RpcUtil {
       final Class<Type> originalClass,
       final Type defaultInstance) {
     return new RpcCallback<Message>() {
-      public void run(Message parameter) {
+      public void run(final Message parameter) {
         Type typedParameter;
         try {
           typedParameter = originalClass.cast(parameter);
-        } catch (ClassCastException e) {
+        } catch (ClassCastException ignored) {
           typedParameter = copyAsType(defaultInstance, parameter);
         }
         originalCallback.run(typedParameter);
@@ -90,7 +90,7 @@ public final class RpcUtil {
    */
   @SuppressWarnings("unchecked")
   private static <Type extends Message> Type copyAsType(
-      Type typeDefaultInstance, Message source) {
+      final Type typeDefaultInstance, final Message source) {
     return (Type)typeDefaultInstance.newBuilderForType()
                                     .mergeFrom(source)
                                     .build();
@@ -106,8 +106,9 @@ public final class RpcUtil {
     RpcCallback<ParameterType> newOneTimeCallback(
       final RpcCallback<ParameterType> originalCallback) {
     return new RpcCallback<ParameterType>() {
-      boolean alreadyCalled = false;
-      public void run(ParameterType parameter) {
+      private boolean alreadyCalled = false;
+
+      public void run(final ParameterType parameter) {
         synchronized(this) {
           if (alreadyCalled) {
             throw new AlreadyCalledException();
@@ -124,6 +125,8 @@ public final class RpcUtil {
    * Exception thrown when a one-time callback is called more than once.
    */
   public static final class AlreadyCalledException extends RuntimeException {
+    private static final long serialVersionUID = 5469741279507848266L;
+
     public AlreadyCalledException() {
       super("This RpcCallback was already called and cannot be called " +
             "multiple times.");

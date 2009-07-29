@@ -45,6 +45,8 @@ import protobuf_unittest.UnittestMset.TestMessageSet;
 import protobuf_unittest.UnittestMset.RawMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
+import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
+import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 
 /**
  * Tests related to parsing and serialization.
@@ -100,6 +102,32 @@ public class WireFormatTest extends TestCase {
     assertEquals(rawBytes, rawBytes2);
   }
 
+  public void testSerializeExtensionsLite() throws Exception {
+    // TestAllTypes and TestAllExtensions should have compatible wire formats,
+    // so if we serialize a TestAllExtensions then parse it as TestAllTypes
+    // it should work.
+
+    TestAllExtensionsLite message = TestUtil.getAllLiteExtensionsSet();
+    ByteString rawBytes = message.toByteString();
+    assertEquals(rawBytes.size(), message.getSerializedSize());
+
+    TestAllTypes message2 = TestAllTypes.parseFrom(rawBytes);
+
+    TestUtil.assertAllFieldsSet(message2);
+  }
+
+  public void testSerializePackedExtensionsLite() throws Exception {
+    // TestPackedTypes and TestPackedExtensions should have compatible wire
+    // formats; check that they serialize to the same string.
+    TestPackedExtensionsLite message = TestUtil.getLitePackedExtensionsSet();
+    ByteString rawBytes = message.toByteString();
+
+    TestPackedTypes message2 = TestUtil.getPackedSet();
+    ByteString rawBytes2 = message2.toByteString();
+
+    assertEquals(rawBytes, rawBytes2);
+  }
+
   public void testParseExtensions() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllTypes then parse it as TestAllExtensions
@@ -125,6 +153,43 @@ public class WireFormatTest extends TestCase {
 
     TestPackedExtensions message2 =
         TestPackedExtensions.parseFrom(rawBytes, registry);
+
+    TestUtil.assertPackedExtensionsSet(message2);
+  }
+
+  public void testParseExtensionsLite() throws Exception {
+    // TestAllTypes and TestAllExtensions should have compatible wire formats,
+    // so if we serialize a TestAllTypes then parse it as TestAllExtensions
+    // it should work.
+
+    TestAllTypes message = TestUtil.getAllSet();
+    ByteString rawBytes = message.toByteString();
+
+    ExtensionRegistryLite registry_lite = TestUtil.getExtensionRegistryLite();
+
+    TestAllExtensionsLite message2 =
+      TestAllExtensionsLite.parseFrom(rawBytes, registry_lite);
+
+    TestUtil.assertAllExtensionsSet(message2);
+
+    // Try again using a full extension registry.
+    ExtensionRegistry registry = TestUtil.getExtensionRegistry();
+
+    TestAllExtensionsLite message3 =
+      TestAllExtensionsLite.parseFrom(rawBytes, registry);
+
+    TestUtil.assertAllExtensionsSet(message3);
+  }
+
+  public void testParsePackedExtensionsLite() throws Exception {
+    // Ensure that packed extensions can be properly parsed.
+    TestPackedExtensionsLite message = TestUtil.getLitePackedExtensionsSet();
+    ByteString rawBytes = message.toByteString();
+
+    ExtensionRegistryLite registry = TestUtil.getExtensionRegistryLite();
+
+    TestPackedExtensionsLite message2 =
+        TestPackedExtensionsLite.parseFrom(rawBytes, registry);
 
     TestUtil.assertPackedExtensionsSet(message2);
   }

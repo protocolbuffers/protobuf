@@ -142,6 +142,16 @@ class TextFormat::Parser::ParserImpl {
     }
   }
 
+  bool ParseField(const FieldDescriptor* field, Message* output) {
+    bool suc;
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      suc = ConsumeFieldMessage(output, output->GetReflection(), field);
+    } else {
+      suc = ConsumeFieldValue(output, output->GetReflection(), field);
+    }
+    return suc && LookingAtType(io::Tokenizer::TYPE_END);
+  }
+
   void ReportError(int line, int col, const string& message) {
     had_errors_ = true;
     if (error_collector_ == NULL) {
@@ -252,29 +262,34 @@ class TextFormat::Parser::ParserImpl {
 
     // Perform special handling for embedded message types.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      string delimeter;
-
       // ':' is optional here.
       TryConsume(":");
-
-      if (TryConsume("<")) {
-        delimeter = ">";
-      } else {
-        DO(Consume("{"));
-        delimeter = "}";
-      }
-
-      if (field->is_repeated()) {
-        DO(ConsumeMessage(reflection->AddMessage(message, field), delimeter));
-      } else {
-        DO(ConsumeMessage(reflection->MutableMessage(message, field),
-                          delimeter));
-      }
+      DO(ConsumeFieldMessage(message, reflection, field));
     } else {
       DO(Consume(":"));
       DO(ConsumeFieldValue(message, reflection, field));
     }
 
+    return true;
+  }
+
+  bool ConsumeFieldMessage(Message* message,
+                           const Reflection* reflection,
+                           const FieldDescriptor* field) {
+    string delimeter;
+    if (TryConsume("<")) {
+      delimeter = ">";
+    } else {
+      DO(Consume("{"));
+      delimeter = "}";
+    }
+
+    if (field->is_repeated()) {
+      DO(ConsumeMessage(reflection->AddMessage(message, field), delimeter));
+    } else {
+      DO(ConsumeMessage(reflection->MutableMessage(message, field),
+                        delimeter));
+    }
     return true;
   }
 
@@ -750,6 +765,16 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
   return true;
 }
 
+bool TextFormat::Parser::ParseFieldValueFromString(
+    const string& input,
+    const FieldDescriptor* field,
+    Message* output) {
+  io::ArrayInputStream input_stream(input.data(), input.size());
+  ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
+                    ParserImpl::ALLOW_SINGULAR_OVERWRITES);
+  return parser.ParseField(field, output);
+}
+
 /* static */ bool TextFormat::Parse(io::ZeroCopyInputStream* input,
                                     Message* output) {
   return Parser().Parse(input, output);
@@ -1006,6 +1031,13 @@ void TextFormat::Printer::PrintFieldValue(
     int index,
     string* output) {
   return Printer().PrintFieldValueToString(message, field, index, output);
+}
+
+/* static */ bool TextFormat::ParseFieldValueFromString(
+    const string& input,
+    const FieldDescriptor* field,
+    Message* message) {
+  return Parser().ParseFieldValueFromString(input, field, message);
 }
 
 // Prints an integer as hex with a fixed number of digits dependent on the

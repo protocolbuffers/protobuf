@@ -39,7 +39,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format_inl.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -53,18 +53,13 @@ namespace {
 //   repeat code between this and the other field types.
 void SetEnumVariables(const FieldDescriptor* descriptor,
                       map<string, string>* variables) {
-  const EnumValueDescriptor* default_value;
-  default_value = descriptor->default_value_enum();
-
-  string type = ClassName(descriptor->enum_type());
-
   (*variables)["name"] =
     UnderscoresToCamelCase(descriptor);
   (*variables)["capitalized_name"] =
     UnderscoresToCapitalizedCamelCase(descriptor);
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = type;
-  (*variables)["default"] = type + "." + default_value->name();
+  (*variables)["type"] = ClassName(descriptor->enum_type());
+  (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       internal::WireFormat::TagSize(descriptor->number(), descriptor->type()));
@@ -132,10 +127,17 @@ void EnumFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "int rawValue = input.readEnum();\n"
-    "$type$ value = $type$.valueOf(rawValue);\n"
-    "if (value == null) {\n"
-    "  unknownFields.mergeVarintField($number$, rawValue);\n"
-    "} else {\n"
+    "$type$ value = $type$.valueOf(rawValue);\n");
+  if (HasUnknownFields(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "if (value == null) {\n"
+      "  unknownFields.mergeVarintField($number$, rawValue);\n"
+      "} else {\n");
+  } else {
+    printer->Print(variables_,
+      "if (value != null) {\n");
+  }
+  printer->Print(variables_,
     "  set$capitalized_name$(value);\n"
     "}\n");
 }
@@ -185,7 +187,7 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
 
   if (descriptor_->options().packed() &&
-      descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
+      HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
   }
@@ -272,10 +274,17 @@ GenerateParsingCode(io::Printer* printer) const {
   // Read and store the enum
   printer->Print(variables_,
     "int rawValue = input.readEnum();\n"
-    "$type$ value = $type$.valueOf(rawValue);\n"
-    "if (value == null) {\n"
-    "  unknownFields.mergeVarintField($number$, rawValue);\n"
-    "} else {\n"
+    "$type$ value = $type$.valueOf(rawValue);\n");
+  if (HasUnknownFields(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "if (value == null) {\n"
+      "  unknownFields.mergeVarintField($number$, rawValue);\n"
+      "} else {\n");
+  } else {
+    printer->Print(variables_,
+      "if (value != null) {\n");
+  }
+  printer->Print(variables_,
     "  add$capitalized_name$(value);\n"
     "}\n");
 

@@ -110,6 +110,9 @@
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
 #include <string>
+#ifndef _MSC_VER
+#include <sys/param.h>
+#endif  // !_MSC_VER
 #include <google/protobuf/stubs/common.h>
 
 namespace google {
@@ -136,6 +139,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
  public:
   // Create a CodedInputStream that reads from the given ZeroCopyInputStream.
   explicit CodedInputStream(ZeroCopyInputStream* input);
+
+  // Create a CodedInputStream that reads from the given flat array.  This is
+  // faster than using an ArrayInputStream.  PushLimit(size) is implied by
+  // this constructor.
+  explicit CodedInputStream(const uint8* buffer, int size);
 
   // Destroy the CodedInputStream and position the underlying
   // ZeroCopyInputStream at the first unread byte.  If an error occurred while
@@ -359,6 +367,9 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Advance the buffer by a given number of bytes.
   void Advance(int amount);
+
+  // Back up input_ to the current buffer position.
+  void BackUpInputToCurrentPosition();
 
   // Recomputes the value of buffer_size_after_limit_.  Must be called after
   // current_limit_ or total_bytes_limit_ changes.
@@ -662,6 +673,41 @@ inline uint8* CodedOutputStream::WriteVarint32SignExtendedToArray(
   } else {
     return WriteVarint32ToArray(static_cast<uint32>(value), target);
   }
+}
+
+inline uint8* CodedOutputStream::WriteLittleEndian32ToArray(uint32 value,
+                                                            uint8* target) {
+#if !defined(PROTOBUF_TEST_NOT_LITTLE_ENDIAN) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  memcpy(target, &value, sizeof(value));
+#else
+  target[0] = static_cast<uint8>(value      );
+  target[1] = static_cast<uint8>(value >>  8);
+  target[2] = static_cast<uint8>(value >> 16);
+  target[3] = static_cast<uint8>(value >> 24);
+#endif
+  return target + sizeof(value);
+}
+
+inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
+                                                            uint8* target) {
+#if !defined(PROTOBUF_TEST_NOT_LITTLE_ENDIAN) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  memcpy(target, &value, sizeof(value));
+#else
+  uint32 part0 = static_cast<uint32>(value);
+  uint32 part1 = static_cast<uint32>(value >> 32);
+
+  target[0] = static_cast<uint8>(part0      );
+  target[1] = static_cast<uint8>(part0 >>  8);
+  target[2] = static_cast<uint8>(part0 >> 16);
+  target[3] = static_cast<uint8>(part0 >> 24);
+  target[4] = static_cast<uint8>(part1      );
+  target[5] = static_cast<uint8>(part1 >>  8);
+  target[6] = static_cast<uint8>(part1 >> 16);
+  target[7] = static_cast<uint8>(part1 >> 24);
+#endif
+  return target + sizeof(value);
 }
 
 inline void CodedOutputStream::WriteTag(uint32 value) {

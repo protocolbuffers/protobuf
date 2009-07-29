@@ -49,51 +49,15 @@
 #include <string>
 #include <iterator>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 
 
 namespace google {
 namespace protobuf {
 
+class Message;
+
 namespace internal {
-
-// DO NOT USE GenericRepeatedField; it should be considered a private detail
-// of RepeatedField/RepeatedPtrField that may be removed in the future.
-// GeneratedMessageReflection needs to manipulate repeated fields in a
-// generic way, so we have them implement this interface.  This should ONLY
-// be used by GeneratedMessageReflection.  This would normally be very bad
-// design but GeneratedMessageReflection is a big efficiency hack anyway.
-//
-// TODO(kenton):  Implement something like Jeff's ProtoVoidPtrArray change.
-//   Then, get rid of GenericRepeatedField.
-class LIBPROTOBUF_EXPORT GenericRepeatedField {
- public:
-  inline GenericRepeatedField() {}
-#if defined(__DECCXX) && defined(__osf__)
-  // HP C++ on Tru64 has trouble when this is not defined inline.
-  virtual ~GenericRepeatedField() {}
-#else
-  virtual ~GenericRepeatedField();
-#endif
-
- private:
-  // We only want GeneratedMessageReflection to see and use these, so we
-  // make them private.  Yes, it is valid C++ for a subclass to implement
-  // a virtual method which is private in the superclass.  Crazy, huh?
-  friend class GeneratedMessageReflection;
-
-  virtual const void* GenericGet(int index) const = 0;
-  virtual void* GenericMutable(int index) = 0;
-  virtual void* GenericAdd() = 0;
-  virtual void GenericClear() = 0;
-  virtual void GenericRemoveLast() = 0;
-  virtual void GenericSwap(GenericRepeatedField *other) = 0;
-  virtual void GenericSwapElements(int index1, int index2) = 0;
-  virtual int GenericSize() const = 0;
-  virtual int GenericSpaceUsedExcludingSelf() const = 0;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GenericRepeatedField);
-};
 
 // We need this (from generated_message_reflection.cc).
 LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
@@ -105,7 +69,7 @@ LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 // not ever use a RepeatedField directly; they will use the get-by-index,
 // set-by-index, and add accessors that are generated for all repeated fields.
 template <typename Element>
-class RepeatedField : public internal::GenericRepeatedField {
+class RepeatedField {
  public:
   RepeatedField();
   ~RepeatedField();
@@ -138,7 +102,7 @@ class RepeatedField : public internal::GenericRepeatedField {
   // Swap entire contents with "other".
   void Swap(RepeatedField* other);
 
-  // Swap two elements of a repeated field.
+  // Swap two elements.
   void SwapElements(int index1, int index2);
 
   // STL-like iterator support
@@ -153,18 +117,6 @@ class RepeatedField : public internal::GenericRepeatedField {
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
   int SpaceUsedExcludingSelf() const;
-
- private:  // See GenericRepeatedField for why this is private.
-  // implements GenericRepeatedField ---------------------------------
-  const void* GenericGet(int index) const;
-  void* GenericMutable(int index);
-  void* GenericAdd();
-  void GenericClear();
-  void GenericRemoveLast();
-  void GenericSwap(GenericRepeatedField *other);
-  void GenericSwapElements(int index1, int index2);
-  int GenericSize() const;
-  int GenericSpaceUsedExcludingSelf() const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedField);
@@ -182,24 +134,157 @@ namespace internal {
 template <typename It> class RepeatedPtrIterator;
 }  // namespace internal
 
+namespace internal {
+
+// This is the common base class for RepeatedPtrFields.  It deals only in void*
+// pointers.  Users should not use this interface directly.
+//
+// The methods of this interface correspond to the methods of RepeatedPtrField,
+// but may have a template argument called TypeHandler.  Its signature is:
+//   class TypeHandler {
+//    public:
+//     typedef MyType Type;
+//     static Type* New();
+//     static void Delete(Type*);
+//     static void Clear(Type*);
+//     static void Merge(const Type& from, Type* to);
+//
+//     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
+//     static int SpaceUsed(const Type&);
+//   };
+class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
+ protected:
+  // The reflection implementation needs to call protected methods directly,
+  // reinterpreting pointers as being to Message instead of a specific Message
+  // subclass.
+  friend class GeneratedMessageReflection;
+
+  // ExtensionSet stores repeated message extensions as
+  // RepeatedPtrField<MessageLite>, but non-lite ExtensionSets need to
+  // implement SpaceUsed(), and thus need to call SpaceUsedExcludingSelf()
+  // reinterpreting MessageLite as Message.  ExtensionSet also needs to make
+  // use of AddFromCleared(), which is not part of the public interface.
+  friend class ExtensionSet;
+
+  RepeatedPtrFieldBase();
+
+  // Must be called from destructor.
+  template <typename TypeHandler>
+  void Destroy();
+
+  int size() const;
+
+  template <typename TypeHandler>
+  const typename TypeHandler::Type& Get(int index) const;
+  template <typename TypeHandler>
+  typename TypeHandler::Type* Mutable(int index);
+  template <typename TypeHandler>
+  typename TypeHandler::Type* Add();
+  template <typename TypeHandler>
+  void RemoveLast();
+  template <typename TypeHandler>
+  void Clear();
+  template <typename TypeHandler>
+  void MergeFrom(const RepeatedPtrFieldBase& other);
+
+  void Reserve(int new_size);
+
+  // Used for constructing iterators.
+  void* const* raw_data() const;
+
+  template <typename TypeHandler>
+  typename TypeHandler::Type** mutable_data();
+  template <typename TypeHandler>
+  const typename TypeHandler::Type* const* data() const;
+
+  void Swap(RepeatedPtrFieldBase* other);
+
+  void SwapElements(int index1, int index2);
+
+  template <typename TypeHandler>
+  int SpaceUsedExcludingSelf() const;
+
+  // Advanced memory management --------------------------------------
+
+  // Like Add(), but if there are no cleared objects to use, returns NULL.
+  template <typename TypeHandler>
+  typename TypeHandler::Type* AddFromCleared();
+
+  template <typename TypeHandler>
+  void AddAllocated(typename TypeHandler::Type* value);
+  template <typename TypeHandler>
+  typename TypeHandler::Type* ReleaseLast();
+
+  int ClearedCount();
+  template <typename TypeHandler>
+  void AddCleared(typename TypeHandler::Type* value);
+  template <typename TypeHandler>
+  typename TypeHandler::Type* ReleaseCleared();
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrFieldBase);
+
+  static const int kInitialSize = 4;
+
+  void** elements_;
+  int    current_size_;
+  int    allocated_size_;
+  int    total_size_;
+
+  void*  initial_space_[kInitialSize];
+
+  template <typename TypeHandler>
+  static inline typename TypeHandler::Type* cast(void* element) {
+    return reinterpret_cast<typename TypeHandler::Type*>(element);
+  }
+  template <typename TypeHandler>
+  static inline const typename TypeHandler::Type* cast(const void* element) {
+    return reinterpret_cast<const typename TypeHandler::Type*>(element);
+  }
+};
+
+template <typename GenericType>
+class GenericTypeHandler {
+ public:
+  typedef GenericType Type;
+  static GenericType* New() { return new GenericType; }
+  static void Delete(GenericType* value) { delete value; }
+  static void Clear(GenericType* value) { value->Clear(); }
+  static void Merge(const GenericType& from, GenericType* to) {
+    to->MergeFrom(from);
+  }
+  static int SpaceUsed(const GenericType& value) { return value.SpaceUsed(); }
+};
+
+template <>
+inline void GenericTypeHandler<MessageLite>::Merge(
+    const MessageLite& from, MessageLite* to) {
+  to->CheckTypeAndMergeFrom(from);
+}
+
+class LIBPROTOBUF_EXPORT StringTypeHandler {
+ public:
+  typedef string Type;
+  static string* New();
+  static void Delete(string* value);
+  static void Clear(string* value) { value->clear(); }
+  static void Merge(const string& from, string* to) { *to = from; }
+  static int SpaceUsed(const string& value)  {
+    return sizeof(value) + StringSpaceUsedExcludingSelf(value);
+  }
+};
+
+
+}  // namespace internal
+
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
 // Messages.
 template <typename Element>
-class RepeatedPtrField : public internal::GenericRepeatedField {
+class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
  public:
   RepeatedPtrField();
 
-  // This constructor is only defined for RepeatedPtrField<Message>.
-  // When a RepeatedPtrField is created using this constructor,
-  // prototype->New() will be called to allocate new elements, rather than
-  // just using the "new" operator.  This is useful for the implementation
-  // of DynamicMessage, but is not used by normal generated messages.
-  explicit RepeatedPtrField(const Message* prototype);
-
   ~RepeatedPtrField();
-
-  // Returns the prototype if one was passed to the constructor.
-  const Message* prototype() const;
 
   int size() const;
 
@@ -223,12 +308,12 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   // Swap entire contents with "other".
   void Swap(RepeatedPtrField* other);
 
-  // Swap two elements of a repeated field.
+  // Swap two elements.
   void SwapElements(int index1, int index2);
 
   // STL-like iterator support
-  typedef internal::RepeatedPtrIterator<Element**> iterator;
-  typedef internal::RepeatedPtrIterator<const Element* const*> const_iterator;
+  typedef internal::RepeatedPtrIterator<Element> iterator;
+  typedef internal::RepeatedPtrIterator<const Element> const_iterator;
 
   iterator begin();
   const_iterator begin() const;
@@ -238,6 +323,11 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   // Returns (an estimate of) the number of bytes used by the repeated field,
   // excluding sizeof(*this).
   int SpaceUsedExcludingSelf() const;
+
+  // The spaced used just by the pointer array, not counting the objects pointed
+  // at.  Returns zero if the array is inlined (i.e. initial_space_ is being
+  // used).
+  int SpaceUsedByArray() const;
 
   // Advanced memory management --------------------------------------
   // When hardcore memory management becomes necessary -- as it often
@@ -272,38 +362,16 @@ class RepeatedPtrField : public internal::GenericRepeatedField {
   // Requires:  ClearedCount() > 0
   Element* ReleaseCleared();
 
- private:  // See GenericRepeatedField for why this is private.
-  // implements GenericRepeatedField ---------------------------------
-  const void* GenericGet(int index) const;
-  void* GenericMutable(int index);
-  void* GenericAdd();
-  void GenericClear();
-  void GenericRemoveLast();
-  void GenericSwap(GenericRepeatedField *other);
-  void GenericSwapElements(int index1, int index2);
-  int GenericSize() const;
-  int GenericSpaceUsedExcludingSelf() const;
-
  private:
-  // Returns (an estimate of) the number of bytes used by an individual
-  // element.
-  int ElementSpaceUsed(Element* element) const;
+  class TypeHandler;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrField);
 
-  static const int kInitialSize = 4;
-
-  // prototype_ is used for RepeatedPtrField<Message> only (see constructor).
-  const Message* prototype_;
-
-  Element** elements_;
-  int       current_size_;
-  int       allocated_size_;
-  int       total_size_;
-
-  Element*  initial_space_[kInitialSize];
-
-  Element* NewElement();
+  // prototype_ is used for RepeatedPtrField<Message> and
+  // RepeatedPtrField<MessageLite> only (see constructor).
+  // TODO(kenton):  Can we use some template magic to avoid wasting space on
+  //   this field when it isn't used?
+  const Element* prototype_;
 };
 
 // implementation ====================================================
@@ -412,7 +480,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 
 template <typename Element>
 void RepeatedField<Element>::SwapElements(int index1, int index2) {
-  swap(*Mutable(index1), *Mutable(index2));
+  swap(elements_[index1], elements_[index2]);
 }
 
 template <typename Element>
@@ -442,53 +510,6 @@ inline int RepeatedField<Element>::SpaceUsedExcludingSelf() const {
 }
 
 template <typename Element>
-const void* RepeatedField<Element>::GenericGet(int index) const {
-  GOOGLE_DCHECK_LT(index, size());
-  return elements_ + index;
-}
-
-template <typename Element>
-void* RepeatedField<Element>::GenericMutable(int index) {
-  return Mutable(index);
-}
-
-template <typename Element>
-void* RepeatedField<Element>::GenericAdd() {
-  Add(Element());
-  return Mutable(current_size_ - 1);
-}
-
-template <typename Element>
-void RepeatedField<Element>::GenericClear() {
-  Clear();
-}
-
-template <typename Element>
-void RepeatedField<Element>::GenericRemoveLast() {
-  RemoveLast();
-}
-
-template <typename Element>
-void RepeatedField<Element>::GenericSwap(GenericRepeatedField *other) {
-  Swap(down_cast<RepeatedField<Element>*>(other));
-}
-
-template <typename Element>
-void RepeatedField<Element>::GenericSwapElements(int index1, int index2) {
-  SwapElements(index1, index2);
-}
-
-template <typename Element>
-int RepeatedField<Element>::GenericSize() const {
-  return size();
-}
-
-template <typename Element>
-int RepeatedField<Element>::GenericSpaceUsedExcludingSelf() const {
-  return SpaceUsedExcludingSelf();
-}
-
-template <typename Element>
 inline void RepeatedField<Element>::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
 
@@ -503,188 +524,123 @@ inline void RepeatedField<Element>::Reserve(int new_size) {
 
 // -------------------------------------------------------------------
 
-template <typename Element>
-inline RepeatedPtrField<Element>::RepeatedPtrField()
-  : prototype_(NULL),
-    elements_(initial_space_),
+namespace internal {
+
+inline RepeatedPtrFieldBase::RepeatedPtrFieldBase()
+  : elements_(initial_space_),
     current_size_(0),
     allocated_size_(0),
     total_size_(kInitialSize) {
 }
 
-template <>
-inline RepeatedPtrField<Message>::RepeatedPtrField(const Message* prototype)
-  : prototype_(prototype),
-    elements_(initial_space_),
-    current_size_(0),
-    allocated_size_(0),
-    total_size_(kInitialSize) {
-}
-
-template <typename Element>
-RepeatedPtrField<Element>::~RepeatedPtrField() {
+template <typename TypeHandler>
+void RepeatedPtrFieldBase::Destroy() {
   for (int i = 0; i < allocated_size_; i++) {
-    delete elements_[i];
+    TypeHandler::Delete(cast<TypeHandler>(elements_[i]));
   }
   if (elements_ != initial_space_) {
     delete [] elements_;
   }
 }
 
-template <>
-inline const Message* RepeatedPtrField<Message>::prototype() const {
-  return prototype_;
-}
-
-
-template <typename Element>
-inline int RepeatedPtrField<Element>::size() const {
+inline int RepeatedPtrFieldBase::size() const {
   return current_size_;
 }
 
 
-template <typename Element>
-inline const Element& RepeatedPtrField<Element>::Get(int index) const {
+template <typename TypeHandler>
+inline const typename TypeHandler::Type&
+RepeatedPtrFieldBase::Get(int index) const {
   GOOGLE_DCHECK_LT(index, size());
-  return *elements_[index];
+  return *cast<TypeHandler>(elements_[index]);
 }
 
-template <typename Element>
-inline Element* RepeatedPtrField<Element>::Mutable(int index) {
+template <typename TypeHandler>
+inline typename TypeHandler::Type*
+RepeatedPtrFieldBase::Mutable(int index) {
   GOOGLE_DCHECK_LT(index, size());
-  return elements_[index];
+  return cast<TypeHandler>(elements_[index]);
 }
 
-template <typename Element>
-inline Element* RepeatedPtrField<Element>::Add() {
-  if (current_size_ < allocated_size_) return elements_[current_size_++];
+template <typename TypeHandler>
+inline typename TypeHandler::Type* RepeatedPtrFieldBase::Add() {
+  if (current_size_ < allocated_size_) {
+    return cast<TypeHandler>(elements_[current_size_++]);
+  }
   if (allocated_size_ == total_size_) Reserve(total_size_ + 1);
   ++allocated_size_;
-  return elements_[current_size_++] = NewElement();
+  typename TypeHandler::Type* result = TypeHandler::New();
+  elements_[current_size_++] = result;
+  return result;
 }
 
-template <typename Element>
-inline void RepeatedPtrField<Element>::RemoveLast() {
+template <typename TypeHandler>
+inline void RepeatedPtrFieldBase::RemoveLast() {
   GOOGLE_DCHECK_GT(current_size_, 0);
-  elements_[--current_size_]->Clear();
+  TypeHandler::Clear(cast<TypeHandler>(elements_[--current_size_]));
 }
 
-template <>
-inline void RepeatedPtrField<string>::RemoveLast() {
-  GOOGLE_DCHECK_GT(current_size_, 0);
-  elements_[--current_size_]->clear();
-}
-
-template <typename Element>
-void RepeatedPtrField<Element>::Clear() {
+template <typename TypeHandler>
+void RepeatedPtrFieldBase::Clear() {
   for (int i = 0; i < current_size_; i++) {
-    elements_[i]->Clear();
+    TypeHandler::Clear(cast<TypeHandler>(elements_[i]));
   }
   current_size_ = 0;
 }
 
-#if defined(__DECCXX) && defined(__osf__)
-// HP C++ on Tru64 has trouble when this is not defined inline.
-template <>
-inline void RepeatedPtrField<string>::Clear() {
-  for (int i = 0; i < current_size_; i++) {
-    elements_[i]->clear();
-  }
-  current_size_ = 0;
-}
-#else
-// Specialization defined in repeated_field.cc.
-template <>
-void LIBPROTOBUF_EXPORT RepeatedPtrField<string>::Clear();
-#endif
-
-template <typename Element>
-void RepeatedPtrField<Element>::MergeFrom(const RepeatedPtrField& other) {
+template <typename TypeHandler>
+void RepeatedPtrFieldBase::MergeFrom(const RepeatedPtrFieldBase& other) {
   Reserve(current_size_ + other.current_size_);
   for (int i = 0; i < other.current_size_; i++) {
-    Add()->MergeFrom(other.Get(i));
+    TypeHandler::Merge(other.Get<TypeHandler>(i), Add<TypeHandler>());
   }
 }
 
-template <>
-inline void RepeatedPtrField<string>::MergeFrom(const RepeatedPtrField& other) {
-  Reserve(current_size_ + other.current_size_);
-  for (int i = 0; i < other.current_size_; i++) {
-    Add()->assign(other.Get(i));
-  }
-}
-
-
-template <typename Element>
-inline Element** RepeatedPtrField<Element>::mutable_data() {
+inline void* const* RepeatedPtrFieldBase::raw_data() const {
   return elements_;
 }
 
-template <typename Element>
-inline const Element* const* RepeatedPtrField<Element>::data() const {
-  return elements_;
+template <typename TypeHandler>
+inline typename TypeHandler::Type** RepeatedPtrFieldBase::mutable_data() {
+  // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
+  //   method entirely.
+  return reinterpret_cast<typename TypeHandler::Type**>(elements_);
 }
 
-
-template <typename Element>
-void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
-  Element** swap_elements       = elements_;
-  int       swap_current_size   = current_size_;
-  int       swap_allocated_size = allocated_size_;
-  int       swap_total_size     = total_size_;
-  // We may not be using initial_space_ but it's not worth checking.  Just
-  // copy it anyway.
-  Element* swap_initial_space[kInitialSize];
-  memcpy(swap_initial_space, initial_space_, sizeof(initial_space_));
-
-  elements_       = other->elements_;
-  current_size_   = other->current_size_;
-  allocated_size_ = other->allocated_size_;
-  total_size_     = other->total_size_;
-  memcpy(initial_space_, other->initial_space_, sizeof(initial_space_));
-
-  other->elements_       = swap_elements;
-  other->current_size_   = swap_current_size;
-  other->allocated_size_ = swap_allocated_size;
-  other->total_size_     = swap_total_size;
-  memcpy(other->initial_space_, swap_initial_space, sizeof(swap_initial_space));
-
-  if (elements_ == other->initial_space_) {
-    elements_ = initial_space_;
-  }
-  if (other->elements_ == initial_space_) {
-    other->elements_ = other->initial_space_;
-  }
+template <typename TypeHandler>
+inline const typename TypeHandler::Type* const*
+RepeatedPtrFieldBase::data() const {
+  // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
+  //   method entirely.
+  return reinterpret_cast<const typename TypeHandler::Type* const*>(elements_);
 }
 
-template <typename Element>
-void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
+inline void RepeatedPtrFieldBase::SwapElements(int index1, int index2) {
   swap(elements_[index1], elements_[index2]);
 }
 
-template <typename Element>
-inline int RepeatedPtrField<Element>::SpaceUsedExcludingSelf() const {
+template <typename TypeHandler>
+inline int RepeatedPtrFieldBase::SpaceUsedExcludingSelf() const {
   int allocated_bytes =
       (elements_ != initial_space_) ? total_size_ * sizeof(elements_[0]) : 0;
   for (int i = 0; i < allocated_size_; ++i) {
-    allocated_bytes += ElementSpaceUsed(elements_[i]);
+    allocated_bytes += TypeHandler::SpaceUsed(*cast<TypeHandler>(elements_[i]));
   }
   return allocated_bytes;
 }
 
-template <typename Element>
-inline int RepeatedPtrField<Element>::ElementSpaceUsed(Element* e) const {
-  return e->SpaceUsed();
+template <typename TypeHandler>
+inline typename TypeHandler::Type* RepeatedPtrFieldBase::AddFromCleared() {
+  if (current_size_ < allocated_size_) {
+    return cast<TypeHandler>(elements_[current_size_++]);
+  } else {
+    return NULL;
+  }
 }
 
-template <>
-inline int RepeatedPtrField<string>::ElementSpaceUsed(string* s) const {
-  return sizeof(*s) + internal::StringSpaceUsedExcludingSelf(*s);
-}
-
-
-template <typename Element>
-inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
+template <typename TypeHandler>
+inline void RepeatedPtrFieldBase::AddAllocated(
+    typename TypeHandler::Type* value) {
   if (allocated_size_ == total_size_) Reserve(total_size_ + 1);
   // We don't care about the order of cleared elements, so if there's one
   // in the way, just move it to the back of the array.
@@ -695,10 +651,11 @@ inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
   elements_[current_size_++] = value;
 }
 
-template <typename Element>
-inline Element* RepeatedPtrField<Element>::ReleaseLast() {
+template <typename TypeHandler>
+inline typename TypeHandler::Type* RepeatedPtrFieldBase::ReleaseLast() {
   GOOGLE_DCHECK_GT(current_size_, 0);
-  Element* result = elements_[--current_size_];
+  typename TypeHandler::Type* result =
+      cast<TypeHandler>(elements_[--current_size_]);
   --allocated_size_;
   if (current_size_ < allocated_size_) {
     // There are cleared elements on the end; replace the removed element
@@ -709,93 +666,148 @@ inline Element* RepeatedPtrField<Element>::ReleaseLast() {
 }
 
 
-template <typename Element>
-inline int RepeatedPtrField<Element>::ClearedCount() {
+inline int RepeatedPtrFieldBase::ClearedCount() {
   return allocated_size_ - current_size_;
 }
 
-template <typename Element>
-inline void RepeatedPtrField<Element>::AddCleared(Element* value) {
+template <typename TypeHandler>
+inline void RepeatedPtrFieldBase::AddCleared(
+    typename TypeHandler::Type* value) {
   if (allocated_size_ == total_size_) Reserve(total_size_ + 1);
   elements_[allocated_size_++] = value;
 }
 
-template <typename Element>
-inline Element* RepeatedPtrField<Element>::ReleaseCleared() {
+template <typename TypeHandler>
+inline typename TypeHandler::Type* RepeatedPtrFieldBase::ReleaseCleared() {
   GOOGLE_DCHECK_GT(allocated_size_, current_size_);
-  return elements_[--allocated_size_];
+  return cast<TypeHandler>(elements_[--allocated_size_]);
 }
 
-
-template <typename Element>
-const void* RepeatedPtrField<Element>::GenericGet(int index) const {
-  return &Get(index);
-}
-
-template <typename Element>
-void* RepeatedPtrField<Element>::GenericMutable(int index) {
-  return Mutable(index);
-}
-
-template <typename Element>
-void* RepeatedPtrField<Element>::GenericAdd() {
-  return Add();
-}
-
-template <typename Element>
-void RepeatedPtrField<Element>::GenericClear() {
-  Clear();
-}
-
-template <typename Element>
-void RepeatedPtrField<Element>::GenericRemoveLast() {
-  RemoveLast();
-}
-
-template <typename Element>
-void RepeatedPtrField<Element>::GenericSwap(GenericRepeatedField *other) {
-  Swap(down_cast<RepeatedPtrField<Element>*>(other));
-}
-
-template <typename Element>
-void RepeatedPtrField<Element>::GenericSwapElements(int index1, int index2) {
-  SwapElements(index1, index2);
-}
-
-template <typename Element>
-int RepeatedPtrField<Element>::GenericSize() const {
-  return size();
-}
-
-template <typename Element>
-int RepeatedPtrField<Element>::GenericSpaceUsedExcludingSelf() const {
-  return SpaceUsedExcludingSelf();
-}
-
-
-template <typename Element>
-inline void RepeatedPtrField<Element>::Reserve(int new_size) {
+inline void RepeatedPtrFieldBase::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
 
-  Element** old_elements = elements_;
+  void** old_elements = elements_;
   total_size_ = max(total_size_ * 2, new_size);
-  elements_ = new Element*[total_size_];
+  elements_ = new void*[total_size_];
   memcpy(elements_, old_elements, allocated_size_ * sizeof(elements_[0]));
   if (old_elements != initial_space_) {
     delete [] old_elements;
   }
 }
 
+}  // namespace internal
+
+// -------------------------------------------------------------------
+
 template <typename Element>
-inline Element* RepeatedPtrField<Element>::NewElement() {
-  return new Element;
+class RepeatedPtrField<Element>::TypeHandler
+    : public internal::GenericTypeHandler<Element> {};
+
+template <>
+class RepeatedPtrField<string>::TypeHandler
+    : public internal::StringTypeHandler {};
+
+
+template <typename Element>
+inline RepeatedPtrField<Element>::RepeatedPtrField()
+  : prototype_(NULL) {
 }
 
-// RepeatedPtrField<Message> is allowed but requires a prototype since Message
-// is abstract.
-template <>
-inline Message* RepeatedPtrField<Message>::NewElement() {
-  return prototype_->New();
+template <typename Element>
+RepeatedPtrField<Element>::~RepeatedPtrField() {
+  Destroy<TypeHandler>();
+}
+
+template <typename Element>
+inline int RepeatedPtrField<Element>::size() const {
+  return RepeatedPtrFieldBase::size();
+}
+
+template <typename Element>
+inline const Element& RepeatedPtrField<Element>::Get(int index) const {
+  return RepeatedPtrFieldBase::Get<TypeHandler>(index);
+}
+
+template <typename Element>
+inline Element* RepeatedPtrField<Element>::Mutable(int index) {
+  return RepeatedPtrFieldBase::Mutable<TypeHandler>(index);
+}
+
+template <typename Element>
+inline Element* RepeatedPtrField<Element>::Add() {
+  return RepeatedPtrFieldBase::Add<TypeHandler>();
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::RemoveLast() {
+  RepeatedPtrFieldBase::RemoveLast<TypeHandler>();
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::Clear() {
+  RepeatedPtrFieldBase::Clear<TypeHandler>();
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::MergeFrom(
+    const RepeatedPtrField& other) {
+  RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+}
+
+template <typename Element>
+inline Element** RepeatedPtrField<Element>::mutable_data() {
+  return RepeatedPtrFieldBase::mutable_data<TypeHandler>();
+}
+
+template <typename Element>
+inline const Element* const* RepeatedPtrField<Element>::data() const {
+  return RepeatedPtrFieldBase::data<TypeHandler>();
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
+  RepeatedPtrFieldBase::Swap(other);
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
+  RepeatedPtrFieldBase::SwapElements(index1, index2);
+}
+
+template <typename Element>
+inline int RepeatedPtrField<Element>::SpaceUsedExcludingSelf() const {
+  return RepeatedPtrFieldBase::SpaceUsedExcludingSelf<TypeHandler>();
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
+  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(value);
+}
+
+template <typename Element>
+inline Element* RepeatedPtrField<Element>::ReleaseLast() {
+  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>();
+}
+
+
+template <typename Element>
+inline int RepeatedPtrField<Element>::ClearedCount() {
+  return RepeatedPtrFieldBase::ClearedCount();
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::AddCleared(Element* value) {
+  return RepeatedPtrFieldBase::AddCleared<TypeHandler>(value);
+}
+
+template <typename Element>
+inline Element* RepeatedPtrField<Element>::ReleaseCleared() {
+  return RepeatedPtrFieldBase::ReleaseCleared<TypeHandler>();
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::Reserve(int new_size) {
+  return RepeatedPtrFieldBase::Reserve(new_size);
 }
 
 // -------------------------------------------------------------------
@@ -805,26 +817,22 @@ namespace internal {
 // STL-like iterator implementation for RepeatedPtrField.  You should not
 // refer to this class directly; use RepeatedPtrField<T>::iterator instead.
 //
-// The iterator for RepeatedPtrField<T>, RepeatedPtrIterator<T**>, is
-// very similar to iterator_ptr<> in util/gtl/iterator_adaptors-inl.h,
-// but adds random-access operators and is slightly more specialized
-// for using T** as its base type. I didn't re-use the other class to
-// avoid an extra dependency.
+// The iterator for RepeatedPtrField<T>, RepeatedPtrIterator<T>, is
+// very similar to iterator_ptr<T**> in util/gtl/iterator_adaptors-inl.h,
+// but adds random-access operators and is modified to wrap a void** base
+// iterator (since RepeatedPtrField stores its array as a void* array and
+// casting void** to T** would violate C++ aliasing rules).
 //
-// This code stolen from net/proto/proto-array-internal.h by Jeffrey Yasskin
+// This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
-template<typename It>
+template<typename Element>
 class RepeatedPtrIterator
     : public std::iterator<
-          std::random_access_iterator_tag,
-          typename internal::remove_pointer<
-              typename internal::remove_pointer<It>::type>::type> {
+          std::random_access_iterator_tag, Element> {
  public:
-  typedef RepeatedPtrIterator<It> iterator;
+  typedef RepeatedPtrIterator<Element> iterator;
   typedef std::iterator<
-          std::random_access_iterator_tag,
-          typename internal::remove_pointer<
-              typename internal::remove_pointer<It>::type>::type> superclass;
+          std::random_access_iterator_tag, Element> superclass;
 
   // Let the compiler know that these are type names, so we don't have to
   // write "typename" in front of them everywhere.
@@ -833,19 +841,21 @@ class RepeatedPtrIterator
   typedef typename superclass::difference_type difference_type;
 
   RepeatedPtrIterator() : it_(NULL) {}
-  explicit RepeatedPtrIterator(const It& it) : it_(it) {}
+  explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
 
   // Allow "upcasting" from RepeatedPtrIterator<T**> to
   // RepeatedPtrIterator<const T*const*>.
-  template<typename OtherIt>
-  RepeatedPtrIterator(const RepeatedPtrIterator<OtherIt>& other)
-      : it_(other.base()) {}
-
-  // Provide access to the wrapped iterator.
-  const It& base() const { return it_; }
+  template<typename OtherElement>
+  RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
+      : it_(other.it_) {
+    // Force a compiler error if the other type is not convertable to ours.
+    if (false) {
+      implicit_cast<Element*, OtherElement*>(0);
+    }
+  }
 
   // dereferenceable
-  reference operator*() const { return **it_; }
+  reference operator*() const { return *reinterpret_cast<Element*>(*it_); }
   pointer   operator->() const { return &(operator*()); }
 
   // {inc,dec}rementable
@@ -893,8 +903,11 @@ class RepeatedPtrIterator
   difference_type operator-(const iterator& x) const { return it_ - x.it_; }
 
  private:
+  template<typename OtherElement>
+  friend class RepeatedPtrIterator;
+
   // The internal iterator.
-  It it_;
+  void* const* it_;
 };
 
 }  // namespace internal
@@ -902,22 +915,22 @@ class RepeatedPtrIterator
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::begin() {
-  return iterator(elements_);
+  return iterator(raw_data());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
 RepeatedPtrField<Element>::begin() const {
-  return iterator(elements_);
+  return iterator(raw_data());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::end() {
-  return iterator(elements_ + current_size_);
+  return iterator(raw_data() + size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
 RepeatedPtrField<Element>::end() const {
-  return iterator(elements_ + current_size_);
+  return iterator(raw_data() + size());
 }
 
 // Iterators and helper functions that follow the spirit of the STL

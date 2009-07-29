@@ -64,6 +64,8 @@ UINT64_MAX = (1 << 64) - 1
 # "struct" format strings that will encode/decode the specified formats.
 FORMAT_UINT32_LITTLE_ENDIAN = '<I'
 FORMAT_UINT64_LITTLE_ENDIAN = '<Q'
+FORMAT_FLOAT_LITTLE_ENDIAN = '<f'
+FORMAT_DOUBLE_LITTLE_ENDIAN = '<d'
 
 
 # We'll have to provide alternate implementations of AppendLittleEndian*() on

@@ -798,7 +798,7 @@ namespace {
 
 EncodedDescriptorDatabase* generated_database_ = NULL;
 DescriptorPool* generated_pool_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(generated_pool_init_);
+GoogleOnceType generated_pool_init_;
 
 void DeleteGeneratedPool() {
   delete generated_database_;
@@ -814,7 +814,7 @@ void InitGeneratedPool() {
 }
 
 inline void InitGeneratedPoolOnce() {
-  GoogleOnceInit(&generated_pool_init_, &InitGeneratedPool);
+  ::google::protobuf::GoogleOnceInit(&generated_pool_init_, &InitGeneratedPool);
 }
 
 }  // anonymous namespace
@@ -1859,7 +1859,11 @@ class DescriptorBuilder {
   // dependency of this file, it will fail, but will set
   // possible_undeclared_dependency_ to point at that file.  This is only used
   // by AddNotDefinedError() to report a more useful error message.
+  // possible_undeclared_dependency_name_ is the name of the symbol that was
+  // actually found in possible_undeclared_dependency_, which may be a parent
+  // of the symbol actually looked for.
   const FileDescriptor* possible_undeclared_dependency_;
+  string possible_undeclared_dependency_name_;
 
   void AddError(const string& element_name,
                 const Message& descriptor,
@@ -2062,7 +2066,7 @@ class DescriptorBuilder {
                                 Message* options);
 
     // A recursive helper function that drills into the intermediate fields
-    // in unknown_fields to check if field #field_number is set on the
+    // in unknown_fields to check if field innermost_field is set on the
     // innermost message. Returns false and sets an error if so.
     bool ExamineIfOptionIsSet(
         vector<const FieldDescriptor*>::const_iterator intermediate_fields_iter,
@@ -2233,8 +2237,9 @@ void DescriptorBuilder::AddNotDefinedError(
              "\"" + undefined_symbol + "\" is not defined.");
   } else {
     AddError(element_name, descriptor, location,
-             "\"" + undefined_symbol + "\" seems to be defined in \""
-             + possible_undeclared_dependency_->name() + "\", which is not "
+             "\"" + possible_undeclared_dependency_name_ +
+             "\" seems to be defined in \"" +
+             possible_undeclared_dependency_->name() + "\", which is not "
              "imported by \"" + filename_ + "\".  To use it here, please "
              "add the necessary import.");
   }
@@ -2295,11 +2300,16 @@ Symbol DescriptorBuilder::FindSymbol(const string& name) {
     // symbol unless none of the dependencies define it.
     if (IsInPackage(file_, name)) return result;
     for (int i = 0; i < file_->dependency_count(); i++) {
-      if (IsInPackage(file_->dependency(i), name)) return result;
+      // Note:  A dependency may be NULL if it was not found or had errors.
+      if (file_->dependency(i) != NULL &&
+          IsInPackage(file_->dependency(i), name)) {
+        return result;
+      }
     }
   }
 
   possible_undeclared_dependency_ = file;
+  possible_undeclared_dependency_name_ = name;
   return kNullSymbol;
 }
 
@@ -3592,12 +3602,38 @@ void DescriptorBuilder::CrossLinkMethod(
                             proto.array_name(i));                  \
   }
 
+// Determine if the file uses optimize_for = LITE_RUNTIME, being careful to
+// avoid problems that exist at init time.
+static bool IsLite(const FileDescriptor* file) {
+  // TODO(kenton):  I don't even remember how many of these conditions are
+  //   actually possible.  I'm just being super-safe.
+  return file != NULL &&
+         &file->options() != NULL &&
+         &file->options() != &FileOptions::default_instance() &&
+         file->options().optimize_for() == FileOptions::LITE_RUNTIME;
+}
+
 void DescriptorBuilder::ValidateFileOptions(FileDescriptor* file,
                                             const FileDescriptorProto& proto) {
   VALIDATE_OPTIONS_FROM_ARRAY(file, message_type, Message);
   VALIDATE_OPTIONS_FROM_ARRAY(file, enum_type, Enum);
   VALIDATE_OPTIONS_FROM_ARRAY(file, service, Service);
   VALIDATE_OPTIONS_FROM_ARRAY(file, extension, Field);
+
+  // Lite files can only be imported by other Lite files.
+  if (!IsLite(file)) {
+    for (int i = 0; i < file->dependency_count(); i++) {
+      if (IsLite(file->dependency(i))) {
+        AddError(
+          file->name(), proto,
+          DescriptorPool::ErrorCollector::OTHER,
+          "Files that do not use optimize_for = LITE_RUNTIME cannot import "
+          "files which do use this option.  This file is not lite, but it "
+          "imports \"" + file->dependency(i)->name() + "\" which is.");
+        break;
+      }
+    }
+  }
 }
 
 void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
@@ -3647,6 +3683,17 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
                "MessageSets cannot have fields, only extensions.");
     }
   }
+
+  // Lite extensions can only be of Lite types.
+  if (IsLite(field->file()) &&
+      field->containing_type_ != NULL &&
+      !IsLite(field->containing_type()->file())) {
+    AddError(field->full_name(), proto,
+             DescriptorPool::ErrorCollector::EXTENDEE,
+             "Extensions to non-lite types can only be declared in non-lite "
+             "files.  Note that you cannot extend a non-lite type to contain "
+             "a lite type, but the reverse is allowed.");
+  }
 }
 
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
@@ -3660,6 +3707,12 @@ void DescriptorBuilder::ValidateEnumValueOptions(
 }
 void DescriptorBuilder::ValidateServiceOptions(ServiceDescriptor* service,
     const ServiceDescriptorProto& proto) {
+  if (IsLite(service->file())) {
+    AddError(service->full_name(), proto,
+             DescriptorPool::ErrorCollector::NAME,
+             "Files with optimize_for = LITE_RUNTIME cannot define services.");
+  }
+
   VALIDATE_OPTIONS_FROM_ARRAY(service, method, Method);
 }
 
@@ -3761,7 +3814,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
   const int num_uninterpreted_options = original_options->GetReflection()->
       FieldSize(*original_options, original_uninterpreted_options_field);
   for (int i = 0; i < num_uninterpreted_options; ++i) {
-    uninterpreted_option_ = ::google::protobuf::down_cast<const UninterpretedOption*>(
+    uninterpreted_option_ = down_cast<const UninterpretedOption*>(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
     if (!InterpretSingleOption(options)) {
@@ -4009,14 +4062,13 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
       const UnknownField* unknown_field = &unknown_fields.field(i);
       FieldDescriptor::Type type = (*intermediate_fields_iter)->type();
       // Recurse into the next submessage.
-      ++intermediate_fields_iter;
       switch (type) {
         case FieldDescriptor::TYPE_MESSAGE:
           if (unknown_field->type() == UnknownField::TYPE_LENGTH_DELIMITED) {
             UnknownFieldSet intermediate_unknown_fields;
             if (intermediate_unknown_fields.ParseFromString(
                     unknown_field->length_delimited()) &&
-                !ExamineIfOptionIsSet(intermediate_fields_iter,
+                !ExamineIfOptionIsSet(intermediate_fields_iter + 1,
                                       intermediate_fields_end,
                                       innermost_field, debug_msg_name,
                                       intermediate_unknown_fields)) {
@@ -4027,7 +4079,7 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
 
         case FieldDescriptor::TYPE_GROUP:
           if (unknown_field->type() == UnknownField::TYPE_GROUP) {
-            if (!ExamineIfOptionIsSet(intermediate_fields_iter,
+            if (!ExamineIfOptionIsSet(intermediate_fields_iter + 1,
                                       intermediate_fields_end,
                                       innermost_field, debug_msg_name,
                                       unknown_field->group())) {
@@ -4139,7 +4191,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                              option_field->full_name() + "\".");
       }
       unknown_fields->AddFixed32(option_field->number(),
-          google::protobuf::internal::WireFormat::EncodeFloat(value));
+          google::protobuf::internal::WireFormatLite::EncodeFloat(value));
       break;
     }
 
@@ -4156,7 +4208,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                              option_field->full_name() + "\".");
       }
       unknown_fields->AddFixed64(option_field->number(),
-          google::protobuf::internal::WireFormat::EncodeDouble(value));
+          google::protobuf::internal::WireFormatLite::EncodeDouble(value));
       break;
     }
 
@@ -4267,7 +4319,7 @@ void DescriptorBuilder::OptionInterpreter::SetInt32(int number, int32 value,
 
     case FieldDescriptor::TYPE_SINT32:
       unknown_fields->AddVarint(number,
-          google::protobuf::internal::WireFormat::ZigZagEncode32(value));
+          google::protobuf::internal::WireFormatLite::ZigZagEncode32(value));
       break;
 
     default:
@@ -4289,7 +4341,7 @@ void DescriptorBuilder::OptionInterpreter::SetInt64(int number, int64 value,
 
     case FieldDescriptor::TYPE_SINT64:
       unknown_fields->AddVarint(number,
-          google::protobuf::internal::WireFormat::ZigZagEncode64(value));
+          google::protobuf::internal::WireFormatLite::ZigZagEncode64(value));
       break;
 
     default:

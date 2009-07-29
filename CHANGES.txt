@@ -1,6 +1,9 @@
-????-??-?? version 2.1.1:
+????-??-?? version 2.2.0:
 
   C++
+  * Lite mode:  The "optimize_for = LITE_RUNTIME" option causes the compiler
+    to generate code which only depends libprotobuf-lite, which is much smaller
+    than libprotobuf but lacks descriptors, reflection, and some other features.
   * Fixed bug where Message.Swap(Message) was only implemented for
     optimize_for_speed.  Swap now properly implemented in both modes
     (Issue 91).
@@ -10,6 +13,27 @@
   * Floating-point literals in generated code that are intended to be
     single-precision now explicitly have 'f' suffix to avoid pedantic warnings
     produced by some compilers.
+  * The [deprecated=true] option now causes the C++ code generator to generate
+    a GCC-style deprecation annotation (no-op on other compilers).
+  * google::protobuf::GetEnumDescriptor<SomeGeneratedEnumType>() returns the
+    EnumDescriptor for that type -- useful for templates which cannot call
+    SomeGeneratedEnumType_descriptor().
+  * Various optimizations and obscure bug fixes.
+
+  Java
+  * Lite mode:  The "optimize_for = LITE_RUNTIME" option causes the compiler
+    to generate code which only depends libprotobuf-lite, which is much smaller
+    than libprotobuf but lacks descriptors, reflection, and some other features.
+  * Put Builder objects on a freelist after build() is called, so they may be
+    reused later.
+  * Lots of style cleanups.
+
+  Python
+  * Fixed endianness bug with floats and doubles.
+  * Text format parsing support.
+  * Fix bug with parsing packed repeated fields in embedded messages.
+  * Ability to initialize fields by passing keyword args to constructor.
+  * Support iterators in extend and __setslice__ for containers.
 
 2009-05-13 version 2.1.0:
 

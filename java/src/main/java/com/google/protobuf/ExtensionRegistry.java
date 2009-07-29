@@ -84,18 +84,16 @@ import java.util.Map;
  * would be slow.  Second, corrupt data would not be detected until first
  * access, at which point it would be much harder to deal with it.  Third, it
  * could violate the expectation that message objects are immutable, since the
- * type provided could be any arbitrary message class.  An unpriviledged user
+ * type provided could be any arbitrary message class.  An unprivileged user
  * could take advantage of this to inject a mutable object into a message
- * belonging to priviledged code and create mischief.
+ * belonging to privileged code and create mischief.
  *
  * @author kenton@google.com Kenton Varda
  */
-public final class ExtensionRegistry {
+public final class ExtensionRegistry extends ExtensionRegistryLite {
   /** Construct a new, empty instance. */
   public static ExtensionRegistry newInstance() {
-    return new ExtensionRegistry(
-      new HashMap<String, ExtensionInfo>(),
-      new HashMap<DescriptorIntPair, ExtensionInfo>());
+    return new ExtensionRegistry();
   }
 
   /** Get the unmodifiable singleton empty instance. */
@@ -104,10 +102,9 @@ public final class ExtensionRegistry {
   }
 
   /** Returns an unmodifiable view of the registry. */
+  @Override
   public ExtensionRegistry getUnmodifiable() {
-    return new ExtensionRegistry(
-      Collections.unmodifiableMap(extensionsByName),
-      Collections.unmodifiableMap(extensionsByNumber));
+    return new ExtensionRegistry(this);
   }
 
   /** A (Descriptor, Message) pair, returned by lookup methods. */
@@ -121,11 +118,12 @@ public final class ExtensionRegistry {
      */
     public final Message defaultInstance;
 
-    private ExtensionInfo(FieldDescriptor descriptor) {
+    private ExtensionInfo(final FieldDescriptor descriptor) {
       this.descriptor = descriptor;
-      this.defaultInstance = null;
+      defaultInstance = null;
     }
-    private ExtensionInfo(FieldDescriptor descriptor, Message defaultInstance) {
+    private ExtensionInfo(final FieldDescriptor descriptor,
+                          final Message defaultInstance) {
       this.descriptor = descriptor;
       this.defaultInstance = defaultInstance;
     }
@@ -139,7 +137,7 @@ public final class ExtensionRegistry {
    * @return Information about the extension if found, or {@code null}
    *         otherwise.
    */
-  public ExtensionInfo findExtensionByName(String fullName) {
+  public ExtensionInfo findExtensionByName(final String fullName) {
     return extensionsByName.get(fullName);
   }
 
@@ -149,14 +147,14 @@ public final class ExtensionRegistry {
    * @return Information about the extension if found, or {@code null}
    *         otherwise.
    */
-  public ExtensionInfo findExtensionByNumber(Descriptor containingType,
-                                             int fieldNumber) {
+  public ExtensionInfo findExtensionByNumber(final Descriptor containingType,
+                                             final int fieldNumber) {
     return extensionsByNumber.get(
       new DescriptorIntPair(containingType, fieldNumber));
   }
 
   /** Add an extension from a generated file to the registry. */
-  public void add(GeneratedMessage.GeneratedExtension<?, ?> extension) {
+  public void add(final GeneratedMessage.GeneratedExtension<?, ?> extension) {
     if (extension.getDescriptor().getJavaType() ==
         FieldDescriptor.JavaType.MESSAGE) {
       add(new ExtensionInfo(extension.getDescriptor(),
@@ -167,7 +165,7 @@ public final class ExtensionRegistry {
   }
 
   /** Add a non-message-type extension to the registry by descriptor. */
-  public void add(FieldDescriptor type) {
+  public void add(final FieldDescriptor type) {
     if (type.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
       throw new IllegalArgumentException(
         "ExtensionRegistry.add() must be provided a default instance when " +
@@ -177,7 +175,7 @@ public final class ExtensionRegistry {
   }
 
   /** Add a message-type extension to the registry by descriptor. */
-  public void add(FieldDescriptor type, Message defaultInstance) {
+  public void add(final FieldDescriptor type, final Message defaultInstance) {
     if (type.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
       throw new IllegalArgumentException(
         "ExtensionRegistry.add() provided a default instance for a " +
@@ -189,22 +187,30 @@ public final class ExtensionRegistry {
   // =================================================================
   // Private stuff.
 
-  private ExtensionRegistry(
-      Map<String, ExtensionInfo> extensionsByName,
-      Map<DescriptorIntPair, ExtensionInfo> extensionsByNumber) {
-    this.extensionsByName = extensionsByName;
-    this.extensionsByNumber = extensionsByNumber;
+  private ExtensionRegistry() {
+    this.extensionsByName = new HashMap<String, ExtensionInfo>();
+    this.extensionsByNumber = new HashMap<DescriptorIntPair, ExtensionInfo>();
+  }
+
+  private ExtensionRegistry(ExtensionRegistry other) {
+    super(other);
+    this.extensionsByName = Collections.unmodifiableMap(other.extensionsByName);
+    this.extensionsByNumber =
+        Collections.unmodifiableMap(other.extensionsByNumber);
   }
 
   private final Map<String, ExtensionInfo> extensionsByName;
   private final Map<DescriptorIntPair, ExtensionInfo> extensionsByNumber;
 
-  private static final ExtensionRegistry EMPTY =
-    new ExtensionRegistry(
-      Collections.<String, ExtensionInfo>emptyMap(),
-      Collections.<DescriptorIntPair, ExtensionInfo>emptyMap());
+  private ExtensionRegistry(boolean empty) {
+    super(ExtensionRegistryLite.getEmptyRegistry());
+    this.extensionsByName = Collections.<String, ExtensionInfo>emptyMap();
+    this.extensionsByNumber =
+        Collections.<DescriptorIntPair, ExtensionInfo>emptyMap();
+  }
+  private static final ExtensionRegistry EMPTY = new ExtensionRegistry(true);
 
-  private void add(ExtensionInfo extension) {
+  private void add(final ExtensionInfo extension) {
     if (!extension.descriptor.isExtension()) {
       throw new IllegalArgumentException(
         "ExtensionRegistry.add() was given a FieldDescriptor for a regular " +
@@ -217,7 +223,7 @@ public final class ExtensionRegistry {
                             extension.descriptor.getNumber()),
       extension);
 
-    FieldDescriptor field = extension.descriptor;
+    final FieldDescriptor field = extension.descriptor;
     if (field.getContainingType().getOptions().getMessageSetWireFormat() &&
         field.getType() == FieldDescriptor.Type.MESSAGE &&
         field.isOptional() &&
@@ -231,20 +237,24 @@ public final class ExtensionRegistry {
 
   /** A (GenericDescriptor, int) pair, used as a map key. */
   private static final class DescriptorIntPair {
-    final Descriptor descriptor;
-    final int number;
+    private final Descriptor descriptor;
+    private final int number;
 
-    DescriptorIntPair(Descriptor descriptor, int number) {
+    DescriptorIntPair(final Descriptor descriptor, final int number) {
       this.descriptor = descriptor;
       this.number = number;
     }
 
+    @Override
     public int hashCode() {
       return descriptor.hashCode() * ((1 << 16) - 1) + number;
     }
-    public boolean equals(Object obj) {
-      if (!(obj instanceof DescriptorIntPair)) return false;
-      DescriptorIntPair other = (DescriptorIntPair)obj;
+    @Override
+    public boolean equals(final Object obj) {
+      if (!(obj instanceof DescriptorIntPair)) {
+        return false;
+      }
+      final DescriptorIntPair other = (DescriptorIntPair)obj;
       return descriptor == other.descriptor && number == other.number;
     }
   }
