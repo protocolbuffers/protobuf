@@ -70,13 +70,11 @@ nobase_include_HEADERS =                                       \
   google/protobuf/compiler/java/java_generator.h               \
   google/protobuf/compiler/python/python_generator.h
 
-lib_LTLIBRARIES = libprotobuf.la libprotoc.la
+lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
-# TODO(kenton):  Separate lite and full libraries.  Also make sure lite_unittest
-#   only links against the lite lib.
-libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 3:0:0
-libprotobuf_la_SOURCES =                                       \
+libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
+libprotobuf_lite_la_LDFLAGS = -version-info 3:0:0
+libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.cc                                \
@@ -85,35 +83,40 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/stubs/map-util.h                             \
   google/protobuf/stubs/stl_util-inl.cc                        \
   google/protobuf/stubs/stl_util-inl.h                         \
-  google/protobuf/stubs/substitute.cc                          \
-  google/protobuf/stubs/substitute.h                           \
   google/protobuf/stubs/strutil.cc                             \
   google/protobuf/stubs/strutil.h                              \
+  google/protobuf/stubs/substitute.cc                          \
+  google/protobuf/stubs/substitute.h                           \
+  google/protobuf/extension_set.cc                             \
+  google/protobuf/generated_message_util.cc                    \
+  google/protobuf/message_lite.cc                              \
+  google/protobuf/repeated_field.cc                            \
+  google/protobuf/wire_format_lite.cc                          \
+  google/protobuf/io/coded_stream.cc                           \
+  google/protobuf/io/zero_copy_stream.cc                       \
+  google/protobuf/io/zero_copy_stream_impl_lite.cc
+
+libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
+libprotobuf_la_LDFLAGS = -version-info 3:0:0
+libprotobuf_la_SOURCES =                                       \
+  $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor.pb.cc                             \
   google/protobuf/descriptor_database.cc                       \
   google/protobuf/dynamic_message.cc                           \
-  google/protobuf/extension_set.cc                             \
   google/protobuf/extension_set_heavy.cc                       \
-  google/protobuf/generated_message_util.cc                    \
   google/protobuf/generated_message_reflection.cc              \
   google/protobuf/message.cc                                   \
-  google/protobuf/message_lite.cc                              \
   google/protobuf/reflection_ops.cc                            \
-  google/protobuf/repeated_field.cc                            \
   google/protobuf/service.cc                                   \
   google/protobuf/text_format.cc                               \
   google/protobuf/unknown_field_set.cc                         \
   google/protobuf/wire_format.cc                               \
-  google/protobuf/wire_format_lite.cc                          \
-  google/protobuf/io/coded_stream.cc                           \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
   google/protobuf/io/tokenizer.cc                              \
-  google/protobuf/io/zero_copy_stream.cc                       \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
-  google/protobuf/io/zero_copy_stream_impl_lite.cc             \
   google/protobuf/compiler/importer.cc                         \
   google/protobuf/compiler/parser.cc
 
@@ -314,7 +317,7 @@ protobuf_lazy_descriptor_test_SOURCES =                        \
 nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 
 # Build lite_unittest separately, since it doesn't use gtest.
-protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la
+protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
   google/protobuf/test_util_lite.cc                                    \
