@@ -83,10 +83,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/map-util.h                             \
   google/protobuf/stubs/stl_util-inl.cc                        \
   google/protobuf/stubs/stl_util-inl.h                         \
-  google/protobuf/stubs/strutil.cc                             \
-  google/protobuf/stubs/strutil.h                              \
-  google/protobuf/stubs/substitute.cc                          \
-  google/protobuf/stubs/substitute.h                           \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/message_lite.cc                              \
@@ -100,6 +96,10 @@ libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 3:0:0
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
+  google/protobuf/stubs/strutil.cc                             \
+  google/protobuf/stubs/strutil.h                              \
+  google/protobuf/stubs/substitute.cc                          \
+  google/protobuf/stubs/substitute.h                           \
   google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor.pb.cc                             \
@@ -311,6 +311,7 @@ protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
 protobuf_lazy_descriptor_test_CPPFLAGS = -I$(top_srcdir)/gtest/include    \
                                          -I$(top_builddir)/gtest/include  \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
+protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   $(COMMON_TEST_SOURCES)
@@ -318,6 +319,7 @@ nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 
 # Build lite_unittest separately, since it doesn't use gtest.
 protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
   google/protobuf/test_util_lite.cc                                    \

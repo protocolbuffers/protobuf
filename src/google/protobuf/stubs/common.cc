@@ -32,8 +32,6 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <stdio.h>
 #include <errno.h>
 #include <vector>
@@ -43,6 +41,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN  // We only need minimal includes
 #include <windows.h>
+#define snprintf _snprintf    // see comment in strutil.cc
 #elif defined(HAVE_PTHREAD)
 #include <pthread.h>
 #else
@@ -87,7 +86,15 @@ string VersionString(int version) {
   int minor = (version / 1000) % 1000;
   int micro = version % 1000;
 
-  return strings::Substitute("$0.$1.$2", major, minor, micro);
+  // 128 bytes should always be enough, but we use snprintf() anyway to be
+  // safe.
+  char buffer[128];
+  snprintf(buffer, sizeof(buffer), "%d.%d.%d", major, minor, micro);
+
+  // Guard against broken MSVC snprintf().
+  buffer[sizeof(buffer)-1] = '\0';
+
+  return buffer;
 }
 
 }  // namespace internal
@@ -131,23 +138,39 @@ void InitLogSilencerCountOnce() {
   GoogleOnceInit(&log_silencer_count_init_, &InitLogSilencerCount);
 }
 
-static string SimpleCtoa(char c) { return string(1, c); }
+LogMessage& LogMessage::operator<<(const string& value) {
+  message_ += value;
+  return *this;
+}
 
+LogMessage& LogMessage::operator<<(const char* value) {
+  message_ += value;
+  return *this;
+}
+
+// Since this is just for logging, we don't care if the current locale changes
+// the results -- in fact, we probably prefer that.  So we use snprintf()
+// instead of Simple*toa().
 #undef DECLARE_STREAM_OPERATOR
-#define DECLARE_STREAM_OPERATOR(TYPE, TOSTRING)                     \
+#define DECLARE_STREAM_OPERATOR(TYPE, FORMAT)                       \
   LogMessage& LogMessage::operator<<(TYPE value) {                  \
-    message_ += TOSTRING(value);                                    \
+    /* 128 bytes should be big enough for any of the primitive */   \
+    /* values which we print with this, but well use snprintf() */  \
+    /* anyway to be extra safe. */                                  \
+    char buffer[128];                                               \
+    snprintf(buffer, sizeof(buffer), FORMAT, value);                \
+    /* Guard against broken MSVC snprintf(). */                     \
+    buffer[sizeof(buffer)-1] = '\0';                                \
+    message_ += buffer;                                             \
     return *this;                                                   \
   }
 
-DECLARE_STREAM_OPERATOR(const string&, )
-DECLARE_STREAM_OPERATOR(const char*  , )
-DECLARE_STREAM_OPERATOR(char         , SimpleCtoa)
-DECLARE_STREAM_OPERATOR(int          , SimpleItoa)
-DECLARE_STREAM_OPERATOR(uint         , SimpleItoa)
-DECLARE_STREAM_OPERATOR(long         , SimpleItoa)
-DECLARE_STREAM_OPERATOR(unsigned long, SimpleItoa)
-DECLARE_STREAM_OPERATOR(double       , SimpleDtoa)
+DECLARE_STREAM_OPERATOR(char         , "%c" )
+DECLARE_STREAM_OPERATOR(int          , "%d" )
+DECLARE_STREAM_OPERATOR(uint         , "%u" )
+DECLARE_STREAM_OPERATOR(long         , "%ld")
+DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
+DECLARE_STREAM_OPERATOR(double       , "%g" )
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)

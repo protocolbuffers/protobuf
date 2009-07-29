@@ -39,7 +39,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
 
 namespace google {
@@ -55,11 +54,23 @@ namespace {
 
 string InitializationErrorMessage(const char* action,
                                   const MessageLite& message) {
-  return strings::Substitute(
-    "Can't $0 message of type \"$1\" because it is missing required "
-    "fields: $2",
-    action, message.GetTypeName(),
-    message.InitializationErrorString());
+  // Note:  We want to avoid depending on strutil in the lite library, otherwise
+  //   we'd use:
+  //
+  // return strings::Substitute(
+  //   "Can't $0 message of type \"$1\" because it is missing required "
+  //   "fields: $2",
+  //   action, message.GetTypeName(),
+  //   message.InitializationErrorString());
+
+  string result;
+  result += "Can't ";
+  result += action;
+  result += " message of type \"";
+  result += message.GetTypeName();
+  result += "\" because it is missing required fields: ";
+  result += message.InitializationErrorString();
+  return result;
 }
 
 // Several of the Parse methods below just do one thing and then call another
