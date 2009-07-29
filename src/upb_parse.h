@@ -21,33 +21,6 @@
 extern "C" {
 #endif
 
-/* Definitions. ***************************************************************/
-
-/* A list of types as they are encoded on-the-wire. */
-enum upb_wire_type {
-  UPB_WIRE_TYPE_VARINT      = 0,
-  UPB_WIRE_TYPE_64BIT       = 1,
-  UPB_WIRE_TYPE_DELIMITED   = 2,
-  UPB_WIRE_TYPE_START_GROUP = 3,
-  UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5
-};
-typedef uint8_t upb_wire_type_t;
-
-/* A value as it is encoded on-the-wire, except delimited, which is handled
- * separately. */
-union upb_wire_value {
-  uint64_t varint;
-  uint64_t _64bit;
-  uint32_t _32bit;
-};
-
-/* A tag occurs before each value on-the-wire. */
-struct upb_tag {
-  upb_field_number_t field_number;
-  upb_wire_type_t wire_type;
-};
-
 INLINE bool upb_issubmsgtype(upb_field_type_t type) {
   return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
          type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
@@ -150,11 +123,16 @@ upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
 upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
                                   union upb_wire_value *wv, uint8_t **outbuf);
 
-/* Low-level parsing functions. **********************************************/
+/* Functions to read wire values. *********************************************/
+
+/* In general, these should never be called directly from any code outside upb.
+ * They are included here only because we expect them to get inlined inside the
+ * value-reading functions below. */
 
 upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
                                      uint8_t **outbuf);
 
+/* Gets a varint (wire type: UPB_WIRE_TYPE_VARINT). */
 INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
                                        uint8_t **outbuf)
 {
@@ -175,6 +153,7 @@ INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val
   }
 }
 
+/* Gets a varint -- called when we only need 32 bits of it. */
 INLINE upb_status_t upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
                                        uint32_t *val, uint8_t **outbuf)
 {
@@ -185,6 +164,7 @@ INLINE upb_status_t upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
   return UPB_STATUS_OK;
 }
 
+/* Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT). */
 INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
                                        uint32_t *val, uint8_t **outbuf)
 {
@@ -201,6 +181,7 @@ INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
   return UPB_STATUS_OK;
 }
 
+/* Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT). */
 INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
                                        uint64_t *val, uint8_t **outbuf)
 {
@@ -218,15 +199,36 @@ INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
   return UPB_STATUS_OK;
 }
 
+/* Functions to read .proto values. *******************************************/
+
+/* These functions read the appropriate wire value for a given .proto type
+ * and then convert it based on the .proto type.  These are the most efficient
+ * functions to call if you want to decode a value for a known type. */
+
+/* Performs zig-zag decoding, which is used by sint32 and sint64. */
 INLINE int32_t zz_decode_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
 INLINE int64_t zz_decode_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
+/* Use macros to define a set of two functions for each .proto type:
+ *
+ *  // Reads and converts a .proto value from buf, placing it in d.
+ *  // "end" indicates the end of the current buffer (if the buffer does
+ *  // not contain the entire value UPB_STATUS_NEED_MORE_DATA is returned).
+ *  // On success, *outbuf will point to the first byte that was not consumed.
+ *  upb_status_t upb_get_INT32(uint8_t *buf, uint8_t *end, int32_t *d,
+ *                             uint8_t **outbuf);
+ *
+ *  // Given an already read wire value s (source), convert it to a .proto
+ *  // value and store it in *d (destination).
+ *  void upb_wvtov_INT32(uint32_t s, int32_t *d);
+ */
 
 #define WVTOV(type, wire_t, val_t) \
   INLINE void upb_wvtov_ ## type(wire_t s, val_t *d)
 
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  INLINE upb_status_t upb_get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, uint8_t **outbuf) { \
+  INLINE upb_status_t upb_get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, \
+                                       uint8_t **outbuf) { \
     wire_t tmp; \
     UPB_CHECK(upb_get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, outbuf)); \
     upb_wvtov_ ## type(tmp, d); \
@@ -256,6 +258,7 @@ T(ENUM,     v, uint32_t, int32_t,  int32)   { *d = (int32_t)s;               }
 #undef GET
 #undef T
 
+/* Parses a tag, places the result in *tag. */
 INLINE upb_status_t parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
                               uint8_t **outbuf)
 {

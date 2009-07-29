@@ -37,29 +37,63 @@ extern "C" {
 
 INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
 
-/* Value type as defined in a .proto file.  The values of this are defined by
- * google_protobuf_FieldDescriptorProto_Type (from descriptor.proto).
- * Note that descriptor.proto reserves "0" for errors, and we use it to
- * represent exceptional circumstances. */
+/* Fundamental types and type constants. **************************************/
+
+/* A list of types as they are encoded on-the-wire. */
+enum upb_wire_type {
+  UPB_WIRE_TYPE_VARINT      = 0,
+  UPB_WIRE_TYPE_64BIT       = 1,
+  UPB_WIRE_TYPE_DELIMITED   = 2,
+  UPB_WIRE_TYPE_START_GROUP = 3,
+  UPB_WIRE_TYPE_END_GROUP   = 4,
+  UPB_WIRE_TYPE_32BIT       = 5
+};
+typedef uint8_t upb_wire_type_t;
+
+/* Value type as defined in a .proto file.  eg. string, int32, etc.
+ *
+ * The values of this are defined by google_protobuf_FieldDescriptorProto_Type
+ * (from descriptor.proto).  Note that descriptor.proto reserves "0" for
+ * errors, and we use it to represent exceptional circumstances. */
 typedef uint8_t upb_field_type_t;
 
+/* Information about a given value type (upb_field_type_t). */
 struct upb_type_info {
   uint8_t align;
   uint8_t size;
-  uint8_t expected_wire_type;
+  upb_wire_type_t expected_wire_type;
   struct upb_string ctype;
 };
 
 /* Contains information for all .proto types.  Indexed by upb_field_type_t. */
 extern struct upb_type_info upb_type_info[];
 
+/* The number of a field, eg. "optional string foo = 3". */
+typedef int32_t upb_field_number_t;
+
 /* Label (optional, repeated, required) as defined in a .proto file.  The values
  * of this are defined by google.protobuf.FieldDescriptorProto.Label (from
  * descriptor.proto). */
 typedef uint8_t  upb_label_t;
 
-/* A pointer to a .proto value.  The owner must have an out-of-band way of
- * knowing the type, so it knows which union member to use. */
+/* A value as it is encoded on-the-wire, except delimited, which is handled
+ * separately. */
+union upb_wire_value {
+  uint64_t varint;
+  uint64_t _64bit;
+  uint32_t _32bit;
+};
+
+/* A tag occurs before each value on-the-wire. */
+struct upb_tag {
+  upb_field_number_t field_number;
+  upb_wire_type_t wire_type;
+};
+
+/* Polymorphic values of .proto types *****************************************/
+
+/* A single .proto value.  The owner must have an out-of-band way of knowing
+ * the type, so that it knows which union member to use. */
 union upb_value {
   double   _double;
   float    _float;
@@ -73,6 +107,8 @@ union upb_value {
   void     *msg;
 };
 
+/* A pointer to a .proto value.  The owner must have an out-of-band way of
+ * knowing the type, so it knows which union member to use. */
 union upb_value_ptr {
   double   *_double;
   float    *_float;
@@ -87,6 +123,9 @@ union upb_value_ptr {
   void     *_void;
 };
 
+/* Converts upb_value_ptr -> upb_value by "dereferencing" the pointer.  We need
+ * to know the field type to perform this operation, because we need to know
+ * how much memory to copy. */
 INLINE union upb_value upb_deref(union upb_value_ptr ptr, upb_field_type_t t) {
   union upb_value val;
   memcpy(&val, ptr._void, upb_type_info[t].size);
@@ -98,9 +137,6 @@ union upb_symbol_ref {
   struct upb_enum *_enum;
   struct upb_svc *svc;
 };
-
-/* The number of a field, eg. "optional string foo = 3". */
-typedef int32_t upb_field_number_t;
 
 /* Status codes used as a return value.  Codes >0 are not fatal and can be
  * resumed. */
