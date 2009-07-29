@@ -79,9 +79,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.cc                                \
   google/protobuf/stubs/hash.h                                 \
-  google/protobuf/stubs/map-util.cc                            \
   google/protobuf/stubs/map-util.h                             \
-  google/protobuf/stubs/stl_util-inl.cc                        \
   google/protobuf/stubs/stl_util-inl.h                         \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
