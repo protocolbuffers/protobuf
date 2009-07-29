@@ -62,6 +62,7 @@ EXTRA_DIST =                                                                 \
   examples/add_person.py                                                     \
   examples/list_people.py                                                    \
   java/src/main/java/com/google/protobuf/AbstractMessage.java                \
+  java/src/main/java/com/google/protobuf/AbstractMessageLite.java            \
   java/src/main/java/com/google/protobuf/BlockingRpcChannel.java             \
   java/src/main/java/com/google/protobuf/BlockingService.java                \
   java/src/main/java/com/google/protobuf/ByteString.java                     \
@@ -70,10 +71,14 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/Descriptors.java                    \
   java/src/main/java/com/google/protobuf/DynamicMessage.java                 \
   java/src/main/java/com/google/protobuf/ExtensionRegistry.java              \
+  java/src/main/java/com/google/protobuf/ExtensionRegistryLite.java          \
   java/src/main/java/com/google/protobuf/FieldSet.java                       \
   java/src/main/java/com/google/protobuf/GeneratedMessage.java               \
+  java/src/main/java/com/google/protobuf/GeneratedMessageLite.java           \
+  java/src/main/java/com/google/protobuf/Internal.java                       \
   java/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java \
   java/src/main/java/com/google/protobuf/Message.java                        \
+  java/src/main/java/com/google/protobuf/MessageLite.java                    \
   java/src/main/java/com/google/protobuf/ProtocolMessageEnum.java            \
   java/src/main/java/com/google/protobuf/RpcCallback.java                    \
   java/src/main/java/com/google/protobuf/RpcChannel.java                     \
@@ -91,6 +96,7 @@ EXTRA_DIST =                                                                 \
   java/src/test/java/com/google/protobuf/DescriptorsTest.java                \
   java/src/test/java/com/google/protobuf/DynamicMessageTest.java             \
   java/src/test/java/com/google/protobuf/GeneratedMessageTest.java           \
+  java/src/test/java/com/google/protobuf/LiteTest.java                       \
   java/src/test/java/com/google/protobuf/MessageTest.java                    \
   java/src/test/java/com/google/protobuf/ServiceTest.java                    \
   java/src/test/java/com/google/protobuf/TestUtil.java                       \
@@ -110,6 +116,7 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/internal/input_stream.py                            \
   python/google/protobuf/internal/input_stream_test.py                       \
   python/google/protobuf/internal/message_listener.py                        \
+  python/google/protobuf/internal/message_test.py                            \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_messages.proto                        \
   python/google/protobuf/internal/output_stream.py                           \

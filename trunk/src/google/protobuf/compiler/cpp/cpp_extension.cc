@@ -133,6 +133,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
     vars["global_name"] = global_name;
     printer->Print(vars,
       "const ::std::string $global_name$_default($default$);\n");
+
     // Update the default to refer to the string global.
     vars["default"] = global_name + "_default";
   }

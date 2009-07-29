@@ -30,9 +30,12 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import protobuf_unittest.UnittestProto.OneString;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
+import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestMset.TestMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
@@ -173,6 +176,22 @@ public class TextFormatTest extends TestCase {
       TextFormat.printToString(message));
   }
 
+  public void testPrintField() throws Exception {
+    final FieldDescriptor dataField =
+      OneString.getDescriptor().findFieldByName("data");
+    assertEquals(
+      "data: \"test data\"\n",
+      TextFormat.printFieldToString(dataField, "test data"));
+
+    final FieldDescriptor optionalField =
+      TestAllTypes.getDescriptor().findFieldByName("optional_nested_message");
+    final Object value = NestedMessage.newBuilder().setBb(42).build();
+    
+    assertEquals(
+      "optional_nested_message {\n  bb: 42\n}\n",
+      TextFormat.printFieldToString(optionalField, value));
+  }
+  
   /**
    * Helper to construct a ByteString from a String containing only 8-bit
    * characters.  The characters are converted directly to bytes, *not*
@@ -450,21 +469,21 @@ public class TextFormatTest extends TestCase {
     try {
       TextFormat.unescapeText("\\x");
       fail("Should have thrown an exception.");
-    } catch (TextFormat.InvalidEscapeSequence e) {
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
       // success
     }
 
     try {
       TextFormat.unescapeText("\\z");
       fail("Should have thrown an exception.");
-    } catch (TextFormat.InvalidEscapeSequence e) {
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
       // success
     }
 
     try {
       TextFormat.unescapeText("\\");
       fail("Should have thrown an exception.");
-    } catch (TextFormat.InvalidEscapeSequence e) {
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
       // success
     }
   }

@@ -45,7 +45,6 @@
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map-util.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
 
@@ -54,15 +53,6 @@ namespace protobuf {
 
 using internal::WireFormat;
 using internal::ReflectionOps;
-
-static string InitializationErrorMessage(const char* action,
-                                         const Message& message) {
-  return strings::Substitute(
-    "Can't $0 message of type \"$1\" because it is missing required "
-    "fields: $2",
-    action, message.GetDescriptor()->full_name(),
-    message.InitializationErrorString());
-}
 
 Message::~Message() {}
 
@@ -75,6 +65,10 @@ void Message::MergeFrom(const Message& from) {
   ReflectionOps::Merge(from, this);
 }
 
+void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
+  MergeFrom(*down_cast<const Message*>(&other));
+}
+
 void Message::CopyFrom(const Message& from) {
   const Descriptor* descriptor = GetDescriptor();
   GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
@@ -82,6 +76,10 @@ void Message::CopyFrom(const Message& from) {
        "to: " << descriptor->full_name() << ", "
        "from:" << from.GetDescriptor()->full_name();
   ReflectionOps::Copy(from, this);
+}
+
+string Message::GetTypeName() const {
+  return GetDescriptor()->full_name();
 }
 
 void Message::Clear() {
@@ -116,74 +114,6 @@ bool Message::MergePartialFromCodedStream(io::CodedInputStream* input) {
   return WireFormat::ParseAndMergePartial(input, this);
 }
 
-bool Message::MergeFromCodedStream(io::CodedInputStream* input) {
-  if (!MergePartialFromCodedStream(input)) return false;
-  if (!IsInitialized()) {
-    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *this);
-    return false;
-  }
-  return true;
-}
-
-bool Message::ParseFromCodedStream(io::CodedInputStream* input) {
-  Clear();
-  return MergeFromCodedStream(input);
-}
-
-bool Message::ParsePartialFromCodedStream(io::CodedInputStream* input) {
-  Clear();
-  return MergePartialFromCodedStream(input);
-}
-
-bool Message::ParseFromZeroCopyStream(io::ZeroCopyInputStream* input) {
-  io::CodedInputStream decoder(input);
-  return ParseFromCodedStream(&decoder) && decoder.ConsumedEntireMessage();
-}
-
-bool Message::ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input) {
-  io::CodedInputStream decoder(input);
-  return ParsePartialFromCodedStream(&decoder) &&
-         decoder.ConsumedEntireMessage();
-}
-
-bool Message::ParseFromBoundedZeroCopyStream(
-    io::ZeroCopyInputStream* input, int size) {
-  io::CodedInputStream decoder(input);
-  decoder.PushLimit(size);
-  return ParseFromCodedStream(&decoder) &&
-         decoder.ConsumedEntireMessage() &&
-         decoder.BytesUntilLimit() == 0;
-}
-
-bool Message::ParsePartialFromBoundedZeroCopyStream(
-    io::ZeroCopyInputStream* input, int size) {
-  io::CodedInputStream decoder(input);
-  decoder.PushLimit(size);
-  return ParsePartialFromCodedStream(&decoder) &&
-         decoder.ConsumedEntireMessage() &&
-         decoder.BytesUntilLimit() == 0;
-}
-
-bool Message::ParseFromString(const string& data) {
-  io::ArrayInputStream input(data.data(), data.size());
-  return ParseFromBoundedZeroCopyStream(&input, data.size());
-}
-
-bool Message::ParsePartialFromString(const string& data) {
-  io::ArrayInputStream input(data.data(), data.size());
-  return ParsePartialFromBoundedZeroCopyStream(&input, data.size());
-}
-
-bool Message::ParseFromArray(const void* data, int size) {
-  io::ArrayInputStream input(data, size);
-  return ParseFromBoundedZeroCopyStream(&input, size);
-}
-
-bool Message::ParsePartialFromArray(const void* data, int size) {
-  io::ArrayInputStream input(data, size);
-  return ParsePartialFromBoundedZeroCopyStream(&input, size);
-}
-
 bool Message::ParseFromFileDescriptor(int file_descriptor) {
   io::FileInputStream input(file_descriptor);
   return ParseFromZeroCopyStream(&input) && input.GetErrno() == 0;
@@ -205,20 +135,9 @@ bool Message::ParsePartialFromIstream(istream* input) {
 }
 
 
-
 void Message::SerializeWithCachedSizes(
     io::CodedOutputStream* output) const {
   WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
-}
-
-uint8* Message::SerializeWithCachedSizesToArray(uint8* target) const {
-  // We only optimize this when using optimize_for = SPEED.
-  int size = GetCachedSize();
-  io::ArrayOutputStream out(target, size);
-  io::CodedOutputStream coded_out(&out);
-  SerializeWithCachedSizes(&coded_out);
-  GOOGLE_CHECK(!coded_out.HadError());
-  return target + size;
 }
 
 int Message::ByteSize() const {
@@ -235,69 +154,6 @@ void Message::SetCachedSize(int size) const {
 
 int Message::SpaceUsed() const {
   return GetReflection()->SpaceUsed(*this);
-}
-
-bool Message::SerializeToCodedStream(io::CodedOutputStream* output) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
-  return SerializePartialToCodedStream(output);
-}
-
-bool Message::SerializePartialToCodedStream(
-    io::CodedOutputStream* output) const {
-  ByteSize();  // Force size to be cached.
-  SerializeWithCachedSizes(output);
-  return !output->HadError();
-}
-
-bool Message::SerializeToZeroCopyStream(
-    io::ZeroCopyOutputStream* output) const {
-  io::CodedOutputStream encoder(output);
-  return SerializeToCodedStream(&encoder);
-}
-
-bool Message::SerializePartialToZeroCopyStream(
-    io::ZeroCopyOutputStream* output) const {
-  io::CodedOutputStream encoder(output);
-  return SerializePartialToCodedStream(&encoder);
-}
-
-bool Message::AppendToString(string* output) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
-  return AppendPartialToString(output);
-}
-
-bool Message::AppendPartialToString(string* output) const {
-  int old_size = output->size();
-  int byte_size = ByteSize();
-  STLStringResizeUninitialized(output, old_size + byte_size);
-  uint8* start = reinterpret_cast<uint8*>(string_as_array(output) + old_size);
-  uint8* end = SerializeWithCachedSizesToArray(start);
-  GOOGLE_CHECK_EQ(end, start + byte_size);
-  return true;
-}
-
-bool Message::SerializeToString(string* output) const {
-  output->clear();
-  return AppendToString(output);
-}
-
-bool Message::SerializePartialToString(string* output) const {
-  output->clear();
-  return AppendPartialToString(output);
-}
-
-bool Message::SerializeToArray(void* data, int size) const {
-  GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
-  return SerializePartialToArray(data, size);
-}
-
-bool Message::SerializePartialToArray(void* data, int size) const {
-  int byte_size = ByteSize();
-  if (size < byte_size) return false;
-  uint8* end =
-    SerializeWithCachedSizesToArray(reinterpret_cast<uint8*>(data));
-  GOOGLE_CHECK_EQ(end, reinterpret_cast<uint8*>(data) + byte_size);
-  return true;
 }
 
 bool Message::SerializeToFileDescriptor(int file_descriptor) const {
@@ -321,24 +177,6 @@ bool Message::SerializePartialToOstream(ostream* output) const {
 }
 
 
-string Message::SerializeAsString() const {
-  // If the compiler implements the (Named) Return Value Optimization,
-  // the local variable 'result' will not actually reside on the stack
-  // of this function, but will be overlaid with the object that the
-  // caller supplied for the return value to be constructed in.
-  string output;
-  if (!AppendToString(&output))
-    output.clear();
-  return output;
-}
-
-string Message::SerializePartialAsString() const {
-  string output;
-  if (!AppendPartialToString(&output))
-    output.clear();
-  return output;
-}
-
 Reflection::~Reflection() {}
 
 // ===================================================================
@@ -355,7 +193,7 @@ class GeneratedMessageFactory : public MessageFactory {
 
   static GeneratedMessageFactory* singleton();
 
-  typedef void RegistrationFunc();
+  typedef void RegistrationFunc(const string&);
   void RegisterFile(const char* file, RegistrationFunc* registration_func);
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
@@ -378,8 +216,8 @@ GeneratedMessageFactory::~GeneratedMessageFactory() {}
 GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
   // No need for thread-safety here because this will be called at static
   // initialization time.  (And GCC4 makes this thread-safe anyway.)
-  static GeneratedMessageFactory singleton;
-  return &singleton;
+  static GeneratedMessageFactory* singleton = new GeneratedMessageFactory;
+  return singleton;
 }
 
 void GeneratedMessageFactory::RegisterFile(
@@ -430,7 +268,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   const Message* result = FindPtrOrNull(type_map_, type);
   if (result == NULL) {
     // Nope.  OK, register everything.
-    registration_func();
+    registration_func(type->file()->name());
     // Should be here now.
     result = FindPtrOrNull(type_map_, type);
   }
@@ -450,7 +288,7 @@ MessageFactory* MessageFactory::generated_factory() {
 }
 
 void MessageFactory::InternalRegisterGeneratedFile(
-    const char* filename, void (*register_messages)()) {
+    const char* filename, void (*register_messages)(const string&)) {
   GeneratedMessageFactory::singleton()->RegisterFile(filename,
                                                      register_messages);
 }

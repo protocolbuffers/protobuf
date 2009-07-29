@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2009 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: brianolson@google.com (Brian Olson)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // This file contains the implementation of classes GzipInputStream and
 // GzipOutputStream.
@@ -39,6 +37,7 @@
 
 #if HAVE_ZLIB
 #include <google/protobuf/io/gzip_stream.h>
+
 #include <google/protobuf/stubs/common.h>
 
 namespace google {
@@ -291,6 +290,6 @@ bool GzipOutputStream::Close() {
 
 }  // namespace io
 }  // namespace protobuf
-}  // namespace google
 
 #endif  // HAVE_ZLIB
+}  // namespace google

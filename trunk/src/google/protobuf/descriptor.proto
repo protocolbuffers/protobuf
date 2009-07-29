@@ -247,8 +247,10 @@ message FileOptions {
 
   // Generated classes can be optimized for speed or code size.
   enum OptimizeMode {
-    SPEED = 1;      // Generate complete code for parsing, serialization, etc.
-    CODE_SIZE = 2;  // Use ReflectionOps to implement these methods.
+    SPEED = 1;        // Generate complete code for parsing, serialization,
+                      // etc.
+    CODE_SIZE = 2;    // Use ReflectionOps to implement these methods.
+    LITE_RUNTIME = 3; // Generate code using MessageLite and the lite runtime.
   }
   optional OptimizeMode optimize_for = 9 [default=SPEED];
 
@@ -281,6 +283,11 @@ message MessageOptions {
   // Because this is an option, the above two restrictions are not enforced by
   // the protocol compiler.
   optional bool message_set_wire_format = 1 [default=false];
+
+  // Disables the generation of the standard "descriptor()" accessor, which can
+  // conflict with a field of the same name.  This is meant to make migration
+  // from proto1 easier; new code should avoid fields named "descriptor".
+  optional bool no_standard_descriptor_accessor = 2 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

@@ -33,7 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #ifdef _WIN32
-// Verify that #icnluding windows.h does not break anything (e.g. because
+// Verify that #including windows.h does not break anything (e.g. because
 // windows.h #defines GetMessage() as a macro).
 #include <windows.h>
 #endif
@@ -86,7 +86,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("optional_cord"),
     "125");
-#endif
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
   // -----------------------------------------------------------------
 
@@ -124,7 +124,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     "225");
-#endif
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
   // Add a second one of each field.
   message->add_repeated_int32   (301);
@@ -161,7 +161,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     "325");
-#endif
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
   // -----------------------------------------------------------------
 
@@ -194,7 +194,7 @@ void TestUtil::SetAllFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("default_cord"),
     "425");
-#endif
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 }
 
 // -------------------------------------------------------------------
@@ -234,7 +234,7 @@ void TestUtil::ModifyRepeatedFields(unittest::TestAllTypes* message) {
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
     1, "425");
-#endif
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 }
 
 // -------------------------------------------------------------------

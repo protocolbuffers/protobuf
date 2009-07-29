@@ -135,12 +135,12 @@ class Decoder(object):
   def ReadFloat(self):
     """Reads and returns a 4-byte floating-point number."""
     serialized = self._stream.ReadBytes(4)
-    return struct.unpack('f', serialized)[0]
+    return struct.unpack(wire_format.FORMAT_FLOAT_LITTLE_ENDIAN, serialized)[0]
 
   def ReadDouble(self):
     """Reads and returns an 8-byte floating-point number."""
     serialized = self._stream.ReadBytes(8)
-    return struct.unpack('d', serialized)[0]
+    return struct.unpack(wire_format.FORMAT_DOUBLE_LITTLE_ENDIAN, serialized)[0]
 
   def ReadBool(self):
     """Reads and returns a bool."""

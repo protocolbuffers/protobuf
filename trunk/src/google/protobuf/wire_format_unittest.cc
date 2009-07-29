@@ -33,7 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_inl.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -51,9 +51,27 @@ namespace protobuf {
 namespace internal {
 namespace {
 
+TEST(WireFormatTest, EnumsInSync) {
+  // Verify that WireFormatLite::FieldType and WireFormatLite::CppType match
+  // FieldDescriptor::Type and FieldDescriptor::CppType.
+
+  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_TYPE),
+            implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
+  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
+            implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
+
+  for (int i = 1; i <= WireFormatLite::MAX_FIELD_TYPE; i++) {
+    EXPECT_EQ(
+      implicit_cast<int>(FieldDescriptor::TypeToCppType(
+        static_cast<FieldDescriptor::Type>(i))),
+      implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
+        static_cast<WireFormatLite::FieldType>(i))));
+  }
+}
+
 TEST(WireFormatTest, MaxFieldNumber) {
   // Make sure the max field number constant is accurate.
-  EXPECT_EQ((1 << (32 - WireFormat::kTagTypeBits)) - 1,
+  EXPECT_EQ((1 << (32 - WireFormatLite::kTagTypeBits)) - 1,
             FieldDescriptor::kMaxNumber);
 }
 
@@ -326,9 +344,9 @@ TEST(WireFormatTest, SerializeMessageSet) {
   EXPECT_EQ("bar", raw.item(2).message());
 }
 
-TEST(WireFormatTest, SerializeMessageSetToStreamAndArrayAreEqual) {
-  // Serialize a MessageSet to a stream and to a flat array and check that the
-  // results are equal.
+TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
+  // Serialize a MessageSet to a stream and to a flat array using generated
+  // code, and also using WireFormat, and check that the results are equal.
   // Set up a TestMessageSet with two known messages and an unknown one, as
   // above.
 
@@ -341,10 +359,15 @@ TEST(WireFormatTest, SerializeMessageSetToStreamAndArrayAreEqual) {
     kUnknownTypeId, "bar");
 
   int size = message_set.ByteSize();
+  EXPECT_EQ(size, message_set.GetCachedSize());
+  ASSERT_EQ(size, WireFormat::ByteSize(message_set));
+
   string flat_data;
   string stream_data;
+  string dynamic_data;
   flat_data.resize(size);
   stream_data.resize(size);
+
   // Serialize to flat array
   {
     uint8* target = reinterpret_cast<uint8*>(string_as_array(&flat_data));
@@ -360,7 +383,16 @@ TEST(WireFormatTest, SerializeMessageSetToStreamAndArrayAreEqual) {
     ASSERT_FALSE(output_stream.HadError());
   }
 
+  // Serialize to buffer with WireFormat.
+  {
+    io::StringOutputStream string_stream(&dynamic_data);
+    io::CodedOutputStream output_stream(&string_stream);
+    WireFormat::SerializeWithCachedSizes(message_set, size, &output_stream);
+    ASSERT_FALSE(output_stream.HadError());
+  }
+
   EXPECT_TRUE(flat_data == stream_data);
+  EXPECT_TRUE(flat_data == dynamic_data);
 }
 
 TEST(WireFormatTest, ParseMessageSet) {
@@ -407,6 +439,13 @@ TEST(WireFormatTest, ParseMessageSet) {
   ASSERT_EQ(UnknownField::TYPE_LENGTH_DELIMITED,
             message_set.unknown_fields().field(0).type());
   EXPECT_EQ("bar", message_set.unknown_fields().field(0).length_delimited());
+
+  // Also parse using WireFormat.
+  unittest::TestMessageSet dynamic_message_set;
+  io::CodedInputStream input(reinterpret_cast<const uint8*>(data.data()),
+                             data.size());
+  ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &dynamic_message_set));
+  EXPECT_EQ(message_set.DebugString(), dynamic_message_set.DebugString());
 }
 
 TEST(WireFormatTest, RecursionLimit) {
@@ -464,10 +503,10 @@ TEST(WireFormatTest, ZigZag) {
 // avoid line-wrapping
 #define LL(x) GOOGLE_LONGLONG(x)
 #define ULL(x) GOOGLE_ULONGLONG(x)
-#define ZigZagEncode32(x) WireFormat::ZigZagEncode32(x)
-#define ZigZagDecode32(x) WireFormat::ZigZagDecode32(x)
-#define ZigZagEncode64(x) WireFormat::ZigZagEncode64(x)
-#define ZigZagDecode64(x) WireFormat::ZigZagDecode64(x)
+#define ZigZagEncode32(x) WireFormatLite::ZigZagEncode32(x)
+#define ZigZagDecode32(x) WireFormatLite::ZigZagDecode32(x)
+#define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)
+#define ZigZagDecode64(x) WireFormatLite::ZigZagDecode64(x)
 
   EXPECT_EQ(0u, ZigZagEncode32( 0));
   EXPECT_EQ(1u, ZigZagEncode32(-1));
@@ -545,7 +584,7 @@ class WireFormatInvalidInputTest : public testing::Test {
       io::StringOutputStream raw_output(&result);
       io::CodedOutputStream output(&raw_output);
 
-      WireFormat::WriteBytes(field->number(), string(bytes, size), &output);
+      WireFormatLite::WriteBytes(field->number(), string(bytes, size), &output);
     }
 
     return result;
@@ -569,8 +608,8 @@ class WireFormatInvalidInputTest : public testing::Test {
       output.WriteVarint32(WireFormat::MakeTag(field));
       output.WriteString(string(bytes, size));
       if (include_end_tag) {
-        output.WriteVarint32(WireFormat::MakeTag(
-          field->number(), WireFormat::WIRETYPE_END_GROUP));
+        output.WriteVarint32(WireFormatLite::MakeTag(
+          field->number(), WireFormatLite::WIRETYPE_END_GROUP));
       }
     }
 

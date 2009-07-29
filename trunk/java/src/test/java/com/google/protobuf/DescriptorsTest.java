@@ -367,4 +367,34 @@ public class DescriptorsTest extends TestCase {
     assertEquals(UnittestCustomOptions.MethodOpt1.METHODOPT1_VAL2,
       method.getOptions().getExtension(UnittestCustomOptions.methodOpt1));
   }
+
+  /**
+   * Test that the FieldDescriptor.Type enum is the same as the
+   * WireFormat.FieldType enum.
+   */
+  public void testFieldTypeTablesMatch() throws Exception {
+    FieldDescriptor.Type[] values1 = FieldDescriptor.Type.values();
+    WireFormat.FieldType[] values2 = WireFormat.FieldType.values();
+
+    assertEquals(values1.length, values2.length);
+
+    for (int i = 0; i < values1.length; i++) {
+      assertEquals(values1[i].toString(), values2[i].toString());
+    }
+  }
+
+  /**
+   * Test that the FieldDescriptor.JavaType enum is the same as the
+   * WireFormat.JavaType enum.
+   */
+  public void testJavaTypeTablesMatch() throws Exception {
+    FieldDescriptor.JavaType[] values1 = FieldDescriptor.JavaType.values();
+    WireFormat.JavaType[] values2 = WireFormat.JavaType.values();
+
+    assertEquals(values1.length, values2.length);
+
+    for (int i = 0; i < values1.length; i++) {
+      assertEquals(values1[i].toString(), values2[i].toString());
+    }
+  }
 }

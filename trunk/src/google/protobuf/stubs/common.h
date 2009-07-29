@@ -181,6 +181,14 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #define GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #endif
 
+#undef GOOGLE_ATTRIBUTE_DEPRECATED
+#ifdef __GNUC__
+// If the method/variable/type is used anywhere, produce a warning.
+#define GOOGLE_ATTRIBUTE_DEPRECATED __attribute__((deprecated))
+#else
+#define GOOGLE_ATTRIBUTE_DEPRECATED
+#endif
+
 // ===================================================================
 // from google3/base/basictypes.h
 
@@ -642,24 +650,24 @@ class LIBPROTOBUF_EXPORT LogFinisher {
 
 #define GOOGLE_CHECK(EXPRESSION) \
   GOOGLE_LOG_IF(FATAL, !(EXPRESSION)) << "CHECK failed: " #EXPRESSION ": "
-#define GOOGLE_CHECK_EQ(A, B) GOOGLE_CHECK(A == B)
-#define GOOGLE_CHECK_NE(A, B) GOOGLE_CHECK(A != B)
-#define GOOGLE_CHECK_LT(A, B) GOOGLE_CHECK(A <  B)
-#define GOOGLE_CHECK_LE(A, B) GOOGLE_CHECK(A <= B)
-#define GOOGLE_CHECK_GT(A, B) GOOGLE_CHECK(A >  B)
-#define GOOGLE_CHECK_GE(A, B) GOOGLE_CHECK(A >= B)
+#define GOOGLE_CHECK_EQ(A, B) GOOGLE_CHECK((A) == (B))
+#define GOOGLE_CHECK_NE(A, B) GOOGLE_CHECK((A) != (B))
+#define GOOGLE_CHECK_LT(A, B) GOOGLE_CHECK((A) <  (B))
+#define GOOGLE_CHECK_LE(A, B) GOOGLE_CHECK((A) <= (B))
+#define GOOGLE_CHECK_GT(A, B) GOOGLE_CHECK((A) >  (B))
+#define GOOGLE_CHECK_GE(A, B) GOOGLE_CHECK((A) >= (B))
 
 #ifdef NDEBUG
 
 #define GOOGLE_DLOG GOOGLE_LOG_IF(false, INFO)
 
 #define GOOGLE_DCHECK(EXPRESSION) while(false) GOOGLE_CHECK(EXPRESSION)
-#define GOOGLE_DCHECK_EQ(A, B) GOOGLE_DCHECK(A == B)
-#define GOOGLE_DCHECK_NE(A, B) GOOGLE_DCHECK(A != B)
-#define GOOGLE_DCHECK_LT(A, B) GOOGLE_DCHECK(A <  B)
-#define GOOGLE_DCHECK_LE(A, B) GOOGLE_DCHECK(A <= B)
-#define GOOGLE_DCHECK_GT(A, B) GOOGLE_DCHECK(A >  B)
-#define GOOGLE_DCHECK_GE(A, B) GOOGLE_DCHECK(A >= B)
+#define GOOGLE_DCHECK_EQ(A, B) GOOGLE_DCHECK((A) == (B))
+#define GOOGLE_DCHECK_NE(A, B) GOOGLE_DCHECK((A) != (B))
+#define GOOGLE_DCHECK_LT(A, B) GOOGLE_DCHECK((A) <  (B))
+#define GOOGLE_DCHECK_LE(A, B) GOOGLE_DCHECK((A) <= (B))
+#define GOOGLE_DCHECK_GT(A, B) GOOGLE_DCHECK((A) >  (B))
+#define GOOGLE_DCHECK_GE(A, B) GOOGLE_DCHECK((A) >= (B))
 
 #else  // NDEBUG
 

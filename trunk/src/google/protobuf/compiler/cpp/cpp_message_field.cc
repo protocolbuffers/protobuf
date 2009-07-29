@@ -35,7 +35,6 @@
 #include <google/protobuf/compiler/cpp/cpp_message_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format_inl.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -43,22 +42,12 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-using internal::WireFormat;
-
 namespace {
 
-// TODO(kenton):  Factor out a "SetCommonFieldVariables()" to get rid of
-//   repeat code between this and the other field types.
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          map<string, string>* variables) {
-  (*variables)["name"] = FieldName(descriptor);
+  SetCommonFieldVariables(descriptor, variables);
   (*variables)["type"] = ClassName(descriptor->message_type(), true);
-  (*variables)["index"] = SimpleItoa(descriptor->index());
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
-  (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  (*variables)["tag_size"] = SimpleItoa(
-    WireFormat::TagSize(descriptor->number(), descriptor->type()));
 }
 
 }  // namespace
@@ -81,8 +70,8 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const $type$& $name$() const;\n"
-    "inline $type$* mutable_$name$();\n");
+    "inline const $type$& $name$() const$deprecation$;\n"
+    "inline $type$* mutable_$name$()$deprecation$;\n");
 }
 
 void MessageFieldGenerator::
@@ -124,35 +113,35 @@ void MessageFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
       "     input, mutable_$name$()));\n");
   } else {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormat::ReadGroupNoVirtual("
-        "$number$, input, mutable_$name$()));\n");
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadGroupNoVirtual(\n"
+      "      $number$, input, mutable_$name$()));\n");
   }
 }
 
 void MessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
-      "$number$, this->$name$(), output);\n");
+    "::google::protobuf::internal::WireFormatLite::Write$declared_type$NoVirtual(\n"
+    "  $number$, this->$name$(), output);\n");
 }
 
 void MessageFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
-    "target = ::google::protobuf::internal::WireFormat::"
-      "Write$declared_type$NoVirtualToArray("
-      "$number$, this->$name$(), target);\n");
+    "target = ::google::protobuf::internal::WireFormatLite::\n"
+    "  Write$declared_type$NoVirtualToArray(\n"
+    "    $number$, this->$name$(), target);\n");
 }
 
 void MessageFieldGenerator::
 GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
     "total_size += $tag_size$ +\n"
-    "  ::google::protobuf::internal::WireFormat::$declared_type$SizeNoVirtual(\n"
+    "  ::google::protobuf::internal::WireFormatLite::$declared_type$SizeNoVirtual(\n"
     "    this->$name$());\n");
 }
 
@@ -175,11 +164,13 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< $type$ >& $name$() const;\n"
-    "inline ::google::protobuf::RepeatedPtrField< $type$ >* mutable_$name$();\n"
-    "inline const $type$& $name$(int index) const;\n"
-    "inline $type$* mutable_$name$(int index);\n"
-    "inline $type$* add_$name$();\n");
+    "inline const ::google::protobuf::RepeatedPtrField< $type$ >& $name$() const"
+                 "$deprecation$;\n"
+    "inline ::google::protobuf::RepeatedPtrField< $type$ >* mutable_$name$()"
+                 "$deprecation$;\n"
+    "inline const $type$& $name$(int index) const$deprecation$;\n"
+    "inline $type$* mutable_$name$(int index)$deprecation$;\n"
+    "inline $type$* add_$name$()$deprecation$;\n");
 }
 
 void RepeatedMessageFieldGenerator::
@@ -228,12 +219,12 @@ void RepeatedMessageFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(\n"
-      "     input, add_$name$()));\n");
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
+      "      input, add_$name$()));\n");
   } else {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormat::ReadGroupNoVirtual("
-        "$number$, input, add_$name$()));\n");
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadGroupNoVirtual(\n"
+      "      $number$, input, add_$name$()));\n");
   }
 }
 
@@ -241,8 +232,8 @@ void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
     "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  ::google::protobuf::internal::WireFormat::Write$declared_type$NoVirtual("
-        "$number$, this->$name$(i), output);\n"
+    "  ::google::protobuf::internal::WireFormatLite::Write$declared_type$NoVirtual(\n"
+    "    $number$, this->$name$(i), output);\n"
     "}\n");
 }
 
@@ -250,9 +241,9 @@ void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
     "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  target = ::google::protobuf::internal::WireFormat::"
-        "Write$declared_type$NoVirtualToArray("
-        "$number$, this->$name$(i), target);\n"
+    "  target = ::google::protobuf::internal::WireFormatLite::\n"
+    "    Write$declared_type$NoVirtualToArray(\n"
+    "      $number$, this->$name$(i), target);\n"
     "}\n");
 }
 
@@ -262,7 +253,7 @@ GenerateByteSize(io::Printer* printer) const {
     "total_size += $tag_size$ * this->$name$_size();\n"
     "for (int i = 0; i < this->$name$_size(); i++) {\n"
     "  total_size +=\n"
-    "    ::google::protobuf::internal::WireFormat::$declared_type$SizeNoVirtual(\n"
+    "    ::google::protobuf::internal::WireFormatLite::$declared_type$SizeNoVirtual(\n"
     "      this->$name$(i));\n"
     "}\n");
 }

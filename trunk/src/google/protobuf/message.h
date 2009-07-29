@@ -98,9 +98,9 @@
 //     const Reflection* reflection = foo->GetReflection();
 //     assert(reflection->GetString(foo, text_field) == "Hello World!");
 //     assert(reflection->FieldSize(foo, numbers_field) == 3);
-//     assert(reflection->GetInt32(foo, numbers_field, 0) == 1);
-//     assert(reflection->GetInt32(foo, numbers_field, 1) == 5);
-//     assert(reflection->GetInt32(foo, numbers_field, 2) == 42);
+//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 0) == 1);
+//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 1) == 5);
+//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 2) == 42);
 //
 //     delete foo;
 //   }
@@ -117,6 +117,10 @@
 #else
 #include <iosfwd>
 #endif
+
+#include <google/protobuf/message_lite.h>
+
+#include <google/protobuf/stubs/common.h>
 
 #if defined(_WIN32) && defined(GetMessage)
 // windows.h defines GetMessage() as a macro.  Let's re-define it as an inline
@@ -136,10 +140,8 @@ inline BOOL GetMessage(
 }
 #endif
 
-#include <google/protobuf/stubs/common.h>
 
 namespace google {
-
 namespace protobuf {
 
 // Defined in this file.
@@ -149,6 +151,7 @@ class Reflection;
 // Defined in other files.
 class Descriptor;            // descriptor.h
 class FieldDescriptor;       // descriptor.h
+class EnumDescriptor;        // descriptor.h
 class EnumValueDescriptor;   // descriptor.h
 namespace io {
   class ZeroCopyInputStream;   // zero_copy_stream.h
@@ -158,14 +161,28 @@ namespace io {
 }
 class UnknownFieldSet;       // unknown_field_set.h
 
+// A container to hold message metadata.
+struct Metadata {
+  const Descriptor* descriptor;
+  const Reflection* reflection;
+};
+
+// Returns the EnumDescriptor for enum type E, which must be a
+// proto-declared enum type.
+template <typename E>
+const EnumDescriptor* GetEnumDescriptor();
+
 // Abstract interface for protocol messages.
+//
+// See also MessageLite, which contains most every-day operations.  Message
+// adds descriptors and reflection on top of that.
 //
 // The methods of this class that are virtual but not pure-virtual have
 // default implementations based on reflection.  Message classes which are
 // optimized for speed will want to override these with faster implementations,
 // but classes optimized for code size may be happy with keeping them.  See
 // the optimize_for option in descriptor.proto.
-class LIBPROTOBUF_EXPORT Message {
+class LIBPROTOBUF_EXPORT Message : public MessageLite {
  public:
   inline Message() {}
   virtual ~Message();
@@ -173,7 +190,8 @@ class LIBPROTOBUF_EXPORT Message {
   // Basic Operations ------------------------------------------------
 
   // Construct a new instance of the same type.  Ownership is passed to the
-  // caller.
+  // caller.  (This is also defined in MessageLite, but is defined again here
+  // for return-type covariance.)
   virtual Message* New() const = 0;
 
   // Make this message into a copy of the given message.  The given message
@@ -186,16 +204,6 @@ class LIBPROTOBUF_EXPORT Message {
   // be merged.  Repeated fields will be concatenated.  The given message
   // must be of the same type as this message (i.e. the exact same class).
   virtual void MergeFrom(const Message& from);
-
-  // Clear all fields of the message and set them to their default values.
-  // Clear() avoids freeing memory, assuming that any memory allocated
-  // to hold parts of the message will be needed again to hold the next
-  // message.  If you actually want to free the memory used by a Message,
-  // you must delete it.
-  virtual void Clear();
-
-  // Quickly check if all required fields have values set.
-  virtual bool IsInitialized() const;
 
   // Verifies that IsInitialized() returns true.  GOOGLE_CHECK-fails otherwise, with
   // a nice error message.
@@ -238,41 +246,9 @@ class LIBPROTOBUF_EXPORT Message {
   // Convenience function useful in GDB.  Prints DebugString() to stdout.
   void PrintDebugString() const;
 
-  // Parsing ---------------------------------------------------------
-  // Methods for parsing in protocol buffer format.  Most of these are
-  // just simple wrappers around MergeFromCodedStream().
-
-  // Fill the message with a protocol buffer parsed from the given input
-  // stream.  Returns false on a read error or if the input is in the
-  // wrong format.
-  bool ParseFromCodedStream(io::CodedInputStream* input);
-  // Like ParseFromCodedStream(), but accepts messages that are missing
-  // required fields.
-  bool ParsePartialFromCodedStream(io::CodedInputStream* input);
-  // Read a protocol buffer from the given zero-copy input stream.  If
-  // successful, the entire input will be consumed.
-  bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
-  // Like ParseFromZeroCopyStream(), but accepts messages that are missing
-  // required fields.
-  bool ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input);
-  // Read a protocol buffer from the given zero-copy input stream, expecting
-  // the message to be exactly "size" bytes long.  If successful, exactly
-  // this many bytes will have been consumed from the input.
-  bool ParseFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
-  // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
-  // missing required fields.
-  bool ParsePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
-                                             int size);
-  // Parse a protocol buffer contained in a string.
-  bool ParseFromString(const string& data);
-  // Like ParseFromString(), but accepts messages that are missing
-  // required fields.
-  bool ParsePartialFromString(const string& data);
-  // Parse a protocol buffer contained in an array of bytes.
-  bool ParseFromArray(const void* data, int size);
-  // Like ParseFromArray(), but accepts messages that are missing
-  // required fields.
-  bool ParsePartialFromArray(const void* data, int size);
+  // Heavy I/O -------------------------------------------------------
+  // Additional parsing and serialization methods not implemented by
+  // MessageLite because they are not supported by the lite library.
 
   // Parse a protocol buffer from a file descriptor.  If successful, the entire
   // input will be consumed.
@@ -287,53 +263,6 @@ class LIBPROTOBUF_EXPORT Message {
   // required fields.
   bool ParsePartialFromIstream(istream* input);
 
-
-  // Reads a protocol buffer from the stream and merges it into this
-  // Message.  Singular fields read from the input overwrite what is
-  // already in the Message and repeated fields are appended to those
-  // already present.
-  //
-  // It is the responsibility of the caller to call input->LastTagWas()
-  // (for groups) or input->ConsumedEntireMessage() (for non-groups) after
-  // this returns to verify that the message's end was delimited correctly.
-  //
-  // ParsefromCodedStream() is implemented as Clear() followed by
-  // MergeFromCodedStream().
-  bool MergeFromCodedStream(io::CodedInputStream* input);
-
-  // Like MergeFromCodedStream(), but succeeds even if required fields are
-  // missing in the input.
-  //
-  // MergeFromCodedStream() is just implemented as MergePartialFromCodedStream()
-  // followed by IsInitialized().
-  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input);
-
-  // Serialization ---------------------------------------------------
-  // Methods for serializing in protocol buffer format.  Most of these
-  // are just simple wrappers around ByteSize() and SerializeWithCachedSizes().
-
-  // Write a protocol buffer of this message to the given output.  Returns
-  // false on a write error.  If the message is missing required fields,
-  // this may GOOGLE_CHECK-fail.
-  bool SerializeToCodedStream(io::CodedOutputStream* output) const;
-  // Like SerializeToCodedStream(), but allows missing required fields.
-  bool SerializePartialToCodedStream(io::CodedOutputStream* output) const;
-  // Write the message to the given zero-copy output stream.  All required
-  // fields must be set.
-  bool SerializeToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
-  // Like SerializeToZeroCopyStream(), but allows missing required fields.
-  bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
-  // Serialize the message and store it in the given string.  All required
-  // fields must be set.
-  bool SerializeToString(string* output) const;
-  // Like SerializeToString(), but allows missing required fields.
-  bool SerializePartialToString(string* output) const;
-  // Serialize the message and store it in the given byte array.  All required
-  // fields must be set.
-  bool SerializeToArray(void* data, int size) const;
-  // Like SerializeToArray(), but allows missing required fields.
-  bool SerializePartialToArray(void* data, int size) const;
-
   // Serialize the message and write it to the given file descriptor.  All
   // required fields must be set.
   bool SerializeToFileDescriptor(int file_descriptor) const;
@@ -346,49 +275,17 @@ class LIBPROTOBUF_EXPORT Message {
   bool SerializePartialToOstream(ostream* output) const;
 
 
-  // Make a string encoding the message. Is equivalent to calling
-  // SerializeToString() on a string and using that.  Returns the empty
-  // string if SerializeToString() would have returned an error.
-  // Note: If you intend to generate many such strings, you may
-  // reduce heap fragmentation by instead re-using the same string
-  // object with calls to SerializeToString().
-  string SerializeAsString() const;
-  // Like SerializeAsString(), but allows missing required fields.
-  string SerializePartialAsString() const;
+  // Reflection-based methods ----------------------------------------
+  // These methods are pure-virtual in MessageLite, but Message provides
+  // reflection-based default implementations.
 
-  // Like SerializeToString(), but appends to the data to the string's existing
-  // contents.  All required fields must be set.
-  bool AppendToString(string* output) const;
-  // Like AppendToString(), but allows missing required fields.
-  bool AppendPartialToString(string* output) const;
-
-  // Computes the serialized size of the message.  This recursively calls
-  // ByteSize() on all embedded messages.  If a subclass does not override
-  // this, it MUST override SetCachedSize().
+  virtual string GetTypeName() const;
+  virtual void Clear();
+  virtual bool IsInitialized() const;
+  virtual void CheckTypeAndMergeFrom(const MessageLite& other);
+  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input);
   virtual int ByteSize() const;
-
-  // Serializes the message without recomputing the size.  The message must
-  // not have changed since the last call to ByteSize(); if it has, the results
-  // are undefined.
   virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const;
-
-  // Like SerializeWithCachedSizes, but writes directly to *target, returning
-  // a pointer to the byte immediately after the last byte written.  "target"
-  // must point at a byte array of at least ByteSize() bytes.
-  virtual uint8* SerializeWithCachedSizesToArray(uint8* target) const;
-
-  // Returns the result of the last call to ByteSize().  An embedded message's
-  // size is needed both to serialize it (because embedded messages are
-  // length-delimited) and to compute the outer message's size.  Caching
-  // the size avoids computing it multiple times.
-  //
-  // ByteSize() does not automatically use the cached size when available
-  // because this would require invalidating it every time the message was
-  // modified, which would be too hard and expensive.  (E.g. if a deeply-nested
-  // sub-message is changed, all of its parents' cached sizes would need to be
-  // invalidated, which is too much work for an otherwise inlined setter
-  // method.)
-  virtual int GetCachedSize() const = 0;
 
  private:
   // This is called only by the default implementation of ByteSize(), to
@@ -409,13 +306,24 @@ class LIBPROTOBUF_EXPORT Message {
 
   // Get a Descriptor for this message's type.  This describes what
   // fields the message contains, the types of those fields, etc.
-  virtual const Descriptor* GetDescriptor() const = 0;
+  const Descriptor* GetDescriptor() const { return GetMetadata().descriptor; }
 
   // Get the Reflection interface for this Message, which can be used to
   // read and modify the fields of the Message dynamically (in other words,
   // without knowing the message type at compile time).  This object remains
   // property of the Message.
-  virtual const Reflection* GetReflection() const = 0;
+  //
+  // This method remains virtual in case a subclass does not implement
+  // reflection and wants to override the default behavior.
+  virtual const Reflection* GetReflection() const {
+    return GetMetadata().reflection;
+  }
+
+ protected:
+  // Get a struct containing the metadata for the Message. Most subclasses only
+  // need to implement this method, rather than the GetDescriptor() and
+  // GetReflection() wrappers.
+  virtual Metadata GetMetadata() const  = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Message);
@@ -758,12 +666,13 @@ class LIBPROTOBUF_EXPORT MessageFactory {
   // For internal use only:  Registers a .proto file at static initialization
   // time, to be placed in generated_factory.  The first time GetPrototype()
   // is called with a descriptor from this file, |register_messages| will be
-  // called.  It must call InternalRegisterGeneratedMessage() (below) to
-  // register each message type in the file.  This strange mechanism is
-  // necessary because descriptors are built lazily, so we can't register
-  // types by their descriptor until we know that the descriptor exists.
-  static void InternalRegisterGeneratedFile(const char* filename,
-                                            void (*register_messages)());
+  // called, with the file name as the parameter.  It must call
+  // InternalRegisterGeneratedMessage() (below) to register each message type
+  // in the file.  This strange mechanism is necessary because descriptors are
+  // built lazily, so we can't register types by their descriptor until we
+  // know that the descriptor exists.  |filename| must be a permanent string.
+  static void InternalRegisterGeneratedFile(
+      const char* filename, void (*register_messages)(const string&));
 
   // For internal use only:  Registers a message type.  Called only by the
   // functions which are registered with InternalRegisterGeneratedFile(),

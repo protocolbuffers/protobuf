@@ -661,7 +661,7 @@ bool Parser::ParseOptionAssignment(Message* options) {
   GOOGLE_CHECK(uninterpreted_option_field != NULL)
       << "No field named \"uninterpreted_option\" in the Options proto.";
 
-  UninterpretedOption* uninterpreted_option = ::google::protobuf::down_cast<UninterpretedOption*>(
+  UninterpretedOption* uninterpreted_option = down_cast<UninterpretedOption*>(
       options->GetReflection()->AddMessage(options,
                                            uninterpreted_option_field));
 

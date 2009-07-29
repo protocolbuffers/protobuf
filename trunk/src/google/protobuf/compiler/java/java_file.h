@@ -81,6 +81,8 @@ class FileGenerator {
   string java_package_;
   string classname_;
 
+  void GenerateEmbeddedDescriptor(io::Printer* printer);
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
 

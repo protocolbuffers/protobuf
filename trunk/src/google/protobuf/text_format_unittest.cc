@@ -597,8 +597,8 @@ class TextFormatParserTest : public testing::Test {
  protected:
   void ExpectFailure(const string& input, const string& message, int line,
                      int col) {
-    unittest::TestAllTypes proto;
-    ExpectFailure(input, message, line, col, &proto);
+    scoped_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
+    ExpectFailure(input, message, line, col, proto.get());
   }
 
   void ExpectFailure(const string& input, const string& message, int line,
@@ -627,6 +627,120 @@ class TextFormatParserTest : public testing::Test {
     }
   };
 };
+
+TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
+  scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  const Descriptor* d = message->GetDescriptor();
+
+#define EXPECT_FIELD(name, value, valuestring) \
+  EXPECT_TRUE(TextFormat::ParseFieldValueFromString( \
+    valuestring, d->FindFieldByName("optional_" #name), message.get())); \
+  EXPECT_EQ(value, message->optional_##name()); \
+  EXPECT_TRUE(message->has_optional_##name());
+
+#define EXPECT_FLOAT_FIELD(name, value, valuestring) \
+  EXPECT_TRUE(TextFormat::ParseFieldValueFromString( \
+    valuestring, d->FindFieldByName("optional_" #name), message.get())); \
+  EXPECT_FLOAT_EQ(value, message->optional_##name()); \
+  EXPECT_TRUE(message->has_optional_##name());
+
+#define EXPECT_DOUBLE_FIELD(name, value, valuestring) \
+  EXPECT_TRUE(TextFormat::ParseFieldValueFromString( \
+    valuestring, d->FindFieldByName("optional_" #name), message.get())); \
+  EXPECT_DOUBLE_EQ(value, message->optional_##name()); \
+  EXPECT_TRUE(message->has_optional_##name());
+
+#define EXPECT_INVALID(name, valuestring) \
+  EXPECT_FALSE(TextFormat::ParseFieldValueFromString( \
+    valuestring, d->FindFieldByName("optional_" #name), message.get()));
+
+  // int32
+  EXPECT_FIELD(int32, 1, "1");
+  EXPECT_FIELD(int32, -1, "-1");
+  EXPECT_FIELD(int32, 0x1234, "0x1234");
+  EXPECT_INVALID(int32, "a");
+  EXPECT_INVALID(int32, "999999999999999999999999999999999999");
+  EXPECT_INVALID(int32, "1,2");
+
+  // int64
+  EXPECT_FIELD(int64, 1, "1");
+  EXPECT_FIELD(int64, -1, "-1");
+  EXPECT_FIELD(int64, 0x1234567812345678LL, "0x1234567812345678");
+  EXPECT_INVALID(int64, "a");
+  EXPECT_INVALID(int64, "999999999999999999999999999999999999");
+  EXPECT_INVALID(int64, "1,2");
+
+  // uint64
+  EXPECT_FIELD(uint64, 1, "1");
+  EXPECT_FIELD(uint64, 0xf234567812345678ULL, "0xf234567812345678");
+  EXPECT_INVALID(uint64, "-1");
+  EXPECT_INVALID(uint64, "a");
+  EXPECT_INVALID(uint64, "999999999999999999999999999999999999");
+  EXPECT_INVALID(uint64, "1,2");
+
+  // fixed32
+  EXPECT_FIELD(fixed32, 1, "1");
+  EXPECT_FIELD(fixed32, 0x12345678, "0x12345678");
+  EXPECT_INVALID(fixed32, "-1");
+  EXPECT_INVALID(fixed32, "a");
+  EXPECT_INVALID(fixed32, "999999999999999999999999999999999999");
+  EXPECT_INVALID(fixed32, "1,2");
+
+  // fixed64
+  EXPECT_FIELD(fixed64, 1, "1");
+  EXPECT_FIELD(fixed64, 0x1234567812345678ULL, "0x1234567812345678");
+  EXPECT_INVALID(fixed64, "-1");
+  EXPECT_INVALID(fixed64, "a");
+  EXPECT_INVALID(fixed64, "999999999999999999999999999999999999");
+  EXPECT_INVALID(fixed64, "1,2");
+
+  // bool
+  EXPECT_FIELD(bool, true, "true");
+  EXPECT_FIELD(bool, false, "false");
+  EXPECT_INVALID(bool, "1");
+  EXPECT_INVALID(bool, "on");
+  EXPECT_INVALID(bool, "a");
+  EXPECT_INVALID(bool, "True");
+
+  // float
+  EXPECT_FIELD(float, 1, "1");
+  EXPECT_FLOAT_FIELD(float, 1.5, "1.5");
+  EXPECT_FLOAT_FIELD(float, 1.5e3, "1.5e3");
+  EXPECT_FLOAT_FIELD(float, -4.55, "-4.55");
+  EXPECT_INVALID(float, "a");
+  EXPECT_INVALID(float, "1,2");
+
+  // double
+  EXPECT_FIELD(double, 1, "1");
+  EXPECT_FIELD(double, -1, "-1");
+  EXPECT_DOUBLE_FIELD(double, 2.3, "2.3");
+  EXPECT_DOUBLE_FIELD(double, 3e5, "3e5");
+  EXPECT_INVALID(double, "a");
+  EXPECT_INVALID(double, "1,2");
+
+  // string
+  EXPECT_FIELD(string, "hello", "\"hello\"");
+  EXPECT_FIELD(string, "-1.87", "'-1.87'");
+  EXPECT_INVALID(string, "hello");  // without quote for value
+
+  // enum
+  EXPECT_FIELD(nested_enum, unittest::TestAllTypes::BAR, "BAR");
+  EXPECT_INVALID(nested_enum, "1");  // number not supported
+  EXPECT_INVALID(nested_enum, "FOOBAR");
+
+  // message
+  EXPECT_TRUE(TextFormat::ParseFieldValueFromString(
+    "<bb:12>", d->FindFieldByName("optional_nested_message"), message.get()));
+  EXPECT_EQ(12, message->optional_nested_message().bb()); \
+  EXPECT_TRUE(message->has_optional_nested_message());
+  EXPECT_INVALID(nested_message, "any");
+
+#undef EXPECT_FIELD
+#undef EXPECT_FLOAT_FIELD
+#undef EXPECT_DOUBLE_FIELD
+#undef EXPECT_INVALID
+}
+
 
 TEST_F(TextFormatParserTest, InvalidToken) {
   ExpectFailure("optional_bool: true\n-5\n", "Expected identifier.",
@@ -735,7 +849,7 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
       "Unknown enumeration value of \"grah\" for field "
       "\"optional_nested_enum\".", 2, 1);
 
- ExpectFailure(
+  ExpectFailure(
       "optional_nested_enum {\n \n}\n",
       "Expected \":\", found \"{\".", 1, 22);
 }

@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 
 #include <string>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -114,6 +115,35 @@ inline JavaType GetJavaType(const FieldDescriptor* field) {
 // "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
 // types.
 const char* BoxedPrimitiveTypeName(JavaType type);
+
+string DefaultValue(const FieldDescriptor* field);
+
+// Does this message class keep track of unknown fields?
+inline bool HasUnknownFields(const Descriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() !=
+           FileOptions::LITE_RUNTIME;
+}
+
+// Does this message class have generated parsing, serialization, and other
+// standard methods for which reflection-based fallback implementations exist?
+inline bool HasGeneratedMethods(const Descriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() !=
+           FileOptions::CODE_SIZE;
+}
+
+// Does this message class have descriptor and reflection methods?
+inline bool HasDescriptorMethods(const Descriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() !=
+           FileOptions::LITE_RUNTIME;
+}
+inline bool HasDescriptorMethods(const EnumDescriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() !=
+           FileOptions::LITE_RUNTIME;
+}
+inline bool HasDescriptorMethods(const FileDescriptor* descriptor) {
+  return descriptor->options().optimize_for() !=
+           FileOptions::LITE_RUNTIME;
+}
 
 }  // namespace java
 }  // namespace compiler

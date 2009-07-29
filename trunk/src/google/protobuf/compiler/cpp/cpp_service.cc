@@ -249,7 +249,7 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
 
-    // Note:  ::google::protobuf::down_cast does not work here because it only works on pointers,
+    // Note:  down_cast does not work here because it only works on pointers,
     //   not references.
     printer->Print(sub_vars,
       "    case $index$:\n"

@@ -33,17 +33,36 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_field.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
 #include <google/protobuf/compiler/cpp/cpp_string_field.h>
 #include <google/protobuf/compiler/cpp/cpp_enum_field.h>
 #include <google/protobuf/compiler/cpp/cpp_message_field.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+using internal::WireFormat;
+
+void SetCommonFieldVariables(const FieldDescriptor* descriptor,
+                             map<string, string>* variables) {
+  (*variables)["name"] = FieldName(descriptor);
+  (*variables)["index"] = SimpleItoa(descriptor->index());
+  (*variables)["number"] = SimpleItoa(descriptor->number());
+  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
+  (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
+
+  (*variables)["tag_size"] = SimpleItoa(
+    WireFormat::TagSize(descriptor->number(), descriptor->type()));
+  (*variables)["deprecation"] = descriptor->options().deprecated()
+      ? " DEPRECATED_PROTOBUF_FIELD" : "";
+}
 
 FieldGenerator::~FieldGenerator() {}
 

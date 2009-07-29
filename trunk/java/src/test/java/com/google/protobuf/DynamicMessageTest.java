@@ -73,6 +73,18 @@ public class DynamicMessageTest extends TestCase {
     }
   }
 
+  public void testClearAfterBuildError() throws Exception {
+    Message.Builder builder =
+      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    builder.build();
+    try {
+      builder.clear();
+      fail("Should have thrown exception.");
+    } catch (IllegalStateException e) {
+      // Success.
+    }
+  }
+
   public void testDynamicMessageSettersRejectNull() throws Exception {
     Message.Builder builder =
       DynamicMessage.newBuilder(TestAllTypes.getDescriptor());

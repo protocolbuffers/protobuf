@@ -5,6 +5,10 @@
 # itself, they cannot be generated automatically by a make rule.  "make check"
 # will fail if these files do not match what the protocol compiler would
 # generate.
+#
+# HINT:  Flags passed to generate_descriptor_proto.sh will be passed directly
+#   to make when building protoc.  This is particularly useful for passing
+#   -j4 to run 4 jobs simultaneously.
 
 if test ! -e src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
@@ -23,5 +27,5 @@ __EOF__
 fi
 
 cd src
-make protoc && ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. google/protobuf/descriptor.proto
+make $@ protoc && ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. google/protobuf/descriptor.proto
 cd ..

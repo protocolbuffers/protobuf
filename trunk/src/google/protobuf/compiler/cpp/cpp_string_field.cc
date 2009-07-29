@@ -35,7 +35,6 @@
 #include <google/protobuf/compiler/cpp/cpp_string_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format_inl.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -44,23 +43,13 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-using internal::WireFormat;
-
 namespace {
 
-// TODO(kenton):  Factor out a "SetCommonFieldVariables()" to get rid of
-//   repeat code between this and the other field types.
 void SetStringVariables(const FieldDescriptor* descriptor,
                         map<string, string>* variables) {
-  (*variables)["name"] = FieldName(descriptor);
+  SetCommonFieldVariables(descriptor, variables);
   (*variables)["default"] =
     "\"" + CEscape(descriptor->default_value_string()) + "\"";
-  (*variables)["index"] = SimpleItoa(descriptor->index());
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
-  (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  (*variables)["tag_size"] = SimpleItoa(
-    WireFormat::TagSize(descriptor->number(), descriptor->type()));
   (*variables)["pointer_type"] =
       descriptor->type() == FieldDescriptor::TYPE_BYTES ? "void" : "char";
 }
@@ -111,11 +100,12 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline const ::std::string& $name$() const;\n"
-    "inline void set_$name$(const ::std::string& value);\n"
-    "inline void set_$name$(const char* value);\n"
-    "inline void set_$name$(const $pointer_type$* value, size_t size);\n"
-    "inline ::std::string* mutable_$name$();\n");
+    "inline const ::std::string& $name$() const$deprecation$;\n"
+    "inline void set_$name$(const ::std::string& value)$deprecation$;\n"
+    "inline void set_$name$(const char* value)$deprecation$;\n"
+    "inline void set_$name$(const $pointer_type$* value, size_t size)"
+                 "$deprecation$;\n"
+    "inline ::std::string* mutable_$name$()$deprecation$;\n");
 
   if (descriptor_->options().has_ctype()) {
     printer->Outdent();
@@ -221,29 +211,52 @@ GenerateDestructorCode(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
-    "DO_(::google::protobuf::internal::WireFormat::Read$declared_type$("
-      "input, mutable_$name$()));\n");
+    "DO_(::google::protobuf::internal::WireFormatLite::Read$declared_type$(\n"
+    "      input, this->mutable_$name$()));\n");
+  if (HasUtf8Verification(descriptor_->file()) &&
+      descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    printer->Print(variables_,
+      "::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
+      "  this->$name$().data(), this->$name$().length(),\n"
+      "  ::google::protobuf::internal::WireFormat::PARSE);\n");
+  }
 }
 
 void StringFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
+  if (HasUtf8Verification(descriptor_->file()) &&
+      descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    printer->Print(variables_,
+      "::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
+      "  this->$name$().data(), this->$name$().length(),\n"
+      "  ::google::protobuf::internal::WireFormat::SERIALIZE);\n");
+  }
   printer->Print(variables_,
-    "::google::protobuf::internal::WireFormat::Write$declared_type$("
-      "$number$, this->$name$(), output);\n");
+    "::google::protobuf::internal::WireFormatLite::Write$declared_type$(\n"
+    "  $number$, this->$name$(), output);\n");
 }
 
 void StringFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
+  if (HasUtf8Verification(descriptor_->file()) &&
+      descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    printer->Print(variables_,
+      "::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
+      "  this->$name$().data(), this->$name$().length(),\n"
+      "  ::google::protobuf::internal::WireFormat::SERIALIZE);\n");
+  }
   printer->Print(variables_,
-    "target = ::google::protobuf::internal::WireFormat::Write$declared_type$ToArray("
-      "$number$, this->$name$(), target);\n");
+    "target =\n"
+    "  ::google::protobuf::internal::WireFormatLite::Write$declared_type$ToArray(\n"
+    "    $number$, this->$name$(), target);\n");
 }
 
 void StringFieldGenerator::
 GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
     "total_size += $tag_size$ +\n"
-    "  ::google::protobuf::internal::WireFormat::$declared_type$Size(this->$name$());\n");
+    "  ::google::protobuf::internal::WireFormatLite::$declared_type$Size(\n"
+    "    this->$name$());\n");
 }
 
 // ===================================================================
@@ -274,18 +287,22 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() const;\n"
-    "inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$();\n"
-    "inline const ::std::string& $name$(int index) const;\n"
-    "inline ::std::string* mutable_$name$(int index);\n"
-    "inline void set_$name$(int index, const ::std::string& value);\n"
-    "inline void set_$name$(int index, const char* value);\n"
+    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() const"
+                 "$deprecation$;\n"
+    "inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
+                 "$deprecation$;\n"
+    "inline const ::std::string& $name$(int index) const$deprecation$;\n"
+    "inline ::std::string* mutable_$name$(int index)$deprecation$;\n"
+    "inline void set_$name$(int index, const ::std::string& value)$deprecation$;\n"
+    "inline void set_$name$(int index, const char* value)$deprecation$;\n"
     "inline "
-    "void set_$name$(int index, const $pointer_type$* value, size_t size);\n"
-    "inline ::std::string* add_$name$();\n"
-    "inline void add_$name$(const ::std::string& value);\n"
-    "inline void add_$name$(const char* value);\n"
-    "inline void add_$name$(const $pointer_type$* value, size_t size);\n");
+    "void set_$name$(int index, const $pointer_type$* value, size_t size)"
+                 "$deprecation$;\n"
+    "inline ::std::string* add_$name$()$deprecation$;\n"
+    "inline void add_$name$(const ::std::string& value)$deprecation$;\n"
+    "inline void add_$name$(const char* value)$deprecation$;\n"
+    "inline void add_$name$(const $pointer_type$* value, size_t size)"
+                 "$deprecation$;\n");
 
   if (descriptor_->options().has_ctype()) {
     printer->Outdent();
@@ -361,26 +378,48 @@ GenerateConstructorCode(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
-    "DO_(::google::protobuf::internal::WireFormat::Read$declared_type$(\n"
-    "     input, add_$name$()));\n");
+    "DO_(::google::protobuf::internal::WireFormatLite::Read$declared_type$(\n"
+    "      input, this->add_$name$()));\n");
+  if (HasUtf8Verification(descriptor_->file()) &&
+      descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    printer->Print(variables_,
+      "::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
+      "  this->$name$(0).data(), this->$name$(0).length(),\n"
+      "  ::google::protobuf::internal::WireFormat::PARSE);\n");
+  }
 }
 
 void RepeatedStringFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  ::google::protobuf::internal::WireFormat::Write$declared_type$("
-        "$number$, this->$name$(i), output);\n"
+    "for (int i = 0; i < this->$name$_size(); i++) {\n");
+  if (HasUtf8Verification(descriptor_->file()) &&
+      descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    printer->Print(variables_,
+      "::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
+      "  this->$name$(i).data(), this->$name$(i).length(),\n"
+      "  ::google::protobuf::internal::WireFormat::SERIALIZE);\n");
+  }
+  printer->Print(variables_,
+    "  ::google::protobuf::internal::WireFormatLite::Write$declared_type$(\n"
+    "    $number$, this->$name$(i), output);\n"
     "}\n");
 }
 
 void RepeatedStringFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  target = ::google::protobuf::internal::WireFormat::"
-        "Write$declared_type$ToArray("
-        "$number$, this->$name$(i), target);\n"
+    "for (int i = 0; i < this->$name$_size(); i++) {\n");
+  if (HasUtf8Verification(descriptor_->file()) &&
+      descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    printer->Print(variables_,
+      "  ::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
+      "    this->$name$(i).data(), this->$name$(i).length(),\n"
+      "    ::google::protobuf::internal::WireFormat::SERIALIZE);\n");
+  }
+  printer->Print(variables_,
+    "  target = ::google::protobuf::internal::WireFormatLite::\n"
+    "    Write$declared_type$ToArray($number$, this->$name$(i), target);\n"
     "}\n");
 }
 
@@ -389,7 +428,7 @@ GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
     "total_size += $tag_size$ * this->$name$_size();\n"
     "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  total_size += ::google::protobuf::internal::WireFormat::$declared_type$Size(\n"
+    "  total_size += ::google::protobuf::internal::WireFormatLite::$declared_type$Size(\n"
     "    this->$name$(i));\n"
     "}\n");
 }

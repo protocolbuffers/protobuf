@@ -165,6 +165,13 @@ class LIBPROTOBUF_EXPORT TextFormat {
   // Like Merge(), but reads directly from a string.
   static bool MergeFromString(const string& input, Message* output);
 
+  // Parse the given text as a single field value and store it into the
+  // given field of the given message. If the field is a repeated field,
+  // the new value will be added to the end
+  static bool ParseFieldValueFromString(const string& input,
+                                        const FieldDescriptor* field,
+                                        Message* message);
+
   // For more control over parsing, use this class.
   class LIBPROTOBUF_EXPORT Parser {
    public:
@@ -191,6 +198,11 @@ class LIBPROTOBUF_EXPORT TextFormat {
     void AllowPartialMessage(bool allow) {
       allow_partial_ = allow;
     }
+
+    // Like TextFormat::ParseFieldValueFromString
+    bool ParseFieldValueFromString(const string& input,
+                                   const FieldDescriptor* field,
+                                   Message* output);
 
    private:
     // Forward declaration of an internal class used to parse text

@@ -36,7 +36,6 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-from google.protobuf import text_format
 
 class Error(Exception): pass
 class DecodeError(Error): pass
@@ -76,7 +75,7 @@ class Message(object):
     return not self == other_msg
 
   def __str__(self):
-    return text_format.MessageToString(self)
+    raise NotImplementedError
 
   def MergeFrom(self, other_msg):
     """Merges the contents of the specified message into current message.

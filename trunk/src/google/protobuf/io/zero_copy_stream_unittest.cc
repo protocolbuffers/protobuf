@@ -61,6 +61,7 @@
 #include <sstream>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+
 #if HAVE_ZLIB
 #include <google/protobuf/io/gzip_stream.h>
 #endif

@@ -63,6 +63,10 @@ class EnumGenerator {
   // nested enums.
   void GenerateDefinition(io::Printer* printer);
 
+  // Generate specialization of GetEnumDescriptor<MyEnum>().
+  // Precondition: in ::google::protobuf namespace.
+  void GenerateGetEnumDescriptorSpecializations(io::Printer* printer);
+
   // For enums nested within a message, generate code to import all the enum's
   // symbols (e.g. the enum type name, all its values, etc.) into the class's
   // namespace.  This should be placed inside the class definition in the

@@ -152,7 +152,18 @@ string FieldName(const FieldDescriptor* field) {
 
 string FieldConstantName(const FieldDescriptor *field) {
   string field_name = UnderscoresToCamelCase(field->name(), true);
-  return "k" + field_name + "FieldNumber";
+  string result = "k" + field_name + "FieldNumber";
+
+  if (!field->is_extension() &&
+      field->containing_type()->FindFieldByCamelcaseName(
+        field->camelcase_name()) != field) {
+    // This field's camelcase name is not unique.  As a hack, add the field
+    // number to the constant name.  This makes the constant rather useless,
+    // but what can we do?
+    result += "_" + SimpleItoa(field->number());
+  }
+
+  return result;
 }
 
 string StripProto(const string& filename) {

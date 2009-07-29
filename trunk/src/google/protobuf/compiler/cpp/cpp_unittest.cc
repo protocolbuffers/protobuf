@@ -50,11 +50,9 @@
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
 #include <google/protobuf/test_util.h>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -75,18 +73,6 @@ namespace cpp {
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace cpp_unittest {
 
-TEST(ExtremeDefaultValues, FloatingPoint) {
-  const unittest::TestExtremeDefaultValues& extreme_default =
-      unittest::TestExtremeDefaultValues::default_instance();
-
-  EXPECT_EQ(0.0f, extreme_default.zero_float());
-  EXPECT_EQ(1.0f, extreme_default.one_float());
-  EXPECT_EQ(1.5f, extreme_default.small_float());
-  EXPECT_EQ(-1.0f, extreme_default.negative_one_float());
-  EXPECT_EQ(-1.5f, extreme_default.negative_float());
-  EXPECT_EQ(2.0e8f, extreme_default.large_float());
-  EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
-}
 
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
@@ -155,6 +141,19 @@ TEST(GeneratedMessageTest, Defaults) {
             &message.optional_foreign_message());
   EXPECT_EQ(&unittest_import::ImportMessage::default_instance(),
             &message.optional_import_message());
+}
+
+TEST(GeneratedMessageTest, FloatingPointDefaults) {
+  const unittest::TestExtremeDefaultValues& extreme_default =
+      unittest::TestExtremeDefaultValues::default_instance();
+
+  EXPECT_EQ(0.0f, extreme_default.zero_float());
+  EXPECT_EQ(1.0f, extreme_default.one_float());
+  EXPECT_EQ(1.5f, extreme_default.small_float());
+  EXPECT_EQ(-1.0f, extreme_default.negative_one_float());
+  EXPECT_EQ(-1.5f, extreme_default.negative_float());
+  EXPECT_EQ(2.0e8f, extreme_default.large_float());
+  EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
 }
 
 TEST(GeneratedMessageTest, Accessors) {
@@ -710,6 +709,32 @@ TEST(GeneratedMessageTest, TestSpaceUsed) {
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
+TEST(GeneratedMessageTest, FieldConstantValues) {
+  unittest::TestRequired message;
+  EXPECT_EQ(unittest::TestAllTypes_NestedMessage::kBbFieldNumber, 1);
+  EXPECT_EQ(unittest::TestAllTypes::kOptionalInt32FieldNumber, 1);
+  EXPECT_EQ(unittest::TestAllTypes::kOptionalgroupFieldNumber, 16);
+  EXPECT_EQ(unittest::TestAllTypes::kOptionalNestedMessageFieldNumber, 18);
+  EXPECT_EQ(unittest::TestAllTypes::kOptionalNestedEnumFieldNumber, 21);
+  EXPECT_EQ(unittest::TestAllTypes::kRepeatedInt32FieldNumber, 31);
+  EXPECT_EQ(unittest::TestAllTypes::kRepeatedgroupFieldNumber, 46);
+  EXPECT_EQ(unittest::TestAllTypes::kRepeatedNestedMessageFieldNumber, 48);
+  EXPECT_EQ(unittest::TestAllTypes::kRepeatedNestedEnumFieldNumber, 51);
+}
+
+TEST(GeneratedMessageTest, ExtensionConstantValues) {
+  EXPECT_EQ(unittest::TestRequired::kSingleFieldNumber, 1000);
+  EXPECT_EQ(unittest::TestRequired::kMultiFieldNumber, 1001);
+  EXPECT_EQ(unittest::kOptionalInt32ExtensionFieldNumber, 1);
+  EXPECT_EQ(unittest::kOptionalgroupExtensionFieldNumber, 16);
+  EXPECT_EQ(unittest::kOptionalNestedMessageExtensionFieldNumber, 18);
+  EXPECT_EQ(unittest::kOptionalNestedEnumExtensionFieldNumber, 21);
+  EXPECT_EQ(unittest::kRepeatedInt32ExtensionFieldNumber, 31);
+  EXPECT_EQ(unittest::kRepeatedgroupExtensionFieldNumber, 46);
+  EXPECT_EQ(unittest::kRepeatedNestedMessageExtensionFieldNumber, 48);
+  EXPECT_EQ(unittest::kRepeatedNestedEnumExtensionFieldNumber, 51);
+}
+
 // ===================================================================
 
 TEST(GeneratedEnumTest, EnumValuesAsSwitchCases) {
@@ -801,6 +826,17 @@ TEST(GeneratedEnumTest, Parse) {
   EXPECT_TRUE(unittest::TestEnumWithDupValue_Parse("FOO2", &dup_value));
   EXPECT_EQ(unittest::FOO2, dup_value);
   EXPECT_FALSE(unittest::TestEnumWithDupValue_Parse("FOO", &dup_value));
+}
+
+TEST(GeneratedEnumTest, GetEnumDescriptor) {
+  EXPECT_EQ(unittest::TestAllTypes::NestedEnum_descriptor(),
+            GetEnumDescriptor<unittest::TestAllTypes::NestedEnum>());
+  EXPECT_EQ(unittest::ForeignEnum_descriptor(),
+            GetEnumDescriptor<unittest::ForeignEnum>());
+  EXPECT_EQ(unittest::TestEnumWithDupValue_descriptor(),
+            GetEnumDescriptor<unittest::TestEnumWithDupValue>());
+  EXPECT_EQ(unittest::TestSparseEnum_descriptor(),
+            GetEnumDescriptor<unittest::TestSparseEnum>());
 }
 
 #endif  // PROTOBUF_TEST_NO_DESCRIPTORS

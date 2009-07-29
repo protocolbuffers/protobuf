@@ -40,6 +40,8 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <string>
+#include <vector>
+#include <utility>
 
 namespace google {
 namespace protobuf {
@@ -104,6 +106,15 @@ class LIBPROTOC_EXPORT OutputDirectory {
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OutputDirectory);
 };
+
+// Several code generators treat the parameter argument as holding a
+// list of options separated by commas.  This helper function parses
+// a set of comma-delimited name/value pairs: e.g.,
+//   "foo=bar,baz,qux=corge"
+// parses to the pairs:
+//   ("foo", "bar"), ("baz", ""), ("qux", "corge")
+extern void ParseGeneratorParameter(const string&,
+				    vector<pair<string, string> >*);
 
 }  // namespace compiler
 }  // namespace protobuf

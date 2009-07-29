@@ -18,9 +18,10 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
-#include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_message_reflection.h>
 
 namespace google {
 namespace protobuf {
@@ -69,11 +70,11 @@ enum FieldDescriptorProto_Type {
   FieldDescriptorProto_Type_TYPE_SINT32 = 17,
   FieldDescriptorProto_Type_TYPE_SINT64 = 18
 };
-LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor();
 LIBPROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = FieldDescriptorProto_Type_TYPE_DOUBLE;
 const FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = FieldDescriptorProto_Type_TYPE_SINT64;
 
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor();
 inline const ::std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
   return ::google::protobuf::internal::NameOfEnum(
     FieldDescriptorProto_Type_descriptor(), value);
@@ -88,11 +89,11 @@ enum FieldDescriptorProto_Label {
   FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
   FieldDescriptorProto_Label_LABEL_REPEATED = 3
 };
-LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Label_descriptor();
 LIBPROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
 const FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN = FieldDescriptorProto_Label_LABEL_OPTIONAL;
 const FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = FieldDescriptorProto_Label_LABEL_REPEATED;
 
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Label_descriptor();
 inline const ::std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
   return ::google::protobuf::internal::NameOfEnum(
     FieldDescriptorProto_Label_descriptor(), value);
@@ -104,13 +105,14 @@ inline bool FieldDescriptorProto_Label_Parse(
 }
 enum FileOptions_OptimizeMode {
   FileOptions_OptimizeMode_SPEED = 1,
-  FileOptions_OptimizeMode_CODE_SIZE = 2
+  FileOptions_OptimizeMode_CODE_SIZE = 2,
+  FileOptions_OptimizeMode_LITE_RUNTIME = 3
 };
-LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FileOptions_OptimizeMode_descriptor();
 LIBPROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
 const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN = FileOptions_OptimizeMode_SPEED;
-const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = FileOptions_OptimizeMode_CODE_SIZE;
+const FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = FileOptions_OptimizeMode_LITE_RUNTIME;
 
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FileOptions_OptimizeMode_descriptor();
 inline const ::std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
   return ::google::protobuf::internal::NameOfEnum(
     FileOptions_OptimizeMode_descriptor(), value);
@@ -124,11 +126,11 @@ enum FieldOptions_CType {
   FieldOptions_CType_CORD = 1,
   FieldOptions_CType_STRING_PIECE = 2
 };
-LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldOptions_CType_descriptor();
 LIBPROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
 const FieldOptions_CType FieldOptions_CType_CType_MIN = FieldOptions_CType_CORD;
 const FieldOptions_CType FieldOptions_CType_CType_MAX = FieldOptions_CType_STRING_PIECE;
 
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* FieldOptions_CType_descriptor();
 inline const ::std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
   return ::google::protobuf::internal::NameOfEnum(
     FieldOptions_CType_descriptor(), value);
@@ -187,8 +189,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -212,6 +213,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -277,8 +279,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -384,6 +385,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -449,8 +451,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -479,6 +480,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -544,8 +546,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -635,6 +636,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -700,8 +702,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -724,12 +725,16 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   static const Type TYPE_SFIXED64 = FieldDescriptorProto_Type_TYPE_SFIXED64;
   static const Type TYPE_SINT32 = FieldDescriptorProto_Type_TYPE_SINT32;
   static const Type TYPE_SINT64 = FieldDescriptorProto_Type_TYPE_SINT64;
+  static inline bool Type_IsValid(int value) {
+    return FieldDescriptorProto_Type_IsValid(value);
+  }
+  static const Type Type_MIN =
+    FieldDescriptorProto_Type_Type_MIN;
+  static const Type Type_MAX =
+    FieldDescriptorProto_Type_Type_MAX;
   static inline const ::google::protobuf::EnumDescriptor*
   Type_descriptor() {
     return FieldDescriptorProto_Type_descriptor();
-  }
-  static inline bool Type_IsValid(int value) {
-    return FieldDescriptorProto_Type_IsValid(value);
   }
   static inline const ::std::string& Type_Name(Type value) {
     return FieldDescriptorProto_Type_Name(value);
@@ -738,21 +743,21 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
       Type* value) {
     return FieldDescriptorProto_Type_Parse(name, value);
   }
-  static const Type Type_MIN =
-    FieldDescriptorProto_Type_Type_MIN;
-  static const Type Type_MAX =
-    FieldDescriptorProto_Type_Type_MAX;
   
   typedef FieldDescriptorProto_Label Label;
   static const Label LABEL_OPTIONAL = FieldDescriptorProto_Label_LABEL_OPTIONAL;
   static const Label LABEL_REQUIRED = FieldDescriptorProto_Label_LABEL_REQUIRED;
   static const Label LABEL_REPEATED = FieldDescriptorProto_Label_LABEL_REPEATED;
+  static inline bool Label_IsValid(int value) {
+    return FieldDescriptorProto_Label_IsValid(value);
+  }
+  static const Label Label_MIN =
+    FieldDescriptorProto_Label_Label_MIN;
+  static const Label Label_MAX =
+    FieldDescriptorProto_Label_Label_MAX;
   static inline const ::google::protobuf::EnumDescriptor*
   Label_descriptor() {
     return FieldDescriptorProto_Label_descriptor();
-  }
-  static inline bool Label_IsValid(int value) {
-    return FieldDescriptorProto_Label_IsValid(value);
   }
   static inline const ::std::string& Label_Name(Label value) {
     return FieldDescriptorProto_Label_Name(value);
@@ -761,10 +766,6 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
       Label* value) {
     return FieldDescriptorProto_Label_Parse(name, value);
   }
-  static const Label Label_MIN =
-    FieldDescriptorProto_Label_Label_MIN;
-  static const Label Label_MAX =
-    FieldDescriptorProto_Label_Label_MAX;
   
   // accessors -------------------------------------------------------
   
@@ -855,6 +856,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -920,8 +922,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -965,6 +966,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1030,8 +1032,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1072,6 +1073,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1137,8 +1139,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1182,6 +1183,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1247,8 +1249,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1305,6 +1306,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1370,20 +1372,24 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
   typedef FileOptions_OptimizeMode OptimizeMode;
   static const OptimizeMode SPEED = FileOptions_OptimizeMode_SPEED;
   static const OptimizeMode CODE_SIZE = FileOptions_OptimizeMode_CODE_SIZE;
+  static const OptimizeMode LITE_RUNTIME = FileOptions_OptimizeMode_LITE_RUNTIME;
+  static inline bool OptimizeMode_IsValid(int value) {
+    return FileOptions_OptimizeMode_IsValid(value);
+  }
+  static const OptimizeMode OptimizeMode_MIN =
+    FileOptions_OptimizeMode_OptimizeMode_MIN;
+  static const OptimizeMode OptimizeMode_MAX =
+    FileOptions_OptimizeMode_OptimizeMode_MAX;
   static inline const ::google::protobuf::EnumDescriptor*
   OptimizeMode_descriptor() {
     return FileOptions_OptimizeMode_descriptor();
-  }
-  static inline bool OptimizeMode_IsValid(int value) {
-    return FileOptions_OptimizeMode_IsValid(value);
   }
   static inline const ::std::string& OptimizeMode_Name(OptimizeMode value) {
     return FileOptions_OptimizeMode_Name(value);
@@ -1392,10 +1398,6 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
       OptimizeMode* value) {
     return FileOptions_OptimizeMode_Parse(name, value);
   }
-  static const OptimizeMode OptimizeMode_MIN =
-    FileOptions_OptimizeMode_OptimizeMode_MIN;
-  static const OptimizeMode OptimizeMode_MAX =
-    FileOptions_OptimizeMode_OptimizeMode_MAX;
   
   // accessors -------------------------------------------------------
   
@@ -1459,6 +1461,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1524,8 +1527,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1537,6 +1539,13 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   static const int kMessageSetWireFormatFieldNumber = 1;
   inline bool message_set_wire_format() const;
   inline void set_message_set_wire_format(bool value);
+  
+  // optional bool no_standard_descriptor_accessor = 2 [default = false];
+  inline bool has_no_standard_descriptor_accessor() const;
+  inline void clear_no_standard_descriptor_accessor();
+  static const int kNoStandardDescriptorAccessorFieldNumber = 2;
+  inline bool no_standard_descriptor_accessor() const;
+  inline void set_no_standard_descriptor_accessor(bool value);
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   inline int uninterpreted_option_size() const;
@@ -1555,11 +1564,13 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   mutable int _cached_size_;
   
   bool message_set_wire_format_;
+  bool no_standard_descriptor_accessor_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1624,20 +1635,23 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
   typedef FieldOptions_CType CType;
   static const CType CORD = FieldOptions_CType_CORD;
   static const CType STRING_PIECE = FieldOptions_CType_STRING_PIECE;
+  static inline bool CType_IsValid(int value) {
+    return FieldOptions_CType_IsValid(value);
+  }
+  static const CType CType_MIN =
+    FieldOptions_CType_CType_MIN;
+  static const CType CType_MAX =
+    FieldOptions_CType_CType_MAX;
   static inline const ::google::protobuf::EnumDescriptor*
   CType_descriptor() {
     return FieldOptions_CType_descriptor();
-  }
-  static inline bool CType_IsValid(int value) {
-    return FieldOptions_CType_IsValid(value);
   }
   static inline const ::std::string& CType_Name(CType value) {
     return FieldOptions_CType_Name(value);
@@ -1646,10 +1660,6 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
       CType* value) {
     return FieldOptions_CType_Parse(name, value);
   }
-  static const CType CType_MIN =
-    FieldOptions_CType_CType_MIN;
-  static const CType CType_MAX =
-    FieldOptions_CType_CType_MAX;
   
   // accessors -------------------------------------------------------
   
@@ -1709,6 +1719,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1774,8 +1785,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1801,6 +1811,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1866,8 +1877,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1893,6 +1903,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -1958,8 +1969,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -1985,6 +1995,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2050,8 +2061,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -2077,6 +2087,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2142,8 +2153,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -2176,6 +2186,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -2241,8 +2252,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   void SetCachedSize(int size) const { _cached_size_ = size; }
   public:
   
-  const ::google::protobuf::Descriptor* GetDescriptor() const;
-  const ::google::protobuf::Reflection* GetReflection() const;
+  ::google::protobuf::Metadata GetMetadata() const;
   
   // nested types ----------------------------------------------------
   
@@ -2316,6 +2326,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
   ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
@@ -3647,6 +3658,22 @@ inline void MessageOptions::set_message_set_wire_format(bool value) {
   message_set_wire_format_ = value;
 }
 
+// optional bool no_standard_descriptor_accessor = 2 [default = false];
+inline bool MessageOptions::has_no_standard_descriptor_accessor() const {
+  return _has_bit(1);
+}
+inline void MessageOptions::clear_no_standard_descriptor_accessor() {
+  no_standard_descriptor_accessor_ = false;
+  _clear_bit(1);
+}
+inline bool MessageOptions::no_standard_descriptor_accessor() const {
+  return no_standard_descriptor_accessor_;
+}
+inline void MessageOptions::set_no_standard_descriptor_accessor(bool value) {
+  _set_bit(1);
+  no_standard_descriptor_accessor_ = value;
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int MessageOptions::uninterpreted_option_size() const {
   return uninterpreted_option_.size();
@@ -4134,4 +4161,30 @@ inline ::std::string* UninterpretedOption::mutable_string_value() {
 
 }  // namespace protobuf
 }  // namespace google
+
+#ifndef SWIG
+namespace google {
+namespace protobuf {
+
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::FieldDescriptorProto_Type>() {
+  return ::google::protobuf::FieldDescriptorProto_Type_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::FieldDescriptorProto_Label>() {
+  return ::google::protobuf::FieldDescriptorProto_Label_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::FileOptions_OptimizeMode>() {
+  return ::google::protobuf::FileOptions_OptimizeMode_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::FieldOptions_CType>() {
+  return ::google::protobuf::FieldOptions_CType_descriptor();
+}
+
+}  // namespace google
+}  // namespace protobuf
+#endif  // SWIG
+
 #endif  // PROTOBUF_google_2fprotobuf_2fdescriptor_2eproto__INCLUDED

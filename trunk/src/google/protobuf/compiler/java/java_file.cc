@@ -151,7 +151,9 @@ void FileGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     "public static void registerAllExtensions(\n"
-    "    com.google.protobuf.ExtensionRegistry registry) {\n");
+    "    com.google.protobuf.ExtensionRegistry$lite$ registry) {\n",
+    "lite", HasDescriptorMethods(file_) ? "" : "Lite");
+
   printer->Indent();
 
   for (int i = 0; i < file_->extension_count(); i++) {
@@ -195,8 +197,42 @@ void FileGenerator::Generate(io::Printer* printer) {
 
   printer->Print("\n");
 
-  // -----------------------------------------------------------------
+  if (HasDescriptorMethods(file_)) {
+    GenerateEmbeddedDescriptor(printer);
+  } else {
+    printer->Print(
+      "static {\n");
+    printer->Indent();
 
+    for (int i = 0; i < file_->message_type_count(); i++) {
+      // TODO(kenton):  Reuse MessageGenerator objects?
+      MessageGenerator(file_->message_type(i))
+        .GenerateStaticVariableInitializers(printer);
+    }
+
+    for (int i = 0; i < file_->extension_count(); i++) {
+      // TODO(kenton):  Reuse ExtensionGenerator objects?
+      ExtensionGenerator(file_->extension(i))
+        .GenerateInitializationCode(printer);
+    }
+
+    printer->Outdent();
+    printer->Print(
+      "}\n");
+  }
+
+  // Dummy function we can use to force the static initialization block to
+  // run.  Needed by inner classes.  Cannot be private due to
+  // java_multiple_files option.
+  printer->Print(
+    "\n"
+    "public static void internalForceInit() {}\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void FileGenerator::GenerateEmbeddedDescriptor(io::Printer* printer) {
   // Embed the descriptor.  We simply serialize the entire FileDescriptorProto
   // and embed it as a string literal, which is parsed and built into real
   // descriptors at initialization time.  We unfortunately have to put it in
@@ -310,9 +346,6 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print(
     "}\n");
-
-  printer->Outdent();
-  printer->Print("}\n");
 }
 
 template<typename GeneratorClass, typename DescriptorClass>

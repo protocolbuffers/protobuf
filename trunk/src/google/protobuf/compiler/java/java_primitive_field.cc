@@ -39,9 +39,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format_inl.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 namespace google {
 namespace protobuf {
@@ -49,6 +48,7 @@ namespace compiler {
 namespace java {
 
 using internal::WireFormat;
+using internal::WireFormatLite;
 
 namespace {
 
@@ -121,16 +121,6 @@ const char* GetCapitalizedType(const FieldDescriptor* field) {
   return NULL;
 }
 
-bool AllPrintableAscii(const string& text) {
-  // Cannot use isprint() because it's locale-specific.  :(
-  for (int i = 0; i < text.size(); i++) {
-    if ((text[i] < 0x20) || text[i] >= 0x7F) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // For encodings with fixed sizes, returns that size in bytes.  Otherwise
 // returns -1.
 int FixedSize(FieldDescriptor::Type type) {
@@ -141,14 +131,14 @@ int FixedSize(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_UINT64  : return -1;
     case FieldDescriptor::TYPE_SINT32  : return -1;
     case FieldDescriptor::TYPE_SINT64  : return -1;
-    case FieldDescriptor::TYPE_FIXED32 : return WireFormat::kFixed32Size;
-    case FieldDescriptor::TYPE_FIXED64 : return WireFormat::kFixed64Size;
-    case FieldDescriptor::TYPE_SFIXED32: return WireFormat::kSFixed32Size;
-    case FieldDescriptor::TYPE_SFIXED64: return WireFormat::kSFixed64Size;
-    case FieldDescriptor::TYPE_FLOAT   : return WireFormat::kFloatSize;
-    case FieldDescriptor::TYPE_DOUBLE  : return WireFormat::kDoubleSize;
+    case FieldDescriptor::TYPE_FIXED32 : return WireFormatLite::kFixed32Size;
+    case FieldDescriptor::TYPE_FIXED64 : return WireFormatLite::kFixed64Size;
+    case FieldDescriptor::TYPE_SFIXED32: return WireFormatLite::kSFixed32Size;
+    case FieldDescriptor::TYPE_SFIXED64: return WireFormatLite::kSFixed64Size;
+    case FieldDescriptor::TYPE_FLOAT   : return WireFormatLite::kFloatSize;
+    case FieldDescriptor::TYPE_DOUBLE  : return WireFormatLite::kDoubleSize;
 
-    case FieldDescriptor::TYPE_BOOL    : return WireFormat::kBoolSize;
+    case FieldDescriptor::TYPE_BOOL    : return WireFormatLite::kBoolSize;
     case FieldDescriptor::TYPE_ENUM    : return -1;
 
     case FieldDescriptor::TYPE_STRING  : return -1;
@@ -161,64 +151,6 @@ int FixedSize(FieldDescriptor::Type type) {
   }
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return -1;
-}
-
-string DefaultValue(const FieldDescriptor* field) {
-  // Switch on cpp_type since we need to know which default_value_* method
-  // of FieldDescriptor to call.
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      return SimpleItoa(field->default_value_int32());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      // Need to print as a signed int since Java has no unsigned.
-      return SimpleItoa(static_cast<int32>(field->default_value_uint32()));
-    case FieldDescriptor::CPPTYPE_INT64:
-      return SimpleItoa(field->default_value_int64()) + "L";
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(static_cast<int64>(field->default_value_uint64())) +
-             "L";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return SimpleDtoa(field->default_value_double()) + "D";
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return SimpleFtoa(field->default_value_float()) + "F";
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return field->default_value_bool() ? "true" : "false";
-    case FieldDescriptor::CPPTYPE_STRING: {
-      bool isBytes = field->type() == FieldDescriptor::TYPE_BYTES;
-
-      if (!isBytes && AllPrintableAscii(field->default_value_string())) {
-        // All chars are ASCII and printable.  In this case CEscape() works
-        // fine (it will only escape quotes and backslashes).
-        // Note:  If this "optimization" is removed, DescriptorProtos will
-        //   no longer be able to initialize itself due to bootstrapping
-        //   problems.
-        return "\"" + CEscape(field->default_value_string()) + "\"";
-      }
-
-      if (isBytes && !field->has_default_value()) {
-        return "com.google.protobuf.ByteString.EMPTY";
-      }
-
-      // Escaping strings correctly for Java and generating efficient
-      // initializers for ByteStrings are both tricky.  We can sidestep the
-      // whole problem by just grabbing the default value from the descriptor.
-      return strings::Substitute(
-        "(($0) $1.getDescriptor().getFields().get($2).getDefaultValue())",
-        isBytes ? "com.google.protobuf.ByteString" : "java.lang.String",
-        ClassName(field->containing_type()), field->index());
-    }
-
-    case FieldDescriptor::CPPTYPE_ENUM:
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      GOOGLE_LOG(FATAL) << "Can't get here.";
-      return "";
-
-    // No default because we want the compiler to complain if any new
-    // types are added.
-  }
-
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return "";
 }
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
@@ -285,8 +217,17 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  return this;\n"
     "}\n"
     "public Builder clear$capitalized_name$() {\n"
-    "  result.has$capitalized_name$ = false;\n"
-    "  result.$name$_ = $default$;\n"
+    "  result.has$capitalized_name$ = false;\n");
+  if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    // The default value is not a simple literal so we want to avoid executing
+    // it multiple times.  Instead, get the default out of the default instance.
+    printer->Print(variables_,
+      "  result.$name$_ = getDefaultInstance().get$capitalized_name$();\n");
+  } else {
+    printer->Print(variables_,
+      "  result.$name$_ = $default$;\n");
+  }
+  printer->Print(variables_,
     "  return this;\n"
     "}\n");
 }
@@ -355,7 +296,7 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
 
   if (descriptor_->options().packed() &&
-      descriptor_->file()->options().optimize_for() == FileOptions::SPEED) {
+      HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
   }

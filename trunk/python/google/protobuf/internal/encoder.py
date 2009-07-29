@@ -123,11 +123,13 @@ class Encoder(object):
 
   def AppendFloatNoTag(self, value):
     """Appends a floating-point number to our buffer."""
-    self._stream.AppendRawBytes(struct.pack('f', value))
+    self._stream.AppendRawBytes(
+        struct.pack(wire_format.FORMAT_FLOAT_LITTLE_ENDIAN, value))
 
   def AppendDoubleNoTag(self, value):
     """Appends a double-precision floating-point number to our buffer."""
-    self._stream.AppendRawBytes(struct.pack('d', value))
+    self._stream.AppendRawBytes(
+        struct.pack(wire_format.FORMAT_DOUBLE_LITTLE_ENDIAN, value))
 
   def AppendBoolNoTag(self, value):
     """Appends a boolean to our buffer."""

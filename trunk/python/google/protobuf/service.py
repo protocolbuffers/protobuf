@@ -67,8 +67,6 @@ class Service(object):
     and "done" will later be called with the response value.
 
     In the blocking case, RpcException will be raised on error.
-    Asynchronous calls must check status via the Failed method of the
-    RpcController.
 
     Preconditions:
     * method_descriptor.service == GetDescriptor
@@ -82,6 +80,9 @@ class Service(object):
     Postconditions:
     * "done" will be called when the method is complete.  This may be
       before CallMethod() returns or it may be at some point in the future.
+    * If the RPC failed, the response value passed to "done" will be None.
+      Further details about the failure can be found by querying the
+      RpcController.
     """
     raise NotImplementedError
 

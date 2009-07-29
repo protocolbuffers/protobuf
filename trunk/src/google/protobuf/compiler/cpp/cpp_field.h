@@ -35,6 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
+#include <map>
+#include <string>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 
@@ -48,6 +51,13 @@ namespace protobuf {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+// Helper function: set variables in the map that are the same for all
+// field code generators.
+// ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
+// 'deprecation'].
+void SetCommonFieldVariables(const FieldDescriptor* descriptor,
+                             map<string, string>* variables);
 
 class FieldGenerator {
  public:

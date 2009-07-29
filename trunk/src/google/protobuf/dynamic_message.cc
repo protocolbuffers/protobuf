@@ -70,6 +70,7 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/repeated_field.h>
@@ -82,7 +83,6 @@ namespace protobuf {
 using internal::WireFormat;
 using internal::ExtensionSet;
 using internal::GeneratedMessageReflection;
-using internal::GenericRepeatedField;
 
 
 // ===================================================================
@@ -186,8 +186,7 @@ class DynamicMessage : public Message {
   int GetCachedSize() const;
   void SetCachedSize(int size) const;
 
-  const Descriptor* GetDescriptor() const;
-  const Reflection* GetReflection() const;
+  Metadata GetMetadata() const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
@@ -279,20 +278,10 @@ DynamicMessage::DynamicMessage(const TypeInfo* type_info)
         break;
 
       case FieldDescriptor::CPPTYPE_MESSAGE: {
-        // If this object is the prototype, its CPPTYPE_MESSAGE fields
-        // must be initialized later, in CrossLinkPrototypes(), so we don't
-        // initialize them here.
-        if (!is_prototype()) {
-          if (!field->is_repeated()) {
-            new(field_ptr) Message*(NULL);
-          } else {
-            const RepeatedPtrField<Message>* prototype_field =
-              reinterpret_cast<const RepeatedPtrField<Message>*>(
-                type_info_->prototype->OffsetToPointer(
-                  type_info_->offsets[i]));
-            new(field_ptr) RepeatedPtrField<Message>(
-              prototype_field->prototype());
-          }
+        if (!field->is_repeated()) {
+          new(field_ptr) Message*(NULL);
+        } else {
+          new(field_ptr) RepeatedPtrField<Message>();
         }
         break;
       }
@@ -322,9 +311,33 @@ DynamicMessage::~DynamicMessage() {
     void* field_ptr = OffsetToPointer(type_info_->offsets[i]);
 
     if (field->is_repeated()) {
-      GenericRepeatedField* field =
-        reinterpret_cast<GenericRepeatedField*>(field_ptr);
-      field->~GenericRepeatedField();
+      switch (field->cpp_type()) {
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                     \
+        case FieldDescriptor::CPPTYPE_##UPPERCASE :                           \
+          reinterpret_cast<RepeatedField<LOWERCASE>*>(field_ptr)              \
+              ->~RepeatedField<LOWERCASE>();                                  \
+          break
+
+        HANDLE_TYPE( INT32,  int32);
+        HANDLE_TYPE( INT64,  int64);
+        HANDLE_TYPE(UINT32, uint32);
+        HANDLE_TYPE(UINT64, uint64);
+        HANDLE_TYPE(DOUBLE, double);
+        HANDLE_TYPE( FLOAT,  float);
+        HANDLE_TYPE(  BOOL,   bool);
+        HANDLE_TYPE(  ENUM,    int);
+#undef HANDLE_TYPE
+
+        case FieldDescriptor::CPPTYPE_STRING:
+            reinterpret_cast<RepeatedPtrField<string>*>(field_ptr)
+                ->~RepeatedPtrField<string>();
+          break;
+
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          reinterpret_cast<RepeatedPtrField<Message>*>(field_ptr)
+              ->~RepeatedPtrField<Message>();
+          break;
+      }
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
         string* ptr = *reinterpret_cast<string**>(field_ptr);
@@ -353,24 +366,14 @@ void DynamicMessage::CrossLinkPrototypes() {
     const FieldDescriptor* field = descriptor->field(i);
     void* field_ptr = OffsetToPointer(type_info_->offsets[i]);
 
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !field->is_repeated()) {
       // For fields with message types, we need to cross-link with the
       // prototype for the field's type.
-      const Message* field_prototype =
+      // For singular fields, the field is just a pointer which should
+      // point to the prototype.
+      *reinterpret_cast<const Message**>(field_ptr) =
         factory->GetPrototype(field->message_type());
-
-      if (field->is_repeated()) {
-        // For repeated fields, we actually construct the RepeatedPtrField
-        // here, but only for fields with message types.  All other repeated
-        // fields are constructed in DynamicMessage's constructor.
-        new(field_ptr) RepeatedPtrField<Message>(field_prototype);
-      } else {
-        // For singular fields, the field is just a pointer which should
-        // point to the prototype.  (OK to const_cast here because the
-        // prototype itself will only be available const to the outside
-        // world.)
-        new(field_ptr) Message*(const_cast<Message*>(field_prototype));
-      }
     }
   }
 }
@@ -392,12 +395,11 @@ void DynamicMessage::SetCachedSize(int size) const {
   cached_byte_size_ = size;
 }
 
-const Descriptor* DynamicMessage::GetDescriptor() const {
-  return type_info_->type;
-}
-
-const Reflection* DynamicMessage::GetReflection() const {
-  return type_info_->reflection.get();
+Metadata DynamicMessage::GetMetadata() const {
+  Metadata metadata;
+  metadata.descriptor = type_info_->type;
+  metadata.reflection = type_info_->reflection.get();
+  return metadata;
 }
 
 // ===================================================================

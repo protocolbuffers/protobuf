@@ -38,6 +38,7 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import os.path
 
+import unittest
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 
@@ -351,6 +352,200 @@ def ExpectAllFieldsAndExtensionsInOrder(serialized):
   if expected != serialized:
     raise ValueError('Expected %r, found %r' % (expected, serialized))
 
+
+class GoldenMessageTestCase(unittest.TestCase):
+  """This adds methods to TestCase useful for verifying our Golden Message."""
+
+  def ExpectAllFieldsSet(self, message):
+    """Check all fields for correct values have after Set*Fields() is called."""
+    self.assertTrue(message.HasField('optional_int32'))
+    self.assertTrue(message.HasField('optional_int64'))
+    self.assertTrue(message.HasField('optional_uint32'))
+    self.assertTrue(message.HasField('optional_uint64'))
+    self.assertTrue(message.HasField('optional_sint32'))
+    self.assertTrue(message.HasField('optional_sint64'))
+    self.assertTrue(message.HasField('optional_fixed32'))
+    self.assertTrue(message.HasField('optional_fixed64'))
+    self.assertTrue(message.HasField('optional_sfixed32'))
+    self.assertTrue(message.HasField('optional_sfixed64'))
+    self.assertTrue(message.HasField('optional_float'))
+    self.assertTrue(message.HasField('optional_double'))
+    self.assertTrue(message.HasField('optional_bool'))
+    self.assertTrue(message.HasField('optional_string'))
+    self.assertTrue(message.HasField('optional_bytes'))
+
+    self.assertTrue(message.HasField('optionalgroup'))
+    self.assertTrue(message.HasField('optional_nested_message'))
+    self.assertTrue(message.HasField('optional_foreign_message'))
+    self.assertTrue(message.HasField('optional_import_message'))
+
+    self.assertTrue(message.optionalgroup.HasField('a'))
+    self.assertTrue(message.optional_nested_message.HasField('bb'))
+    self.assertTrue(message.optional_foreign_message.HasField('c'))
+    self.assertTrue(message.optional_import_message.HasField('d'))
+
+    self.assertTrue(message.HasField('optional_nested_enum'))
+    self.assertTrue(message.HasField('optional_foreign_enum'))
+    self.assertTrue(message.HasField('optional_import_enum'))
+
+    self.assertTrue(message.HasField('optional_string_piece'))
+    self.assertTrue(message.HasField('optional_cord'))
+
+    self.assertEqual(101, message.optional_int32)
+    self.assertEqual(102, message.optional_int64)
+    self.assertEqual(103, message.optional_uint32)
+    self.assertEqual(104, message.optional_uint64)
+    self.assertEqual(105, message.optional_sint32)
+    self.assertEqual(106, message.optional_sint64)
+    self.assertEqual(107, message.optional_fixed32)
+    self.assertEqual(108, message.optional_fixed64)
+    self.assertEqual(109, message.optional_sfixed32)
+    self.assertEqual(110, message.optional_sfixed64)
+    self.assertEqual(111, message.optional_float)
+    self.assertEqual(112, message.optional_double)
+    self.assertEqual(True, message.optional_bool)
+    self.assertEqual('115', message.optional_string)
+    self.assertEqual('116', message.optional_bytes)
+
+    self.assertEqual(117, message.optionalgroup.a);
+    self.assertEqual(118, message.optional_nested_message.bb)
+    self.assertEqual(119, message.optional_foreign_message.c)
+    self.assertEqual(120, message.optional_import_message.d)
+
+    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
+                     message.optional_nested_enum)
+    self.assertEqual(unittest_pb2.FOREIGN_BAZ, message.optional_foreign_enum)
+    self.assertEqual(unittest_import_pb2.IMPORT_BAZ,
+                     message.optional_import_enum)
+
+    # -----------------------------------------------------------------
+
+    self.assertEqual(2, len(message.repeated_int32))
+    self.assertEqual(2, len(message.repeated_int64))
+    self.assertEqual(2, len(message.repeated_uint32))
+    self.assertEqual(2, len(message.repeated_uint64))
+    self.assertEqual(2, len(message.repeated_sint32))
+    self.assertEqual(2, len(message.repeated_sint64))
+    self.assertEqual(2, len(message.repeated_fixed32))
+    self.assertEqual(2, len(message.repeated_fixed64))
+    self.assertEqual(2, len(message.repeated_sfixed32))
+    self.assertEqual(2, len(message.repeated_sfixed64))
+    self.assertEqual(2, len(message.repeated_float))
+    self.assertEqual(2, len(message.repeated_double))
+    self.assertEqual(2, len(message.repeated_bool))
+    self.assertEqual(2, len(message.repeated_string))
+    self.assertEqual(2, len(message.repeated_bytes))
+
+    self.assertEqual(2, len(message.repeatedgroup))
+    self.assertEqual(2, len(message.repeated_nested_message))
+    self.assertEqual(2, len(message.repeated_foreign_message))
+    self.assertEqual(2, len(message.repeated_import_message))
+    self.assertEqual(2, len(message.repeated_nested_enum))
+    self.assertEqual(2, len(message.repeated_foreign_enum))
+    self.assertEqual(2, len(message.repeated_import_enum))
+
+    self.assertEqual(2, len(message.repeated_string_piece))
+    self.assertEqual(2, len(message.repeated_cord))
+
+    self.assertEqual(201, message.repeated_int32[0])
+    self.assertEqual(202, message.repeated_int64[0])
+    self.assertEqual(203, message.repeated_uint32[0])
+    self.assertEqual(204, message.repeated_uint64[0])
+    self.assertEqual(205, message.repeated_sint32[0])
+    self.assertEqual(206, message.repeated_sint64[0])
+    self.assertEqual(207, message.repeated_fixed32[0])
+    self.assertEqual(208, message.repeated_fixed64[0])
+    self.assertEqual(209, message.repeated_sfixed32[0])
+    self.assertEqual(210, message.repeated_sfixed64[0])
+    self.assertEqual(211, message.repeated_float[0])
+    self.assertEqual(212, message.repeated_double[0])
+    self.assertEqual(True, message.repeated_bool[0])
+    self.assertEqual('215', message.repeated_string[0])
+    self.assertEqual('216', message.repeated_bytes[0])
+
+    self.assertEqual(217, message.repeatedgroup[0].a)
+    self.assertEqual(218, message.repeated_nested_message[0].bb)
+    self.assertEqual(219, message.repeated_foreign_message[0].c)
+    self.assertEqual(220, message.repeated_import_message[0].d)
+
+    self.assertEqual(unittest_pb2.TestAllTypes.BAR,
+                     message.repeated_nested_enum[0])
+    self.assertEqual(unittest_pb2.FOREIGN_BAR,
+                     message.repeated_foreign_enum[0])
+    self.assertEqual(unittest_import_pb2.IMPORT_BAR,
+                     message.repeated_import_enum[0])
+
+    self.assertEqual(301, message.repeated_int32[1])
+    self.assertEqual(302, message.repeated_int64[1])
+    self.assertEqual(303, message.repeated_uint32[1])
+    self.assertEqual(304, message.repeated_uint64[1])
+    self.assertEqual(305, message.repeated_sint32[1])
+    self.assertEqual(306, message.repeated_sint64[1])
+    self.assertEqual(307, message.repeated_fixed32[1])
+    self.assertEqual(308, message.repeated_fixed64[1])
+    self.assertEqual(309, message.repeated_sfixed32[1])
+    self.assertEqual(310, message.repeated_sfixed64[1])
+    self.assertEqual(311, message.repeated_float[1])
+    self.assertEqual(312, message.repeated_double[1])
+    self.assertEqual(False, message.repeated_bool[1])
+    self.assertEqual('315', message.repeated_string[1])
+    self.assertEqual('316', message.repeated_bytes[1])
+
+    self.assertEqual(317, message.repeatedgroup[1].a)
+    self.assertEqual(318, message.repeated_nested_message[1].bb)
+    self.assertEqual(319, message.repeated_foreign_message[1].c)
+    self.assertEqual(320, message.repeated_import_message[1].d)
+
+    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
+                     message.repeated_nested_enum[1])
+    self.assertEqual(unittest_pb2.FOREIGN_BAZ,
+                     message.repeated_foreign_enum[1])
+    self.assertEqual(unittest_import_pb2.IMPORT_BAZ,
+                     message.repeated_import_enum[1])
+
+    # -----------------------------------------------------------------
+
+    self.assertTrue(message.HasField('default_int32'))
+    self.assertTrue(message.HasField('default_int64'))
+    self.assertTrue(message.HasField('default_uint32'))
+    self.assertTrue(message.HasField('default_uint64'))
+    self.assertTrue(message.HasField('default_sint32'))
+    self.assertTrue(message.HasField('default_sint64'))
+    self.assertTrue(message.HasField('default_fixed32'))
+    self.assertTrue(message.HasField('default_fixed64'))
+    self.assertTrue(message.HasField('default_sfixed32'))
+    self.assertTrue(message.HasField('default_sfixed64'))
+    self.assertTrue(message.HasField('default_float'))
+    self.assertTrue(message.HasField('default_double'))
+    self.assertTrue(message.HasField('default_bool'))
+    self.assertTrue(message.HasField('default_string'))
+    self.assertTrue(message.HasField('default_bytes'))
+
+    self.assertTrue(message.HasField('default_nested_enum'))
+    self.assertTrue(message.HasField('default_foreign_enum'))
+    self.assertTrue(message.HasField('default_import_enum'))
+
+    self.assertEqual(401, message.default_int32)
+    self.assertEqual(402, message.default_int64)
+    self.assertEqual(403, message.default_uint32)
+    self.assertEqual(404, message.default_uint64)
+    self.assertEqual(405, message.default_sint32)
+    self.assertEqual(406, message.default_sint64)
+    self.assertEqual(407, message.default_fixed32)
+    self.assertEqual(408, message.default_fixed64)
+    self.assertEqual(409, message.default_sfixed32)
+    self.assertEqual(410, message.default_sfixed64)
+    self.assertEqual(411, message.default_float)
+    self.assertEqual(412, message.default_double)
+    self.assertEqual(False, message.default_bool)
+    self.assertEqual('415', message.default_string)
+    self.assertEqual('416', message.default_bytes)
+
+    self.assertEqual(unittest_pb2.TestAllTypes.FOO, message.default_nested_enum)
+    self.assertEqual(unittest_pb2.FOREIGN_FOO, message.default_foreign_enum)
+    self.assertEqual(unittest_import_pb2.IMPORT_FOO,
+                     message.default_import_enum)
+
 def GoldenFile(filename):
   """Finds the given golden file and returns a file object representing it."""
 
@@ -359,7 +554,8 @@ def GoldenFile(filename):
   while os.path.exists(path):
     if os.path.exists(os.path.join(path, 'src/google/protobuf')):
       # Found it.  Load the golden file from the testdata directory.
-      return file(os.path.join(path, 'src/google/protobuf/testdata', filename))
+      full_path = os.path.join(path, 'src/google/protobuf/testdata', filename)
+      return open(full_path, 'rb')
     path = os.path.join(path, '..')
 
   raise RuntimeError(

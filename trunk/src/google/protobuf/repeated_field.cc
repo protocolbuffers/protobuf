@@ -33,30 +33,51 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
-
-// HP C++ on Tru64 can't handle the stuff below being defined out-of-line, so
-// on that platform everything is defined in repeated_field.h.  On other
-// platforms, we want these to be out-of-line to avoid code bloat.
-#if !defined(__DECCXX) || !defined(__osf__)
-
 namespace internal {
 
-GenericRepeatedField::~GenericRepeatedField() {}
+void RepeatedPtrFieldBase::Swap(RepeatedPtrFieldBase* other) {
+  void** swap_elements       = elements_;
+  int    swap_current_size   = current_size_;
+  int    swap_allocated_size = allocated_size_;
+  int    swap_total_size     = total_size_;
+  // We may not be using initial_space_ but it's not worth checking.  Just
+  // copy it anyway.
+  void* swap_initial_space[kInitialSize];
+  memcpy(swap_initial_space, initial_space_, sizeof(initial_space_));
 
-} // namespace internal
+  elements_       = other->elements_;
+  current_size_   = other->current_size_;
+  allocated_size_ = other->allocated_size_;
+  total_size_     = other->total_size_;
+  memcpy(initial_space_, other->initial_space_, sizeof(initial_space_));
 
-template <>
-void RepeatedPtrField<string>::Clear() {
-  for (int i = 0; i < current_size_; i++) {
-    elements_[i]->clear();
+  other->elements_       = swap_elements;
+  other->current_size_   = swap_current_size;
+  other->allocated_size_ = swap_allocated_size;
+  other->total_size_     = swap_total_size;
+  memcpy(other->initial_space_, swap_initial_space, sizeof(swap_initial_space));
+
+  if (elements_ == other->initial_space_) {
+    elements_ = initial_space_;
   }
-  current_size_ = 0;
+  if (other->elements_ == initial_space_) {
+    other->elements_ = other->initial_space_;
+  }
 }
 
-#endif  // !defined(__DECCXX) || !defined(__osf__)
+string* StringTypeHandler::New() {
+  return new string;
+}
+void StringTypeHandler::Delete(string* value) {
+  delete value;
+}
+
+
+} // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

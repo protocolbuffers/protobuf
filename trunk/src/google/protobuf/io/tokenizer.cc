@@ -571,7 +571,7 @@ bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
   const char* ptr = text.c_str();
   int base = 10;
   if (ptr[0] == '0') {
-    if (ptr[1] == 'x') {
+    if (ptr[1] == 'x' || ptr[1] == 'X') {
       // This is hex.
       base = 16;
       ptr += 2;
