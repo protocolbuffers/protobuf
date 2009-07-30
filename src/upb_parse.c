@@ -39,36 +39,12 @@ upb_status_t upb_get_v_uint64_t_full(uint8_t *restrict buf, uint8_t *end,
                                      uint64_t *restrict val,
                                      uint8_t **outbuf)
 {
-  if(buf + 10 <= end) {
-    /* >2-byte varint, fast path. */
-    uint64_t cont = *(uint64_t*)(buf+2) | 0x7f7f7f7f7f7f7f7fULL;
-    int num_bytes = __builtin_ffsll(~cont) / 8;
-    uint32_t part0 = 0, part1 = 0, part2 = 0;
-
-    switch(num_bytes) {
-      default: return UPB_ERROR_UNTERMINATED_VARINT;
-      case 8: part2 |= (buf[9] & 0x7F) << 7;
-      case 7: part2 |= (buf[8] & 0x7F);
-      case 6: part1 |= (buf[7] & 0x7F) << 21;
-      case 5: part1 |= (buf[6] & 0x7F) << 14;
-      case 4: part1 |= (buf[5] & 0x7F) << 7;
-      case 3: part1 |= (buf[4] & 0x7F);
-      case 2: part0 |= (buf[3] & 0x7F) << 21;
-      case 1: part0 |= (buf[2] & 0x7F) << 14;
-              part0 |= (buf[1] & 0x7F) << 7;
-              part0 |= (buf[0] & 0x7F);
-    }
-    *val = (uint64_t)part0 | ((uint64_t)part1 << 28) | ((uint64_t)part2 << 56);
-    *outbuf = buf + num_bytes + 2;
-  } else {
-    /* >2-byte varint, slow path. */
-    uint8_t last = 0x80;
-    *val = 0;
-    for(int bitpos = 0; buf < (uint8_t*)end && (last & 0x80); buf++, bitpos += 7)
-      *val |= ((uint64_t)((last = *buf) & 0x7F)) << bitpos;
-    if(last & 0x80) return UPB_STATUS_NEED_MORE_DATA;
-    *outbuf = buf;
-  }
+  uint8_t last = 0x80;
+  *val = 0;
+  for(int bitpos = 0; buf < (uint8_t*)end && (last & 0x80); buf++, bitpos += 7)
+    *val |= ((uint64_t)((last = *buf) & 0x7F)) << bitpos;
+  if(last & 0x80) return UPB_STATUS_NEED_MORE_DATA;
+  *outbuf = buf;
   return UPB_STATUS_OK;
 }
 
@@ -201,15 +177,17 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
   uint8_t *buf = _buf;
   uint8_t *completed = buf;
   uint8_t *const start = buf;
-
+  uint8_t *end = buf + len;
+  uint8_t *submsg_end = buf + (*s->top > 0 ? *s->top : 0);
   upb_status_t status = UPB_STATUS_OK;
+
+  /* Make local copies so optimizer knows they won't change. */
   upb_tag_cb tag_cb = s->tag_cb;
   upb_str_cb str_cb = s->str_cb;
   upb_value_cb value_cb = s->value_cb;
   void *udata = s->udata;
 
-  uint8_t *end = buf + len;
-  uint8_t *submsg_end = buf + (*s->top > 0 ? *s->top : 0);
+  /* Main loop: parse a tag, then handle the value. */
   while(buf < end) {
     struct upb_tag tag;
     UPB_CHECK(parse_tag(buf, end, &tag, &buf));
@@ -218,53 +196,43 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
       completed = buf;
       continue;
     }
-    /* Don't handle START_GROUP here, so client can skip group via tag_cb. */
-    void *user_field_desc;
 
-    upb_field_type_t ft = tag_cb(udata, &tag, &user_field_desc);
+    void *udesc;
+    upb_field_type_t ft = tag_cb(udata, &tag, &udesc);
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
       UPB_CHECK(upb_get_INT32(buf, end, &delim_len, &buf));
       uint8_t *delim_end = buf + delim_len;
-
-      if(delim_end > end) { /* String ends beyond the data we have. */
-        if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
-          /* Streaming the body of a message is ok. */
-        } else {
-          /* String, bytes, and packed arrays must have all data present. */
-          status = UPB_STATUS_NEED_MORE_DATA;
-          goto done;
-        }
-      }
-
       if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
-        UPB_CHECK(push_stack_frame(s, start, delim_end - start, user_field_desc, &submsg_end));
-      } else {  /* Delimited data for which we require (and have) all data. */
-        if(ft == 0) {
-          /* Do nothing -- client has elected to skip. */
-        } else if(upb_isstringtype(ft)) {
-          struct upb_string str = {.ptr = (char*)buf, .byte_len = delim_len};
-          str_cb(udata, &str, user_field_desc);
-        } else {  /* Packed Array. */
-          while(buf < delim_end)
-            UPB_CHECK(value_cb(udata, buf, end, user_field_desc, &buf));
-        }
-        buf = delim_end;
+          UPB_CHECK(push_stack_frame(
+              s, start, delim_end - start, udesc, &submsg_end));
+      } else {
+        if(upb_isstringtype(ft))
+          str_cb(udata, buf, UPB_MIN(delim_end, end) - buf, delim_end - buf, udesc);
+        else
+          ;/* Set a marker for packed arrays. */
+        buf = delim_end;  /* Note that this could be greater than end. */
       }
     } else {  /* Scalar (non-delimited) value. */
-      if(ft == 0)  /* Client elected to skip. */
-        UPB_CHECK(skip_wire_value(buf, end, tag.wire_type, &buf));
-      else if(ft == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
-        UPB_CHECK(push_stack_frame(s, start, 0, user_field_desc, &submsg_end));
-      else
-        UPB_CHECK(value_cb(udata, buf, end, user_field_desc, &buf));
+      switch(ft) {
+        case 0:  /* Client elected to skip. */
+          UPB_CHECK(skip_wire_value(buf, end, tag.wire_type, &buf));
+          break;
+        case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP:
+          UPB_CHECK(push_stack_frame(s, start, 0, udesc, &submsg_end));
+          break;
+        default:
+          UPB_CHECK(value_cb(udata, buf, end, udesc, &buf));
+          break;
+      }
     }
 
     while(buf == submsg_end) submsg_end = pop_stack_frame(s, start);
+    //while(buf < s->packed_end)  /* packed arrays. */
+    //  UPB_CHECK(value_cb(udata, buf, end, udesc, &buf));
     completed = buf;
   }
 
-done:
   *read = (char*)completed - (char*)start;
   s->completed_offset += *read;
   return status;

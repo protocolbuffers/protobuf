@@ -291,18 +291,23 @@ static upb_status_t value_cb(void *udata, uint8_t *buf, uint8_t *end,
   return UPB_STATUS_OK;
 }
 
-static void str_cb(void *udata, struct upb_string *str, void *user_field_desc)
+static void str_cb(void *udata, uint8_t *str,
+                   size_t avail_len, size_t total_len,
+                   void *udesc)
 {
   struct upb_msg_parse_state *s = udata;
-  struct upb_msg_field *f = user_field_desc;
+  struct upb_msg_field *f = udesc;
   union upb_value_ptr p = get_value_ptr(s->top->data, f);
   upb_msg_set(s->top->data, f);
+  if(avail_len != total_len) abort();  /* TODO: support streaming. */
   if(s->byref) {
     upb_msg_reuse_strref(p.str);
-    **p.str = *str;
+    (*p.str)->ptr = (char*)str;
+    (*p.str)->byte_len = avail_len;
   } else {
-    upb_msg_reuse_str(p.str, str->byte_len);
-    upb_strcpy(*p.str, str);
+    upb_msg_reuse_str(p.str, avail_len);
+    memcpy((*p.str)->ptr, str, avail_len);
+    (*p.str)->byte_len = avail_len;
   }
   //google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, s->top->m);
   //upb_text_printfield(&s->p, *fd->name, f->type, upb_deref(p, fd->type), stdout);

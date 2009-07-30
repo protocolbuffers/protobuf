@@ -72,8 +72,12 @@ typedef upb_field_type_t (*upb_tag_cb)(void *udata,
 typedef upb_status_t (*upb_value_cb)(void *udata, uint8_t *buf, uint8_t *end,
                                      void *user_field_desc, uint8_t **outbuf);
 
-/* The callback that is called when a string is parsed. */
-typedef void (*upb_str_cb)(void *udata, struct upb_string *str,
+/* The callback that is called when a string is parsed.  Note that the data
+ * for the string might not all be available -- we could be streaming, and
+ * the current buffer might end right in the middle of the string.  So we
+ * pass both the available length and the total length. */
+typedef void (*upb_str_cb)(void *udata, uint8_t *str,
+                           size_t avail_len, size_t total_len,
                            void *user_field_desc);
 
 /* Callbacks that are called when a submessage begins and ends, respectively.
@@ -96,9 +100,16 @@ struct upb_parse_state {
 };
 
 /* Parses up to len bytes of protobuf data out of buf, calling cb as needed.
- * The function returns how many bytes were consumed from buf.  Data is parsed
- * until no more data can be read from buf, or the callback sets *done=true,
- * or an error occured.  Sets *read to the number of bytes consumed. */
+ * The function returns a status indicating the success of the operation.  Data
+ * is parsed until no more data can be read from buf, or the callback returns an
+ * error like UPB_STATUS_USER_CANCELLED, or an error occurs.
+ *
+ * *read is set to the number of bytes consumed.  Note that this can be greater
+ * than len in the case that a string was recognized that spans beyond the end
+ * of the currently provided data.
+ *
+ * The next call to upb_parse must be the first byte after buf + *read, even in
+ * the case that *read > len. */
 upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
                        size_t *read);
 
@@ -136,17 +147,11 @@ upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
 INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
                                        uint8_t **outbuf)
 {
-  /* We inline these two common cases (short varints), if that fails we
-   * dispatch to the full (non-inlined) version. */
+  /* We inline this common case (1-byte varints), if that fails we dispatch to
+   * the full (non-inlined) version. */
   if((*buf & 0x80) == 0) {
-    /* Single-byte varint -- very common case. */
     *val = *buf & 0x7f;
     *outbuf = buf + 1;
-    return UPB_STATUS_OK;
-  } else if(buf <= end && (*(buf+1) & 0x80) == 0) {
-    /* Two-byte varint. */
-    *val = (buf[0] & 0x7f) | ((buf[1] & 0x7f) << 7);
-    *outbuf = buf + 2;
     return UPB_STATUS_OK;
   } else {
     return upb_get_v_uint64_t_full(buf, end, val, outbuf);
@@ -174,7 +179,7 @@ INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
   *val = *(uint32_t*)buf;
 #else
 #define SHL(val, bits) ((uint32_t)val << bits)
-  *val = SHL(b[0], 0) | SHL(b[1], 8) | SHL(b[2], 16) | SHL(b[3], 24);
+  *val = SHL(buf[0], 0) | SHL(buf[1], 8) | SHL(buf[2], 16) | SHL(buf[3], 24);
 #undef SHL
 #endif
   *outbuf = uint32_end;
@@ -191,8 +196,8 @@ INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
   *val = *(uint64_t*)buf;
 #else
 #define SHL(val, bits) ((uint64_t)val << bits)
-  *val = SHL(b[0],  0) | SHL(b[1],  8) | SHL(b[2], 16) | SHL(b[3], 24) |
-         SHL(b[4], 32) | SHL(b[5], 40) | SHL(b[6], 48) | SHL(b[7], 56) |
+  *val = SHL(buf[0],  0) | SHL(buf[1],  8) | SHL(buf[2], 16) | SHL(buf[3], 24) |
+         SHL(buf[4], 32) | SHL(buf[5], 40) | SHL(buf[6], 48) | SHL(buf[7], 56);
 #undef SHL
 #endif
   *outbuf = uint64_end;

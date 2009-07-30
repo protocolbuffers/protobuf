@@ -37,6 +37,8 @@ extern "C" {
 #define INLINE static inline
 #endif
 
+#define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
+
 struct upb_string {
   /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
    * ingrained convention that we follow it. */
@@ -44,15 +46,13 @@ struct upb_string {
   uint32_t byte_len;
 };
 
-INLINE uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
-
 INLINE bool upb_streql(struct upb_string *s1, struct upb_string *s2) {
   return s1->byte_len == s2->byte_len &&
          memcmp(s1->ptr, s2->ptr, s1->byte_len) == 0;
 }
 
 INLINE int upb_strcmp(struct upb_string s1, struct upb_string s2) {
-  size_t common_length = min(s1.byte_len, s2.byte_len);
+  size_t common_length = UPB_MIN(s1.byte_len, s2.byte_len);
   int common_diff = memcmp(s1.ptr, s2.ptr, common_length);
   if(common_diff == 0) return s1.byte_len - s2.byte_len;
   else return common_diff;
