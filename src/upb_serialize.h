@@ -33,6 +33,14 @@ extern "C" {
 INLINE upb_status_t upb_put_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
                                        uint8_t **outbuf)
 {
+  do {
+    uint8_t byte = val & 0x7f;
+    val >>= 7;
+    if(val) byte |= 0x80;
+    if(buf >= end) return UPB_STATUS_NEED_MORE_DATA;
+    *buf++ = byte;
+  } while(val);
+  *outbuf = buf;
   return UPB_STATUS_OK;
 }
 
@@ -47,6 +55,10 @@ INLINE upb_status_t upb_put_v_uint32_t(uint8_t *buf, uint8_t *end,
 INLINE upb_status_t upb_put_f_uint32_t(uint8_t *buf, uint8_t *end,
                                        uint32_t val, uint8_t **outbuf)
 {
+  uint8_t *uint32_end = buf + sizeof(uint32_t);
+  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  *(uint32_t*)buf = val;
+  *outbuf = uint32_end;
   return UPB_STATUS_OK;
 }
 
@@ -54,6 +66,10 @@ INLINE upb_status_t upb_put_f_uint32_t(uint8_t *buf, uint8_t *end,
 INLINE upb_status_t upb_put_f_uint64_t(uint8_t *buf, uint8_t *end,
                                        uint64_t val, uint8_t **outbuf)
 {
+  uint8_t *uint64_end = buf + sizeof(uint64_t);
+  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  *(uint64_t*)buf = val;
+  *outbuf = uint64_end;
   return UPB_STATUS_OK;
 }
 
