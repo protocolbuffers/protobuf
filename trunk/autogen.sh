@@ -13,23 +13,16 @@ __EOF__
   exit 1
 fi
 
-if test ! -d gtest; then
-  echo "gtest bundle not present.  Downloading gtest-1.3.0 automatically." >&2
-  set -ex
-  curl http://googletest.googlecode.com/files/gtest-1.3.0.tar.bz2 | tar jx
-  mv gtest-1.3.0 gtest
+set -ex
 
-  # Temporary hack:  Must change C runtime library to "multi-threaded DLL",
-  #   otherwise it will be set to "multi-threaded static" when MSVC upgrades
-  #   the project file to MSVC 2005/2008.  vladl of Google Test says gtest will
-  #   probably change their default to match, then this will be unnecessary.
-  #   One of these mappings converts the debug configuration and the other
-  #   converts the release configuration.  I don't know which is which.
-  sed -i -e 's/RuntimeLibrary="5"/RuntimeLibrary="3"/g;
-             s/RuntimeLibrary="4"/RuntimeLibrary="2"/g;' gtest/msvc/*.vcproj
-else
-  set -ex
-fi
+# Temporary hack:  Must change C runtime library to "multi-threaded DLL",
+#   otherwise it will be set to "multi-threaded static" when MSVC upgrades
+#   the project file to MSVC 2005/2008.  vladl of Google Test says gtest will
+#   probably change their default to match, then this will be unnecessary.
+#   One of these mappings converts the debug configuration and the other
+#   converts the release configuration.  I don't know which is which.
+sed -i -e 's/RuntimeLibrary="5"/RuntimeLibrary="3"/g;
+           s/RuntimeLibrary="4"/RuntimeLibrary="2"/g;' gtest/msvc/*.vcproj
 
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete
