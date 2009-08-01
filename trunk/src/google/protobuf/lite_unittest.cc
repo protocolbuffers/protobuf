@@ -107,6 +107,6 @@ int main(int argc, char* argv[]) {
     google::protobuf::TestUtilLite::ExpectPackedExtensionsClear(message);
   }
 
-  cout << "PASS";
+  cout << "PASS" << endl;
   return 0;
 }

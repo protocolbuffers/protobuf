@@ -262,18 +262,29 @@ inline void GenericTypeHandler<MessageLite>::Merge(
   to->CheckTypeAndMergeFrom(from);
 }
 
-class LIBPROTOBUF_EXPORT StringTypeHandler {
+// HACK:  If a class is declared as DLL-exported in MSVC, it insists on
+//   generating copies of all its methods -- even inline ones -- to include
+//   in the DLL.  But SpaceUsed() calls StringSpaceUsedExcludingSelf() which
+//   isn't in the lite library, therefore the lite library cannot link if
+//   StringTypeHandler is exported.  So, we factor out StringTypeHandlerBase,
+//   export that, then make StringTypeHandler be a subclass which is NOT
+//   exported.
+// TODO(kenton):  There has to be a better way.
+class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
  public:
   typedef string Type;
   static string* New();
   static void Delete(string* value);
   static void Clear(string* value) { value->clear(); }
   static void Merge(const string& from, string* to) { *to = from; }
+};
+
+class StringTypeHandler : public StringTypeHandlerBase {
+ public:
   static int SpaceUsed(const string& value)  {
     return sizeof(value) + StringSpaceUsedExcludingSelf(value);
   }
 };
-
 
 }  // namespace internal
 

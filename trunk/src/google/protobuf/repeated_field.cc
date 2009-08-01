@@ -69,10 +69,10 @@ void RepeatedPtrFieldBase::Swap(RepeatedPtrFieldBase* other) {
   }
 }
 
-string* StringTypeHandler::New() {
+string* StringTypeHandlerBase::New() {
   return new string;
 }
-void StringTypeHandler::Delete(string* value) {
+void StringTypeHandlerBase::Delete(string* value) {
   delete value;
 }
 
