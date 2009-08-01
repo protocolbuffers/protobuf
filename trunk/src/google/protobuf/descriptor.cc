@@ -798,7 +798,7 @@ namespace {
 
 EncodedDescriptorDatabase* generated_database_ = NULL;
 DescriptorPool* generated_pool_ = NULL;
-GoogleOnceType generated_pool_init_;
+GOOGLE_PROTOBUF_DECLARE_ONCE(generated_pool_init_);
 
 void DeleteGeneratedPool() {
   delete generated_database_;
