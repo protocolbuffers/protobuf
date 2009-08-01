@@ -9,14 +9,16 @@ Compiling and Installing
 1) Open protobuf.sln in Microsoft Visual Studio.
 2) Choose "Debug" or "Release" configuration as desired.*
 3) From the Build menu, choose "Build Solution".  Wait for compiling to finish.
-4) From a command shell, run tests.exe and check that all tests pass.
+4) From a command shell, run tests.exe and lite-test.exe and check that all
+   tests pass.
 5) Run extract_includes.bat to copy all the public headers into a separate
    "include" directory (under the top-level package directory).
 6) Copy the contents of the include directory to wherever you want to put
    headers.
 7) Copy protoc.exe wherever you put build tools (probably somewhere in your
    PATH).
-8) Copy libprotobuf.lib and libprotoc.lib wherever you put libraries.
+8) Copy libprotobuf.lib, libprotobuf-lite.lib, and libprotoc.lib wherever you
+   put libraries.
 
 * To avoid conflicts between the MSVC debug and release runtime libraries, when
   compiling a debug build of your application, you may need to link against a

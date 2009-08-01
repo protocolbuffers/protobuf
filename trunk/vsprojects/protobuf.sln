@@ -27,6 +27,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "..\gtest\msvc\gtes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest_main", "..\gtest\msvc\gtest_main.vcproj", "{3AF54C8A-10BF-4332-9147-F68ED9862032}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libprotobuf-lite", "libprotobuf-lite.vcproj", "{49EA010D-706F-4BE2-A397-77854B72A040}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lite-test", "lite-test.vcproj", "{12015ACE-42BE-4952-A5A0-44A9A46908E2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{49EA010D-706F-4BE2-A397-77854B72A040} = {49EA010D-706F-4BE2-A397-77854B72A040}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -57,6 +64,14 @@ Global
 		{3AF54C8A-10BF-4332-9147-F68ED9862032}.Debug|Win32.Build.0 = Debug|Win32
 		{3AF54C8A-10BF-4332-9147-F68ED9862032}.Release|Win32.ActiveCfg = Release|Win32
 		{3AF54C8A-10BF-4332-9147-F68ED9862032}.Release|Win32.Build.0 = Release|Win32
+		{49EA010D-706F-4BE2-A397-77854B72A040}.Debug|Win32.ActiveCfg = Debug|Win32
+		{49EA010D-706F-4BE2-A397-77854B72A040}.Debug|Win32.Build.0 = Debug|Win32
+		{49EA010D-706F-4BE2-A397-77854B72A040}.Release|Win32.ActiveCfg = Release|Win32
+		{49EA010D-706F-4BE2-A397-77854B72A040}.Release|Win32.Build.0 = Release|Win32
+		{12015ACE-42BE-4952-A5A0-44A9A46908E2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12015ACE-42BE-4952-A5A0-44A9A46908E2}.Debug|Win32.Build.0 = Debug|Win32
+		{12015ACE-42BE-4952-A5A0-44A9A46908E2}.Release|Win32.ActiveCfg = Release|Win32
+		{12015ACE-42BE-4952-A5A0-44A9A46908E2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
