@@ -46,11 +46,13 @@ EXTRA_DIST =                                                                 \
   vsprojects/config.h                                                        \
   vsprojects/extract_includes.bat                                            \
   vsprojects/libprotobuf.vcproj                                              \
+  vsprojects/libprotobuf-lite.vcproj                                         \
   vsprojects/libprotoc.vcproj                                                \
   vsprojects/protobuf.sln                                                    \
   vsprojects/protoc.vcproj                                                   \
   vsprojects/readme.txt                                                      \
   vsprojects/tests.vcproj                                                    \
+  vsprojects/lite-test.vcproj                                                \
   vsprojects/convert2008to2005.sh                                            \
   examples/README.txt                                                        \
   examples/Makefile                                                          \
