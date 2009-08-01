@@ -36,7 +36,8 @@ build libprotobuf and libprotoc as DLLs if you really want.  To do this,
 do the following:
 
   1) Open protobuf.sln in MSVC.
-  2) For each of the projects libprotobuf and libprotoc, do the following:
+  2) For each of the projects libprotobuf, libprotobuf-lite, and libprotoc, do
+     the following:
     2a) Right-click the project and choose "properties".
     2b) From the side bar, choose "General", under "Configuration Properties".
     2c) Change the "Configuration Type" to "Dynamic Library (.dll)".

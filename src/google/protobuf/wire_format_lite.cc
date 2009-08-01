@@ -42,7 +42,6 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/unknown_field_set.h>
 
 namespace google {
 namespace protobuf {
