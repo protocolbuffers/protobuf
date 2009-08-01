@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="libprotobuf"
-	ProjectGUID="{3E283F37-A4ED-41B7-A3E6-A2D89D131A30}"
+	Name="libprotobuf-lite"
+	ProjectGUID="{49EA010D-706F-4BE2-A397-77854B72A040}"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="0"
 	>
@@ -160,27 +160,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\descriptor.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\descriptor.pb.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\descriptor_database.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\dynamic_message.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\extension_set.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\generated_message_reflection.h"
 				>
 			</File>
 			<File
@@ -188,23 +168,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\io\gzip_stream.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\stubs\hash.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\compiler\importer.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\stubs\map-util.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\message.h"
 				>
 			</File>
 			<File
@@ -216,51 +184,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\compiler\parser.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\io\printer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\reflection_ops.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\repeated_field.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\service.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\stubs\stl_util-inl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\stubs\strutil.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\stubs\substitute.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\text_format.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\io\tokenizer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\unknown_field_set.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\wire_format.h"
 				>
 			</File>
 			<File
@@ -273,10 +201,6 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\io\zero_copy_stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\io\zero_copy_stream_impl.h"
 				>
 			</File>
 			<File
@@ -304,31 +228,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\descriptor.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\descriptor.pb.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\descriptor_database.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\dynamic_message.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\extension_set.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\extension_set_heavy.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\generated_message_reflection.cc"
 				>
 			</File>
 			<File
@@ -336,19 +236,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\io\gzip_stream.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\stubs\hash.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\compiler\importer.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\message.cc"
 				>
 			</File>
 			<File
@@ -360,51 +248,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\compiler\parser.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\io\printer.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\reflection_ops.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\repeated_field.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\service.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\stubs\structurally_valid.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\stubs\strutil.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\stubs\substitute.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\text_format.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\io\tokenizer.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\unknown_field_set.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\wire_format.cc"
 				>
 			</File>
 			<File
@@ -413,10 +257,6 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\io\zero_copy_stream.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\io\zero_copy_stream_impl.cc"
 				>
 			</File>
 			<File
