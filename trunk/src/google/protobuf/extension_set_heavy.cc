@@ -165,6 +165,11 @@ int ExtensionSet::SpaceUsedExcludingSelf() const {
   return total_size;
 }
 
+inline int ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelf(
+    RepeatedPtrFieldBase* field) {
+  return field->SpaceUsedExcludingSelf<GenericTypeHandler<Message> >();
+}
+
 int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
   int total_size = 0;
   if (is_repeated) {
@@ -191,9 +196,7 @@ int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
         // RepeatedPtrFieldBase::SpaceUsedExcludingSelf() with a different type
         // handler.
         total_size += sizeof(*repeated_message_value) +
-            repeated_message_value->
-              RepeatedPtrFieldBase::SpaceUsedExcludingSelf<
-                GenericTypeHandler<Message> >();
+            RepeatedMessage_SpaceUsedExcludingSelf(repeated_message_value);
         break;
     }
   } else {
