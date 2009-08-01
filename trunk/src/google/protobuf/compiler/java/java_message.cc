@@ -312,7 +312,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "  return $fileclass$.internal_$identifier$_descriptor;\n"
       "}\n"
       "\n"
-      "@Override\n"
       "protected com.google.protobuf.GeneratedMessage.FieldAccessorTable\n"
       "    internalGetFieldAccessorTable() {\n"
       "  return $fileclass$.internal_$identifier$_fieldAccessorTable;\n"
@@ -392,7 +391,6 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
        ExtensionRangeOrdering());
 
   printer->Print(
-    "@Override\n"
     "public void writeTo(com.google.protobuf.CodedOutputStream output)\n"
     "                    throws java.io.IOException {\n");
   printer->Indent();
@@ -442,7 +440,6 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     "}\n"
     "\n"
     "private int memoizedSerializedSize = -1;\n"
-    "@Override\n"
     "public int getSerializedSize() {\n"
     "  int size = memoizedSerializedSize;\n"
     "  if (size != -1) return size;\n"
@@ -648,12 +645,10 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "  return builder;\n"
     "}\n"
     "\n"
-    "@Override\n"
     "protected $classname$ internalGetResult() {\n"
     "  return result;\n"
     "}\n"
     "\n"
-    "@Override\n"
     "public Builder clear() {\n"
     "  if (result == null) {\n"
     "    throw new IllegalStateException(\n"
@@ -663,7 +658,6 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "  return this;\n"
     "}\n"
     "\n"
-    "@Override\n"
     "public Builder clone() {\n"
     "  return create().mergeFrom(result);\n"
     "}\n"
@@ -671,7 +665,6 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "classname", ClassName(descriptor_));
   if (HasDescriptorMethods(descriptor_)) {
     printer->Print(
-      "@Override\n"
       "public com.google.protobuf.Descriptors.Descriptor\n"
       "    getDescriptorForType() {\n"
       "  return $classname$.getDescriptor();\n"
@@ -738,7 +731,6 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     // messages type by its descriptor.
     if (HasDescriptorMethods(descriptor_)) {
       printer->Print(
-        "@Override\n"
         "public Builder mergeFrom(com.google.protobuf.Message other) {\n"
         "  if (other instanceof $classname$) {\n"
         "    return mergeFrom(($classname$)other);\n"
@@ -790,7 +782,6 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
     SortFieldsByNumber(descriptor_));
 
   printer->Print(
-    "@Override\n"
     "public Builder mergeFrom(\n"
     "    com.google.protobuf.CodedInputStream input,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
@@ -870,7 +861,6 @@ void MessageGenerator::GenerateBuilderParsingMethods(io::Printer* printer) {
 
 void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
   printer->Print(
-    "@Override\n"
     "public final boolean isInitialized() {\n");
   printer->Indent();
 
