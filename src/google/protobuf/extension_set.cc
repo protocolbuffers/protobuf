@@ -76,7 +76,7 @@ struct ExtensionInfo {
 typedef hash_map<pair<const MessageLite*, int>,
                  ExtensionInfo> ExtensionRegistry;
 ExtensionRegistry* registry_ = NULL;
-GoogleOnceType registry_init_;
+GOOGLE_PROTOBUF_DECLARE_ONCE(registry_init_);
 
 void DeleteRegistry() {
   delete registry_;
