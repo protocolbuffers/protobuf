@@ -168,14 +168,38 @@ int64 GzipInputStream::ByteCount() const {
 
 // =========================================================================
 
+GzipOutputStream::Options::Options()
+    : format(GZIP),
+      buffer_size(kDefaultBufferSize),
+      compression_level(Z_DEFAULT_COMPRESSION),
+      compression_strategy(Z_DEFAULT_STRATEGY) {}
+
+GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream* sub_stream) {
+  Init(sub_stream, Options());
+}
+
+GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream* sub_stream,
+                                   const Options& options) {
+  Init(sub_stream, options);
+}
+
 GzipOutputStream::GzipOutputStream(
-    ZeroCopyOutputStream* sub_stream, Format format, int buffer_size)
-  : sub_stream_(sub_stream), sub_data_(NULL), sub_data_size_(0) {
-  if (buffer_size == -1) {
-    input_buffer_length_ = kDefaultBufferSize;
-  } else {
-    input_buffer_length_ = buffer_size;
+    ZeroCopyOutputStream* sub_stream, Format format, int buffer_size) {
+  Options options;
+  options.format = format;
+  if (buffer_size != -1) {
+    options.buffer_size = buffer_size;
   }
+  Init(sub_stream, options);
+}
+
+void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
+                            const Options& options) {
+  sub_stream_ = sub_stream;
+  sub_data_ = NULL;
+  sub_data_size_ = 0;
+
+  input_buffer_length_ = options.buffer_size;
   input_buffer_ = operator new(input_buffer_length_);
   GOOGLE_CHECK(input_buffer_ != NULL);
 
@@ -191,17 +215,18 @@ GzipOutputStream::GzipOutputStream(
   zcontext_.msg = NULL;
   // default to GZIP format
   int windowBitsFormat = 16;
-  if (format == ZLIB) {
+  if (options.format == ZLIB) {
     windowBitsFormat = 0;
   }
   zerror_ = deflateInit2(
       &zcontext_,
-      Z_BEST_COMPRESSION,
+      options.compression_level,
       Z_DEFLATED,
       /* windowBits */15 | windowBitsFormat,
       /* memLevel (default) */8,
-      Z_DEFAULT_STRATEGY);
+      options.compression_strategy);
 }
+
 GzipOutputStream::~GzipOutputStream() {
   Close();
   if (input_buffer_ != NULL) {

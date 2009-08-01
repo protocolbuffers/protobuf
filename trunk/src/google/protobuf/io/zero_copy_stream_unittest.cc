@@ -68,6 +68,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/testing/file.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -113,6 +114,11 @@ class IoTest : public testing::Test {
   // Reads and tests a stream that should have been written to
   // via WriteStuffLarge().
   void ReadStuffLarge(ZeroCopyInputStream* input);
+
+#if HAVE_ZLIB
+  string Compress(const string& data, const GzipOutputStream::Options& options);
+  string Uncompress(const string& data);
+#endif
 
   static const int kBlockSizes[];
   static const int kBlockSizeCount;
@@ -365,6 +371,65 @@ TEST_F(IoTest, ZlibIoInputAutodetect) {
     ReadStuff(&gzin);
   }
   delete [] buffer;
+}
+
+string IoTest::Compress(const string& data,
+                        const GzipOutputStream::Options& options) {
+  string result;
+  {
+    StringOutputStream output(&result);
+    GzipOutputStream gzout(&output, options);
+    WriteToOutput(&gzout, data.data(), data.size());
+  }
+  return result;
+}
+
+string IoTest::Uncompress(const string& data) {
+  string result;
+  {
+    ArrayInputStream input(data.data(), data.size());
+    GzipInputStream gzin(&input);
+    const void* buffer;
+    int size;
+    while (gzin.Next(&buffer, &size)) {
+      result.append(reinterpret_cast<const char*>(buffer), size);
+    }
+  }
+  return result;
+}
+
+TEST_F(IoTest, CompressionOptions) {
+  // Some ad-hoc testing of compression options.
+
+  string golden;
+  File::ReadFileToStringOrDie(
+      TestSourceDir() + "/google/protobuf/testdata/golden_message", &golden);
+
+  GzipOutputStream::Options options;
+  string gzip_compressed = Compress(golden, options);
+
+  options.compression_level = 0;
+  string not_compressed = Compress(golden, options);
+
+  // Try zlib compression for fun.
+  options = GzipOutputStream::Options();
+  options.format = GzipOutputStream::ZLIB;
+  string zlib_compressed = Compress(golden, options);
+
+  // Uncompressed should be bigger than the original since it should have some
+  // sort of header.
+  EXPECT_GT(not_compressed.size(), golden.size());
+
+  // Higher compression levels should result in smaller sizes.
+  EXPECT_LT(zlib_compressed.size(), not_compressed.size());
+
+  // ZLIB format should differ from GZIP format.
+  EXPECT_TRUE(zlib_compressed != gzip_compressed);
+
+  // Everything should decompress correctly.
+  EXPECT_TRUE(Uncompress(not_compressed) == golden);
+  EXPECT_TRUE(Uncompress(gzip_compressed) == golden);
+  EXPECT_TRUE(Uncompress(zlib_compressed) == golden);
 }
 #endif
 
