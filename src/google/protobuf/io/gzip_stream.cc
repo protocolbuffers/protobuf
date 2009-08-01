@@ -315,6 +315,6 @@ bool GzipOutputStream::Close() {
 
 }  // namespace io
 }  // namespace protobuf
+}  // namespace google
 
 #endif  // HAVE_ZLIB
-}  // namespace google
