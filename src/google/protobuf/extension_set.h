@@ -61,6 +61,7 @@ namespace protobuf {
   }
   namespace internal {
     class FieldSkipper;                                  // wire_format_lite.h
+    class RepeatedPtrFieldBase;                          // repeated_field.h
   }
   template <typename Element> class RepeatedField;     // repeated_field.h
   template <typename Element> class RepeatedPtrField;  // repeated_field.h
@@ -388,6 +389,15 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
                            const MessageLite* containing_type,
                            FieldSkipper* field_skipper);
 
+  // Hack:  RepeatedPtrFieldBase declares ExtensionSet as a friend.  This
+  //   friendship should automatically extend to ExtensionSet::Extension, but
+  //   unfortunately some older compilers (e.g. GCC 3.4.4) do not implement this
+  //   correctly.  So, we must provide helpers for calling methods of that
+  //   class.
+
+  // Defined in extension_set_heavy.cc.
+  static inline int RepeatedMessage_SpaceUsedExcludingSelf(
+      RepeatedPtrFieldBase* field);
 
   // The Extension struct is small enough to be passed by value, so we use it
   // directly as the value type in the map rather than use pointers.  We use
