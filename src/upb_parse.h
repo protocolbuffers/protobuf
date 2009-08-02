@@ -164,8 +164,7 @@ INLINE upb_status_t upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
 {
   uint64_t val64;
   UPB_CHECK(upb_get_v_uint64_t(buf, end, &val64, outbuf));
-  /* TODO: should we throw an error if any of the high bits in val64 are set? */
-  *val = (uint32_t)val64;
+  *val = (uint32_t)val64;  /* Discard the high bits. */
   return UPB_STATUS_OK;
 }
 
@@ -245,18 +244,18 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   GET(type, v_or_f, wire_t, val_t, member_name) \
   WVTOV(type, wire_t, val_t)
 
-T(INT32,    v, uint32_t, int32_t,  int32)   { return (int32_t)s;             }
-T(INT64,    v, uint64_t, int64_t,  int64)   { return (int64_t)s;             }
-T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;                      }
-T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;                      }
-T(SINT32,   v, uint32_t, int32_t,  int32)   { return upb_zzdec_32(s);        }
-T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzdec_64(s);        }
-T(FIXED32,  f, uint32_t, uint32_t, uint32)  { return s;                      }
-T(FIXED64,  f, uint64_t, uint64_t, uint64)  { return s;                      }
-T(SFIXED32, f, uint32_t, int32_t,  int32)   { return (int32_t)s;             }
-T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (int64_t)s;             }
-T(BOOL,     v, uint32_t, bool,     _bool)   { return (bool)s;                }
-T(ENUM,     v, uint32_t, int32_t,  int32)   { return (int32_t)s;             }
+T(INT32,    v, uint32_t, int32_t,  int32)   { return (int32_t)s;      }
+T(INT64,    v, uint64_t, int64_t,  int64)   { return (int64_t)s;      }
+T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;               }
+T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;               }
+T(SINT32,   v, uint32_t, int32_t,  int32)   { return upb_zzdec_32(s); }
+T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzdec_64(s); }
+T(FIXED32,  f, uint32_t, uint32_t, uint32)  { return s;               }
+T(FIXED64,  f, uint64_t, uint64_t, uint64)  { return s;               }
+T(SFIXED32, f, uint32_t, int32_t,  int32)   { return (int32_t)s;      }
+T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (int64_t)s;      }
+T(BOOL,     v, uint32_t, bool,     _bool)   { return (bool)s;         }
+T(ENUM,     v, uint32_t, int32_t,  int32)   { return (int32_t)s;      }
 T(DOUBLE,   f, uint64_t, double,   _double) {
   union upb_value v;
   v.uint64 = s;

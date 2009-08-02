@@ -215,32 +215,39 @@ INLINE bool upb_isarray(struct upb_msg_field *f) {
 
 /* "Set" flag reading and writing.  *******************************************/
 
+/* Please note that these functions do not perform any memory management or in
+ * any way ensure that the fields are valid.  They *only* test/set/clear a bit
+ * that indicates whether the field is set or not. */
+
+/* Returns the byte offset where we store whether this field is set. */
 INLINE size_t upb_isset_offset(uint32_t field_index) {
   return field_index / 8;
 }
 
+/* Returns the mask within the appropriate byte that selects the set bit. */
 INLINE uint8_t upb_isset_mask(uint32_t field_index) {
   return 1 << (field_index % 8);
 }
 
-/* Functions for reading and writing the "set" flags in the msg.  Note that
- * these do not perform memory management associated with any dynamic memory
- * these fields may be referencing. These *only* set and test the flags. */
+/* Returns true if the given field is set, false otherwise. */
 INLINE void upb_msg_set(void *s, struct upb_msg_field *f)
 {
   ((char*)s)[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
 }
 
+/* Clears the set bit for this field in the given message. */
 INLINE void upb_msg_unset(void *s, struct upb_msg_field *f)
 {
   ((char*)s)[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
 }
 
+/* Tests whether the given field is set. */
 INLINE bool upb_msg_isset(void *s, struct upb_msg_field *f)
 {
   return ((char*)s)[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
 }
 
+/* Returns true if *all* required fields are set, false otherwise. */
 INLINE bool upb_msg_all_required_fields_set(void *s, struct upb_msg *m)
 {
   int num_fields = m->num_required_fields;
@@ -253,6 +260,7 @@ INLINE bool upb_msg_all_required_fields_set(void *s, struct upb_msg *m)
   return true;
 }
 
+/* Clears the set bit for all fields. */
 INLINE void upb_msg_clear(void *s, struct upb_msg *m)
 {
   memset(s, 0, m->set_flags_bytes);
@@ -304,7 +312,7 @@ void upb_msg_reuse_array(struct upb_array **arr, uint32_t size,
 /* Reuse a submessage of the given type. */
 void upb_msg_reuse_submsg(void **msg, struct upb_msg *m);
 
-/* Serialization/Deserialization.  ********************************************/
+/* Parsing.  ******************************************************************/
 
 /* This is all just a layer on top of the stream-oriented facility in
  * upb_parse.h. */
@@ -352,6 +360,48 @@ upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
  * above.  "byref" works as in upb_msg_parse_init(). */
 void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *s, bool byref);
 
+/* Serialization  *************************************************************/
+
+/* For messages that contain any submessages, we must do a pre-pass on the
+ * message tree to discover the size of all submessages.  This is necessary
+ * because when serializing, the message length has to precede the message data
+ * itself.
+ *
+ * We can calculate these sizes once and reuse them as long as the message is
+ * known not to have changed. */
+struct upb_msgsizes;
+
+/* Initialize/free a upb_msgsizes for the given message. */
+void upb_msgsizes_init(struct upb_msgsizes *sizes);
+void upb_msgsizes_free(struct upb_msgsizes *sizes);
+
+/* Given a previously initialized sizes, recurse over the message and store its
+ * sizes in 'sizes'. */
+void upb_msgsizes_read(struct upb_msgsizes *sizes, void *data,
+                       struct upb_msg *m);
+
+/* Returns the total size of the serialized message given in sizes.  Must be
+ * preceeded by a call to upb_msgsizes_read. */
+size_t upb_msgsizes_totalsize(struct upb_msgsizes *sizes);
+
+struct upb_msg_serialize_state;
+
+/* Initializes the state of serialization.  The provided message must not
+ * change between the upb_msgsizes_read() call that was used to construct
+ * "sizes" and the parse being fully completed. */
+void upb_msg_serialize_alloc(struct upb_msg_serialize_state *s);
+void upb_msg_serialize_free(struct upb_msg_serialize_state *s);
+void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *data,
+                            struct upb_msg *m, struct upb_msgsizes *sizes);
+
+/* Serializes the next set of bytes into buf (which has size len).  Returns
+ * UPB_STATUS_OK if serialization is complete, or UPB_STATUS_NEED_MORE_DATA
+ * if there is more data from the message left to be serialized.
+ *
+ * The number of bytes written to buf is returned in *read.  This will be
+ * equal to len unless we finished serializing. */
+upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
+                               void *buf, size_t len, size_t *read);
 
 /* Text dump  *****************************************************************/
 

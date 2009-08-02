@@ -44,11 +44,19 @@ INLINE upb_status_t upb_put_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
   return UPB_STATUS_OK;
 }
 
-/* Puts a varint -- called when we only have 32 bits of data. */
+/* Puts an unsigned 32-bit varint, verbatim.  Never uses the high 64 bits. */
 INLINE upb_status_t upb_put_v_uint32_t(uint8_t *buf, uint8_t *end,
                                        uint32_t val, uint8_t **outbuf)
 {
-  return UPB_STATUS_OK;
+  return upb_put_v_uint64_t(buf, end, val, outbuf);
+}
+
+/* Puts a signed 32-bit varint, first sign-extending to 64-bits.  We do this to
+ * maintain wire-compatibility with 64-bit signed integers. */
+INLINE upb_status_t upb_put_v_int32_t(uint8_t *buf, uint8_t *end,
+                                      int32_t val, uint8_t **outbuf)
+{
+  return upb_put_v_uint64_t(buf, end, (int64_t)val, outbuf);
 }
 
 INLINE void upb_put32(uint8_t *buf, uint32_t val) {
@@ -157,18 +165,18 @@ INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
   PUT(type, v_or_f, wire_t, val_t, member_name) \
   VTOWV(type, wire_t, val_t)
 
-T(INT32,    v, uint32_t, int32_t,  int32)   { return (uint32_t)s;              }
-T(INT64,    v, uint64_t, int64_t,  int64)   { return (uint64_t)s;              }
-T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;                        }
-T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;                        }
-T(SINT32,   v, uint32_t, int32_t,  int32)   { return upb_zzenc_32(s);          }
-T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzdec_64(s);          }
-T(FIXED32,  f, uint32_t, uint32_t, uint32)  { return s;                        }
-T(FIXED64,  f, uint64_t, uint64_t, uint64)  { return s;                        }
-T(SFIXED32, f, uint32_t, int32_t,  int32)   { return (uint32_t)s;              }
-T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (uint64_t)s;              }
-T(BOOL,     v, uint32_t, bool,     _bool)   { return (uint32_t)s;              }
-T(ENUM,     v, uint32_t, int32_t,  int32)   { return (uint32_t)s;              }
+T(INT32,    v, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
+T(INT64,    v, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
+T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;               }
+T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;               }
+T(SINT32,   v, uint32_t, int32_t,  int32)   { return upb_zzenc_32(s); }
+T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzdec_64(s); }
+T(FIXED32,  f, uint32_t, uint32_t, uint32)  { return s;               }
+T(FIXED64,  f, uint64_t, uint64_t, uint64)  { return s;               }
+T(SFIXED32, f, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
+T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
+T(BOOL,     v, uint32_t, bool,     _bool)   { return (uint32_t)s;     }
+T(ENUM,     v, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
 T(DOUBLE,   f, uint64_t, double,   _double) {
   union upb_value v;
   v._double = s;
@@ -183,9 +191,9 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef PUT
 #undef T
 
-/* Functions to get sizes of serialized values without serializing. ***********/
-
-
+size_t upb_get_tag_size(uint32_t fieldnum) {
+  return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
+}
 
 #ifdef __cplusplus
 }  /* extern "C" */
