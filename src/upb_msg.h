@@ -398,10 +398,10 @@ void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *data,
  * UPB_STATUS_OK if serialization is complete, or UPB_STATUS_NEED_MORE_DATA
  * if there is more data from the message left to be serialized.
  *
- * The number of bytes written to buf is returned in *read.  This will be
+ * The number of bytes written to buf is returned in *written.  This will be
  * equal to len unless we finished serializing. */
 upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
-                               void *buf, size_t len, size_t *read);
+                               void *buf, size_t len, size_t *written);
 
 /* Text dump  *****************************************************************/
 

@@ -170,7 +170,7 @@ T(INT64,    v, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
 T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;               }
 T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;               }
 T(SINT32,   v, uint32_t, int32_t,  int32)   { return upb_zzenc_32(s); }
-T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzdec_64(s); }
+T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzenc_64(s); }
 T(FIXED32,  f, uint32_t, uint32_t, uint32)  { return s;               }
 T(FIXED64,  f, uint64_t, uint64_t, uint64)  { return s;               }
 T(SFIXED32, f, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
@@ -191,7 +191,7 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef PUT
 #undef T
 
-size_t upb_get_tag_size(uint32_t fieldnum) {
+INLINE size_t upb_get_tag_size(uint32_t fieldnum) {
   return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
 }
 

@@ -503,6 +503,74 @@ size_t upb_msgsizes_totalsize(struct upb_msgsizes *sizes)
   return sizes->sizes[sizes->len-1];
 }
 
+struct upb_msg_serialize_state {
+  struct {
+    int field_iter;
+    int elem_iter;
+    struct upb_msg *m;
+    void *msg;
+  } stack[UPB_MAX_NESTING], *top, *limit;
+};
+
+void upb_msg_serialize_alloc(struct upb_msg_serialize_state *s)
+{
+  (void)s;
+}
+
+void upb_msg_serialize_free(struct upb_msg_serialize_state *s)
+{
+  (void)s;
+}
+
+void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *data,
+                            struct upb_msg *m, struct upb_msgsizes *sizes)
+{
+  (void)s;
+  (void)data;
+  (void)m;
+  (void)sizes;
+}
+
+static upb_status_t serialize_tag(uint8_t *buf, uint8_t *end,
+                                  struct upb_msg_field *f, uint8_t **outptr)
+{
+  /* TODO: need to have the field number also. */
+  UPB_CHECK(upb_put_UINT32(buf, end, f->type, outptr));
+  return UPB_STATUS_OK;
+}
+
+/* Serializes the next set of bytes into buf (which has size len).  Returns
+ * UPB_STATUS_OK if serialization is complete, or UPB_STATUS_NEED_MORE_DATA
+ * if there is more data from the message left to be serialized.
+ *
+ * The number of bytes written to buf is returned in *read.  This will be
+ * equal to len unless we finished serializing. */
+upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
+                               void *_buf, size_t len, size_t *written)
+{
+  uint8_t *buf = _buf;
+  uint8_t *end = buf + len;
+  uint8_t *const start = buf;
+  int i = s->top->field_iter;
+  int j = s->top->elem_iter;
+  void *msg = s->top->msg;
+  struct upb_msg *m = s->top->m;
+
+  while(buf < end) {
+    struct upb_msg_field *f = &m->fields[i];
+    union upb_value_ptr p = upb_msg_getptr(msg, f);
+    serialize_tag(buf, end, f, &buf);
+    if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
+    } else if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
+    } else if(upb_isstring(f)) {
+    } else {
+      upb_serialize_value(buf, end, f->type, p, &buf);
+    }
+  }
+  *written = buf - start;
+  return UPB_STATUS_OK;
+}
+
 /* Comparison.  ***************************************************************/
 
 bool upb_value_eql(union upb_value_ptr p1, union upb_value_ptr p2,

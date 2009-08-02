@@ -99,7 +99,9 @@ struct upb_parse_state {
   upb_submsg_end_cb   submsg_end_cb;
 };
 
-/* Parses up to len bytes of protobuf data out of buf, calling cb as needed.
+/* Parses up to len bytes of protobuf data out of buf, calling the appropriate
+ * callbacks as values are parsed.
+ *
  * The function returns a status indicating the success of the operation.  Data
  * is parsed until no more data can be read from buf, or the callback returns an
  * error like UPB_STATUS_USER_CANCELLED, or an error occurs.
@@ -109,7 +111,10 @@ struct upb_parse_state {
  * of the currently provided data.
  *
  * The next call to upb_parse must be the first byte after buf + *read, even in
- * the case that *read > len. */
+ * the case that *read > len.
+ *
+ * TODO: see if we can provide the following guarantee efficiently:
+ *   *read will always be >= len. */
 upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
                        size_t *read);
 

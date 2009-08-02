@@ -4,9 +4,9 @@ CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-O3 -fomit-frame-pointer -Wall -Wextra -g -DUPB_UNALIGNED_READS_OK -DNDEBUG $(INCLUDE)
+CPPFLAGS=-O3 -fomit-frame-pointer -Wall -Wextra -g -DNDEBUG $(INCLUDE)
 OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \
-    src/upb_string.o src/upb_text.o descriptor/descriptor.o
+    src/upb_string.o src/upb_text.o src/upb_serialize.o descriptor/descriptor.o
 SRC=src/*.c src/*.h descriptor/*.c descriptor/*.h tests/*.c tests/*.h tools/*.c
 ALL=$(OBJ) src/libupb.a tests/test_table tests/tests tools/upbc benchmark/benchmark
 all: $(ALL)
