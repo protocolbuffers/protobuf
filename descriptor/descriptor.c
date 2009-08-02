@@ -343,172 +343,325 @@ static UPB_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto) google_protobuf_E
 };
 static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18] = {
 
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[34],   /* "FileDescriptorSet" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[0],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[33],   /* "FileDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[1],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0b}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = true,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[24],   /* "DescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[2],
-    .extension = 0,   /* Not set. */
     .nested_type = &google_protobuf_DescriptorProto_arrays[1],
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x13}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = true,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[31],   /* "FieldDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[4],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = &google_protobuf_EnumDescriptorProto_arrays[0],
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[26],   /* "EnumDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[5],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[28],   /* "EnumValueDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[6],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[47],   /* "ServiceDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[7],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[41],   /* "MethodDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[8],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x33}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = true,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[35],   /* "FileOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[9],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = &google_protobuf_EnumDescriptorProto_arrays[1],
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[0],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x23}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[40],   /* "MessageOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[10],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[1],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x33}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = true,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[32],   /* "FieldOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[11],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = &google_protobuf_EnumDescriptorProto_arrays[2],
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[2],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x23}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[27],   /* "EnumOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[12],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[3],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x23}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[29],   /* "EnumValueOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[13],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[4],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x23}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[48],   /* "ServiceOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[14],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[5],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x23}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = true,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[42],   /* "MethodOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[15],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[6],
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0b}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = true,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[68],   /* "UninterpretedOption" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[16],
-    .extension = 0,   /* Not set. */
     .nested_type = &google_protobuf_DescriptorProto_arrays[2],
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[30],   /* "ExtensionRange" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[3],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .field = true,
+    .nested_type = false,
+    .enum_type = false,
+    .extension_range = false,
+    .extension = false,
+    .options = false,
+  }},
     .name = &strings[43],   /* "NamePart" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[17],
-    .extension = 0,   /* Not set. */
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
     .extension_range = 0,   /* Not set. */
+    .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
 };
 static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_values[1] = {
 
-  {.set_flags = {.bytes = {0x8b}},
+  {.set_flags = {.has = {
+    .name = true,
+    .package = true,
+    .dependency = false,
+    .message_type = true,
+    .enum_type = false,
+    .service = false,
+    .extension = false,
+    .options = true,
+  }},
     .name = &strings[74],   /* "descriptor/descriptor.proto" */
     .package = &strings[85],   /* "google.protobuf" */
     .dependency = 0,   /* Not set. */
@@ -521,69 +674,114 @@ static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_v
 };
 static google_protobuf_FileDescriptorSet google_protobuf_FileDescriptorSet_values[1] = {
 
-  {.set_flags = {.bytes = {0x01}},
+  {.set_flags = {.has = {
+    .file = true,
+  }},
     .file = &google_protobuf_FileDescriptorProto_arrays[0],
   },
 };
 static google_protobuf_DescriptorProto_ExtensionRange google_protobuf_DescriptorProto_ExtensionRange_values[7] = {
 
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .start = true,
+    .end = true,
+  }},
     .start = 1000,
     .end = 536870912,
   },
 };
 static google_protobuf_FileOptions google_protobuf_FileOptions_values[1] = {
 
-  {.set_flags = {.bytes = {0x0b}},
+  {.set_flags = {.has = {
+    .java_package = true,
+    .java_outer_classname = true,
+    .optimize_for = true,
+    .java_multiple_files = false,
+    .uninterpreted_option = false,
+  }},
     .java_package = &strings[69],   /* "com.google.protobuf" */
     .java_outer_classname = &strings[25],   /* "DescriptorProtos" */
-    .java_multiple_files = 0,   /* Not set. */
     .optimize_for = 1,
+    .java_multiple_files = 0,   /* Not set. */
     .uninterpreted_option = 0,   /* Not set. */
   },
 };
 static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_values[4] = {
 
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .value = true,
+    .options = false,
+  }},
     .name = &strings[67],   /* "Type" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[0],
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .value = true,
+    .options = false,
+  }},
     .name = &strings[39],   /* "Label" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[1],
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .value = true,
+    .options = false,
+  }},
     .name = &strings[44],   /* "OptimizeMode" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[2],
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .value = true,
+    .options = false,
+  }},
     .name = &strings[23],   /* "CType" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[3],
     .options = 0,   /* Not set. */
@@ -591,760 +789,1427 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
 };
 static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_values[63] = {
 
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[84],   /* "file" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 3,
     .type = 11,
     .type_name = &strings[11],   /* ".google.protobuf.FileDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[104],   /* "package" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[72],   /* "dependency" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 3,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[94],   /* "message_type" */
+    .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 3,
     .type = 11,
     .type_name = &strings[0],   /* ".google.protobuf.DescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[77],   /* "enum_type" */
+    .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 3,
     .type = 11,
     .type_name = &strings[2],   /* ".google.protobuf.EnumDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[107],   /* "service" */
+    .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 3,
     .type = 11,
     .type_name = &strings[17],   /* ".google.protobuf.ServiceDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[80],   /* "extension" */
+    .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 3,
     .type = 11,
     .type_name = &strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 8,
     .label = 1,
     .type = 11,
     .type_name = &strings[12],   /* ".google.protobuf.FileOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[83],   /* "field" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
     .type_name = &strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[99],   /* "nested_type" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 3,
     .type = 11,
     .type_name = &strings[0],   /* ".google.protobuf.DescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[77],   /* "enum_type" */
+    .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 3,
     .type = 11,
     .type_name = &strings[2],   /* ".google.protobuf.EnumDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[81],   /* "extension_range" */
+    .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 3,
     .type = 11,
     .type_name = &strings[1],   /* ".google.protobuf.DescriptorProto.ExtensionRange" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[80],   /* "extension" */
+    .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 3,
     .type = 11,
     .type_name = &strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 1,
     .type = 11,
     .type_name = &strings[14],   /* ".google.protobuf.MessageOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[108],   /* "start" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 5,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[76],   /* "end" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
     .type = 5,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[79],   /* "extendee" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[100],   /* "number" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 5,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[92],   /* "label" */
+    .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 1,
     .type = 14,
     .type_name = &strings[7],   /* ".google.protobuf.FieldDescriptorProto.Label" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[110],   /* "type" */
+    .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 1,
     .type = 14,
     .type_name = &strings[8],   /* ".google.protobuf.FieldDescriptorProto.Type" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[111],   /* "type_name" */
+    .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[71],   /* "default_value" */
+    .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 8,
     .label = 1,
     .type = 11,
     .type_name = &strings[9],   /* ".google.protobuf.FieldOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[113],   /* "value" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
     .type_name = &strings[4],   /* ".google.protobuf.EnumValueDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 11,
     .type_name = &strings[3],   /* ".google.protobuf.EnumOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[100],   /* "number" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
     .type = 5,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 11,
     .type_name = &strings[5],   /* ".google.protobuf.EnumValueOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[95],   /* "method" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
     .type_name = &strings[15],   /* ".google.protobuf.MethodDescriptorProto" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 11,
     .type_name = &strings[18],   /* ".google.protobuf.ServiceOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[87],   /* "input_type" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[103],   /* "output_type" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[102],   /* "options" */
+    .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 1,
     .type = 11,
     .type_name = &strings[16],   /* ".google.protobuf.MethodOptions" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[91],   /* "java_package" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[90],   /* "java_outer_classname" */
+    .extendee = 0,   /* Not set. */
     .number = 8,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x5f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = true,
+    .options = false,
+  }},
     .name = &strings[101],   /* "optimize_for" */
+    .extendee = 0,   /* Not set. */
     .number = 9,
     .label = 1,
     .type = 14,
     .type_name = &strings[13],   /* ".google.protobuf.FileOptions.OptimizeMode" */
-    .extendee = 0,   /* Not set. */
     .default_value = &strings[45],   /* "SPEED" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x4f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = true,
+    .options = false,
+  }},
     .name = &strings[89],   /* "java_multiple_files" */
+    .extendee = 0,   /* Not set. */
     .number = 10,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = &strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x4f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = true,
+    .options = false,
+  }},
     .name = &strings[93],   /* "message_set_wire_format" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = &strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[70],   /* "ctype" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 14,
     .type_name = &strings[10],   /* ".google.protobuf.FieldOptions.CType" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[105],   /* "packed" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x4f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = true,
+    .options = false,
+  }},
     .name = &strings[73],   /* "deprecated" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = &strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[78],   /* "experimental_map_key" */
+    .extendee = 0,   /* Not set. */
     .number = 9,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[112],   /* "uninterpreted_option" */
+    .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
     .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x1f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = true,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[96],   /* "name" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
     .type_name = &strings[20],   /* ".google.protobuf.UninterpretedOption.NamePart" */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[86],   /* "identifier_value" */
+    .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[106],   /* "positive_int_value" */
+    .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 1,
     .type = 4,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[98],   /* "negative_int_value" */
+    .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 1,
     .type = 3,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[75],   /* "double_value" */
+    .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 1,
     .type = 1,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[109],   /* "string_value" */
+    .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 1,
     .type = 12,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[97],   /* "name_part" */
+    .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 2,
     .type = 9,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x0f}},
+  {.set_flags = {.has = {
+    .name = true,
+    .extendee = false,
+    .number = true,
+    .label = true,
+    .type = true,
+    .type_name = false,
+    .default_value = false,
+    .options = false,
+  }},
     .name = &strings[88],   /* "is_extension" */
+    .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 2,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .extendee = 0,   /* Not set. */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
 };
 static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescriptorProto_values[25] = {
 
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[51],   /* "TYPE_DOUBLE" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[55],   /* "TYPE_FLOAT" */
     .number = 2,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[58],   /* "TYPE_INT64" */
     .number = 3,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[66],   /* "TYPE_UINT64" */
     .number = 4,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[57],   /* "TYPE_INT32" */
     .number = 5,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[54],   /* "TYPE_FIXED64" */
     .number = 6,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[53],   /* "TYPE_FIXED32" */
     .number = 7,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[49],   /* "TYPE_BOOL" */
     .number = 8,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[64],   /* "TYPE_STRING" */
     .number = 9,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[56],   /* "TYPE_GROUP" */
     .number = 10,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[59],   /* "TYPE_MESSAGE" */
     .number = 11,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[50],   /* "TYPE_BYTES" */
     .number = 12,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[65],   /* "TYPE_UINT32" */
     .number = 13,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[52],   /* "TYPE_ENUM" */
     .number = 14,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[60],   /* "TYPE_SFIXED32" */
     .number = 15,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[61],   /* "TYPE_SFIXED64" */
     .number = 16,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[62],   /* "TYPE_SINT32" */
     .number = 17,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[63],   /* "TYPE_SINT64" */
     .number = 18,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[36],   /* "LABEL_OPTIONAL" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[38],   /* "LABEL_REQUIRED" */
     .number = 2,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[37],   /* "LABEL_REPEATED" */
     .number = 3,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[45],   /* "SPEED" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[21],   /* "CODE_SIZE" */
     .number = 2,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[22],   /* "CORD" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.bytes = {0x03}},
+  {.set_flags = {.has = {
+    .name = true,
+    .number = true,
+    .options = false,
+  }},
     .name = &strings[46],   /* "STRING_PIECE" */
     .number = 2,
     .options = 0,   /* Not set. */

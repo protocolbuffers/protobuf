@@ -467,12 +467,18 @@ static void write_message_c(void *data, struct upb_msg *m,
         struct upb_msg *m = e->field->ref.msg;
         void *msgdata = val.msg;
         /* Print set flags. */
-        fputs("  {.set_flags = {.bytes = {", stream);
-        for(unsigned int j = 0; j < m->set_flags_bytes; j++) {
-          fprintf(stream, "0x%02hhx", *(uint8_t*)(val.msg + j));
-          if(j < m->set_flags_bytes - 1) fputs(", ", stream);
+        fputs("  {.set_flags = {.has = {\n", stream);
+        for(unsigned int j = 0; j < m->num_fields; j++) {
+          struct upb_msg_field *f = &m->fields[j];
+          google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
+          fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(*fd->name));
+          if(upb_msg_isset(msgdata, f))
+            fprintf(stream, "true");
+          else
+            fprintf(stream, "false");
+          fputs(",\n", stream);
         }
-        fputs("}},\n", stream);
+        fputs("  }},\n", stream);
         /* Print msg data. */
         for(unsigned int j = 0; j < m->num_fields; j++) {
           struct upb_msg_field *f = &m->fields[j];

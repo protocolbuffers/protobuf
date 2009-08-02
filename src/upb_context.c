@@ -195,14 +195,12 @@ static bool insert_message(struct upb_strtable *t,
   upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
-  //if(d->set_flags.has.nested_type)  (re-enable when protoc sets)
-  if(d->nested_type)
+  if(d->set_flags.has.nested_type)
     for(unsigned int i = 0; i < d->nested_type->len; i++)
       if(!insert_message(t, d->nested_type->elements[i], &fqname, sort))
         return false;
 
-  //if(d->set_flags.has.enum_type)
-  if(d->enum_type)
+  if(d->set_flags.has.enum_type)
     for(unsigned int i = 0; i < d->enum_type->len; i++)
       if(!insert_enum(t, d->enum_type->elements[i], &fqname))
         return false;
