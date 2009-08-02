@@ -195,6 +195,9 @@ INLINE size_t upb_get_tag_size(uint32_t fieldnum) {
   return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
 }
 
+upb_status_t upb_serialize_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                                 union upb_value_ptr v, uint8_t **outbuf);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

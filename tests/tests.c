@@ -4,10 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "descriptor.c"
-#include "upb_enum.c"
-#include "upb_parse.c"
 #include "upb_context.c"
+#include "upb_enum.c"
 #include "upb_msg.c"
+#include "upb_parse.c"
+#include "upb_serialize.c"
 #include "upb_table.c"
 #include "upb_text.c"
 
