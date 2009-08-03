@@ -22,10 +22,12 @@ protoc_middleman: addressbook.proto
 	@touch protoc_middleman
 
 add_person_cpp: add_person.cc protoc_middleman
-	c++ add_person.cc addressbook.pb.cc -lprotobuf -lpthread -o add_person_cpp
+	pkg-config --cflags protobuf  # fails if protobuf is not installed
+	c++ add_person.cc addressbook.pb.cc -o add_person_cpp `pkg-config --cflags --libs protobuf`
 
 list_people_cpp: list_people.cc protoc_middleman
-	c++ list_people.cc addressbook.pb.cc -lprotobuf -lpthread -o list_people_cpp
+	pkg-config --cflags protobuf  # fails if protobuf is not installed
+	c++ list_people.cc addressbook.pb.cc -o list_people_cpp `pkg-config --cflags --libs protobuf`
 
 javac_middleman: AddPerson.java ListPeople.java protoc_middleman
 	javac AddPerson.java ListPeople.java com/example/tutorial/AddressBookProtos.java
