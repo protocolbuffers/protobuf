@@ -119,5 +119,5 @@ AC_CXX_STL_HASH
 
 AC_CONFIG_SUBDIRS([gtest])
 
-AC_CONFIG_FILES([Makefile src/Makefile ])
+AC_CONFIG_FILES([Makefile src/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT

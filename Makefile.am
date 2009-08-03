@@ -32,6 +32,9 @@ clean-local:
 	  cd gtest && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = protobuf.pc protobuf-lite.pc
+
 EXTRA_DIST =                                                                 \
   autogen.sh                                                                 \
   generate_descriptor_proto.sh                                               \
