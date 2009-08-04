@@ -3,12 +3,11 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <!-- remove the reference to the parent until the google repo is synced with central -->
-  <!--<parent>
+  <parent>
     <groupId>com.google</groupId>
     <artifactId>google</artifactId>
     <version>1</version>
-  </parent>-->
+  </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
   <version>2.1.1-SNAPSHOT</version>
@@ -33,20 +32,6 @@
       scm:svn:http://protobuf.googlecode.com/svn/trunk/
     </connection>
   </scm>
-  <!-- this is temporarily copied from the parent pom.  remove this section when that is used -->
-  <distributionManagement>
-    <repository>
-      <id>google-maven-repository</id>
-      <name>Google Maven Repository</name>
-      <url>https://google-maven-repository.googlecode.com/svn/trunk/repository/</url>
-    </repository>
-    <snapshotRepository>
-      <id>google-maven-snapshot-repository</id>
-      <name>Google Maven Snapshot Repository</name>
-      <url>https://google-maven-repository.googlecode.com/svn/trunk/snapshot-repository/</url>
-      <uniqueVersion>true</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -139,4 +124,53 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>lite</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>lite-compile</id>
+                <phase>compile</phase>
+                <configuration>
+                  <includes>
+                    <include>**/AbstractMessageLite.java</include>
+                    <include>**/ByteString.java</include>
+                    <include>**/CodedInputStream.java</include>
+                    <include>**/CodedOutputStream.java</include>
+                    <include>**/ExtensionRegistryLite.java</include>
+                    <include>**/FieldSet.java</include>
+                    <include>**/GeneratedMessageLite.java</include>
+                    <include>**/InvalidProtocolBufferException.java</include>
+                    <include>**/Internal.java</include>
+                    <include>**/MessageLite.java</include>
+                    <include>**/UninitializedMessageException.java</include>
+                    <include>**/WireFormat.java</include>
+                  </includes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>lite-test-compile</id>
+                <phase>test-compile</phase>
+                <configuration>
+                  <includes>
+                    <include>**/LiteTest.java</include>
+                  </includes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <classifier>lite</classifier>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
