@@ -7,7 +7,7 @@ Installation - With Maven
 =========================
 
 The Protocol Buffers build is managed using Maven.  If you would
-rather build without Maven, see the next section.
+rather build without Maven, see below.
 
 1) Install Apache Maven if you don't have it:
 
@@ -39,6 +39,28 @@ rather build without Maven, see the next section.
      $ mvn package
 
    The .jar will be placed in the "target" directory.
+   
+Installation - 'Lite' Version - With Maven
+=========================
+
+Building the 'lite' version of the Java Protocol Buffers library is
+the same as building the full version, except that all commands are
+run using the 'lite' profile.  (see
+http://maven.apache.org/guides/introduction/introduction-to-profiles.html)
+
+E.g. to install the lite version of the jar, you would run:
+
+  $ mvn install -P lite
+  
+The resulting artifact has the 'lite' classifier.  To reference it
+for dependency resolution, you would specify it as:
+
+  <dependency>
+    <groupId>com.google.protobuf</groupId>
+    <artifactId>protobuf-java</artifactId>
+    <version>${version}</version>
+    <classifier>lite</classifier>
+  </dependency>
 
 Installation - Without Maven
 ============================
