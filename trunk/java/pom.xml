@@ -153,6 +153,14 @@
             </configuration>
           </plugin>
           <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/LiteTest.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
             <configuration>
               <classifier>lite</classifier>
