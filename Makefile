@@ -13,6 +13,9 @@ all: $(ALL)
 clean:
 	rm -f $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.*
 
+test: tests/tests
+	./tests/tests
+
 src/libupb.a: $(OBJ)
 	ar rcs src/libupb.a $(OBJ)
 tests/test_table: src/libupb.a

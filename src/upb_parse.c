@@ -38,7 +38,7 @@ struct upb_type_info upb_type_info[] = {
 upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
                                      uint8_t **outbuf)
 {
-  uint8_t *const *maxend = buf + 10;
+  uint8_t *const maxend = buf + 10;
   uint8_t last = 0x80;
   *val = 0;
   int bitpos;
