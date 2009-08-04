@@ -131,37 +131,26 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>lite-compile</id>
-                <phase>compile</phase>
-                <configuration>
-                  <includes>
-                    <include>**/AbstractMessageLite.java</include>
-                    <include>**/ByteString.java</include>
-                    <include>**/CodedInputStream.java</include>
-                    <include>**/CodedOutputStream.java</include>
-                    <include>**/ExtensionRegistryLite.java</include>
-                    <include>**/FieldSet.java</include>
-                    <include>**/GeneratedMessageLite.java</include>
-                    <include>**/InvalidProtocolBufferException.java</include>
-                    <include>**/Internal.java</include>
-                    <include>**/MessageLite.java</include>
-                    <include>**/UninitializedMessageException.java</include>
-                    <include>**/WireFormat.java</include>
-                  </includes>
-                </configuration>
-              </execution>
-              <execution>
-                <id>lite-test-compile</id>
-                <phase>test-compile</phase>
-                <configuration>
-                  <includes>
-                    <include>**/LiteTest.java</include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
+            <configuration>
+              <includes>
+                <include>**/AbstractMessageLite.java</include>
+                <include>**/ByteString.java</include>
+                <include>**/CodedInputStream.java</include>
+                <include>**/CodedOutputStream.java</include>
+                <include>**/ExtensionRegistryLite.java</include>
+                <include>**/FieldSet.java</include>
+                <include>**/GeneratedMessageLite.java</include>
+                <include>**/InvalidProtocolBufferException.java</include>
+                <include>**/Internal.java</include>
+                <include>**/MessageLite.java</include>
+                <include>**/UninitializedMessageException.java</include>
+                <include>**/WireFormat.java</include>
+              </includes>
+              <testIncludes>
+                <testInclude>**/LiteTest.java</testInclude>
+                <testInclude>**/*Lite.java</testInclude>
+              </testIncludes>
+            </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-jar-plugin</artifactId>
