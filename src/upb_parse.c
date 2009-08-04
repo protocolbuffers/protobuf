@@ -35,47 +35,18 @@ struct upb_type_info upb_type_info[] = {
 
 /* This is called by the inline version of the function if the varint turns out
  * to be >= 2 bytes. */
-upb_status_t upb_get_v_uint64_t_full(uint8_t *restrict buf, uint8_t *end,
-                                     uint64_t *restrict val,
+upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
                                      uint8_t **outbuf)
 {
+  uint8_t *const *maxend = buf + 10;
   uint8_t last = 0x80;
   *val = 0;
-  for(int bitpos = 0; buf < (uint8_t*)end && (last & 0x80); buf++, bitpos += 7)
+  int bitpos;
+  for(bitpos = 0; buf < (uint8_t*)end && (last & 0x80); buf++, bitpos += 7)
     *val |= ((uint64_t)((last = *buf) & 0x7F)) << bitpos;
-  if(last & 0x80) return UPB_STATUS_NEED_MORE_DATA;
+  if(buf >= end && buf <= maxend && (last & 0x80)) return UPB_STATUS_NEED_MORE_DATA;
+  if(buf > maxend) return UPB_ERROR_UNTERMINATED_VARINT;
   *outbuf = buf;
-  return UPB_STATUS_OK;
-}
-
-static upb_status_t skip_v_uint64_t(uint8_t *buf, uint8_t *end, uint8_t **outbuf)
-{
-  /* TODO: fix and optimize. */
-  uint8_t last = 0x80;
-  for(; buf < end && (last & 0x80); buf++) {
-    last = *buf;
-  }
-
-  if(last & 0x80) {
-    return UPB_ERROR_UNTERMINATED_VARINT;
-  }
-  *outbuf = buf;
-  return UPB_STATUS_OK;
-}
-
-static upb_status_t skip_f_uint32_t(uint8_t *buf, uint8_t *end, uint8_t **outbuf)
-{
-  uint8_t *uint32_end = buf + sizeof(uint32_t);
-  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
-  *outbuf = uint32_end;
-  return UPB_STATUS_OK;
-}
-
-static upb_status_t skip_f_uint64_t(uint8_t *buf, uint8_t *end, uint8_t **outbuf)
-{
-  uint8_t *uint64_end = buf + sizeof(uint64_t);
-  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
-  *outbuf = uint64_end;
   return UPB_STATUS_OK;
 }
 
@@ -94,9 +65,9 @@ static upb_status_t skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t 
                                     uint8_t **outbuf)
 {
   switch(wt) {
-    case UPB_WIRE_TYPE_VARINT: return skip_v_uint64_t(buf, end, outbuf);
-    case UPB_WIRE_TYPE_64BIT:  return skip_f_uint64_t(buf, end, outbuf);
-    case UPB_WIRE_TYPE_32BIT:  return skip_f_uint32_t(buf, end, outbuf);
+    case UPB_WIRE_TYPE_VARINT: return upb_skip_v_uint64_t(buf, end, outbuf);
+    case UPB_WIRE_TYPE_64BIT:  return upb_skip_f_uint64_t(buf, end, outbuf);
+    case UPB_WIRE_TYPE_32BIT:  return upb_skip_f_uint32_t(buf, end, outbuf);
     case UPB_WIRE_TYPE_START_GROUP: /* TODO: skip to matching end group. */
     case UPB_WIRE_TYPE_END_GROUP: return UPB_STATUS_OK;
     default: return UPB_ERROR_ILLEGAL;

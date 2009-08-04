@@ -16,6 +16,7 @@ clean:
 src/libupb.a: $(OBJ)
 	ar rcs src/libupb.a $(OBJ)
 tests/test_table: src/libupb.a
+tests/tests: src/libupb.a
 tools/upbc: src/libupb.a
 benchmark/benchmark: src/libupb.a benchmark/google_messages.pb.h benchmark/google_messages.pb.o benchmark/benchmark.o
 	$(CXX) $(CPPFLAGS) -o benchmark/benchmark benchmark/google_messages.pb.o benchmark/benchmark.cc src/libupb.a -lm -lprotobuf -lpthread
