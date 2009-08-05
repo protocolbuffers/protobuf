@@ -2,25 +2,26 @@
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
 
-.PHONY: all clean
+.PHONY: all clean test benchmarks
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-O3 -fomit-frame-pointer -Wall -Wextra -g -DNDEBUG $(INCLUDE)
+CPPFLAGS=-O3 -Wall -Wextra -g $(INCLUDE) $(strip $(shell cat perf-cppflags))
 
-ALL=deps $(OBJ) src/libupb.a tests/test_table tests/tests tools/upbc
+LIBUPB=src/libupb.a
+ALL=deps $(OBJ) $(LIBUPB) tests/test_table tests/tests tools/upbc
 all: $(ALL)
 clean:
-	rm -f $(call rwildcard,,*.o) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmark/b_*
+	rm -f $(call rwildcard,,*.o) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 
 # The core library (src/libupb.a)
 OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \
     src/upb_string.o src/upb_text.o src/upb_serialize.o descriptor/descriptor.o
 SRC=$(call rwildcard,,*.c)
 HEADERS=$(call rwildcard,,*.h)
-src/libupb.a: $(OBJ)
-	ar rcs src/libupb.a $(OBJ)
+$(LIBUPB): $(OBJ)
+	ar rcs $(LIBUPB) $(OBJ)
 
 # Tests
 test: tests/tests
@@ -32,6 +33,77 @@ tests/tests: src/libupb.a
 tools/upbc: src/libupb.a
 
 # Benchmarks
+BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
+           benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
+           benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
+           benchmarks/b.parsetostruct_googlemessage2.upb_table_byref \
+           benchmarks/b.parsetostruct_googlemessage1.proto2_table \
+           benchmarks/b.parsetostruct_googlemessage2.proto2_table \
+           benchmarks/b.parsetostruct_googlemessage1.proto2_compiled \
+           benchmarks/b.parsetostruct_googlemessage2.proto2_compiled
+benchmarks: $(BENCHMARKS)
+
+benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
+	# TODO: replace with upbc.
+	protoc benchmarks/google_messages.proto -obenchmarks/google_messages.proto.pb
+
+benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
+	protoc benchmarks/google_messages.proto --cpp_out=.
+
+benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
+benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
+benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
+benchmarks/b.parsetostruct_googlemessage2.upb_table_byref: \
+    benchmarks/parsetostruct.upb_table.c $(LIBUPB) benchmarks/google_messages.proto.pb
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byval $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DBYREF=false $(LIBUPB)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byref $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DBYREF=true $(LIBUPB)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byval $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DBYREF=false $(LIBUPB)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byref $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DBYREF=true $(LIBUPB)
+
+benchmarks/b.parsetostruct_googlemessage1.proto2_table \
+benchmarks/b.parsetostruct_googlemessage2.proto2_table: \
+    benchmarks/parsetostruct.proto2_table.cc benchmarks/google_messages.pb.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_table $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.proto2_table $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
+
+benchmarks/b.parsetostruct_googlemessage1.proto2_compiled \
+benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
+    benchmarks/parsetostruct.proto2_compiled.cc \
+    benchmarks/parsetostruct.proto2_table.cc benchmarks/google_messages.pb.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_compiled $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.proto2_compiled $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
 
 -include deps
 deps: $(SRC) $(HEADERS) gen-deps.sh Makefile

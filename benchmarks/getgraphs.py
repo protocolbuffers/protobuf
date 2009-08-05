@@ -26,7 +26,7 @@ for benchmark, values in benchmarks.items():
   values.sort(cmp)
   variants = [x[0] for x in values]
   values = [x[1] for x in values]
-  scaling = 300
+  scaling = 400
   encoded_values = [encode((x * 4096 / scaling) - 1) for x in values]
   legend = "chdl=%s" % ("|".join(variants))
   colors = "chco=%s" % ("|".join([color_map[x] for x in variants]))

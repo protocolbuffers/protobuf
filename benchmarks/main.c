@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <time.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 
 static bool initialize();
 static void cleanup();
@@ -9,6 +11,18 @@ static size_t run();
 
 int main (int argc, char *argv[])
 {
+  (void)argc;
+
+  /* Change cwd to where the binary is. */
+  char *lastslash = strrchr(argv[0], '/');
+  char *progname = argv[0];
+  if(lastslash) {
+    *lastslash = '\0';
+    chdir(argv[0]);
+    *lastslash = '/';
+    progname = lastslash + 3;  /* "/b_" */
+  }
+
   if(!initialize()) {
     fprintf(stderr, "%s: failed to initialize\n", argv[0]);
     return 1;
@@ -26,7 +40,7 @@ int main (int argc, char *argv[])
     total_bytes += bytes;
   }
   double elapsed = ((double)clock() - before) / CLOCKS_PER_SEC;
-  printf("%s: %d\n", argv[0], (int)(total_bytes / elapsed / (1 << 20)));
+  printf("%s:%d\n", progname, (int)(total_bytes / elapsed / (1 << 20)));
   cleanup();
   return 0;
 }
