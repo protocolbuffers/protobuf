@@ -552,7 +552,7 @@ upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
   uint8_t *end = buf + len;
   uint8_t *const start = buf;
   int i = s->top->field_iter;
-  int j = s->top->elem_iter;
+  //int j = s->top->elem_iter;
   void *msg = s->top->msg;
   struct upb_msg *m = s->top->m;
 

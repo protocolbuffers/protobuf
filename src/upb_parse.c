@@ -180,8 +180,8 @@ upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
       } else {
         if(upb_isstringtype(ft))
           str_cb(udata, buf, UPB_MIN(delim_end, end) - buf, delim_end - buf, udesc);
-        else
-          ;/* Set a marker for packed arrays. */
+        //else
+        //  /* Set a marker for packed arrays. */
         buf = delim_end;  /* Note that this could be greater than end. */
       }
     } else {  /* Scalar (non-delimited) value. */
