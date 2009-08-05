@@ -2,7 +2,7 @@
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
 
-.PHONY: all clean test benchmarks
+.PHONY: all clean test benchmarks benchmark
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
@@ -33,15 +33,21 @@ tests/tests: src/libupb.a
 tools/upbc: src/libupb.a
 
 # Benchmarks
-BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
-           benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
-           benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
-           benchmarks/b.parsetostruct_googlemessage2.upb_table_byref \
+UPB_BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
+               benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
+               benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
+               benchmarks/b.parsetostruct_googlemessage2.upb_table_byref
+
+BENCHMARKS=$(UPB_BENCHMARKS) \
            benchmarks/b.parsetostruct_googlemessage1.proto2_table \
            benchmarks/b.parsetostruct_googlemessage2.proto2_table \
            benchmarks/b.parsetostruct_googlemessage1.proto2_compiled \
            benchmarks/b.parsetostruct_googlemessage2.proto2_compiled
+upb_benchmarks: $(UPB_BENCHMARKS)
 benchmarks: $(BENCHMARKS)
+benchmark:
+	@rm -f benchmarks/results
+	@for test in benchmarks/b.* ; do ./$$test ; done
 
 benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
 	# TODO: replace with upbc.
@@ -107,4 +113,4 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 
 -include deps
 deps: $(SRC) $(HEADERS) gen-deps.sh Makefile
-	./gen-deps.sh $(SRC)
+	@./gen-deps.sh $(SRC)

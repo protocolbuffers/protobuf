@@ -8,7 +8,7 @@ static struct upb_context c;
 static struct upb_string str;
 static struct upb_msg_parse_state s;
 static struct upb_msg *m;
-static void *data;
+static void *data[NUM_MESSAGES];
 
 static bool initialize()
 {
@@ -37,8 +37,8 @@ static bool initialize()
   }
 
   m = e->ref.msg;
-  data = upb_msgdata_new(m);
-  upb_msg_parse_init(&s, data, m, false, true);
+  for(int i = 0; i < 32; i++)
+    data[i] = upb_msgdata_new(m);
 
   /* Read the message data itself. */
   if(!upb_strreadfile(MESSAGE_FILE, &str)) {
@@ -50,17 +50,19 @@ static bool initialize()
 
 static void cleanup()
 {
+  for(int i = 0; i < 32; i++)
+    upb_msgdata_free(data[i], m, true);
   upb_strfree(str);
   upb_context_free(&c);
 }
 
-static size_t run()
+static size_t run(int i)
 {
   size_t read;
-  upb_msg_parse_reset(&s, data, m, false, BYREF);
+  upb_msg_parse_reset(&s, data[i%NUM_MESSAGES], m, false, BYREF);
   upb_status_t status = upb_msg_parse(&s, str.ptr, str.byte_len, &read);
   if(status != UPB_STATUS_OK && read != str.byte_len) {
-    fprintf(stderr, "Error. :(  error=%d, read=%lu\n", status, read);
+    fprintf(stderr, "Error. :(  error=%d, read=%zu\n", status, read);
     return 0;
   }
   return read;

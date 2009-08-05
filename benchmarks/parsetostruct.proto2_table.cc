@@ -8,7 +8,7 @@
 
 static std::string str;
 static google::protobuf::DynamicMessageFactory factory;
-static google::protobuf::Message *msg;
+static google::protobuf::Message *msg[NUM_MESSAGES];
 
 static bool initialize()
 {
@@ -25,18 +25,20 @@ static bool initialize()
   /* Create the DynamicMessage. */
   const google::protobuf::Message *dynamic_msg_prototype =
       factory.GetPrototype(MESSAGE_CIDENT::descriptor());
-  msg = dynamic_msg_prototype->New();
+  for(int i = 0; i < NUM_MESSAGES; i++)
+    msg[i] = dynamic_msg_prototype->New();
   return true;
 }
 
 static void cleanup()
 {
-  delete msg;
+  for(int i = 0; i < NUM_MESSAGES; i++)
+    delete msg[i];
 }
 
-static size_t run()
+static size_t run(int i)
 {
-  if(!msg->ParseFromString(str)) {
+  if(!msg[i%NUM_MESSAGES]->ParseFromString(str)) {
     fprintf(stderr, "Error parsing with proto2.\n");
     return 0;
   }

@@ -5,9 +5,15 @@
 #include <unistd.h>
 #include <string.h>
 
+/* Cycle between a bunch of different messages, to avoid performance
+ * variations due to memory effects of a particular allocation pattern. */
+#ifndef NUM_MESSAGES
+#define NUM_MESSAGES 32
+#endif
+
 static bool initialize();
 static void cleanup();
-static size_t run();
+static size_t run(int i);
 
 int main (int argc, char *argv[])
 {
@@ -32,7 +38,7 @@ int main (int argc, char *argv[])
   clock_t before = clock();
   for(int i = 0; true; i++) {
     if((i & 0xFF) == 0 && (clock() - before > CLOCKS_PER_SEC)) break;
-    size_t bytes = run();
+    size_t bytes = run(i);
     if(bytes == 0) {
       fprintf(stderr, "%s: failed.\n", argv[0]);
       return 2;
