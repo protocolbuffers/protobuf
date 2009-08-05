@@ -39,9 +39,9 @@ rather build without Maven, see below.
      $ mvn package
 
    The .jar will be placed in the "target" directory.
-   
+
 Installation - 'Lite' Version - With Maven
-=========================
+==========================================
 
 Building the 'lite' version of the Java Protocol Buffers library is
 the same as building the full version, except that all commands are
@@ -51,7 +51,7 @@ http://maven.apache.org/guides/introduction/introduction-to-profiles.html)
 E.g. to install the lite version of the jar, you would run:
 
   $ mvn install -P lite
-  
+
 The resulting artifact has the 'lite' classifier.  To reference it
 for dependency resolution, you would specify it as:
 
