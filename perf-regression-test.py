@@ -27,4 +27,4 @@ for line in wd_file:
   test, speed = line.split(":")
   baseline_val = baseline[test]
   change = float(int(speed) - baseline_val) / float(baseline_val) * 100
-  print "%s: %d -> %d (%f)" % (test, baseline_val, speed, change)
+  print "%s: %d -> %d (%0.2f)" % (test, baseline_val, int(speed), change)

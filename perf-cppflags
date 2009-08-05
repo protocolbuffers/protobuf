@@ -1,1 +1,1 @@
--DNDEBUG -fomit-frame-pointer -msse3
+-DNDEBUG -fomit-frame-pointer -msse3 -m32
