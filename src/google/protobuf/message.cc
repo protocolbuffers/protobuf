@@ -38,6 +38,7 @@
 #include <google/protobuf/message.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -210,14 +211,25 @@ class GeneratedMessageFactory : public MessageFactory {
   hash_map<const Descriptor*, const Message*> type_map_;
 };
 
+GeneratedMessageFactory* generated_message_factory_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(generated_message_factory_once_init_);
+
+void ShutdownGeneratedMessageFactory() {
+  delete generated_message_factory_;
+}
+
+void InitGeneratedMessageFactory() {
+  generated_message_factory_ = new GeneratedMessageFactory;
+  internal::OnShutdown(&ShutdownGeneratedMessageFactory);
+}
+
 GeneratedMessageFactory::GeneratedMessageFactory() {}
 GeneratedMessageFactory::~GeneratedMessageFactory() {}
 
 GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
-  // No need for thread-safety here because this will be called at static
-  // initialization time.  (And GCC4 makes this thread-safe anyway.)
-  static GeneratedMessageFactory* singleton = new GeneratedMessageFactory;
-  return singleton;
+  GoogleOnceInit(&generated_message_factory_once_init_,
+                 &InitGeneratedMessageFactory);
+  return generated_message_factory_;
 }
 
 void GeneratedMessageFactory::RegisterFile(
