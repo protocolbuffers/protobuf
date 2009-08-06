@@ -12,7 +12,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[2.1.1-pre],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[2.2.0-pre],[protobuf@googlegroups.com],[protobuf])
 
 
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
@@ -25,7 +25,7 @@ AS_IF([test "x${ac_cv_env_CFLAGS_set}" = "x"],
       [CFLAGS=""])
 AS_IF([test "x${ac_cv_env_CXXFLAGS_set}" = "x"],
       [CXXFLAGS=""])
-  
+
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE
@@ -69,7 +69,7 @@ AC_SUBST(PROTOBUF_OPT_FLAG)
 
 ACX_CHECK_SUNCC
 
-# Have to do libtool after SUNCC, other wise it "helpfully" adds Crun Cstd 
+# Have to do libtool after SUNCC, other wise it "helpfully" adds Crun Cstd
 # to the link
 AC_PROG_LIBTOOL
 
