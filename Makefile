@@ -7,7 +7,7 @@ CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-O3 -Wall -Wextra -g $(INCLUDE) $(strip $(shell cat perf-cppflags))
+CPPFLAGS=-O3 -Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 
 LIBUPB=src/libupb.a
 ALL=deps $(OBJ) $(LIBUPB) tests/test_table tests/tests tools/upbc
