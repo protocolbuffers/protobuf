@@ -14,22 +14,58 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
 
   AC_LANG_PUSH([C++])
   AC_CHECK_DECL([__SUNPRO_CC], [SUNCC="yes"], [SUNCC="no"])
-
-  AS_IF([test "$SUNCC" = "yes"],[
-    isainfo_k=`isainfo -k`
-    AS_IF([test "$target_cpu" = "sparc"],[
-      MEMALIGN_FLAGS="-xmemalign=8s"
-      IS_64="-m64"
-      LDFLAGS="${LDFLAGS} -L/usr/lib/${isainfo_k} -L/usr/local/lib/${isainfo_k}"
-    ],[
-      AS_IF([test "$isainfo_k" = "amd64"],[
-        IS_64="-m64"
-        LDFLAGS="${LDFLAGS} -L/usr/lib/${isainfo_k} -L/usr/local/lib/${isainfo_k}"
-      ])
-    ])
-
-    CFLAGS="-g -xO4 -xlibmil -xdepend -Xa -mt -xstrconst ${IS_64} ${MEMALIGN_FLAGS} $CFLAGS"
-    CXXFLAGS="-g -xO4 -xlibmil -mt ${IS_64} ${MEMALIGN_FLAGS} -xlang=c99 -compat=5 -library=stlport4 -template=no%extdef $CXXFLAGS"
-  ])
   AC_LANG_POP()
+
+
+  AC_ARG_ENABLE([64bit-solaris],
+    [AS_HELP_STRING([--disable-64bit-solaris],
+      [Build 64 bit binary on Solaris @<:@default=on@:>@])],
+             [ac_enable_64bit="$enableval"],
+             [ac_enable_64bit="yes"])
+
+  AS_IF([test "$SUNCC" = "yes" -a "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
+    dnl Sun Studio has a crashing bug with -xO4 in some cases. Keep this
+    dnl at -xO3 until a proper test to detect those crashes can be done.
+    CXXFLAGS="-g0 -xO3 -xlibmil -xdepend -xbuiltin -mt -compat=5 -library=stlport4 -template=no%extdef ${CXXFLAGS}"
+  ])
+
+  case $host_os in
+    *solaris*)
+      AC_CHECK_PROGS(ISAINFO, [isainfo], [no])
+      AS_IF([test "x$ISAINFO" != "xno"],
+            [isainfo_b=`${ISAINFO} -b`],
+            [isainfo_b="x"])
+
+      AS_IF([test "$isainfo_b" != "x"],[
+
+        isainfo_k=`${ISAINFO} -k`
+
+        AS_IF([test "x$ac_enable_64bit" = "xyes"],[
+
+          AS_IF([test "x${ac_cv_env_LDFLAGS_set}" = "x"],[
+            LDFLAGS="-L/usr/local/lib/${isainfo_k} ${LDFLAGS}"
+          ])
+
+          AS_IF([test "x$libdir" = "x\${exec_prefix}/lib"],[
+           dnl The user hasn't overridden the default libdir, so we'll
+           dnl the dir suffix to match solaris 32/64-bit policy
+           libdir="${libdir}/${isainfo_k}"
+          ])
+
+          dnl This should just be set in CPPFLAGS and in LDFLAGS, but libtool
+          dnl does the wrong thing if you don't put it into CXXFLAGS. sigh.
+          AS_IF([test "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
+            CXXFLAGS="${CXXFLAGS} -m64"
+            ac_cv_env_CXXFLAGS_set=set
+            ac_cv_env_CXXFLAGS_value='-m64'
+          ])
+
+          AS_IF([test "$target_cpu" = "sparc" -a "x$SUNCC" = "xyes" ],[
+            CXXFLAGS="-xmemalign=8s ${CXXFLAGS}"
+          ])
+        ])
+      ])
+    ;;
+  esac
+
 ])
