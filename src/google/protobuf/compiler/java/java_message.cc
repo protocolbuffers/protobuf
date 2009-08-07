@@ -601,15 +601,6 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
   }
   printer->Indent();
 
-  // By using a threadlocal queue, we do not have to worry about locking when
-  // accessing the queue.  Current JDKs implement this very efficiently, using
-  // no locks themselves to acquire the value when needed.
-  printer->Print(
-    "private static final "
-    "  com.google.protobuf.Internal.ThreadLocalQuickQueue<Builder> builders =\n"
-    "    new com.google.protobuf.Internal.ThreadLocalQuickQueue<Builder>();\n"
-    "\n");
-
   GenerateCommonBuilderMethods(printer);
 
   if (HasGeneratedMethods(descriptor_)) {
@@ -637,10 +628,7 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
     "private Builder() {}\n"
     "\n"
     "private static Builder create() {\n"
-    "  Builder builder = builders.get().poll();\n"
-    "  if (builder == null) {\n"
-    "    builder = new Builder();\n"
-    "  }\n"
+    "  Builder builder = new Builder();\n"
     "  builder.result = new $classname$();\n"
     "  return builder;\n"
     "}\n"
@@ -718,7 +706,6 @@ void MessageGenerator::GenerateCommonBuilderMethods(io::Printer* printer) {
   printer->Print(
     "  $classname$ returnMe = result;\n"
     "  result = null;\n"
-    "  builders.get().offer(this);\n"
     "  return returnMe;\n"
     "}\n"
     "\n",
