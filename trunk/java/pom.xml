@@ -112,6 +112,7 @@
                   <arg value="../src/google/protobuf/unittest_lite.proto" />
                   <arg value="../src/google/protobuf/unittest_import_lite.proto" />
                   <arg value="../src/google/protobuf/unittest_lite_imports_nonlite.proto" />
+                  <arg value="../src/google/protobuf/unittest_enormous_descriptor.proto" />
                 </exec>
               </tasks>
               <testSourceRoot>target/generated-test-sources</testSourceRoot>
