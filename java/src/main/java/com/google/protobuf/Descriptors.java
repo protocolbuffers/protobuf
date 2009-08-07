@@ -244,7 +244,8 @@ public final class Descriptors {
      * encoded in protocol buffer wire format.
      */
     public static void internalBuildGeneratedFileFrom(
-        final String descriptorData, final FileDescriptor[] dependencies,
+        final String[] descriptorDataParts,
+        final FileDescriptor[] dependencies,
         final InternalDescriptorAssigner descriptorAssigner) {
       // Hack:  We can't embed a raw byte array inside generated Java code
       //   (at least, not efficiently), but we can embed Strings.  So, the
@@ -255,9 +256,16 @@ public final class Descriptors {
       //   serialized form.  So, if we convert it to bytes in ISO-8859-1, we
       //   should get the original bytes that we want.
 
+      // descriptorData may contain multiple strings in order to get around the
+      // Java 64k string literal limit.
+      StringBuilder descriptorData = new StringBuilder();
+      for (String part : descriptorDataParts) {
+        descriptorData.append(part);
+      }
+
       final byte[] descriptorBytes;
       try {
-        descriptorBytes = descriptorData.getBytes("ISO-8859-1");
+        descriptorBytes = descriptorData.toString().getBytes("ISO-8859-1");
       } catch (UnsupportedEncodingException e) {
         throw new RuntimeException(
           "Standard encoding ISO-8859-1 not supported by JVM.", e);

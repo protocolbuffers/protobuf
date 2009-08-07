@@ -397,4 +397,12 @@ public class DescriptorsTest extends TestCase {
       assertEquals(values1[i].toString(), values2[i].toString());
     }
   }
+
+  public void testEnormousDescriptor() throws Exception {
+    // The descriptor for this file is larger than 64k, yet it did not cause
+    // a compiler error due to an over-long string literal.
+    assertTrue(
+        UnittestEnormousDescriptor.getDescriptor()
+          .toProto().getSerializedSize() > 65536);
+  }
 }

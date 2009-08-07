@@ -256,20 +256,28 @@ void FileGenerator::GenerateEmbeddedDescriptor(io::Printer* printer) {
     "private static com.google.protobuf.Descriptors.FileDescriptor\n"
     "    descriptor;\n"
     "static {\n"
-    "  java.lang.String descriptorData =\n");
+    "  java.lang.String[] descriptorData = {\n");
   printer->Indent();
   printer->Indent();
 
   // Only write 40 bytes per line.
   static const int kBytesPerLine = 40;
   for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
-    if (i > 0) printer->Print(" +\n");
+    if (i > 0) {
+      // Every 400 lines, start a new string literal, in order to avoid the
+      // 64k length limit.
+      if (i % 400 == 0) {
+        printer->Print(",\n");
+      } else {
+        printer->Print(" +\n");
+      }
+    }
     printer->Print("\"$data$\"",
       "data", CEscape(file_data.substr(i, kBytesPerLine)));
   }
-  printer->Print(";\n");
 
   printer->Outdent();
+  printer->Print("\n};\n");
 
   // -----------------------------------------------------------------
   // Create the InternalDescriptorAssigner.
