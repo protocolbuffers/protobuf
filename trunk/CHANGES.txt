@@ -24,8 +24,6 @@
   * Lite mode:  The "optimize_for = LITE_RUNTIME" option causes the compiler
     to generate code which only depends libprotobuf-lite, which is much smaller
     than libprotobuf but lacks descriptors, reflection, and some other features.
-  * Put Builder objects on a freelist after build() is called, so they may be
-    reused later.
   * Lots of style cleanups.
 
   Python

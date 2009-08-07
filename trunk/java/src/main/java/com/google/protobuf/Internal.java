@@ -38,82 +38,9 @@ import java.io.UnsupportedEncodingException;
  * those generated messages do not reside in the {@code protobuf} package.
  * Others should not use this class directly.
  *
- * @author cyrusn@google.com (Cyrus Najmabadi)
+ * @author kenton@google.com (Kenton Varda)
  */
 public class Internal {
-  /**
-   * Implementation of a Queue designed to have as little overhead as possible.
-   * No guarantees are made as to the order you will get values back from the
-   * queue. Currently it is a Last-In-First-Out implementation, but that may
-   * change in the future.
-   *
-   * Duplicate values are allowed, as are null values.
-   *
-   * Not threadsafe.
-   *
-   * @author cyrusn@google.com (Cyrus Najmabadi)
-   */
-  public static final class QuickQueue<T> {
-    @SuppressWarnings("unchecked")
-    private T[] array = (T[]) new Object[16];
-    private int size;
-
-    /**
-     * Adds a value to the queue.
-     *
-     * @param value The value to add to the queue.
-     */
-    public void offer(final T value) {
-      if (size == array.length) {
-        // I'd like to use Arrays.copy here. However, it is currently
-        // unavailable
-        // on android. So, for now, we just use the tried and true arraycopy
-        // technique.
-        @SuppressWarnings("unchecked")
-        final T[] copy = (T[]) new Object[size * 2];
-        System.arraycopy(array, 0, copy, 0, array.length);
-        array = copy;
-      }
-
-      array[size++] = value;
-    }
-
-    /**
-     * Removes some previously added value to the queue, or {@code null} if the
-     * queue is empty.
-     *
-     * @return An existing value in the queue, or {@code null} if the queue is
-     *         empty.
-     */
-    public T poll() {
-      if (size == 0) {
-        return null;
-      }
-
-      final T result = array[--size];
-      // make sure we null out the entry so that we're not keeping anything
-      // alive unnecessarily.
-      array[size] = null;
-
-      return result;
-    }
-  }
-
-  /**
-   * Instances of this class will provide a unique {@code QuickQueue} to each
-   * thread that accesses it. Very useful for providing free lists without
-   * needing to take any locks.
-   *
-   * @author cyrusn@google.com (Cyrus Najmabadi)
-   */
-  public static final class ThreadLocalQuickQueue<T>
-      extends ThreadLocal<QuickQueue<T>> {
-    @Override
-    protected QuickQueue<T> initialValue() {
-      return new QuickQueue<T>();
-    }
-  }
-
   /**
    * Helper called by generated code to construct default values for string
    * fields.
