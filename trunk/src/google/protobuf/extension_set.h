@@ -569,7 +569,7 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
     return set->MutableRepeatedString(number, index);
   }
   static inline void Add(int number, FieldType field_type,
-                         bool is_packed, const string& value,
+                         bool /*is_packed*/, const string& value,
                          ExtensionSet* set) {
     set->AddString(number, field_type, value);
   }
