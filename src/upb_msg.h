@@ -3,93 +3,48 @@
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  *
- * A upb_msg provides a full description of a message as defined in a .proto
- * file.  It supports many features and operations for dealing with proto
+ * A upb_msgdef provides a full description of a message type as defined in a
+ * .proto file.  Using a upb_msgdef, it is possible to treat an arbitrary hunk
+ * of memory (a void*) as a protobuf of the given type.  We will call this
+ * void* a upb_msg in the context of this interface.
+ *
+ * Clients generally do not construct or destruct upb_msgdef objects directly.
+ * They are managed by upb_contexts, and clients can obtain upb_msgdef pointers
+ * directly from a upb_context.
+ *
+ * A upb_msg is READ-ONLY, and the upb_msgdef functions in this file provide
+ * read-only access.  For a mutable message, or for a message that you can take
+ * a reference to to prevents its destruction, see upb_mm_msg.h, which is a
+ * layer on top of upb_msg that adds memory management semantics.
+ *
+ * upb_msgdef supports many features and operations for dealing with proto
  * messages:
  * - reflection over .proto types at runtime (list fields, get names, etc).
  * - an in-memory byte-level format for efficiently storing and accessing msgs.
- * - serializing and deserializing from the in-memory format to a protobuf.
- * - optional memory management for handling strings, arrays, and submessages.
- *
- * Throughout this file, the following convention is used:
- * - "struct upb_msg *m" describes a message type (name, list of fields, etc).
- * - "void *data" is an actual message stored using the in-memory format.
+ * - serializing from the in-memory format to a protobuf.
+ * - parsing from a protobuf to an in-memory data structure (you either
+ *   supply callbacks for allocating/repurposing memory or use a simplified
+ *   version that parses into newly-allocated memory).
  *
  * The in-memory format is very much like a C struct that you can define at
  * run-time, but also supports reflection.  Like C structs it supports
  * offset-based access, as opposed to the much slower name-based lookup.  The
  * format stores both the values themselves and bits describing whether each
- * field is set or not.  For example:
+ * field is set or not.
  *
- * parsed message Foo {
- *   optional bool a = 1;
- *   repeated uint32 b = 2;
- *   optional Bar c = 3;
- * }
- *
- * The in-memory layout for this message on a 32-bit machine will be something
- * like:
- *
- *  Foo
- * +------------------------+
- * | set_flags a:1, b:1, c:1|
- * +------------------------+
- * | bool a (1 byte)        |
- * +------------------------+
- * | padding (3 bytes)      |
- * +------------------------+         upb_array
- * | upb_array* b (4 bytes) | ---->  +----------------------------+
- * +------------------------+        | uint32* elements (4 bytes) | ---+
- * | Bar* c (4 bytes)       |        +----------------------------+    |
- * +------------------------+        | uint32 size (4 bytes)      |    |
- *                                   +----------------------------+    |
- *                                                                     |
- *    -----------------------------------------------------------------+
- *    |
- *    V
- *  uint32 array
- * +----+----+----+----+----+----+
- * | e1 | e2 | e3 | e4 | e5 | e6 |
- * +----+----+----+----+----+----+
- *
- * And the corresponding C structure (as emitted by the proto compiler) would be:
- *
- * struct Foo {
- *   union {
- *     uint8_t bytes[1];
- *     struct {
- *       bool a:1;
- *       bool b:1;
- *       bool c:1;
- *     } has;
- *   } set_flags;
- *   bool a;
- *   upb_uint32_array *b;
- *   Bar *c;
- * }
+ * For a more in-depth description of the in-memory format, see:
+ *   http://wiki.github.com/haberman/upb/inmemoryformat
  *
  * Because the C struct emitted by the upb compiler uses exactly the same
  * byte-level format as the reflection interface, you can access the same hunk
  * of memory either way.  The C struct provides maximum performance and static
- * type safety; upb_msg provides flexibility.
+ * type safety; upb_msg_def provides flexibility.
  *
  * The in-memory format has no interoperability guarantees whatsoever, except
  * that a single version of upb will interoperate with itself.  Don't even
  * think about persisting the in-memory format or sending it anywhere.  That's
  * what serialized protobufs are for!  The in-memory format is just that -- an
  * in-memory representation that allows for fast access.
- *
- * The in-memory format is carefully designed to *not* mandate any particular
- * memory management scheme.  This should make it easier to integrate with
- * existing memory management schemes, or to perform advanced techniques like
- * reference counting, garbage collection, and string references.  Different
- * clients can read each others messages regardless of what memory management
- * scheme each is using.
- *
- * A memory management scheme is provided for convenience, and it is used by
- * default by the stock message parser.  Clients can substitute their own
- * memory management scheme into this parser without any loss of generality
- * or performance.
  */
 
 #ifndef UPB_MSG_H_
@@ -108,21 +63,9 @@ extern "C" {
 
 /* Message definition. ********************************************************/
 
-/* Structure that describes a single field in a message.  This structure is very
- * consciously designed to fit into 12/16 bytes (32/64 bit, respectively),
- * because copies of this struct are in the hash table that is read in the
- * critical path of parsing.  Minimizing the size of this struct increases
- * cache-friendliness. */
-struct upb_msg_field {
-  union upb_symbol_ref ref;
-  uint32_t byte_offset;     /* Where to find the data. */
-  uint16_t field_index;     /* Indexes upb_msg.fields. Also indicates set bit */
-  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
-  upb_label_t label;
-};
-
+struct upb_msg_fielddef;
 /* Structure that describes a single .proto message type. */
-struct upb_msg {
+struct upb_msgdef {
   struct google_protobuf_DescriptorProto *descriptor;
   struct upb_string fqname;      /* Fully qualified. */
   size_t size;
@@ -131,93 +74,65 @@ struct upb_msg {
   uint32_t num_required_fields;  /* Required fields have the lowest set bytemasks. */
   struct upb_inttable fields_by_num;
   struct upb_strtable fields_by_name;
-  struct upb_msg_field *fields;
+  struct upb_msg_fielddef *fields;
   struct google_protobuf_FieldDescriptorProto **field_descriptors;
 };
 
-/* The num->field and name->field maps in upb_msg allow fast lookup of fields
- * by number or name.  These lookups are in the critical path of parsing and
- * field lookup, so they must be as fast as possible.  To make these more
- * cache-friendly, we put the data in the table by value. */
 
-struct upb_fieldsbynum_entry {
-  struct upb_inttable_entry e;
-  struct upb_msg_field f;
+/* Structure that describes a single field in a message.  This structure is very
+ * consciously designed to fit into 12/16 bytes (32/64 bit, respectively),
+ * because copies of this struct are in the hash table that is read in the
+ * critical path of parsing.  Minimizing the size of this struct increases
+ * cache-friendliness. */
+struct upb_msg_fielddef {
+  union upb_symbol_ref ref;
+  uint32_t byte_offset;     /* Where to find the data. */
+  uint16_t field_index;     /* Indexes upb_msgdef.fields and indicates set bit */
+  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
+  upb_label_t label;
 };
 
-struct upb_fieldsbyname_entry {
-  struct upb_strtable_entry e;
-  struct upb_msg_field f;
-};
+INLINE bool upb_issubmsg(struct upb_msg_fielddef *f) {
+  return upb_issubmsgtype(f->type);
+}
+INLINE bool upb_isstring(struct upb_msg_fielddef *f) {
+  return upb_isstringtype(f->type);
+}
+INLINE bool upb_isarray(struct upb_msg_fielddef *f) {
+  return f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED;
+}
 
-/* Can be used to retrieve a field descriptor given the upb_msg_field ref. */
+/* Can be used to retrieve a field descriptor given the upb_msg_fielddef. */
 INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
-    struct upb_msg_field *f, struct upb_msg *m) {
+    struct upb_msg_fielddef *f, struct upb_msgdef *m) {
   return m->field_descriptors[f->field_index];
 }
 
-/* Initializes/frees a upb_msg.  Usually this will be called by upb_context, and
- * clients will not have to construct one directly.
- *
- * Caller retains ownership of d, but the msg will contain references to it, so
- * it must outlive the msg.  Note that init does not resolve upb_msg_field.ref
- * the caller should do that post-initialization by calling upb_msg_ref()
- * below.
- *
- * fqname indicates the fully-qualified name of this message.  Ownership of
- * fqname passes to the msg, but the msg will contain references to it, so it
- * must outlive the msg.
- *
- * sort indicates whether or not it is safe to reorder the fields from the order
- * they appear in d.  This should be false if code has been compiled against a
- * header for this type that expects the given order. */
-bool upb_msg_init(struct upb_msg *m, struct google_protobuf_DescriptorProto *d,
-                  struct upb_string fqname, bool sort);
-void upb_msg_free(struct upb_msg *m);
+/* Field access. **************************************************************/
 
-/* Sort the given field descriptors in-place, according to what we think is an
- * optimal ordering of fields.  This can change from upb release to upb release.
- * This is meant for internal use. */
-void upb_msg_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num);
+/* Note that these only provide access to fields that are directly in the msg
+ * itself.  For dynamic fields (strings, arrays, and submessages) it will be
+ * necessary to dereference the returned values. */
 
-/* Clients use this function on a previously initialized upb_msg to resolve the
- * "ref" field in the upb_msg_field.  Since messages can refer to each other in
- * mutually-recursive ways, this step must be separated from initialization. */
-void upb_msg_ref(struct upb_msg *m, struct upb_msg_field *f, union upb_symbol_ref ref);
-
-/* Looks up a field by name or number.  While these are written to be as fast
- * as possible, it will still be faster to cache the results of this lookup if
- * possible.  These return NULL if no such field is found. */
-INLINE struct upb_msg_field *upb_msg_fieldbynum(struct upb_msg *m,
-                                                uint32_t number) {
-  struct upb_fieldsbynum_entry *e =
-      (struct upb_fieldsbynum_entry*)upb_inttable_fast_lookup(
-          &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
-  return e ? &e->f : NULL;
-}
-INLINE struct upb_msg_field *upb_msg_fieldbyname(struct upb_msg *m,
-                                                 struct upb_string *name) {
-  struct upb_fieldsbyname_entry *e =
-      (struct upb_fieldsbyname_entry*)upb_strtable_lookup(
-          &m->fields_by_name, name);
-  return e ? &e->f : NULL;
+/* Returns a pointer to a specific field in a message. */
+INLINE union upb_value_ptr upb_msg_getptr(void *msg, struct upb_msg_fielddef *f) {
+  union upb_value_ptr p;
+  p._void = ((char*)msg + f->byte_offset);
+  return p;
 }
 
-INLINE bool upb_issubmsg(struct upb_msg_field *f) {
-  return upb_issubmsgtype(f->type);
-}
-INLINE bool upb_isstring(struct upb_msg_field *f) {
-  return upb_isstringtype(f->type);
-}
-INLINE bool upb_isarray(struct upb_msg_field *f) {
-  return f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED;
+/* Returns a a specific field in a message. */
+INLINE union upb_value upb_msg_get(void *msg, struct upb_msg_fielddef *f) {
+  return upb_deref(upb_msg_getptr(msg, f), f->type);
 }
 
 /* "Set" flag reading and writing.  *******************************************/
 
-/* Please note that these functions do not perform any memory management or in
- * any way ensure that the fields are valid.  They *only* test/set/clear a bit
- * that indicates whether the field is set or not. */
+/* All upb code and code using upb should guarantee that the set flags are
+ * always valid.  It should always be the case that if a flag's field is set
+ * for a dynamic field that the pointer is valid.
+ *
+ * Clients should never set fields on a plain upb_msg, only on a upb_mm_msg. */
 
 /* Returns the byte offset where we store whether this field is set. */
 INLINE size_t upb_isset_offset(uint32_t field_index) {
@@ -230,135 +145,162 @@ INLINE uint8_t upb_isset_mask(uint32_t field_index) {
 }
 
 /* Returns true if the given field is set, false otherwise. */
-INLINE void upb_msg_set(void *s, struct upb_msg_field *f)
+INLINE void upb_msg_set(void *msg, struct upb_msg_fielddef *f)
 {
-  ((char*)s)[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
+  ((char*)msg)[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
 }
 
 /* Clears the set bit for this field in the given message. */
-INLINE void upb_msg_unset(void *s, struct upb_msg_field *f)
+INLINE void upb_msg_unset(void *msg, struct upb_msg_fielddef *f)
 {
-  ((char*)s)[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
+  ((char*)msg)[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
 }
 
 /* Tests whether the given field is set. */
-INLINE bool upb_msg_isset(void *s, struct upb_msg_field *f)
+INLINE bool upb_msg_isset(void *msg, struct upb_msg_fielddef *f)
 {
-  return ((char*)s)[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
+  return ((char*)msg)[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
 }
 
 /* Returns true if *all* required fields are set, false otherwise. */
-INLINE bool upb_msg_all_required_fields_set(void *s, struct upb_msg *m)
+INLINE bool upb_msg_all_required_fields_set(void *msg, struct upb_msgdef *m)
 {
   int num_fields = m->num_required_fields;
   int i = 0;
   while(num_fields > 8) {
-    if(((uint8_t*)s)[i++] != 0xFF) return false;
+    if(((uint8_t*)msg)[i++] != 0xFF) return false;
     num_fields -= 8;
   }
-  if(((uint8_t*)s)[i] != (1 << num_fields) - 1) return false;
+  if(((uint8_t*)msg)[i] != (1 << num_fields) - 1) return false;
   return true;
 }
 
 /* Clears the set bit for all fields. */
-INLINE void upb_msg_clear(void *s, struct upb_msg *m)
+INLINE void upb_msg_clear(void *msg, struct upb_msgdef *m)
 {
-  memset(s, 0, m->set_flags_bytes);
+  memset(msg, 0, m->set_flags_bytes);
 }
 
-/* Scalar (non-array) data access. ********************************************/
+/* Number->field and name->field lookup.  *************************************/
 
-/* Returns a pointer to a specific field in a message. */
-INLINE union upb_value_ptr upb_msg_getptr(void *data, struct upb_msg_field *f) {
-  union upb_value_ptr p;
-  p._void = ((char*)data + f->byte_offset);
-  return p;
-}
+/* The num->field and name->field maps in upb_msgdef allow fast lookup of fields
+ * by number or name.  These lookups are in the critical path of parsing and
+ * field lookup, so they must be as fast as possible.  To make these more
+ * cache-friendly, we put the data in the table by value. */
 
-/* Returns a a specific field in a message. */
-INLINE union upb_value upb_msg_get(void *data, struct upb_msg_field *f) {
-  return upb_deref(upb_msg_getptr(data, f), f->type);
-}
-
-/* Memory management  *********************************************************/
-
-/* One important note about these memory management routines: they must be used
- * completely or not at all (for each message).  In other words, you can't
- * allocate your own message and then free it with upb_msgdata_free.  As
- * another example, you can't point a field to your own string and then call
- * upb_msg_reuse_str. */
-
-/* Allocates and frees message data, respectively.  Newly allocated data is
- * initialized to empty.  Freeing a message always frees string data, but
- * the client can decide whether or not submessages should be deleted. */
-void *upb_msgdata_new(struct upb_msg *m);
-void upb_msgdata_free(void *data, struct upb_msg *m, bool free_submsgs);
-
-/* Given a pointer to the appropriate field of the message or array, these
- * functions will lazily allocate memory for a string, array, or submessage.
- * If the previously allocated memory is big enough, it will reuse it without
- * re-allocating.  See upb_msg.c for example usage. */
-
-/* Reuse a string of at least the given size. */
-void upb_msg_reuse_str(struct upb_string **str, uint32_t size);
-/* Like the previous, but assumes that the string will be by reference, so
- * doesn't allocate memory for the string itself. */
-void upb_msg_reuse_strref(struct upb_string **str);
-
-/* Reuse an array of at least the given size, with the given type. */
-void upb_msg_reuse_array(struct upb_array **arr, uint32_t size,
-                         upb_field_type_t t);
-
-/* Reuse a submessage of the given type. */
-void upb_msg_reuse_submsg(void **msg, struct upb_msg *m);
-
-/* Parsing.  ******************************************************************/
-
-/* This is all just a layer on top of the stream-oriented facility in
- * upb_parse.h. */
-
-struct upb_msg_parse_frame {
-  struct upb_msg *m;
-  void *data;
+struct upb_fieldsbynum_entry {
+  struct upb_inttable_entry e;
+  struct upb_msg_fielddef f;
 };
 
-#include "upb_text.h"
-struct upb_msg_parse_state {
-  struct upb_parse_state s;
+struct upb_fieldsbyname_entry {
+  struct upb_strtable_entry e;
+  struct upb_msg_fielddef f;
+};
+
+/* Looks up a field by name or number.  While these are written to be as fast
+ * as possible, it will still be faster to cache the results of this lookup if
+ * possible.  These return NULL if no such field is found. */
+INLINE struct upb_msg_fielddef *upb_msg_fieldbynum(struct upb_msgdef *m,
+                                                   uint32_t number) {
+  struct upb_fieldsbynum_entry *e =
+      (struct upb_fieldsbynum_entry*)upb_inttable_fast_lookup(
+          &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
+  return e ? &e->f : NULL;
+}
+
+INLINE struct upb_msg_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
+                                                    struct upb_string *name) {
+  struct upb_fieldsbyname_entry *e =
+      (struct upb_fieldsbyname_entry*)upb_strtable_lookup(
+          &m->fields_by_name, name);
+  return e ? &e->f : NULL;
+}
+
+
+/* Simple, one-shot parsing ***************************************************/
+
+/* A simple interface for parsing into a newly-allocated message.  This
+ * interface should only be used when the message will be read-only with
+ * respect to memory management (eg. won't add or remove internal references to
+ * dynamic memory).  For more flexible (but also more complicated) interfaces,
+ * see below and in upb_mm_msg.h. */
+
+/* Parses the protobuf in s (which is expected to be complete) and allocates
+ * new message data to hold it.  If byref is set, strings in the returned
+ * upb_msg will reference s instead of copying from it, but this requires that
+ * s will live for as long as the returned message does. */
+void *upb_msg_parsenew(struct upb_msgdef *m, struct upb_string *s);
+
+/* This function should be used to free messages that were parsed with
+ * upb_msg_parsenew.  It will free the message appropriately (including all
+ * submessages). */
+void upb_msg_free(void *msg, struct upb_msgdef *m);
+
+
+/* Parsing with (re)allocation callbacks. *************************************/
+
+/* This interface parses protocol buffers into upb_msgs, but allows the client
+ * to supply allocation callbacks whenever the parser needs to obtain a string,
+ * array, or submsg (a "dynamic field").  If the parser sees that a dynamic
+ * field is already present (its "set bit" is set) it will use that, otherwise
+ * it will call the allocation callback to obtain one.
+ *
+ * This may seem trivial (since nearly all clients will use malloc and free for
+ * memory management), but the allocation callback can be used for more than
+ * just allocation.  If we are parsing data into an existing upb_msg, the
+ * allocation callback can examine any existing memory that is allocated for
+ * the dynamic field and determine whether it can reuse it.  It can also
+ * perform memory management like unrefing the existing field or refing the new.
+ *
+ * This parser is layered on top of the event-based parser in upb_parse.h.  The
+ * parser is upb_mm_msg.h is layered on top of this parser.
+ *
+ * This parser is fully streaming-capable. */
+
+typedef struct upb_array *(*upb_msg_getarray_cb_t)(
+    void *msg, struct upb_msgdef *m,
+    struct upb_array *existingval, struct upb_msg_fielddef *f,
+    upb_arraylen_t size);
+
+/* Callback to allocate a string of size >=len.  If len==0 then the client can
+ * assume that the parser intends to reference the memory instead of copying
+ * it. */
+typedef struct upb_string *(*upb_msg_getstring_cb_t)(
+    void *msg, struct upb_msgdef *m,
+    struct upb_string *existingval, struct upb_msg_fielddef *f, size_t len);
+
+typedef void *(*upb_msg_getmsg_cb_t)(
+    void *msg, struct upb_msgdef *m,
+    void *existingval, struct upb_msg_fielddef *f);
+
+struct upb_msg_parser_frame {
+  struct upb_msgdef *m;
+  void *msg;
+};
+
+struct upb_msg_parser {
+  struct upb_stream_parser s;
   bool merge;
   bool byref;
   struct upb_msg *m;
-  struct upb_msg_parse_frame stack[UPB_MAX_NESTING], *top;
-  struct upb_text_printer p;
+  struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
+  upb_msg_getarray_cb_t getarray_cb;
+  upb_msg_getstring_cb_t getstring_cb;
+  upb_msg_getmsg_cb_t getmsg_cb;
 };
 
-/* Initializes/frees a message parser.  The parser will write the data to the
- * message data "data", which the caller must have previously allocated (the
- * parser will allocate submsgs, strings, and arrays as needed, however).
- *
- * "Merge" controls whether the parser will append to data instead of
- * overwriting.  Merging concatenates arrays and merges submessages instead
- * of clearing both.
- *
- * "Byref" controls whether the new message data copies or references strings
- * it encounters.  If byref == true, then all strings supplied to upb_msg_parse
- * must remain unchanged and must outlive data. */
-void upb_msg_parse_init(struct upb_msg_parse_state *s, void *data,
-                        struct upb_msg *m, bool merge, bool byref);
-void upb_msg_parse_reset(struct upb_msg_parse_state *s, void *data,
-                         struct upb_msg *m, bool merge, bool byref);
-void upb_msg_parse_free(struct upb_msg_parse_state *s);
+void upb_msg_parser_reset(struct upb_msg_parser *p,
+                          void *msg, struct upb_msgdef *m,
+                          bool byref);
 
-/* Parses a protobuf fragment, writing the data to the message that was passed
- * to upb_msg_parse_init.  This function can be called multiple times as more
- * data becomes available. */
-upb_status_t upb_msg_parse(struct upb_msg_parse_state *s,
-                           void *data, size_t len, size_t *read);
+/* Parses protocol buffer data out of data which has length of len.  The data
+ * need not be a complete protocol buffer.  The number of bytes parsed is
+ * returned in *read, and the next call to upb_msg_parse must supply data that
+ * is *read bytes past data in the logical stream. */
+upb_status_t upb_msg_parser_parse(struct upb_msg_parser *p,
+                                  void *data, size_t len, size_t *read);
 
-/* Parses the protobuf in s (which is expected to be complete) and allocates
- * new message data to hold it.  This is an alternative to the streaming API
- * above.  "byref" works as in upb_msg_parse_init(). */
-void *upb_alloc_and_parse(struct upb_msg *m, struct upb_string *s, bool byref);
 
 /* Serialization  *************************************************************/
 
@@ -377,8 +319,8 @@ void upb_msgsizes_free(struct upb_msgsizes *sizes);
 
 /* Given a previously initialized sizes, recurse over the message and store its
  * sizes in 'sizes'. */
-void upb_msgsizes_read(struct upb_msgsizes *sizes, void *data,
-                       struct upb_msg *m);
+void upb_msgsizes_read(struct upb_msgsizes *sizes, void *msg,
+                       struct upb_msgdef *m);
 
 /* Returns the total size of the serialized message given in sizes.  Must be
  * preceeded by a call to upb_msgsizes_read. */
@@ -391,8 +333,8 @@ struct upb_msg_serialize_state;
  * "sizes" and the parse being fully completed. */
 void upb_msg_serialize_alloc(struct upb_msg_serialize_state *s);
 void upb_msg_serialize_free(struct upb_msg_serialize_state *s);
-void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *data,
-                            struct upb_msg *m, struct upb_msgsizes *sizes);
+void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *msg,
+                            struct upb_msgdef *m, struct upb_msgsizes *sizes);
 
 /* Serializes the next set of bytes into buf (which has size len).  Returns
  * UPB_STATUS_OK if serialization is complete, or UPB_STATUS_NEED_MORE_DATA
@@ -405,8 +347,43 @@ upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
 
 /* Text dump  *****************************************************************/
 
-bool upb_msg_eql(void *data1, void *data2, struct upb_msg *m, bool recursive);
-void upb_msg_print(void *data, struct upb_msg *m, FILE *stream);
+bool upb_msg_eql(void *data1, void *data2, struct upb_msgdef *m, bool recursive);
+void upb_msg_print(void *data, struct upb_msgdef *m, bool single_line,
+                   FILE *stream);
+
+/* Internal functions. ********************************************************/
+
+/* Initializes/frees a upb_msgdef.  Usually this will be called by upb_context,
+ * and clients will not have to construct one directly.
+ *
+ * Caller retains ownership of d, but the msg will contain references to it, so
+ * it must outlive the msg.  Note that init does not resolve
+ * upb_msg_fielddef.ref the caller should do that post-initialization by
+ * calling upb_msg_ref() below.
+ *
+ * fqname indicates the fully-qualified name of this message.  Ownership of
+ * fqname passes to the msg, but the msg will contain references to it, so it
+ * must outlive the msg.
+ *
+ * sort indicates whether or not it is safe to reorder the fields from the order
+ * they appear in d.  This should be false if code has been compiled against a
+ * header for this type that expects the given order. */
+bool upb_msgdef_init(struct upb_msgdef *m,
+                     struct google_protobuf_DescriptorProto *d,
+                     struct upb_string fqname, bool sort);
+void upb_msgdef_free(struct upb_msgdef *m);
+
+/* Sort the given field descriptors in-place, according to what we think is an
+ * optimal ordering of fields.  This can change from upb release to upb
+ * release. */
+void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num);
+
+/* Clients use this function on a previously initialized upb_msgdef to resolve
+ * the "ref" field in the upb_msg_fielddef.  Since messages can refer to each
+ * other in mutually-recursive ways, this step must be separated from
+ * initialization. */
+void upb_msgdef_ref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
+                    union upb_symbol_ref ref);
 
 #ifdef __cplusplus
 }  /* extern "C" */

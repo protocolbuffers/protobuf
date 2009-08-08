@@ -141,7 +141,7 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
   for(int i = 0; i < num_entries; i++) {  /* Foreach message */
     if(entries[i]->type != UPB_SYM_MESSAGE) continue;
     struct upb_symtab_entry *entry = entries[i];
-    struct upb_msg *m = entry->ref.msg;
+    struct upb_msgdef *m = entry->ref.msg;
     /* We use entry->e.key (the fully qualified name). */
     struct upb_string msg_name = upb_strdup(entry->e.key);
     to_cident(msg_name);
@@ -158,7 +158,7 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
     fputs("    } has;\n", stream);
     fputs("  } set_flags;\n", stream);
     for(uint32_t j = 0; j < m->num_fields; j++) {
-      struct upb_msg_field *f = &m->fields[j];
+      struct upb_msg_fielddef *f = &m->fields[j];
       struct google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
       if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP ||
          f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
@@ -229,7 +229,7 @@ struct strtable_entry {
 
 struct typetable_entry {
   struct upb_strtable_entry e;
-  struct upb_msg_field *field;
+  struct upb_msg_fielddef *field;
   struct upb_string cident;  /* Type name converted with to_cident(). */
   /* A list of all values of this type, in an established order. */
   union upb_value *values;
@@ -259,11 +259,11 @@ int compare_entries(const void *_e1, const void *_e2)
  *
  * TODO: make these use a generic msg visitor. */
 
-static void add_strings_from_msg(void *data, struct upb_msg *m,
+static void add_strings_from_msg(void *data, struct upb_msgdef *m,
                                  struct upb_strtable *t);
 
 static void add_strings_from_value(union upb_value_ptr p,
-                                   struct upb_msg_field *f,
+                                   struct upb_msg_fielddef *f,
                                    struct upb_strtable *t)
 {
   if(upb_isstringtype(f->type)) {
@@ -275,11 +275,11 @@ static void add_strings_from_value(union upb_value_ptr p,
   }
 }
 
-static void add_strings_from_msg(void *data, struct upb_msg *m,
+static void add_strings_from_msg(void *data, struct upb_msgdef *m,
                                  struct upb_strtable *t)
 {
   for(uint32_t i = 0; i < m->num_fields; i++) {
-    struct upb_msg_field *f = &m->fields[i];
+    struct upb_msg_fielddef *f = &m->fields[i];
     if(!upb_msg_isset(data, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(data, f);
     if(upb_isarray(f)) {
@@ -299,7 +299,7 @@ static void add_strings_from_msg(void *data, struct upb_msg *m,
 
 
 struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
-                                                struct upb_msg_field *f)
+                                                struct upb_msg_fielddef *f)
 {
   struct upb_string type_name = upb_issubmsg(f) ? f->ref.msg->fqname :
                                                   upb_type_info[f->type].ctype;
@@ -318,7 +318,7 @@ struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
   return type_e;
 }
 
-static void add_value(union upb_value value, struct upb_msg_field *f,
+static void add_value(union upb_value value, struct upb_msg_fielddef *f,
                       struct upb_strtable *t)
 {
   struct typetable_entry *type_e = get_or_insert_typeentry(t, f);
@@ -329,10 +329,10 @@ static void add_value(union upb_value value, struct upb_msg_field *f,
   type_e->values[type_e->values_len++] = value;
 }
 
-static void add_submsgs(void *data, struct upb_msg *m, struct upb_strtable *t)
+static void add_submsgs(void *data, struct upb_msgdef *m, struct upb_strtable *t)
 {
   for(uint32_t i = 0; i < m->num_fields; i++) {
-    struct upb_msg_field *f = &m->fields[i];
+    struct upb_msg_fielddef *f = &m->fields[i];
     if(!upb_msg_isset(data, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(data, f);
     if(upb_isarray(f)) {
@@ -371,7 +371,7 @@ static void add_submsgs(void *data, struct upb_msg *m, struct upb_strtable *t)
 
 /* write_messages_c emits a .c file that contains the data of a protobuf,
  * serialized as C structures. */
-static void write_message_c(void *data, struct upb_msg *m,
+static void write_message_c(void *data, struct upb_msgdef *m,
                             char *cident, char *hfile_name,
                             int argc, char *argv[], char *infile_name,
                             FILE *stream)
@@ -441,7 +441,7 @@ static void write_message_c(void *data, struct upb_msg *m,
   upb_strtable_init(&types, 16, sizeof(struct typetable_entry));
   union upb_value val = {.msg = data};
   /* A fake field to get the recursion going. */
-  struct upb_msg_field fake_field = {
+  struct upb_msg_fielddef fake_field = {
       .type = GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE,
       .ref = {.msg = m}
   };
@@ -484,12 +484,12 @@ static void write_message_c(void *data, struct upb_msg *m,
     for(int i = 0; i < e->values_len; i++) {
       union upb_value val = e->values[i];
       if(upb_issubmsg(e->field)) {
-        struct upb_msg *m = e->field->ref.msg;
+        struct upb_msgdef *m = e->field->ref.msg;
         void *msgdata = val.msg;
         /* Print set flags. */
         fputs("  {.set_flags = {.has = {\n", stream);
         for(unsigned int j = 0; j < m->num_fields; j++) {
-          struct upb_msg_field *f = &m->fields[j];
+          struct upb_msg_fielddef *f = &m->fields[j];
           google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(*fd->name));
           if(upb_msg_isset(msgdata, f))
@@ -501,7 +501,7 @@ static void write_message_c(void *data, struct upb_msg *m,
         fputs("  }},\n", stream);
         /* Print msg data. */
         for(unsigned int j = 0; j < m->num_fields; j++) {
-          struct upb_msg_field *f = &m->fields[j];
+          struct upb_msg_fielddef *f = &m->fields[j];
           google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
           union upb_value val = upb_msg_get(msgdata, f);
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(*fd->name));
@@ -599,7 +599,7 @@ void error(char *err)
 
 void sort_fields_in_descriptor(google_protobuf_DescriptorProto *d)
 {
-  if(d->set_flags.has.field) upb_msg_sortfds(d->field->elements, d->field->len);
+  if(d->set_flags.has.field) upb_msgdef_sortfds(d->field->elements, d->field->len);
   if(d->set_flags.has.nested_type)
     for(uint32_t i = 0; i < d->nested_type->len; i++)
       sort_fields_in_descriptor(d->nested_type->elements[i]);
@@ -640,7 +640,7 @@ int main(int argc, char *argv[])
   struct upb_context c;
   upb_context_init(&c);
   google_protobuf_FileDescriptorSet *fds =
-      upb_alloc_and_parse(c.fds_msg, &descriptor, false);
+      upb_msg_parsenew(c.fds_msg, &descriptor);
   if(!fds)
     error("Failed to parse input file descriptor.");
   if(!upb_context_addfds(&c, fds))

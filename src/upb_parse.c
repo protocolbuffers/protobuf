@@ -100,7 +100,7 @@ upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
 #undef CASE
 }
 
-void upb_parse_reset(struct upb_parse_state *state, void *udata)
+void upb_stream_parser_reset(struct upb_stream_parser *state, void *udata)
 {
   state->top = state->stack;
   state->limit = &state->stack[UPB_MAX_NESTING];
@@ -111,18 +111,7 @@ void upb_parse_reset(struct upb_parse_state *state, void *udata)
   state->udata = udata;
 }
 
-void upb_parse_init(struct upb_parse_state *state, void *udata)
-{
-  memset(state, 0, sizeof(struct upb_parse_state));  /* Clear all callbacks. */
-  upb_parse_reset(state, udata);
-}
-
-void upb_parse_free(struct upb_parse_state *state)
-{
-  (void)state;
-}
-
-static void *pop_stack_frame(struct upb_parse_state *s, uint8_t *buf)
+static void *pop_stack_frame(struct upb_stream_parser *s, uint8_t *buf)
 {
   if(s->submsg_end_cb) s->submsg_end_cb(s->udata);
   s->top--;
@@ -130,7 +119,7 @@ static void *pop_stack_frame(struct upb_parse_state *s, uint8_t *buf)
 }
 
 /* Returns the next end offset. */
-static upb_status_t push_stack_frame(struct upb_parse_state *s,
+static upb_status_t push_stack_frame(struct upb_stream_parser *s,
                                      uint8_t *buf, uint32_t len,
                                      void *user_field_desc, uint8_t **submsg_end)
 {
@@ -142,8 +131,8 @@ static upb_status_t push_stack_frame(struct upb_parse_state *s,
   return UPB_STATUS_OK;
 }
 
-upb_status_t upb_parse(struct upb_parse_state *s, void *_buf, size_t len,
-                       size_t *read)
+upb_status_t upb_stream_parser_parse(struct upb_stream_parser *s,
+                                     void *_buf, size_t len, size_t *read)
 {
   uint8_t *buf = _buf;
   uint8_t *completed = buf;

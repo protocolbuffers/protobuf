@@ -133,7 +133,7 @@ INLINE union upb_value upb_deref(union upb_value_ptr ptr, upb_field_type_t t) {
 }
 
 union upb_symbol_ref {
-  struct upb_msg *msg;
+  struct upb_msgdef *msg;
   struct upb_enum *_enum;
   struct upb_svc *svc;
 };

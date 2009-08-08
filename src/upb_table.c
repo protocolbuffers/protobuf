@@ -13,7 +13,7 @@
 static const upb_inttable_key_t EMPTYENT = 0;
 static const double MAX_LOAD = 0.85;
 
-static uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
+uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
 
 /* We use 1-based indexes into the table so that 0 can be "NULL". */
 static struct upb_inttable_entry *intent(struct upb_inttable *t, int32_t i) {
@@ -238,7 +238,7 @@ void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) 
 //   1. It will not work incrementally.
 //   2. It will not produce the same results on little-endian and big-endian
 //      machines.
-static uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed)
+uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed)
 {
   // 'm' and 'r' are mixing constants generated offline.
   // They're not really 'magic', they just happen to work well.

@@ -46,7 +46,7 @@ static void free_symtab(struct upb_strtable *t)
   struct upb_symtab_entry *e = upb_strtable_begin(t);
   for(; e; e = upb_strtable_next(t, &e->e)) {
     switch(e->type) {
-      case UPB_SYM_MESSAGE: upb_msg_free(e->ref.msg); break;
+      case UPB_SYM_MESSAGE: upb_msgdef_free(e->ref.msg); break;
       case UPB_SYM_ENUM: upb_enum_free(e->ref._enum); break;
       default: break;  /* TODO */
     }
@@ -60,7 +60,7 @@ void upb_context_free(struct upb_context *c)
 {
   free_symtab(&c->symtab);
   for(size_t i = 0; i < c->fds_len; i++)
-    upb_msgdata_free(c->fds[i], c->fds_msg, true);
+    upb_msg_free(c->fds[i], c->fds_msg);
   free_symtab(&c->psymtab);
   free(c->fds);
 }
@@ -188,7 +188,7 @@ static bool insert_message(struct upb_strtable *t,
   e.e.key = fqname;
   e.type = UPB_SYM_MESSAGE;
   e.ref.msg = malloc(sizeof(*e.ref.msg));
-  if(!upb_msg_init(e.ref.msg, d, fqname, sort)) {
+  if(!upb_msgdef_init(e.ref.msg, d, fqname, sort)) {
     free(fqname.ptr);
     return false;
   }
@@ -232,9 +232,9 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
     if(upb_strtable_lookup(existingdefs, &e->e.key))
       return false;  /* Redefinition prohibited. */
     if(e->type == UPB_SYM_MESSAGE) {
-      struct upb_msg *m = e->ref.msg;
+      struct upb_msgdef *m = e->ref.msg;
       for(unsigned int i = 0; i < m->num_fields; i++) {
-        struct upb_msg_field *f = &m->fields[i];
+        struct upb_msg_fielddef *f = &m->fields[i];
         google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
         if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE ||
@@ -247,7 +247,7 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
         else
           continue;  /* No resolving necessary. */
         if(!ref.msg) return false;  /* Ref. to undefined symbol. */
-        upb_msg_ref(m, f, ref);
+        upb_msgdef_ref(m, f, ref);
       }
     }
   }
@@ -280,7 +280,7 @@ bool upb_context_addfds(struct upb_context *c,
 
 bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
   google_protobuf_FileDescriptorSet *fds =
-      upb_alloc_and_parse(c->fds_msg, fds_str, false);
+      upb_msg_parsenew(c->fds_msg, fds_str);
   if(!fds) return false;
   if(!upb_context_addfds(c, fds)) return false;
 

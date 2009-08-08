@@ -42,14 +42,11 @@ INLINE bool upb_isstringtype(upb_field_type_t type) {
  * as data becomes available.  The parser is fully streaming-capable, so the
  * data need not all be available at the same time. */
 
-struct upb_parse_state;
+struct upb_stream_parser;
 
-/* Initialize and free (respectively) the given parse state, which must have
- * been previously allocated.  udata_size specifies how much space will be
- * available at parse_stack_frame.user_data in each frame for user data. */
-void upb_parse_init(struct upb_parse_state *state, void *udata);
-void upb_parse_reset(struct upb_parse_state *state, void *udata);
-void upb_parse_free(struct upb_parse_state *state);
+/* Resets the internal state of an already-allocated parser.   udata will be
+ * passed to callbacks as appropriate. */
+void upb_stream_parser_reset(struct upb_stream_parser *p, void *udata);
 
 /* The callback that is called immediately after a tag has been parsed.  The
  * client should determine whether it wants to parse or skip the corresponding
@@ -86,7 +83,7 @@ typedef void (*upb_submsg_start_cb)(void *udata,
                                     void *user_field_desc);
 typedef void (*upb_submsg_end_cb)(void *udata);
 
-struct upb_parse_state {
+struct upb_stream_parser {
   /* For delimited submsgs, counts from the submsg len down to zero.
    * For group submsgs, counts from zero down to the negative len. */
   uint32_t stack[UPB_MAX_NESTING], *top, *limit;
@@ -115,8 +112,8 @@ struct upb_parse_state {
  *
  * TODO: see if we can provide the following guarantee efficiently:
  *   *read will always be >= len. */
-upb_status_t upb_parse(struct upb_parse_state *s, void *buf, size_t len,
-                       size_t *read);
+upb_status_t upb_stream_parser_parse(struct upb_stream_parser *p,
+                                     void *buf, size_t len, size_t *read);
 
 extern upb_wire_type_t upb_expected_wire_types[];
 /* Returns true if wt is the correct on-the-wire type for ft. */
