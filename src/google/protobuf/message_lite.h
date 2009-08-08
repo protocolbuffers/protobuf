@@ -33,6 +33,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
+// Defines MessageLite, the abstract interface implemented by all (lite
+// and non-lite) protocol message objects.
 
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
@@ -45,15 +47,15 @@ namespace protobuf {
 
 // Interface to light weight protocol messages.
 //
-// This interface is implemented by all protocol message objects.  Most
-// users will be more interested in the Message interface, which is a
-// subclass of MessageLite. Use MessageLite instead when you only need
+// This interface is implemented by all protocol message objects.  Non-lite
+// messages additionally implement the Message interface, which is a
+// subclass of MessageLite.  Use MessageLite instead when you only need
 // the subset of features which it supports -- namely, nothing that uses
 // descriptors or reflection.  You can instruct the protocol compiler
 // to generate classes which implement only MessageLite, not the full
 // Message interface, by adding the following line to the .proto file:
 //
-//  option optimize_for = LITE_RUNTIME;
+//   option optimize_for = LITE_RUNTIME;
 //
 // This is particularly useful on resource-constrained systems where
 // the full protocol buffers runtime library is too big.
