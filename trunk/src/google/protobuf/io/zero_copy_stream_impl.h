@@ -33,11 +33,9 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // This file contains common implementations of the interfaces defined in
-// zero_copy_stream.h.  These implementations cover I/O on raw arrays,
-// strings, and file descriptors.  Of course, many users will probably
-// want to write their own implementations of these interfaces specific
-// to the particular I/O abstractions they prefer to use, but these
-// should cover the most common cases.
+// zero_copy_stream.h which are only included in the full (non-lite)
+// protobuf library.  These implementations include Unix file descriptors
+// and C++ iostreams.  See also:  zero_copy_stream_impl_lite.h
 
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__
