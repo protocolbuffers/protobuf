@@ -193,7 +193,7 @@ void *upb_msg_parsenew(struct upb_msgdef *md, struct upb_string *s)
  * needs to be freed) iff its set bit is set. */
 static void free_value(union upb_value_ptr p, struct upb_msg_fielddef *f)
 {
-  if(upb_isarray(f)) {
+  if(upb_isstring(f)) {
     free((*p.str)->ptr);
     free(*p.str);
   } else if(upb_issubmsg(f)) {

@@ -434,6 +434,7 @@ static void write_message_c(void *data, struct upb_msgdef *m,
     fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d},\n", e->offset, e->e.key.byte_len);
   }
   fputs("};\n\n", stream);
+  free(str_entries);
 
   /* Gather a list of types for which we are emitting data, and give each msg
    * a unique number within its type. */
@@ -568,6 +569,15 @@ static void write_message_c(void *data, struct upb_msgdef *m,
   fprintf(stream, UPB_STRFMT " *%s = &" UPB_STRFMT "_values[0];\n",
           UPB_STRARG(toplevel_type->cident), cident,
           UPB_STRARG(toplevel_type->cident));
+
+  /* Free tables. */
+  for(e = upb_strtable_begin(&types); e; e = upb_strtable_next(&types, &e->e)) {
+    upb_strfree(e->cident);
+    free(e->values);
+    free(e->arrays);
+  }
+  upb_strtable_free(&types);
+  upb_strtable_free(&strings);
 }
 
 const char usage[] =
@@ -669,12 +679,14 @@ int main(int argc, char *argv[])
   int symcount;
   struct upb_symtab_entry **entries = strtable_to_array(&c.symtab, &symcount);
   write_h(entries, symcount, h_filename, cident, h_file);
+  free(entries);
   if(cident) {
     FILE *c_file = fopen(c_filename, "w");
     if(!c_file) error("Failed to open .h output file");
     write_message_c(fds, c.fds_msg, cident, h_filename, argc, argv, input_file, c_file);
     fclose(c_file);
   }
+  upb_msg_free(fds, c.fds_msg);
   upb_context_free(&c);
   upb_strfree(descriptor);
   fclose(h_file);
