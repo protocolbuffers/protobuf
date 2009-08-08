@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import com.google.protobuf.Internal.ThreadLocalQuickQueue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -278,9 +276,6 @@ public final class UnknownFieldSet implements MessageLite {
    * <p>Use {@link UnknownFieldSet#newBuilder()} to construct a {@code Builder}.
    */
   public static final class Builder implements MessageLite.Builder {
-    private static ThreadLocalQuickQueue<Builder> builders =
-      new ThreadLocalQuickQueue<Builder>();
-
     // This constructor should never be called directly (except from 'create').
     private Builder() {}
 
@@ -293,10 +288,7 @@ public final class UnknownFieldSet implements MessageLite {
     private Field.Builder lastField;
 
     private static Builder create() {
-      Builder builder = builders.get().poll();
-      if (builder == null) {
-        builder = new Builder();
-      }
+      Builder builder = new Builder();
       builder.reinitialize();
       return builder;
     }
@@ -343,7 +335,6 @@ public final class UnknownFieldSet implements MessageLite {
         result = new UnknownFieldSet(Collections.unmodifiableMap(fields));
       }
       fields = null;
-      builders.get().offer(this);
       return result;
     }
 
@@ -812,18 +803,11 @@ public final class UnknownFieldSet implements MessageLite {
      * <p>Use {@link Field#newBuilder()} to construct a {@code Builder}.
      */
     public static final class Builder {
-      private static ThreadLocalQuickQueue<Builder> builders =
-        new ThreadLocalQuickQueue<Builder>();
-
       // This constructor should never be called directly (except from 'create').
       private Builder() {}
 
       private static Builder create() {
-        Builder builder = builders.get().poll();
-        if (builder == null) {
-          builder = new Builder();
-        }
-
+        Builder builder = new Builder();
         builder.result = new Field();
         return builder;
       }
@@ -866,7 +850,6 @@ public final class UnknownFieldSet implements MessageLite {
 
         final Field returnMe = result;
         result = null;
-        builders.get().offer(this);
         return returnMe;
       }
 
