@@ -199,14 +199,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\google\protobuf\unittest_lite.pb.h"
-				>
-			</File>
-			<File
-				RelativePath=".\google\protobuf\unittest_lite_imports_nonline.pb.h"
-				>
-			</File>
-			<File
 				RelativePath=".\google\protobuf\unittest_custom_options.pb.h"
 				>
 			</File>
@@ -219,7 +211,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\google\protobuf\unittest_import_lite.pb.h"
+				RelativePath=".\google\protobuf\unittest_lite_imports_nonline.pb.h"
 				>
 			</File>
 			<File
@@ -347,14 +339,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\google\protobuf\unittest_lite.pb.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\google\protobuf\unittest_lite_imports_nonlite.pb.cc"
-				>
-			</File>
-			<File
 				RelativePath=".\google\protobuf\unittest_custom_options.pb.cc"
 				>
 			</File>
@@ -367,7 +351,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\google\protobuf\unittest_import_lite.pb.cc"
+				RelativePath=".\google\protobuf\unittest_lite_imports_nonlite.pb.cc"
 				>
 			</File>
 			<File
@@ -436,54 +420,6 @@
 					Description="Generating unittest.pb.{h,cc}..."
 					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest.proto&#x0D;&#x0A;"
 					Outputs="google\protobuf\unittest.pb.h;google\protobuf\unittest.pb.cc"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\src\google\protobuf\unittest_lite.proto"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-					Description="Generating unittest_lite.pb.{h,cc}..."
-					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_lite.proto&#x0D;&#x0A;"
-					Outputs="google\protobuf\unittest_lite.pb.h;google\protobuf\unittest_lite.pb.cc"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-					Description="Generating unittest_lite.pb.{h,cc}..."
-					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_lite.proto&#x0D;&#x0A;"
-					Outputs="google\protobuf\unittest_lite.pb.h;google\protobuf\unittest_lite.pb.cc"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\src\google\protobuf\unittest_lite_imports_nonlite.proto"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-					Description="Generating unittest_lite_imports_nonlite.pb.{h,cc}..."
-					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_lite_imports_nonlite.proto&#x0D;&#x0A;"
-					Outputs="google\protobuf\unittest_lite_imports_nonlite.pb.h;google\protobuf\unittest_lite_imports_nonlite.pb.cc"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-					Description="Generating unittest_lite_imports_nonlite.pb.{h,cc}..."
-					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_lite_imports_nonlite.proto&#x0D;&#x0A;"
-					Outputs="google\protobuf\unittest_lite_imports_nonlite.pb.h;google\protobuf\unittest_lite_imports_nonlite.pb.cc"
 				/>
 			</FileConfiguration>
 		</File>
@@ -560,16 +496,16 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\src\google\protobuf\unittest_import_lite.proto"
+			RelativePath="..\src\google\protobuf\unittest_lite_imports_nonlite.proto"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					Description="Generating unittest_import_lite.pb.{h,cc}..."
-					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_import_lite.proto&#x0D;&#x0A;"
-					Outputs="google\protobuf\unittest_import_lite.pb.h;google\protobuf\unittest_import_lite.pb.cc"
+					Description="Generating unittest_lite_imports_nonlite.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_lite_imports_nonlite.proto&#x0D;&#x0A;"
+					Outputs="google\protobuf\unittest_lite_imports_nonlite.pb.h;google\protobuf\unittest_lite_imports_nonlite.pb.cc"
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -577,9 +513,9 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					Description="Generating unittest_import_lite.pb.{h,cc}..."
-					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_import_lite.proto&#x0D;&#x0A;"
-					Outputs="google\protobuf\unittest_import_lite.pb.h;google\protobuf\unittest_import_lite.pb.cc"
+					Description="Generating unittest_lite_imports_nonlite.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_lite_imports_nonlite.proto&#x0D;&#x0A;"
+					Outputs="google\protobuf\unittest_lite_imports_nonlite.pb.h;google\protobuf\unittest_lite_imports_nonlite.pb.cc"
 				/>
 			</FileConfiguration>
 		</File>
