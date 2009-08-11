@@ -199,7 +199,8 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
-  google/protobuf/compiler/package_info.h
+  google/protobuf/compiler/package_info.h                      \
+  google/protobuf/unittest_enormous_descriptor.proto
 
 protoc_lite_outputs =                                          \
   google/protobuf/unittest_lite.pb.cc                          \
