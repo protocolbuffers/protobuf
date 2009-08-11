@@ -186,7 +186,6 @@ protoc_inputs =                                                \
   google/protobuf/unittest_lite.proto                          \
   google/protobuf/unittest_import_lite.proto                   \
   google/protobuf/unittest_lite_imports_nonlite.proto          \
-  google/protobuf/unittest_enormous_descriptor.proto           \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
 
 EXTRA_DIST =                                                   \
@@ -226,8 +225,6 @@ protoc_outputs =                                               \
   google/protobuf/unittest_custom_options.pb.h                 \
   google/protobuf/unittest_lite_imports_nonlite.pb.cc          \
   google/protobuf/unittest_lite_imports_nonlite.pb.h           \
-  google/protobuf/unittest_enormous_descriptor.pb.cc           \
-  google/protobuf/unittest_enormous_descriptor.pb.h            \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 
