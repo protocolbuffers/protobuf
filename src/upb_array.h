@@ -38,22 +38,32 @@ typedef uint32_t upb_arraylen_t;
  * the data in the array depends on the type. */
 struct upb_array {
   union upb_value_ptr elements;
-  void *mem;
   upb_arraylen_t len;     /* Number of elements in "elements". */
-  upb_arraylen_t size;    /* Memory allocated in "mem" (measured in elements) */
+  upb_arraylen_t size;    /* Memory we own (0 if by reference). */
+  void *gptr;
 };
 
 INLINE void upb_array_init(struct upb_array *arr)
 {
   arr->elements._void = NULL;
-  arr->mem = NULL;
   arr->len = 0;
   arr->size = 0;
 }
 
-INLINE void upb_array_free(struct upb_array *arr)
+INLINE void upb_array_uninit(struct upb_array *arr)
 {
-  free(arr->mem);
+  if(arr->size) free(arr->elements._void);
+}
+
+INLINE struct upb_array *upb_array_new() {
+  struct upb_array *arr = malloc(sizeof(*arr));
+  upb_array_init(arr);
+  return arr;
+}
+
+INLINE void upb_array_free(struct upb_array *arr) {
+  upb_array_uninit(arr);
+  free(arr);
 }
 
 /* Returns a pointer to an array element.  Does not perform a bounds check! */
@@ -92,18 +102,18 @@ INLINE bool upb_array_resize(struct upb_array *arr, upb_arraylen_t newlen,
 {
   size_t type_size = upb_type_info[type].size;
   bool dropped = false;
-  bool ref = arr->elements._void != arr->mem;  /* Ref'ing external memory. */
+  bool ref = arr->size == 0;   /* Ref'ing external memory. */
+  void *data = arr->elements._void;
   if(arr->size < newlen) {
     /* Need to resize. */
-    arr->size = max(4, upb_round_up_to_pow2(newlen));
-    arr->mem = realloc(arr->mem, arr->size * type_size);
+    arr->size = UPB_MAX(4, upb_round_up_to_pow2(newlen));
+    arr->elements._void = realloc(ref ? NULL : data, arr->size * type_size);
   }
   if(ref) {
     /* Need to take referenced data and copy it to memory we own. */
-    memcpy(arr->mem, arr->elements._void, UPB_MIN(arr->len, newlen) * type_size);
+    memcpy(arr->elements._void, data, UPB_MIN(arr->len, newlen) * type_size);
     dropped = true;
   }
-  arr->elements._void = arr->mem;
   arr->len = newlen;
   return dropped;
 }
@@ -111,8 +121,9 @@ INLINE bool upb_array_resize(struct upb_array *arr, upb_arraylen_t newlen,
 /* These are all overlays on upb_array, pointers between them can be cast. */
 #define UPB_DEFINE_ARRAY_TYPE(name, type) \
   struct name ## _array { \
+    struct upb_fielddef *f; \
+    void *gptr; \
     type *elements; \
-    type *mem; \
     upb_arraylen_t len; \
     upb_arraylen_t size; \
   };
@@ -132,7 +143,6 @@ UPB_DEFINE_ARRAY_TYPE(upb_msg,    void*)
 #define UPB_DEFINE_MSG_ARRAY(msg_type) \
   UPB_MSG_ARRAY(msg_type) { \
     msg_type **elements; \
-    msg_type **mem; \
     upb_arraylen_t len; \
     upb_arraylen_t size; \
   };

@@ -14,8 +14,8 @@ bool upb_strreadfile(const char *filename, struct upb_string *data) {
   long size = ftell(f);
   if(size < 0) return false;
   if(fseek(f, 0, SEEK_SET) != 0) return false;
-  data->ptr = (char*)malloc(size);
   data->byte_len = size;
+  upb_stralloc(data, data->byte_len);
   if(fread(data->ptr, size, 1, f) != 1) {
     free(data->ptr);
     return false;

@@ -35,8 +35,6 @@ extern "C" {
 
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
-INLINE uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
-
 /* Fundamental types and type constants. **************************************/
 
 /* A list of types as they are encoded on-the-wire. */
@@ -104,7 +102,7 @@ union upb_value {
   bool     _bool;
   struct upb_string *str;
   struct upb_array *arr;
-  void     *msg;
+  struct upb_msg *msg;
 };
 
 /* A pointer to a .proto value.  The owner must have an out-of-band way of
@@ -119,7 +117,7 @@ union upb_value_ptr {
   bool     *_bool;
   struct upb_string **str;
   struct upb_array **arr;
-  void     **msg;
+  struct upb_msg **msg;
   void     *_void;
 };
 

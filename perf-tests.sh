@@ -11,23 +11,23 @@ fi
 rm -f perf-tests.out
 
 make clean
-echo "-DNDEBUG -msse3" > perf-cppflags
+echo "-O3 -DNDEBUG -msse3" > perf-cppflags
 make $MAKETARGET
 make benchmark | sed -e 's/^/plain./g' | tee -a perf-tests.out
 
 make clean
-echo "-DNDEBUG -fomit-frame-pointer -msse3" > perf-cppflags
+echo "-O3 -DNDEBUG -fomit-frame-pointer -msse3" > perf-cppflags
 make $MAKETARGET
 make benchmark | sed -e 's/^/omitfp./g' | tee -a perf-tests.out
 
 if [ x`uname -m` == xx86_64 ]; then
   make clean
-  echo "-DNDEBUG -msse3 -m32" > perf-cppflags
+  echo "-O3 -DNDEBUG -msse3 -m32" > perf-cppflags
   make upb_benchmarks
   make benchmark | sed -e 's/^/plain32./g' | tee -a perf-tests.out
 
   make clean
-  echo "-DNDEBUG -fomit-frame-pointer -msse3 -m32" > perf-cppflags
+  echo "-O3 -DNDEBUG -fomit-frame-pointer -msse3 -m32" > perf-cppflags
   make upb_benchmarks
   make benchmark | sed -e 's/^/omitfp32./g' | tee -a perf-tests.out
 fi

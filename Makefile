@@ -2,18 +2,19 @@
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
 
-.PHONY: all clean test benchmarks benchmark
+.PHONY: all clean test benchmarks benchmark descriptorgen
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-O3 -Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 
 LIBUPB=src/libupb.a
 ALL=deps $(OBJ) $(LIBUPB) tests/test_table tests/tests tools/upbc
 all: $(ALL)
 clean:
 	rm -f $(call rwildcard,,*.o) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -f descriptor/descriptor.proto.pb
 
 # The core library (src/libupb.a)
 OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \
@@ -22,6 +23,14 @@ SRC=$(call rwildcard,,*.c)
 HEADERS=$(call rwildcard,,*.h)
 $(LIBUPB): $(OBJ)
 	ar rcs $(LIBUPB) $(OBJ)
+
+# Regenerating the auto-generated files in descriptor/.
+descriptor/descriptor.proto.pb: descriptor/descriptor.proto
+	# TODO: replace with upbc
+	protoc descriptor/descriptor.proto -odescriptor/descriptor.proto.pb
+
+descriptorgen: descriptor/descriptor.proto.pb tools/upbc
+	./tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
 
 # Tests
 test: tests/tests

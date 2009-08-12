@@ -36,7 +36,7 @@ void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
       /* TODO: escaping. */
-      fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(*val.str)); break;
+      fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(val.str)); break;
   }
 }
 
@@ -48,7 +48,7 @@ static void print_indent(struct upb_text_printer *p, FILE *stream)
 }
 
 void upb_text_printfield(struct upb_text_printer *p,
-                         struct upb_string name,
+                         struct upb_string *name,
                          upb_field_type_t valtype, union upb_value val,
                          FILE *stream)
 {
@@ -62,7 +62,7 @@ void upb_text_printfield(struct upb_text_printer *p,
 }
 
 void upb_text_push(struct upb_text_printer *p,
-                   struct upb_string submsg_type,
+                   struct upb_string *submsg_type,
                    FILE *stream)
 {
   print_indent(p, stream);

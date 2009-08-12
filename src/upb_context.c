@@ -60,7 +60,7 @@ void upb_context_free(struct upb_context *c)
 {
   free_symtab(&c->symtab);
   for(size_t i = 0; i < c->fds_len; i++)
-    upb_msg_free(c->fds[i], c->fds_msg);
+    upb_msg_free((struct upb_msg*)c->fds[i]);
   free_symtab(&c->psymtab);
   free(c->fds);
 }
@@ -280,7 +280,7 @@ bool upb_context_addfds(struct upb_context *c,
 
 bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
   google_protobuf_FileDescriptorSet *fds =
-      upb_msg_parsenew(c->fds_msg, fds_str);
+      (google_protobuf_FileDescriptorSet*)upb_msg_parsenew(c->fds_msg, fds_str);
   if(!fds) return false;
   if(!upb_context_addfds(c, fds)) return false;
 

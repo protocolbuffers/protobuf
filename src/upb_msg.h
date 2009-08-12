@@ -108,6 +108,18 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
   return m->field_descriptors[f->field_index];
 }
 
+/* Message structure. *********************************************************/
+
+struct upb_msg {
+  struct upb_msgdef *def;
+  void *gptr;  /* Generic pointer for use by subclasses. */
+  uint8_t data[1];
+};
+
+INLINE void *upb_msg_gptr(struct upb_msg *msg) {
+  return msg->gptr;
+}
+
 /* Field access. **************************************************************/
 
 /* Note that these only provide access to fields that are directly in the msg
@@ -115,14 +127,16 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
  * necessary to dereference the returned values. */
 
 /* Returns a pointer to a specific field in a message. */
-INLINE union upb_value_ptr upb_msg_getptr(void *msg, struct upb_msg_fielddef *f) {
+INLINE union upb_value_ptr upb_msg_getptr(struct upb_msg *msg,
+                                          struct upb_msg_fielddef *f) {
   union upb_value_ptr p;
-  p._void = ((char*)msg + f->byte_offset);
+  p._void = &msg->data[f->byte_offset];
   return p;
 }
 
 /* Returns a a specific field in a message. */
-INLINE union upb_value upb_msg_get(void *msg, struct upb_msg_fielddef *f) {
+INLINE union upb_value upb_msg_get(struct upb_msg *msg,
+                                   struct upb_msg_fielddef *f) {
   return upb_deref(upb_msg_getptr(msg, f), f->type);
 }
 
@@ -145,40 +159,40 @@ INLINE uint8_t upb_isset_mask(uint32_t field_index) {
 }
 
 /* Returns true if the given field is set, false otherwise. */
-INLINE void upb_msg_set(void *msg, struct upb_msg_fielddef *f)
+INLINE void upb_msg_set(struct upb_msg *msg, struct upb_msg_fielddef *f)
 {
-  ((char*)msg)[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
+  msg->data[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
 }
 
 /* Clears the set bit for this field in the given message. */
-INLINE void upb_msg_unset(void *msg, struct upb_msg_fielddef *f)
+INLINE void upb_msg_unset(struct upb_msg *msg, struct upb_msg_fielddef *f)
 {
-  ((char*)msg)[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
+  msg->data[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
 }
 
 /* Tests whether the given field is set. */
-INLINE bool upb_msg_isset(void *msg, struct upb_msg_fielddef *f)
+INLINE bool upb_msg_isset(struct upb_msg *msg, struct upb_msg_fielddef *f)
 {
-  return ((char*)msg)[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
+  return msg->data[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
 }
 
 /* Returns true if *all* required fields are set, false otherwise. */
-INLINE bool upb_msg_all_required_fields_set(void *msg, struct upb_msgdef *m)
+INLINE bool upb_msg_all_required_fields_set(struct upb_msg *msg, struct upb_msgdef *m)
 {
   int num_fields = m->num_required_fields;
   int i = 0;
   while(num_fields > 8) {
-    if(((uint8_t*)msg)[i++] != 0xFF) return false;
+    if(msg->data[i++] != 0xFF) return false;
     num_fields -= 8;
   }
-  if(((uint8_t*)msg)[i] != (1 << num_fields) - 1) return false;
+  if(msg->data[i] != (1 << num_fields) - 1) return false;
   return true;
 }
 
 /* Clears the set bit for all fields. */
-INLINE void upb_msg_clear(void *msg, struct upb_msgdef *m)
+INLINE void upb_msg_clear(struct upb_msg *msg)
 {
-  memset(msg, 0, m->set_flags_bytes);
+  memset(msg->data, 0, msg->def->set_flags_bytes);
 }
 
 /* Number->field and name->field lookup.  *************************************/
@@ -230,12 +244,12 @@ INLINE struct upb_msg_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
  * new message data to hold it.  If byref is set, strings in the returned
  * upb_msg will reference s instead of copying from it, but this requires that
  * s will live for as long as the returned message does. */
-void *upb_msg_parsenew(struct upb_msgdef *m, struct upb_string *s);
+struct upb_msg *upb_msg_parsenew(struct upb_msgdef *m, struct upb_string *s);
 
 /* This function should be used to free messages that were parsed with
  * upb_msg_parsenew.  It will free the message appropriately (including all
  * submessages). */
-void upb_msg_free(void *msg, struct upb_msgdef *m);
+void upb_msg_free(struct upb_msg *msg);
 
 
 /* Parsing with (re)allocation callbacks. *************************************/
@@ -243,56 +257,52 @@ void upb_msg_free(void *msg, struct upb_msgdef *m);
 /* This interface parses protocol buffers into upb_msgs, but allows the client
  * to supply allocation callbacks whenever the parser needs to obtain a string,
  * array, or submsg (a "dynamic field").  If the parser sees that a dynamic
- * field is already present (its "set bit" is set) it will use that, otherwise
- * it will call the allocation callback to obtain one.
+ * field is already present (its "set bit" is set) it will use that, resizing
+ * it if necessary in the case of an array.  Otherwise it will call the
+ * allocation callback to obtain one.
  *
  * This may seem trivial (since nearly all clients will use malloc and free for
  * memory management), but the allocation callback can be used for more than
  * just allocation.  If we are parsing data into an existing upb_msg, the
  * allocation callback can examine any existing memory that is allocated for
  * the dynamic field and determine whether it can reuse it.  It can also
- * perform memory management like unrefing the existing field or refing the new.
+ * perform memory management like refing the new field.
  *
  * This parser is layered on top of the event-based parser in upb_parse.h.  The
  * parser is upb_mm_msg.h is layered on top of this parser.
  *
  * This parser is fully streaming-capable. */
 
-typedef struct upb_array *(*upb_msg_getarray_cb_t)(
-    void *msg, struct upb_msgdef *m,
-    struct upb_array *existingval, struct upb_msg_fielddef *f,
-    upb_arraylen_t size);
+/* Should return an initialized array. */
+typedef struct upb_array *(*upb_msg_getandref_array_cb_t)(
+    void *from_gptr, struct upb_array *existingval, struct upb_msg_fielddef *f);
 
-/* Callback to allocate a string of size >=len.  If len==0 then the client can
- * assume that the parser intends to reference the memory instead of copying
- * it. */
-typedef struct upb_string *(*upb_msg_getstring_cb_t)(
-    void *msg, struct upb_msgdef *m,
-    struct upb_string *existingval, struct upb_msg_fielddef *f, size_t len);
+/* Callback to allocate a string.  If byref is true, the client should assume
+ * that the string will be referencing the input data. */
+typedef struct upb_string *(*upb_msg_getandref_string_cb_t)(
+    void *from_gptr, struct upb_string *existingval, struct upb_msg_fielddef *f,
+    bool byref);
 
-typedef void *(*upb_msg_getmsg_cb_t)(
-    void *msg, struct upb_msgdef *m,
-    void *existingval, struct upb_msg_fielddef *f);
+/* Should return a cleared message. */
+typedef struct upb_msg *(*upb_msg_getandref_msg_cb_t)(
+    void *from_gptr, struct upb_msg *existingval, struct upb_msg_fielddef *f);
 
 struct upb_msg_parser_frame {
-  struct upb_msgdef *m;
-  void *msg;
+  struct upb_msg *msg;
 };
 
 struct upb_msg_parser {
   struct upb_stream_parser s;
   bool merge;
   bool byref;
-  struct upb_msg *m;
   struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
-  upb_msg_getarray_cb_t getarray_cb;
-  upb_msg_getstring_cb_t getstring_cb;
-  upb_msg_getmsg_cb_t getmsg_cb;
+  upb_msg_getandref_array_cb_t getarray_cb;
+  upb_msg_getandref_string_cb_t getstring_cb;
+  upb_msg_getandref_msg_cb_t getmsg_cb;
 };
 
 void upb_msg_parser_reset(struct upb_msg_parser *p,
-                          void *msg, struct upb_msgdef *m,
-                          bool byref);
+                          struct upb_msg *msg, bool byref);
 
 /* Parses protocol buffer data out of data which has length of len.  The data
  * need not be a complete protocol buffer.  The number of bytes parsed is
@@ -347,9 +357,8 @@ upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
 
 /* Text dump  *****************************************************************/
 
-bool upb_msg_eql(void *data1, void *data2, struct upb_msgdef *m, bool recursive);
-void upb_msg_print(void *data, struct upb_msgdef *m, bool single_line,
-                   FILE *stream);
+bool upb_msg_eql(struct upb_msg *msg1, struct upb_msg *msg2, bool recursive);
+void upb_msg_print(struct upb_msg *data, bool single_line, FILE *stream);
 
 /* Internal functions. ********************************************************/
 

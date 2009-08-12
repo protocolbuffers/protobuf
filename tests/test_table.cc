@@ -96,7 +96,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
   upb_inttable_init(&table, num_entries, sizeof(struct inttable_entry));
   for(size_t i = 0; i < num_entries; i++) {
     int32_t key = keys[i];
-    largest_key = max(largest_key, key);
+    largest_key = UPB_MAX((int32_t)largest_key, key);
     struct inttable_entry e;
     e.e.key = key;
     e.value = key*2;
