@@ -1,4 +1,4 @@
-????-??-?? version 2.2.0:
+2009-08-11 version 2.2.0:
 
   C++
   * Lite mode:  The "optimize_for = LITE_RUNTIME" option causes the compiler
