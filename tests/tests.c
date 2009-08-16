@@ -224,7 +224,7 @@ static void test_get_f_uint32_t()
 static void test_upb_context() {
   struct upb_context c;
   ASSERT(upb_context_init(&c));
-  upb_context_free(&c);
+  upb_context_unref(&c);
 }
 
 int main()

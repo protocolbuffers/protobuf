@@ -8,9 +8,12 @@
 #include "upb_enum.h"
 
 void upb_enum_init(struct upb_enum *e,
-                   struct google_protobuf_EnumDescriptorProto *ed) {
+                   struct google_protobuf_EnumDescriptorProto *ed,
+                   struct upb_context *c) {
   int num_values = ed->set_flags.has.value ? ed->value->len : 0;
   e->descriptor = ed;
+  e->context = c;
+  upb_atomic_refcount_init(&e->refcount, 0);
   upb_strtable_init(&e->nametoint, num_values, sizeof(struct upb_enum_ntoi_entry));
   upb_inttable_init(&e->inttoname, num_values, sizeof(struct upb_enum_iton_entry));
 

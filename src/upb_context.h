@@ -14,6 +14,7 @@
 
 #include "upb.h"
 #include "upb_table.h"
+#include "upb_atomic.h"
 
 struct google_protobuf_FileDescriptorProto;
 
@@ -38,6 +39,8 @@ struct upb_symtab_entry {
 };
 
 struct upb_context {
+  upb_atomic_refcount_t refcount;
+  upb_rwlock_t lock;
   struct upb_strtable symtab;   /* The context's symbol table. */
   struct upb_strtable psymtab;  /* Private symbols, for internal use. */
   struct upb_msgdef *fds_msg;   /* In psymtab, ptr here for convenience. */
@@ -48,9 +51,13 @@ struct upb_context {
   struct google_protobuf_FileDescriptorSet **fds;
 };
 
-/* Initializes and frees a upb_context, respectively. */
+/* Initializes a upb_context.  Contexts are not freed explicitly, but unref'd
+ * when the caller is done with them. */
 bool upb_context_init(struct upb_context *c);
-void upb_context_free(struct upb_context *c);
+INLINE void upb_context_ref(struct upb_context *c) {
+  upb_atomic_ref(&c->refcount);
+}
+void upb_context_unref(struct upb_context *c);
 
 /* Looking up symbols. ********************************************************/
 

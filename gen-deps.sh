@@ -11,7 +11,8 @@
 # Since upb_parse.o is actually in src, the dependency information is
 # not used.  To remedy this, we use the -MT flag (see gcc docs).
 
+set -e
 rm -f deps
 for file in $@; do
-  gcc -MM $file -MT ${file%.*}.o -Idescriptor -Isrc -I. >> deps
+  gcc -MM $file -MT ${file%.*}.o -DUPB_THREAD_UNSAFE -Idescriptor -Isrc -I. >> deps
 done

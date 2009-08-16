@@ -686,7 +686,7 @@ int main(int argc, char *argv[])
     fclose(c_file);
   }
   upb_msg_free(fds_msg);
-  upb_context_free(&c);
+  upb_context_unref(&c);
   upb_strfree(descriptor);
   fclose(h_file);
 

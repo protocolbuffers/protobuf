@@ -42,11 +42,12 @@ void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
 }
 
 bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
-                     struct upb_string fqname, bool sort)
+                     struct upb_string fqname, bool sort, struct upb_context *c)
 {
   /* TODO: more complete validation. */
   if(!d->set_flags.has.field) return false;
 
+  upb_atomic_refcount_init(&m->refcount, 0);
   upb_inttable_init(&m->fields_by_num, d->field->len,
                     sizeof(struct upb_fieldsbynum_entry));
   upb_strtable_init(&m->fields_by_name, d->field->len,
@@ -54,6 +55,7 @@ bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
 
   m->descriptor = d;
   m->fqname = fqname;
+  m->context = c;
   m->num_fields = d->field->len;
   m->set_flags_bytes = div_round_up(m->num_fields, 8);
   /* These are incremented in the loop. */
@@ -88,7 +90,7 @@ bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
 
     /* Insert into the tables.  Note that f->ref will be uninitialized, even in
      * the tables' copies of *f, which is why we must update them separately
-     * in upb_msg_ref() below. */
+     * in upb_msg_setref() below. */
     struct upb_fieldsbynum_entry nument = {.e = {.key = fd->number}, .f = *f};
     struct upb_fieldsbyname_entry strent = {.e = {.key = *fd->name}, .f = *f};
     upb_inttable_insert(&m->fields_by_num, &nument.e);
@@ -107,8 +109,8 @@ void upb_msgdef_free(struct upb_msgdef *m)
   free(m->field_descriptors);
 }
 
-void upb_msgdef_ref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
-                    union upb_symbol_ref ref) {
+void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
+                       union upb_symbol_ref ref) {
   struct google_protobuf_FieldDescriptorProto *d =
       upb_msg_field_descriptor(f, m);
   struct upb_fieldsbynum_entry *int_e = upb_inttable_fast_lookup(

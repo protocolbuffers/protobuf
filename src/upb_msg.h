@@ -54,8 +54,10 @@
 #include <stdint.h>
 
 #include "upb.h"
-#include "upb_table.h"
+#include "upb_atomic.h"
+#include "upb_context.h"
 #include "upb_parse.h"
+#include "upb_table.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +68,8 @@ extern "C" {
 struct upb_msg_fielddef;
 /* Structure that describes a single .proto message type. */
 struct upb_msgdef {
+  upb_atomic_refcount_t refcount;
+  struct upb_context *context;
   struct google_protobuf_DescriptorProto *descriptor;
   struct upb_string fqname;      /* Fully qualified. */
   size_t size;
@@ -91,6 +95,14 @@ struct upb_msg_fielddef {
   upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
   upb_label_t label;
 };
+
+INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
+  if(upb_atomic_ref(&m->refcount)) upb_context_ref(m->context);
+}
+
+INLINE void upb_msgdef_unref(struct upb_msgdef *m) {
+  if(upb_atomic_unref(&m->refcount)) upb_context_unref(m->context);
+}
 
 INLINE bool upb_issubmsg(struct upb_msg_fielddef *f) {
   return upb_issubmsgtype(f->type);
@@ -379,7 +391,8 @@ void upb_msg_print(struct upb_msg *data, bool single_line, FILE *stream);
  * header for this type that expects the given order. */
 bool upb_msgdef_init(struct upb_msgdef *m,
                      struct google_protobuf_DescriptorProto *d,
-                     struct upb_string fqname, bool sort);
+                     struct upb_string fqname, bool sort,
+                     struct upb_context *c);
 void upb_msgdef_free(struct upb_msgdef *m);
 
 /* Sort the given field descriptors in-place, according to what we think is an
@@ -391,8 +404,8 @@ void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num);
  * the "ref" field in the upb_msg_fielddef.  Since messages can refer to each
  * other in mutually-recursive ways, this step must be separated from
  * initialization. */
-void upb_msgdef_ref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
-                    union upb_symbol_ref ref);
+void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
+                       union upb_symbol_ref ref);
 
 #ifdef __cplusplus
 }  /* extern "C" */
