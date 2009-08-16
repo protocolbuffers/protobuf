@@ -55,7 +55,7 @@ INLINE void upb_array_uninit(struct upb_array *arr)
   if(arr->size) free(arr->elements._void);
 }
 
-INLINE struct upb_array *upb_array_new() {
+INLINE struct upb_array *upb_array_new(void) {
   struct upb_array *arr = malloc(sizeof(*arr));
   upb_array_init(arr);
   return arr;

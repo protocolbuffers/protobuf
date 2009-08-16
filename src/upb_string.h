@@ -60,7 +60,7 @@ INLINE void upb_struninit(struct upb_string *str)
   if(str->byte_size) free(str->ptr);
 }
 
-INLINE struct upb_string *upb_strnew()
+INLINE struct upb_string *upb_strnew(void)
 {
   struct upb_string *str = (struct upb_string*)malloc(sizeof(*str));
   upb_strinit(str);

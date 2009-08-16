@@ -53,7 +53,7 @@ struct upb_context {
 
 /* Initializes a upb_context.  Contexts are not freed explicitly, but unref'd
  * when the caller is done with them. */
-struct upb_context *upb_context_new();
+struct upb_context *upb_context_new(void);
 INLINE void upb_context_ref(struct upb_context *c) {
   upb_atomic_ref(&c->refcount);
 }
@@ -70,23 +70,24 @@ void upb_context_unref(struct upb_context *c);
  *    root namespace).
  *
  * Returns NULL if the symbol has not been defined. */
-struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
-                                             struct upb_string *base,
-                                             struct upb_string *symbol);
+bool upb_context_resolve(struct upb_context *c, struct upb_string *base,
+                         struct upb_string *symbol,
+                         struct upb_symtab_entry *out_entry);
 
 /* Find an entry in the symbol table with this exact name.  Returns NULL if no
  * such symbol name exists. */
-struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
-                                            struct upb_string *symbol);
+bool upb_context_lookup(struct upb_context *c, struct upb_string *symbol,
+                        struct upb_symtab_entry *out_entry);
 
-INLINE struct upb_symtab_entry *upb_context_symbegin(struct upb_context *c) {
-  return (struct upb_symtab_entry*)upb_strtable_begin(&c->symtab);
-}
-
-INLINE struct upb_symtab_entry *upb_context_symnext(
-    struct upb_context *c, struct upb_symtab_entry *cur) {
-  return (struct upb_symtab_entry*)upb_strtable_next(&c->symtab, &cur->e);
-}
+/* For enumerating over the entries in the symbol table.  The enumerator
+ * callback will be called once for every symtab entry.
+ *
+ * The callback *must not* block or take any significant amount of time, since
+ * the upb_context's lock is held while it is being called! */
+typedef void (*upb_context_enumerator_t)(
+    void *udata, struct upb_symtab_entry *entry);
+void upb_context_enumerate(struct upb_context *c, upb_context_enumerator_t,
+                           void *udata);
 
 /* Adding symbols. ************************************************************/
 

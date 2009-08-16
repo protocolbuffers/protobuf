@@ -82,13 +82,24 @@ void upb_context_unref(struct upb_context *c)
   upb_rwlock_destroy(&c->lock);
 }
 
-struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
-                                            struct upb_string *symbol)
+bool upb_context_lookup(struct upb_context *c, struct upb_string *symbol,
+                        struct upb_symtab_entry *out_entry)
 {
   upb_rwlock_rdlock(&c->lock);
   struct upb_symtab_entry *e = upb_strtable_lookup(&c->symtab, symbol);
+  if(e) *out_entry = *e;
   upb_rwlock_unlock(&c->lock);
-  return e;
+  return e != NULL;
+}
+
+void upb_context_enumerate(struct upb_context *c, upb_context_enumerator_t cb,
+                           void *udata)
+{
+  upb_rwlock_rdlock(&c->lock);
+  struct upb_symtab_entry *e = upb_strtable_begin(&c->symtab);
+  for(; e; e = upb_strtable_next(&c->symtab, &e->e))
+    cb(udata, e);
+  upb_rwlock_unlock(&c->lock);
 }
 
 /* Given a symbol and the base symbol inside which it is defined, find the
@@ -139,13 +150,14 @@ union upb_symbol_ref resolve2(struct upb_strtable *t1, struct upb_strtable *t2,
 }
 
 
-struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
-                                             struct upb_string *base,
-                                             struct upb_string *symbol) {
+bool upb_context_resolve(struct upb_context *c, struct upb_string *base,
+                         struct upb_string *symbol,
+                         struct upb_symtab_entry *out_entry) {
   upb_rwlock_rdlock(&c->lock);
   struct upb_symtab_entry *e = resolve(&c->symtab, base, symbol);
+  if(e) *out_entry = *e;
   upb_rwlock_unlock(&c->lock);
-  return e;
+  return e != NULL;
 }
 
 /* Joins strings together, for example:
