@@ -1,3 +1,17 @@
+#
+# Summary of compiler flags you may want to use:
+#
+# * -DNDEBUG: makes binary smaller and faster by removing sanity checks.
+# * -O3: optimize for maximum speed
+# * -fomit-frame-pointer: makes code smaller and faster by freeing up a reg.
+#
+# Threading:
+# * -DUPB_USE_PTHREADS: configures upb to use pthreads r/w lock.
+# * -DUPB_THREAD_UNSAFE: remove all thread-safety.
+# * -pthread: required on GCC to enable pthreads (but what does it do?)
+#
+# Other:
+# * -DUPB_UNALIGNED_READS_OK: makes code smaller, but not standard compliant
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
@@ -8,13 +22,14 @@ CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
 CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+LDLIBS=-lpthread
 
 LIBUPB=src/libupb.a
 ALL=deps $(OBJ) $(LIBUPB) tests/test_table tests/tests tools/upbc
 all: $(ALL)
 clean:
-	rm -f $(call rwildcard,,*.o) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
-	rm -f descriptor/descriptor.proto.pb
+	rm -rf $(call rwildcard,,*.o) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -rf descriptor/descriptor.proto.pb
 
 # The core library (src/libupb.a)
 OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \

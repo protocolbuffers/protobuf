@@ -339,8 +339,7 @@ struct upb_msgsizes {
 };
 
 /* Declared below -- this and get_valuesize are mutually recursive. */
-static size_t get_msgsize(struct upb_msgsizes *sizes, void *data,
-                          struct upb_msgdef *m);
+static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m);
 
 /* Returns a size of a value as it will be serialized.  Does *not* include
  * the size of the tag -- that is already accounted for. */
@@ -351,12 +350,12 @@ static size_t get_valuesize(struct upb_msgsizes *sizes, union upb_value_ptr p,
   switch(f->type) {
     default: assert(false); return 0;  /* Internal corruption. */
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE: {
-      size_t submsg_size = get_msgsize(sizes, p.msg, f->ref.msg);
+      size_t submsg_size = get_msgsize(sizes, *p.msg);
       return upb_get_INT32_size(submsg_size) + submsg_size;
     }
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP: {
       size_t endgrp_tag_size = upb_get_tag_size(fd->number);
-      return endgrp_tag_size + get_msgsize(sizes, p.msg, f->ref.msg);
+      return endgrp_tag_size + get_msgsize(sizes, *p.msg);
     }
 #define CASE(type, member) \
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## type: \
@@ -382,16 +381,15 @@ static size_t get_valuesize(struct upb_msgsizes *sizes, union upb_value_ptr p,
 /* This is mostly just a pure recursive function to calculate the size of a
  * message.  However it also stores the results of each level of the recursion
  * in sizes, because we need all of this intermediate information later. */
-static size_t get_msgsize(struct upb_msgsizes *sizes, void *data,
-                          struct upb_msgdef *m)
+static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m)
 {
   size_t size = 0;
   /* We iterate over fields and arrays in reverse order. */
-  for(int32_t i = m->num_fields - 1; i >= 0; i--) {
-    struct upb_msg_fielddef *f = &m->fields[i];
-    google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m);
-    if(!upb_msg_isset(data, f)) continue;
-    union upb_value_ptr p = upb_msg_getptr(data, f);
+  for(int32_t i = m->def->num_fields - 1; i >= 0; i--) {
+    struct upb_msg_fielddef *f = &m->def->fields[i];
+    google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m->def);
+    if(!upb_msg_isset(m, f)) continue;
+    union upb_value_ptr p = upb_msg_getptr(m, f);
     if(upb_isarray(f)) {
       for(int32_t j = (*p.arr)->len - 1; j >= 0; j--) {
         union upb_value_ptr elem = upb_array_getelementptr((*p.arr), j, f->type);
@@ -415,9 +413,9 @@ static size_t get_msgsize(struct upb_msgsizes *sizes, void *data,
   return size;
 }
 
-void upb_msgsizes_read(struct upb_msgsizes *sizes, void *data, struct upb_msgdef *m)
+void upb_msgsizes_read(struct upb_msgsizes *sizes, struct upb_msg *m)
 {
-  get_msgsize(sizes, data, m);
+  get_msgsize(sizes, m);
 }
 
 /* Initialize/free a upb_msg_sizes for the given message. */
@@ -457,11 +455,10 @@ void upb_msg_serialize_free(struct upb_msg_serialize_state *s)
   (void)s;
 }
 
-void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *data,
-                            struct upb_msgdef *m, struct upb_msgsizes *sizes)
+void upb_msg_serialize_init(struct upb_msg_serialize_state *s, struct upb_msg *m,
+                            struct upb_msgsizes *sizes)
 {
   (void)s;
-  (void)data;
   (void)m;
   (void)sizes;
 }

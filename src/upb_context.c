@@ -12,7 +12,7 @@
 #include "upb_msg.h"
 
 /* Search for a character in a string, in reverse. */
-static int memrchr(char *data, char c, size_t len)
+static int my_memrchr(char *data, char c, size_t len)
 {
   int off = len-1;
   while(off > 0 && data[off] != c) --off;
@@ -69,7 +69,6 @@ static void free_context(struct upb_context *c)
     upb_msg_free((struct upb_msg*)c->fds[i]);
   free_symtab(&c->psymtab);
   free(c->fds);
-  free(c);
 }
 
 void upb_context_unref(struct upb_context *c)
@@ -79,6 +78,7 @@ void upb_context_unref(struct upb_context *c)
     free_context(c);
     upb_rwlock_unlock(&c->lock);
   }
+  free(c);
   upb_rwlock_destroy(&c->lock);
 }
 
@@ -132,7 +132,7 @@ static struct upb_symtab_entry *resolve(struct upb_strtable *t,
       if (e) return e;
       else if(baselen == 0) return NULL;  /* No more scopes to try. */
 
-      baselen = memrchr(base->ptr, UPB_SYMBOL_SEPARATOR, baselen);
+      baselen = my_memrchr(base->ptr, UPB_SYMBOL_SEPARATOR, baselen);
     }
   }
 }

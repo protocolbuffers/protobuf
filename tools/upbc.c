@@ -35,7 +35,7 @@ static void to_preproc(struct upb_string *str)
     str->ptr[i] = toupper(str->ptr[i]);
 }
 
-static int memrchr(char *data, char c, size_t len)
+static int my_memrchr(char *data, char c, size_t len)
 {
   int off = len-1;
   while(off > 0 && data[off] != c) --off;
@@ -92,9 +92,9 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
     to_cident(enum_name);
 
     struct upb_string *enum_val_prefix = upb_strdup(&entry->e.key);
-    enum_val_prefix->byte_len = memrchr(enum_val_prefix->ptr,
-                                       UPB_SYMBOL_SEPARATOR,
-                                       enum_val_prefix->byte_len);
+    enum_val_prefix->byte_len = my_memrchr(enum_val_prefix->ptr,
+                                           UPB_SYMBOL_SEPARATOR,
+                                           enum_val_prefix->byte_len);
     enum_val_prefix->byte_len++;
     to_preproc(enum_val_prefix);
 

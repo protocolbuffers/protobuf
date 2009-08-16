@@ -189,9 +189,9 @@ INLINE bool upb_msg_isset(struct upb_msg *msg, struct upb_msg_fielddef *f)
 }
 
 /* Returns true if *all* required fields are set, false otherwise. */
-INLINE bool upb_msg_all_required_fields_set(struct upb_msg *msg, struct upb_msgdef *m)
+INLINE bool upb_msg_all_required_fields_set(struct upb_msg *msg)
 {
-  int num_fields = m->num_required_fields;
+  int num_fields = msg->def->num_required_fields;
   int i = 0;
   while(num_fields > 8) {
     if(msg->data[i++] != 0xFF) return false;
@@ -341,8 +341,7 @@ void upb_msgsizes_free(struct upb_msgsizes *sizes);
 
 /* Given a previously initialized sizes, recurse over the message and store its
  * sizes in 'sizes'. */
-void upb_msgsizes_read(struct upb_msgsizes *sizes, void *msg,
-                       struct upb_msgdef *m);
+void upb_msgsizes_read(struct upb_msgsizes *sizes, struct upb_msg *msg);
 
 /* Returns the total size of the serialized message given in sizes.  Must be
  * preceeded by a call to upb_msgsizes_read. */
@@ -355,8 +354,8 @@ struct upb_msg_serialize_state;
  * "sizes" and the parse being fully completed. */
 void upb_msg_serialize_alloc(struct upb_msg_serialize_state *s);
 void upb_msg_serialize_free(struct upb_msg_serialize_state *s);
-void upb_msg_serialize_init(struct upb_msg_serialize_state *s, void *msg,
-                            struct upb_msgdef *m, struct upb_msgsizes *sizes);
+void upb_msg_serialize_init(struct upb_msg_serialize_state *s,
+                            struct upb_msg *msg, struct upb_msgsizes *sizes);
 
 /* Serializes the next set of bytes into buf (which has size len).  Returns
  * UPB_STATUS_OK if serialization is complete, or UPB_STATUS_NEED_MORE_DATA

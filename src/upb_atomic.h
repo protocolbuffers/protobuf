@@ -79,12 +79,12 @@ INLINE void upb_atomic_refcount_init(upb_atomic_refcount_t *a, int val) {
   __sync_synchronize();   /* Ensure the initialized value is visible. */
 }
 
-INLINE void upb_atomic_ref(upb_atomic_refcount_t *a) {
-  return __sync_fetch_and_add(&a->val) == 0;
+INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
+  return __sync_fetch_and_add(&a->val, 1) == 0;
 }
 
 INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
-  return __sync_sub_and_fetch(&a->val) == 0;
+  return __sync_sub_and_fetch(&a->val, 1) == 0;
 }
 
 #elif defined(WIN32)
@@ -119,7 +119,9 @@ INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
 
 /* Already defined. */
 
-#elif defined(_POSIX_THREADS)
+#elif defined(UPB_USE_PTHREADS)
+
+#include <pthread.h>
 
 typedef struct {
   pthread_rwlock_t lock;
@@ -127,7 +129,7 @@ typedef struct {
 
 INLINE void upb_rwlock_init(upb_rwlock_t *l) {
   /* TODO: check return value. */
-  pthread_rwlock_init(&l->lock);
+  pthread_rwlock_init(&l->lock, NULL);
 }
 
 INLINE void upb_rwlock_destroy(upb_rwlock_t *l) {
