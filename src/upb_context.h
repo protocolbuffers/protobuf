@@ -53,7 +53,7 @@ struct upb_context {
 
 /* Initializes a upb_context.  Contexts are not freed explicitly, but unref'd
  * when the caller is done with them. */
-bool upb_context_init(struct upb_context *c);
+struct upb_context *upb_context_new();
 INLINE void upb_context_ref(struct upb_context *c) {
   upb_atomic_ref(&c->refcount);
 }

@@ -23,8 +23,9 @@ bool addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
            google_protobuf_FileDescriptorProto *fd, bool sort,
            struct upb_context *context);
 
-bool upb_context_init(struct upb_context *c)
+struct upb_context *upb_context_new()
 {
+  struct upb_context *c = malloc(sizeof(*c));
   upb_atomic_refcount_init(&c->refcount, 1);
   upb_rwlock_init(&c->lock);
   upb_strtable_init(&c->symtab, 16, sizeof(struct upb_symtab_entry));
@@ -34,7 +35,7 @@ bool upb_context_init(struct upb_context *c)
       upb_file_descriptor_set->file->elements[0]; /* We know there is only 1. */
   if(!addfd(&c->psymtab, &c->symtab, fd, false, c)) {
     assert(false);
-    return false;  /* Indicates that upb is buggy or corrupt. */
+    return NULL;  /* Indicates that upb is buggy or corrupt. */
   }
   struct upb_string name = UPB_STRLIT("google.protobuf.FileDescriptorSet");
   struct upb_symtab_entry *e = upb_strtable_lookup(&c->psymtab, &name);
@@ -43,7 +44,7 @@ bool upb_context_init(struct upb_context *c)
   c->fds_size = 16;
   c->fds_len = 0;
   c->fds = malloc(sizeof(*c->fds));
-  return true;
+  return c;
 }
 
 static void free_symtab(struct upb_strtable *t)
@@ -68,6 +69,7 @@ static void free_context(struct upb_context *c)
     upb_msg_free((struct upb_msg*)c->fds[i]);
   free_symtab(&c->psymtab);
   free(c->fds);
+  free(c);
 }
 
 void upb_context_unref(struct upb_context *c)
@@ -83,7 +85,10 @@ void upb_context_unref(struct upb_context *c)
 struct upb_symtab_entry *upb_context_lookup(struct upb_context *c,
                                             struct upb_string *symbol)
 {
-  return upb_strtable_lookup(&c->symtab, symbol);
+  upb_rwlock_rdlock(&c->lock);
+  struct upb_symtab_entry *e = upb_strtable_lookup(&c->symtab, symbol);
+  upb_rwlock_unlock(&c->lock);
+  return e;
 }
 
 /* Given a symbol and the base symbol inside which it is defined, find the
@@ -137,7 +142,10 @@ union upb_symbol_ref resolve2(struct upb_strtable *t1, struct upb_strtable *t2,
 struct upb_symtab_entry *upb_context_resolve(struct upb_context *c,
                                              struct upb_string *base,
                                              struct upb_string *symbol) {
-  return resolve(&c->symtab, base, symbol);
+  upb_rwlock_rdlock(&c->lock);
+  struct upb_symtab_entry *e = resolve(&c->symtab, base, symbol);
+  upb_rwlock_unlock(&c->lock);
+  return e;
 }
 
 /* Joins strings together, for example:
@@ -280,17 +288,25 @@ bool upb_context_addfds(struct upb_context *c,
      * the descriptor is valid. */
     struct upb_strtable tmp;
     upb_strtable_init(&tmp, 0, sizeof(struct upb_symtab_entry));
+    upb_rwlock_rdlock(&c->lock);
     for(uint32_t i = 0; i < fds->file->len; i++) {
       if(!addfd(&tmp, &c->symtab, fds->file->elements[i], true, c)) {
         printf("Not added successfully!\n");
         free_symtab(&tmp);
+        upb_rwlock_unlock(&c->lock);
         return false;
       }
     }
+    upb_rwlock_unlock(&c->lock);
+
     /* Everything was successfully added, copy from the tmp symtable. */
     struct upb_symtab_entry *e;
-    for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e))
-      upb_strtable_insert(&c->symtab, &e->e);
+    {
+      upb_rwlock_wrlock(&c->lock);
+      for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e))
+        upb_strtable_insert(&c->symtab, &e->e);
+      upb_rwlock_unlock(&c->lock);
+    }
     upb_strtable_free(&tmp);
   }
   return true;
@@ -302,11 +318,15 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
   if(!fds) return false;
   if(!upb_context_addfds(c, fds)) return false;
 
-  /* We own fds now, need to keep a ref so we can free it later. */
-  if(c->fds_size == c->fds_len) {
-    c->fds_size *= 2;
-    c->fds = realloc(c->fds, c->fds_size);
+  {
+    /* We own fds now, need to keep a ref so we can free it later. */
+    upb_rwlock_wrlock(&c->lock);
+    if(c->fds_size == c->fds_len) {
+      c->fds_size *= 2;
+      c->fds = realloc(c->fds, c->fds_size);
+    }
+    c->fds[c->fds_len++] = fds;
+    upb_rwlock_unlock(&c->lock);
   }
-  c->fds[c->fds_len++] = fds;
   return true;
 }

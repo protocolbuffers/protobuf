@@ -646,13 +646,12 @@ int main(int argc, char *argv[])
     error("Couldn't read input file.");
 
   /* Parse input file. */
-  struct upb_context c;
-  upb_context_init(&c);
-  struct upb_msg *fds_msg = upb_msg_parsenew(c.fds_msg, descriptor);
+  struct upb_context *c = upb_context_new();
+  struct upb_msg *fds_msg = upb_msg_parsenew(c->fds_msg, descriptor);
   google_protobuf_FileDescriptorSet *fds = (void*)fds_msg;
   if(!fds)
     error("Failed to parse input file descriptor.");
-  if(!upb_context_addfds(&c, fds))
+  if(!upb_context_addfds(c, fds))
     error("Failed to resolve symbols in descriptor.\n");
 
   /* We need to sort the fields of all the descriptors.  They will already be
@@ -676,17 +675,17 @@ int main(int argc, char *argv[])
   if(!h_file) error("Failed to open .h output file");
 
   int symcount;
-  struct upb_symtab_entry **entries = strtable_to_array(&c.symtab, &symcount);
+  struct upb_symtab_entry **entries = strtable_to_array(&c->symtab, &symcount);
   write_h(entries, symcount, h_filename, cident, h_file);
   free(entries);
   if(cident) {
     FILE *c_file = fopen(c_filename, "w");
     if(!c_file) error("Failed to open .h output file");
-    write_message_c(fds, c.fds_msg, cident, h_filename, argc, argv, input_file, c_file);
+    write_message_c(fds, c->fds_msg, cident, h_filename, argc, argv, input_file, c_file);
     fclose(c_file);
   }
   upb_msg_free(fds_msg);
-  upb_context_unref(&c);
+  upb_context_unref(c);
   upb_strfree(descriptor);
   fclose(h_file);
 
