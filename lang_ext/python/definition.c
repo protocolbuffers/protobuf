@@ -22,6 +22,7 @@
 
 #include "definition.h"
 #include "upb_context.h"
+#include "upb_msg.h"
 
 #if PY_MAJOR_VERSION > 3
 const char *bytes_format = "y#";
@@ -32,17 +33,39 @@ const char *bytes_format = "s#";
 
 /* upb.def.MessageDefinition **************************************************/
 
-#if 0
+typedef struct {
+  PyObject_HEAD
+  struct upb_msgdef *def;
+} PyUpb_MsgDef;
+
+PyTypeObject PyUpb_MsgDefType;  /* forward decl. */
+
 /* Not implemented yet, but these methods will expose information about the
  * message definition (the upb_msgdef). */
-static PyMethodDef PyUpb_MessageDefinitionMethods[] = {
+static PyMethodDef msgdef_methods[] = {
+  {NULL, NULL}
 };
 
-PyTypeObject PyUpb_MessageDefinitionType = {
+static PyObject *msgdef_new(struct upb_msgdef *m)
+{
+  PyUpb_MsgDef *md_obj = (void*)PyType_GenericAlloc(&PyUpb_MsgDefType, 0);
+  md_obj->def = m;
+  upb_msgdef_ref(md_obj->def);
+  return (void*)md_obj;
+}
+
+static void msgdef_dealloc(PyObject *obj)
+{
+  PyUpb_MsgDef *md_obj = (void*)obj;
+  upb_msgdef_unref(md_obj->def);
+  obj->ob_type->tp_free(obj);
+}
+
+PyTypeObject PyUpb_MsgDefType = {
   PyObject_HEAD_INIT(NULL)
   0,                                      /* ob_size */
   "upb.definition.MessageDefinition",     /* tp_name */
-  sizeof(PyUpb_MessageDefinition),        /* tp_basicsize */
+  sizeof(PyUpb_MsgDef),                   /* tp_basicsize */
   0,                                      /* tp_itemsize */
   msgdef_dealloc,                         /* tp_dealloc */
   0,                                      /* tp_print */
@@ -80,13 +103,13 @@ PyTypeObject PyUpb_MessageDefinitionType = {
   0, /* Can't be created in Python. */    /* tp_new */
   0,                                      /* tp_free */
 };
-#endif
 
 /* upb.Context ****************************************************************/
 
 typedef struct {
   PyObject_HEAD
   struct upb_context *context;
+  PyObject *created_defs;
 } PyUpb_Context;
 
 static PyTypeObject PyUpb_ContextType;  /* forward decl. */
@@ -115,37 +138,70 @@ static PyObject *context_parsefds(PyObject *_context, PyObject *args)
   Py_RETURN_NONE;
 }
 
-//static PyObject *context_lookup(PyObject *self, PyObject *args)
-//{
-//  PyUpb_Context *context = CheckContext(self);
-//  struct upb_string str;
-//  if(!PyArg_ParseTuple(args, "s#", &str.ptr, &str.byte_len))
-//    return NULL;
-//  str.byte_size = 0;  /* We don't own that mem. */
-//
-//  struct upb_symtab_entry e;
-//  if(upb_context_lookup(context->context, &str, &e)) {
-//    return get_or_create_def(&e);
-//  } else {
-//    Py_RETURN_NONE;
-//  }
-//}
-//
-//static PyObject *context_resolve(PyObject *self, PyObject *args)
-//{
-//  PyUpb_Context *context = CheckContext(self);
-//  struct upb_string str;
-//  if(!PyArg_ParseTuple(args, "s#", &str.ptr, &str.byte_len))
-//    return NULL;
-//  str.byte_size = 0;  /* We don't own that mem. */
-//
-//  struct upb_symtab_entry e;
-//  if(upb_context_resolve(context->context, &str, &e)) {
-//    return get_or_create_def(&e);
-//  } else {
-//    Py_RETURN_NONE;
-//  }
-//}
+static PyObject *get_or_create_def(PyUpb_Context *context,
+                                   struct upb_symtab_entry *e)
+{
+  /* Check out internal dictionary of Python classes we have already created
+   * (keyed by the address of the obj we are referencing). */
+#if PY_MAJOR_VERSION > 3
+  PyObject *str = PyBytes_FromStringAndSize((char*)&e->ref, sizeof(void*));
+#else
+  PyObject *str = PyString_FromStringAndSize((char*)&e->ref, sizeof(void*));
+#endif
+  /* Would use PyDict_GetItemStringAndSize() if it existed, but only
+   * PyDict_GetItemString() exists, and pointers could have NULL bytes. */
+  PyObject *def = PyDict_GetItem(context->created_defs, str);
+  if(!def) {
+    switch(e->type) {
+      case UPB_SYM_MESSAGE:
+        def = msgdef_new(e->ref.msg);
+        break;
+      case UPB_SYM_ENUM:
+      case UPB_SYM_SERVICE:
+      case UPB_SYM_EXTENSION:
+      default:
+        def = NULL;
+        break;
+    }
+    if(def) PyDict_SetItem(context->created_defs, str, def);
+  }
+  Py_DECREF(str);
+  return def;
+}
+
+static PyObject *context_lookup(PyObject *self, PyObject *args)
+{
+  PyUpb_Context *context = CheckContext(self);
+  struct upb_string str;
+  if(!PyArg_ParseTuple(args, "s#", &str.ptr, &str.byte_len))
+    return NULL;
+  str.byte_size = 0;  /* We don't own that mem. */
+
+  struct upb_symtab_entry e;
+  if(upb_context_lookup(context->context, &str, &e)) {
+    return get_or_create_def(context, &e);
+  } else {
+    Py_RETURN_NONE;
+  }
+}
+
+static PyObject *context_resolve(PyObject *self, PyObject *args)
+{
+  PyUpb_Context *context = CheckContext(self);
+  struct upb_string str;
+  struct upb_string base;
+  if(!PyArg_ParseTuple(args, "s#s#", &base.ptr, &base.byte_len,
+                                     &str.ptr, &str.byte_len))
+    return NULL;
+  str.byte_size = 0;  /* We don't own that mem. */
+
+  struct upb_symtab_entry e;
+  if(upb_context_resolve(context->context, &base, &str, &e)) {
+    return get_or_create_def(context, &e);
+  } else {
+    Py_RETURN_NONE;
+  }
+}
 
 static void add_string(void *udata, struct upb_symtab_entry *entry)
 {
@@ -154,6 +210,7 @@ static void add_string(void *udata, struct upb_symtab_entry *entry)
   /* TODO: check return. */
   PyObject *str = PyString_FromStringAndSize(s->ptr, s->byte_len);
   PyList_Append(list, str);
+  Py_DECREF(str);
 }
 
 static PyObject *context_symbols(PyObject *self, PyObject *args)
@@ -169,13 +226,13 @@ static PyMethodDef context_methods[] = {
    "Parses a string containing a serialized FileDescriptorSet and adds its "
    "definitions to the context."
   },
-  //{"lookup", context_lookup, METH_VARARGS,
-  // "Finds a symbol by fully-qualified name (eg. foo.bar.MyType)."
-  //},
-  //{"resolve", context_resolve, METH_VARARGS,
-  // "Finds a symbol by a possibly-relative name, which will be interpreted "
-  // "in the context of the given base."
-  //}
+  {"lookup", context_lookup, METH_VARARGS,
+   "Finds a symbol by fully-qualified name (eg. foo.bar.MyType)."
+  },
+  {"resolve", context_resolve, METH_VARARGS,
+   "Finds a symbol by a possibly-relative name, which will be interpreted "
+   "in the context of the given base."
+  },
   {"symbols", context_symbols, METH_NOARGS,
    "Returns a list of symbol names that are defined in this context."
   },
@@ -187,6 +244,7 @@ static PyObject *context_new(PyTypeObject *subtype,
 {
   PyUpb_Context *obj = (void*)subtype->tp_alloc(subtype, 0);
   obj->context = upb_context_new();
+  obj->created_defs = PyDict_New();
   return (void*)obj;
 }
 
@@ -194,6 +252,8 @@ static void context_dealloc(PyObject *obj)
 {
   PyUpb_Context *c = (void*)obj;
   upb_context_unref(c->context);
+  Py_DECREF(c->created_defs);
+  obj->ob_type->tp_free(obj);
 }
 
 static PyTypeObject PyUpb_ContextType = {
@@ -247,6 +307,8 @@ initdefinition(void)
 {
   if(PyType_Ready(&PyUpb_ContextType) < 0) return;
   Py_INCREF(&PyUpb_ContextType);  /* TODO: necessary? */
+  if(PyType_Ready(&PyUpb_MsgDefType) < 0) return;
+  Py_INCREF(&PyUpb_MsgDefType);  /* TODO: necessary? */
 
   PyObject *mod = Py_InitModule("upb.definition", methods);
   PyModule_AddObject(mod, "Context", (PyObject*)&PyUpb_ContextType);
