@@ -134,8 +134,11 @@ class ProtobufLibrary(sebs.Rule):
 
     protoc.expand_once()
 
+    # We must build protoc for the host configuration to allow cross-compiling.
+    host_protoc = self.context.configured_artifact(protoc.binary, "host")
+
     protoc_action = self.context.action(self, "protobuf")
-    protoc_args = [protoc.binary, "-Isrc", "-Itmp", "-Iinclude","--cpp_out=tmp"]
+    protoc_args = [host_protoc, "-Isrc", "-Itmp", "-Iinclude","--cpp_out=tmp"]
 
     cpp_srcs = []
     for src in args.srcs:
@@ -166,6 +169,7 @@ class ProtobufLibrary(sebs.Rule):
 
     self.__cpp_library = _cpp.Library(srcs = cpp_srcs, deps = deps,
                                       context = self.context)
+    self.__cpp_library.label = self.label
     self.outputs = []
 
   def as_cpp_library(self):
