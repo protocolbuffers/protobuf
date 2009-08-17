@@ -46,6 +46,8 @@
 #endif
 #include <stdio.h>
 #include <fcntl.h>
+#include <iostream>
+#include <fstream>
 
 namespace google {
 namespace protobuf {
@@ -94,7 +96,8 @@ string GetTemporaryDirectoryName() {
   // tmpnam() is generally not considered safe but we're only using it for
   // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
   // directory.
-  string result = tmpnam(NULL);
+  char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
+  string result = tmpnam(b);
 #ifdef _WIN32
   // On Win32, tmpnam() returns a file prefixed with '\', but which is supposed
   // to be used in the current working directory.  WTF?

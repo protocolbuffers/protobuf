@@ -1027,7 +1027,7 @@ char* DoubleToBuffer(double value, char* buffer) {
 bool safe_strtof(const char* str, float* value) {
   char* endptr;
   errno = 0;  // errno only gets set on errors
-#ifdef _WIN32  // has no strtof()
+#if defined(_WIN32) || defined (__hpux)  // has no strtof()
   *value = strtod(str, &endptr);
 #else
   *value = strtof(str, &endptr);
