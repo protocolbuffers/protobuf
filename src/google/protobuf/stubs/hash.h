@@ -98,7 +98,7 @@ template <typename Key,
 class hash_set : public std::set<Key, HashFcn> {
 };
 
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(_STLPORT_VERSION)
 
 template <typename Key>
 struct hash : public HASH_NAMESPACE::hash_compare<Key> {

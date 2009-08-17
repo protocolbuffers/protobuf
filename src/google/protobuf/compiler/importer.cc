@@ -59,6 +59,7 @@ namespace compiler {
 #ifndef F_OK
 #define F_OK 00  // not defined by MSVC for whatever reason
 #endif
+#include <ctype.h>
 #endif
 
 // Returns true if the text looks like a Windows-style absolute path, starting
