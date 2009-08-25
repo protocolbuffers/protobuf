@@ -3,9 +3,7 @@
 #ifndef DESCRIPTOR_DESCRIPTOR_H
 #define DESCRIPTOR_DESCRIPTOR_H
 
-#include <upb_string.h>
-
-#include <upb_array.h>
+#include <upb_struct.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,45 +11,6 @@ extern "C" {
 
 struct google_protobuf_FileDescriptorSet;
 extern struct google_protobuf_FileDescriptorSet *upb_file_descriptor_set;
-
-/* Enums. */
-
-typedef enum google_protobuf_FieldOptions_CType {
-  GOOGLE_PROTOBUF_FIELDOPTIONS_CORD = 1,
-  GOOGLE_PROTOBUF_FIELDOPTIONS_STRING_PIECE = 2
-} google_protobuf_FieldOptions_CType;
-
-typedef enum google_protobuf_FieldDescriptorProto_Type {
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE = 1,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT = 2,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64 = 3,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64 = 4,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32 = 5,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64 = 6,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32 = 7,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL = 8,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING = 9,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP = 10,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE = 11,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES = 12,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM = 14,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32 = 15,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64 = 16,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32 = 17,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64 = 18
-} google_protobuf_FieldDescriptorProto_Type;
-
-typedef enum google_protobuf_FieldDescriptorProto_Label {
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_OPTIONAL = 1,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REQUIRED = 2,
-  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED = 3
-} google_protobuf_FieldDescriptorProto_Label;
-
-typedef enum google_protobuf_FileOptions_OptimizeMode {
-  GOOGLE_PROTOBUF_FILEOPTIONS_SPEED = 1,
-  GOOGLE_PROTOBUF_FILEOPTIONS_CODE_SIZE = 2
-} google_protobuf_FileOptions_OptimizeMode;
 
 /* Forward declarations of all message types.
  * So they can refer to each other in possibly-recursive ways. */
@@ -131,8 +90,8 @@ typedef struct google_protobuf_MethodOptions
 /* The message definitions themselves. */
 
 struct google_protobuf_UninterpretedOption_NamePart {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -146,8 +105,8 @@ struct google_protobuf_UninterpretedOption_NamePart {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption_NamePart)
 
 struct google_protobuf_DescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -171,8 +130,8 @@ struct google_protobuf_DescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_DescriptorProto)
 
 struct google_protobuf_EnumDescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -188,8 +147,8 @@ struct google_protobuf_EnumDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumDescriptorProto)
 
 struct google_protobuf_UninterpretedOption {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -211,8 +170,8 @@ struct google_protobuf_UninterpretedOption {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption)
 
 struct google_protobuf_FileDescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -238,8 +197,8 @@ struct google_protobuf_FileDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FileDescriptorProto)
 
 struct google_protobuf_MethodDescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -257,8 +216,8 @@ struct google_protobuf_MethodDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_MethodDescriptorProto)
 
 struct google_protobuf_EnumValueOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -270,8 +229,8 @@ struct google_protobuf_EnumValueOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumValueOptions)
 
 struct google_protobuf_EnumValueDescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -287,8 +246,8 @@ struct google_protobuf_EnumValueDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto)
 
 struct google_protobuf_ServiceDescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -304,8 +263,8 @@ struct google_protobuf_ServiceDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_ServiceDescriptorProto)
 
 struct google_protobuf_FileDescriptorSet {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -317,8 +276,8 @@ struct google_protobuf_FileDescriptorSet {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FileDescriptorSet)
 
 struct google_protobuf_DescriptorProto_ExtensionRange {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -332,8 +291,8 @@ struct google_protobuf_DescriptorProto_ExtensionRange {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange)
 
 struct google_protobuf_FieldOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -353,8 +312,8 @@ struct google_protobuf_FieldOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldOptions)
 
 struct google_protobuf_FileOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -374,8 +333,8 @@ struct google_protobuf_FileOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FileOptions)
 
 struct google_protobuf_MessageOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -389,8 +348,8 @@ struct google_protobuf_MessageOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_MessageOptions)
 
 struct google_protobuf_EnumOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -402,8 +361,8 @@ struct google_protobuf_EnumOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumOptions)
 
 struct google_protobuf_FieldDescriptorProto {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -429,8 +388,8 @@ struct google_protobuf_FieldDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldDescriptorProto)
 
 struct google_protobuf_ServiceOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {
@@ -442,8 +401,8 @@ struct google_protobuf_ServiceOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_ServiceOptions)
 
 struct google_protobuf_MethodOptions {
+  struct upb_mmhead mmhead;
   struct upb_msgdef *def;
-  void *gptr;
   union {
     uint8_t bytes[1];
     struct {

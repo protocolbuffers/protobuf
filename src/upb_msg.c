@@ -6,8 +6,9 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
-#include "descriptor.h"
 #include "upb_msg.h"
+#include "descriptor.h"
+#include "upb_mm.h"
 #include "upb_parse.h"
 #include "upb_serialize.h"
 #include "upb_text.h"
@@ -47,7 +48,6 @@ bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
   /* TODO: more complete validation. */
   if(!d->set_flags.has.field) return false;
 
-  upb_atomic_refcount_init(&m->refcount, 0);
   upb_inttable_init(&m->fields_by_num, d->field->len,
                     sizeof(struct upb_fieldsbynum_entry));
   upb_strtable_init(&m->fields_by_name, d->field->len,
@@ -123,113 +123,43 @@ void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
   str_e->f.ref = ref;
 }
 
-/* Simple, one-shot parsing ***************************************************/
-
-static void *upb_msg_new(struct upb_msgdef *md)
-{
-  size_t size = md->size + (sizeof(void*) * 2);
-  struct upb_msg *msg = malloc(size);
-  memset(msg, 0, size);
-  msg->def = md;
-  return msg;
-}
-
-/* Allocation callbacks. */
-struct upb_array *getarray_cb(
-    void *from_gptr, struct upb_array *existingval, struct upb_msg_fielddef *f)
-{
-  (void)from_gptr;
-  (void)existingval;  /* Don't care -- always zero. */
-  (void)f;
-  return upb_array_new();
-}
-
-static struct upb_string *getstring_cb(
-    void *from_gptr, struct upb_string *existingval, struct upb_msg_fielddef *f,
-    bool byref)
-{
-  (void)from_gptr;
-  (void)existingval;  /* Don't care -- always zero. */
-  (void)f;
-  (void)byref;
-  return upb_strnew();
-}
-
-static struct upb_msg *getmsg_cb(
-    void *from_gptr, struct upb_msg *existingval, struct upb_msg_fielddef *f)
-{
-  (void)from_gptr;
-  (void)existingval;  /* Don't care -- always zero. */
-  return upb_msg_new(f->ref.msg);
-}
-
-struct upb_msg *upb_msg_parsenew(struct upb_msgdef *md, struct upb_string *s)
-{
-  struct upb_msg_parser mp;
-  struct upb_msg *msg = upb_msg_new(md);
-  upb_msg_parser_reset(&mp, msg, false);
-  mp.getarray_cb = getarray_cb;
-  mp.getstring_cb = getstring_cb;
-  mp.getmsg_cb = getmsg_cb;
-  size_t read;
-  upb_status_t status = upb_msg_parser_parse(&mp, s->ptr, s->byte_len, &read);
-  if(status == UPB_STATUS_OK && read == s->byte_len) {
-    return msg;
-  } else {
-    upb_msg_free(msg);
-    return NULL;
-  }
-}
-
-/* For simple, one-shot parsing we assume that a dynamic field exists (and
- * needs to be freed) iff its set bit is set. */
-static void free_value(union upb_value_ptr p, struct upb_msg_fielddef *f)
-{
-  if(upb_isstring(f)) {
-    free((*p.str)->ptr);
-    free(*p.str);
-  } else if(upb_issubmsg(f)) {
-    upb_msg_free(*p.msg);
-  }
-}
-
-void upb_msg_free(struct upb_msg *msg)
-{
-  if(!msg) return;  /* A very free-like thing to do. */
-  struct upb_msgdef *m = msg->def;
-  for(unsigned int i = 0; i < m->num_fields; i++) {
-    struct upb_msg_fielddef *f = &m->fields[i];
-    if(!upb_msg_isset(msg, f)) continue;
-    union upb_value_ptr p = upb_msg_getptr(msg, f);
-    if(upb_isarray(f)) {
-      assert(*p.arr);
-      for(upb_arraylen_t j = 0; j < (*p.arr)->len; j++)
-        free_value(upb_array_getelementptr(*p.arr, j, f->type), f);
-      upb_array_free(*p.arr);
-    } else {
-      free_value(p, f);
-    }
-  }
-  free(msg);
-}
-
 /* Parsing.  ******************************************************************/
+
+struct upb_msg_parser_frame {
+  struct upb_msg *msg;
+};
+
+struct upb_msg_parser {
+  struct upb_stream_parser s;
+  bool merge;
+  bool byref;
+  struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
+};
+
+void upb_msg_parser_reset(struct upb_msg_parser *p,
+                          struct upb_msg *msg, bool byref);
+
+/* Parses protocol buffer data out of data which has length of len.  The data
+ * need not be a complete protocol buffer.  The number of bytes parsed is
+ * returned in *read, and the next call to upb_msg_parse must supply data that
+ * is *read bytes past data in the logical stream. */
+upb_status_t upb_msg_parser_parse(struct upb_msg_parser *p,
+                                  void *data, size_t len, size_t *read);
+
+
 
 /* Helper function that returns a pointer to where the next value for field "f"
  * should be stored, taking into account whether f is an array that may need to
  * be allocated or resized. */
 static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
-                                         struct upb_msg_fielddef *f,
-                                         void **gptr,
-                                         upb_msg_getandref_array_cb_t getarray_cb)
+                                         struct upb_msg_fielddef *f)
 {
   union upb_value_ptr p = upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
     bool isset = upb_msg_isset(msg, f);
     size_t len = isset ? (*p.arr)->len : 0;
-    if(!isset) *p.arr = getarray_cb(*gptr, *p.arr, f);
-    upb_array_resize(*p.arr, len+1, f->type);
-    *gptr = (*p.arr)->gptr;
+    if(!isset) *p.arr = upb_array_new(f);
+    upb_array_resize(*p.arr, len+1);
     p = upb_array_getelementptr(*p.arr, len, f->type);
   }
   return p;
@@ -255,8 +185,7 @@ static upb_status_t value_cb(void *udata, uint8_t *buf, uint8_t *end,
   struct upb_msg_parser *mp = udata;
   struct upb_msg_fielddef *f = user_field_desc;
   struct upb_msg *msg = mp->top->msg;
-  void *gptr = upb_msg_gptr(msg);
-  union upb_value_ptr p = get_value_ptr(msg, f, &gptr, mp->getarray_cb);
+  union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
   UPB_CHECK(upb_parse_value(buf, end, f->type, p, outbuf));
   return UPB_STATUS_OK;
@@ -269,21 +198,20 @@ static void str_cb(void *udata, uint8_t *str,
   struct upb_msg_parser *mp = udata;
   struct upb_msg_fielddef *f = udesc;
   struct upb_msg *msg = mp->top->msg;
-  void *gptr = upb_msg_gptr(msg);
-  union upb_value_ptr p = get_value_ptr(msg, f, &gptr, mp->getarray_cb);
+  union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
   if(avail_len != total_len) abort();  /* TODO: support streaming. */
-  bool byref = avail_len == total_len && mp->byref;
-  *p.str = mp->getstring_cb(gptr, *p.str, f, byref);
-  if(byref) {
-    upb_strdrop(*p.str);
-    (*p.str)->ptr = (char*)str;
-    (*p.str)->byte_len = avail_len;
-  } else {
-    upb_stralloc(*p.str, total_len);
+  //bool byref = avail_len == total_len && mp->byref;
+  *p.str = upb_string_new();
+  //if(byref) {
+  //  upb_strdrop(*p.str);
+  //  (*p.str)->ptr = (char*)str;
+  //  (*p.str)->byte_len = avail_len;
+  //} else {
+    upb_string_resize(*p.str, total_len);
     memcpy((*p.str)->ptr, str, avail_len);
     (*p.str)->byte_len = avail_len;
-  }
+  //}
 }
 
 static void submsg_start_cb(void *udata, void *user_field_desc)
@@ -291,21 +219,38 @@ static void submsg_start_cb(void *udata, void *user_field_desc)
   struct upb_msg_parser *mp = udata;
   struct upb_msg_fielddef *f = user_field_desc;
   struct upb_msg *oldmsg = mp->top->msg;
-  void *gptr = upb_msg_gptr(oldmsg);
-  union upb_value_ptr p = get_value_ptr(oldmsg, f, &gptr, mp->getarray_cb);
+  union upb_value_ptr p = get_value_ptr(oldmsg, f);
+  struct upb_msg **submsg = p.msg;
+  //if(*submsg && upb_mmhead_only(&((*submsg)->mmhead))) {
+  //  /* We can reuse the existing submsg. */
+  //} else {
+    *submsg = upb_msg_new(f->ref.msg);
+  //}
+  upb_msg_clear(*submsg);
   upb_msg_set(oldmsg, f);
-  *p.msg = mp->getmsg_cb(gptr, *p.msg, f);
   mp->top++;
-  mp->top->msg = *p.msg;
+  mp->top->msg = *submsg;
 }
 
 static void submsg_end_cb(void *udata)
 {
   struct upb_msg_parser *mp = udata;
+  struct upb_msg *msg = mp->top->msg;
+  /* TODO: free any remaining dynamic storage that was not reused. */
+  (void)msg;
   mp->top--;
 }
 
 /* Externally-visible functions for the msg parser. */
+
+upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len)
+{
+  struct upb_msg_parser mp;
+  upb_msg_parser_reset(&mp, msg, false);
+  size_t read;
+  upb_status_t ret = upb_msg_parser_parse(&mp, buf, len, &read);
+  return ret;
+}
 
 void upb_msg_parser_reset(struct upb_msg_parser *s, struct upb_msg *msg, bool byref)
 {
@@ -591,52 +536,4 @@ bool upb_msg_eql(struct upb_msg *msg1, struct upb_msg *msg2, bool recursive)
     }
   }
   return true;
-}
-
-
-static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
-                     struct upb_msg_fielddef *f,
-                     google_protobuf_FieldDescriptorProto *fd,
-                     FILE *stream);
-
-static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
-                     FILE *stream)
-{
-  struct upb_msgdef *m = msg->def;
-  for(uint32_t i = 0; i < m->num_fields; i++) {
-    struct upb_msg_fielddef *f = &m->fields[i];
-    google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m);
-    if(!upb_msg_isset(msg, f)) continue;
-    union upb_value_ptr p = upb_msg_getptr(msg, f);
-    if(upb_isarray(f)) {
-      struct upb_array *arr = *p.arr;
-      for(uint32_t j = 0; j < arr->len; j++) {
-        union upb_value_ptr elem_p = upb_array_getelementptr(arr, j, f->type);
-        printval(printer, elem_p, f, fd, stream);
-      }
-    } else {
-      printval(printer, p, f, fd, stream);
-    }
-  }
-}
-
-static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
-                     struct upb_msg_fielddef *f,
-                     google_protobuf_FieldDescriptorProto *fd,
-                     FILE *stream)
-{
-  if(upb_issubmsg(f)) {
-    upb_text_push(printer, fd->name, stream);
-    printmsg(printer, *p.msg, stream);
-    upb_text_pop(printer, stream);
-  } else {
-    upb_text_printfield(printer, fd->name, f->type, upb_deref(p, f->type), stream);
-  }
-}
-
-void upb_msg_print(struct upb_msg *msg, bool single_line, FILE *stream)
-{
-  struct upb_text_printer printer;
-  upb_text_printer_init(&printer, single_line);
-  printmsg(&printer, msg, stream);
 }

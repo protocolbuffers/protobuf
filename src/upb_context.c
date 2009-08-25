@@ -10,6 +10,7 @@
 #include "upb_context.h"
 #include "upb_enum.h"
 #include "upb_msg.h"
+#include "upb_mm.h"
 
 /* Search for a character in a string, in reverse. */
 static int my_memrchr(char *data, char c, size_t len)
@@ -66,7 +67,7 @@ static void free_context(struct upb_context *c)
 {
   free_symtab(&c->symtab);
   for(size_t i = 0; i < c->fds_len; i++)
-    upb_msg_free((struct upb_msg*)c->fds[i]);
+    upb_msg_unref((struct upb_msg*)c->fds[i]);
   free_symtab(&c->psymtab);
   free(c->fds);
 }
@@ -77,9 +78,9 @@ void upb_context_unref(struct upb_context *c)
     upb_rwlock_wrlock(&c->lock);
     free_context(c);
     upb_rwlock_unlock(&c->lock);
+    free(c);
+    upb_rwlock_destroy(&c->lock);
   }
-  free(c);
-  upb_rwlock_destroy(&c->lock);
 }
 
 bool upb_context_lookup(struct upb_context *c, struct upb_string *symbol,
@@ -325,10 +326,9 @@ bool upb_context_addfds(struct upb_context *c,
 }
 
 bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
-  google_protobuf_FileDescriptorSet *fds =
-      (google_protobuf_FileDescriptorSet*)upb_msg_parsenew(c->fds_msg, fds_str);
-  if(!fds) return false;
-  if(!upb_context_addfds(c, fds)) return false;
+  struct upb_msg *fds = upb_msg_new(c->fds_msg);
+  if(upb_msg_parsestr(fds, fds_str->ptr, fds_str->byte_len) != UPB_STATUS_OK) return false;
+  if(!upb_context_addfds(c, (google_protobuf_FileDescriptorSet*)fds)) return false;
 
   {
     /* We own fds now, need to keep a ref so we can free it later. */
@@ -337,7 +337,7 @@ bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str) {
       c->fds_size *= 2;
       c->fds = realloc(c->fds, c->fds_size);
     }
-    c->fds[c->fds_len++] = fds;
+    c->fds[c->fds_len++] = (google_protobuf_FileDescriptorSet*)fds;
     upb_rwlock_unlock(&c->lock);
   }
   return true;

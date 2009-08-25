@@ -21,16 +21,6 @@
 extern "C" {
 #endif
 
-INLINE bool upb_issubmsgtype(upb_field_type_t type) {
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
-}
-
-INLINE bool upb_isstringtype(upb_field_type_t type) {
-  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
-         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
-}
-
 /* High-level parsing interface. **********************************************/
 
 /* The general scheme is that the client registers callbacks that will be

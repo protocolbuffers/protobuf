@@ -11,7 +11,7 @@
 
 /* May want to move this to upb.c if enough other things warrant it. */
 #define alignof(t) offsetof(struct { char c; t x; }, x)
-#define TYPE_INFO(proto_type, wire_type, ctype) [proto_type] = {alignof(ctype), sizeof(ctype), wire_type, UPB_STRLIT(#ctype)},
+#define TYPE_INFO(proto_type, wire_type, ctype) [proto_type] = {alignof(ctype), sizeof(ctype), wire_type, #ctype},
 struct upb_type_info upb_type_info[] = {
   TYPE_INFO(GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE,   UPB_WIRE_TYPE_64BIT,       double)
   TYPE_INFO(GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT,    UPB_WIRE_TYPE_32BIT,       float)

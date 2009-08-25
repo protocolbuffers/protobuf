@@ -7,19 +7,20 @@
 #include <stdio.h>
 #include "upb_string.h"
 
-bool upb_strreadfile(const char *filename, struct upb_string *data) {
+struct upb_string *upb_strreadfile(const char *filename) {
   FILE *f = fopen(filename, "rb");
   if(!f) return false;
-  if(fseek(f, 0, SEEK_END) != 0) return false;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
   long size = ftell(f);
-  if(size < 0) return false;
-  if(fseek(f, 0, SEEK_SET) != 0) return false;
-  data->byte_len = size;
-  upb_stralloc(data, data->byte_len);
-  if(fread(data->ptr, size, 1, f) != 1) {
-    free(data->ptr);
-    return false;
-  }
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  struct upb_string *s = upb_string_new();
+  upb_string_resize(s, size);
+  if(fread(s->ptr, size, 1, f) != 1) goto error;
   fclose(f);
-  return true;
+  return s;
+
+error:
+  fclose(f);
+  return NULL;
 }

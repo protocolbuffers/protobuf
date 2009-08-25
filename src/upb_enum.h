@@ -33,15 +33,6 @@ struct upb_enum_iton_entry {
   struct upb_string *string;
 };
 
-INLINE void upb_enum_ref(struct upb_enum *e) {
-  if(upb_atomic_ref(&e->refcount)) upb_context_ref(e->context);
-}
-
-INLINE void upb_enum_unref(struct upb_enum *e) {
-  if(upb_atomic_unref(&e->refcount)) upb_context_unref(e->context);
-}
-
-
 /* Initializes and frees an enum, respectively.  Caller retains ownership of
  * ed, but it must outlive e. */
 void upb_enum_init(struct upb_enum *e,

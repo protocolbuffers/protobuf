@@ -1,4 +1,11 @@
 #
+# This Makefile builds the upb library as well as associated tests, tools, and
+# language extensions.
+#
+# It does not use autoconf/automake/libtool because I can't stomach all the
+# cruft.  If you're not compiling for gcc, you may have to change some of the
+# options.
+#
 # Summary of compiler flags you may want to use:
 #
 # * -DNDEBUG: makes binary smaller and faster by removing sanity checks.
@@ -25,19 +32,28 @@ CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && ca
 LDLIBS=-lpthread
 
 LIBUPB=src/libupb.a
-ALL=deps $(OBJ) $(LIBUPB) tests/test_table tests/tests tools/upbc
+LIBUPB_PIC=src/libupb_pic.a
+LIBUPB_SHARED=src/libupb.so
+ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC) $(LIBUPB_SHARED) tests/test_table tests/tests tools/upbc
 all: $(ALL)
 clean:
-	rm -rf $(call rwildcard,,*.o) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf descriptor/descriptor.proto.pb
+	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
-OBJ=src/upb_parse.o src/upb_table.o src/upb_msg.o src/upb_enum.o src/upb_context.o \
-    src/upb_string.o src/upb_text.o src/upb_serialize.o descriptor/descriptor.o
-SRC=$(call rwildcard,,*.c)
-HEADERS=$(call rwildcard,,*.h)
-$(LIBUPB): $(OBJ)
-	ar rcs $(LIBUPB) $(OBJ)
+SRC=src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c src/upb_enum.c src/upb_context.c \
+    src/upb_string.c src/upb_text.c src/upb_serialize.c descriptor/descriptor.c
+STATICOBJ=$(patsubst %.c,%.o,$(SRC))
+SHAREDOBJ=$(patsubst %.c,%.lo,$(SRC))
+# building shared objects is like building static ones, except -fPIC is added.
+%.lo : %.c ; $(CC) -fPIC $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+$(LIBUPB): $(STATICOBJ)
+	ar rcs $(LIBUPB) $(STATICOBJ)
+$(LIBUPB_PIC): $(SHAREDOBJ)
+	ar rcs $(LIBUPB_PIC) $(SHAREDOBJ)
+$(LIBUPB_SHARED): $(SHAREDOBJ)
+	$(CC) -shared -o $(LIBUPB_SHARED) $(SHAREDOBJ)
 
 # Regenerating the auto-generated files in descriptor/.
 descriptor/descriptor.proto.pb: descriptor/descriptor.proto
@@ -46,6 +62,10 @@ descriptor/descriptor.proto.pb: descriptor/descriptor.proto
 
 descriptorgen: descriptor/descriptor.proto.pb tools/upbc
 	./tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
+
+# Language extensions.
+python: $(LIBUPB_PIC)
+	cd lang_ext/python && python setup.py build
 
 # Tests
 test: tests/tests
@@ -136,5 +156,5 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
 
 -include deps
-deps: $(SRC) $(HEADERS) gen-deps.sh Makefile
+deps: gen-deps.sh Makefile $(call rwildcard,,*.c) $(call rwildcard,,*.h)
 	@./gen-deps.sh $(SRC)

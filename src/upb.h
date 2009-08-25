@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>  /* for size_t. */
-#include "upb_string.h"
+#include "descriptor_const.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +22,9 @@ extern "C" {
 #ifndef INLINE
 #define INLINE static inline
 #endif
+
+#define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
+#define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit. */
 #define UPB_MAX_NESTING 64
@@ -55,12 +58,22 @@ typedef uint8_t upb_wire_type_t;
  * errors, and we use it to represent exceptional circumstances. */
 typedef uint8_t upb_field_type_t;
 
+INLINE bool upb_issubmsgtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE;
+}
+
+INLINE bool upb_isstringtype(upb_field_type_t type) {
+  return type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING  ||
+         type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES;
+}
+
 /* Information about a given value type (upb_field_type_t). */
 struct upb_type_info {
   uint8_t align;
   uint8_t size;
   upb_wire_type_t expected_wire_type;
-  struct upb_string ctype;
+  char *ctype;
 };
 
 /* Contains information for all .proto types.  Indexed by upb_field_type_t. */
@@ -89,6 +102,10 @@ struct upb_tag {
 };
 
 /* Polymorphic values of .proto types *****************************************/
+
+struct upb_string;
+struct upb_array;
+struct upb_msg;
 
 /* A single .proto value.  The owner must have an out-of-band way of knowing
  * the type, so that it knows which union member to use. */
@@ -121,13 +138,81 @@ union upb_value_ptr {
   void     *_void;
 };
 
+/* Unfortunately there is no way to define this so that it can be used as a
+ * generic expression, a la:
+ *   foo(UPB_VALUE_ADDROF(bar));
+ * ...you have to use it as the initializer of a upb_value_ptr:
+ *   union upb_value_ptr p = UPB_VALUE_ADDROF(bar);
+ *   foo(p);
+ */
+#define UPB_VALUE_ADDROF(val) {(void*)&val._double}
+
 /* Converts upb_value_ptr -> upb_value by "dereferencing" the pointer.  We need
  * to know the field type to perform this operation, because we need to know
  * how much memory to copy. */
-INLINE union upb_value upb_deref(union upb_value_ptr ptr, upb_field_type_t t) {
+INLINE union upb_value upb_value_read(union upb_value_ptr ptr,
+                                      upb_field_type_t ft) {
   union upb_value val;
-  memcpy(&val, ptr._void, upb_type_info[t].size);
+#define CASE(t, member_name) \
+  case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: \
+    val.member_name = *ptr.member_name; \
+    break;
+  switch(ft) {
+    CASE(DOUBLE,   _double)
+    CASE(FLOAT,    _float)
+    CASE(INT32,    int32)
+    CASE(INT64,    int64)
+    CASE(UINT32,   uint32)
+    CASE(UINT64,   uint64)
+    CASE(SINT32,   int32)
+    CASE(SINT64,   int64)
+    CASE(FIXED32,  uint32)
+    CASE(FIXED64,  uint64)
+    CASE(SFIXED32, int32)
+    CASE(SFIXED64, int64)
+    CASE(BOOL,     _bool)
+    CASE(ENUM,     int32)
+    CASE(STRING,   str)
+    CASE(BYTES,    str)
+    CASE(MESSAGE,  msg)
+    CASE(GROUP,    msg)
+    default: break;
+  }
+#undef CASE
   return val;
+}
+
+/* Converts upb_value_ptr -> upb_value by "dereferencing" the pointer.  We need
+ * to know the field type to perform this operation, because we need to know
+ * how much memory to copy. */
+INLINE void upb_value_write(union upb_value_ptr ptr, union upb_value val,
+                            upb_field_type_t ft) {
+#define CASE(t, member_name) \
+  case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: \
+    *ptr.member_name = val.member_name; \
+    break;
+  switch(ft) {
+    CASE(DOUBLE,   _double)
+    CASE(FLOAT,    _float)
+    CASE(INT32,    int32)
+    CASE(INT64,    int64)
+    CASE(UINT32,   uint32)
+    CASE(UINT64,   uint64)
+    CASE(SINT32,   int32)
+    CASE(SINT64,   int64)
+    CASE(FIXED32,  uint32)
+    CASE(FIXED64,  uint64)
+    CASE(SFIXED32, int32)
+    CASE(SFIXED64, int64)
+    CASE(BOOL,     _bool)
+    CASE(ENUM,     int32)
+    CASE(STRING,   str)
+    CASE(BYTES,    str)
+    CASE(MESSAGE,  msg)
+    CASE(GROUP,    msg)
+    default: break;
+  }
+#undef CASE
 }
 
 union upb_symbol_ref {

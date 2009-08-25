@@ -3,12 +3,10 @@
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  *
- * See def.h for a general description.  These definitions
- * must be shared so that specific Python message types (for the
- * different proto APIs) can have access to the C definitions. */
+ */
 
-#ifndef UPB_PYTHON_DEFINITION_H_
-#define UPB_PYTHON_DEFINITION_H_
+#ifndef UPB_PYTHON_CEXT_H_
+#define UPB_PYTHON_CEXT_H_
 
 #include <Python.h>
 
@@ -19,6 +17,7 @@ extern "C" {
 typedef struct {
   PyObject_HEAD
   struct upb_context *context;
+  PyObject *created_defs;
 } PyUpb_Context;
 
 typedef struct {
@@ -37,9 +36,10 @@ extern PyTypeObject PyUpb_MsgDefType;
 #define BYTES_FORMAT "s#"
 #endif
 
-PyUpb_MsgDef *get_or_create_msgdef(struct upb_msgdef *def);
-
 #define RETURN_BOOL(val) if(val) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }
+
+extern PyMODINIT_FUNC initdefinition(void);
+extern PyMODINIT_FUNC initpb(void);
 
 #ifdef __cplusplus
 }  /* extern "C" */

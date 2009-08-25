@@ -32,48 +32,35 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-/* inline if possible, emit standalone code if required. */
-#ifndef INLINE
-#define INLINE static inline
-#endif
+#include "upb_struct.h"
 
-#define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
-#define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
+/* Allocation/Deallocation/Resizing. ******************************************/
 
-struct upb_string {
-  /* We expect the data to be 8-bit clean (uint8_t), but char* is such an
-   * ingrained convention that we follow it. */
-  char *ptr;
-  uint32_t byte_len;
-  uint32_t byte_size;  /* How many bytes of ptr we own. */
-};
-
-INLINE void upb_strinit(struct upb_string *str)
+INLINE struct upb_string *upb_string_new(void)
 {
+  struct upb_string *str = (struct upb_string*)malloc(sizeof(*str));
+  upb_mmhead_init(&str->mmhead);
   str->ptr = NULL;
   str->byte_len = 0;
   str->byte_size = 0;
-}
-
-INLINE void upb_struninit(struct upb_string *str)
-{
-  if(str->byte_size) free(str->ptr);
-}
-
-INLINE struct upb_string *upb_strnew(void)
-{
-  struct upb_string *str = (struct upb_string*)malloc(sizeof(*str));
-  upb_strinit(str);
   return str;
 }
 
-INLINE void upb_strfree(struct upb_string *str)
+/* For internal use only. */
+INLINE void upb_string_destroy(struct upb_string *str)
 {
-  upb_struninit(str);
+  if(str->byte_size != 0) free(str->ptr);
   free(str);
 }
 
-INLINE void upb_stralloc(struct upb_string *str, uint32_t size)
+INLINE void upb_string_unref(struct upb_string *str)
+{
+  if(upb_mmhead_unref(&str->mmhead)) upb_string_destroy(str);
+}
+
+/* Resizes the string to size, reallocating if necessary.  Does not preserve
+ * existing data. */
+INLINE void upb_string_resize(struct upb_string *str, uint32_t size)
 {
   if(str->byte_size < size) {
     /* Need to resize. */
@@ -81,12 +68,10 @@ INLINE void upb_stralloc(struct upb_string *str, uint32_t size)
     void *oldptr = str->byte_size == 0 ? NULL : str->ptr;
     str->ptr = (char*)realloc(oldptr, str->byte_size);
   }
+  str->byte_len = size;
 }
 
-INLINE void upb_strdrop(struct upb_string *str)
-{
-  upb_struninit(str);
-}
+/* Library functions. *********************************************************/
 
 INLINE bool upb_streql(struct upb_string *s1, struct upb_string *s2) {
   return s1->byte_len == s2->byte_len &&
@@ -101,26 +86,26 @@ INLINE int upb_strcmp(struct upb_string *s1, struct upb_string *s2) {
 
 INLINE void upb_strcpy(struct upb_string *dest, struct upb_string *src) {
   dest->byte_len = src->byte_len;
-  upb_stralloc(dest, dest->byte_len);
+  upb_string_resize(dest, dest->byte_len);
   memcpy(dest->ptr, src->ptr, src->byte_len);
 }
 
 INLINE struct upb_string *upb_strdup(struct upb_string *s) {
-  struct upb_string *copy = upb_strnew();
+  struct upb_string *copy = upb_string_new();
   upb_strcpy(copy, s);
   return copy;
 }
 
 INLINE struct upb_string *upb_strdupc(char *s) {
-  struct upb_string *copy = upb_strnew();
+  struct upb_string *copy = upb_string_new();
   copy->byte_len = strlen(s);
-  upb_stralloc(copy, copy->byte_len);
+  upb_string_resize(copy, copy->byte_len);
   memcpy(copy->ptr, s, copy->byte_len);
   return copy;
 }
 
 /* Reads an entire file into a newly-allocated string. */
-bool upb_strreadfile(const char *filename, struct upb_string *data);
+struct upb_string *upb_strreadfile(const char *filename);
 
 /* Allows defining upb_strings as literals, ie:
  *   struct upb_string str = UPB_STRLIT("Hello, World!\n");

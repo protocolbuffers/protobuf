@@ -52,10 +52,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
+#include "descriptor.h"
 #include "upb.h"
-#include "upb_atomic.h"
-#include "upb_context.h"
 #include "upb_parse.h"
 #include "upb_table.h"
 
@@ -66,10 +66,11 @@ extern "C" {
 /* Message definition. ********************************************************/
 
 struct upb_msg_fielddef;
+struct upb_context;
 /* Structure that describes a single .proto message type. */
 struct upb_msgdef {
-  upb_atomic_refcount_t refcount;
   struct upb_context *context;
+  struct upb_msg *default_msg;   /* Message with all default values set. */
   struct google_protobuf_DescriptorProto *descriptor;
   struct upb_string fqname;      /* Fully qualified. */
   size_t size;
@@ -81,7 +82,6 @@ struct upb_msgdef {
   struct upb_msg_fielddef *fields;
   struct google_protobuf_FieldDescriptorProto **field_descriptors;
 };
-
 
 /* Structure that describes a single field in a message.  This structure is very
  * consciously designed to fit into 12/16 bytes (32/64 bit, respectively),
@@ -96,14 +96,6 @@ struct upb_msg_fielddef {
   upb_label_t label;
 };
 
-INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
-  if(upb_atomic_ref(&m->refcount)) upb_context_ref(m->context);
-}
-
-INLINE void upb_msgdef_unref(struct upb_msgdef *m) {
-  if(upb_atomic_unref(&m->refcount)) upb_context_unref(m->context);
-}
-
 INLINE bool upb_issubmsg(struct upb_msg_fielddef *f) {
   return upb_issubmsgtype(f->type);
 }
@@ -114,6 +106,29 @@ INLINE bool upb_isarray(struct upb_msg_fielddef *f) {
   return f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED;
 }
 
+INLINE bool upb_field_ismm(struct upb_msg_fielddef *f) {
+  return upb_isarray(f) || upb_isstring(f) || upb_issubmsg(f);
+}
+
+INLINE bool upb_elem_ismm(struct upb_msg_fielddef *f) {
+  return upb_isstring(f) || upb_issubmsg(f);
+}
+
+/* Defined iff upb_field_ismm(f). */
+INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_msg_fielddef *f) {
+  if(upb_isarray(f)) return UPB_MM_ARR_REF;
+  else if(upb_isstring(f)) return UPB_MM_STR_REF;
+  else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
+  else return -1;
+}
+
+/* Defined iff upb_elem_ismm(f). */
+INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_msg_fielddef *f) {
+  if(upb_isstring(f)) return UPB_MM_STR_REF;
+  else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
+  else return -1;
+}
+
 /* Can be used to retrieve a field descriptor given the upb_msg_fielddef. */
 INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
     struct upb_msg_fielddef *f, struct upb_msgdef *m) {
@@ -122,14 +137,15 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
 
 /* Message structure. *********************************************************/
 
-struct upb_msg {
-  struct upb_msgdef *def;
-  void *gptr;  /* Generic pointer for use by subclasses. */
-  uint8_t data[1];
-};
-
-INLINE void *upb_msg_gptr(struct upb_msg *msg) {
-  return msg->gptr;
+/* Constructs a new msg corresponding to the given msgdef, and having one
+ * counted reference. */
+INLINE struct upb_msg *upb_msg_new(struct upb_msgdef *md) {
+  size_t size = md->size + offsetof(struct upb_msg, data);
+  struct upb_msg *msg = malloc(size);
+  memset(msg, 0, size);
+  upb_mmhead_init(&msg->mmhead);
+  msg->def = md;
+  return msg;
 }
 
 /* Field access. **************************************************************/
@@ -144,12 +160,6 @@ INLINE union upb_value_ptr upb_msg_getptr(struct upb_msg *msg,
   union upb_value_ptr p;
   p._void = &msg->data[f->byte_offset];
   return p;
-}
-
-/* Returns a a specific field in a message. */
-INLINE union upb_value upb_msg_get(struct upb_msg *msg,
-                                   struct upb_msg_fielddef *f) {
-  return upb_deref(upb_msg_getptr(msg, f), f->type);
 }
 
 /* "Set" flag reading and writing.  *******************************************/
@@ -244,85 +254,10 @@ INLINE struct upb_msg_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
 }
 
 
-/* Simple, one-shot parsing ***************************************************/
+/* Parsing ********************************************************************/
 
-/* A simple interface for parsing into a newly-allocated message.  This
- * interface should only be used when the message will be read-only with
- * respect to memory management (eg. won't add or remove internal references to
- * dynamic memory).  For more flexible (but also more complicated) interfaces,
- * see below and in upb_mm_msg.h. */
-
-/* Parses the protobuf in s (which is expected to be complete) and allocates
- * new message data to hold it.  If byref is set, strings in the returned
- * upb_msg will reference s instead of copying from it, but this requires that
- * s will live for as long as the returned message does. */
-struct upb_msg *upb_msg_parsenew(struct upb_msgdef *m, struct upb_string *s);
-
-/* This function should be used to free messages that were parsed with
- * upb_msg_parsenew.  It will free the message appropriately (including all
- * submessages). */
-void upb_msg_free(struct upb_msg *msg);
-
-
-/* Parsing with (re)allocation callbacks. *************************************/
-
-/* This interface parses protocol buffers into upb_msgs, but allows the client
- * to supply allocation callbacks whenever the parser needs to obtain a string,
- * array, or submsg (a "dynamic field").  If the parser sees that a dynamic
- * field is already present (its "set bit" is set) it will use that, resizing
- * it if necessary in the case of an array.  Otherwise it will call the
- * allocation callback to obtain one.
- *
- * This may seem trivial (since nearly all clients will use malloc and free for
- * memory management), but the allocation callback can be used for more than
- * just allocation.  If we are parsing data into an existing upb_msg, the
- * allocation callback can examine any existing memory that is allocated for
- * the dynamic field and determine whether it can reuse it.  It can also
- * perform memory management like refing the new field.
- *
- * This parser is layered on top of the event-based parser in upb_parse.h.  The
- * parser is upb_mm_msg.h is layered on top of this parser.
- *
- * This parser is fully streaming-capable. */
-
-/* Should return an initialized array. */
-typedef struct upb_array *(*upb_msg_getandref_array_cb_t)(
-    void *from_gptr, struct upb_array *existingval, struct upb_msg_fielddef *f);
-
-/* Callback to allocate a string.  If byref is true, the client should assume
- * that the string will be referencing the input data. */
-typedef struct upb_string *(*upb_msg_getandref_string_cb_t)(
-    void *from_gptr, struct upb_string *existingval, struct upb_msg_fielddef *f,
-    bool byref);
-
-/* Should return a cleared message. */
-typedef struct upb_msg *(*upb_msg_getandref_msg_cb_t)(
-    void *from_gptr, struct upb_msg *existingval, struct upb_msg_fielddef *f);
-
-struct upb_msg_parser_frame {
-  struct upb_msg *msg;
-};
-
-struct upb_msg_parser {
-  struct upb_stream_parser s;
-  bool merge;
-  bool byref;
-  struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
-  upb_msg_getandref_array_cb_t getarray_cb;
-  upb_msg_getandref_string_cb_t getstring_cb;
-  upb_msg_getandref_msg_cb_t getmsg_cb;
-};
-
-void upb_msg_parser_reset(struct upb_msg_parser *p,
-                          struct upb_msg *msg, bool byref);
-
-/* Parses protocol buffer data out of data which has length of len.  The data
- * need not be a complete protocol buffer.  The number of bytes parsed is
- * returned in *read, and the next call to upb_msg_parse must supply data that
- * is *read bytes past data in the logical stream. */
-upb_status_t upb_msg_parser_parse(struct upb_msg_parser *p,
-                                  void *data, size_t len, size_t *read);
-
+/* TODO: a stream parser. */
+upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len);
 
 /* Serialization  *************************************************************/
 
@@ -336,7 +271,7 @@ upb_status_t upb_msg_parser_parse(struct upb_msg_parser *p,
 struct upb_msgsizes;
 
 /* Initialize/free a upb_msgsizes for the given message. */
-void upb_msgsizes_init(struct upb_msgsizes *sizes);
+struct upb_msgsizes *upb_msgsizes_new(void);
 void upb_msgsizes_free(struct upb_msgsizes *sizes);
 
 /* Given a previously initialized sizes, recurse over the message and store its
@@ -365,6 +300,10 @@ void upb_msg_serialize_init(struct upb_msg_serialize_state *s,
  * equal to len unless we finished serializing. */
 upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
                                void *buf, size_t len, size_t *written);
+
+upb_status_t upb_msg_serialize_all(struct upb_msg *msg,
+                                   struct upb_msgsizes *sizes,
+                                   void *buf);
 
 /* Text dump  *****************************************************************/
 
@@ -397,7 +336,8 @@ void upb_msgdef_free(struct upb_msgdef *m);
 /* Sort the given field descriptors in-place, according to what we think is an
  * optimal ordering of fields.  This can change from upb release to upb
  * release. */
-void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num);
+void upb_msgdef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
+                        size_t num);
 
 /* Clients use this function on a previously initialized upb_msgdef to resolve
  * the "ref" field in the upb_msg_fielddef.  Since messages can refer to each

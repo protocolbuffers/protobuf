@@ -5,8 +5,11 @@
  */
 
 #include <inttypes.h>
-#include "upb_text.h"
 #include "descriptor.h"
+#include "upb_text.h"
+#include "upb_string.h"
+#include "upb_msg.h"
+#include "upb_array.h"
 
 void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
 {
@@ -78,3 +81,52 @@ void upb_text_pop(struct upb_text_printer *p,
   print_indent(p, stream);
   fprintf(stream, "}\n");
 }
+
+static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
+                     struct upb_msg_fielddef *f,
+                     google_protobuf_FieldDescriptorProto *fd,
+                     FILE *stream);
+
+static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
+                     FILE *stream)
+{
+  struct upb_msgdef *m = msg->def;
+  for(uint32_t i = 0; i < m->num_fields; i++) {
+    struct upb_msg_fielddef *f = &m->fields[i];
+    google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m);
+    if(!upb_msg_isset(msg, f)) continue;
+    union upb_value_ptr p = upb_msg_getptr(msg, f);
+    if(upb_isarray(f)) {
+      struct upb_array *arr = *p.arr;
+      for(uint32_t j = 0; j < arr->len; j++) {
+        union upb_value_ptr elem_p = upb_array_getelementptr(arr, j, f->type);
+        printval(printer, elem_p, f, fd, stream);
+      }
+    } else {
+      printval(printer, p, f, fd, stream);
+    }
+  }
+}
+
+static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
+                     struct upb_msg_fielddef *f,
+                     google_protobuf_FieldDescriptorProto *fd,
+                     FILE *stream)
+{
+  if(upb_issubmsg(f)) {
+    upb_text_push(printer, fd->name, stream);
+    printmsg(printer, *p.msg, stream);
+    upb_text_pop(printer, stream);
+  } else {
+    upb_text_printfield(printer, fd->name, f->type, upb_value_read(p, f->type), stream);
+  }
+}
+
+
+void upb_msg_print(struct upb_msg *msg, bool single_line, FILE *stream)
+{
+  struct upb_text_printer printer;
+  upb_text_printer_init(&printer, single_line);
+  printmsg(&printer, msg, stream);
+}
+
