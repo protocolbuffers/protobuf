@@ -6,17 +6,6 @@
  * This file implements an interface to Python that is compatible
  * (as much as possible) with proto1 (the first implementation of
  * protocol buffers, which is only released internally to Google).
- *
- * The key interface we must support is ProtocolMessage.  Each message
- * type has its own Python class that supports the ProtocolMessage
- * interface (obj.Clear(), obj.IsInitialized(), etc) as well as
- * message-specific accessors (obj.foo(), obj.set_foo(),
- * obj.clear_foo(), etc).
- *
- * accessors.  We represent these message types as instances as
- * upb.pb.MessageType objects.  In other words, these instances
- * are both instances of upb.pb.MessageType *and* classes of
- * type MyProtoType.
  */
 
 #include <Python.h>
@@ -46,17 +35,28 @@ const char *opcode_names[] = {
 };
 
 /* Structures for the Python objects we define. */
+
+/* Callable that will create a new message object of a specific type.  In this
+ * sense it sort of "pretends" to be a type, but it is not actually a type. */
 typedef struct {
   PyObject_HEAD;
   PyUpb_MsgDef *def;
 } PyUpb_PbMsgCreator;
 
+/* Message object.  All messages use this structure and have the same Python
+ * type (even if their .proto types are different).  The type dictionary for
+ * this type does not include field accessors -- those are dynamically looked
+ * up in msg_getattro. */
 typedef struct {
   PyObject_HEAD;
   struct upb_mm_ref ref;
   PyUpb_MsgDef *def;
 } PyUpb_PbMsg;
 
+/* Represents a "bound" operation like obj.has_foo, that will perform the
+ * operation when called.  This is necessary because proto1 has all of its
+ * operations modeled as methods, so one calls obj.has_foo(), not obj.has_foo
+ * alone. */
 typedef struct {
   PyObject_HEAD;
   PyUpb_PbMsg *msg;
