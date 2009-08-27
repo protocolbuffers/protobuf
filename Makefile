@@ -34,7 +34,7 @@ LDLIBS=-lpthread
 LIBUPB=src/libupb.a
 LIBUPB_PIC=src/libupb_pic.a
 LIBUPB_SHARED=src/libupb.so
-ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC) $(LIBUPB_SHARED) tests/test_table tests/tests tools/upbc
+ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC)  tests/test_table tests/tests tools/upbc
 all: $(ALL)
 clean:
 	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
@@ -42,8 +42,9 @@ clean:
 	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
-SRC=src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c src/upb_enum.c src/upb_context.c \
-    src/upb_string.c src/upb_text.c src/upb_serialize.c descriptor/descriptor.c
+SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c \
+    src/upb_enum.c src/upb_context.c src/upb_string.c src/upb_text.c \
+    src/upb_serialize.c descriptor/descriptor.c
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))
 SHAREDOBJ=$(patsubst %.c,%.lo,$(SRC))
 # building shared objects is like building static ones, except -fPIC is added.
@@ -91,6 +92,7 @@ upb_benchmarks: $(UPB_BENCHMARKS)
 benchmarks: $(BENCHMARKS)
 benchmark:
 	@rm -f benchmarks/results
+	@rm -rf benchmarks/*.dSYM
 	@for test in benchmarks/b.* ; do ./$$test ; done
 
 benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto

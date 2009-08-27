@@ -74,9 +74,8 @@ typedef void (*upb_submsg_start_cb)(void *udata,
 typedef void (*upb_submsg_end_cb)(void *udata);
 
 struct upb_stream_parser {
-  /* For delimited submsgs, counts from the submsg len down to zero.
-   * For group submsgs, counts from zero down to the negative len. */
-  uint32_t stack[UPB_MAX_NESTING], *top, *limit;
+  // Stack entries store the offset where the submsg ends (for groups, 0).
+  size_t stack[UPB_MAX_NESTING], *top, *limit;
   size_t completed_offset;
   void *udata;
   upb_tag_cb          tag_cb;

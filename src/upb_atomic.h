@@ -29,6 +29,7 @@ extern "C" {
 #define INLINE static inline
 #endif
 
+#define UPB_THREAD_UNSAFE
 #ifdef UPB_THREAD_UNSAFE
 
 /* Non-thread-safe implementations. ******************************************/

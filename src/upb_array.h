@@ -32,11 +32,12 @@ extern "C" {
 struct upb_string;
 
 /* Returns a pointer to an array element.  Does not perform a bounds check! */
-INLINE union upb_value_ptr upb_array_getelementptr(
-    struct upb_array *arr, upb_arraylen_t n, upb_field_type_t type)
+INLINE union upb_value_ptr upb_array_getelementptr(struct upb_array *arr,
+                                                   upb_arraylen_t n)
 {
   union upb_value_ptr ptr;
-  ptr._void = (void*)((char*)arr->elements._void + n*upb_type_info[type].size);
+  ptr._void = UPB_INDEX(arr->elements._void, n,
+                        upb_type_info[arr->fielddef->type].size);
   return ptr;
 }
 
@@ -66,26 +67,22 @@ INLINE uint32_t upb_round_up_to_pow2(uint32_t v)
   return v;
 }
 
-/* Resizes array to be "len" elements long (reallocating if necessary). */
-INLINE bool upb_array_resize(struct upb_array *arr, upb_arraylen_t newlen)
+INLINE union upb_value_ptr upb_array_append(struct upb_array *arr)
 {
-  size_t type_size = upb_type_info[arr->fielddef->type].size;
-  bool dropped = false;
-  bool ref = arr->size == 0;   /* Ref'ing external memory. */
-  void *data = arr->elements._void;
-  if(arr->size < newlen) {
-    /* Need to resize. */
-    arr->size = UPB_MAX(4, upb_round_up_to_pow2(newlen));
-    arr->elements._void = realloc(ref ? NULL : data, arr->size * type_size);
+  size_t size = upb_type_info[arr->fielddef->type].size;
+  upb_arraylen_t oldlen = arr->len;
+  if(oldlen == arr->size) {
+    arr->size = UPB_MAX(4, upb_round_up_to_pow2(oldlen+1));
+    arr->elements._void = realloc(arr->elements._void, arr->size * size);
+    memset((char*)arr->elements._void + (arr->len*size), 0, (arr->size - arr->len) * size);
   }
-  if(ref) {
-    /* Need to take referenced data and copy it to memory we own. */
-    memcpy(arr->elements._void, data, UPB_MIN(arr->len, newlen) * type_size);
-    dropped = true;
-  }
-  /* TODO: fill with defaults. */
-  arr->len = newlen;
-  return dropped;
+  arr->len++;
+  return upb_array_getelementptr(arr, oldlen);
+}
+
+INLINE void upb_array_truncate(struct upb_array *arr)
+{
+  arr->len = 0;
 }
 
 #ifdef __cplusplus

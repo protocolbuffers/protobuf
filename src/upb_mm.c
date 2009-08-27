@@ -27,7 +27,7 @@ void upb_array_destroy(struct upb_array *arr)
     upb_arraylen_t i;
     /* Unref elements. */
     for(i = 0; i < arr->len; i++) {
-      union upb_value_ptr p = upb_array_getelementptr(arr, i, arr->fielddef->type);
+      union upb_value_ptr p = upb_array_getelementptr(arr, i);
       upb_mm_ptrtype type = upb_elem_ptrtype(arr->fielddef);
       union upb_mmptr mmptr = upb_mmptr_read(p, type);
       upb_mm_unref(mmptr, type);
@@ -120,7 +120,7 @@ struct upb_mm_ref *upb_mm_getelemref(struct upb_mm_ref *arrref, upb_arraylen_t i
   struct upb_msg_fielddef *f = arr->fielddef;
   assert(upb_elem_ismm(f));
   assert(i < arr->len);
-  union upb_value_ptr p = upb_array_getelementptr(arr, i, f->type);
+  union upb_value_ptr p = upb_array_getelementptr(arr, i);
   upb_mm_ptrtype type = upb_elem_ptrtype(f);
   union upb_mmptr val = upb_mmptr_read(p, type);
   return find_or_create_ref(arrref, arrref->mm, val, type, refcreated);

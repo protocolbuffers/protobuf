@@ -29,6 +29,10 @@ INLINE bool upb_mmhead_norefs(struct upb_mmhead *head) {
   return head->refcount == 0 && head->refs == NULL;
 }
 
+INLINE bool upb_mmhead_only(struct upb_mmhead *head) {
+  return head->refcount == 1 && head->refs == NULL;
+}
+
 INLINE bool upb_mmhead_unref(struct upb_mmhead *head) {
   head->refcount--;
   return upb_mmhead_norefs(head);
@@ -57,7 +61,7 @@ struct upb_array {
   struct upb_msg_fielddef *fielddef;  /* Defines the type of the array. */
   union upb_value_ptr elements;
   upb_arraylen_t len;     /* Number of elements in "elements". */
-  upb_arraylen_t size;    /* Memory we own (0 if by reference). */
+  upb_arraylen_t size;    /* Memory we own. */
 };
 
 struct upb_string {

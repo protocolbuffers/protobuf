@@ -156,11 +156,16 @@ static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
 {
   union upb_value_ptr p = upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
-    bool isset = upb_msg_isset(msg, f);
-    size_t len = isset ? (*p.arr)->len : 0;
-    if(!isset) *p.arr = upb_array_new(f);
-    upb_array_resize(*p.arr, len+1);
-    p = upb_array_getelementptr(*p.arr, len, f->type);
+    if(!upb_msg_isset(msg, f)) {
+      if(!*p.arr || !upb_mmhead_only(&((*p.arr)->mmhead))) {
+        if(*p.arr)
+          upb_array_unref(*p.arr);
+        *p.arr = upb_array_new(f);
+      }
+      upb_array_truncate(*p.arr);
+      upb_msg_set(msg, f);
+    }
+    p = upb_array_append(*p.arr);
   }
   return p;
 }
@@ -202,7 +207,11 @@ static void str_cb(void *udata, uint8_t *str,
   upb_msg_set(msg, f);
   if(avail_len != total_len) abort();  /* TODO: support streaming. */
   //bool byref = avail_len == total_len && mp->byref;
-  *p.str = upb_string_new();
+  if(!*p.str || !upb_mmhead_only(&((*p.str)->mmhead))) {
+    if(*p.str)
+      upb_string_unref(*p.str);
+    *p.str = upb_string_new();
+  }
   //if(byref) {
   //  upb_strdrop(*p.str);
   //  (*p.str)->ptr = (char*)str;
@@ -220,16 +229,19 @@ static void submsg_start_cb(void *udata, void *user_field_desc)
   struct upb_msg_fielddef *f = user_field_desc;
   struct upb_msg *oldmsg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
-  struct upb_msg **submsg = p.msg;
-  //if(*submsg && upb_mmhead_only(&((*submsg)->mmhead))) {
-  //  /* We can reuse the existing submsg. */
-  //} else {
-    *submsg = upb_msg_new(f->ref.msg);
-  //}
-  upb_msg_clear(*submsg);
-  upb_msg_set(oldmsg, f);
+
+  if(upb_isarray(f) || !upb_msg_isset(oldmsg, f)) {
+    if(!*p.msg || !upb_mmhead_only(&((*p.msg)->mmhead))) {
+      if(*p.msg)
+        upb_msg_unref(*p.msg);
+      *p.msg = upb_msg_new(f->ref.msg);
+    }
+    upb_msg_clear(*p.msg);
+    upb_msg_set(oldmsg, f);
+  }
+
   mp->top++;
-  mp->top->msg = *submsg;
+  mp->top->msg = *p.msg;
 }
 
 static void submsg_end_cb(void *udata)
@@ -248,6 +260,7 @@ upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len)
   struct upb_msg_parser mp;
   upb_msg_parser_reset(&mp, msg, false);
   size_t read;
+  upb_msg_clear(msg);
   upb_status_t ret = upb_msg_parser_parse(&mp, buf, len, &read);
   return ret;
 }
@@ -337,7 +350,7 @@ static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m)
     union upb_value_ptr p = upb_msg_getptr(m, f);
     if(upb_isarray(f)) {
       for(int32_t j = (*p.arr)->len - 1; j >= 0; j--) {
-        union upb_value_ptr elem = upb_array_getelementptr((*p.arr), j, f->type);
+        union upb_value_ptr elem = upb_array_getelementptr(*p.arr, j);
         /* TODO: for packed arrays tag size goes outside the loop. */
         size += upb_get_tag_size(fd->number);
         size += get_valuesize(sizes, elem, f, fd);
