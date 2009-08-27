@@ -312,7 +312,7 @@ static void add_strings_from_msg(void *data, struct upb_msgdef *m,
     if(upb_isarray(f)) {
       struct upb_array *arr = *p.arr;
       for(uint32_t j = 0; j < arr->len; j++)
-        add_strings_from_value(upb_array_getelementptr(arr, j, f->type), f, t);
+        add_strings_from_value(upb_array_getelementptr(arr, j), f, t);
     } else {
       add_strings_from_value(p, f, t);
     }
@@ -384,13 +384,13 @@ static void add_submsgs(void *data, struct upb_msgdef *m, struct upb_strtable *t
 
       /* Add the individual values in the array. */
       for(uint32_t j = 0; j < arr->len; j++)
-        add_value(upb_array_getelementptr(arr, j, f->type), f, t);
+        add_value(upb_array_getelementptr(arr, j), f, t);
 
       /* Add submsgs.  We must do this separately so that the msgs in this
        * array are contiguous (and don't have submsgs of the same type
        * interleaved). */
       for(uint32_t j = 0; j < arr->len; j++)
-        add_submsgs(*upb_array_getelementptr(arr, j, f->type).msg, f->ref.msg, t);
+        add_submsgs(*upb_array_getelementptr(arr, j).msg, f->ref.msg, t);
     } else {
       if(!upb_issubmsg(f)) continue;
       add_value(p, f, t);
