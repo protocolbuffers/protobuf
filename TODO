@@ -1,0 +1,26 @@
+- functionality
+  - finish serialization
+  - text format to string (not just FILE*)
+  - default values
+  - enums with 0
+  - python
+    - _list() accessor
+    - expose enums
+- tests
+  - event parser
+  - round-trip encode/decode
+  - tree manipulation
+  - memory management
+- benchmarks
+  - low-level encoding/decoding
+  - event parsing
+  - python
+- performance
+  - strings by reference
+- checkin suite
+  - benchmark diff (done)
+  - memory footprint diff
+  - binary size diff
+  - valgrind check
+  - -Werror no compiler warnings
+  - test suite
