@@ -130,14 +130,14 @@ struct upb_msg_parser_frame {
 };
 
 struct upb_msg_parser {
-  struct upb_stream_parser s;
+  struct upb_cbparser *s;
   bool merge;
   bool byref;
   struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
 };
 
-void upb_msg_parser_reset(struct upb_msg_parser *p,
-                          struct upb_msg *msg, bool byref);
+void upb_msgparser_init(struct upb_msg_parser *p,
+                        struct upb_msg *msg, bool byref);
 
 /* Parses protocol buffer data out of data which has length of len.  The data
  * need not be a complete protocol buffer.  The number of bytes parsed is
@@ -223,7 +223,7 @@ static void str_cb(void *udata, uint8_t *str,
   //}
 }
 
-static void submsg_start_cb(void *udata, void *user_field_desc)
+static void start_cb(void *udata, void *user_field_desc)
 {
   struct upb_msg_parser *mp = udata;
   struct upb_msg_fielddef *f = user_field_desc;
@@ -244,7 +244,7 @@ static void submsg_start_cb(void *udata, void *user_field_desc)
   mp->top->msg = *p.msg;
 }
 
-static void submsg_end_cb(void *udata)
+static void end_cb(void *udata)
 {
   struct upb_msg_parser *mp = udata;
   struct upb_msg *msg = mp->top->msg;
@@ -258,30 +258,32 @@ static void submsg_end_cb(void *udata)
 upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len)
 {
   struct upb_msg_parser mp;
-  upb_msg_parser_reset(&mp, msg, false);
+  upb_msgparser_init(&mp, msg, false);
   size_t read;
   upb_msg_clear(msg);
   upb_status_t ret = upb_msg_parser_parse(&mp, buf, len, &read);
+  upb_msgparser_free(&mp);
   return ret;
 }
 
-void upb_msg_parser_reset(struct upb_msg_parser *s, struct upb_msg *msg, bool byref)
+void upb_msgparser_init(struct upb_msg_parser *s, struct upb_msg *msg, bool byref)
 {
-  upb_stream_parser_reset(&s->s, s);
+  s->s = upb_cbparser_new();
+  upb_cbparser_reset(s->s, s, tag_cb, value_cb, str_cb, start_cb, end_cb);
   s->byref = byref;
   s->top = s->stack;
   s->top->msg = msg;
-  s->s.tag_cb = tag_cb;
-  s->s.value_cb = value_cb;
-  s->s.str_cb = str_cb;
-  s->s.submsg_start_cb = submsg_start_cb;
-  s->s.submsg_end_cb = submsg_end_cb;
+}
+
+void upb_msgparser_free(struct upb_msg_parser *s)
+{
+  upb_cbparser_free(s->s);
 }
 
 upb_status_t upb_msg_parser_parse(struct upb_msg_parser *s,
                                   void *data, size_t len, size_t *read)
 {
-  return upb_stream_parser_parse(&s->s, data, len, read);
+  return upb_cbparser_parse(s->s, data, len, read);
 }
 
 /* Serialization.  ************************************************************/

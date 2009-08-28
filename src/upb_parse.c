@@ -98,23 +98,55 @@ upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
 #undef CASE
 }
 
-void upb_stream_parser_reset(struct upb_stream_parser *state, void *udata)
+struct upb_cbparser {
+  // Stack entries store the offset where the submsg ends (for groups, 0).
+  size_t stack[UPB_MAX_NESTING], *top, *limit;
+  size_t completed_offset;
+  void *udata;
+  upb_tag_cb    tag_cb;
+  upb_value_cb  value_cb;
+  upb_str_cb    str_cb;
+  upb_start_cb  start_cb;
+  upb_end_cb    end_cb;
+};
+
+struct upb_cbparser *upb_cbparser_new(void)
 {
-  state->top = state->stack;
-  state->limit = &state->stack[UPB_MAX_NESTING];
-  state->completed_offset = 0;
-  state->udata = udata;
+  return malloc(sizeof(struct upb_cbparser));
+}
+
+void upb_cbparser_free(struct upb_cbparser *p)
+{
+  free(p);
+}
+
+void upb_cbparser_reset(struct upb_cbparser *p, void *udata,
+                        upb_tag_cb tagcb,
+                        upb_value_cb valuecb,
+                        upb_str_cb strcb,
+                        upb_start_cb startcb,
+                        upb_end_cb endcb)
+{
+  p->top = p->stack;
+  p->limit = &p->stack[UPB_MAX_NESTING];
+  p->completed_offset = 0;
+  p->udata = udata;
+  p->tag_cb = tagcb;
+  p->value_cb = valuecb;
+  p->str_cb = strcb;
+  p->start_cb = startcb;
+  p->end_cb = endcb;
 
   // The top-level message is not delimited (we can keep receiving data for it
   // indefinitely), so we treat it like a group.
-  *state->top = 0;
+  *p->top = 0;
 }
 
 /**
  * Pushes a new stack frame for a submessage with the given len (which will
  * be zero if the submessage is a group).
  */
-static upb_status_t push(struct upb_stream_parser *s, uint8_t *start,
+static upb_status_t push(struct upb_cbparser *s, uint8_t *start,
                          uint32_t submsg_len, void *user_field_desc,
                          uint8_t **submsg_end)
 {
@@ -123,8 +155,8 @@ static upb_status_t push(struct upb_stream_parser *s, uint8_t *start,
     return UPB_ERROR_STACK_OVERFLOW;
   *s->top = s->completed_offset + submsg_len;
 
-  if(s->submsg_start_cb)
-    s->submsg_start_cb(s->udata, user_field_desc);
+  if(s->start_cb)
+    s->start_cb(s->udata, user_field_desc);
 
   *submsg_end = start + (*s->top > 0 ? (*s->top - s->completed_offset) : 0);
   return UPB_STATUS_OK;
@@ -134,10 +166,10 @@ static upb_status_t push(struct upb_stream_parser *s, uint8_t *start,
  * Pops a stack frame, returning a pointer for where the next submsg should
  * end (or a pointer that is out of range for a group).
  */
-static void *pop(struct upb_stream_parser *s, uint8_t *start)
+static void *pop(struct upb_cbparser *s, uint8_t *start)
 {
-  if(s->submsg_end_cb)
-    s->submsg_end_cb(s->udata);
+  if(s->end_cb)
+    s->end_cb(s->udata);
 
   s->top--;
 
@@ -148,8 +180,8 @@ static void *pop(struct upb_stream_parser *s, uint8_t *start)
 }
 
 
-upb_status_t upb_stream_parser_parse(struct upb_stream_parser *s,
-                                     void *_buf, size_t len, size_t *read)
+upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
+                                size_t *read)
 {
   uint8_t *buf = _buf;
   uint8_t *completed = buf;

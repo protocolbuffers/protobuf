@@ -21,125 +21,114 @@
 extern "C" {
 #endif
 
-/* High-level parsing interface. **********************************************/
+/* Event Callbacks. ***********************************************************/
 
-/* The general scheme is that the client registers callbacks that will be
- * called at the appropriate times.  These callbacks provide the client with
- * data and let the client make decisions (like whether to parse or to skip
- * a value).
- *
- * After initializing the parse state, the client can repeatedly call upb_parse
- * as data becomes available.  The parser is fully streaming-capable, so the
- * data need not all be available at the same time. */
-
-struct upb_stream_parser;
-
-/* Resets the internal state of an already-allocated parser.   udata will be
- * passed to callbacks as appropriate. */
-void upb_stream_parser_reset(struct upb_stream_parser *p, void *udata);
-
-/* The callback that is called immediately after a tag has been parsed.  The
- * client should determine whether it wants to parse or skip the corresponding
- * value.  If it wants to parse it, it must discover and return the correct
- * .proto type (the tag only contains the wire type) and check that the wire
- * type is appropriate for the .proto type.  To skip the value (which means
- * skipping all submessages, in the case of a submessage), the callback should
- * return zero. */
-typedef upb_field_type_t (*upb_tag_cb)(void *udata,
-                                       struct upb_tag *tag,
+// The tag callback is called immediately after a tag has been parsed.  The
+// client should determine whether it wants to parse or skip the corresponding
+// value.  If it wants to parse it, it must discover and return the correct
+// .proto type (the tag only contains the wire type) and check that the wire
+// type is appropriate for the .proto type.  To skip the value (which means
+// skipping all submessages, in the case of a submessage), the callback should
+// return zero.
+//
+// The client can store a void* in *user_field_desc; this will be passed to
+// the value callback or the string callback.
+typedef upb_field_type_t (*upb_tag_cb)(void *udata, struct upb_tag *tag,
                                        void **user_field_desc);
 
-/* The callback that is called when a regular value (ie. not a string or
- * submessage) is encountered which the client has opted to parse (by not
- * returning 0 from the tag_cb).  The client must parse the value and update
- * buf accordingly, returning success or failure.
- *
- * Note that this callback can be called several times in a row for a single
- * call to tag_cb in the case of packed arrays. */
+// The value callback is called when a regular value (ie. not a string or
+// submessage) is encountered which the client has opted to parse (by not
+// returning 0 from the tag_cb).  The client must parse the value by calling
+// upb_parse_value(), returning success or failure accordingly.
+//
+// Note that this callback can be called several times in a row for a single
+// call to tag_cb in the case of packed arrays.
 typedef upb_status_t (*upb_value_cb)(void *udata, uint8_t *buf, uint8_t *end,
                                      void *user_field_desc, uint8_t **outbuf);
 
-/* The callback that is called when a string is parsed.  Note that the data
- * for the string might not all be available -- we could be streaming, and
- * the current buffer might end right in the middle of the string.  So we
- * pass both the available length and the total length. */
-typedef void (*upb_str_cb)(void *udata, uint8_t *str,
-                           size_t avail_len, size_t total_len,
-                           void *user_field_desc);
+// The string callback is called when a string is parsed.  avail_len is the
+// number of bytes that are currently available at str.  If the client is
+// streaming and the current buffer ends in the middle of the string, this
+// number could be less than total_len.
+typedef void (*upb_str_cb)(void *udata, uint8_t *str, size_t avail_len,
+                           size_t total_len, void *user_field_desc);
 
-/* Callbacks that are called when a submessage begins and ends, respectively.
- * Both are called with the submessage's stack frame at the top of the stack. */
-typedef void (*upb_submsg_start_cb)(void *udata,
-                                    void *user_field_desc);
-typedef void (*upb_submsg_end_cb)(void *udata);
+// The start and end callbacks are called when a submessage begins and ends,
+// respectively.
+typedef void (*upb_start_cb)(void *udata, void *user_field_desc);
+typedef void (*upb_end_cb)(void *udata);
 
-struct upb_stream_parser {
-  // Stack entries store the offset where the submsg ends (for groups, 0).
-  size_t stack[UPB_MAX_NESTING], *top, *limit;
-  size_t completed_offset;
-  void *udata;
-  upb_tag_cb          tag_cb;
-  upb_value_cb        value_cb;
-  upb_str_cb          str_cb;
-  upb_submsg_start_cb submsg_start_cb;
-  upb_submsg_end_cb   submsg_end_cb;
-};
+/* Callback parser interface. *************************************************/
 
-/* Parses up to len bytes of protobuf data out of buf, calling the appropriate
- * callbacks as values are parsed.
- *
- * The function returns a status indicating the success of the operation.  Data
- * is parsed until no more data can be read from buf, or the callback returns an
- * error like UPB_STATUS_USER_CANCELLED, or an error occurs.
- *
- * *read is set to the number of bytes consumed.  Note that this can be greater
- * than len in the case that a string was recognized that spans beyond the end
- * of the currently provided data.
- *
- * The next call to upb_parse must be the first byte after buf + *read, even in
- * the case that *read > len.
- *
- * TODO: see if we can provide the following guarantee efficiently:
- *   *read will always be >= len. */
-upb_status_t upb_stream_parser_parse(struct upb_stream_parser *p,
-                                     void *buf, size_t len, size_t *read);
+// Allocates and frees a upb_cbparser, respectively.
+struct upb_cbparser *upb_cbparser_new(void);
+void upb_cbparser_free(struct upb_cbparser *p);
+
+// Resets the internal state of an already-allocated parser.  Parsers must be
+// reset before they can be used.  A parser can be reset multiple times.  udata
+// will be passed as the first argument to callbacks.
+void upb_cbparser_reset(struct upb_cbparser *p, void *udata,
+                        upb_tag_cb tagcb,
+                        upb_value_cb valuecb,
+                        upb_str_cb strcb,
+                        upb_start_cb startcb,
+                        upb_end_cb endcb);
+
+
+// Parses up to len bytes of protobuf data out of buf, calling the appropriate
+// callbacks as values are parsed.
+//
+// The function returns a status indicating the success of the operation.  Data
+// is parsed until no more data can be read from buf, or the callback returns an
+// error like UPB_STATUS_USER_CANCELLED, or an error occurs.
+//
+// *read is set to the number of bytes consumed.  Note that this can be greater
+// than len in the case that a string was recognized that spans beyond the end
+// of the currently provided data.
+//
+// The next call to upb_parse must be the first byte after buf + *read, even in
+// the case that *read > len.
+//
+// TODO: see if we can provide the following guarantee efficiently:
+//   *read will always be >= len. */
+upb_status_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
+                                size_t *read);
 
 extern upb_wire_type_t upb_expected_wire_types[];
-/* Returns true if wt is the correct on-the-wire type for ft. */
+// Returns true if wt is the correct on-the-wire type for ft.
 INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-  /* This doesn't currently support packed arrays. */
+  // This doesn't currently support packed arrays.
   return upb_type_info[ft].expected_wire_type == wt;
 }
 
 /* Data-consuming functions (to be called from value cb). *********************/
 
-/* Parses and converts a value from the character data starting at buf.  The
- * caller must have previously checked that the wire type is appropriate for
- * this field type. */
+// Parses and converts a value from the character data starting at buf (but not
+// past end).  *outbuf will be set to one past the data that was read.  The
+// caller must have previously checked that the wire type is appropriate for
+// this field type.
 upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
                              union upb_value_ptr v, uint8_t **outbuf);
 
-/* Parses a wire value with the given type (which must have been obtained from
- * a tag that was just parsed) and adds the number of bytes that were consumed
- * to *offset. */
+// Parses a wire value with the given type (which must have been obtained from
+// a tag that was just parsed) and sets *outbuf to one past the data that was
+// read.
 upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
                                   union upb_wire_value *wv, uint8_t **outbuf);
 
 /* Functions to read wire values. *********************************************/
 
-/* In general, these should never be called directly from any code outside upb.
- * They are included here only because we expect them to get inlined inside the
- * value-reading functions below. */
+// Most clients will not want to use these directly.
 
 upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
                                      uint8_t **outbuf);
 
-/* Gets a varint (wire type: UPB_WIRE_TYPE_VARINT). */
+// Gets a varint (wire type: UPB_WIRE_TYPE_VARINT).
 INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
                                        uint8_t **outbuf)
 {
-  /* We inline this common case (1-byte varints), if that fails we dispatch to
-   * the full (non-inlined) version. */
+  // We inline this common case (1-byte varints), if that fails we dispatch to
+  // the full (non-inlined) version.
   if((*buf & 0x80) == 0) {
     *val = *buf & 0x7f;
     *outbuf = buf + 1;
@@ -149,17 +138,17 @@ INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val
   }
 }
 
-/* Gets a varint -- called when we only need 32 bits of it. */
+// Gets a varint -- called when we only need 32 bits of it.
 INLINE upb_status_t upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
                                        uint32_t *val, uint8_t **outbuf)
 {
   uint64_t val64;
   UPB_CHECK(upb_get_v_uint64_t(buf, end, &val64, outbuf));
-  *val = (uint32_t)val64;  /* Discard the high bits. */
+  *val = (uint32_t)val64;  // Discard the high bits.
   return UPB_STATUS_OK;
 }
 
-/* Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT). */
+// Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).
 INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
                                        uint32_t *val, uint8_t **outbuf)
 {
@@ -176,7 +165,7 @@ INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
   return UPB_STATUS_OK;
 }
 
-/* Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT). */
+// Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).
 INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
                                        uint64_t *val, uint8_t **outbuf)
 {
@@ -207,8 +196,8 @@ INLINE upb_status_t upb_skip_v_uint64_t(uint8_t *buf, uint8_t *end,
   return UPB_STATUS_OK;
 }
 
-INLINE upb_status_t upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end, uint8_t
-                                        **outbuf)
+INLINE upb_status_t upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end,
+                                        uint8_t **outbuf)
 {
   uint8_t *uint32_end = buf + sizeof(uint32_t);
   if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
@@ -216,8 +205,8 @@ INLINE upb_status_t upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end, uint8_t
   return UPB_STATUS_OK;
 }
 
-INLINE upb_status_t upb_skip_f_uint64_t(uint8_t *buf, uint8_t *end, uint8_t
-                                        **outbuf)
+INLINE upb_status_t upb_skip_f_uint64_t(uint8_t *buf, uint8_t *end,
+                                        uint8_t **outbuf)
 {
   uint8_t *uint64_end = buf + sizeof(uint64_t);
   if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
@@ -228,27 +217,26 @@ INLINE upb_status_t upb_skip_f_uint64_t(uint8_t *buf, uint8_t *end, uint8_t
 
 /* Functions to read .proto values. *******************************************/
 
-/* These functions read the appropriate wire value for a given .proto type
- * and then convert it based on the .proto type.  These are the most efficient
- * functions to call if you want to decode a value for a known type. */
 
-/* Performs zig-zag decoding, which is used by sint32 and sint64. */
+// Performs zig-zag decoding, which is used by sint32 and sint64.
 INLINE int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
 INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
-/* Use macros to define a set of two functions for each .proto type:
- *
- *  // Reads and converts a .proto value from buf, placing it in d.
- *  // "end" indicates the end of the current buffer (if the buffer does
- *  // not contain the entire value UPB_STATUS_NEED_MORE_DATA is returned).
- *  // On success, *outbuf will point to the first byte that was not consumed.
- *  upb_status_t upb_get_INT32(uint8_t *buf, uint8_t *end, int32_t *d,
- *                             uint8_t **outbuf);
- *
- *  // Given an already read wire value s (source), convert it to a .proto
- *  // value and return it.
- *  int32_t upb_wvtov_INT32(uint32_t s);
- */
+// Use macros to define a set of two functions for each .proto type:
+//
+//  // Reads and converts a .proto value from buf, placing it in d.
+//  // "end" indicates the end of the current buffer (if the buffer does
+//  // not contain the entire value UPB_STATUS_NEED_MORE_DATA is returned).
+//  // On success, *outbuf will point to the first byte that was not consumed.
+//  upb_status_t upb_get_INT32(uint8_t *buf, uint8_t *end, int32_t *d,
+//                             uint8_t **outbuf);
+//
+//  // Given an already read wire value s (source), convert it to a .proto
+//  // value and return it.
+//  int32_t upb_wvtov_INT32(uint32_t s);
+//
+// These are the most efficient functions to call if you want to decode a value
+// for a known type.
 
 #define WVTOV(type, wire_t, val_t) \
   INLINE val_t upb_wvtov_ ## type(wire_t s)
@@ -294,7 +282,7 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef GET
 #undef T
 
-/* Parses a tag, places the result in *tag. */
+// Parses a tag, places the result in *tag.
 INLINE upb_status_t parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
                               uint8_t **outbuf)
 {
