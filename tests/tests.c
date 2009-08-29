@@ -227,6 +227,26 @@ static void test_upb_context() {
   upb_context_unref(c);
 }
 
+
+static upb_field_type_t tag_cb(void *udata, struct upb_tag *tag,
+                               void **user_field_desc)
+{
+  (void)udata;
+  (void)tag;
+  (void)user_field_desc;
+  return 0;
+}
+
+static void test_cbparser()
+{
+  struct upb_cbparser *p = upb_cbparser_new();
+  ASSERT(p);
+  upb_cbparser_reset(p, NULL, tag_cb, NULL, NULL, NULL, NULL);
+  size_t read;
+  ASSERT(upb_cbparser_parse(p, NULL, 0, &read) == UPB_STATUS_OK);
+  ASSERT(read == 0);
+}
+
 int main()
 {
 #define TEST(func) do { \
@@ -241,6 +261,7 @@ int main()
   TEST(test_skip_v_uint64_t);
   TEST(test_get_f_uint32_t);
   TEST(test_upb_context);
+  TEST(test_cbparser);
   printf("All tests passed (%d assertions).\n", num_assertions);
   return 0;
 }

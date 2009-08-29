@@ -28,7 +28,7 @@ CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+CPPFLAGS=-Wall -Wextra -Werror -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 LDLIBS=-lpthread
 
 LIBUPB=src/libupb.a

@@ -27,9 +27,11 @@ extern "C" {
 // client should determine whether it wants to parse or skip the corresponding
 // value.  If it wants to parse it, it must discover and return the correct
 // .proto type (the tag only contains the wire type) and check that the wire
-// type is appropriate for the .proto type.  To skip the value (which means
-// skipping all submessages, in the case of a submessage), the callback should
-// return zero.
+// type is appropriate for the .proto type.  Returning a type for which
+// upb_check_type(tag->wire_type, type) == false invokes undefined behavior.
+//
+// To skip the value (which means skipping all submessages, in the case of a
+// submessage), the callback should return zero.
 //
 // The client can store a void* in *user_field_desc; this will be passed to
 // the value callback or the string callback.
@@ -67,6 +69,9 @@ void upb_cbparser_free(struct upb_cbparser *p);
 // Resets the internal state of an already-allocated parser.  Parsers must be
 // reset before they can be used.  A parser can be reset multiple times.  udata
 // will be passed as the first argument to callbacks.
+//
+// tagcb must be set, but all other callbacks can be NULL, in which case they
+// will just be skipped.
 void upb_cbparser_reset(struct upb_cbparser *p, void *udata,
                         upb_tag_cb tagcb,
                         upb_value_cb valuecb,

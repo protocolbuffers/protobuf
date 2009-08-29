@@ -136,9 +136,6 @@ struct upb_msg_parser {
   struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
 };
 
-void upb_msgparser_init(struct upb_msg_parser *p,
-                        struct upb_msg *msg, bool byref);
-
 /* Parses protocol buffer data out of data which has length of len.  The data
  * need not be a complete protocol buffer.  The number of bytes parsed is
  * returned in *read, and the next call to upb_msg_parse must supply data that
@@ -255,17 +252,6 @@ static void end_cb(void *udata)
 
 /* Externally-visible functions for the msg parser. */
 
-upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len)
-{
-  struct upb_msg_parser mp;
-  upb_msgparser_init(&mp, msg, false);
-  size_t read;
-  upb_msg_clear(msg);
-  upb_status_t ret = upb_msg_parser_parse(&mp, buf, len, &read);
-  upb_msgparser_free(&mp);
-  return ret;
-}
-
 void upb_msgparser_init(struct upb_msg_parser *s, struct upb_msg *msg, bool byref)
 {
   s->s = upb_cbparser_new();
@@ -278,6 +264,17 @@ void upb_msgparser_init(struct upb_msg_parser *s, struct upb_msg *msg, bool byre
 void upb_msgparser_free(struct upb_msg_parser *s)
 {
   upb_cbparser_free(s->s);
+}
+
+upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len)
+{
+  struct upb_msg_parser mp;
+  upb_msgparser_init(&mp, msg, false);
+  size_t read;
+  upb_msg_clear(msg);
+  upb_status_t ret = upb_msg_parser_parse(&mp, buf, len, &read);
+  upb_msgparser_free(&mp);
+  return ret;
 }
 
 upb_status_t upb_msg_parser_parse(struct upb_msg_parser *s,

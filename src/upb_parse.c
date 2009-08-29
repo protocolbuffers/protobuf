@@ -158,7 +158,10 @@ static upb_status_t push(struct upb_cbparser *s, uint8_t *start,
   if(s->start_cb)
     s->start_cb(s->udata, user_field_desc);
 
-  *submsg_end = start + (*s->top > 0 ? (*s->top - s->completed_offset) : 0);
+  if(*s->top > 0)
+    *submsg_end = start + (*s->top - s->completed_offset);
+  else
+    *submsg_end = (void*)UINTPTR_MAX;
   return UPB_STATUS_OK;
 }
 
@@ -176,7 +179,7 @@ static void *pop(struct upb_cbparser *s, uint8_t *start)
   if(*s->top > 0)
     return (char*)start + (*s->top - s->completed_offset);
   else
-    return (char*)start;  // group.
+    return (void*)UINTPTR_MAX;  // group.
 }
 
 
@@ -187,7 +190,7 @@ upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
   uint8_t *completed = buf;
   uint8_t *const start = buf;  // ptr equivalent of s->completed_offset
   uint8_t *end = buf + len;
-  uint8_t *submsg_end = buf + (*s->top > 0 ? *s->top : 0);
+  uint8_t *submsg_end = *s->top > 0 ? buf + *s->top : (uint8_t*)UINTPTR_MAX;
   upb_status_t status = UPB_STATUS_OK;
 
   // Make local copies so optimizer knows they won't change.
@@ -238,8 +241,12 @@ upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
       }
     }
 
-    while(buf == submsg_end)
+    while(buf >= submsg_end) {
+      if(buf > submsg_end) {
+        return UPB_ERROR_BAD_SUBMESSAGE_END;
+      }
       submsg_end = pop(s, start);
+    }
     // while(buf < s->packed_end) { TODO: packed arrays }
     completed = buf;
   }
