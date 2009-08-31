@@ -245,8 +245,17 @@ static void end_cb(void *udata)
 {
   struct upb_msg_parser *mp = udata;
   struct upb_msg *msg = mp->top->msg;
-  /* TODO: free any remaining dynamic storage that was not reused. */
-  (void)msg;
+  struct upb_msgdef *def = msg->def;
+
+  // Free any remaining dynamic storage we did not reuse.
+  for(uint32_t i = 0; i < def->num_fields; i++) {
+    struct upb_msg_fielddef *f = &def->fields[i];
+    union upb_value_ptr p = upb_msg_getptr(msg, f);
+    if(upb_msg_isset(msg, f) || !upb_field_ismm(f) || !*p.msg) continue;
+    union upb_mmptr mmptr = upb_mmptr_read(p, f->type);
+    upb_mm_unref(mmptr, f->type);
+  }
+
   mp->top--;
 }
 
