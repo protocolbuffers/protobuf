@@ -23,7 +23,7 @@
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
 
-.PHONY: all clean test benchmarks benchmark descriptorgen
+.PHONY: all clean test benchmarks benchmark descriptorgen tests
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
@@ -34,10 +34,13 @@ LDLIBS=-lpthread
 LIBUPB=src/libupb.a
 LIBUPB_PIC=src/libupb_pic.a
 LIBUPB_SHARED=src/libupb.so
-ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC)  tests/test_table tests/tests tools/upbc
+ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC) tools/upbc
 all: $(ALL)
 clean:
-	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(ALL) benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -rf $(LIBUPB) $(LIBUPB_PIC)
+	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo)
+	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -rf tests/tests tests/t.* tests/test_table
 	rm -rf descriptor/descriptor.proto.pb
 	cd lang_ext/python && python setup.py clean --all
 
@@ -69,8 +72,31 @@ python: $(LIBUPB_PIC)
 	cd lang_ext/python && python setup.py build
 
 # Tests
+tests: tests/tests \
+    tests/t.test_vs_proto2.googlemessage1 \
+    tests/t.test_vs_proto2.googlemessage2
+
 test: tests/tests
 	./tests/tests
+
+tests/t.test_vs_proto2.googlemessage1 \
+tests/t.test_vs_proto2.googlemessage2: \
+    tests/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
+    benchmarks/google_messages.pb.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/test_vs_proto2.googlemessage1 $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"../benchmarks/google_message1.dat\" \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
+	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/test_vs_proto2.googlemessage2 $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"../benchmarks/google_message2.dat\" \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
+	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
 tests/test_table: src/libupb.a
 tests/tests: src/libupb.a
 
