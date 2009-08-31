@@ -225,7 +225,7 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
         static char* c_types[] = {
           "", "double", "float", "int64_t", "uint64_t", "int32_t", "uint64_t",
           "uint32_t", "bool", "struct upb_string*", "", "",
-          "struct upb_string*", "uint32_t", "uint32_t", "int32_t", "int64_t",
+          "struct upb_string*", "uint32_t", "int32_t", "int32_t", "int64_t",
           "int32_t", "int64_t"
         };
         fprintf(stream, "  %s " UPB_STRFMT ";\n",

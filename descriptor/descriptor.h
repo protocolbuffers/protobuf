@@ -303,7 +303,7 @@ struct google_protobuf_FieldOptions {
       bool uninterpreted_option:1;  /* = 999, repeated. */
     } has;
   } set_flags;
-  uint32_t ctype;
+  int32_t ctype;
   bool packed;
   bool deprecated;
   struct upb_string* experimental_map_key;
@@ -326,7 +326,7 @@ struct google_protobuf_FileOptions {
   } set_flags;
   struct upb_string* java_package;
   struct upb_string* java_outer_classname;
-  uint32_t optimize_for;
+  int32_t optimize_for;
   bool java_multiple_files;
   UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
@@ -379,8 +379,8 @@ struct google_protobuf_FieldDescriptorProto {
   struct upb_string* name;
   struct upb_string* extendee;
   int32_t number;
-  uint32_t label;
-  uint32_t type;
+  int32_t label;
+  int32_t type;
   struct upb_string* type_name;
   struct upb_string* default_value;
   google_protobuf_FieldOptions* options;
