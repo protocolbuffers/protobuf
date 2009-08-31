@@ -12,7 +12,7 @@ static google::protobuf::Message *msg[NUM_MESSAGES];
 
 static bool initialize()
 {
-  /* Read the message data itself. */
+  // Read the message data itself.
   std::ifstream stream(MESSAGE_FILE);
   if(!stream.is_open()) {
     fprintf(stderr, "Error opening " MESSAGE_FILE ".\n");
@@ -22,7 +22,7 @@ static bool initialize()
   stringstream << stream.rdbuf();
   str = stringstream.str();
 
-  /* Create the DynamicMessage. */
+  // Create the DynamicMessage.
   const google::protobuf::Message *dynamic_msg_prototype =
       factory.GetPrototype(MESSAGE_CIDENT::descriptor());
   for(int i = 0; i < NUM_MESSAGES; i++)

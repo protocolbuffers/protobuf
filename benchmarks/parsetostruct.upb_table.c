@@ -12,7 +12,7 @@ static struct upb_msg *msgs[NUM_MESSAGES];
 
 static bool initialize()
 {
-  /* Initialize upb state, parse descriptor. */
+  // Initialize upb state, parse descriptor.
   c = upb_context_new();
   struct upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(!fds) {
@@ -25,23 +25,21 @@ static bool initialize()
   }
   upb_string_unref(fds);
 
-  char class_name[] = MESSAGE_NAME;
-  struct upb_string proto_name;
-  proto_name.ptr = class_name;
-  proto_name.byte_len = sizeof(class_name)-1;
+  struct upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
   struct upb_symtab_entry e;
-  upb_status_t success = upb_context_lookup(c, &proto_name, &e);
+  upb_status_t success = upb_context_lookup(c, proto_name, &e);
   if(!success || e.type != UPB_SYM_MESSAGE) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
-            UPB_STRARG(&proto_name));
+            UPB_STRARG(proto_name));
     return false;
   }
+  upb_string_unref(proto_name);
 
   def = e.ref.msg;
   for(int i = 0; i < 32; i++)
     msgs[i] = upb_msg_new(def);
 
-  /* Read the message data itself. */
+  // Read the message data itself.
   str = upb_strreadfile(MESSAGE_FILE);
   if(!str) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");

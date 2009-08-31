@@ -11,7 +11,7 @@ MESSAGE_CIDENT msg[NUM_MESSAGES];
 
 static bool initialize()
 {
-  /* Read the message data itself. */
+  // Read the message data itself. */
   std::ifstream stream(MESSAGE_FILE);
   if(!stream.is_open()) {
     fprintf(stderr, "Error opening " MESSAGE_FILE ".\n");
