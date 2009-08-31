@@ -45,7 +45,7 @@ INLINE union upb_value_ptr upb_array_getelementptr(struct upb_array *arr,
 
 INLINE struct upb_array *upb_array_new(struct upb_msg_fielddef *f)
 {
-  struct upb_array *arr = malloc(sizeof(*arr));
+  struct upb_array *arr = (struct upb_array*)malloc(sizeof(*arr));
   upb_mmhead_init(&arr->mmhead);
   arr->elements._void = NULL;
   arr->len = 0;

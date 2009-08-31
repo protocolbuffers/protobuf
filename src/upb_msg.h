@@ -141,7 +141,7 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
  * counted reference. */
 INLINE struct upb_msg *upb_msg_new(struct upb_msgdef *md) {
   size_t size = md->size + offsetof(struct upb_msg, data);
-  struct upb_msg *msg = malloc(size);
+  struct upb_msg *msg = (struct upb_msg*)malloc(size);
   memset(msg, 0, size);
   upb_mmhead_init(&msg->mmhead);
   msg->def = md;

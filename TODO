@@ -24,3 +24,4 @@
   - valgrind check
   - -Werror no compiler warnings
   - test suite
+  - verify that all headers compile with C++.
