@@ -96,7 +96,7 @@ INLINE struct upb_string *upb_strdup(struct upb_string *s) {
   return copy;
 }
 
-INLINE struct upb_string *upb_strdupc(char *s) {
+INLINE struct upb_string *upb_strdupc(const char *s) {
   struct upb_string *copy = upb_string_new();
   copy->byte_len = strlen(s);
   upb_string_resize(copy, copy->byte_len);

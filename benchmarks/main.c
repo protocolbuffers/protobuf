@@ -24,7 +24,10 @@ int main (int argc, char *argv[])
   char *progname = argv[0];
   if(lastslash) {
     *lastslash = '\0';
-    chdir(argv[0]);
+    if(chdir(argv[0]) < 0) {
+      fprintf(stderr, "Error changing directory to %s.\n", argv[0]);
+      return 1;
+    }
     *lastslash = '/';
     progname = lastslash + 3;  /* "/b_" */
   }
