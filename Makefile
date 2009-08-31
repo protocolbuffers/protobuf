@@ -73,31 +73,42 @@ python: $(LIBUPB_PIC)
 
 # Tests
 tests: tests/tests \
+    tests/test_table \
     tests/t.test_vs_proto2.googlemessage1 \
     tests/t.test_vs_proto2.googlemessage2
 
-test: tests/tests
-	./tests/tests
+test: tests
+	@echo Running all tests under valgrind.
+	valgrind --leak-check=full --error-exitcode=1 ./tests/tests
+#	Needs to be rewritten to separate the benchmark.
+#	valgrind --error-exitcode=1 ./tests/test_table
+	@for test in tests/t.* ; do \
+	  echo valgrind --leak-check=full --error-exitcode=1 ./$$test; \
+	  valgrind --leak-check=full --error-exitcode=1 ./$$test; \
+	done;
 
 tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \
     tests/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
     benchmarks/google_messages.pb.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/test_vs_proto2.googlemessage1 $< \
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage1 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message1.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/test_vs_proto2.googlemessage2 $< \
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message2.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
-tests/test_table: src/libupb.a
+tests/test_table: tests/test_table.cc
+	# Includes <hash_set> which is a deprecated header.
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
+
 tests/tests: src/libupb.a
 
 # Tools

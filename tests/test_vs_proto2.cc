@@ -172,8 +172,22 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg, struct upb_msg *upb_msg,
   compare(*proto2_msg, upb_msg);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+  // Change cwd to where the binary is.
+  (void)argc;
+  char *lastslash = strrchr(argv[0], '/');
+  char *progname = argv[0];
+  if(lastslash) {
+    *lastslash = '\0';
+    if(chdir(argv[0]) < 0) {
+      fprintf(stderr, "Error changing directory to %s.\n", argv[0]);
+      return 1;
+    }
+    *lastslash = '/';
+    progname = lastslash + 3;  /* "/b_" */
+  }
+
   // Initialize upb state, parse descriptor.
   struct upb_context *c = upb_context_new();
   struct upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
