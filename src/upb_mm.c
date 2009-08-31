@@ -59,8 +59,8 @@ static struct upb_mm_ref *find_or_create_ref(struct upb_mm_ref *fromref,
   struct upb_mm_ref **ref = &head->refs;
   while(*ref && (*ref)->mm <= mm) {
     if((*ref)->mm == mm) {
-      return *ref;
       *created = false;
+      return *ref;
     }
     ref = &((*ref)->next);
   }
