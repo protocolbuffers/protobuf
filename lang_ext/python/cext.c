@@ -11,6 +11,7 @@ PyMODINIT_FUNC
 initcext(void)
 {
   PyObject *mod = Py_InitModule("upb.cext", NULL);
+  (void)mod;
   initdefinition();
   initpb();
 }

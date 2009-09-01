@@ -316,7 +316,7 @@ PyObject* fieldop_call(PyObject *callable, PyObject *args, PyObject *kw)
           PyErr_SetString(PyExc_IndexError, "assignment to invalid index");
           return NULL;
         }
-        p = upb_array_getelementptr(*p.arr, i, f->type);
+        p = upb_array_getelementptr(*p.arr, i);
       } else {
         /* obj.set_foo(val) */
         if(!PyArg_ParseTuple(args, "O", &val)) return NULL;
@@ -357,8 +357,8 @@ PyObject* fieldop_call(PyObject *callable, PyObject *args, PyObject *kw)
       }
 
       upb_arraylen_t len = (*p.arr)->len;
-      union upb_value_ptr elem_p = upb_array_getelementptr(*p.arr, len, f->type);
-      upb_array_resize(*p.arr, len + 1);
+      union upb_value_ptr elem_p = upb_array_getelementptr(*p.arr, len);
+      upb_array_append(*p.arr);
 
       if(upb_issubmsg(f)) {
         /* string or submsg. */
@@ -386,7 +386,7 @@ PyObject* fieldop_call(PyObject *callable, PyObject *args, PyObject *kw)
           PyErr_SetString(PyExc_IndexError, "get from invalid index");
           return NULL;
         }
-        p = upb_array_getelementptr(*p.arr, i, f->type);
+        p = upb_array_getelementptr(*p.arr, i);
       } else {
         /* obj.foo() */
         EXPECT_NO_ARGS;
