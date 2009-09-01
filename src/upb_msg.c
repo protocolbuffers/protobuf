@@ -45,18 +45,16 @@ void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
 bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
                      struct upb_string fqname, bool sort, struct upb_context *c)
 {
-  /* TODO: more complete validation. */
-  if(!d->set_flags.has.field) return false;
-
-  upb_inttable_init(&m->fields_by_num, d->field->len,
+  int num_fields = d->set_flags.has.field ? d->field->len : 0;
+  upb_inttable_init(&m->fields_by_num, num_fields,
                     sizeof(struct upb_fieldsbynum_entry));
-  upb_strtable_init(&m->fields_by_name, d->field->len,
+  upb_strtable_init(&m->fields_by_name, num_fields,
                     sizeof(struct upb_fieldsbyname_entry));
 
   m->descriptor = d;
   m->fqname = fqname;
   m->context = c;
-  m->num_fields = d->field->len;
+  m->num_fields = num_fields;
   m->set_flags_bytes = div_round_up(m->num_fields, 8);
   /* These are incremented in the loop. */
   m->num_required_fields = 0;
@@ -97,7 +95,9 @@ bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
     upb_strtable_insert(&m->fields_by_name, &strent.e);
   }
 
-  m->size = ALIGN_UP(m->size, max_align);
+  if(max_align > 0)
+    m->size = ALIGN_UP(m->size, max_align);
+
   return true;
 }
 
