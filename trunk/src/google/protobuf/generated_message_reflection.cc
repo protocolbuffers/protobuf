@@ -324,7 +324,7 @@ void GeneratedMessageReflection::Swap(
   int has_bits_size = (descriptor_->field_count() + 31) / 32;
 
   for (int i = 0; i < has_bits_size; i++) {
-    swap(has_bits1[i], has_bits2[i]);
+    std::swap(has_bits1[i], has_bits2[i]);
   }
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -360,8 +360,8 @@ void GeneratedMessageReflection::Swap(
       switch (field->cpp_type()) {
 #define SWAP_VALUES(CPPTYPE, TYPE)                                           \
         case FieldDescriptor::CPPTYPE_##CPPTYPE:                             \
-          swap(*MutableRaw<TYPE>(message1, field),                           \
-               *MutableRaw<TYPE>(message2, field));                          \
+          std::swap(*MutableRaw<TYPE>(message1, field),                      \
+                    *MutableRaw<TYPE>(message2, field));                     \
           break;
 
           SWAP_VALUES(INT32 , int32 );
@@ -376,8 +376,8 @@ void GeneratedMessageReflection::Swap(
 #undef SWAP_VALUES
 
         case FieldDescriptor::CPPTYPE_STRING:
-            swap(*MutableRaw<string*>(message1, field),
-                 *MutableRaw<string*>(message2, field));
+            std::swap(*MutableRaw<string*>(message1, field),
+                      *MutableRaw<string*>(message2, field));
           break;
 
         default:

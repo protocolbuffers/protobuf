@@ -491,7 +491,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 
 template <typename Element>
 void RepeatedField<Element>::SwapElements(int index1, int index2) {
-  swap(elements_[index1], elements_[index2]);
+  std::swap(elements_[index1], elements_[index2]);
 }
 
 template <typename Element>
@@ -627,7 +627,7 @@ RepeatedPtrFieldBase::data() const {
 }
 
 inline void RepeatedPtrFieldBase::SwapElements(int index1, int index2) {
-  swap(elements_[index1], elements_[index2]);
+  std::swap(elements_[index1], elements_[index2]);
 }
 
 template <typename TypeHandler>
