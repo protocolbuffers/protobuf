@@ -1,23 +1,36 @@
 #!/bin/bash
 
-export SRC=../src
-export LIB=../lib
+# Adjust these to reflect the location of NUnit in your system,
+# and how you want NUnit to run
+NUNIT=~/protobuf/NUnit-2.5.0.9122/bin/net-2.0/nunit-console.exe
+NUNIT_OPTIONS=-noshadow
+
+# The rest should be okay.
+
+SRC=../src
+LIB=../lib
+
+rm -rf bin
+mkdir bin
+
+# Running the unit tests requires the dependencies are
+# in the bin directory too
+cp -f $LIB/{Rhino.Mocks.dll,nunit.framework.dll} bin
 
 echo Building main library
-gmcs -target:library -out:Google.ProtocolBuffers.dll `find $SRC/ProtocolBuffers -name '*.cs'` -keyfile:$SRC/ProtocolBuffers/Properties/Google.ProtocolBuffers.snk
+gmcs -target:library -out:bin/Google.ProtocolBuffers.dll `find $SRC/ProtocolBuffers -name '*.cs'` -keyfile:$SRC/ProtocolBuffers/Properties/Google.ProtocolBuffers.snk
 
 echo Building main library tests
-gmcs -target:library -out:Google.ProtocolBuffers.Test.dll `find $SRC/ProtocolBuffers.Test -name '*.cs'` -keyfile:$SRC/ProtocolBuffers.Test/Properties/Google.ProtocolBuffers.Test.snk -r:Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:$LIB/Rhino.Mocks.dll
+gmcs -target:library -out:bin/Google.ProtocolBuffers.Test.dll `find $SRC/ProtocolBuffers.Test -name '*.cs'` -keyfile:$SRC/ProtocolBuffers.Test/Properties/Google.ProtocolBuffers.Test.snk -r:bin/Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:$LIB/Rhino.Mocks.dll
 
 echo Running main library tests
-mono ~/protobuf/NUnit-2.5.0.9122/bin/net-2.0/nunit-console.exe Google.ProtocolBuffers.Test.dll -noshadow
+mono $NUNIT bin/Google.ProtocolBuffers.Test.dll $NUNIT_OPTIONS
 
 echo Building ProtoGen
-gmcs -target:exe -out:ProtoGen.exe `find $SRC/ProtoGen -name '*.cs'` -keyfile:$SRC/ProtoGen/Properties/Google.ProtocolBuffers.ProtoGen.snk -r:Google.ProtocolBuffers.dll
+gmcs -target:exe -out:bin/ProtoGen.exe `find $SRC/ProtoGen -name '*.cs'` -keyfile:$SRC/ProtoGen/Properties/Google.ProtocolBuffers.ProtoGen.snk -r:bin/Google.ProtocolBuffers.dll
 
 echo Building ProtoGen tests
-gmcs -target:library -out:Google.ProtocolBuffers.ProtoGen.Test.dll `find $SRC/ProtoGen.Test -name '*.cs'` -keyfile:$SRC/ProtoGen.Test/Properties/Google.ProtocolBuffers.ProtoGen.Test.snk -r:Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:ProtoGen.exe
+gmcs -target:library -out:bin/Google.ProtocolBuffers.ProtoGen.Test.dll `find $SRC/ProtoGen.Test -name '*.cs'` -keyfile:$SRC/ProtoGen.Test/Properties/Google.ProtocolBuffers.ProtoGen.Test.snk -r:bin/Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:bin/ProtoGen.exe
 
 echo Running ProtoGen tests
-mono ~/protobuf/NUnit-2.5.0.9122/bin/net-2.0/nunit-console.exe Google.ProtocolBuffers.ProtoGen.Test.dll -noshadow
-
+mono $NUNIT bin/Google.ProtocolBuffers.ProtoGen.Test.dll $NUNIT_OPTIONS
