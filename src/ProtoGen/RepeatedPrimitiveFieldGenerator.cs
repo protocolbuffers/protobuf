@@ -155,8 +155,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("size += dataSize;");
       int tagSize = CodedOutputStream.ComputeTagSize(Descriptor.FieldNumber);
       if (Descriptor.IsPacked) {
-        writer.WriteLine("size += {0};", tagSize);
-        writer.WriteLine("size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);");
+        writer.WriteLine("if ({0}_.Count != 0) {{", Name);
+        writer.WriteLine("  size += {0} + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);", tagSize);
+        writer.WriteLine("}");
       } else {
         writer.WriteLine("size += {0} * {1}_.Count;", tagSize, Name);
       }

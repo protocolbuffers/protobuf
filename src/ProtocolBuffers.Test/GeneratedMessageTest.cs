@@ -452,5 +452,11 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(UnitTestProtoFile.RepeatedNestedMessageExtensionFieldNumber, 48);
       Assert.AreEqual(UnitTestProtoFile.RepeatedNestedEnumExtensionFieldNumber, 51);
     }
+
+    [Test]
+    public void EmptyPackedValue() {
+      TestPackedTypes empty = new TestPackedTypes.Builder().Build();
+      Assert.AreEqual(0, empty.SerializedSize);
+    }
   }
 }

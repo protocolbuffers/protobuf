@@ -12765,8 +12765,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
           }
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedInt32_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedInt32MemoizedSerializedSize = dataSize;
         }
         {
@@ -12775,8 +12776,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
           }
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedInt64_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedInt64MemoizedSerializedSize = dataSize;
         }
         {
@@ -12785,8 +12787,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
           }
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedUint32_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedUint32MemoizedSerializedSize = dataSize;
         }
         {
@@ -12795,8 +12798,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
           }
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedUint64_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedUint64MemoizedSerializedSize = dataSize;
         }
         {
@@ -12805,8 +12809,9 @@ namespace Google.ProtocolBuffers.TestProtos {
             dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
           }
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedSint32_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedSint32MemoizedSerializedSize = dataSize;
         }
         {
@@ -12815,64 +12820,72 @@ namespace Google.ProtocolBuffers.TestProtos {
             dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
           }
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedSint64_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedSint64MemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 4 * packedFixed32_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedFixed32_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedFixed32MemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 8 * packedFixed64_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedFixed64_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedFixed64MemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 4 * packedSfixed32_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedSfixed32_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedSfixed32MemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 8 * packedSfixed64_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedSfixed64_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedSfixed64MemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 4 * packedFloat_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedFloat_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedFloatMemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 8 * packedDouble_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedDouble_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedDoubleMemoizedSerializedSize = dataSize;
         }
         {
           int dataSize = 0;
           dataSize = 1 * packedBool_.Count;
           size += dataSize;
-          size += 2;
-          size += pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          if (packedBool_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
           packedBoolMemoizedSerializedSize = dataSize;
         }
         {
