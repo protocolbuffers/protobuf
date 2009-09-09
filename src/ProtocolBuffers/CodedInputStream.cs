@@ -160,8 +160,12 @@ namespace Google.ProtocolBuffers {
     /// Read a double field from the stream.
     /// </summary>
     public double ReadDouble() {
-      // TODO(jonskeet): Test this on different endiannesses
+#if SILVERLIGHT2
+      byte[] bytes = ReadRawBytes(8);
+      return BitConverter.ToDouble(bytes, 0);
+#else
       return BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
+#endif
     }
 
     /// <summary>

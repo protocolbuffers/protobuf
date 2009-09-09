@@ -114,9 +114,8 @@ namespace Google.ProtocolBuffers {
     /// Writes a double field value, including tag, to the stream.
     /// </summary>
     public void WriteDouble(int fieldNumber, double value) {
-      // TODO(jonskeet): Test this on different endiannesses
       WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-      WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
+      WriteDoubleNoTag(value);
     }
 
     /// <summary>
@@ -124,10 +123,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public void WriteFloat(int fieldNumber, float value) {
       WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-      // TODO(jonskeet): Test this on different endiannesses
-      byte[] rawBytes = BitConverter.GetBytes(value);
-      uint asInteger = BitConverter.ToUInt32(rawBytes, 0);
-      WriteRawLittleEndian32(asInteger);
+      WriteFloatNoTag(value);
     }
 
     /// <summary>
@@ -332,7 +328,13 @@ namespace Google.ProtocolBuffers {
     /// Writes a double field value, including tag, to the stream.
     /// </summary>
     public void WriteDoubleNoTag(double value) {
+      // TODO(jonskeet): Test this on different endiannesses
+#if SILVERLIGHT2
+      byte[] bytes = BitConverter.GetBytes(value);
+      WriteRawBytes(bytes, 0, 8);
+#else
       WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
+#endif
     }
 
     /// <summary>

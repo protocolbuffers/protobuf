@@ -69,25 +69,22 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     private int previousColumn = 0;
 
-#if SILVERLIGHT
-    private const RegexOptions CompiledRegexWhereAvailable = RegexOptions.None;
-#else
-    private const RegexOptions CompiledRegexWhereAvailable = RegexOptions.Compiled;
-#endif
-
     // Note: atomic groups used to mimic possessive quantifiers in Java in both of these regexes
-    private static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(?>(\\s|(#.*$))+)", 
-        CompiledRegexWhereAvailable | RegexOptions.Multiline);
+    internal static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(?>(\\s|(#.*$))+)",
+        SilverlightCompatibility.CompiledRegexWhereAvailable | RegexOptions.Multiline);
     private static readonly Regex TokenPattern = new Regex(
       "\\G[a-zA-Z_](?>[0-9a-zA-Z_+-]*)|" +              // an identifier
       "\\G[0-9+-](?>[0-9a-zA-Z_.+-]*)|" +                  // a number
       "\\G\"(?>([^\"\\\n\\\\]|\\\\.)*)(\"|\\\\?$)|" +    // a double-quoted string
       "\\G\'(?>([^\"\\\n\\\\]|\\\\.)*)(\'|\\\\?$)",      // a single-quoted string
-      RegexOptions.Compiled | RegexOptions.Multiline);
+      SilverlightCompatibility.CompiledRegexWhereAvailable | RegexOptions.Multiline);
 
-    private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$", CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
-    private static readonly Regex FloatInfinity = new Regex("^-?inf(inity)?f?$", CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
-    private static readonly Regex FloatNan = new Regex("^nanf?$", CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
+    private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$",
+      SilverlightCompatibility.CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
+    private static readonly Regex FloatInfinity = new Regex("^-?inf(inity)?f?$",
+      SilverlightCompatibility.CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
+    private static readonly Regex FloatNan = new Regex("^nanf?$",
+      SilverlightCompatibility.CompiledRegexWhereAvailable | RegexOptions.IgnoreCase);
 
     /** Construct a tokenizer that parses tokens from the given text. */
     public TextTokenizer(string text) {

@@ -139,7 +139,7 @@ namespace Google.ProtocolBuffers.Descriptors {
       descriptorsByName[fullName] = descriptor;
     }
 
-    private static readonly Regex ValidationRegex = new Regex("^[_A-Za-z][_A-Za-z0-9]*$", RegexOptions.Compiled);
+    private static readonly Regex ValidationRegex = new Regex("^[_A-Za-z][_A-Za-z0-9]*$", SilverlightCompatibility.CompiledRegexWhereAvailable);
 
     /// <summary>
     /// Verifies that the descriptor's name is valid (i.e. it contains
