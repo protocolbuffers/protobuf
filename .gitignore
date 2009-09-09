@@ -27,3 +27,5 @@ mono/tmp
 mono/protoc
 mono/TestResult.xml
 mono/.libs
+mono/*.exe
+mono/*.dll
