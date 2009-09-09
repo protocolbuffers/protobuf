@@ -2,14 +2,17 @@ Current task list (not in order)
 
 - Optionally remove dependencies to csharp options
 - Remove multifile support
-- Mono support
 - Docs
 - Clean up protogen code
 - Add flags to protogen
 - Avoid using reflection for messages which don't need it (is this
   possible?)
-- Add RegisterAllExtensions
-- Add ToBuilder changes from Google's r92 (done? Need to check)
-- Silverlight changes (as per email to Jon)
 - Bring service generation into line with Java
-- Build protoc as a dll and use directly from protogen
+- Build protoc as a dll and use directly from protoge
+- Check copyright is everywhere
+- Work out how to unit test Silverlight code
+- Reformat code
+- Change generated format
+- Add regions to copyright
+- Investigate command line parsing library
+- Investigate calling protoc directly
