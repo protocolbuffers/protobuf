@@ -234,7 +234,7 @@ BUILT_SOURCES = $(protoc_outputs)
 if USE_EXTERNAL_PROTOC
 
 unittest_proto_middleman: $(protoc_inputs)
-	$(PROTOC) -I$(srcdir) --cpp_out=. $(protoc_inputs)
+	$(PROTOC) -I$(srcdir) --cpp_out=. $^
 	touch unittest_proto_middleman
 
 else
