@@ -74,3 +74,5 @@ Patch contributors:
     * Added Swap(), SwapElements(), and RemoveLast() to Reflection interface.
   Alexander Melnikov <alm@sibmail.ru>
     * HPUX support.
+  Oliver Jowett <oliver.jowett@gmail.com>
+    * Detect whether zlib is new enough in configure script.
