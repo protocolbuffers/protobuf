@@ -168,7 +168,9 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg, struct upb_msg *upb_msg,
 {
   // Parse to both proto2 and upb.
   ASSERT(proto2_msg->ParseFromArray(str->ptr, str->byte_len));
-  ASSERT(upb_msg_parsestr(upb_msg, str->ptr, str->byte_len) == UPB_STATUS_OK);
+  struct upb_status status = UPB_STATUS_INIT;
+  upb_msg_parsestr(upb_msg, str->ptr, str->byte_len, &status);
+  ASSERT(upb_ok(&status));
   compare(*proto2_msg, upb_msg);
 }
 
@@ -189,14 +191,17 @@ int main(int argc, char *argv[])
   }
 
   // Initialize upb state, parse descriptor.
+  struct upb_status status = UPB_STATUS_INIT;
   struct upb_context *c = upb_context_new();
   struct upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(!fds) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
     return 1;
   }
-  if(!upb_context_parsefds(c, fds)) {
-    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ".\n");
+  upb_context_parsefds(c, fds, &status);
+  if(!upb_ok(&status)) {
+    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
+            status.msg);
     return 1;
   }
   upb_string_unref(fds);

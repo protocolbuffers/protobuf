@@ -15,18 +15,18 @@ int num_assertions = 0;
 static void test_get_v_uint64_t()
 {
 #define TEST(name, bytes, val) {\
-    upb_status_t status; \
+    struct upb_status status = UPB_STATUS_INIT; \
     uint8_t name[] = bytes; \
     uint8_t *name ## _buf = name; \
     uint64_t name ## _val = 0; \
-    status = upb_get_v_uint64_t(name, name + sizeof(name) - 1, &name ## _val, &name ## _buf); \
-    ASSERT(status == UPB_STATUS_OK); \
+    name ## _buf = upb_get_v_uint64_t(name, name + sizeof(name) - 1, &name ## _val, &status); \
+    ASSERT(upb_ok(&status)); \
     ASSERT(name ## _val == val); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
     /* Test NEED_MORE_DATA. */ \
     if(sizeof(name) > 2) { \
-      status = upb_get_v_uint64_t(name, name + sizeof(name) - 2, &name ## _val, &name ## _buf); \
-      ASSERT(status == UPB_STATUS_NEED_MORE_DATA); \
+      name ## _buf = upb_get_v_uint64_t(name, name + sizeof(name) - 2, &name ## _val, &status); \
+      ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA); \
     } \
   }
 
@@ -44,18 +44,18 @@ static void test_get_v_uint64_t()
 #undef TEST
 
   uint8_t twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
-  uint8_t *twelvebyte_buf = twelvebyte;
   uint64_t twelvebyte_val = 0;
-  upb_status_t status;
+  struct upb_status status = UPB_STATUS_INIT;
   /* A varint that terminates before hitting the end of the provided buffer,
    * but in too many bytes (11 instead of 10). */
-  status = upb_get_v_uint64_t(twelvebyte_buf, twelvebyte + 12, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
+  upb_get_v_uint64_t(twelvebyte, twelvebyte + 12, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT);
 
   /* A varint that terminates simultaneously with the end of the provided
    * buffer, but in too many bytes (11 instead of 10). */
-  status = upb_get_v_uint64_t(twelvebyte_buf, twelvebyte + 11, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
+  upb_reset(&status);
+  upb_get_v_uint64_t(twelvebyte, twelvebyte + 11, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT);
 
   /* A varint whose buffer ends on exactly the byte where the varint must
    * terminate, but the final byte does not terminate.  The absolutely most
@@ -66,29 +66,31 @@ static void test_get_v_uint64_t()
    * then receive a UPB_ERROR_UNTERMINATED_VARINT error; clients who have no
    * more data to supply will (rightly) conclude that their protobuf is corrupt.
    */
-  status = upb_get_v_uint64_t(twelvebyte_buf, twelvebyte + 10, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT ||
-         status == UPB_STATUS_NEED_MORE_DATA);
+  upb_reset(&status);
+  upb_get_v_uint64_t(twelvebyte, twelvebyte + 10, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT ||
+         status.code == UPB_STATUS_NEED_MORE_DATA);
 
-  status = upb_get_v_uint64_t(twelvebyte_buf, twelvebyte + 9, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
+  upb_reset(&status);
+  upb_get_v_uint64_t(twelvebyte, twelvebyte + 9, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA);
 }
 
 static void test_get_v_uint32_t()
 {
 #define TEST(name, bytes, val) {\
-    upb_status_t status; \
+    struct upb_status status = UPB_STATUS_INIT; \
     uint8_t name[] = bytes; \
     uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
-    status = upb_get_v_uint32_t(name, name + sizeof(name), &name ## _val, &name ## _buf); \
-    ASSERT(status == UPB_STATUS_OK); \
+    name ## _buf = upb_get_v_uint32_t(name, name + sizeof(name), &name ## _val, &status); \
+    ASSERT(upb_ok(&status)); \
     ASSERT(name ## _val == val); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
     /* Test NEED_MORE_DATA. */ \
     if(sizeof(name) > 2) { \
-      status = upb_get_v_uint32_t(name, name + sizeof(name) - 2, &name ## _val, &name ## _buf); \
-      ASSERT(status == UPB_STATUS_NEED_MORE_DATA); \
+      name ## _buf = upb_get_v_uint32_t(name, name + sizeof(name) - 2, &name ## _val, &status); \
+      ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA); \
     } \
   }
 
@@ -107,18 +109,18 @@ static void test_get_v_uint32_t()
 #undef TEST
 
   uint8_t twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
-  uint8_t *twelvebyte_buf = twelvebyte;
   uint32_t twelvebyte_val = 0;
-  upb_status_t status;
+  struct upb_status status = UPB_STATUS_INIT;
   /* A varint that terminates before hitting the end of the provided buffer,
    * but in too many bytes (11 instead of 10). */
-  status = upb_get_v_uint32_t(twelvebyte_buf, twelvebyte + 12, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
+  upb_get_v_uint32_t(twelvebyte, twelvebyte + 12, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT);
 
   /* A varint that terminates simultaneously with the end of the provided
    * buffer, but in too many bytes (11 instead of 10). */
-  status = upb_get_v_uint32_t(twelvebyte_buf, twelvebyte + 11, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
+  upb_reset(&status);
+  upb_get_v_uint32_t(twelvebyte, twelvebyte + 11, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT);
 
   /* A varint whose buffer ends on exactly the byte where the varint must
    * terminate, but the final byte does not terminate.  The absolutely most
@@ -129,27 +131,29 @@ static void test_get_v_uint32_t()
    * then receive a UPB_ERROR_UNTERMINATED_VARINT error; clients who have no
    * more data to supply will (rightly) conclude that their protobuf is corrupt.
    */
-  status = upb_get_v_uint32_t(twelvebyte_buf, twelvebyte + 10, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT ||
-         status == UPB_STATUS_NEED_MORE_DATA);
+  upb_reset(&status);
+  upb_get_v_uint32_t(twelvebyte, twelvebyte + 10, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT ||
+         status.code == UPB_STATUS_NEED_MORE_DATA);
 
-  status = upb_get_v_uint32_t(twelvebyte_buf, twelvebyte + 9, &twelvebyte_val, &twelvebyte_buf);
-  ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
+  upb_reset(&status);
+  upb_get_v_uint32_t(twelvebyte, twelvebyte + 9, &twelvebyte_val, &status);
+  ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA);
 }
 
 static void test_skip_v_uint64_t()
 {
 #define TEST(name, bytes) {\
-    upb_status_t status; \
+    struct upb_status status = UPB_STATUS_INIT; \
     uint8_t name[] = bytes; \
     uint8_t *name ## _buf = name; \
-    status = upb_skip_v_uint64_t(name ## _buf, name + sizeof(name), &name ## _buf); \
-    ASSERT(status == UPB_STATUS_OK); \
+    name ## _buf = upb_skip_v_uint64_t(name ## _buf, name + sizeof(name), &status); \
+    ASSERT(upb_ok(&status)); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
     /* Test NEED_MORE_DATA. */ \
     if(sizeof(name) > 2) { \
-      status = upb_skip_v_uint64_t(name, name + sizeof(name) - 2, &name ## _buf); \
-      ASSERT(status == UPB_STATUS_NEED_MORE_DATA); \
+      name ## _buf = upb_skip_v_uint64_t(name, name + sizeof(name) - 2, &status); \
+      ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA); \
     } \
   }
 
@@ -167,17 +171,17 @@ static void test_skip_v_uint64_t()
 #undef TEST
 
   uint8_t twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
-  uint8_t *twelvebyte_buf = twelvebyte;
-  upb_status_t status;
+  struct upb_status status = UPB_STATUS_INIT;
   /* A varint that terminates before hitting the end of the provided buffer,
    * but in too many bytes (11 instead of 10). */
-  status = upb_skip_v_uint64_t(twelvebyte_buf, twelvebyte + 12, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
+  upb_skip_v_uint64_t(twelvebyte, twelvebyte + 12, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT);
 
   /* A varint that terminates simultaneously with the end of the provided
    * buffer, but in too many bytes (11 instead of 10). */
-  status = upb_skip_v_uint64_t(twelvebyte_buf, twelvebyte + 11, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT);
+  upb_reset(&status);
+  upb_skip_v_uint64_t(twelvebyte, twelvebyte + 11, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT);
 
   /* A varint whose buffer ends on exactly the byte where the varint must
    * terminate, but the final byte does not terminate.  The absolutely most
@@ -188,23 +192,25 @@ static void test_skip_v_uint64_t()
    * then receive a UPB_ERROR_UNTERMINATED_VARINT error; clients who have no
    * more data to supply will (rightly) conclude that their protobuf is corrupt.
    */
-  status = upb_skip_v_uint64_t(twelvebyte_buf, twelvebyte + 10, &twelvebyte_buf);
-  ASSERT(status == UPB_ERROR_UNTERMINATED_VARINT ||
-         status == UPB_STATUS_NEED_MORE_DATA);
+  upb_reset(&status);
+  upb_skip_v_uint64_t(twelvebyte, twelvebyte + 10, &status);
+  ASSERT(status.code == UPB_ERROR_UNTERMINATED_VARINT ||
+         status.code == UPB_STATUS_NEED_MORE_DATA);
 
-  status = upb_skip_v_uint64_t(twelvebyte_buf, twelvebyte + 9, &twelvebyte_buf);
-  ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
+  upb_reset(&status);
+  upb_skip_v_uint64_t(twelvebyte, twelvebyte + 9, &status);
+  ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA);
 }
 
 static void test_get_f_uint32_t()
 {
 #define TEST(name, bytes, val) {\
-    upb_status_t status; \
+    struct upb_status status = UPB_STATUS_INIT; \
     uint8_t name[] = bytes; \
     uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
-    status = upb_get_f_uint32_t(name ## _buf, name + sizeof(name), &name ## _val, &name ## _buf); \
-    ASSERT(status == UPB_STATUS_OK); \
+    name ## _buf = upb_get_f_uint32_t(name ## _buf, name + sizeof(name), &name ## _val, &status); \
+    ASSERT(upb_ok(&status)); \
     ASSERT(name ## _val == val); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
   }
@@ -213,10 +219,10 @@ static void test_get_f_uint32_t()
   TEST(one,   "\x01\x00\x00\x00",                                0x1UL);
 
   uint8_t threeb[] = {0x00, 0x00, 0x00};
-  uint8_t *threeb_buf = threeb;
   uint32_t threeb_val;
-  upb_status_t status = upb_get_f_uint32_t(threeb, threeb + sizeof(threeb), &threeb_val, &threeb_buf);
-  ASSERT(status == UPB_STATUS_NEED_MORE_DATA);
+  struct upb_status status = UPB_STATUS_INIT;
+  upb_get_f_uint32_t(threeb, threeb + sizeof(threeb), &threeb_val, &status);
+  ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA);
 
 #undef TEST
 }
@@ -243,7 +249,9 @@ static void test_cbparser()
   ASSERT(p);
   upb_cbparser_reset(p, NULL, tag_cb, NULL, NULL, NULL, NULL);
   size_t read;
-  ASSERT(upb_cbparser_parse(p, NULL, 0, &read) == UPB_STATUS_OK);
+  struct upb_status status = UPB_STATUS_INIT;
+  read = upb_cbparser_parse(p, NULL, 0, &status);
+  ASSERT(upb_ok(&status));
   ASSERT(read == 0);
 }
 

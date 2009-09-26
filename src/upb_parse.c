@@ -13,8 +13,8 @@
  * Parses a 64-bit varint that is known to be >= 2 bytes (the inline version
  * handles 1 and 2 byte varints).
  */
-upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
-                                     uint8_t **outbuf)
+uint8_t *upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
+                                 struct upb_status *status)
 {
   uint8_t *const maxend = buf + 10;
   uint8_t last = 0x80;
@@ -24,27 +24,33 @@ upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
   for(bitpos = 0; buf < (uint8_t*)end && (last & 0x80); buf++, bitpos += 7)
     *val |= ((uint64_t)((last = *buf) & 0x7F)) << bitpos;
 
-  if(buf >= end && buf <= maxend && (last & 0x80))
-    return UPB_STATUS_NEED_MORE_DATA;
-  if(buf > maxend)
-    return UPB_ERROR_UNTERMINATED_VARINT;
+  if(buf >= end && buf <= maxend && (last & 0x80)) {
+    upb_seterr(status, UPB_STATUS_NEED_MORE_DATA,
+               "Provided data ended in the middle of a varint.\n");
+    buf = end;
+  } else if(buf > maxend) {
+    upb_seterr(status, UPB_ERROR_UNTERMINATED_VARINT,
+               "Varint was unterminated after 10 bytes.\n");
+    buf = end;
+  }
 
-  *outbuf = buf;
-  return UPB_STATUS_OK;
+  return buf;
 }
 
-upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
-                                  union upb_wire_value *wv, uint8_t **outbuf)
+uint8_t *upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
+                              union upb_wire_value *wv,
+                              struct upb_status *status)
 {
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT:
-      return upb_get_v_uint64_t(buf, end, &wv->varint, outbuf);
+      return upb_get_v_uint64_t(buf, end, &wv->varint, status);
     case UPB_WIRE_TYPE_64BIT:
-      return upb_get_f_uint64_t(buf, end, &wv->_64bit, outbuf);
+      return upb_get_f_uint64_t(buf, end, &wv->_64bit, status);
     case UPB_WIRE_TYPE_32BIT:
-      return upb_get_f_uint32_t(buf, end, &wv->_32bit, outbuf);
+      return upb_get_f_uint32_t(buf, end, &wv->_32bit, status);
     default:
-      return UPB_ERROR_ILLEGAL;  // Doesn't handle delimited, groups.
+      status->code = UPB_STATUS_ERROR;  // Doesn't handle delimited, groups.
+      return end;
   }
 }
 
@@ -52,30 +58,31 @@ upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt
  * Advances buf past the current wire value (of type wt), saving the result in
  * outbuf.
  */
-static upb_status_t skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
-                                    uint8_t **outbuf)
+static uint8_t *skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
+                                struct upb_status *status)
 {
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT:
-      return upb_skip_v_uint64_t(buf, end, outbuf);
+      return upb_skip_v_uint64_t(buf, end, status);
     case UPB_WIRE_TYPE_64BIT:
-      return upb_skip_f_uint64_t(buf, end, outbuf);
+      return upb_skip_f_uint64_t(buf, end, status);
     case UPB_WIRE_TYPE_32BIT:
-      return upb_skip_f_uint32_t(buf, end, outbuf);
+      return upb_skip_f_uint32_t(buf, end, status);
     case UPB_WIRE_TYPE_START_GROUP:
       // TODO: skip to matching end group.
     case UPB_WIRE_TYPE_END_GROUP:
-      return UPB_STATUS_OK;
+      return buf;
     default:
-      return UPB_ERROR_ILLEGAL;
+      status->code = UPB_STATUS_ERROR;
+      return end;
   }
 }
 
-upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
-                             union upb_value_ptr v, uint8_t **outbuf)
+uint8_t *upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                         union upb_value_ptr v, struct upb_status *status)
 {
 #define CASE(t, member_name) \
-  case UPB_TYPENUM(t): return upb_get_ ## t(buf, end, v.member_name, outbuf);
+  case UPB_TYPENUM(t): return upb_get_ ## t(buf, end, v.member_name, status);
 
   switch(ft) {
     CASE(DOUBLE,   _double)
@@ -92,7 +99,7 @@ upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
     CASE(SFIXED64, int64)
     CASE(BOOL,     _bool)
     CASE(ENUM,     int32)
-    default: return UPB_ERROR_ILLEGAL;
+    default: return end;
   }
 
 #undef CASE
@@ -146,23 +153,26 @@ void upb_cbparser_reset(struct upb_cbparser *p, void *udata,
  * Pushes a new stack frame for a submessage with the given len (which will
  * be zero if the submessage is a group).
  */
-static upb_status_t push(struct upb_cbparser *s, uint8_t *start,
-                         uint32_t submsg_len, void *user_field_desc,
-                         uint8_t **submsg_end)
+static uint8_t *push(struct upb_cbparser *s, uint8_t *start,
+                     uint32_t submsg_len, void *user_field_desc,
+                     struct upb_status *status)
 {
   s->top++;
-  if(s->top >= s->limit)
-    return UPB_ERROR_STACK_OVERFLOW;
+  if(s->top >= s->limit) {
+    upb_seterr(status, UPB_STATUS_ERROR,
+               "Nesting exceeded maximum (%d levels)\n",
+               UPB_MAX_NESTING);
+    return NULL;
+  }
   *s->top = s->completed_offset + submsg_len;
 
   if(s->start_cb)
     s->start_cb(s->udata, user_field_desc);
 
   if(*s->top > 0)
-    *submsg_end = start + (*s->top - s->completed_offset);
+    return start + (*s->top - s->completed_offset);
   else
-    *submsg_end = (void*)UINTPTR_MAX;
-  return UPB_STATUS_OK;
+    return (void*)UINTPTR_MAX;
 }
 
 /**
@@ -183,15 +193,14 @@ static void *pop(struct upb_cbparser *s, uint8_t *start)
 }
 
 
-upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
-                                size_t *read)
+size_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
+                          struct upb_status *status)
 {
   uint8_t *buf = _buf;
   uint8_t *completed = buf;
   uint8_t *const start = buf;  // ptr equivalent of s->completed_offset
   uint8_t *end = buf + len;
   uint8_t *submsg_end = *s->top > 0 ? buf + *s->top : (uint8_t*)UINTPTR_MAX;
-  upb_status_t status = UPB_STATUS_OK;
 
   // Make local copies so optimizer knows they won't change.
   upb_tag_cb tag_cb = s->tag_cb;
@@ -199,13 +208,14 @@ upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
   upb_value_cb value_cb = s->value_cb;
   void *udata = s->udata;
 
-#define CHECK(exp) do { if((status = exp) != UPB_STATUS_OK) goto err; } while(0)
+#define CHECK_STATUS() do { if(!upb_ok(status)) goto err; } while(0)
 
   // Main loop: parse a tag, then handle the value.
   while(buf < end) {
     struct upb_tag tag;
-    CHECK(parse_tag(buf, end, &tag, &buf));
+    buf = parse_tag(buf, end, &tag, status);
     if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
+      CHECK_STATUS();
       submsg_end = pop(s, start);
       completed = buf;
       continue;
@@ -215,10 +225,11 @@ upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
     upb_field_type_t ft = tag_cb(udata, &tag, &udesc);
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
-      CHECK(upb_get_INT32(buf, end, &delim_len, &buf));
+      buf = upb_get_INT32(buf, end, &delim_len, status);
+      CHECK_STATUS();
       uint8_t *delim_end = buf + delim_len;
       if(ft == UPB_TYPENUM(MESSAGE)) {
-        CHECK(push(s, start, delim_end - start, udesc, &submsg_end));
+        submsg_end = push(s, start, delim_end - start, udesc, status);
       } else {
         if(upb_isstringtype(ft)) {
           size_t avail_len = UPB_MIN(delim_end, end) - buf;
@@ -230,20 +241,21 @@ upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
       // Scalar (non-delimited) value.
       switch(ft) {
         case 0:  // Client elected to skip.
-          CHECK(skip_wire_value(buf, end, tag.wire_type, &buf));
+          buf = skip_wire_value(buf, end, tag.wire_type, status);
           break;
         case UPB_TYPENUM(GROUP):
-          CHECK(push(s, start, 0, udesc, &submsg_end));
+          submsg_end = push(s, start, 0, udesc, status);
           break;
         default:
-          CHECK(value_cb(udata, buf, end, udesc, &buf));
+          buf = value_cb(udata, buf, end, udesc, status);
           break;
       }
     }
+    CHECK_STATUS();
 
     while(buf >= submsg_end) {
       if(buf > submsg_end) {
-        return UPB_ERROR_BAD_SUBMESSAGE_END;
+        return UPB_STATUS_ERROR;  // Bad submessage end.
       }
       submsg_end = pop(s, start);
     }
@@ -251,8 +263,9 @@ upb_status_t upb_cbparser_parse(struct upb_cbparser *s, void *_buf, size_t len,
     completed = buf;
   }
 
+  size_t read;
 err:
-  *read = (char*)completed - (char*)start;
-  s->completed_offset += *read;
-  return status;
+  read = (char*)completed - (char*)start;
+  s->completed_offset += read;
+  return read;
 }

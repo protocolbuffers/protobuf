@@ -10,6 +10,7 @@
 
 #include <ctype.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include "descriptor.h"
 #include "upb_context.h"
 #include "upb_enum.h"
@@ -632,9 +633,13 @@ void usage_err(char *err)
   exit(1);
 }
 
-void error(char *err)
+void error(char *err, ...)
 {
-  fprintf(stderr, "upbc: %s\n\n", err);
+  va_list args;
+  va_start(args, err);
+  fprintf(stderr, "upbc: ");
+  vfprintf(stderr, err, args);
+  va_end(args);
   exit(1);
 }
 
@@ -680,12 +685,15 @@ int main(int argc, char *argv[])
   /* Parse input file. */
   struct upb_context *c = upb_context_new();
   struct upb_msg *fds_msg = upb_msg_new(c->fds_msg);
-  if(upb_msg_parsestr(fds_msg, descriptor->ptr, descriptor->byte_len) != UPB_STATUS_OK)
-    error("Failed to parse input file descriptor.");
+  struct upb_status status = UPB_STATUS_INIT;
+  upb_msg_parsestr(fds_msg, descriptor->ptr, descriptor->byte_len, &status);
+  if(!upb_ok(&status))
+    error("Failed to parse input file descriptor: %s", status.msg);
   //upb_msg_print(fds_msg, false, stderr);
   google_protobuf_FileDescriptorSet *fds = (void*)fds_msg;
-  if(!upb_context_addfds(c, fds))
-    error("Failed to resolve symbols in descriptor.\n");
+  upb_context_addfds(c, fds, &status);
+  if(!upb_ok(&status))
+    error("Failed to resolve symbols in descriptor: %s", status.msg);
 
   /* We need to sort the fields of all the descriptors.  They will already be
    * sorted in the upb_msgs that we base our header file output on, so we must

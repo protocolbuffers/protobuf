@@ -9,26 +9,30 @@ static struct upb_context *c;
 static struct upb_string *str;
 static struct upb_msgdef *def;
 static struct upb_msg *msgs[NUM_MESSAGES];
+static struct upb_msgparser *mp;
 
 static bool initialize()
 {
   // Initialize upb state, parse descriptor.
+  struct upb_status status = UPB_STATUS_INIT;
   c = upb_context_new();
   struct upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(!fds) {
-    fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
+    fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
+            status.msg);
     return false;
   }
-  if(!upb_context_parsefds(c, fds)) {
-    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ".\n");
+  upb_context_parsefds(c, fds, &status);
+  if(!upb_ok(&status)) {
+    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
+            status.msg);
     return false;
   }
   upb_string_unref(fds);
 
   struct upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
   struct upb_symtab_entry e;
-  upb_status_t success = upb_context_lookup(c, proto_name, &e);
-  if(!success || e.type != UPB_SYM_MESSAGE) {
+  if(!upb_context_lookup(c, proto_name, &e) || e.type != UPB_SYM_MESSAGE) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));
     return false;
@@ -45,6 +49,7 @@ static bool initialize()
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
   }
+  mp = upb_msgparser_new(def);
   return true;
 }
 
@@ -54,14 +59,18 @@ static void cleanup()
     upb_msg_unref(msgs[i]);
   upb_string_unref(str);
   upb_context_unref(c);
+  upb_msgparser_free(mp);
 }
 
 static size_t run(int i)
 {
-  upb_status_t status;
-  status = upb_msg_parsestr(msgs[i%NUM_MESSAGES], str->ptr, str->byte_len);
-  if(status != UPB_STATUS_OK) {
-    fprintf(stderr, "Error. :(  error=%d\n", status);
+  struct upb_status status = UPB_STATUS_INIT;
+  struct upb_msg *msg = msgs[i%NUM_MESSAGES];
+  upb_msgparser_reset(mp, msg, false);
+  upb_msg_clear(msg);
+  upb_msgparser_parse(mp, str->ptr, str->byte_len, &status);
+  if(!upb_ok(&status)) {
+    fprintf(stderr, "Parse error: %s\n", status.msg);
     return 0;
   }
   return str->byte_len;

@@ -9,14 +9,20 @@
 #include "upb_array.h"
 #include "upb_msg.h"
 
+static void upb_mm_destroy(union upb_value_ptr p, upb_mm_ptrtype type)
+{
+  if(*p.msg) {
+    union upb_mmptr mmptr = upb_mmptr_read(p, type);
+    upb_mm_unref(mmptr, type);
+  }
+}
+
 void upb_msg_destroy(struct upb_msg *msg) {
   uint32_t i;
   for(i = 0; i < msg->def->num_fields; i++) {
     struct upb_msg_fielddef *f = &msg->def->fields[i];
     if(!upb_msg_isset(msg, f) || !upb_field_ismm(f)) continue;
-    upb_mm_ptrtype type = upb_field_ptrtype(f);
-    union upb_mmptr mmptr = upb_mmptr_read(upb_msg_getptr(msg, f), type);
-    upb_mm_unref(mmptr, type);
+    upb_mm_destroy(upb_msg_getptr(msg, f), upb_field_ptrtype(f));
   }
   free(msg);
 }
@@ -26,11 +32,9 @@ void upb_array_destroy(struct upb_array *arr)
   if(upb_elem_ismm(arr->fielddef)) {
     upb_arraylen_t i;
     /* Unref elements. */
-    for(i = 0; i < arr->len; i++) {
+    for(i = 0; i < arr->size; i++) {
       union upb_value_ptr p = upb_array_getelementptr(arr, i);
-      upb_mm_ptrtype type = upb_elem_ptrtype(arr->fielddef);
-      union upb_mmptr mmptr = upb_mmptr_read(p, type);
-      upb_mm_unref(mmptr, type);
+      upb_mm_destroy(p, upb_elem_ptrtype(arr->fielddef));
     }
   }
   if(arr->size != 0) free(arr->elements._void);

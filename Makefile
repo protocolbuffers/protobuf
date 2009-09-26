@@ -28,7 +28,7 @@ CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-Wall -Wextra -Werror -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 LDLIBS=-lpthread
 
 LIBUPB=src/libupb.a
@@ -47,7 +47,8 @@ clean:
 # The core library (src/libupb.a)
 SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c \
     src/upb_enum.c src/upb_context.c src/upb_string.c src/upb_text.c \
-    src/upb_serialize.c descriptor/descriptor.c
+    descriptor/descriptor.c
+    #src/upb_serialize.c descriptor/descriptor.c
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))
 SHAREDOBJ=$(patsubst %.c,%.lo,$(SRC))
 # building shared objects is like building static ones, except -fPIC is added.

@@ -30,33 +30,35 @@ extern "C" {
 /* Functions to write wire values. ********************************************/
 
 /* Puts a varint (wire type: UPB_WIRE_TYPE_VARINT). */
-INLINE upb_status_t upb_put_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
-                                       uint8_t **outbuf)
+INLINE uint8_t *upb_put_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
+                                   struct upb_status *status)
 {
   do {
     uint8_t byte = val & 0x7f;
     val >>= 7;
     if(val) byte |= 0x80;
-    if(buf >= end) return UPB_STATUS_NEED_MORE_DATA;
+    if(buf >= end) {
+      status->code = UPB_STATUS_NEED_MORE_DATA;
+      return end;
+    }
     *buf++ = byte;
   } while(val);
-  *outbuf = buf;
-  return UPB_STATUS_OK;
+  return buf;
 }
 
 /* Puts an unsigned 32-bit varint, verbatim.  Never uses the high 64 bits. */
-INLINE upb_status_t upb_put_v_uint32_t(uint8_t *buf, uint8_t *end,
-                                       uint32_t val, uint8_t **outbuf)
+INLINE uint8_t *upb_put_v_uint32_t(uint8_t *buf, uint8_t *end,
+                                   uint32_t val, struct upb_status *status)
 {
-  return upb_put_v_uint64_t(buf, end, val, outbuf);
+  return upb_put_v_uint64_t(buf, end, val, status);
 }
 
 /* Puts a signed 32-bit varint, first sign-extending to 64-bits.  We do this to
  * maintain wire-compatibility with 64-bit signed integers. */
-INLINE upb_status_t upb_put_v_int32_t(uint8_t *buf, uint8_t *end,
-                                      int32_t val, uint8_t **outbuf)
+INLINE uint8_t *upb_put_v_int32_t(uint8_t *buf, uint8_t *end,
+                                  int32_t val, struct upb_status *status)
 {
-  return upb_put_v_uint64_t(buf, end, (int64_t)val, outbuf);
+  return upb_put_v_uint64_t(buf, end, (int64_t)val, status);
 }
 
 INLINE void upb_put32(uint8_t *buf, uint32_t val) {
@@ -67,34 +69,38 @@ INLINE void upb_put32(uint8_t *buf, uint32_t val) {
 }
 
 /* Puts a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT). */
-INLINE upb_status_t upb_put_f_uint32_t(uint8_t *buf, uint8_t *end,
-                                       uint32_t val, uint8_t **outbuf)
+INLINE uint8_t *upb_put_f_uint32_t(uint8_t *buf, uint8_t *end,
+                                   uint32_t val, struct upb_status *status)
 {
   uint8_t *uint32_end = buf + sizeof(uint32_t);
-  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint32_end > end) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    return end;
+  }
 #if UPB_UNALIGNED_READS_OK
   *(uint32_t*)buf = val;
 #else
   upb_put32(buf, val);
 #endif
-  *outbuf = uint32_end;
-  return UPB_STATUS_OK;
+  return uint32_end;
 }
 
 /* Puts a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT). */
-INLINE upb_status_t upb_put_f_uint64_t(uint8_t *buf, uint8_t *end,
-                                       uint64_t val, uint8_t **outbuf)
+INLINE uint8_t *upb_put_f_uint64_t(uint8_t *buf, uint8_t *end,
+                                   uint64_t val, struct upb_status *status)
 {
   uint8_t *uint64_end = buf + sizeof(uint64_t);
-  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint64_end > end) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    return end;
+  }
 #if UPB_UNALIGNED_READS_OK
   *(uint64_t*)buf = val;
 #else
   upb_put32(buf, (uint32_t)val);
   upb_put32(buf, (uint32_t)(val >> 32));
 #endif
-  *outbuf = uint64_end;
-  return UPB_STATUS_OK;
+  return uint64_end;
 }
 
 INLINE size_t upb_v_uint64_t_size(uint64_t val) {
@@ -136,8 +142,8 @@ INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
  *  // of the current available buffer (if the buffer does not contain enough
  *  // space UPB_STATUS_NEED_MORE_DATA is returned).  On success, *outbuf will
  *  // point one past the data that was written.
- *  upb_status_t upb_put_INT32(uint8_t *buf, uint8_t *end, int32_t val,
- *                             uint8_t **outbuf);
+ *  uint8_t *upb_put_INT32(uint8_t *buf, uint8_t *end, int32_t val,
+ *                         struct upb_status *status);
  *
  *  // Returns the number of bytes required to serialize val.
  *  size_t upb_get_INT32_size(int32_t val);
@@ -150,11 +156,10 @@ INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
   INLINE wire_t upb_vtowv_ ## type(val_t s)
 
 #define PUT(type, v_or_f, wire_t, val_t, member_name) \
-  INLINE upb_status_t upb_put_ ## type(uint8_t *buf, uint8_t *end, val_t val, \
-                                       uint8_t **outbuf) { \
+  INLINE uint8_t *upb_put_ ## type(uint8_t *buf, uint8_t *end, val_t val, \
+                                   struct upb_status *status) { \
     wire_t tmp = upb_vtowv_ ## type(val); \
-    UPB_CHECK(upb_put_ ## v_or_f ## _ ## wire_t(buf, end, tmp, outbuf)); \
-    return UPB_STATUS_OK; \
+    return upb_put_ ## v_or_f ## _ ## wire_t(buf, end, tmp, status); \
   }
 
 #define T(type, v_or_f, wire_t, val_t, member_name) \
@@ -195,8 +200,8 @@ INLINE size_t upb_get_tag_size(uint32_t fieldnum) {
   return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
 }
 
-upb_status_t upb_serialize_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
-                                 union upb_value_ptr v, uint8_t **outbuf);
+uint8_t *upb_serialize_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                             union upb_value_ptr v, struct upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */

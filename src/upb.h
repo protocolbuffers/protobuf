@@ -34,7 +34,7 @@ extern "C" {
 
 // Nested type names are separated by periods.
 #define UPB_SYMBOL_SEPARATOR '.'
-#define UPB_SYMBOL_MAX_LENGTH 256
+#define UPB_SYMBOL_MAXLEN 128
 
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
@@ -230,7 +230,7 @@ union upb_symbol_ref {
 
 // Status codes used as a return value.  Codes >0 are not fatal and can be
 // resumed.
-typedef enum upb_status {
+enum upb_status_code {
   UPB_STATUS_OK = 0,
 
   // The input byte stream ended in the middle of a record.
@@ -239,28 +239,32 @@ typedef enum upb_status {
   // The user value callback opted to stop parsing.
   UPB_STATUS_USER_CANCELLED = 2,
 
-  // A varint did not terminate before hitting 64 bits.
-  UPB_ERROR_UNTERMINATED_VARINT = -1,
+  // An unrecoverable error occurred.
+  UPB_STATUS_ERROR = -1,
 
-  // A submessage or packed array ended in the middle of data.
-  UPB_ERROR_BAD_SUBMESSAGE_END = -2,
+  // A varint went for 10 bytes without terminating.
+  UPB_ERROR_UNTERMINATED_VARINT = -2
+};
 
-  // Input was nested more than UPB_MAX_NESTING deep.
-  UPB_ERROR_STACK_OVERFLOW = -3,
+#define UPB_ERRORMSG_MAXLEN 256
+struct upb_status {
+  enum upb_status_code code;
+  char msg[UPB_ERRORMSG_MAXLEN];
+};
 
-  // The input data caused the pb's offset (a size_t) to overflow.
-  UPB_ERROR_OVERFLOW = -4,
+#define UPB_STATUS_INIT {UPB_STATUS_OK, ""}
 
-  // An "end group" tag was encountered in an inappropriate place.
-  UPB_ERROR_SPURIOUS_END_GROUP = -5,
+INLINE bool upb_ok(struct upb_status *status) {
+  return status->code == UPB_STATUS_OK;
+}
 
-  UPB_ERROR_ILLEGAL = -6
-} upb_status_t;
+INLINE void upb_reset(struct upb_status *status) {
+  status->code = UPB_STATUS_OK;
+  status->msg[0] = '\0';
+}
 
-#define UPB_CHECK(func) do { \
-  upb_status_t status = func; \
-  if(status != UPB_STATUS_OK) return status; \
-  } while (0)
+void upb_seterr(struct upb_status *status, enum upb_status_code code,
+                const char *msg, ...);
 
 #ifdef __cplusplus
 }  /* extern "C" */

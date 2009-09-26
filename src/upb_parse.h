@@ -45,8 +45,8 @@ typedef upb_field_type_t (*upb_tag_cb)(void *udata, struct upb_tag *tag,
 //
 // Note that this callback can be called several times in a row for a single
 // call to tag_cb in the case of packed arrays.
-typedef upb_status_t (*upb_value_cb)(void *udata, uint8_t *buf, uint8_t *end,
-                                     void *user_field_desc, uint8_t **outbuf);
+typedef void *(*upb_value_cb)(void *udata, uint8_t *buf, uint8_t *end,
+                              void *user_field_desc, struct upb_status *status);
 
 // The string callback is called when a string is parsed.  avail_len is the
 // number of bytes that are currently available at str.  If the client is
@@ -96,8 +96,8 @@ void upb_cbparser_reset(struct upb_cbparser *p, void *udata,
 //
 // TODO: see if we can provide the following guarantee efficiently:
 //   *read will always be >= len. */
-upb_status_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
-                                size_t *read);
+size_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
+                          struct upb_status *status);
 
 extern upb_wire_type_t upb_expected_wire_types[];
 // Returns true if wt is the correct on-the-wire type for ft.
@@ -109,56 +109,59 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
 /* Data-consuming functions (to be called from value cb). *********************/
 
 // Parses and converts a value from the character data starting at buf (but not
-// past end).  *outbuf will be set to one past the data that was read.  The
+// past end).  Returns a pointer that is one past the data that was read.  The
 // caller must have previously checked that the wire type is appropriate for
 // this field type.
-upb_status_t upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
-                             union upb_value_ptr v, uint8_t **outbuf);
+uint8_t *upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                         union upb_value_ptr v, struct upb_status *status);
 
 // Parses a wire value with the given type (which must have been obtained from
-// a tag that was just parsed) and sets *outbuf to one past the data that was
-// read.
-upb_status_t upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
-                                  union upb_wire_value *wv, uint8_t **outbuf);
+// a tag that was just parsed) and returns a pointer to one past the data that
+// was read.
+uint8_t *upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
+                              union upb_wire_value *wv,
+                              struct upb_status *status);
 
 /* Functions to read wire values. *********************************************/
 
 // Most clients will not want to use these directly.
 
-upb_status_t upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
-                                     uint8_t **outbuf);
+uint8_t *upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
+                                 struct upb_status *status);
 
 // Gets a varint (wire type: UPB_WIRE_TYPE_VARINT).
-INLINE upb_status_t upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
-                                       uint8_t **outbuf)
+INLINE uint8_t *upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
+                                   struct upb_status *status)
 {
   // We inline this common case (1-byte varints), if that fails we dispatch to
   // the full (non-inlined) version.
   if((*buf & 0x80) == 0) {
     *val = *buf & 0x7f;
-    *outbuf = buf + 1;
-    return UPB_STATUS_OK;
+    return buf + 1;
   } else {
-    return upb_get_v_uint64_t_full(buf, end, val, outbuf);
+    return upb_get_v_uint64_t_full(buf, end, val, status);
   }
 }
 
 // Gets a varint -- called when we only need 32 bits of it.
-INLINE upb_status_t upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
-                                       uint32_t *val, uint8_t **outbuf)
+INLINE uint8_t *upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
+                                   uint32_t *val, struct upb_status *status)
 {
   uint64_t val64;
-  UPB_CHECK(upb_get_v_uint64_t(buf, end, &val64, outbuf));
+  uint8_t *ret = upb_get_v_uint64_t(buf, end, &val64, status);
   *val = (uint32_t)val64;  // Discard the high bits.
-  return UPB_STATUS_OK;
+  return ret;
 }
 
 // Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).
-INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
-                                       uint32_t *val, uint8_t **outbuf)
+INLINE uint8_t *upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
+                                   uint32_t *val, struct upb_status *status)
 {
   uint8_t *uint32_end = buf + sizeof(uint32_t);
-  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint32_end > end) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    return end;
+  }
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint32_t*)buf;
 #else
@@ -166,16 +169,18 @@ INLINE upb_status_t upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
   *val = SHL(buf[0], 0) | SHL(buf[1], 8) | SHL(buf[2], 16) | SHL(buf[3], 24);
 #undef SHL
 #endif
-  *outbuf = uint32_end;
-  return UPB_STATUS_OK;
+  return uint32_end;
 }
 
 // Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).
-INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
-                                       uint64_t *val, uint8_t **outbuf)
+INLINE uint8_t *upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
+                                   uint64_t *val, struct upb_status *status)
 {
   uint8_t *uint64_end = buf + sizeof(uint64_t);
-  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
+  if(uint64_end > end) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    return end;
+  }
 #if UPB_UNALIGNED_READS_OK
   *val = *(uint64_t*)buf;
 #else
@@ -184,39 +189,47 @@ INLINE upb_status_t upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
          SHL(buf[4], 32) | SHL(buf[5], 40) | SHL(buf[6], 48) | SHL(buf[7], 56);
 #undef SHL
 #endif
-  *outbuf = uint64_end;
-  return UPB_STATUS_OK;
+  return uint64_end;
 }
 
-INLINE upb_status_t upb_skip_v_uint64_t(uint8_t *buf, uint8_t *end,
-                                        uint8_t **outbuf)
+INLINE uint8_t *upb_skip_v_uint64_t(uint8_t *buf, uint8_t *end,
+                                    struct upb_status *status)
 {
   uint8_t *const maxend = buf + 10;
   uint8_t last = 0x80;
   for(; buf < (uint8_t*)end && (last & 0x80); buf++)
     last = *buf;
-  if(buf >= end && buf <= maxend && (last & 0x80)) return UPB_STATUS_NEED_MORE_DATA;
-  if(buf > maxend) return UPB_ERROR_UNTERMINATED_VARINT;
-  *outbuf = buf;
-  return UPB_STATUS_OK;
+
+  if(buf >= end && buf <= maxend && (last & 0x80)) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    buf = end;
+  } else if(buf > maxend) {
+    status->code = UPB_ERROR_UNTERMINATED_VARINT;
+    buf = end;
+  }
+  return buf;
 }
 
-INLINE upb_status_t upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end,
-                                        uint8_t **outbuf)
+INLINE uint8_t *upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end,
+                                    struct upb_status *status)
 {
   uint8_t *uint32_end = buf + sizeof(uint32_t);
-  if(uint32_end > end) return UPB_STATUS_NEED_MORE_DATA;
-  *outbuf = uint32_end;
-  return UPB_STATUS_OK;
+  if(uint32_end > end) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    return end;
+  }
+  return uint32_end;
 }
 
-INLINE upb_status_t upb_skip_f_uint64_t(uint8_t *buf, uint8_t *end,
-                                        uint8_t **outbuf)
+INLINE uint8_t *upb_skip_f_uint64_t(uint8_t *buf, uint8_t *end,
+                                    struct upb_status *status)
 {
   uint8_t *uint64_end = buf + sizeof(uint64_t);
-  if(uint64_end > end) return UPB_STATUS_NEED_MORE_DATA;
-  *outbuf = uint64_end;
-  return UPB_STATUS_OK;
+  if(uint64_end > end) {
+    status->code = UPB_STATUS_NEED_MORE_DATA;
+    return end;
+  }
+  return uint64_end;
 }
 
 
@@ -232,9 +245,10 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 //  // Reads and converts a .proto value from buf, placing it in d.
 //  // "end" indicates the end of the current buffer (if the buffer does
 //  // not contain the entire value UPB_STATUS_NEED_MORE_DATA is returned).
-//  // On success, *outbuf will point to the first byte that was not consumed.
-//  upb_status_t upb_get_INT32(uint8_t *buf, uint8_t *end, int32_t *d,
-//                             uint8_t **outbuf);
+//  // On success, a pointer will be returned to the first byte that was
+//  // not consumed.
+//  uint8_t *upb_get_INT32(uint8_t *buf, uint8_t *end, int32_t *d,
+//                         struct upb_status *status);
 //
 //  // Given an already read wire value s (source), convert it to a .proto
 //  // value and return it.
@@ -247,12 +261,12 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   INLINE val_t upb_wvtov_ ## type(wire_t s)
 
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  INLINE upb_status_t upb_get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, \
-                                       uint8_t **outbuf) { \
-    wire_t tmp; \
-    UPB_CHECK(upb_get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, outbuf)); \
+  INLINE uint8_t *upb_get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, \
+                                   struct upb_status *status) { \
+    wire_t tmp = 0; \
+    uint8_t *ret = upb_get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, status); \
     *d = upb_wvtov_ ## type(tmp); \
-    return UPB_STATUS_OK; \
+    return ret; \
   }
 
 #define T(type, v_or_f, wire_t, val_t, member_name) \
@@ -288,14 +302,14 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef T
 
 // Parses a tag, places the result in *tag.
-INLINE upb_status_t parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
-                              uint8_t **outbuf)
+INLINE uint8_t *parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
+                          struct upb_status *status)
 {
   uint32_t tag_int;
-  UPB_CHECK(upb_get_v_uint32_t(buf, end, &tag_int, outbuf));
+  uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
   tag->wire_type    = (upb_wire_type_t)(tag_int & 0x07);
   tag->field_number = tag_int >> 3;
-  return UPB_STATUS_OK;
+  return ret;
 }
 
 #ifdef __cplusplus

@@ -42,9 +42,11 @@ void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
   qsort(fds, num, sizeof(void*), compare_fields);
 }
 
-bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
-                     struct upb_string fqname, bool sort, struct upb_context *c)
+void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
+                     struct upb_string fqname, bool sort, struct upb_context *c,
+                     struct upb_status *status)
 {
+  (void)status;  // Nothing that can fail at the moment.
   int num_fields = d->set_flags.has.field ? d->field->len : 0;
   upb_inttable_init(&m->fields_by_num, num_fields,
                     sizeof(struct upb_fieldsbynum_entry));
@@ -97,8 +99,6 @@ bool upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
 
   if(max_align > 0)
     m->size = ALIGN_UP(m->size, max_align);
-
-  return true;
 }
 
 void upb_msgdef_free(struct upb_msgdef *m)
@@ -125,25 +125,16 @@ void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
 
 /* Parsing.  ******************************************************************/
 
-struct upb_msg_parser_frame {
+struct upb_msgparser_frame {
   struct upb_msg *msg;
 };
 
-struct upb_msg_parser {
+struct upb_msgparser {
   struct upb_cbparser *s;
   bool merge;
   bool byref;
-  struct upb_msg_parser_frame stack[UPB_MAX_NESTING], *top;
+  struct upb_msgparser_frame stack[UPB_MAX_NESTING], *top;
 };
-
-/* Parses protocol buffer data out of data which has length of len.  The data
- * need not be a complete protocol buffer.  The number of bytes parsed is
- * returned in *read, and the next call to upb_msg_parse must supply data that
- * is *read bytes past data in the logical stream. */
-upb_status_t upb_msg_parser_parse(struct upb_msg_parser *p,
-                                  void *data, size_t len, size_t *read);
-
-
 
 /* Helper function that returns a pointer to where the next value for field "f"
  * should be stored, taking into account whether f is an array that may need to
@@ -172,7 +163,7 @@ static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
 static upb_field_type_t tag_cb(void *udata, struct upb_tag *tag,
                                void **user_field_desc)
 {
-  struct upb_msg_parser *mp = udata;
+  struct upb_msgparser *mp = udata;
   struct upb_msg_fielddef *f =
       upb_msg_fieldbynum(mp->top->msg->def, tag->field_number);
   if(!f || !upb_check_type(tag->wire_type, f->type))
@@ -181,23 +172,22 @@ static upb_field_type_t tag_cb(void *udata, struct upb_tag *tag,
   return f->type;
 }
 
-static upb_status_t value_cb(void *udata, uint8_t *buf, uint8_t *end,
-                             void *user_field_desc, uint8_t **outbuf)
+static void *value_cb(void *udata, uint8_t *buf, uint8_t *end,
+                      void *user_field_desc, struct upb_status *status)
 {
-  struct upb_msg_parser *mp = udata;
+  struct upb_msgparser *mp = udata;
   struct upb_msg_fielddef *f = user_field_desc;
   struct upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
-  UPB_CHECK(upb_parse_value(buf, end, f->type, p, outbuf));
-  return UPB_STATUS_OK;
+  return upb_parse_value(buf, end, f->type, p, status);
 }
 
 static void str_cb(void *udata, uint8_t *str,
                    size_t avail_len, size_t total_len,
                    void *udesc)
 {
-  struct upb_msg_parser *mp = udata;
+  struct upb_msgparser *mp = udata;
   struct upb_msg_fielddef *f = udesc;
   struct upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
@@ -222,7 +212,7 @@ static void str_cb(void *udata, uint8_t *str,
 
 static void start_cb(void *udata, void *user_field_desc)
 {
-  struct upb_msg_parser *mp = udata;
+  struct upb_msgparser *mp = udata;
   struct upb_msg_fielddef *f = user_field_desc;
   struct upb_msg *oldmsg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
@@ -243,53 +233,48 @@ static void start_cb(void *udata, void *user_field_desc)
 
 static void end_cb(void *udata)
 {
-  struct upb_msg_parser *mp = udata;
-  struct upb_msg *msg = mp->top->msg;
-  struct upb_msgdef *def = msg->def;
-
-  // Free any remaining dynamic storage we did not reuse.
-  for(uint32_t i = 0; i < def->num_fields; i++) {
-    struct upb_msg_fielddef *f = &def->fields[i];
-    union upb_value_ptr p = upb_msg_getptr(msg, f);
-    if(upb_msg_isset(msg, f) || !upb_field_ismm(f) || !*p.msg) continue;
-    union upb_mmptr mmptr = upb_mmptr_read(p, f->type);
-    upb_mm_unref(mmptr, f->type);
-  }
-
+  struct upb_msgparser *mp = udata;
   mp->top--;
 }
 
 /* Externally-visible functions for the msg parser. */
 
-void upb_msgparser_init(struct upb_msg_parser *s, struct upb_msg *msg, bool byref)
+struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def)
 {
-  s->s = upb_cbparser_new();
+  (void)def;  // Not used atm.
+  struct upb_msgparser *mp = malloc(sizeof(struct upb_msgparser));
+  mp->s = upb_cbparser_new();
+  return mp;
+}
+
+void upb_msgparser_reset(struct upb_msgparser *s, struct upb_msg *msg, bool byref)
+{
   upb_cbparser_reset(s->s, s, tag_cb, value_cb, str_cb, start_cb, end_cb);
   s->byref = byref;
   s->top = s->stack;
   s->top->msg = msg;
 }
 
-void upb_msgparser_free(struct upb_msg_parser *s)
+void upb_msgparser_free(struct upb_msgparser *s)
 {
   upb_cbparser_free(s->s);
+  free(s);
 }
 
-upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len)
+void upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len,
+                      struct upb_status *status)
 {
-  struct upb_msg_parser mp;
-  upb_msgparser_init(&mp, msg, false);
-  size_t read;
+  struct upb_msgparser *mp = upb_msgparser_new(msg->def);
+  upb_msgparser_reset(mp, msg, false);
   upb_msg_clear(msg);
-  upb_status_t ret = upb_msg_parser_parse(&mp, buf, len, &read);
-  upb_msgparser_free(&mp);
-  return ret;
+  upb_msgparser_parse(mp, buf, len, status);
+  upb_msgparser_free(mp);
 }
 
-upb_status_t upb_msg_parser_parse(struct upb_msg_parser *s,
-                                  void *data, size_t len, size_t *read)
+size_t upb_msgparser_parse(struct upb_msgparser *s, void *data, size_t len,
+                           struct upb_status *status)
 {
-  return upb_cbparser_parse(s->s, data, len, read);
+  return upb_cbparser_parse(s->s, data, len, status);
 }
 
 /* Serialization.  ************************************************************/
@@ -429,12 +414,13 @@ void upb_msg_serialize_init(struct upb_msg_serialize_state *s, struct upb_msg *m
   (void)sizes;
 }
 
-static upb_status_t serialize_tag(uint8_t *buf, uint8_t *end,
-                                  struct upb_msg_fielddef *f, uint8_t **outptr)
+#if 0
+static uint8_t *serialize_tag(uint8_t *buf, uint8_t *end,
+                              struct upb_msg_fielddef *f,
+                              struct upb_status *status)
 {
   /* TODO: need to have the field number also. */
-  UPB_CHECK(upb_put_UINT32(buf, end, f->type, outptr));
-  return UPB_STATUS_OK;
+  return upb_put_UINT32(buf, end, f->type, status);
 }
 
 /* Serializes the next set of bytes into buf (which has size len).  Returns
@@ -443,8 +429,8 @@ static upb_status_t serialize_tag(uint8_t *buf, uint8_t *end,
  *
  * The number of bytes written to buf is returned in *read.  This will be
  * equal to len unless we finished serializing. */
-upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
-                               void *_buf, size_t len, size_t *written)
+size_t upb_msg_serialize(struct upb_msg_serialize_state *s,
+                         void *_buf, size_t len, struct upb_status *status)
 {
   uint8_t *buf = _buf;
   uint8_t *end = buf + len;
@@ -456,18 +442,18 @@ upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
 
   while(buf < end) {
     struct upb_msg_fielddef *f = &m->fields[i];
-    union upb_value_ptr p = upb_msg_getptr(msg, f);
-    serialize_tag(buf, end, f, &buf);
+    //union upb_value_ptr p = upb_msg_getptr(msg, f);
+    buf = serialize_tag(buf, end, f, status);
     if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
     } else if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
     } else if(upb_isstring(f)) {
     } else {
-      upb_serialize_value(buf, end, f->type, p, &buf);
+      //upb_serialize_value(buf, end, f->type, p, status);
     }
   }
-  *written = buf - start;
-  return UPB_STATUS_OK;
+  return buf - start;
 }
+#endif
 
 
 /* Comparison.  ***************************************************************/

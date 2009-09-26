@@ -257,7 +257,17 @@ INLINE struct upb_msg_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
 /* Parsing ********************************************************************/
 
 /* TODO: a stream parser. */
-upb_status_t upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len);
+void upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len,
+                      struct upb_status *status);
+
+struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def);
+void upb_msgparser_free(struct upb_msgparser *mp);
+
+void upb_msgparser_reset(struct upb_msgparser *mp, struct upb_msg *m,
+                         bool byref);
+
+size_t upb_msgparser_parse(struct upb_msgparser *mp, void *buf, size_t len,
+                           struct upb_status *status);
 
 /* Serialization  *************************************************************/
 
@@ -298,12 +308,11 @@ void upb_msg_serialize_init(struct upb_msg_serialize_state *s,
  *
  * The number of bytes written to buf is returned in *written.  This will be
  * equal to len unless we finished serializing. */
-upb_status_t upb_msg_serialize(struct upb_msg_serialize_state *s,
-                               void *buf, size_t len, size_t *written);
+size_t upb_msg_serialize(struct upb_msg_serialize_state *s,
+                         void *buf, size_t len, struct upb_status *status);
 
-upb_status_t upb_msg_serialize_all(struct upb_msg *msg,
-                                   struct upb_msgsizes *sizes,
-                                   void *buf);
+void upb_msg_serialize_all(struct upb_msg *msg, struct upb_msgsizes *sizes,
+                           void *buf, struct upb_status *status);
 
 /* Text dump  *****************************************************************/
 
@@ -327,10 +336,10 @@ void upb_msg_print(struct upb_msg *data, bool single_line, FILE *stream);
  * sort indicates whether or not it is safe to reorder the fields from the order
  * they appear in d.  This should be false if code has been compiled against a
  * header for this type that expects the given order. */
-bool upb_msgdef_init(struct upb_msgdef *m,
+void upb_msgdef_init(struct upb_msgdef *m,
                      struct google_protobuf_DescriptorProto *d,
                      struct upb_string fqname, bool sort,
-                     struct upb_context *c);
+                     struct upb_context *c, struct upb_status *status);
 void upb_msgdef_free(struct upb_msgdef *m);
 
 /* Sort the given field descriptors in-place, according to what we think is an

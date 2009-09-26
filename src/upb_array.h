@@ -70,14 +70,13 @@ INLINE uint32_t upb_round_up_to_pow2(uint32_t v)
 INLINE union upb_value_ptr upb_array_append(struct upb_array *arr)
 {
   size_t size = upb_type_info[arr->fielddef->type].size;
-  upb_arraylen_t oldlen = arr->len;
-  if(oldlen == arr->size) {
-    arr->size = UPB_MAX(4, upb_round_up_to_pow2(oldlen+1));
+  if(arr->len == arr->size) {
+    arr->size = UPB_MAX(4, upb_round_up_to_pow2(arr->len + 1));
     arr->elements._void = realloc(arr->elements._void, arr->size * size);
-    memset((char*)arr->elements._void + (arr->len*size), 0, (arr->size - arr->len) * size);
+    memset((char*)arr->elements._void + (arr->len * size), 0,
+           (arr->size - arr->len) * size);
   }
-  arr->len++;
-  return upb_array_getelementptr(arr, oldlen);
+  return upb_array_getelementptr(arr, arr->len++);
 }
 
 INLINE void upb_array_truncate(struct upb_array *arr)

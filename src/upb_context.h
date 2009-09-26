@@ -102,13 +102,16 @@ void upb_context_enumerate(struct upb_context *c, upb_context_enumerator_t,
  * upb_context_addfd only returns true or false; it does not give any hint
  * about what happened in the case of failure.  This is because the descriptor
  * is expected to have been validated at the time it was parsed/generated. */
-bool upb_context_addfds(struct upb_context *c,
-                        struct google_protobuf_FileDescriptorSet *fds);
+void upb_context_addfds(struct upb_context *c,
+                        struct google_protobuf_FileDescriptorSet *fds,
+                        struct upb_status *status);
 
-bool upb_context_addfds(struct upb_context *c,
-                        struct google_protobuf_FileDescriptorSet *fds);
+void upb_context_addfds(struct upb_context *c,
+                        struct google_protobuf_FileDescriptorSet *fds,
+                        struct upb_status *status);
 
-bool upb_context_parsefds(struct upb_context *c, struct upb_string *fds);
+void upb_context_parsefds(struct upb_context *c, struct upb_string *fds,
+                          struct upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */
