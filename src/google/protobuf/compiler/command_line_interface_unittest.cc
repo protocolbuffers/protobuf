@@ -882,7 +882,11 @@ TEST_F(CommandLineInterfaceTest, CwdRelativeInputNotMappedError) {
   ExpectErrorText(
     "$tmpdir/foo.proto: File does not reside within any path "
       "specified using --proto_path (or -I).  You must specify a "
-      "--proto_path which encompasses this file.\n");
+      "--proto_path which encompasses this file.  Note that the "
+      "proto_path must be an exact prefix of the .proto file "
+      "names -- protoc is too dumb to figure out when two paths "
+      "(e.g. absolute and relative) are equivalent (it's harder "
+      "than you think).\n");
 }
 
 TEST_F(CommandLineInterfaceTest, CwdRelativeInputNotFoundAndNotMappedError) {
