@@ -36,6 +36,7 @@
 #include <limits>
 #include <limits.h>
 #include <stdio.h>
+#include <iterator>
 
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
