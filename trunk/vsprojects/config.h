@@ -5,7 +5,11 @@
 #define HASH_MAP_H <hash_map>
 
 /* the namespace of hash_map/hash_set */
-#if _MSC_VER < 1310
+// Apparently Microsoft decided to move hash_map *back* to the std namespace
+// in MSVC 2010:
+//   http://blogs.msdn.com/vcblog/archive/2009/05/25/stl-breaking-changes-in-visual-studio-2010-beta-1.aspx
+// TODO(kenton):  Use unordered_map instead, which is available in MSVC 2010.
+#if _MSC_VER < 1310 || _MSC_VER >= 1500
 #define HASH_NAMESPACE std
 #else
 #define HASH_NAMESPACE stdext
