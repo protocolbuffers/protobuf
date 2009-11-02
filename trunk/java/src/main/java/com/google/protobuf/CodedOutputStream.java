@@ -60,6 +60,18 @@ public final class CodedOutputStream {
    */
   public static final int DEFAULT_BUFFER_SIZE = 4096;
 
+  /**
+   * Returns the buffer size to efficiently write dataLength bytes to this
+   * CodedOutputStream. Used by AbstractMessageLite.
+   *
+   * @return the buffer size to efficiently write dataLength bytes to this
+   *         CodedOutputStream.
+   */
+  static int computePreferredBufferSize(int dataLength) {
+    if (dataLength > DEFAULT_BUFFER_SIZE) return DEFAULT_BUFFER_SIZE;
+    return dataLength;
+  }
+
   private CodedOutputStream(final byte[] buffer, final int offset,
                             final int length) {
     output = null;
