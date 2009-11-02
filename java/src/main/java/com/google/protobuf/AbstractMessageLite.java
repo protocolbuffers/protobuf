@@ -72,13 +72,20 @@ public abstract class AbstractMessageLite implements MessageLite {
   }
 
   public void writeTo(final OutputStream output) throws IOException {
-    final CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    final int bufferSize =
+        CodedOutputStream.computePreferredBufferSize(getSerializedSize());
+    final CodedOutputStream codedOutput =
+        CodedOutputStream.newInstance(output, bufferSize);
     writeTo(codedOutput);
     codedOutput.flush();
   }
 
   public void writeDelimitedTo(final OutputStream output) throws IOException {
-    final CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    final int serialized = getSerializedSize();
+    final int bufferSize = CodedOutputStream.computePreferredBufferSize(
+        CodedOutputStream.computeRawVarint32Size(serialized) + serialized);
+    final CodedOutputStream codedOutput =
+        CodedOutputStream.newInstance(output, bufferSize);
     codedOutput.writeRawVarint32(getSerializedSize());
     writeTo(codedOutput);
     codedOutput.flush();
