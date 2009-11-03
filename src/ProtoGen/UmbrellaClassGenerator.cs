@@ -115,8 +115,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
         writer.WriteLine("namespace {0} {{", Descriptor.CSharpOptions.Namespace);
         writer.Indent();
         writer.WriteLine();
+      }    
+      if (Descriptor.CSharpOptions.CodeContracts) {
+          writer.WriteLine("[global::System.Diagnostics.Contracts.ContractVerificationAttribute(false)]");
       }
-
       writer.WriteLine("{0} static partial class {1} {{", ClassAccessLevel, Descriptor.CSharpOptions.UmbrellaClassname);
       writer.WriteLine();
       writer.Indent();

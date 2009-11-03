@@ -94,15 +94,6 @@ namespace Google.ProtocolBuffers.Descriptors {
       if (!builder.HasNamespace) {
         builder.Namespace = Package;
       }
-      if (!builder.HasMultipleFiles) {
-        builder.MultipleFiles = false;
-      }
-      if (!builder.HasNestClasses) {
-        builder.NestClasses = false;
-      }
-      if (!builder.HasPublicClasses) {
-        builder.PublicClasses = true;
-      }
       if (!builder.HasUmbrellaClassname) {
         int lastSlash = Name.LastIndexOf('/');
         string baseName = Name.Substring(lastSlash + 1);

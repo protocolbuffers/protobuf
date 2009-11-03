@@ -57,6 +57,7 @@ namespace Google.ProtocolBuffers.Descriptors {
       enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumTypeList,
           (type, index) => new EnumDescriptor(type, file, this, index));
 
+      // TODO(jonskeet): Sort fields first?
       fields = DescriptorUtil.ConvertAndMakeReadOnly(proto.FieldList,
           (field, index) => new FieldDescriptor(field, file, this, index, false));
 

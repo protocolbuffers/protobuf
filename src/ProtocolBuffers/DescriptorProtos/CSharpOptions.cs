@@ -37,21 +37,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "iAEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
-          "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSFgoOcHVibGljX2NsYXNzZXMYAyAB" + 
-          "KAgSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFzc2VzGAUg" + 
-          "ASgIIisKEkNTaGFycEZpZWxkT3B0aW9ucxIVCg1wcm9wZXJ0eV9uYW1lGAEg" + 
-          "ASgJOl4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYu" + 
-          "RmlsZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZp" + 
-          "bGVPcHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnBy" + 
-          "b3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYu" + 
-          "Q1NoYXJwRmllbGRPcHRpb25z");
+          "pgEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
+          "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
+          "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIIisKEkNTaGFycEZp" + 
+          "ZWxkT3B0aW9ucxIVCg1wcm9wZXJ0eV9uYW1lGAEgASgJOl4KE2NzaGFycF9m" + 
+          "aWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYuRmlsZU9wdGlvbnMY6Acg" + 
+          "ASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZpbGVPcHRpb25zOmEKFGNz" + 
+          "aGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0" + 
+          "aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYuQ1NoYXJwRmllbGRPcHRp" + 
+          "b25z");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
         internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", });
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", });
         internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
@@ -113,7 +114,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int PublicClassesFieldNumber = 3;
     private bool hasPublicClasses;
-    private bool publicClasses_ = false;
+    private bool publicClasses_ = true;
     public bool HasPublicClasses {
       get { return hasPublicClasses; }
     }
@@ -141,6 +142,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return nestClasses_; }
     }
     
+    public const int CodeContractsFieldNumber = 6;
+    private bool hasCodeContracts;
+    private bool codeContracts_ = false;
+    public bool HasCodeContracts {
+      get { return hasCodeContracts; }
+    }
+    public bool CodeContracts {
+      get { return codeContracts_; }
+    }
+    
     public override bool IsInitialized {
       get {
         return true;
@@ -162,6 +173,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       if (HasNestClasses) {
         output.WriteBool(5, NestClasses);
+      }
+      if (HasCodeContracts) {
+        output.WriteBool(6, CodeContracts);
       }
       UnknownFields.WriteTo(output);
     }
@@ -187,6 +201,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (HasNestClasses) {
           size += pb::CodedOutputStream.ComputeBoolSize(5, NestClasses);
+        }
+        if (HasCodeContracts) {
+          size += pb::CodedOutputStream.ComputeBoolSize(6, CodeContracts);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -295,6 +312,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasNestClasses) {
           NestClasses = other.NestClasses;
         }
+        if (other.HasCodeContracts) {
+          CodeContracts = other.CodeContracts;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -345,6 +365,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             }
             case 40: {
               NestClasses = input.ReadBool();
+              break;
+            }
+            case 48: {
+              CodeContracts = input.ReadBool();
               break;
             }
           }
@@ -404,7 +428,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       public Builder ClearPublicClasses() {
         result.hasPublicClasses = false;
-        result.publicClasses_ = false;
+        result.publicClasses_ = true;
         return this;
       }
       
@@ -441,6 +465,24 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearNestClasses() {
         result.hasNestClasses = false;
         result.nestClasses_ = false;
+        return this;
+      }
+      
+      public bool HasCodeContracts {
+        get { return result.HasCodeContracts; }
+      }
+      public bool CodeContracts {
+        get { return result.CodeContracts; }
+        set { SetCodeContracts(value); }
+      }
+      public Builder SetCodeContracts(bool value) {
+        result.hasCodeContracts = true;
+        result.codeContracts_ = value;
+        return this;
+      }
+      public Builder ClearCodeContracts() {
+        result.hasCodeContracts = false;
+        result.codeContracts_ = false;
         return this;
       }
     }

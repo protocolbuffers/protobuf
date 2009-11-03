@@ -6,10 +6,11 @@ package google.protobuf;
 
 message CSharpFileOptions {
   optional string namespace = 1;
-  optional string umbrella_classname= 2;
-  optional bool public_classes = 3;
+  optional string umbrella_classname = 2;
+  optional bool public_classes = 3 [default = true];
   optional bool multiple_files = 4;
   optional bool nest_classes = 5;
+  optional bool code_contracts = 6;
 }
 
 extend FileOptions {
