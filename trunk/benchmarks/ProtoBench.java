@@ -33,12 +33,15 @@ package com.google.protocolbuffers;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Method;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.Message;
 
 public class ProtoBench {
@@ -88,6 +91,16 @@ public class ProtoBench {
       final ByteArrayInputStream inputStream = new ByteArrayInputStream(inputData);
       final ByteString inputString = ByteString.copyFrom(inputData);
       final Message sampleMessage = defaultMessage.newBuilderForType().mergeFrom(inputString).build();
+      FileOutputStream devNullTemp = null;
+      CodedOutputStream reuseDevNullTemp = null;
+      try {
+        devNullTemp = new FileOutputStream("/dev/null");
+        reuseDevNullTemp = CodedOutputStream.newInstance(devNullTemp);
+      } catch (FileNotFoundException e) {
+        // ignore: this is probably Windows, where /dev/null does not exist
+      }
+      final FileOutputStream devNull = devNullTemp;
+      final CodedOutputStream reuseDevNull = reuseDevNullTemp;
       benchmark("Serialize to byte string", inputData.length, new Action() {
         public void execute() { sampleMessage.toByteString(); }
       });      
@@ -99,6 +112,19 @@ public class ProtoBench {
           sampleMessage.writeTo(new ByteArrayOutputStream()); 
         }
       });
+      if (devNull != null) {
+        benchmark("Serialize to /dev/null with FileOutputStream", inputData.length, new Action() {
+          public void execute() throws IOException {
+            sampleMessage.writeTo(devNull);
+          }
+        });
+        benchmark("Serialize to /dev/null reusing FileOutputStream", inputData.length, new Action() {
+          public void execute() throws IOException {
+            sampleMessage.writeTo(reuseDevNull);
+            reuseDevNull.flush();  // force the write to the OutputStream
+          }
+        });
+      }
       benchmark("Deserialize from byte string", inputData.length, new Action() {
         public void execute() throws IOException { 
           defaultMessage.newBuilderForType().mergeFrom(inputString).build();
