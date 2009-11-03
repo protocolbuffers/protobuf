@@ -64,7 +64,9 @@ using System.Runtime.CompilerServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
+#if !COMPACT_FRAMEWORK_35
 [assembly: AssemblyFileVersion("1.0.0.0")]
+#endif
 
 [assembly:InternalsVisibleTo("Google.ProtocolBuffers.Test,PublicKey="+
 "00240000048000009400000006020000002400005253413100040000010001008179f2dd31a648"+

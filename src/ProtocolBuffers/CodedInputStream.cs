@@ -163,7 +163,7 @@ namespace Google.ProtocolBuffers {
     /// Read a double field from the stream.
     /// </summary>
     public double ReadDouble() {
-#if SILVERLIGHT2
+#if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
       byte[] bytes = ReadRawBytes(8);
       return BitConverter.ToDouble(bytes, 0);
 #else

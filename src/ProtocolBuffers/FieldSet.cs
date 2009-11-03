@@ -65,8 +65,8 @@ namespace Google.ProtocolBuffers {
     }
 
     public static FieldSet CreateInstance() {
-      // Use SortedDictionary to keep fields in the canonical order
-      return new FieldSet(new SortedDictionary<FieldDescriptor, object>());
+      // Use SortedList to keep fields in the canonical order
+      return new FieldSet(new SortedList<FieldDescriptor, object>());
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ namespace Google.ProtocolBuffers {
       }
 
       if (hasRepeats) {
-        var tmp = new SortedDictionary<FieldDescriptor, object>();
+        var tmp = new SortedList<FieldDescriptor, object>();
         foreach (KeyValuePair<FieldDescriptor, object> entry in fields) {
           IList<object> list = entry.Value as IList<object>;
           tmp[entry.Key] = list == null ? entry.Value : Lists.AsReadOnly(list);

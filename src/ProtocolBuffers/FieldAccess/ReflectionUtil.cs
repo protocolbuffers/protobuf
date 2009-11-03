@@ -64,12 +64,11 @@ namespace Google.ProtocolBuffers.FieldAccess {
     public static Func<TSource, object> CreateUpcastDelegateImpl<TSource, TResult>(MethodInfo method) {
       // Convert the reflection call into an open delegate, i.e. instead of calling x.Method()
       // we'll call getter(x).
-      Func<TSource, TResult> getter = (Func<TSource, TResult>)Delegate.CreateDelegate(typeof(Func<TSource, TResult>), method);
+      Func<TSource, TResult> getter = (Func<TSource, TResult>)Delegate.CreateDelegate(typeof(Func<TSource, TResult>), null, method);
 
       // Implicit upcast to object (within the delegate)
       return delegate(TSource source) { return getter(source); };
     }
-
 
     /// <summary>
     /// Creates a delegate which will execute the given method after casting the parameter
@@ -84,7 +83,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     public static Action<TSource, object> CreateDowncastDelegateImpl<TSource, TParam>(MethodInfo method) {
       // Convert the reflection call into an open delegate, i.e. instead of calling x.Method(y) we'll
       // call Method(x, y)
-      Action<TSource, TParam> call = (Action<TSource, TParam>) Delegate.CreateDelegate(typeof(Action<TSource, TParam>), method);
+      Action<TSource, TParam> call = (Action<TSource, TParam>) Delegate.CreateDelegate(typeof(Action<TSource, TParam>), null, method);
 
       return delegate(TSource source, object parameter) { call(source, (TParam)parameter); };
     }
@@ -103,7 +102,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
       // Convert the reflection call into an open delegate, i.e. instead of calling x.Method(y) we'll
       // call Method(x, y)
       Func<TSource, TParam, TReturn> call = (Func<TSource, TParam, TReturn>)
-          Delegate.CreateDelegate(typeof(Func<TSource, TParam, TReturn>), method);
+          Delegate.CreateDelegate(typeof(Func<TSource, TParam, TReturn>), null, method);
 
       return delegate(TSource source, object parameter) { call(source, (TParam)parameter); };
     }
@@ -118,7 +117,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
     }
 
     public static Func<IBuilder> CreateStaticUpcastDelegateImpl<T>(MethodInfo method) {
-      Func<T> call = (Func<T>)Delegate.CreateDelegate(typeof(Func<T>), method);
+      Func<T> call = (Func<T>)Delegate.CreateDelegate(typeof(Func<T>), null, method);
       return delegate { return (IBuilder)call(); };
     }
   }

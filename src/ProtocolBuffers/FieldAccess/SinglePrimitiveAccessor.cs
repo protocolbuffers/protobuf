@@ -46,6 +46,8 @@ namespace Google.ProtocolBuffers.FieldAccess {
     private readonly Func<TMessage, bool> hasDelegate;
     private readonly Func<TBuilder, IBuilder> clearDelegate;
 
+    internal static readonly Type[] EmptyTypes = new Type[0];
+
     /// <summary>
     /// The CLR type of the field (int, the enum type, ByteString, the message etc).
     /// As declared by the property.
@@ -59,13 +61,13 @@ namespace Google.ProtocolBuffers.FieldAccess {
       PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name);
       if (builderProperty == null) builderProperty = typeof(TBuilder).GetProperty(name);
       PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
-      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, Type.EmptyTypes);
+      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, EmptyTypes);
       if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null) {
         throw new ArgumentException("Not all required properties/methods available");
       }
       clrType = messageProperty.PropertyType;
-      hasDelegate = (Func<TMessage, bool>)Delegate.CreateDelegate(typeof(Func<TMessage, bool>), hasProperty.GetGetMethod());
-      clearDelegate = (Func<TBuilder, IBuilder>)Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), clearMethod);
+      hasDelegate = (Func<TMessage, bool>)Delegate.CreateDelegate(typeof(Func<TMessage, bool>), null, hasProperty.GetGetMethod());
+      clearDelegate = (Func<TBuilder, IBuilder>)Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null ,clearMethod);
       getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
       setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
     }

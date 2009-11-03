@@ -243,11 +243,10 @@ namespace Google.ProtocolBuffers {
     public sealed class Builder
     {
       /// <summary>
-      /// Mapping from number to field. Note that by using a SortedDictionary we ensure
+      /// Mapping from number to field. Note that by using a SortedList we ensure
       /// that the fields will be serialized in ascending order.
       /// </summary>
-      private IDictionary<int, UnknownField> fields = new SortedDictionary<int, UnknownField>();
-
+      private IDictionary<int, UnknownField> fields = new SortedList<int, UnknownField>();
       // Optimization:  We keep around a builder for the last field that was
       // modified so that we can efficiently add to it multiple times in a
       // row (important when parsing an unknown repeated field).

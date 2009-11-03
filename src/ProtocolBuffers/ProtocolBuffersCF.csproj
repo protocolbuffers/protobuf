@@ -1,47 +1,48 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</ProjectGuid>
+    <ProjectGuid>{49B51802-9D09-4AD8-A0EE-0DA704EFA379}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Google.ProtocolBuffers</RootNamespace>
     <AssemblyName>Google.ProtocolBuffers</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>PocketPC</PlatformFamilyName>
+    <PlatformID>b2c48bd2-963d-4549-9169-1fa021dce484</PlatformID>
+    <OSVersion>5.2</OSVersion>
+    <DeployDirSuffix>compactframework</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows Mobile 6 Professional SDK</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DefineConstants>COMPACT_FRAMEWORK_35;DEBUG;TRACE;$(PlatformFamilyName)</DefineConstants>
     <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>COMPACT_FRAMEWORK_35;TRACE;$(PlatformFamilyName)</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Silverlight2|AnyCPU' ">
-    <OutputPath>bin\Silverlight2\</OutputPath>
-    <DefineConstants>TRACE;SILVERLIGHT2</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoStdLib>true</NoStdLib>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -51,15 +52,15 @@
     <Compile Include="AbstractBuilder.cs" />
     <Compile Include="AbstractMessage.cs" />
     <Compile Include="ByteString.cs" />
-    <Compile Include="Collections\Enumerables.cs" />
-    <Compile Include="Collections\IPopsicleList.cs" />
-    <Compile Include="Collections\PopsicleList.cs" />
-    <Compile Include="Delegates.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
     <Compile Include="Collections\Dictionaries.cs" />
+    <Compile Include="Collections\Enumerables.cs" />
+    <Compile Include="Collections\IPopsicleList.cs" />
     <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Collections\PopsicleList.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="Delegates.cs" />
     <Compile Include="DescriptorProtos\CSharpOptions.cs" />
     <Compile Include="DescriptorProtos\DescriptorProtoFile.cs" />
     <Compile Include="DescriptorProtos\IDescriptorProto.cs" />
@@ -86,22 +87,22 @@
     <Compile Include="ExtendableMessage.cs" />
     <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
+    <Compile Include="FieldAccess\FieldAccessorTable.cs" />
+    <Compile Include="FieldAccess\IFieldAccessor.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />
+    <Compile Include="FieldAccess\RepeatedEnumAccessor.cs" />
+    <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
+    <Compile Include="FieldAccess\RepeatedPrimitiveAccessor.cs" />
     <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
     <Compile Include="FieldAccess\SingleMessageAccessor.cs" />
     <Compile Include="FieldAccess\SinglePrimitiveAccessor.cs" />
-    <Compile Include="FieldAccess\RepeatedPrimitiveAccessor.cs" />
-    <Compile Include="FieldAccess\RepeatedEnumAccessor.cs" />
-    <Compile Include="FieldAccess\IFieldAccessor.cs" />
-    <Compile Include="FieldAccess\FieldAccessorTable.cs" />
-    <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="GeneratedBuilder.cs" />
+    <Compile Include="GeneratedExtensionBase.cs" />
+    <Compile Include="GeneratedMessage.cs" />
     <Compile Include="GeneratedRepeatExtension.cs" />
     <Compile Include="GeneratedSingleExtension.cs" />
-    <Compile Include="GeneratedMessage.cs" />
     <Compile Include="IBuilder.cs" />
-    <Compile Include="GeneratedExtensionBase.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="IRpcChannel.cs" />
@@ -124,11 +125,14 @@
     <Compile Include="UnknownFieldSet.cs" />
     <Compile Include="WireFormat.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Google.ProtocolBuffers.snk" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' != 'Silverlight2' " />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Silverlight2' " />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}">
+        <HostingProcess disable="1" />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -54,6 +54,9 @@ namespace Google.ProtocolBuffers {
     private readonly ExtensionRegistry extensionRegistry;
     private readonly int sizeLimit;
 
+    // Type.EmptyTypes isn't present on the compact framework
+    private static readonly Type[] EmptyTypes = new Type[0];
+
     /// <summary>
     /// Delegate created via reflection trickery (once per type) to create a builder
     /// and read a message from a CodedInputStream with it. Note that unlike in Java,
@@ -77,7 +80,7 @@ namespace Google.ProtocolBuffers {
         Type builderType = FindBuilderType();
 
         // Yes, it's redundant to find this again, but it's only the once...
-        MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", Type.EmptyTypes);
+        MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", EmptyTypes);
         Delegate builderBuilder = Delegate.CreateDelegate(
             typeof(Func<>).MakeGenericType(builderType), null, createBuilderMethod);
 
@@ -102,7 +105,7 @@ namespace Google.ProtocolBuffers {
     /// Works out the builder type for TMessage, or throws an ArgumentException to explain why it can't.
     /// </summary>
     private static Type FindBuilderType() {
-      MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", Type.EmptyTypes);
+      MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", EmptyTypes);
       if (createBuilderMethod == null) {
         throw new ArgumentException("Message type " + typeof(TMessage).FullName + " has no CreateBuilder method.");
       }

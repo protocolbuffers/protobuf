@@ -332,7 +332,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public void WriteDoubleNoTag(double value) {
       // TODO(jonskeet): Test this on different endiannesses
-#if SILVERLIGHT2
+#if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
       byte[] bytes = BitConverter.GetBytes(value);
       WriteRawBytes(bytes, 0, 8);
 #else

@@ -46,7 +46,7 @@ namespace Google.ProtocolBuffers
     /// This is only used for Silverlight, which doesn't have the normal
     /// sorted collections.
     /// </summary>
-    internal sealed class SortedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    internal sealed class SortedList<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private readonly IDictionary<TKey, TValue> wrapped = new Dictionary<TKey, TValue>();
 
