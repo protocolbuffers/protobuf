@@ -434,6 +434,7 @@ public class CodedInputStreamTest extends TestCase {
         new SmallBlockInputStream(new byte[256], 8));
     input.setSizeLimit(16);
     input.readRawBytes(16);
+    assertEquals(16, input.getTotalBytesRead());
 
     try {
       input.readRawByte();
@@ -443,7 +444,10 @@ public class CodedInputStreamTest extends TestCase {
     }
 
     input.resetSizeCounter();
+    assertEquals(0, input.getTotalBytesRead());
     input.readRawByte();  // No exception thrown.
+    input.resetSizeCounter();
+    assertEquals(0, input.getTotalBytesRead());
 
     try {
       input.readRawBytes(16);  // Hits limit again.
@@ -477,10 +481,13 @@ public class CodedInputStreamTest extends TestCase {
   public void testReadFromSlice() throws Exception {
     byte[] bytes = bytes(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     CodedInputStream in = CodedInputStream.newInstance(bytes, 3, 5);
+    assertEquals(0, in.getTotalBytesRead());
     for (int i = 3; i < 8; i++) {
       assertEquals(i, in.readRawByte());
+      assertEquals(i-2, in.getTotalBytesRead());
     }
     // eof
     assertEquals(0, in.readTag());
+    assertEquals(5, in.getTotalBytesRead());
   }
 }
