@@ -78,3 +78,5 @@ Patch contributors:
     * Detect whether zlib is new enough in configure script.
   Evan Jones <evanj@mit.edu>
     * Optimize Java serialization code when writing a small message to a stream.
+  Michael Kucharski <m.kucharski@gmail.com>
+    * Added CodedInputStream.getTotalBytesRead().
