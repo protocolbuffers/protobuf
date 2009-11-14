@@ -20,7 +20,7 @@ static void upb_mm_destroy(union upb_value_ptr p, upb_mm_ptrtype type)
 void upb_msg_destroy(struct upb_msg *msg) {
   uint32_t i;
   for(i = 0; i < msg->def->num_fields; i++) {
-    struct upb_msg_fielddef *f = &msg->def->fields[i];
+    struct upb_fielddef *f = &msg->def->fields[i];
     if(!upb_msg_isset(msg, f) || !upb_field_ismm(f)) continue;
     upb_mm_destroy(upb_msg_getptr(msg, f), upb_field_ptrtype(f));
   }
@@ -42,7 +42,7 @@ void upb_array_destroy(struct upb_array *arr)
 }
 
 static union upb_mmptr upb_mm_newptr(upb_mm_ptrtype type,
-                                     struct upb_msg_fielddef *f)
+                                     struct upb_fielddef *f)
 {
   union upb_mmptr p = {NULL};
   switch(type) {
@@ -96,7 +96,7 @@ struct upb_mm_ref *upb_mm_newmsg_ref(struct upb_msgdef *def, struct upb_mm *mm)
 }
 
 struct upb_mm_ref *upb_mm_getfieldref(struct upb_mm_ref *msgref,
-                                      struct upb_msg_fielddef *f,
+                                      struct upb_fielddef *f,
                                       bool *refcreated)
 {
   assert(upb_field_ismm(f));
@@ -121,7 +121,7 @@ struct upb_mm_ref *upb_mm_getelemref(struct upb_mm_ref *arrref, upb_arraylen_t i
                                      bool *refcreated)
 {
   struct upb_array *arr = arrref->p.arr;
-  struct upb_msg_fielddef *f = arr->fielddef;
+  struct upb_fielddef *f = arr->fielddef;
   assert(upb_elem_ismm(f));
   assert(i < arr->len);
   union upb_value_ptr p = upb_array_getelementptr(arr, i);
@@ -161,7 +161,7 @@ void upb_mm_release(struct upb_mm_ref *ref)
 }
 
 void upb_mm_msg_set(struct upb_mm_ref *from_msg_ref, struct upb_mm_ref *to_ref,
-                    struct upb_msg_fielddef *f)
+                    struct upb_fielddef *f)
 {
   assert(upb_field_ismm(f));
   union upb_mmptr fromval = from_msg_ref->p;
@@ -179,7 +179,7 @@ void upb_mm_msg_set(struct upb_mm_ref *from_msg_ref, struct upb_mm_ref *to_ref,
   upb_mm_ref(toval, type);
 }
 
-void upb_mm_msgclear(struct upb_mm_ref *from_msg_ref, struct upb_msg_fielddef *f)
+void upb_mm_msgclear(struct upb_mm_ref *from_msg_ref, struct upb_fielddef *f)
 {
   assert(upb_field_ismm(f));
   union upb_mmptr fromval = from_msg_ref->p;
@@ -196,7 +196,7 @@ void upb_mm_msgclear_all(struct upb_mm_ref *from)
 {
   struct upb_msgdef *def = from->p.msg->def;
   for(uint32_t i = 0; i < def->num_fields; i++) {
-    struct upb_msg_fielddef *f = &def->fields[i];
+    struct upb_fielddef *f = &def->fields[i];
     if(!upb_field_ismm(f)) continue;
     upb_mm_msgclear(from, f);
   }

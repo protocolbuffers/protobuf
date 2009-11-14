@@ -40,7 +40,7 @@ typedef int16_t upb_mm_id;
 struct upb_msg;
 struct upb_array;
 struct upb_string;
-struct upb_msg_fielddef;
+struct upb_fielddef;
 
 struct upb_mm_ref;
 /* Info about a mm. */
@@ -76,7 +76,7 @@ struct upb_mm_ref *upb_mm_getref(union upb_mmptr p, upb_mm_ptrtype type,
  * returns it, otherwise calls the given callback to create one.  'created'
  * indicates whether a new reference was created. */
 struct upb_mm_ref *upb_mm_getfieldref(struct upb_mm_ref *msgref,
-                                      struct upb_msg_fielddef *f,
+                                      struct upb_fielddef *f,
                                       bool *refcreated);
 /* Array len must be < i. */
 struct upb_mm_ref *upb_mm_getelemref(struct upb_mm_ref *arrref, upb_arraylen_t i,
@@ -87,16 +87,16 @@ struct upb_mm_ref *upb_mm_getelemref(struct upb_mm_ref *arrref, upb_arraylen_t i
 void upb_mm_release(struct upb_mm_ref *ref);
 
 void upb_mm_msgset(struct upb_mm_ref *msg, struct upb_mm_ref *to,
-                   struct upb_msg_fielddef *f);
-void upb_mm_msgclear(struct upb_mm_ref *from, struct upb_msg_fielddef *f);
+                   struct upb_fielddef *f);
+void upb_mm_msgclear(struct upb_mm_ref *from, struct upb_fielddef *f);
 void upb_mm_msgclear_all(struct upb_mm_ref *from);
 
 void upb_mm_arrset(struct upb_mm_ref *from, struct upb_mm_ref *to, uint32_t i);
 
 /* Defined iff upb_field_ismm(f). */
-INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_msg_fielddef *f);
+INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_fielddef *f);
 /* Defined iff upb_elem_ismm(f). */
-INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_msg_fielddef *f);
+INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_fielddef *f);
 
 INLINE void upb_mm_unref(union upb_mmptr p, upb_mm_ptrtype type);
 

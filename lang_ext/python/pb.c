@@ -60,7 +60,7 @@ typedef struct {
 typedef struct {
   PyObject_HEAD;
   PyUpb_PbMsg *msg;
-  struct upb_msg_fielddef *f;
+  struct upb_fielddef *f;
   PyUpb_PbBoundFieldOpCode code;
 } PyUpb_PbBoundFieldOp;
 
@@ -299,7 +299,7 @@ PyObject* fieldop_call(PyObject *callable, PyObject *args, PyObject *kw)
   PyUpb_PbMsg *pymsg = op->msg;
   struct upb_mm_ref *msgref = &(pymsg->ref);
   struct upb_msg *msg = pymsg->ref.p.msg;
-  struct upb_msg_fielddef *f = op->f;
+  struct upb_fielddef *f = op->f;
   union upb_value_ptr p = upb_msg_getptr(msg, f);
   switch(op->code) {
     case OP_HAS:
@@ -654,7 +654,7 @@ static bool ends_with(struct upb_string *str, struct upb_string *suffix,
   }
 }
 
-PyObject *PyUpb_NewPbBoundFieldOp(PyUpb_PbMsg *msgobj, struct upb_msg_fielddef *f,
+PyObject *PyUpb_NewPbBoundFieldOp(PyUpb_PbMsg *msgobj, struct upb_fielddef *f,
                                   PyUpb_PbBoundFieldOpCode code)
 {
   /* Type check that this operation on a field of this type makes sense.  */
@@ -750,7 +750,7 @@ PyObject* msg_getattro(PyObject *obj, PyObject *attr_name)
       opcode = OP_GET;
       field_name = str;
     }
-    struct upb_msg_fielddef *f = upb_msg_fieldbyname(def, &field_name);
+    struct upb_fielddef *f = upb_msg_fieldbyname(def, &field_name);
     if(f) {
       PyObject *op = PyUpb_NewPbBoundFieldOp(msgobj, f, opcode);
       if(op) return op;

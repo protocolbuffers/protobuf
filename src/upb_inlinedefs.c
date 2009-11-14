@@ -14,7 +14,7 @@
 #define INLINE
 #include "upb_array.h"
 #include "upb_context.h"
-#include "upb_enum.h"
+#include "upb_def.h"
 #include "upb_mm.h"
 #include "upb_msg.h"
 #include "upb_parse.h"

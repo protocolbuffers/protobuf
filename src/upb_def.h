@@ -5,8 +5,8 @@
  *
  * Provides definitions of .proto constructs:
  * - upb_msgdef: describes a "message" construct.
- * - upb_msg_fielddef: describes a message field.
- * - upb_enum: describes an enum.
+ * - upb_fielddef: describes a message field.
+ * - upb_enumdef: describes an enum.
  * (TODO: descriptions of extensions and services).
  *
  * This file contains routines for creating and manipulating the definitions
@@ -25,7 +25,7 @@ extern "C" {
 
 /* Message definition. ********************************************************/
 
-struct upb_msg_fielddef;
+struct upb_fielddef;
 struct upb_context;
 /* Structure that describes a single .proto message type. */
 struct upb_msgdef {
@@ -39,7 +39,7 @@ struct upb_msgdef {
   uint32_t num_required_fields;  /* Required fields have the lowest set bytemasks. */
   struct upb_inttable fields_by_num;
   struct upb_strtable fields_by_name;
-  struct upb_msg_fielddef *fields;
+  struct upb_fielddef *fields;
   struct google_protobuf_FieldDescriptorProto **field_descriptors;
 };
 
@@ -48,7 +48,7 @@ struct upb_msgdef {
  * because copies of this struct are in the hash table that is read in the
  * critical path of parsing.  Minimizing the size of this struct increases
  * cache-friendliness. */
-struct upb_msg_fielddef {
+struct upb_fielddef {
   union upb_symbol_ref ref;
   uint32_t byte_offset;     /* Where to find the data. */
   uint16_t field_index;     /* Indexes upb_msgdef.fields and indicates set bit */
@@ -56,26 +56,26 @@ struct upb_msg_fielddef {
   upb_label_t label;
 };
 
-INLINE bool upb_issubmsg(struct upb_msg_fielddef *f) {
+INLINE bool upb_issubmsg(struct upb_fielddef *f) {
   return upb_issubmsgtype(f->type);
 }
-INLINE bool upb_isstring(struct upb_msg_fielddef *f) {
+INLINE bool upb_isstring(struct upb_fielddef *f) {
   return upb_isstringtype(f->type);
 }
-INLINE bool upb_isarray(struct upb_msg_fielddef *f) {
+INLINE bool upb_isarray(struct upb_fielddef *f) {
   return f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED;
 }
 
-INLINE bool upb_field_ismm(struct upb_msg_fielddef *f) {
+INLINE bool upb_field_ismm(struct upb_fielddef *f) {
   return upb_isarray(f) || upb_isstring(f) || upb_issubmsg(f);
 }
 
-INLINE bool upb_elem_ismm(struct upb_msg_fielddef *f) {
+INLINE bool upb_elem_ismm(struct upb_fielddef *f) {
   return upb_isstring(f) || upb_issubmsg(f);
 }
 
 /* Defined iff upb_field_ismm(f). */
-INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_msg_fielddef *f) {
+INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_fielddef *f) {
   if(upb_isarray(f)) return UPB_MM_ARR_REF;
   else if(upb_isstring(f)) return UPB_MM_STR_REF;
   else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
@@ -83,15 +83,15 @@ INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_msg_fielddef *f) {
 }
 
 /* Defined iff upb_elem_ismm(f). */
-INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_msg_fielddef *f) {
+INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_fielddef *f) {
   if(upb_isstring(f)) return UPB_MM_STR_REF;
   else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
   else return -1;
 }
 
-/* Can be used to retrieve a field descriptor given the upb_msg_fielddef. */
+/* Can be used to retrieve a field descriptor given the upb_fielddef. */
 INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
-    struct upb_msg_fielddef *f, struct upb_msgdef *m) {
+    struct upb_fielddef *f, struct upb_msgdef *m) {
   return m->field_descriptors[f->field_index];
 }
 
@@ -104,18 +104,18 @@ INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
 
 struct upb_fieldsbynum_entry {
   struct upb_inttable_entry e;
-  struct upb_msg_fielddef f;
+  struct upb_fielddef f;
 };
 
 struct upb_fieldsbyname_entry {
   struct upb_strtable_entry e;
-  struct upb_msg_fielddef f;
+  struct upb_fielddef f;
 };
 
 /* Looks up a field by name or number.  While these are written to be as fast
  * as possible, it will still be faster to cache the results of this lookup if
  * possible.  These return NULL if no such field is found. */
-INLINE struct upb_msg_fielddef *upb_msg_fieldbynum(struct upb_msgdef *m,
+INLINE struct upb_fielddef *upb_msg_fieldbynum(struct upb_msgdef *m,
                                                    uint32_t number) {
   struct upb_fieldsbynum_entry *e =
       (struct upb_fieldsbynum_entry*)upb_inttable_fast_lookup(
@@ -123,7 +123,7 @@ INLINE struct upb_msg_fielddef *upb_msg_fieldbynum(struct upb_msgdef *m,
   return e ? &e->f : NULL;
 }
 
-INLINE struct upb_msg_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
+INLINE struct upb_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
                                                     struct upb_string *name) {
   struct upb_fieldsbyname_entry *e =
       (struct upb_fieldsbyname_entry*)upb_strtable_lookup(
@@ -133,7 +133,7 @@ INLINE struct upb_msg_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
 
 /* Enums. *********************************************************************/
 
-struct upb_enum {
+struct upb_enumdef {
   upb_atomic_refcount_t refcount;
   struct upb_context *context;
   struct google_protobuf_EnumDescriptorProto *descriptor;
@@ -141,22 +141,22 @@ struct upb_enum {
   struct upb_inttable inttoname;
 };
 
-struct upb_enum_ntoi_entry {
+struct upb_enumdef_ntoi_entry {
   struct upb_strtable_entry e;
   uint32_t value;
 };
 
-struct upb_enum_iton_entry {
+struct upb_enumdef_iton_entry {
   struct upb_inttable_entry e;
   struct upb_string *string;
 };
 
 /* Initializes and frees an enum, respectively.  Caller retains ownership of
  * ed, but it must outlive e. */
-void upb_enum_init(struct upb_enum *e,
-                   struct google_protobuf_EnumDescriptorProto *ed,
-                   struct upb_context *c);
-void upb_enum_free(struct upb_enum *e);
+void upb_enumdef_init(struct upb_enumdef *e,
+                     struct google_protobuf_EnumDescriptorProto *ed,
+                     struct upb_context *c);
+void upb_enumdef_free(struct upb_enumdef *e);
 
 
 /* Internal functions. ********************************************************/
@@ -166,7 +166,7 @@ void upb_enum_free(struct upb_enum *e);
  *
  * Caller retains ownership of d, but the msg will contain references to it, so
  * it must outlive the msg.  Note that init does not resolve
- * upb_msg_fielddef.ref the caller should do that post-initialization by
+ * upb_fielddef.ref the caller should do that post-initialization by
  * calling upb_msg_ref() below.
  *
  * fqname indicates the fully-qualified name of this message.  Ownership of
@@ -189,10 +189,10 @@ void upb_msgdef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
                         size_t num);
 
 /* Clients use this function on a previously initialized upb_msgdef to resolve
- * the "ref" field in the upb_msg_fielddef.  Since messages can refer to each
+ * the "ref" field in the upb_fielddef.  Since messages can refer to each
  * other in mutually-recursive ways, this step must be separated from
  * initialization. */
-void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
+void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
                        union upb_symbol_ref ref);
 
 #ifdef __cplusplus

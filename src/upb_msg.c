@@ -30,7 +30,7 @@ struct upb_msgparser {
  * should be stored, taking into account whether f is an array that may need to
  * be allocated or resized. */
 static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
-                                         struct upb_msg_fielddef *f)
+                                         struct upb_fielddef *f)
 {
   union upb_value_ptr p = upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
@@ -54,7 +54,7 @@ static upb_field_type_t tag_cb(void *udata, struct upb_tag *tag,
                                void **user_field_desc)
 {
   struct upb_msgparser *mp = udata;
-  struct upb_msg_fielddef *f =
+  struct upb_fielddef *f =
       upb_msg_fieldbynum(mp->top->msg->def, tag->field_number);
   if(!f || !upb_check_type(tag->wire_type, f->type))
     return 0;  /* Skip unknown or fields of the wrong type. */
@@ -66,7 +66,7 @@ static void *value_cb(void *udata, uint8_t *buf, uint8_t *end,
                       void *user_field_desc, struct upb_status *status)
 {
   struct upb_msgparser *mp = udata;
-  struct upb_msg_fielddef *f = user_field_desc;
+  struct upb_fielddef *f = user_field_desc;
   struct upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
@@ -78,7 +78,7 @@ static void str_cb(void *udata, uint8_t *str,
                    void *udesc)
 {
   struct upb_msgparser *mp = udata;
-  struct upb_msg_fielddef *f = udesc;
+  struct upb_fielddef *f = udesc;
   struct upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
@@ -103,7 +103,7 @@ static void str_cb(void *udata, uint8_t *str,
 static void start_cb(void *udata, void *user_field_desc)
 {
   struct upb_msgparser *mp = udata;
-  struct upb_msg_fielddef *f = user_field_desc;
+  struct upb_fielddef *f = user_field_desc;
   struct upb_msg *oldmsg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
 
@@ -185,7 +185,7 @@ static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m);
 /* Returns a size of a value as it will be serialized.  Does *not* include
  * the size of the tag -- that is already accounted for. */
 static size_t get_valuesize(struct upb_msgsizes *sizes, union upb_value_ptr p,
-                            struct upb_msg_fielddef *f,
+                            struct upb_fielddef *f,
                             google_protobuf_FieldDescriptorProto *fd)
 {
   switch(f->type) {
@@ -227,7 +227,7 @@ static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m)
   size_t size = 0;
   /* We iterate over fields and arrays in reverse order. */
   for(int32_t i = m->def->num_fields - 1; i >= 0; i--) {
-    struct upb_msg_fielddef *f = &m->def->fields[i];
+    struct upb_fielddef *f = &m->def->fields[i];
     google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m->def);
     if(!upb_msg_isset(m, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(m, f);
@@ -306,7 +306,7 @@ void upb_msg_serialize_init(struct upb_msg_serialize_state *s, struct upb_msg *m
 
 #if 0
 static uint8_t *serialize_tag(uint8_t *buf, uint8_t *end,
-                              struct upb_msg_fielddef *f,
+                              struct upb_fielddef *f,
                               struct upb_status *status)
 {
   /* TODO: need to have the field number also. */
@@ -331,7 +331,7 @@ size_t upb_msg_serialize(struct upb_msg_serialize_state *s,
   struct upb_msgdef *m = s->top->m;
 
   while(buf < end) {
-    struct upb_msg_fielddef *f = &m->fields[i];
+    struct upb_fielddef *f = &m->fields[i];
     //union upb_value_ptr p = upb_msg_getptr(msg, f);
     buf = serialize_tag(buf, end, f, status);
     if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
@@ -382,7 +382,7 @@ bool upb_value_eql(union upb_value_ptr p1, union upb_value_ptr p2,
 }
 
 bool upb_array_eql(struct upb_array *arr1, struct upb_array *arr2,
-                   struct upb_msg_fielddef *f, bool recursive)
+                   struct upb_fielddef *f, bool recursive)
 {
   if(arr1->len != arr2->len) return false;
   if(upb_issubmsg(f)) {
@@ -416,7 +416,7 @@ bool upb_msg_eql(struct upb_msg *msg1, struct upb_msg *msg2, bool recursive)
    * padding) and memcmp the masked messages. */
 
   for(uint32_t i = 0; i < m->num_fields; i++) {
-    struct upb_msg_fielddef *f = &m->fields[i];
+    struct upb_fielddef *f = &m->fields[i];
     bool msg1set = upb_msg_isset(msg1, f);
     bool msg2set = upb_msg_isset(msg2, f);
     if(msg1set != msg2set) return false;

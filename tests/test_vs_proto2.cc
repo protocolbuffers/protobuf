@@ -24,7 +24,7 @@ void compare(const google::protobuf::Message& proto2_msg,
 void compare_arrays(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
                     const google::protobuf::FieldDescriptor *proto2_f,
-                    struct upb_msg *upb_msg, struct upb_msg_fielddef *upb_f)
+                    struct upb_msg *upb_msg, struct upb_fielddef *upb_f)
 {
   struct upb_array *arr = *upb_msg_getptr(upb_msg, upb_f).arr;
   ASSERT(arr->len == (upb_arraylen_t)r->FieldSize(proto2_msg, proto2_f));
@@ -78,7 +78,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
 void compare_values(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
                     const google::protobuf::FieldDescriptor *proto2_f,
-                    struct upb_msg *upb_msg, struct upb_msg_fielddef *upb_f)
+                    struct upb_msg *upb_msg, struct upb_fielddef *upb_f)
 {
   union upb_value_ptr p = upb_msg_getptr(upb_msg, upb_f);
   switch(upb_f->type) {
@@ -134,7 +134,7 @@ void compare(const google::protobuf::Message& proto2_msg,
 
   ASSERT((uint32_t)d->field_count() == def->num_fields);
   for(uint32_t i = 0; i < def->num_fields; i++) {
-    struct upb_msg_fielddef *upb_f = &def->fields[i];
+    struct upb_fielddef *upb_f = &def->fields[i];
     struct google_protobuf_FieldDescriptorProto *upb_fd =
         upb_msg_field_descriptor(upb_f, def);
     const google::protobuf::FieldDescriptor *proto2_f =

@@ -23,7 +23,7 @@
 #define UPB_ARRAY_H_
 
 #include <stdlib.h>
-#include "upb_msg.h"  /* Because we use upb_msg_fielddef */
+#include "upb_def.h"  /* Because we use upb_fielddef */
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +43,7 @@ INLINE union upb_value_ptr upb_array_getelementptr(struct upb_array *arr,
 
 /* Allocation/Deallocation/Resizing. ******************************************/
 
-INLINE struct upb_array *upb_array_new(struct upb_msg_fielddef *f)
+INLINE struct upb_array *upb_array_new(struct upb_fielddef *f)
 {
   struct upb_array *arr = (struct upb_array*)malloc(sizeof(*arr));
   upb_mmhead_init(&arr->mmhead);

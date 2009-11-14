@@ -57,7 +57,7 @@ static void free_symtab(struct upb_strtable *t)
   for(; e; e = upb_strtable_next(t, &e->e)) {
     switch(e->type) {
       case UPB_SYM_MESSAGE: upb_msgdef_free(e->ref.msg); break;
-      case UPB_SYM_ENUM: upb_enum_free(e->ref._enum); break;
+      case UPB_SYM_ENUM: upb_enumdef_free(e->ref._enum); break;
       default: break;  /* TODO */
     }
     free(e->ref.msg);  /* The pointer is the same for all. */
@@ -211,7 +211,7 @@ static void insert_enum(struct upb_strtable *t,
   e.e.key = fqname;
   e.type = UPB_SYM_ENUM;
   e.ref._enum = malloc(sizeof(*e.ref._enum));
-  upb_enum_init(e.ref._enum, ed, c);
+  upb_enumdef_init(e.ref._enum, ed, c);
   upb_strtable_insert(t, &e.e);
 }
 
@@ -291,7 +291,7 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
     if(e->type == UPB_SYM_MESSAGE) {
       struct upb_msgdef *m = e->ref.msg;
       for(unsigned int i = 0; i < m->num_fields; i++) {
-        struct upb_msg_fielddef *f = &m->fields[i];
+        struct upb_fielddef *f = &m->fields[i];
         google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
         if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE ||

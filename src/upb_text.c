@@ -83,7 +83,7 @@ void upb_text_pop(struct upb_text_printer *p,
 }
 
 static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
-                     struct upb_msg_fielddef *f,
+                     struct upb_fielddef *f,
                      google_protobuf_FieldDescriptorProto *fd,
                      FILE *stream);
 
@@ -92,7 +92,7 @@ static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
 {
   struct upb_msgdef *m = msg->def;
   for(uint32_t i = 0; i < m->num_fields; i++) {
-    struct upb_msg_fielddef *f = &m->fields[i];
+    struct upb_fielddef *f = &m->fields[i];
     google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m);
     if(!upb_msg_isset(msg, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(msg, f);
@@ -109,7 +109,7 @@ static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
 }
 
 static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
-                     struct upb_msg_fielddef *f,
+                     struct upb_fielddef *f,
                      google_protobuf_FieldDescriptorProto *fd,
                      FILE *stream)
 {

@@ -66,7 +66,7 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
 
   size_t max_align = 0;
   for(unsigned int i = 0; i < m->num_fields; i++) {
-    struct upb_msg_fielddef *f = &m->fields[i];
+    struct upb_fielddef *f = &m->fields[i];
     google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
     struct upb_type_info *type_info = &upb_type_info[fd->type];
 
@@ -103,7 +103,7 @@ void upb_msgdef_free(struct upb_msgdef *m)
   free(m->field_descriptors);
 }
 
-void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
+void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
                        union upb_symbol_ref ref) {
   struct google_protobuf_FieldDescriptorProto *d =
       upb_msg_field_descriptor(f, m);
@@ -118,28 +118,30 @@ void upb_msgdef_setref(struct upb_msgdef *m, struct upb_msg_fielddef *f,
 }
 
 
-void upb_enum_init(struct upb_enum *e,
+void upb_enumdef_init(struct upb_enumdef *e,
                    struct google_protobuf_EnumDescriptorProto *ed,
                    struct upb_context *c) {
   int num_values = ed->set_flags.has.value ? ed->value->len : 0;
   e->descriptor = ed;
   e->context = c;
   upb_atomic_refcount_init(&e->refcount, 0);
-  upb_strtable_init(&e->nametoint, num_values, sizeof(struct upb_enum_ntoi_entry));
-  upb_inttable_init(&e->inttoname, num_values, sizeof(struct upb_enum_iton_entry));
+  upb_strtable_init(&e->nametoint, num_values,
+                    sizeof(struct upb_enumdef_ntoi_entry));
+  upb_inttable_init(&e->inttoname, num_values,
+                    sizeof(struct upb_enumdef_iton_entry));
 
   for(int i = 0; i < num_values; i++) {
     google_protobuf_EnumValueDescriptorProto *value = ed->value->elements[i];
-    struct upb_enum_ntoi_entry ntoi_entry = {.e = {.key = *value->name},
-                                             .value = value->number};
-    struct upb_enum_iton_entry iton_entry = {.e = {.key = value->number},
-                                             .string = value->name};
+    struct upb_enumdef_ntoi_entry ntoi_entry = {.e = {.key = *value->name},
+                                                .value = value->number};
+    struct upb_enumdef_iton_entry iton_entry = {.e = {.key = value->number},
+                                                .string = value->name};
     upb_strtable_insert(&e->nametoint, &ntoi_entry.e);
     upb_inttable_insert(&e->inttoname, &iton_entry.e);
   }
 }
 
-void upb_enum_free(struct upb_enum *e) {
+void upb_enumdef_free(struct upb_enumdef *e) {
   upb_strtable_free(&e->nametoint);
   upb_inttable_free(&e->inttoname);
 }

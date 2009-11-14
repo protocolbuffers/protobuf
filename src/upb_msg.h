@@ -70,7 +70,7 @@ INLINE struct upb_msg *upb_msg_new(struct upb_msgdef *md) {
 
 /* Returns a pointer to a specific field in a message. */
 INLINE union upb_value_ptr upb_msg_getptr(struct upb_msg *msg,
-                                          struct upb_msg_fielddef *f) {
+                                          struct upb_fielddef *f) {
   union upb_value_ptr p;
   p._void = &msg->data[f->byte_offset];
   return p;
@@ -95,19 +95,19 @@ INLINE uint8_t upb_isset_mask(uint32_t field_index) {
 }
 
 /* Returns true if the given field is set, false otherwise. */
-INLINE void upb_msg_set(struct upb_msg *msg, struct upb_msg_fielddef *f)
+INLINE void upb_msg_set(struct upb_msg *msg, struct upb_fielddef *f)
 {
   msg->data[upb_isset_offset(f->field_index)] |= upb_isset_mask(f->field_index);
 }
 
 /* Clears the set bit for this field in the given message. */
-INLINE void upb_msg_unset(struct upb_msg *msg, struct upb_msg_fielddef *f)
+INLINE void upb_msg_unset(struct upb_msg *msg, struct upb_fielddef *f)
 {
   msg->data[upb_isset_offset(f->field_index)] &= ~upb_isset_mask(f->field_index);
 }
 
 /* Tests whether the given field is set. */
-INLINE bool upb_msg_isset(struct upb_msg *msg, struct upb_msg_fielddef *f)
+INLINE bool upb_msg_isset(struct upb_msg *msg, struct upb_fielddef *f)
 {
   return msg->data[upb_isset_offset(f->field_index)] & upb_isset_mask(f->field_index);
 }

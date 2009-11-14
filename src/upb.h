@@ -224,7 +224,7 @@ INLINE void upb_value_write(union upb_value_ptr ptr, union upb_value val,
 // All the different definitions that can occur in .proto files.
 union upb_symbol_ref {
   struct upb_msgdef *msg;
-  struct upb_enum *_enum;
+  struct upb_enumdef *_enum;
   struct upb_svc *svc;
 };
 

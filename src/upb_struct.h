@@ -47,7 +47,7 @@ INLINE void upb_mmhead_ref(struct upb_mmhead *head) {
 /* These are all self describing. */
 
 struct upb_msgdef;
-struct upb_msg_fielddef;
+struct upb_fielddef;
 
 struct upb_msg {
   struct upb_mmhead mmhead;
@@ -58,7 +58,7 @@ struct upb_msg {
 typedef uint32_t upb_arraylen_t;  /* can be at most 2**32 elements long. */
 struct upb_array {
   struct upb_mmhead mmhead;
-  struct upb_msg_fielddef *fielddef;  /* Defines the type of the array. */
+  struct upb_fielddef *fielddef;  /* Defines the type of the array. */
   union upb_value_ptr elements;
   upb_arraylen_t len;     /* Number of elements in "elements". */
   upb_arraylen_t size;    /* Memory we own. */
@@ -78,7 +78,7 @@ struct upb_string {
 #define UPB_DEFINE_ARRAY_TYPE(name, type) \
   struct name ## _array { \
     struct upb_mmhead mmhead; \
-    struct upb_msg_fielddef *fielddef; \
+    struct upb_fielddef *fielddef; \
     type elements; \
     upb_arraylen_t len; \
     upb_arraylen_t size; \
@@ -99,7 +99,7 @@ UPB_DEFINE_ARRAY_TYPE(upb_msg,    void*)
 #define UPB_DEFINE_MSG_ARRAY(msg_type) \
   UPB_MSG_ARRAY(msg_type) { \
     struct upb_mmhead mmhead; \
-    struct upb_msg_fielddef *fielddef; \
+    struct upb_fielddef *fielddef; \
     msg_type **elements; \
     upb_arraylen_t len; \
     upb_arraylen_t size; \
