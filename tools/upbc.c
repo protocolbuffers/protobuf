@@ -13,7 +13,6 @@
 #include <stdarg.h>
 #include "descriptor.h"
 #include "upb_context.h"
-#include "upb_enum.h"
 #include "upb_msg.h"
 #include "upb_text.h"
 #include "upb_array.h"

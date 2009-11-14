@@ -46,7 +46,7 @@ clean:
 
 # The core library (src/libupb.a)
 SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c \
-    src/upb_enum.c src/upb_context.c src/upb_string.c src/upb_text.c \
+    src/upb_def.c src/upb_context.c src/upb_string.c src/upb_text.c \
     descriptor/descriptor.c
     #src/upb_serialize.c descriptor/descriptor.c
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))
@@ -78,14 +78,16 @@ tests: tests/tests \
     tests/t.test_vs_proto2.googlemessage1 \
     tests/t.test_vs_proto2.googlemessage2
 
+#VALGRIND=valgrind --leak-check=full --error-exitcode=1 
+VALGRIND=
 test: tests
 	@echo Running all tests under valgrind.
-	valgrind --leak-check=full --error-exitcode=1 ./tests/tests
+	$(VALGRIND) ./tests/tests
 #	Needs to be rewritten to separate the benchmark.
 #	valgrind --error-exitcode=1 ./tests/test_table
 	@for test in tests/t.* ; do \
-	  echo valgrind --leak-check=full --error-exitcode=1 ./$$test; \
-	  valgrind --leak-check=full --error-exitcode=1 ./$$test; \
+	  echo $(VALGRIND) ./$$test; \
+	  $(VALGRIND) ./$$test; \
 	done;
 
 tests/t.test_vs_proto2.googlemessage1 \

@@ -8,8 +8,7 @@
 #include <string.h>
 #include "descriptor.h"
 #include "upb_context.h"
-#include "upb_enum.h"
-#include "upb_msg.h"
+#include "upb_def.h"
 #include "upb_mm.h"
 
 /* Search for a character in a string, in reverse. */
