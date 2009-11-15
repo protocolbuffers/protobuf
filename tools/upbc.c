@@ -79,7 +79,7 @@ static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     if(entries[i]->type != UPB_SYM_ENUM) continue;
     struct upb_symtab_entry *entry = entries[i];
-    struct upb_enum *e = entry->ref._enum;
+    struct upb_enumdef *e = entry->ref._enum;
     google_protobuf_EnumDescriptorProto *ed = e->descriptor;
     /* We use entry->e.key (the fully qualified name) instead of ed->name. */
     struct upb_string *enum_name = upb_strdup(&entry->e.key);
@@ -476,8 +476,7 @@ static void write_message_c(void *data, struct upb_msgdef *m,
       .type = GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE,
       .ref = {.msg = m}
   };
-  union upb_value_ptr p = UPB_VALUE_ADDROF(val);
-  add_value(p, &fake_field, &types);
+  add_value(upb_value_addrof(&val), &fake_field, &types);
   add_submsgs(data, m, &types);
 
   /* Emit foward declarations for all msgs of all types, and define arrays. */

@@ -42,6 +42,7 @@ clean:
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf tests/tests tests/t.* tests/test_table
 	rm -rf descriptor/descriptor.proto.pb
+	rm -rf tools/upbc deps
 	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
@@ -86,8 +87,10 @@ test: tests
 #	Needs to be rewritten to separate the benchmark.
 #	valgrind --error-exitcode=1 ./tests/test_table
 	@for test in tests/t.* ; do \
-	  echo $(VALGRIND) ./$$test; \
-	  $(VALGRIND) ./$$test; \
+	  if [ -f ./$$test ] ; then \
+	    echo $(VALGRIND) ./$$test: \\c; \
+	    $(VALGRIND) ./$$test; \
+	  fi \
 	done;
 
 tests/t.test_vs_proto2.googlemessage1 \

@@ -140,13 +140,10 @@ union upb_value_ptr {
   void *_void;
 };
 
-// Unfortunately there is no way to define this so that it can be used as a
-// generic expression, a la:
-//   foo(UPB_VALUE_ADDROF(bar));
-// ...you have to use it as the initializer of a upb_value_ptr:
-//   union upb_value_ptr p = UPB_VALUE_ADDROF(bar);
-//   foo(p);
-#define UPB_VALUE_ADDROF(val) {(void*)&val._double}
+INLINE union upb_value_ptr upb_value_addrof(union upb_value *val) {
+  union upb_value_ptr ptr = {&val->_double};
+  return ptr;
+}
 
 /**
  * Converts upb_value_ptr -> upb_value by reading from the pointer.  We need to

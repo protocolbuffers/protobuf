@@ -50,35 +50,24 @@ static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
 
 /* Callbacks for the stream parser. */
 
-static upb_field_type_t tag_cb(void *udata, struct upb_tag *tag,
-                               void **user_field_desc)
+static bool value_cb(void *udata, struct upb_msgdef *msgdef,
+                     struct upb_fielddef *f, union upb_value val)
 {
+  (void)msgdef;
   struct upb_msgparser *mp = udata;
-  struct upb_fielddef *f =
-      upb_msg_fieldbynum(mp->top->msg->def, tag->field_number);
-  if(!f || !upb_check_type(tag->wire_type, f->type))
-    return 0;  /* Skip unknown or fields of the wrong type. */
-  *user_field_desc = f;
-  return f->type;
-}
-
-static void *value_cb(void *udata, uint8_t *buf, uint8_t *end,
-                      void *user_field_desc, struct upb_status *status)
-{
-  struct upb_msgparser *mp = udata;
-  struct upb_fielddef *f = user_field_desc;
   struct upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
-  return upb_parse_value(buf, end, f->type, p, status);
+  upb_value_write(p, val, f->type);
+  return true;
 }
 
-static void str_cb(void *udata, uint8_t *str,
-                   size_t avail_len, size_t total_len,
-                   void *udesc)
+static bool str_cb(void *udata, struct upb_msgdef *msgdef,
+                   struct upb_fielddef *f, uint8_t *str, size_t avail_len,
+                   size_t total_len)
 {
+  (void)msgdef;
   struct upb_msgparser *mp = udata;
-  struct upb_fielddef *f = udesc;
   struct upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_set(msg, f);
@@ -98,12 +87,12 @@ static void str_cb(void *udata, uint8_t *str,
     memcpy((*p.str)->ptr, str, avail_len);
     (*p.str)->byte_len = avail_len;
   //}
+  return true;
 }
 
-static void start_cb(void *udata, void *user_field_desc)
+static void start_cb(void *udata, struct upb_fielddef *f)
 {
   struct upb_msgparser *mp = udata;
-  struct upb_fielddef *f = user_field_desc;
   struct upb_msg *oldmsg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
 
@@ -131,15 +120,14 @@ static void end_cb(void *udata)
 
 struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def)
 {
-  (void)def;  // Not used atm.
   struct upb_msgparser *mp = malloc(sizeof(struct upb_msgparser));
-  mp->s = upb_cbparser_new();
+  mp->s = upb_cbparser_new(def, value_cb, str_cb, start_cb, end_cb);
   return mp;
 }
 
 void upb_msgparser_reset(struct upb_msgparser *s, struct upb_msg *msg, bool byref)
 {
-  upb_cbparser_reset(s->s, s, tag_cb, value_cb, str_cb, start_cb, end_cb);
+  upb_cbparser_reset(s->s, s);
   s->byref = byref;
   s->top = s->stack;
   s->top->msg = msg;
