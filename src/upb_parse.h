@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-/* Event Callbacks. ***********************************************************/
+/* Callback parser callbacks. *************************************************/
 
 // The value callback is called when a regular value (ie. not a string or
 // submessage) is encountered which was defined in the upb_msgdef.  The client
@@ -80,6 +80,45 @@ void upb_cbparser_reset(struct upb_cbparser *p, void *udata);
 //
 // TODO: see if we can provide the following guarantee efficiently:
 //   retval will always be >= len. */
+size_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
+                          struct upb_status *status);
+
+/* Pick parser interface. ************************************************/
+
+// The pick parser provides a convenient interface for extracting a given set
+// of fields from a protobuf.  This is especially useful in the case that you
+// want only a few fields from a large protobuf, because the pick parser can be
+// much more efficient by aggressively skipping data and stopping when it has
+// all the fields you asked for.  The requested fields may be nested
+// submessages of the top-level message.
+//
+// The selection parser currently does not yet support repeated fields -- this
+// would involve either letting the user specify an index of the record they
+// wanted, or repeatedly delivering values for the same field number.  The
+// latter would make it impossible to bail out of processing a message early,
+// because there could always be more values for that field.
+//
+// This parser is layered on top of the callback parser.
+
+// Callbacks for the pick parser.  The semantics are the same as for the
+// callback parser, excet that field numbers are provided instead of msgdefs
+// and fieldefs.
+typedef void (*upb_pp_value_cb)(void *udata, int fieldnum, union upb_value val);
+typedef void (*upb_pp_str_cb)(void *udata, int fieldnum, uint8_t *str,
+                              size_t avail_len, size_t total_len);
+
+// The pickparser methods all have the same semantics as the cbparser, except
+// that there are no start or end callbacks and the constructor needs a list
+// of fields.  The fields are in dotted notation, so "foo.bar" expects that the
+// top-level message contains a field foo, which contains a field bar.  The
+// new function will return NULL if any of the field names are invalid, or are
+// repeated fields.
+struct upb_pickparser *upb_pickparser_new(struct upb_msgdef *msgdef,
+                                          char *fields[],
+                                          upb_pp_value_cb value_cb,
+                                          upb_pp_str_cb str_cb);
+void upb_pickparser_free(struct upb_cbparser *p);
+void upb_pickparser_reset(struct upb_pickparser *p, void *udata);
 size_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
                           struct upb_status *status);
 
