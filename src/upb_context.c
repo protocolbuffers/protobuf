@@ -55,11 +55,7 @@ static void free_symtab(struct upb_strtable *t)
 {
   struct upb_symtab_entry *e = upb_strtable_begin(t);
   for(; e; e = upb_strtable_next(t, &e->e)) {
-    switch(e->type) {
-      case UPB_SYM_MESSAGE: upb_msgdef_unref(e->ref.msg); break;
-      case UPB_SYM_ENUM: upb_enumdef_unref(e->ref._enum); break;
-      default: break;  /* TODO */
-    }
+    upb_def_unref(e->def);
     free(e->e.key.ptr);
   }
   upb_strtable_free(t);
@@ -80,8 +76,8 @@ void upb_context_unref(struct upb_context *c)
     upb_rwlock_wrlock(&c->lock);
     free_context(c);
     upb_rwlock_unlock(&c->lock);
-    free(c);
     upb_rwlock_destroy(&c->lock);
+    free(c);
   }
 }
 

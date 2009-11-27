@@ -218,16 +218,6 @@ INLINE void upb_value_write(union upb_value_ptr ptr, union upb_value val,
 #undef CASE
 }
 
-// All the different definitions that can occur in .proto files.
-union upb_symbol_ref {
-  struct upb_msgdef *msg;
-  struct upb_enumdef *_enum;
-  struct upb_svc *svc;
-
-  /* Used only temporarily before a reference has been resolved. */
-  struct upb_string *str;
-};
-
 // Status codes used as a return value.  Codes >0 are not fatal and can be
 // resumed.
 enum upb_status_code {

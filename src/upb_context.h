@@ -24,18 +24,9 @@ extern "C" {
 
 /* Definitions. ***************************************************************/
 
-/* The symbol table maps names to various kinds of symbols. */
-enum upb_symbol_type {
-  UPB_SYM_MESSAGE,
-  UPB_SYM_ENUM,
-  UPB_SYM_SERVICE,
-  UPB_SYM_EXTENSION
-};
-
 struct upb_symtab_entry {
   struct upb_strtable_entry e;
-  enum upb_symbol_type type;
-  union upb_symbol_ref ref;
+  struct upb_def *def;  /* We own one ref. */
 };
 
 struct upb_context {

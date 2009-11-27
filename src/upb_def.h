@@ -10,10 +10,10 @@
  * (TODO: descriptions of extensions and services).
  *
  * Defs are immutable and reference-counted.  Contexts reference any defs
- * that are the currently active def for that context, but they can be
- * unref'd if the message is changed by loading extensions.  In the case
- * that a def is no longer active in a context, it will still be ref'd by
- * messages (if any) that were constructed with that def.
+ * that are the currently in their symbol table.  If an extension is loaded
+ * that adds a field to an existing message, a new msgdef is constructed that
+ * includes the new field and the old msgdef is unref'd.  The old msgdef will
+ * still be ref'd by message (if any) that were constructed with that msgdef.
  *
  * This file contains routines for creating and manipulating the definitions
  * themselves.  To create and manipulate actual messages, see upb_msg.h.
@@ -29,42 +29,47 @@
 extern "C" {
 #endif
 
-/* Message definition. ********************************************************/
+/* "Base class" for defs; defines common members and functions.  **************/
 
-struct upb_fielddef;
-struct upb_context;
-struct google_protobuf_EnumDescriptorProto;
-struct google_protobuf_DescriptorProto;
-struct google_protobuf_FieldDescriptorProto;
-
-/* Structure that describes a single .proto message type. */
-struct upb_msgdef {
-  upb_atomic_refcount_t refcount;
-  struct upb_context *context;
-  struct upb_msg *default_msg;   /* Message with all default values set. */
-  struct upb_string *fqname;     /* Fully qualified. */
-  size_t size;
-  uint32_t num_fields;
-  uint32_t set_flags_bytes;
-  uint32_t num_required_fields;  /* Required fields have the lowest set bytemasks. */
-  struct upb_inttable fields_by_num;
-  struct upb_strtable fields_by_name;
-  struct upb_fielddef *fields;
+// All the different kind of defs we support.  These correspond 1:1 with
+// declarations in a .proto file.
+enum upb_def_type {
+  UPB_DEF_MESSAGE,
+  UPB_DEF_ENUM,
+  UPB_DEF_SERVICE,
+  UPB_DEF_EXTENSION,
+  // Represented by a string, symbol hasn't been resolved yet.
+  UPB_DEF_UNRESOLVED
 };
 
-/* Structure that describes a single field in a message. */
-struct upb_fielddef {
-  union upb_symbol_ref ref;
-  uint32_t byte_offset;     /* Where to find the data. */
-  uint16_t field_index;     /* Indicates set bit. */
+// Common members.
+struct upb_def {
+  enum upb_def_type type;
+  upb_atomic_refcount_t refcount;
+  struct upb_string *fqname;  /* Fully-qualified. */
+}
 
-  /* TODO: Performance test whether it's better to move the name and number
-   * into an array in upb_msgdef, indexed by field_index. */
+void upb_def_init(struct upb_def *def, enum upb_def_type type,
+                  struct upb_string *fqname);
+
+/* Field definition. **********************************************************/
+
+// A upb_fielddef describes a single field in a message.  It isn't a full def
+// in the sense that it derives from upb_def.  It cannot stand on its own; it
+// is either a field of a upb_msgdef or contained inside a upb_extensiondef.
+struct upb_fielddef {
+  upb_field_type_t type;
+  upb_label_t label;
   upb_field_number_t number;
   struct upb_string *name;
 
-  upb_field_type_t type;
-  upb_label_t label;
+  // These are set only when this fielddef is part of a msgdef.
+  uint32_t byte_offset;     // Where in a upb_msg to find the data.
+  uint16_t field_index;     // Indicates set bit.
+
+  // For the case of an enum or a submessage, points to the def for that type.
+  // We own a ref on this def.
+  struct upb_def *def;
 };
 
 INLINE bool upb_issubmsg(struct upb_fielddef *f) {
@@ -100,47 +105,72 @@ INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_fielddef *f) {
   else return -1;
 }
 
-/* Number->field and name->field lookup.  *************************************/
+// Interfaces for constructing/destroying fielddefs.  These are internal-only.
+struct google_protobuf_FieldDescriptorProto;
 
-/* The num->field and name->field maps in upb_msgdef allow fast lookup of fields
- * by number or name.  These lookups are in the critical path of parsing and
- * field lookup, so they must be as fast as possible.  To make these more
- * cache-friendly, we put the data in the table by value. */
+// Initializes a upb_fielddef from a FieldDescriptorProto.  The caller must
+// have previously allocated the upb_fielddef.
+void upb_fielddef_init(struct google_protobuf_FieldDescriptorProto *fd,
+                       struct upb_fielddef *f);
+void upb_fielddef_uninit(struct upb_fielddef *f);
 
+// Sort the given fielddefs in-place, according to what we think is an optimal
+// ordering of fields.  This can change from upb release to upb release.
+void upb_fielddef_sort(struct upb_fielddef *defs, size_t num);
+
+/* Message definition. ********************************************************/
+
+struct google_protobuf_EnumDescriptorProto;
+struct google_protobuf_DescriptorProto;
+
+// Structure that describes a single .proto message type.
+struct upb_msgdef {
+  struct upb_def def;
+  struct upb_msg *default_msg;   // Message with all default values set.
+  size_t size;
+  uint32_t num_fields;
+  uint32_t set_flags_bytes;
+  uint32_t num_required_fields;  // Required fields have the lowest set bytemasks.
+  struct upb_fielddef *fields;   // We have exclusive ownership of these.
+
+  // Tables for looking up fields by number and name.
+  struct upb_inttable fields_by_num;
+  struct upb_strtable fields_by_name;
+};
+
+// The num->field and name->field maps in upb_msgdef allow fast lookup of fields
+// by number or name.  These lookups are in the critical path of parsing and
+// field lookup, so they must be as fast as possible.
 struct upb_fieldsbynum_entry {
   struct upb_inttable_entry e;
   struct upb_fielddef f;
 };
-
 struct upb_fieldsbyname_entry {
   struct upb_strtable_entry e;
   struct upb_fielddef f;
 };
 
-/* Looks up a field by name or number.  While these are written to be as fast
- * as possible, it will still be faster to cache the results of this lookup if
- * possible.  These return NULL if no such field is found. */
+// Looks up a field by name or number.  While these are written to be as fast
+// as possible, it will still be faster to cache the results of this lookup if
+// possible.  These return NULL if no such field is found.
 INLINE struct upb_fielddef *upb_msg_fieldbynum(struct upb_msgdef *m,
-                                                   uint32_t number) {
-  struct upb_fieldsbynum_entry *e =
-      (struct upb_fieldsbynum_entry*)upb_inttable_fast_lookup(
-          &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
+                                               uint32_t number) {
+  struct upb_fieldsbynum_entry *e = upb_inttable_fast_lookup(
+      &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
   return e ? &e->f : NULL;
 }
 
 INLINE struct upb_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
-                                                    struct upb_string *name) {
-  struct upb_fieldsbyname_entry *e =
-      (struct upb_fieldsbyname_entry*)upb_strtable_lookup(
-          &m->fields_by_name, name);
+                                                struct upb_string *name) {
+  struct upb_fieldsbyname_entry *e = upb_strtable_lookup(
+      &m->fields_by_name, name);
   return e ? &e->f : NULL;
 }
 
-/* Enums. *********************************************************************/
+/* Enum defintion. ************************************************************/
 
 struct upb_enumdef {
   upb_atomic_refcount_t refcount;
-  struct upb_context *context;
   struct upb_strtable nametoint;
   struct upb_inttable inttoname;
 };
@@ -172,7 +202,7 @@ struct upb_enumdef_iton_entry {
 void upb_msgdef_init(struct upb_msgdef *m,
                      struct google_protobuf_DescriptorProto *d,
                      struct upb_string *fqname, bool sort,
-                     struct upb_context *c, struct upb_status *status);
+                     struct upb_status *status);
 void _upb_msgdef_free(struct upb_msgdef *m);
 INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
   upb_atomic_ref(&m->refcount);
@@ -180,12 +210,6 @@ INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
 INLINE void upb_msgdef_unref(struct upb_msgdef *m) {
   if(upb_atomic_unref(&m->refcount)) _upb_msgdef_free(m);
 }
-
-/* Sort the given field descriptors in-place, according to what we think is an
- * optimal ordering of fields.  This can change from upb release to upb
- * release. */
-void upb_msgdef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
-                        size_t num);
 
 /* Clients use this function on a previously initialized upb_msgdef to resolve
  * the "ref" field in the upb_fielddef.  Since messages can refer to each
@@ -197,8 +221,7 @@ void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
 /* Initializes and frees an enum, respectively.  Caller retains ownership of
  * ed.  The enumdef is initialized with one ref. */
 void upb_enumdef_init(struct upb_enumdef *e,
-                      struct google_protobuf_EnumDescriptorProto *ed,
-                      struct upb_context *c);
+                      struct google_protobuf_EnumDescriptorProto *ed);
 void _upb_enumdef_free(struct upb_enumdef *e);
 INLINE void upb_enumdef_ref(struct upb_enumdef *e) {
   upb_atomic_ref(&e->refcount);
@@ -207,28 +230,24 @@ INLINE void upb_enumdef_unref(struct upb_enumdef *e) {
   if(upb_atomic_unref(&e->refcount)) _upb_enumdef_free(e);
 }
 
-INLINE void upb_def_ref(union upb_symbol_ref ref, upb_field_type_t type) {
-  switch(type) {
-    case UPB_TYPENUM(MESSAGE):
-    case UPB_TYPENUM(GROUP):
-      upb_msgdef_ref(ref.msg);
+INLINE void upb_def_ref(struct upb_def *def) { upb_atomic_ref(&def->refcount); }
+INLINE void upb_def_unref(struct upb_def *def) {
+  if(upb_atomic_unref(&def->refcount)) {
+  switch(def->type) {
+    case UPB_DEF_MESSAGE:
+      _upb_msgdef_free((struct upb_msgdef*)def);
       break;
-    case UPB_TYPENUM(ENUM):
-      upb_enumdef_ref(ref._enum);
+    case UPB_DEF_ENUM:
+      _upb_emumdef_free((struct upb_enumdef*)def);
       break;
-    default:
-      assert(false);
-  }
-}
-
-INLINE void upb_def_unref(union upb_symbol_ref ref, upb_field_type_t type) {
-  switch(type) {
-    case UPB_TYPENUM(MESSAGE):
-    case UPB_TYPENUM(GROUP):
-      upb_msgdef_unref(ref.msg);
+    case UPB_DEF_SERVICE:
+      assert(false);  /* Unimplemented. */
       break;
-    case UPB_TYPENUM(ENUM):
-      upb_enumdef_unref(ref._enum);
+    case UPB_DEF_EXTENSION,
+      _upb_extensiondef_free((struct upb_extensiondef*)def);
+      break;
+    case UPB_DEF_UNRESOLVED
+      upb_string_unref((struct upb_string*)def);
       break;
     default:
       assert(false);

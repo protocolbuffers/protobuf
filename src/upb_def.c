@@ -118,7 +118,7 @@ void _upb_msgdef_free(struct upb_msgdef *m)
 }
 
 void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
-                       union upb_symbol_ref ref) {
+                       union upb_def_ptr ref) {
   struct upb_fieldsbynum_entry *int_e = upb_inttable_fast_lookup(
       &m->fields_by_num, f->number, sizeof(struct upb_fieldsbynum_entry));
   struct upb_fieldsbyname_entry *str_e =
