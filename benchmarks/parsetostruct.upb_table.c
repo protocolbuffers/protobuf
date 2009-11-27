@@ -40,7 +40,7 @@ static bool initialize()
   upb_string_unref(proto_name);
 
   def = e.ref.msg;
-  for(int i = 0; i < 32; i++)
+  for(int i = 0; i < NUM_MESSAGES; i++)
     msgs[i] = upb_msg_new(def);
 
   // Read the message data itself.
@@ -55,7 +55,7 @@ static bool initialize()
 
 static void cleanup()
 {
-  for(int i = 0; i < 32; i++)
+  for(int i = 0; i < NUM_MESSAGES; i++)
     upb_msg_unref(msgs[i]);
   upb_string_unref(str);
   upb_context_unref(c);
