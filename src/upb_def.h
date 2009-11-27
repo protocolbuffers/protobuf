@@ -9,6 +9,8 @@
  * - upb_enumdef: describes an enum.
  * (TODO: descriptions of extensions and services).
  *
+ * Defs are immutable and reference-counted.  
+ *
  * This file contains routines for creating and manipulating the definitions
  * themselves.  To create and manipulate actual messages, see upb_msg.h.
  */
@@ -27,12 +29,14 @@ extern "C" {
 
 struct upb_fielddef;
 struct upb_context;
+struct google_protobuf_EnumDescriptorProto;
+struct google_protobuf_DescriptorProto;
+struct google_protobuf_FieldDescriptorProto;
 /* Structure that describes a single .proto message type. */
 struct upb_msgdef {
   struct upb_context *context;
   struct upb_msg *default_msg;   /* Message with all default values set. */
-  struct google_protobuf_DescriptorProto *descriptor;
-  struct upb_string fqname;      /* Fully qualified. */
+  struct upb_string *fqname;     /* Fully qualified. */
   size_t size;
   uint32_t num_fields;
   uint32_t set_flags_bytes;
@@ -40,19 +44,20 @@ struct upb_msgdef {
   struct upb_inttable fields_by_num;
   struct upb_strtable fields_by_name;
   struct upb_fielddef *fields;
-  struct google_protobuf_FieldDescriptorProto **field_descriptors;
 };
 
-/* Structure that describes a single field in a message.  This structure is very
- * consciously designed to fit into 12/16 bytes (32/64 bit, respectively),
- * because copies of this struct are in the hash table that is read in the
- * critical path of parsing.  Minimizing the size of this struct increases
- * cache-friendliness. */
+/* Structure that describes a single field in a message. */
 struct upb_fielddef {
   union upb_symbol_ref ref;
   uint32_t byte_offset;     /* Where to find the data. */
-  uint16_t field_index;     /* Indexes upb_msgdef.fields and indicates set bit */
-  upb_field_type_t type;    /* Copied from descriptor for cache-friendliness. */
+  uint16_t field_index;     /* Indicates set bit. */
+
+  /* TODO: Performance test whether it's better to move the name and number
+   * into an array in upb_msgdef, indexed by field_index. */
+  upb_field_number_t number;
+  struct upb_string *name;
+
+  upb_field_type_t type;
   upb_label_t label;
 };
 
@@ -87,12 +92,6 @@ INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_fielddef *f) {
   if(upb_isstring(f)) return UPB_MM_STR_REF;
   else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
   else return -1;
-}
-
-/* Can be used to retrieve a field descriptor given the upb_fielddef. */
-INLINE struct google_protobuf_FieldDescriptorProto *upb_msg_field_descriptor(
-    struct upb_fielddef *f, struct upb_msgdef *m) {
-  return m->field_descriptors[f->field_index];
 }
 
 /* Number->field and name->field lookup.  *************************************/
@@ -136,7 +135,6 @@ INLINE struct upb_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
 struct upb_enumdef {
   upb_atomic_refcount_t refcount;
   struct upb_context *context;
-  struct google_protobuf_EnumDescriptorProto *descriptor;
   struct upb_strtable nametoint;
   struct upb_inttable inttoname;
 };
@@ -154,8 +152,8 @@ struct upb_enumdef_iton_entry {
 /* Initializes and frees an enum, respectively.  Caller retains ownership of
  * ed, but it must outlive e. */
 void upb_enumdef_init(struct upb_enumdef *e,
-                     struct google_protobuf_EnumDescriptorProto *ed,
-                     struct upb_context *c);
+                      struct google_protobuf_EnumDescriptorProto *ed,
+                      struct upb_context *c);
 void upb_enumdef_free(struct upb_enumdef *e);
 
 
@@ -164,21 +162,18 @@ void upb_enumdef_free(struct upb_enumdef *e);
 /* Initializes/frees a upb_msgdef.  Usually this will be called by upb_context,
  * and clients will not have to construct one directly.
  *
- * Caller retains ownership of d, but the msg will contain references to it, so
- * it must outlive the msg.  Note that init does not resolve
+ * Caller retains ownership of d.  Note that init does not resolve
  * upb_fielddef.ref the caller should do that post-initialization by
  * calling upb_msg_ref() below.
  *
- * fqname indicates the fully-qualified name of this message.  Ownership of
- * fqname passes to the msg, but the msg will contain references to it, so it
- * must outlive the msg.
+ * fqname indicates the fully-qualified name of this message.
  *
  * sort indicates whether or not it is safe to reorder the fields from the order
  * they appear in d.  This should be false if code has been compiled against a
  * header for this type that expects the given order. */
 void upb_msgdef_init(struct upb_msgdef *m,
                      struct google_protobuf_DescriptorProto *d,
-                     struct upb_string fqname, bool sort,
+                     struct upb_string *fqname, bool sort,
                      struct upb_context *c, struct upb_status *status);
 void upb_msgdef_free(struct upb_msgdef *m);
 

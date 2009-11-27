@@ -243,7 +243,7 @@ static void insert_message(struct upb_strtable *t,
   e.e.key = fqname;
   e.type = UPB_SYM_MESSAGE;
   e.ref.msg = malloc(sizeof(*e.ref.msg));
-  upb_msgdef_init(e.ref.msg, d, fqname, sort, c, status);
+  upb_msgdef_init(e.ref.msg, d, &fqname, sort, c, status);
   if(!upb_ok(status)) {
     free(fqname.ptr);
     return;
@@ -292,14 +292,12 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
       struct upb_msgdef *m = e->ref.msg;
       for(unsigned int i = 0; i < m->num_fields; i++) {
         struct upb_fielddef *f = &m->fields[i];
-        google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
         union upb_symbol_ref ref;
-        if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE ||
-           fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP)
-          ref = resolve2(existingdefs, addto, &e->e.key, fd->type_name,
+        if(f->type == UPB_TYPENUM(MESSAGE) || f->type == UPB_TYPENUM(GROUP))
+          ref = resolve2(existingdefs, addto, &e->e.key, f->ref.str,
                          UPB_SYM_MESSAGE);
-        else if(fd->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM)
-          ref = resolve2(existingdefs, addto, &e->e.key, fd->type_name,
+        else if(f->type == UPB_TYPENUM(ENUM))
+          ref = resolve2(existingdefs, addto, &e->e.key, f->ref.str,
                          UPB_SYM_ENUM);
         else
           continue;  /* No resolving necessary. */
@@ -307,7 +305,7 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
           upb_seterr(status, UPB_STATUS_ERROR,
                      "could not resolve symbol '" UPB_STRFMT "'"
                      " in context '" UPB_STRFMT "'",
-                     UPB_STRARG(fd->type_name), UPB_STRARG(&e->e.key));
+                     UPB_STRARG(f->ref.str), UPB_STRARG(&e->e.key));
           return;
         }
         upb_msgdef_setref(m, f, ref);

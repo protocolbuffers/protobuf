@@ -135,18 +135,15 @@ void compare(const google::protobuf::Message& proto2_msg,
   ASSERT((uint32_t)d->field_count() == def->num_fields);
   for(uint32_t i = 0; i < def->num_fields; i++) {
     struct upb_fielddef *upb_f = &def->fields[i];
-    struct google_protobuf_FieldDescriptorProto *upb_fd =
-        upb_msg_field_descriptor(upb_f, def);
     const google::protobuf::FieldDescriptor *proto2_f =
-        d->FindFieldByNumber(upb_fd->number);
+        d->FindFieldByNumber(upb_f->number);
     // Make sure the definitions are equal.
     ASSERT(upb_f);
-    ASSERT(upb_fd);
     ASSERT(proto2_f);
-    ASSERT(upb_fd->number == proto2_f->number());
-    ASSERT(std::string(upb_fd->name->ptr, upb_fd->name->byte_len) ==
+    ASSERT(upb_f->number == proto2_f->number());
+    ASSERT(std::string(upb_f->name->ptr, upb_f->name->byte_len) ==
            proto2_f->name());
-    ASSERT(upb_fd->type == proto2_f->type());
+    ASSERT(upb_f->type == proto2_f->type());
     ASSERT(upb_isarray(upb_f) == proto2_f->is_repeated());
 
     if(!upb_msg_isset(upb_msg, upb_f)) {

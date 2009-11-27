@@ -15,29 +15,29 @@ void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
 {
 #define CASE(fmtstr, member) fprintf(file, fmtstr, val.member); break;
   switch(type) {
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
+    case UPB_TYPENUM(DOUBLE):
       CASE("%0.f", _double);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT:
+    case UPB_TYPENUM(FLOAT):
       CASE("%0.f", _float)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
+    case UPB_TYPENUM(INT64):
+    case UPB_TYPENUM(SFIXED64):
+    case UPB_TYPENUM(SINT64):
       CASE("%" PRId64, int64)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64:
+    case UPB_TYPENUM(UINT64):
+    case UPB_TYPENUM(FIXED64):
       CASE("%" PRIu64, uint64)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
+    case UPB_TYPENUM(INT32):
+    case UPB_TYPENUM(SFIXED32):
+    case UPB_TYPENUM(SINT32):
       CASE("%" PRId32, int32)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM:
+    case UPB_TYPENUM(UINT32):
+    case UPB_TYPENUM(FIXED32):
+    case UPB_TYPENUM(ENUM):
       CASE("%" PRIu32, uint32);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
+    case UPB_TYPENUM(BOOL):
       CASE("%hhu", _bool);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
+    case UPB_TYPENUM(STRING):
+    case UPB_TYPENUM(BYTES):
       /* TODO: escaping. */
       fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(val.str)); break;
   }
@@ -84,7 +84,6 @@ void upb_text_pop(struct upb_text_printer *p,
 
 static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
                      struct upb_fielddef *f,
-                     google_protobuf_FieldDescriptorProto *fd,
                      FILE *stream);
 
 static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
@@ -93,32 +92,31 @@ static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
   struct upb_msgdef *m = msg->def;
   for(uint32_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
-    google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m);
     if(!upb_msg_isset(msg, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(msg, f);
     if(upb_isarray(f)) {
       struct upb_array *arr = *p.arr;
       for(uint32_t j = 0; j < arr->len; j++) {
         union upb_value_ptr elem_p = upb_array_getelementptr(arr, j);
-        printval(printer, elem_p, f, fd, stream);
+        printval(printer, elem_p, f, stream);
       }
     } else {
-      printval(printer, p, f, fd, stream);
+      printval(printer, p, f, stream);
     }
   }
 }
 
 static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
                      struct upb_fielddef *f,
-                     google_protobuf_FieldDescriptorProto *fd,
                      FILE *stream)
 {
   if(upb_issubmsg(f)) {
-    upb_text_push(printer, fd->name, stream);
+    upb_text_push(printer, f->name, stream);
     printmsg(printer, *p.msg, stream);
     upb_text_pop(printer, stream);
   } else {
-    upb_text_printfield(printer, fd->name, f->type, upb_value_read(p, f->type), stream);
+    upb_text_printfield(printer, f->name, f->type,
+                        upb_value_read(p, f->type), stream);
   }
 }
 

@@ -79,8 +79,7 @@ static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     if(entries[i]->type != UPB_SYM_ENUM) continue;
     struct upb_symtab_entry *entry = entries[i];
-    struct upb_enumdef *e = entry->ref._enum;
-    google_protobuf_EnumDescriptorProto *ed = e->descriptor;
+    struct upb_enumdef *enumdef = entry->ref._enum;
     /* We use entry->e.key (the fully qualified name) instead of ed->name. */
     struct upb_string *enum_name = upb_strdup(&entry->e.key);
     to_cident(enum_name);
@@ -93,20 +92,20 @@ static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
     to_preproc(enum_val_prefix);
 
     fprintf(stream, "typedef enum " UPB_STRFMT " {\n", UPB_STRARG(enum_name));
-    if(ed->set_flags.has.value) {
-      for(uint32_t j = 0; j < ed->value->len; j++) {  /* Foreach enum value. */
-        google_protobuf_EnumValueDescriptorProto *v = ed->value->elements[j];
-        struct upb_string *value_name = upb_strdup(v->name);
-        to_preproc(value_name);
-        /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13," */
-        fprintf(stream, "  " UPB_STRFMT UPB_STRFMT " = %" PRIu32,
-                UPB_STRARG(enum_val_prefix), UPB_STRARG(value_name), v->number);
-        if(j != ed->value->len-1) fputc(',', stream);
-        fputc('\n', stream);
-        upb_string_unref(value_name);
-      }
+    struct upb_enumdef_ntoi_entry *e = upb_strtable_begin(&enumdef->nametoint);
+    bool first = true;
+    /* Foreach enum value. */
+    for(; e; e = upb_strtable_next(&enumdef->nametoint, &e->e)) {
+      struct upb_string *value_name = upb_strdup(&e->e.key);
+      to_preproc(value_name);
+      /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13," */
+      if (!first) fputs(",\n", stream);
+      first = false;
+      fprintf(stream, "  " UPB_STRFMT UPB_STRFMT " = %" PRIu32,
+              UPB_STRARG(enum_val_prefix), UPB_STRARG(value_name), e->value);
+      upb_string_unref(value_name);
     }
-    fprintf(stream, "} " UPB_STRFMT ";\n\n", UPB_STRARG(enum_name));
+    fprintf(stream, "\n} " UPB_STRFMT ";\n\n", UPB_STRARG(enum_name));
     upb_string_unref(enum_name);
     upb_string_unref(enum_val_prefix);
   }
@@ -178,33 +177,23 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
     fputs("    struct {\n", stream);
     for(uint32_t j = 0; j < m->num_fields; j++) {
       static char* labels[] = {"", "optional", "required", "repeated"};
-      struct google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
+      struct upb_fielddef *f = &m->fields[j];
       fprintf(stream, "      bool " UPB_STRFMT ":1;  /* = %" PRIu32 ", %s. */\n",
-              UPB_STRARG(fd->name), fd->number, labels[fd->label]);
+              UPB_STRARG(f->name), f->number, labels[f->label]);
     }
     fputs("    } has;\n", stream);
     fputs("  } set_flags;\n", stream);
     for(uint32_t j = 0; j < m->num_fields; j++) {
       struct upb_fielddef *f = &m->fields[j];
-      struct google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
-      if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP ||
-         f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
-        /* Submessages get special treatment, since we have to use the message
-         * name directly. */
-        struct upb_string type_name_ref = *fd->type_name;
-        if(type_name_ref.ptr[0] == UPB_SYMBOL_SEPARATOR) {
-          /* Omit leading '.'. */
-          type_name_ref.ptr++;
-          type_name_ref.byte_len--;
-        }
-        struct upb_string *type_name = upb_strdup(&type_name_ref);
+      if(f->type == UPB_TYPENUM(GROUP) || f->type == UPB_TYPENUM(MESSAGE)) {
+        struct upb_string *type_name = upb_strdup(f->ref.msg->fqname);
         to_cident(type_name);
         if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
           fprintf(stream, "  UPB_MSG_ARRAY(" UPB_STRFMT ")* " UPB_STRFMT ";\n",
-                  UPB_STRARG(type_name), UPB_STRARG(fd->name));
+                  UPB_STRARG(type_name), UPB_STRARG(f->name));
         } else {
           fprintf(stream, "  " UPB_STRFMT "* " UPB_STRFMT ";\n",
-                  UPB_STRARG(type_name), UPB_STRARG(fd->name));
+                  UPB_STRARG(type_name), UPB_STRARG(f->name));
         }
         upb_string_unref(type_name);
       } else if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
@@ -220,7 +209,7 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
           "struct upb_int64_array*"
         };
         fprintf(stream, "  %s " UPB_STRFMT ";\n",
-                c_types[fd->type], UPB_STRARG(fd->name));
+                c_types[f->type], UPB_STRARG(f->name));
       } else {
         static char* c_types[] = {
           "", "double", "float", "int64_t", "uint64_t", "int32_t", "uint64_t",
@@ -229,7 +218,7 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
           "int32_t", "int64_t"
         };
         fprintf(stream, "  %s " UPB_STRFMT ";\n",
-                c_types[fd->type], UPB_STRARG(fd->name));
+                c_types[f->type], UPB_STRARG(f->name));
       }
     }
     fputs("};\n", stream);
@@ -327,7 +316,7 @@ static void add_strings_from_msg(void *data, struct upb_msgdef *m,
 struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
                                                 struct upb_fielddef *f)
 {
-  struct upb_string *type_name = upb_issubmsg(f) ? upb_strdup(&f->ref.msg->fqname) :
+  struct upb_string *type_name = upb_issubmsg(f) ? upb_strdup(f->ref.msg->fqname) :
                                                    upb_strdupc(upb_type_info[f->type].ctype);
   struct typetable_entry *type_e = upb_strtable_lookup(t, type_name);
   if(type_e == NULL) {
@@ -473,7 +462,7 @@ static void write_message_c(void *data, struct upb_msgdef *m,
   union upb_value val = {.msg = data};
   /* A fake field to get the recursion going. */
   struct upb_fielddef fake_field = {
-      .type = GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE,
+      .type = UPB_TYPENUM(MESSAGE),
       .ref = {.msg = m}
   };
   add_value(upb_value_addrof(&val), &fake_field, &types);
@@ -521,8 +510,7 @@ static void write_message_c(void *data, struct upb_msgdef *m,
         fputs("  {.set_flags = {.has = {\n", stream);
         for(unsigned int j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
-          google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
-          fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(fd->name));
+          fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(upb_msg_isset(msgdata, f))
             fprintf(stream, "true");
           else
@@ -533,9 +521,8 @@ static void write_message_c(void *data, struct upb_msgdef *m,
         /* Print msg data. */
         for(unsigned int j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
-          google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[j];
           union upb_value val = upb_value_read(upb_msg_getptr(msgdata, f), f->type);
-          fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(fd->name));
+          fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(!upb_msg_isset(msgdata, f)) {
             fputs("0,   /* Not set. */", stream);
           } else if(upb_isstring(f)) {

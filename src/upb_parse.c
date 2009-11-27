@@ -467,9 +467,9 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, void *_buf, size_t len,
         buf = delim_end;  // Could be >end.
       }
     } else {
-      if(!f || !upb_check_type(tag.wire_type, f->type)) {
-        buf = skip_wire_value(buf, end, tag.wire_type, status);
-      } else if (f->type == UPB_TYPENUM(GROUP)) {
+      //if(!f || !upb_check_type(tag.wire_type, f->type)) {
+      //  buf = skip_wire_value(buf, end, tag.wire_type, status);
+      if (f->type == UPB_TYPENUM(GROUP)) {
         submsg_end = push(p, start, 0, f, status);
         msgdef = p->top->msgdef;
       } else {

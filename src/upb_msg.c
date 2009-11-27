@@ -173,17 +173,16 @@ static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m);
 /* Returns a size of a value as it will be serialized.  Does *not* include
  * the size of the tag -- that is already accounted for. */
 static size_t get_valuesize(struct upb_msgsizes *sizes, union upb_value_ptr p,
-                            struct upb_fielddef *f,
-                            google_protobuf_FieldDescriptorProto *fd)
+                            struct upb_fielddef *f)
 {
   switch(f->type) {
     default: assert(false); return 0;  /* Internal corruption. */
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE: {
+    case UPB_TYPENUM(MESSAGE): {
       size_t submsg_size = get_msgsize(sizes, *p.msg);
       return upb_get_INT32_size(submsg_size) + submsg_size;
     }
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP: {
-      size_t endgrp_tag_size = upb_get_tag_size(fd->number);
+    case UPB_TYPENUM(GROUP): {
+      size_t endgrp_tag_size = upb_get_tag_size(f->number);
       return endgrp_tag_size + get_msgsize(sizes, *p.msg);
     }
 #define CASE(type, member) \
@@ -216,19 +215,18 @@ static size_t get_msgsize(struct upb_msgsizes *sizes, struct upb_msg *m)
   /* We iterate over fields and arrays in reverse order. */
   for(int32_t i = m->def->num_fields - 1; i >= 0; i--) {
     struct upb_fielddef *f = &m->def->fields[i];
-    google_protobuf_FieldDescriptorProto *fd = upb_msg_field_descriptor(f, m->def);
     if(!upb_msg_isset(m, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(m, f);
     if(upb_isarray(f)) {
       for(int32_t j = (*p.arr)->len - 1; j >= 0; j--) {
         union upb_value_ptr elem = upb_array_getelementptr(*p.arr, j);
         /* TODO: for packed arrays tag size goes outside the loop. */
-        size += upb_get_tag_size(fd->number);
-        size += get_valuesize(sizes, elem, f, fd);
+        size += upb_get_tag_size(f->number);
+        size += get_valuesize(sizes, elem, f);
       }
     } else {
-      size += upb_get_tag_size(fd->number);
-      size += get_valuesize(sizes, p, f, fd);
+      size += upb_get_tag_size(f->number);
+      size += get_valuesize(sizes, p, f);
     }
   }
   /* Resize the 'sizes' array if necessary. */
@@ -322,8 +320,8 @@ size_t upb_msg_serialize(struct upb_msg_serialize_state *s,
     struct upb_fielddef *f = &m->fields[i];
     //union upb_value_ptr p = upb_msg_getptr(msg, f);
     buf = serialize_tag(buf, end, f, status);
-    if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE) {
-    } else if(f->type == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP) {
+    if(f->type == UPB_TYPENUM(MESSAGE)) {
+    } else if(f->type == UPB_TYPENUM(GROUP)) {
     } else if(upb_isstring(f)) {
     } else {
       //upb_serialize_value(buf, end, f->type, p, status);
@@ -341,29 +339,29 @@ bool upb_value_eql(union upb_value_ptr p1, union upb_value_ptr p2,
 {
 #define CMP(type) return *p1.type == *p2.type;
   switch(type) {
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
+    case UPB_TYPENUM(DOUBLE):
       CMP(_double)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT:
+    case UPB_TYPENUM(FLOAT):
       CMP(_float)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
+    case UPB_TYPENUM(INT64):
+    case UPB_TYPENUM(SFIXED64):
+    case UPB_TYPENUM(SINT64):
       CMP(int64)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64:
+    case UPB_TYPENUM(UINT64):
+    case UPB_TYPENUM(FIXED64):
       CMP(uint64)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
+    case UPB_TYPENUM(INT32):
+    case UPB_TYPENUM(SFIXED32):
+    case UPB_TYPENUM(SINT32):
       CMP(int32)
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM:
+    case UPB_TYPENUM(UINT32):
+    case UPB_TYPENUM(FIXED32):
+    case UPB_TYPENUM(ENUM):
       CMP(uint32);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
+    case UPB_TYPENUM(BOOL):
       CMP(_bool);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
+    case UPB_TYPENUM(STRING):
+    case UPB_TYPENUM(BYTES):
       return upb_streql(*p1.str, *p2.str);
     default: return false;
   }

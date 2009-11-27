@@ -126,38 +126,38 @@ static PyObject *upb_to_py(union upb_value_ptr p, upb_field_type_t type)
     default:
       PyErr_SetString(PyExc_RuntimeError, "internal: unexpected type");
       return NULL;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE:
+    case UPB_TYPENUM(DOUBLE):
       return PyFloat_FromDouble(*p._double);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT:
+    case UPB_TYPENUM(FLOAT):
       return PyFloat_FromDouble(*p._float);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64:
+    case UPB_TYPENUM(INT64):
+    case UPB_TYPENUM(SINT64):
+    case UPB_TYPENUM(SFIXED64):
       return PyLong_FromLongLong(*p.int64);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64:
+    case UPB_TYPENUM(UINT64):
+    case UPB_TYPENUM(FIXED64):
       return PyLong_FromUnsignedLongLong(*p.uint64);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM:
+    case UPB_TYPENUM(SFIXED32):
+    case UPB_TYPENUM(SINT32):
+    case UPB_TYPENUM(INT32):
+    case UPB_TYPENUM(ENUM):
 #if PY_MAJOR_VERSION >= 3
       return PyLong_FromLong(*p.int32);
 #else
       return PyInt_FromLong(*p.int32);
 #endif
 
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32:
+    case UPB_TYPENUM(FIXED32):
+    case UPB_TYPENUM(UINT32):
       return PyLong_FromLong(*p.uint32);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
+    case UPB_TYPENUM(BOOL):
       RETURN_BOOL(*p._bool);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES:
+    case UPB_TYPENUM(STRING):
+    case UPB_TYPENUM(BYTES):
       /* Py3k will distinguish between these two. */
       return PyString_FromStringAndSize((*p.str)->ptr, (*p.str)->byte_len);
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_GROUP:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_MESSAGE: {
+    case UPB_TYPENUM(GROUP):
+    case UPB_TYPENUM(MESSAGE): {
       union upb_mmptr mmptr = upb_mmptr_read(p, UPB_MM_MSG_REF);
       bool created;
       struct upb_mm_ref *ref = upb_mm_getref(mmptr, UPB_MM_MSG_REF, &pymm, &created);
@@ -193,7 +193,7 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
     default:
       PyErr_SetString(PyExc_RuntimeError, "internal error");
       return;
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_DOUBLE: {
+    case UPB_TYPENUM(DOUBLE): {
       PyObject *o = PyNumber_Float(val);
       if(!o) {
         PyErr_SetString(PyExc_ValueError, "could not convert to double");
@@ -202,7 +202,7 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
       *p._double = PyFloat_AS_DOUBLE(o);
       return;
     }
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FLOAT: {
+    case UPB_TYPENUM(FLOAT): {
       PyObject *o = PyNumber_Float(val);
       if(!o) {
         PyErr_SetString(PyExc_ValueError, "could not convert to float");
@@ -211,9 +211,9 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
       *p._float = PyFloat_AS_DOUBLE(o);
       return;
     }
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED64: {
+    case UPB_TYPENUM(INT64):
+    case UPB_TYPENUM(SINT64):
+    case UPB_TYPENUM(SFIXED64): {
 #if LONG_MAX >= INT64_MAX
       bool ok;
       long longval = convert_to_long(val, INT64_MIN, INT64_MAX, &ok);
@@ -229,8 +229,8 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
       return;
 #endif
     }
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT64:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED64: {
+    case UPB_TYPENUM(UINT64):
+    case UPB_TYPENUM(FIXED64): {
       PyObject *o = PyNumber_Long(val);
       if(!o) {
         PyErr_SetString(PyExc_ValueError, "could not convert to uint64");
@@ -239,18 +239,18 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
       *p.uint64 = PyLong_AsUnsignedLongLong(o);
       return;
     }
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SFIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_SINT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ENUM: {
+    case UPB_TYPENUM(SFIXED32):
+    case UPB_TYPENUM(SINT32):
+    case UPB_TYPENUM(INT32):
+    case UPB_TYPENUM(ENUM): {
       bool ok;
       long longval = convert_to_long(val, INT32_MIN, INT32_MAX, &ok);
       if(ok) *p.int32 = longval;
       return;
     }
 
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIXED32:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32: {
+    case UPB_TYPENUM(FIXED32):
+    case UPB_TYPENUM(UINT32): {
 #if LONG_MAX >= UINT32_MAX
       bool ok;
       long longval = convert_to_long(val, 0, UINT32_MAX, &ok);
@@ -267,7 +267,7 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
 #endif
     }
 
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BOOL:
+    case UPB_TYPENUM(BOOL):
       if(!PyBool_Check(val)) {
         PyErr_SetString(PyExc_ValueError, "should be true or false");
         return;
@@ -277,8 +277,8 @@ static void set_upbscalarfield(union upb_value_ptr p, PyObject *val,
       else PyErr_SetString(PyExc_RuntimeError, "not true or false?");
       return;
 
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_STRING:
-    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_BYTES: {
+    case UPB_TYPENUM(STRING):
+    case UPB_TYPENUM(BYTES): {
       size_t len = PyString_GET_SIZE(val);
       upb_string_resize(*p.str, len);
       memcpy((*p.str)->ptr, PyString_AS_STRING(val), len);

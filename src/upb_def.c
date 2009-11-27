@@ -37,7 +37,7 @@ void upb_msgdef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
 }
 
 void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
-                     struct upb_string fqname, bool sort, struct upb_context *c,
+                     struct upb_string *fqname, bool sort, struct upb_context *c,
                      struct upb_status *status)
 {
   (void)status;  // Nothing that can fail at the moment.
@@ -47,8 +47,7 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
   upb_strtable_init(&m->fields_by_name, num_fields,
                     sizeof(struct upb_fieldsbyname_entry));
 
-  m->descriptor = d;
-  m->fqname = fqname;
+  m->fqname = upb_strdup(fqname);
   m->context = c;
   m->num_fields = num_fields;
   m->set_flags_bytes = div_round_up(m->num_fields, 8);
@@ -57,17 +56,20 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
   m->size = m->set_flags_bytes;
 
   m->fields = malloc(sizeof(*m->fields) * m->num_fields);
-  m->field_descriptors = malloc(sizeof(*m->field_descriptors) * m->num_fields);
+
+  /* Create a sorted list of the fields. */
+  google_protobuf_FieldDescriptorProto **fds =
+      malloc(sizeof(*fds) * m->num_fields);
   for(unsigned int i = 0; i < m->num_fields; i++) {
     /* We count on the caller to keep this pointer alive. */
-    m->field_descriptors[i] = d->field->elements[i];
+    fds[i] = d->field->elements[i];
   }
-  if(sort) upb_msgdef_sortfds(m->field_descriptors, m->num_fields);
+  if(sort) upb_msgdef_sortfds(fds, m->num_fields);
 
   size_t max_align = 0;
   for(unsigned int i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
-    google_protobuf_FieldDescriptorProto *fd = m->field_descriptors[i];
+    google_protobuf_FieldDescriptorProto *fd = fds[i];
     struct upb_type_info *type_info = &upb_type_info[fd->type];
 
     /* General alignment rules are: each member must be at an address that is a
@@ -77,6 +79,9 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
     f->byte_offset = ALIGN_UP(m->size, type_info->align);
     f->type = fd->type;
     f->label = fd->label;
+    f->number = fd->number;
+    f->name = upb_strdup(fd->name);
+    f->ref.str = fd->type_name;
     m->size = f->byte_offset + type_info->size;
     max_align = UPB_MAX(max_align, type_info->align);
     if(fd->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REQUIRED)
@@ -93,24 +98,26 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
 
   if(max_align > 0)
     m->size = ALIGN_UP(m->size, max_align);
+  free(fds);
 }
 
 void upb_msgdef_free(struct upb_msgdef *m)
 {
   upb_inttable_free(&m->fields_by_num);
   upb_strtable_free(&m->fields_by_name);
+  upb_string_unref(m->fqname);
+  for (unsigned int i = 0; i < m->num_fields; i++) {
+    upb_string_unref(m->fields[i].name);
+  }
   free(m->fields);
-  free(m->field_descriptors);
 }
 
 void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
                        union upb_symbol_ref ref) {
-  struct google_protobuf_FieldDescriptorProto *d =
-      upb_msg_field_descriptor(f, m);
   struct upb_fieldsbynum_entry *int_e = upb_inttable_fast_lookup(
-      &m->fields_by_num, d->number, sizeof(struct upb_fieldsbynum_entry));
+      &m->fields_by_num, f->number, sizeof(struct upb_fieldsbynum_entry));
   struct upb_fieldsbyname_entry *str_e =
-      upb_strtable_lookup(&m->fields_by_name, d->name);
+      upb_strtable_lookup(&m->fields_by_name, f->name);
   assert(int_e && str_e);
   f->ref = ref;
   int_e->f.ref = ref;
@@ -122,7 +129,6 @@ void upb_enumdef_init(struct upb_enumdef *e,
                    struct google_protobuf_EnumDescriptorProto *ed,
                    struct upb_context *c) {
   int num_values = ed->set_flags.has.value ? ed->value->len : 0;
-  e->descriptor = ed;
   e->context = c;
   upb_atomic_refcount_init(&e->refcount, 0);
   upb_strtable_init(&e->nametoint, num_values,
