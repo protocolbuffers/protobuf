@@ -275,8 +275,7 @@ int compare_entries(const void *_e1, const void *_e2)
  *
  * TODO: make these use a generic msg visitor. */
 
-static void add_strings_from_msg(void *data, struct upb_msgdef *m,
-                                 struct upb_strtable *t);
+static void add_strings_from_msg(struct upb_msg *msg, struct upb_strtable *t);
 
 static void add_strings_from_value(union upb_value_ptr p,
                                    struct upb_fielddef *f,
@@ -287,17 +286,17 @@ static void add_strings_from_value(union upb_value_ptr p,
     if(upb_strtable_lookup(t, &e.e.key) == NULL)
       upb_strtable_insert(t, &e.e);
   } else if(upb_issubmsg(f)) {
-    add_strings_from_msg(*p.msg, f->ref.msg, t);
+    add_strings_from_msg(*p.msg, t);
   }
 }
 
-static void add_strings_from_msg(void *data, struct upb_msgdef *m,
-                                 struct upb_strtable *t)
+static void add_strings_from_msg(struct upb_msg *msg, struct upb_strtable *t)
 {
+  struct upb_msgdef *m = msg->def;
   for(uint32_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
-    if(!upb_msg_isset(data, f)) continue;
-    union upb_value_ptr p = upb_msg_getptr(data, f);
+    if(!upb_msg_isset(msg, f)) continue;
+    union upb_value_ptr p = upb_msg_getptr(msg, f);
     if(upb_isarray(f)) {
       struct upb_array *arr = *p.arr;
       for(uint32_t j = 0; j < arr->len; j++)
@@ -348,12 +347,13 @@ static void add_value(union upb_value_ptr p, struct upb_fielddef *f,
   type_e->values[type_e->values_len++] = upb_value_read(p, f->type);
 }
 
-static void add_submsgs(void *data, struct upb_msgdef *m, struct upb_strtable *t)
+static void add_submsgs(struct upb_msg *msg, struct upb_strtable *t)
 {
+  struct upb_msgdef *m = msg->def;
   for(uint32_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
-    if(!upb_msg_isset(data, f)) continue;
-    union upb_value_ptr p = upb_msg_getptr(data, f);
+    if(!upb_msg_isset(msg, f)) continue;
+    union upb_value_ptr p = upb_msg_getptr(msg, f);
     if(upb_isarray(f)) {
       if(upb_isstring(f)) continue;  /* Handled by a different code-path. */
       struct upb_array *arr = *p.arr;
@@ -379,19 +379,18 @@ static void add_submsgs(void *data, struct upb_msgdef *m, struct upb_strtable *t
        * array are contiguous (and don't have submsgs of the same type
        * interleaved). */
       for(uint32_t j = 0; j < arr->len; j++)
-        add_submsgs(*upb_array_getelementptr(arr, j).msg, f->ref.msg, t);
+        add_submsgs(*upb_array_getelementptr(arr, j).msg, t);
     } else {
       if(!upb_issubmsg(f)) continue;
       add_value(p, f, t);
-      add_submsgs(*p.msg, f->ref.msg, t);
+      add_submsgs(*p.msg, t);
     }
   }
 }
 
 /* write_messages_c emits a .c file that contains the data of a protobuf,
  * serialized as C structures. */
-static void write_message_c(void *data, struct upb_msgdef *m,
-                            char *cident, char *hfile_name,
+static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
                             int argc, char *argv[], char *infile_name,
                             FILE *stream)
 {
@@ -421,7 +420,7 @@ static void write_message_c(void *data, struct upb_msgdef *m,
    * same string more than once. */
   struct upb_strtable strings;
   upb_strtable_init(&strings, 16, sizeof(struct strtable_entry));
-  add_strings_from_msg(data, m, &strings);
+  add_strings_from_msg(msg, &strings);
 
   int size;
   struct strtable_entry **str_entries = strtable_to_array(&strings, &size);
@@ -459,14 +458,14 @@ static void write_message_c(void *data, struct upb_msgdef *m,
    * a unique number within its type. */
   struct upb_strtable types;
   upb_strtable_init(&types, 16, sizeof(struct typetable_entry));
-  union upb_value val = {.msg = data};
+  union upb_value val = {.msg = msg};
   /* A fake field to get the recursion going. */
   struct upb_fielddef fake_field = {
       .type = UPB_TYPENUM(MESSAGE),
-      .ref = {.msg = m}
+      .ref = {.msg = msg->def}
   };
   add_value(upb_value_addrof(&val), &fake_field, &types);
-  add_submsgs(data, m, &types);
+  add_submsgs(msg, &types);
 
   /* Emit foward declarations for all msgs of all types, and define arrays. */
   fprintf(stream, "/* Forward declarations of messages, and array decls. */\n");
@@ -669,7 +668,7 @@ int main(int argc, char *argv[])
 
   /* Parse input file. */
   struct upb_context *c = upb_context_new();
-  struct upb_msg *fds_msg = upb_msg_new(c->fds_msg);
+  struct upb_msg *fds_msg = upb_msg_new(c->fds_msgdef);
   struct upb_status status = UPB_STATUS_INIT;
   upb_msg_parsestr(fds_msg, descriptor->ptr, descriptor->byte_len, &status);
   if(!upb_ok(&status))
@@ -680,9 +679,19 @@ int main(int argc, char *argv[])
   if(!upb_ok(&status))
     error("Failed to resolve symbols in descriptor: %s", status.msg);
 
-  /* We need to sort the fields of all the descriptors.  They will already be
-   * sorted in the upb_msgs that we base our header file output on, so we must
-   * sort here to match. */
+  // We need to sort the fields of all the descriptors.  This is currently
+  // somewhat special-cased to when we are emitting a descriptor for
+  // FileDescriptorProto, which is used internally for bootstrapping.
+  //
+  // The fundamental issue is that we will be parsing descriptors into memory
+  // using a reflection-based code-path, but upb then reads the descriptors
+  // from memory using the C structs emitted by upbc.  This means that the
+  // msgdef we will use internally to parse the descriptors must use the same
+  // field order as the .h files we are about to generate.  But the msgdefs we
+  // will use to generate those .h files have already been sorted according to
+  // this scheme.
+  //
+  // If/when we ever make upbc more general, we'll have to revisit this.
   for(uint32_t i = 0; i < fds->file->len; i++) {
     google_protobuf_FileDescriptorProto *fd = fds->file->elements[i];
     if(!fd->set_flags.has.message_type) continue;
@@ -711,7 +720,7 @@ int main(int argc, char *argv[])
   if(cident) {
     FILE *c_file = fopen(c_filename, "w");
     if(!c_file) error("Failed to open .h output file");
-    write_message_c(fds, c->fds_msg, cident, h_filename, argc, argv, input_file, c_file);
+    write_message_c(fds_msg, cident, h_filename, argc, argv, input_file, c_file);
     fclose(c_file);
   }
   upb_msg_unref(fds_msg);

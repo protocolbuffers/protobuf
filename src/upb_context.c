@@ -44,7 +44,7 @@ struct upb_context *upb_context_new()
   struct upb_string name = UPB_STRLIT("google.protobuf.FileDescriptorSet");
   struct upb_symtab_entry *e = upb_strtable_lookup(&c->psymtab, &name);
   assert(e);
-  c->fds_msg = e->ref.msg;
+  c->fds_msgdef = e->ref.msg;
   c->fds_size = 16;
   c->fds_len = 0;
   c->fds = malloc(sizeof(*c->fds));
@@ -349,7 +349,7 @@ void upb_context_addfds(struct upb_context *c,
 void upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str,
                           struct upb_status *status)
 {
-  struct upb_msg *fds = upb_msg_new(c->fds_msg);
+  struct upb_msg *fds = upb_msg_new(c->fds_msgdef);
   upb_msg_parsestr(fds, fds_str->ptr, fds_str->byte_len, status);
   if(!upb_ok(status)) return;
   upb_context_addfds(c, (google_protobuf_FileDescriptorSet*)fds, status);

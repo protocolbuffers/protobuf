@@ -41,9 +41,9 @@ struct upb_symtab_entry {
 struct upb_context {
   upb_atomic_refcount_t refcount;
   upb_rwlock_t lock;
-  struct upb_strtable symtab;   /* The context's symbol table. */
-  struct upb_strtable psymtab;  /* Private symbols, for internal use. */
-  struct upb_msgdef *fds_msg;   /* In psymtab, ptr here for convenience. */
+  struct upb_strtable symtab;     /* The context's symbol table. */
+  struct upb_strtable psymtab;    /* Private symbols, for internal use. */
+  struct upb_msgdef *fds_msgdef;  /* In psymtab, ptr here for convenience. */
 
   /* A list of the FileDescriptorProtos we own (from having parsed them
    * ourselves) and must free on destruction. */

@@ -110,7 +110,8 @@ void _upb_msgdef_free(struct upb_msgdef *m)
   for (unsigned int i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
     upb_string_unref(f->name);
-    upb_def_unref(f->ref, f->type);
+    if (upb_issubmsg(f) || f->type == UPB_TYPENUM(ENUM))
+      upb_def_unref(f->ref, f->type);
   }
   free(m->fields);
   free(m);
