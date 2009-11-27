@@ -9,7 +9,11 @@
  * - upb_enumdef: describes an enum.
  * (TODO: descriptions of extensions and services).
  *
- * Defs are immutable and reference-counted.  
+ * Defs are immutable and reference-counted.  Contexts reference any defs
+ * that are the currently active def for that context, but they can be
+ * unref'd if the message is changed by loading extensions.  In the case
+ * that a def is no longer active in a context, it will still be ref'd by
+ * messages (if any) that were constructed with that def.
  *
  * This file contains routines for creating and manipulating the definitions
  * themselves.  To create and manipulate actual messages, see upb_msg.h.
@@ -32,8 +36,10 @@ struct upb_context;
 struct google_protobuf_EnumDescriptorProto;
 struct google_protobuf_DescriptorProto;
 struct google_protobuf_FieldDescriptorProto;
+
 /* Structure that describes a single .proto message type. */
 struct upb_msgdef {
+  upb_atomic_refcount_t refcount;
   struct upb_context *context;
   struct upb_msg *default_msg;   /* Message with all default values set. */
   struct upb_string *fqname;     /* Fully qualified. */
@@ -149,20 +155,12 @@ struct upb_enumdef_iton_entry {
   struct upb_string *string;
 };
 
-/* Initializes and frees an enum, respectively.  Caller retains ownership of
- * ed, but it must outlive e. */
-void upb_enumdef_init(struct upb_enumdef *e,
-                      struct google_protobuf_EnumDescriptorProto *ed,
-                      struct upb_context *c);
-void upb_enumdef_free(struct upb_enumdef *e);
-
-
 /* Internal functions. ********************************************************/
 
 /* Initializes/frees a upb_msgdef.  Usually this will be called by upb_context,
  * and clients will not have to construct one directly.
  *
- * Caller retains ownership of d.  Note that init does not resolve
+ * Caller retains ownership of d and fqname.  Note that init does not resolve
  * upb_fielddef.ref the caller should do that post-initialization by
  * calling upb_msg_ref() below.
  *
@@ -175,7 +173,13 @@ void upb_msgdef_init(struct upb_msgdef *m,
                      struct google_protobuf_DescriptorProto *d,
                      struct upb_string *fqname, bool sort,
                      struct upb_context *c, struct upb_status *status);
-void upb_msgdef_free(struct upb_msgdef *m);
+void _upb_msgdef_free(struct upb_msgdef *m);
+INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
+  upb_atomic_ref(&m->refcount);
+}
+INLINE void upb_msgdef_unref(struct upb_msgdef *m) {
+  if(upb_atomic_unref(&m->refcount)) _upb_msgdef_free(m);
+}
 
 /* Sort the given field descriptors in-place, according to what we think is an
  * optimal ordering of fields.  This can change from upb release to upb
@@ -189,6 +193,47 @@ void upb_msgdef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
  * initialization. */
 void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
                        union upb_symbol_ref ref);
+
+/* Initializes and frees an enum, respectively.  Caller retains ownership of
+ * ed.  The enumdef is initialized with one ref. */
+void upb_enumdef_init(struct upb_enumdef *e,
+                      struct google_protobuf_EnumDescriptorProto *ed,
+                      struct upb_context *c);
+void _upb_enumdef_free(struct upb_enumdef *e);
+INLINE void upb_enumdef_ref(struct upb_enumdef *e) {
+  upb_atomic_ref(&e->refcount);
+}
+INLINE void upb_enumdef_unref(struct upb_enumdef *e) {
+  if(upb_atomic_unref(&e->refcount)) _upb_enumdef_free(e);
+}
+
+INLINE void upb_def_ref(union upb_symbol_ref ref, upb_field_type_t type) {
+  switch(type) {
+    case UPB_TYPENUM(MESSAGE):
+    case UPB_TYPENUM(GROUP):
+      upb_msgdef_ref(ref.msg);
+      break;
+    case UPB_TYPENUM(ENUM):
+      upb_enumdef_ref(ref._enum);
+      break;
+    default:
+      assert(false);
+  }
+}
+
+INLINE void upb_def_unref(union upb_symbol_ref ref, upb_field_type_t type) {
+  switch(type) {
+    case UPB_TYPENUM(MESSAGE):
+    case UPB_TYPENUM(GROUP):
+      upb_msgdef_unref(ref.msg);
+      break;
+    case UPB_TYPENUM(ENUM):
+      upb_enumdef_unref(ref._enum);
+      break;
+    default:
+      assert(false);
+  }
+}
 
 #ifdef __cplusplus
 }  /* extern "C" */

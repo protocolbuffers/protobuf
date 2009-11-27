@@ -56,11 +56,10 @@ static void free_symtab(struct upb_strtable *t)
   struct upb_symtab_entry *e = upb_strtable_begin(t);
   for(; e; e = upb_strtable_next(t, &e->e)) {
     switch(e->type) {
-      case UPB_SYM_MESSAGE: upb_msgdef_free(e->ref.msg); break;
-      case UPB_SYM_ENUM: upb_enumdef_free(e->ref._enum); break;
+      case UPB_SYM_MESSAGE: upb_msgdef_unref(e->ref.msg); break;
+      case UPB_SYM_ENUM: upb_enumdef_unref(e->ref._enum); break;
       default: break;  /* TODO */
     }
-    free(e->ref.msg);  /* The pointer is the same for all. */
     free(e->e.key.ptr);
   }
   upb_strtable_free(t);

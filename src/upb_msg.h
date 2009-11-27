@@ -59,6 +59,7 @@ INLINE struct upb_msg *upb_msg_new(struct upb_msgdef *md) {
   memset(msg, 0, size);
   upb_mmhead_init(&msg->mmhead);
   msg->def = md;
+  upb_msgdef_ref(md);
   return msg;
 }
 

@@ -47,6 +47,7 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
   upb_strtable_init(&m->fields_by_name, num_fields,
                     sizeof(struct upb_fieldsbyname_entry));
 
+  upb_atomic_refcount_init(&m->refcount, 1);
   m->fqname = upb_strdup(fqname);
   m->context = c;
   m->num_fields = num_fields;
@@ -101,15 +102,18 @@ void upb_msgdef_init(struct upb_msgdef *m, google_protobuf_DescriptorProto *d,
   free(fds);
 }
 
-void upb_msgdef_free(struct upb_msgdef *m)
+void _upb_msgdef_free(struct upb_msgdef *m)
 {
   upb_inttable_free(&m->fields_by_num);
   upb_strtable_free(&m->fields_by_name);
   upb_string_unref(m->fqname);
   for (unsigned int i = 0; i < m->num_fields; i++) {
-    upb_string_unref(m->fields[i].name);
+    struct upb_fielddef *f = &m->fields[i];
+    upb_string_unref(f->name);
+    upb_def_unref(f->ref, f->type);
   }
   free(m->fields);
+  free(m);
 }
 
 void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
@@ -122,15 +126,15 @@ void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
   f->ref = ref;
   int_e->f.ref = ref;
   str_e->f.ref = ref;
+  upb_def_ref(ref, f->type);
 }
-
 
 void upb_enumdef_init(struct upb_enumdef *e,
                    struct google_protobuf_EnumDescriptorProto *ed,
                    struct upb_context *c) {
   int num_values = ed->set_flags.has.value ? ed->value->len : 0;
   e->context = c;
-  upb_atomic_refcount_init(&e->refcount, 0);
+  upb_atomic_refcount_init(&e->refcount, 1);
   upb_strtable_init(&e->nametoint, num_values,
                     sizeof(struct upb_enumdef_ntoi_entry));
   upb_inttable_init(&e->inttoname, num_values,
@@ -147,7 +151,8 @@ void upb_enumdef_init(struct upb_enumdef *e,
   }
 }
 
-void upb_enumdef_free(struct upb_enumdef *e) {
+void _upb_enumdef_free(struct upb_enumdef *e) {
   upb_strtable_free(&e->nametoint);
   upb_inttable_free(&e->inttoname);
+  free(e);
 }
