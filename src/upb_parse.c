@@ -387,7 +387,7 @@ static uint8_t *push(struct upb_cbparser *p, uint8_t *start,
   }
   struct upb_cbparser_frame *frame = p->top;
   frame->end_offset = p->completed_offset + submsg_len;
-  frame->msgdef = f->ref.msg;
+  frame->msgdef = upb_downcast_msgdef(f->def);
 
   if(p->start_cb) p->start_cb(p->udata, f);
   return get_msgend(p, start);

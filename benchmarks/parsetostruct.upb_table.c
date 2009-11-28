@@ -31,15 +31,14 @@ static bool initialize()
   upb_string_unref(fds);
 
   struct upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
-  struct upb_symtab_entry e;
-  if(!upb_context_lookup(c, proto_name, &e) || e.type != UPB_SYM_MESSAGE) {
+  def = upb_downcast_msgdef(upb_context_lookup(c, proto_name));
+  if(!def) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));
     return false;
   }
   upb_string_unref(proto_name);
 
-  def = e.ref.msg;
   for(int i = 0; i < NUM_MESSAGES; i++)
     msgs[i] = upb_msg_new(def);
 

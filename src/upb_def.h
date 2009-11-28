@@ -9,6 +9,9 @@
  * - upb_enumdef: describes an enum.
  * (TODO: descriptions of extensions and services).
  *
+ * Defs should be obtained from a upb_context object; the APIs for creating
+ * them directly are internal-only.
+ *
  * Defs are immutable and reference-counted.  Contexts reference any defs
  * that are the currently in their symbol table.  If an extension is loaded
  * that adds a field to an existing message, a new msgdef is constructed that
@@ -44,13 +47,15 @@ enum upb_def_type {
 
 // Common members.
 struct upb_def {
+  struct upb_string *fqname;  // Fully qualified.
   enum upb_def_type type;
   upb_atomic_refcount_t refcount;
-  struct upb_string *fqname;  /* Fully-qualified. */
-}
+};
 
 void upb_def_init(struct upb_def *def, enum upb_def_type type,
                   struct upb_string *fqname);
+void upb_def_uninit(struct upb_def *def);
+INLINE void upb_def_ref(struct upb_def *def) { upb_atomic_ref(&def->refcount); }
 
 /* Field definition. **********************************************************/
 
@@ -72,6 +77,7 @@ struct upb_fielddef {
   struct upb_def *def;
 };
 
+// A variety of tests about the type of a field.
 INLINE bool upb_issubmsg(struct upb_fielddef *f) {
   return upb_issubmsgtype(f->type);
 }
@@ -80,6 +86,10 @@ INLINE bool upb_isstring(struct upb_fielddef *f) {
 }
 INLINE bool upb_isarray(struct upb_fielddef *f) {
   return f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED;
+}
+// Does the type of this field imply that it should contain an associated def?
+INLINE bool upb_fielddef_hasdef(struct upb_fielddef *f) {
+  return upb_issubmsg(f) || f->type == UPB_TYPENUM(ENUM);
 }
 
 INLINE bool upb_field_ismm(struct upb_fielddef *f) {
@@ -105,18 +115,22 @@ INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_fielddef *f) {
   else return -1;
 }
 
-// Interfaces for constructing/destroying fielddefs.  These are internal-only.
 struct google_protobuf_FieldDescriptorProto;
+
+// Interfaces for constructing/destroying fielddefs.  These are internal-only.
 
 // Initializes a upb_fielddef from a FieldDescriptorProto.  The caller must
 // have previously allocated the upb_fielddef.
-void upb_fielddef_init(struct google_protobuf_FieldDescriptorProto *fd,
-                       struct upb_fielddef *f);
+void upb_fielddef_init(struct upb_fielddef *f,
+                       struct google_protobuf_FieldDescriptorProto *fd);
+struct upb_fielddef *upb_fielddef_dup(struct upb_fielddef *f);
 void upb_fielddef_uninit(struct upb_fielddef *f);
 
 // Sort the given fielddefs in-place, according to what we think is an optimal
 // ordering of fields.  This can change from upb release to upb release.
 void upb_fielddef_sort(struct upb_fielddef *defs, size_t num);
+void upb_fielddef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
+                          size_t num);
 
 /* Message definition. ********************************************************/
 
@@ -155,22 +169,52 @@ struct upb_fieldsbyname_entry {
 // possible.  These return NULL if no such field is found.
 INLINE struct upb_fielddef *upb_msg_fieldbynum(struct upb_msgdef *m,
                                                uint32_t number) {
-  struct upb_fieldsbynum_entry *e = upb_inttable_fast_lookup(
-      &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
+  struct upb_fieldsbynum_entry *e = (struct upb_fieldsbynum_entry*)
+      upb_inttable_fast_lookup(
+          &m->fields_by_num, number, sizeof(struct upb_fieldsbynum_entry));
   return e ? &e->f : NULL;
 }
 
 INLINE struct upb_fielddef *upb_msg_fieldbyname(struct upb_msgdef *m,
                                                 struct upb_string *name) {
-  struct upb_fieldsbyname_entry *e = upb_strtable_lookup(
-      &m->fields_by_name, name);
+  struct upb_fieldsbyname_entry *e = (struct upb_fieldsbyname_entry*)
+      upb_strtable_lookup(
+          &m->fields_by_name, name);
   return e ? &e->f : NULL;
+}
+
+// Internal-only functions for constructing a msgdef.  Caller retains ownership
+// of d and fqname.  Ownership of fields passes to the msgdef.
+//
+// Note that init does not resolve upb_fielddef.ref; the caller should do that
+// post-initialization by calling upb_msgdef_resolve() below.
+struct upb_msgdef *upb_msgdef_new(struct upb_fielddef *fields, int num_fields,
+                                  struct upb_string *fqname);
+void _upb_msgdef_free(struct upb_msgdef *m);
+INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
+  upb_def_ref(&m->def);
+}
+INLINE void upb_msgdef_unref(struct upb_msgdef *m) {
+  if(upb_atomic_unref(&m->def.refcount)) _upb_msgdef_free(m);
+}
+
+// Clients use this function on a previously initialized upb_msgdef to resolve
+// the "ref" field in the upb_fielddef.  Since messages can refer to each
+// other in mutually-recursive ways, this step must be separated from
+// initialization.
+void upb_msgdef_resolve(struct upb_msgdef *m, struct upb_fielddef *f,
+                        struct upb_def *def);
+
+// Downcasts.  They are checked only if asserts are enabled.
+INLINE struct upb_msgdef *upb_downcast_msgdef(struct upb_def *def) {
+  assert(def->type == UPB_DEF_MESSAGE);
+  return (struct upb_msgdef*)def;
 }
 
 /* Enum defintion. ************************************************************/
 
 struct upb_enumdef {
-  upb_atomic_refcount_t refcount;
+  struct upb_def def;
   struct upb_strtable nametoint;
   struct upb_inttable inttoname;
 };
@@ -185,72 +229,67 @@ struct upb_enumdef_iton_entry {
   struct upb_string *string;
 };
 
-/* Internal functions. ********************************************************/
-
-/* Initializes/frees a upb_msgdef.  Usually this will be called by upb_context,
- * and clients will not have to construct one directly.
- *
- * Caller retains ownership of d and fqname.  Note that init does not resolve
- * upb_fielddef.ref the caller should do that post-initialization by
- * calling upb_msg_ref() below.
- *
- * fqname indicates the fully-qualified name of this message.
- *
- * sort indicates whether or not it is safe to reorder the fields from the order
- * they appear in d.  This should be false if code has been compiled against a
- * header for this type that expects the given order. */
-void upb_msgdef_init(struct upb_msgdef *m,
-                     struct google_protobuf_DescriptorProto *d,
-                     struct upb_string *fqname, bool sort,
-                     struct upb_status *status);
-void _upb_msgdef_free(struct upb_msgdef *m);
-INLINE void upb_msgdef_ref(struct upb_msgdef *m) {
-  upb_atomic_ref(&m->refcount);
-}
-INLINE void upb_msgdef_unref(struct upb_msgdef *m) {
-  if(upb_atomic_unref(&m->refcount)) _upb_msgdef_free(m);
-}
-
-/* Clients use this function on a previously initialized upb_msgdef to resolve
- * the "ref" field in the upb_fielddef.  Since messages can refer to each
- * other in mutually-recursive ways, this step must be separated from
- * initialization. */
-void upb_msgdef_setref(struct upb_msgdef *m, struct upb_fielddef *f,
-                       union upb_symbol_ref ref);
-
-/* Initializes and frees an enum, respectively.  Caller retains ownership of
- * ed.  The enumdef is initialized with one ref. */
-void upb_enumdef_init(struct upb_enumdef *e,
-                      struct google_protobuf_EnumDescriptorProto *ed);
+// Internal-only functions for creating/destroying an enumdef.  Caller retains
+// ownership of ed.  The enumdef is initialized with one ref.
+struct upb_enumdef *upb_enumdef_new(
+    struct google_protobuf_EnumDescriptorProto *ed, struct upb_string *fqname);
 void _upb_enumdef_free(struct upb_enumdef *e);
-INLINE void upb_enumdef_ref(struct upb_enumdef *e) {
-  upb_atomic_ref(&e->refcount);
-}
+INLINE void upb_enumdef_ref(struct upb_enumdef *e) { upb_def_ref(&e->def); }
 INLINE void upb_enumdef_unref(struct upb_enumdef *e) {
-  if(upb_atomic_unref(&e->refcount)) _upb_enumdef_free(e);
+  if(upb_atomic_unref(&e->def.refcount)) _upb_enumdef_free(e);
+}
+INLINE struct upb_enumdef *upb_downcast_enumdef(struct upb_def *def) {
+  assert(def->type == UPB_DEF_ENUM);
+  return (struct upb_enumdef*)def;
 }
 
-INLINE void upb_def_ref(struct upb_def *def) { upb_atomic_ref(&def->refcount); }
+/* Unresolved definition. *****************************************************/
+
+// This is a placeholder definition that contains only the name of the type
+// that should eventually be referenced.  Once symbols are resolved, this
+// definition is replaced with a real definition.
+struct upb_unresolveddef {
+  struct upb_def def;
+  struct upb_string *name;  // Not fully-qualified.
+};
+
+INLINE struct upb_unresolveddef *upb_unresolveddef_new(struct upb_string *name) {
+  struct upb_unresolveddef *d = (struct upb_unresolveddef*)malloc(sizeof(*d));
+  upb_def_init(&d->def, UPB_DEF_UNRESOLVED, name);
+  d->name = name;
+  upb_string_ref(name);
+  return d;
+}
+INLINE void _upb_unresolveddef_free(struct upb_unresolveddef *def) {
+  upb_def_uninit(&def->def);
+  upb_string_unref(def->name);
+}
+INLINE struct upb_unresolveddef *upb_downcast_unresolveddef(struct upb_def *def) {
+  assert(def->type == UPB_DEF_UNRESOLVED);
+  return (struct upb_unresolveddef*)def;
+}
+
 INLINE void upb_def_unref(struct upb_def *def) {
   if(upb_atomic_unref(&def->refcount)) {
-  switch(def->type) {
-    case UPB_DEF_MESSAGE:
-      _upb_msgdef_free((struct upb_msgdef*)def);
-      break;
-    case UPB_DEF_ENUM:
-      _upb_emumdef_free((struct upb_enumdef*)def);
-      break;
-    case UPB_DEF_SERVICE:
-      assert(false);  /* Unimplemented. */
-      break;
-    case UPB_DEF_EXTENSION,
-      _upb_extensiondef_free((struct upb_extensiondef*)def);
-      break;
-    case UPB_DEF_UNRESOLVED
-      upb_string_unref((struct upb_string*)def);
-      break;
-    default:
-      assert(false);
+    switch(def->type) {
+      case UPB_DEF_MESSAGE:
+        _upb_msgdef_free((struct upb_msgdef*)def);
+        break;
+      case UPB_DEF_ENUM:
+        _upb_enumdef_free((struct upb_enumdef*)def);
+        break;
+      case UPB_DEF_SERVICE:
+        assert(false);  /* Unimplemented. */
+        break;
+      case UPB_DEF_EXTENSION:
+        assert(false);  /* Unimplemented. */
+        break;
+      case UPB_DEF_UNRESOLVED:
+        _upb_unresolveddef_free((struct upb_unresolveddef*)def);
+        break;
+      default:
+        assert(false);
+    }
   }
 }
 

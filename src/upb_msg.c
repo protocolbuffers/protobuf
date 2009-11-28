@@ -100,7 +100,7 @@ static void start_cb(void *udata, struct upb_fielddef *f)
     if(!*p.msg || !upb_mmhead_only(&((*p.msg)->mmhead))) {
       if(*p.msg)
         upb_msg_unref(*p.msg);
-      *p.msg = upb_msg_new(f->ref.msg);
+      *p.msg = upb_msg_new(upb_downcast_msgdef(f->def));
     }
     upb_msg_clear(*p.msg);
     upb_msg_set(oldmsg, f);

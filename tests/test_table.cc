@@ -32,10 +32,10 @@ double get_usertime()
 }
 
 struct upb_string *get_upbstring(const string& key) {
-  static struct upb_string str;
-  str.ptr = (char*)key.c_str();
-  str.byte_len = key.size();
-  return &str;
+  struct upb_string *str = upb_string_new();
+  upb_string_resize(str, key.size());
+  memcpy(str->ptr, key.c_str(), key.size());
+  return str;
 }
 
 /* num_entries must be a power of 2. */
@@ -51,7 +51,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
     all.insert(key);
     struct strtable_entry e;
     e.value = key[0];
-    e.e.key = *get_upbstring(key);
+    e.e.key = get_upbstring(key);
     upb_strtable_insert(&table, &e.e);
     m[key] = key[0];
   }
@@ -61,10 +61,10 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
     const string& key = keys[i];
     struct upb_string *str = get_upbstring(key);
     struct strtable_entry *e =
-        (struct strtable_entry*)upb_strtable_lookup( &table, str);
+        (struct strtable_entry*)upb_strtable_lookup(&table, str);
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
-      assert(upb_streql(&e->e.key, get_upbstring(key)));
+      assert(upb_streql(e->e.key, get_upbstring(key)));
       assert(e->value == key[0]);
       assert(m[key] == key[0]);
     } else {
@@ -75,7 +75,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   struct strtable_entry *e;
   for(e = (struct strtable_entry*)upb_strtable_begin(&table); e;
       e = (struct strtable_entry*)upb_strtable_next(&table, &e->e)) {
-    string tmp(e->e.key.ptr, e->e.key.byte_len);
+    string tmp(e->e.key->ptr, e->e.key->byte_len);
     std::set<string>::iterator i = all.find(tmp);
     assert(i != all.end());
     all.erase(i);

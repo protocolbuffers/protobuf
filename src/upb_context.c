@@ -11,6 +11,11 @@
 #include "upb_def.h"
 #include "upb_mm.h"
 
+struct upb_symtab_entry {
+  struct upb_strtable_entry e;
+  struct upb_def *def;
+};
+
 /* Search for a character in a string, in reverse. */
 static int my_memrchr(char *data, char c, size_t len)
 {
@@ -21,7 +26,6 @@ static int my_memrchr(char *data, char c, size_t len)
 
 void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
            google_protobuf_FileDescriptorProto *fd, bool sort,
-           struct upb_context *context,
            struct upb_status *status);
 
 struct upb_context *upb_context_new()
@@ -35,7 +39,7 @@ struct upb_context *upb_context_new()
   google_protobuf_FileDescriptorProto *fd =
       upb_file_descriptor_set->file->elements[0]; /* We know there is only 1. */
   struct upb_status status = UPB_STATUS_INIT;
-  addfd(&c->psymtab, &c->symtab, fd, false, c, &status);
+  addfd(&c->psymtab, &c->symtab, fd, false, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Failed to initialize upb: %s.\n", status.msg);
     assert(false);
@@ -44,10 +48,7 @@ struct upb_context *upb_context_new()
   struct upb_string name = UPB_STRLIT("google.protobuf.FileDescriptorSet");
   struct upb_symtab_entry *e = upb_strtable_lookup(&c->psymtab, &name);
   assert(e);
-  c->fds_msgdef = e->ref.msg;
-  c->fds_size = 16;
-  c->fds_len = 0;
-  c->fds = malloc(sizeof(*c->fds));
+  c->fds_msgdef = upb_downcast_msgdef(e->def);
   return c;
 }
 
@@ -56,7 +57,7 @@ static void free_symtab(struct upb_strtable *t)
   struct upb_symtab_entry *e = upb_strtable_begin(t);
   for(; e; e = upb_strtable_next(t, &e->e)) {
     upb_def_unref(e->def);
-    free(e->e.key.ptr);
+    upb_string_unref(e->e.key);
   }
   upb_strtable_free(t);
 }
@@ -64,10 +65,7 @@ static void free_symtab(struct upb_strtable *t)
 static void free_context(struct upb_context *c)
 {
   free_symtab(&c->symtab);
-  for(size_t i = 0; i < c->fds_len; i++)
-    upb_msg_unref((struct upb_msg*)c->fds[i]);
   free_symtab(&c->psymtab);
-  free(c->fds);
 }
 
 void upb_context_unref(struct upb_context *c)
@@ -81,24 +79,30 @@ void upb_context_unref(struct upb_context *c)
   }
 }
 
-bool upb_context_lookup(struct upb_context *c, struct upb_string *symbol,
-                        struct upb_symtab_entry *out_entry)
+struct upb_def **upb_context_getandref_defs(struct upb_context *c, int *count)
 {
-  upb_rwlock_rdlock(&c->lock);
-  struct upb_symtab_entry *e = upb_strtable_lookup(&c->symtab, symbol);
-  if(e) *out_entry = *e;
+  upb_rwlock_wrlock(&c->lock);
+  *count = upb_strtable_count(&c->symtab);
+  struct upb_def **defs = malloc(sizeof(*defs) * (*count));
+  struct upb_symtab_entry *e = upb_strtable_begin(&c->symtab);
+  int i = 0;
+  for(; e; e = upb_strtable_next(&c->symtab, &e->e), i++) {
+    assert(e->def);
+    defs[i] = e->def;
+    upb_def_ref(defs[i]);
+  }
+  assert(*count == i);
   upb_rwlock_unlock(&c->lock);
-  return e != NULL;
+  return defs;
 }
 
-void upb_context_enumerate(struct upb_context *c, upb_context_enumerator_t cb,
-                           void *udata)
+struct upb_def *upb_context_lookup(struct upb_context *c,
+                                   struct upb_string *sym)
 {
   upb_rwlock_rdlock(&c->lock);
-  struct upb_symtab_entry *e = upb_strtable_begin(&c->symtab);
-  for(; e; e = upb_strtable_next(&c->symtab, &e->e))
-    cb(udata, e);
+  struct upb_symtab_entry *e = upb_strtable_lookup(&c->symtab, sym);
   upb_rwlock_unlock(&c->lock);
+  return e ? e->def : NULL;
 }
 
 /* Given a symbol and the base symbol inside which it is defined, find the
@@ -137,43 +141,41 @@ static struct upb_symtab_entry *resolve(struct upb_strtable *t,
 }
 
 /* Tries to resolve a symbol in two different tables. */
-union upb_symbol_ref resolve2(struct upb_strtable *t1, struct upb_strtable *t2,
-                              struct upb_string *base, struct upb_string *sym,
-                                 enum upb_symbol_type expected_type) {
-  union upb_symbol_ref nullref = {.msg = NULL};
+struct upb_def *resolve2(struct upb_strtable *t1, struct upb_strtable *t2,
+                         struct upb_string *base, struct upb_string *sym,
+                         enum upb_def_type expected_type) {
   struct upb_symtab_entry *e = resolve(t1, base, sym);
   if(e == NULL) e = resolve(t2, base, sym);
-
-  if(e && e->type == expected_type) return e->ref;
-  else return nullref;
+  if(e && e->def->type == expected_type) return e->def;
+  return NULL;
 }
 
 
-bool upb_context_resolve(struct upb_context *c, struct upb_string *base,
-                         struct upb_string *symbol,
-                         struct upb_symtab_entry *out_entry) {
+struct upb_def *upb_context_resolve(struct upb_context *c,
+                                    struct upb_string *base,
+                                    struct upb_string *symbol) {
   upb_rwlock_rdlock(&c->lock);
   struct upb_symtab_entry *e = resolve(&c->symtab, base, symbol);
-  if(e) *out_entry = *e;
   upb_rwlock_unlock(&c->lock);
-  return e != NULL;
+  return e ? e->def : NULL;
 }
 
 /* Joins strings together, for example:
  *   join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
  *   join("", "Baz") -> "Baz"
  * Caller owns the returned string and must free it. */
-static struct upb_string join(struct upb_string *base, struct upb_string *name) {
+static struct upb_string *join(struct upb_string *base, struct upb_string *name) {
   size_t len = base->byte_len + name->byte_len;
   if(base->byte_len > 0) len++;  /* For the separator. */
-  struct upb_string joined = {.byte_len=len, .ptr=malloc(len)};
+  struct upb_string *joined = upb_string_new();
+  upb_string_resize(joined, len);
   if(base->byte_len > 0) {
     /* nested_base = base + '.' +  d->name */
-    memcpy(joined.ptr, base->ptr, base->byte_len);
-    joined.ptr[base->byte_len] = UPB_SYMBOL_SEPARATOR;
-    memcpy(&joined.ptr[base->byte_len+1], name->ptr, name->byte_len);
+    memcpy(joined->ptr, base->ptr, base->byte_len);
+    joined->ptr[base->byte_len] = UPB_SYMBOL_SEPARATOR;
+    memcpy(&joined->ptr[base->byte_len+1], name->ptr, name->byte_len);
   } else {
-    memcpy(joined.ptr, name->ptr, name->byte_len);
+    memcpy(joined->ptr, name->ptr, name->byte_len);
   }
   return joined;
 }
@@ -181,7 +183,6 @@ static struct upb_string join(struct upb_string *base, struct upb_string *name) 
 static void insert_enum(struct upb_strtable *t,
                         google_protobuf_EnumDescriptorProto *ed,
                         struct upb_string *base,
-                        struct upb_context *c,
                         struct upb_status *status)
 {
   if(!ed->set_flags.has.name) {
@@ -191,29 +192,24 @@ static void insert_enum(struct upb_strtable *t,
     return;
   }
 
-  /* We own this and must free it on destruct. */
-  struct upb_string fqname = join(base, ed->name);
-
-  if(upb_strtable_lookup(t, &fqname)) {
+  struct upb_string *fqname = join(base, ed->name);
+  if(upb_strtable_lookup(t, fqname)) {
     upb_seterr(status, UPB_STATUS_ERROR,
                "attempted to redefine symbol '" UPB_STRFMT "'",
-               UPB_STRARG(&fqname));
-    free(fqname.ptr);
+               UPB_STRARG(fqname));
+    upb_string_unref(fqname);
     return;
   }
 
   struct upb_symtab_entry e;
-  e.e.key = fqname;
-  e.type = UPB_SYM_ENUM;
-  e.ref._enum = malloc(sizeof(*e.ref._enum));
-  upb_enumdef_init(e.ref._enum, ed, c);
+  e.e.key = fqname;  // Donating our ref to the table.
+  e.def = (struct upb_def*)upb_enumdef_new(ed, fqname);
   upb_strtable_insert(t, &e.e);
 }
 
 static void insert_message(struct upb_strtable *t,
                            google_protobuf_DescriptorProto *d,
                            struct upb_string *base, bool sort,
-                           struct upb_context *c,
                            struct upb_status *status)
 {
   if(!d->set_flags.has.name) {
@@ -224,51 +220,51 @@ static void insert_message(struct upb_strtable *t,
   }
 
   /* We own this and must free it on destruct. */
-  struct upb_string fqname = join(base, d->name);
+  struct upb_string *fqname = join(base, d->name);
 
-  if(upb_strtable_lookup(t, &fqname)) {
+  if(upb_strtable_lookup(t, fqname)) {
     upb_seterr(status, UPB_STATUS_ERROR,
                "attempted to redefine symbol '" UPB_STRFMT "'",
-               UPB_STRARG(&fqname));
-    free(fqname.ptr);
+               UPB_STRARG(fqname));
+    upb_string_unref(fqname);
     return;
   }
 
   struct upb_symtab_entry e;
-  e.e.key = fqname;
-  e.type = UPB_SYM_MESSAGE;
-  e.ref.msg = malloc(sizeof(*e.ref.msg));
-  upb_msgdef_init(e.ref.msg, d, &fqname, sort, c, status);
-  if(!upb_ok(status)) {
-    free(fqname.ptr);
-    return;
+  e.e.key = fqname;  // Donating our ref to the table.
+  struct upb_fielddef *fielddefs = malloc(sizeof(*fielddefs) * d->field->len);
+  for (unsigned int i = 0; i < d->field->len; i++) {
+    google_protobuf_FieldDescriptorProto *fd = d->field->elements[i];
+    upb_fielddef_init(&fielddefs[i], fd);
   }
+  if(sort) upb_fielddef_sort(fielddefs, d->field->len);
+  e.def = (struct upb_def*)upb_msgdef_new(fielddefs, d->field->len, fqname);
   upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
   if(d->set_flags.has.nested_type)
     for(unsigned int i = 0; i < d->nested_type->len; i++)
-      insert_message(t, d->nested_type->elements[i], &fqname, sort, c, status);
+      insert_message(t, d->nested_type->elements[i], fqname, sort, status);
 
   if(d->set_flags.has.enum_type)
     for(unsigned int i = 0; i < d->enum_type->len; i++)
-      insert_enum(t, d->enum_type->elements[i], &fqname, c, status);
+      insert_enum(t, d->enum_type->elements[i], fqname, status);
 }
 
 void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
            google_protobuf_FileDescriptorProto *fd, bool sort,
-           struct upb_context *c, struct upb_status *status)
+           struct upb_status *status)
 {
   struct upb_string pkg = {.byte_len=0};
   if(fd->set_flags.has.package) pkg = *fd->package;
 
   if(fd->set_flags.has.message_type)
     for(unsigned int i = 0; i < fd->message_type->len; i++)
-      insert_message(addto, fd->message_type->elements[i], &pkg, sort, c, status);
+      insert_message(addto, fd->message_type->elements[i], &pkg, sort, status);
 
   if(fd->set_flags.has.enum_type)
     for(unsigned int i = 0; i < fd->enum_type->len; i++)
-      insert_enum(addto, fd->enum_type->elements[i], &pkg, c, status);
+      insert_enum(addto, fd->enum_type->elements[i], &pkg, status);
 
   if(!upb_ok(status)) return;
 
@@ -277,33 +273,34 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
   /* Attempt to resolve all references. */
   struct upb_symtab_entry *e;
   for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-    if(upb_strtable_lookup(existingdefs, &e->e.key)) {
+    if(upb_strtable_lookup(existingdefs, e->e.key)) {
       upb_seterr(status, UPB_STATUS_ERROR,
                  "attempted to redefine symbol '" UPB_STRFMT "'",
-                 UPB_STRARG(&e->e.key));
+                 UPB_STRARG(e->e.key));
       return;
     }
-    if(e->type == UPB_SYM_MESSAGE) {
-      struct upb_msgdef *m = e->ref.msg;
+    if(e->def->type == UPB_DEF_MESSAGE) {
+      struct upb_msgdef *m = upb_downcast_msgdef(e->def);
       for(unsigned int i = 0; i < m->num_fields; i++) {
         struct upb_fielddef *f = &m->fields[i];
-        union upb_symbol_ref ref;
-        if(f->type == UPB_TYPENUM(MESSAGE) || f->type == UPB_TYPENUM(GROUP))
-          ref = resolve2(existingdefs, addto, &e->e.key, f->ref.str,
-                         UPB_SYM_MESSAGE);
+        if(!upb_issubmsg(f) && f->type != UPB_TYPENUM(ENUM)) {
+          // No resolving necessary.
+          continue;
+        }
+        struct upb_def *def;
+        struct upb_string *name = upb_downcast_unresolveddef(f->def)->name;
+        if(upb_issubmsg(f))
+          def = resolve2(existingdefs, addto, e->e.key, name, UPB_DEF_MESSAGE);
         else if(f->type == UPB_TYPENUM(ENUM))
-          ref = resolve2(existingdefs, addto, &e->e.key, f->ref.str,
-                         UPB_SYM_ENUM);
-        else
-          continue;  /* No resolving necessary. */
-        if(!ref.msg) {
+          def = resolve2(existingdefs, addto, e->e.key, name, UPB_DEF_ENUM);
+        if(!def) {
           upb_seterr(status, UPB_STATUS_ERROR,
                      "could not resolve symbol '" UPB_STRFMT "'"
                      " in context '" UPB_STRFMT "'",
-                     UPB_STRARG(f->ref.str), UPB_STRARG(&e->e.key));
+                     UPB_STRARG(name), UPB_STRARG(e->e.key));
           return;
         }
-        upb_msgdef_setref(m, f, ref);
+        upb_msgdef_resolve(m, f, def);
       }
     }
   }
@@ -320,7 +317,7 @@ void upb_context_addfds(struct upb_context *c,
     upb_strtable_init(&tmp, 0, sizeof(struct upb_symtab_entry));
     upb_rwlock_rdlock(&c->lock);
     for(uint32_t i = 0; i < fds->file->len; i++) {
-      addfd(&tmp, &c->symtab, fds->file->elements[i], true, c, status);
+      addfd(&tmp, &c->symtab, fds->file->elements[i], true, status);
       if(!upb_ok(status)) {
         free_symtab(&tmp);
         upb_rwlock_unlock(&c->lock);
@@ -349,17 +346,5 @@ void upb_context_parsefds(struct upb_context *c, struct upb_string *fds_str,
   upb_msg_parsestr(fds, fds_str->ptr, fds_str->byte_len, status);
   if(!upb_ok(status)) return;
   upb_context_addfds(c, (google_protobuf_FileDescriptorSet*)fds, status);
-  if(!upb_ok(status)) return;
-
-  {
-    /* We own fds now, need to keep a ref so we can free it later. */
-    upb_rwlock_wrlock(&c->lock);
-    if(c->fds_size == c->fds_len) {
-      c->fds_size *= 2;
-      c->fds = realloc(c->fds, c->fds_size);
-    }
-    c->fds[c->fds_len++] = (google_protobuf_FileDescriptorSet*)fds;
-    upb_rwlock_unlock(&c->lock);
-  }
   return;
 }

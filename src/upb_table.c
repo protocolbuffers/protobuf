@@ -61,7 +61,7 @@ void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key)
   struct upb_strtable_entry *e;
   do {
     e = strent(t, bucket);
-    if(upb_streql(&e->key, key)) return e;
+    if(e->key && upb_streql(e->key, key)) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;
 }
@@ -141,7 +141,7 @@ static uint32_t empty_strbucket(struct upb_strtable *table)
   /* TODO: does it matter that this is biased towards the front of the table? */
   for(uint32_t i = 1; i <= upb_strtable_size(table); i++) {
     struct upb_strtable_entry *e = strent(table, i);
-    if(e->key.byte_len == 0) return i;
+    if(e->key == NULL) return i;
   }
   assert(false);
   return 0;
@@ -149,12 +149,12 @@ static uint32_t empty_strbucket(struct upb_strtable *table)
 
 static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
 {
-  assert(upb_strtable_lookup(t, &e->key) == NULL);
+  assert(upb_strtable_lookup(t, e->key) == NULL);
   t->t.count++;
-  uint32_t bucket = strtable_bucket(t, &e->key);
+  uint32_t bucket = strtable_bucket(t, e->key);
   struct upb_strtable_entry *table_e = strent(t, bucket);
-  if(table_e->key.byte_len != 0) {  /* Collision. */
-    if(bucket == strtable_bucket(t, &table_e->key)) {
+  if(table_e->key != NULL) {  /* Collision. */
+    if(bucket == strtable_bucket(t, table_e->key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
        * place our new element and append it to this key's chain. */
       uint32_t empty_bucket = empty_strbucket(t);
@@ -166,11 +166,11 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
       /* Existing element is not in its main position.  Move it to an empty
        * slot and put our element in its main position. */
       uint32_t empty_bucket = empty_strbucket(t);
-      uint32_t evictee_bucket = strtable_bucket(t, &table_e->key);
+      uint32_t evictee_bucket = strtable_bucket(t, table_e->key);
       memcpy(strent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
       struct upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
       while(1) {
-        assert(evictee_e->key.byte_len != 0);
+        assert(evictee_e->key != NULL);
         assert(evictee_e->next != UPB_END_OF_CHAIN);
         if(evictee_e->next == bucket) {
           evictee_e->next = empty_bucket;
@@ -183,7 +183,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
   }
   memcpy(table_e, e, t->t.entry_size);
   table_e->next = UPB_END_OF_CHAIN;
-  assert(upb_strtable_lookup(t, &e->key) == table_e);
+  assert(upb_strtable_lookup(t, e->key) == table_e);
 }
 
 void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
@@ -223,7 +223,7 @@ void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) 
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;
-  } while(cur->key.byte_len == 0);
+  } while(cur->key == NULL);
   return cur;
 }
 

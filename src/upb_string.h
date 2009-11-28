@@ -58,6 +58,11 @@ INLINE void upb_string_unref(struct upb_string *str)
   if(upb_mmhead_unref(&str->mmhead)) upb_string_destroy(str);
 }
 
+INLINE void upb_string_ref(struct upb_string *str)
+{
+  upb_mmhead_ref(&str->mmhead);
+}
+
 /* Resizes the string to size, reallocating if necessary.  Does not preserve
  * existing data. */
 INLINE void upb_string_resize(struct upb_string *str, uint32_t size)

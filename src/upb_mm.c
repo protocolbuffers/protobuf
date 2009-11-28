@@ -47,7 +47,7 @@ static union upb_mmptr upb_mm_newptr(upb_mm_ptrtype type,
 {
   union upb_mmptr p = {NULL};
   switch(type) {
-    case UPB_MM_MSG_REF: p.msg = upb_msg_new(f->ref.msg);
+    case UPB_MM_MSG_REF: p.msg = upb_msg_new(upb_downcast_msgdef(f->def));
     case UPB_MM_STR_REF: p.str = upb_string_new();
     case UPB_MM_ARR_REF: p.arr = upb_array_new(f);
     default: assert(false); break;

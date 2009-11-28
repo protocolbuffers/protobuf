@@ -34,13 +34,13 @@ struct upb_inttable_entry {
   uint32_t next;  /* Internal chaining. */
 };
 
-/* TODO: consider storing the hash in the entry.  This would avoid the need to
- * rehash on table resizes, but more importantly could possibly improve lookup
- * performance by letting us compare hashes before comparing lengths or the
- * strings themselves. */
+// TODO: consider storing the hash in the entry.  This would avoid the need to
+// rehash on table resizes, but more importantly could possibly improve lookup
+// performance by letting us compare hashes before comparing lengths or the
+// strings themselves.
 struct upb_strtable_entry {
-  struct upb_string key;
-  uint32_t next;  /* Internal chaining. */
+  struct upb_string *key;  // We own one ref.
+  uint32_t next;           // Internal chaining.
 };
 
 struct upb_table {

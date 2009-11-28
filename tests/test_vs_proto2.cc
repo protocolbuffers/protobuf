@@ -204,15 +204,13 @@ int main(int argc, char *argv[])
   upb_string_unref(fds);
 
   struct upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
-  struct upb_symtab_entry e;
-  bool success = upb_context_lookup(c, proto_name, &e);
-  if(!success || e.type != UPB_SYM_MESSAGE) {
+  struct upb_msgdef *def = upb_downcast_msgdef(upb_context_lookup(c, proto_name));
+  if(!def) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));
     return 1;
   }
   upb_string_unref(proto_name);
-  struct upb_msgdef *def = e.ref.msg;
 
   // Read the message data itself.
   struct upb_string *str = upb_strreadfile(MESSAGE_FILE);

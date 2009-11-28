@@ -48,9 +48,9 @@ void *strtable_to_array(struct upb_strtable *t, int *size)
 {
   *size = t->t.count;
   void **array = malloc(*size * sizeof(void*));
-  struct upb_symtab_entry *e;
+  struct upb_strtable_entry *e;
   int i = 0;
-  for(e = upb_strtable_begin(t); e && i < *size; e = upb_strtable_next(t, &e->e))
+  for(e = upb_strtable_begin(t); e && i < *size; e = upb_strtable_next(t, e))
     array[i++] = e;
   assert(i == *size && e == NULL);
   return array;
@@ -58,7 +58,7 @@ void *strtable_to_array(struct upb_strtable *t, int *size)
 
 /* The _const.h file defines the constants (enums) defined in the .proto
  * file. */
-static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
+static void write_const_h(struct upb_def *defs[], int num_entries,
                           char *outfile_name, FILE *stream)
 {
   /* Header file prologue. */
@@ -77,14 +77,12 @@ static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
   /* Enums. */
   fprintf(stream, "/* Enums. */\n\n");
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
-    if(entries[i]->type != UPB_SYM_ENUM) continue;
-    struct upb_symtab_entry *entry = entries[i];
-    struct upb_enumdef *enumdef = entry->ref._enum;
-    /* We use entry->e.key (the fully qualified name) instead of ed->name. */
-    struct upb_string *enum_name = upb_strdup(&entry->e.key);
+    if(defs[i]->type != UPB_DEF_ENUM) continue;
+    struct upb_enumdef *enumdef = upb_downcast_enumdef(defs[i]);
+    struct upb_string *enum_name = upb_strdup(enumdef->def.fqname);
     to_cident(enum_name);
 
-    struct upb_string *enum_val_prefix = upb_strdup(&entry->e.key);
+    struct upb_string *enum_val_prefix = upb_strdup(enumdef->def.fqname);
     enum_val_prefix->byte_len = my_memrchr(enum_val_prefix->ptr,
                                            UPB_SYMBOL_SEPARATOR,
                                            enum_val_prefix->byte_len);
@@ -96,7 +94,7 @@ static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
     bool first = true;
     /* Foreach enum value. */
     for(; e; e = upb_strtable_next(&enumdef->nametoint, &e->e)) {
-      struct upb_string *value_name = upb_strdup(&e->e.key);
+      struct upb_string *value_name = upb_strdup(e->e.key);
       to_preproc(value_name);
       /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13," */
       if (!first) fputs(",\n", stream);
@@ -122,8 +120,8 @@ static void write_const_h(struct upb_symtab_entry *entries[], int num_entries,
  * also defines constants for the enum values.
  *
  * Assumes that d has been validated. */
-static void write_h(struct upb_symtab_entry *entries[], int num_entries,
-                    char *outfile_name, char *descriptor_cident, FILE *stream)
+static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
+                    char *descriptor_cident, FILE *stream)
 {
   /* Header file prologue. */
   struct upb_string *include_guard_name = upb_strdupc(outfile_name);
@@ -148,11 +146,10 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
   fputs(" * So they can refer to each other in ", stream);
   fputs("possibly-recursive ways. */\n\n", stream);
 
-  for(int i = 0; i < num_entries; i++) {  /* Foreach message */
-    if(entries[i]->type != UPB_SYM_MESSAGE) continue;
-    struct upb_symtab_entry *entry = entries[i];
-    /* We use entry->e.key (the fully qualified name). */
-    struct upb_string *msg_name = upb_strdup(&entry->e.key);
+  for(int i = 0; i < num_defs; i++) {  /* Foreach message */
+    if(defs[i]->type != UPB_DEF_MESSAGE) continue;
+    struct upb_msgdef *m = upb_downcast_msgdef(defs[i]);
+    struct upb_string *msg_name = upb_strdup(m->def.fqname);
     to_cident(msg_name);
     fprintf(stream, "struct " UPB_STRFMT ";\n", UPB_STRARG(msg_name));
     fprintf(stream, "typedef struct " UPB_STRFMT "\n    " UPB_STRFMT ";\n\n",
@@ -162,12 +159,10 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
 
   /* Message Declarations. */
   fputs("/* The message definitions themselves. */\n\n", stream);
-  for(int i = 0; i < num_entries; i++) {  /* Foreach message */
-    if(entries[i]->type != UPB_SYM_MESSAGE) continue;
-    struct upb_symtab_entry *entry = entries[i];
-    struct upb_msgdef *m = entry->ref.msg;
-    /* We use entry->e.key (the fully qualified name). */
-    struct upb_string *msg_name = upb_strdup(&entry->e.key);
+  for(int i = 0; i < num_defs; i++) {  /* Foreach message */
+    if(defs[i]->type != UPB_DEF_MESSAGE) continue;
+    struct upb_msgdef *m = upb_downcast_msgdef(defs[i]);
+    struct upb_string *msg_name = upb_strdup(m->def.fqname);
     to_cident(msg_name);
     fprintf(stream, "struct " UPB_STRFMT " {\n", UPB_STRARG(msg_name));
     fputs("  struct upb_mmhead mmhead;\n", stream);
@@ -185,8 +180,8 @@ static void write_h(struct upb_symtab_entry *entries[], int num_entries,
     fputs("  } set_flags;\n", stream);
     for(uint32_t j = 0; j < m->num_fields; j++) {
       struct upb_fielddef *f = &m->fields[j];
-      if(f->type == UPB_TYPENUM(GROUP) || f->type == UPB_TYPENUM(MESSAGE)) {
-        struct upb_string *type_name = upb_strdup(f->ref.msg->fqname);
+      if(upb_issubmsg(f)) {
+        struct upb_string *type_name = upb_strdup(f->def->fqname);
         to_cident(type_name);
         if(f->label == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_REPEATED) {
           fprintf(stream, "  UPB_MSG_ARRAY(" UPB_STRFMT ")* " UPB_STRFMT ";\n",
@@ -267,7 +262,7 @@ struct msgtable_entry {
 int compare_entries(const void *_e1, const void *_e2)
 {
   struct strtable_entry *const*e1 = _e1, *const*e2 = _e2;
-  return upb_strcmp(&(*e1)->e.key, &(*e2)->e.key);
+  return upb_strcmp((*e1)->e.key, (*e2)->e.key);
 }
 
 /* Mutually recursive functions to recurse over a set of possibly nested
@@ -282,8 +277,8 @@ static void add_strings_from_value(union upb_value_ptr p,
                                    struct upb_strtable *t)
 {
   if(upb_isstringtype(f->type)) {
-    struct strtable_entry e = {.e = {.key = **p.str}};
-    if(upb_strtable_lookup(t, &e.e.key) == NULL)
+    struct strtable_entry e = {.e = {.key = *p.str}};
+    if(upb_strtable_lookup(t, e.e.key) == NULL)
       upb_strtable_insert(t, &e.e);
   } else if(upb_issubmsg(f)) {
     add_strings_from_msg(*p.msg, t);
@@ -315,18 +310,18 @@ static void add_strings_from_msg(struct upb_msg *msg, struct upb_strtable *t)
 struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
                                                 struct upb_fielddef *f)
 {
-  struct upb_string *type_name = upb_issubmsg(f) ? upb_strdup(f->ref.msg->fqname) :
+  struct upb_string *type_name = upb_issubmsg(f) ? upb_strdup(f->def->fqname) :
                                                    upb_strdupc(upb_type_info[f->type].ctype);
   struct typetable_entry *type_e = upb_strtable_lookup(t, type_name);
   if(type_e == NULL) {
     struct typetable_entry new_type_e = {
-      .e = {.key = *type_name}, .field = f, .cident = upb_strdup(type_name),
+      .e = {.key = type_name}, .field = f, .cident = upb_strdup(type_name),
       .values = NULL, .values_size = 0, .values_len = 0,
       .arrays = NULL, .arrays_size = 0, .arrays_len = 0
     };
     to_cident(new_type_e.cident);
     assert(upb_strtable_lookup(t, type_name) == NULL);
-    assert(upb_strtable_lookup(t, &new_type_e.e.key) == NULL);
+    assert(upb_strtable_lookup(t, new_type_e.e.key) == NULL);
     upb_strtable_insert(t, &new_type_e.e);
     type_e = upb_strtable_lookup(t, type_name);
     assert(type_e);
@@ -432,7 +427,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
   int col = 2;
   int offset = 0;
   for(int i = 0; i < size; i++) {
-    struct upb_string *s = &str_entries[i]->e.key;
+    struct upb_string *s = str_entries[i]->e.key;
     str_entries[i]->offset = offset;
     str_entries[i]->num = i;
     for(uint32_t j = 0; j < s->byte_len; j++) {
@@ -449,7 +444,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
   fputs("static struct upb_string strings[] = {\n", stream);
   for(int i = 0; i < size; i++) {
     struct strtable_entry *e = str_entries[i];
-    fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d},\n", e->offset, e->e.key.byte_len);
+    fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d},\n", e->offset, e->e.key->byte_len);
   }
   fputs("};\n\n", stream);
   free(str_entries);
@@ -462,7 +457,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
   /* A fake field to get the recursion going. */
   struct upb_fielddef fake_field = {
       .type = UPB_TYPENUM(MESSAGE),
-      .ref = {.msg = msg->def}
+      .def = &msg->def->def,
   };
   add_value(upb_value_addrof(&val), &fake_field, &types);
   add_submsgs(msg, &types);
@@ -503,7 +498,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
     for(int i = 0; i < e->values_len; i++) {
       union upb_value val = e->values[i];
       if(upb_issubmsg(e->field)) {
-        struct upb_msgdef *m = e->field->ref.msg;
+        struct upb_msgdef *m = upb_downcast_msgdef(e->field->def);
         void *msgdata = val.msg;
         /* Print set flags. */
         fputs("  {.set_flags = {.has = {\n", stream);
@@ -629,7 +624,7 @@ void error(char *err, ...)
 
 void sort_fields_in_descriptor(google_protobuf_DescriptorProto *d)
 {
-  if(d->set_flags.has.field) upb_msgdef_sortfds(d->field->elements, d->field->len);
+  if(d->set_flags.has.field) upb_fielddef_sortfds(d->field->elements, d->field->len);
   if(d->set_flags.has.nested_type)
     for(uint32_t i = 0; i < d->nested_type->len; i++)
       sort_fields_in_descriptor(d->nested_type->elements[i]);
@@ -713,10 +708,11 @@ int main(int argc, char *argv[])
   if(!h_const_file) error("Failed to open _const.h output file");
 
   int symcount;
-  struct upb_symtab_entry **entries = strtable_to_array(&c->symtab, &symcount);
-  write_h(entries, symcount, h_filename, cident, h_file);
-  write_const_h(entries, symcount, h_filename, h_const_file);
-  free(entries);
+  struct upb_def **defs = upb_context_getandref_defs(c, &symcount);
+  write_h(defs, symcount, h_filename, cident, h_file);
+  write_const_h(defs, symcount, h_filename, h_const_file);
+  for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);
+  free(defs);
   if(cident) {
     FILE *c_file = fopen(c_filename, "w");
     if(!c_file) error("Failed to open .h output file");
