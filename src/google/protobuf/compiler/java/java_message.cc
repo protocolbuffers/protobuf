@@ -394,6 +394,14 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     "public void writeTo(com.google.protobuf.CodedOutputStream output)\n"
     "                    throws java.io.IOException {\n");
   printer->Indent();
+  // writeTo(CodedOutputStream output) might be invoked without
+  // getSerializedSize() ever being called, but we need the memoized
+  // sizes in case this message has packed fields. Rather than emit checks for
+  // each packed field, just call getSerializedSize() up front for all messages.
+  // In most cases, getSerializedSize() will have already been called anyway by
+  // one of the wrapper writeTo() methods, making this call cheap.
+  printer->Print(
+    "getSerializedSize();\n");
 
   if (descriptor_->extension_range_count() > 0) {
     if (descriptor_->options().message_set_wire_format()) {
