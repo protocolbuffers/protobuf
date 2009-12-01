@@ -298,7 +298,7 @@ GenerateMembers(io::Printer* printer) const {
   if (descriptor_->options().packed() &&
       HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize;\n");
+      "private int $name$MemoizedSerializedSize = -1;\n");
   }
 }
 

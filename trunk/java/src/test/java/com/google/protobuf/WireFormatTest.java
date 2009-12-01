@@ -102,6 +102,28 @@ public class WireFormatTest extends TestCase {
     assertEquals(rawBytes, rawBytes2);
   }
 
+  public void testSerializationPackedWithoutGetSerializedSize()
+      throws Exception {
+    // Write directly to an OutputStream, without invoking getSerializedSize()
+    // This used to be a bug where the size of a packed field was incorrect,
+    // since getSerializedSize() was never invoked.
+    TestPackedTypes message = TestUtil.getPackedSet();
+
+    // Directly construct a CodedOutputStream around the actual OutputStream,
+    // in case writeTo(OutputStream output) invokes getSerializedSize();
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    CodedOutputStream codedOutput = CodedOutputStream.newInstance(outputStream);
+
+    message.writeTo(codedOutput);
+
+    codedOutput.flush();
+
+    TestPackedTypes message2 = TestPackedTypes.parseFrom(
+        outputStream.toByteArray());
+
+    TestUtil.assertPackedFieldsSet(message2);
+  }
+
   public void testSerializeExtensionsLite() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllExtensions then parse it as TestAllTypes
