@@ -177,11 +177,11 @@ static size_t get_valuesize(struct upb_msgsizes *sizes, union upb_value_ptr p,
 {
   switch(f->type) {
     default: assert(false); return 0;  /* Internal corruption. */
-    case UPB_TYPENUM(MESSAGE): {
+    case UPB_TYPE(MESSAGE): {
       size_t submsg_size = get_msgsize(sizes, *p.msg);
       return upb_get_INT32_size(submsg_size) + submsg_size;
     }
-    case UPB_TYPENUM(GROUP): {
+    case UPB_TYPE(GROUP): {
       size_t endgrp_tag_size = upb_get_tag_size(f->number);
       return endgrp_tag_size + get_msgsize(sizes, *p.msg);
     }
@@ -320,8 +320,8 @@ size_t upb_msg_serialize(struct upb_msg_serialize_state *s,
     struct upb_fielddef *f = &m->fields[i];
     //union upb_value_ptr p = upb_msg_getptr(msg, f);
     buf = serialize_tag(buf, end, f, status);
-    if(f->type == UPB_TYPENUM(MESSAGE)) {
-    } else if(f->type == UPB_TYPENUM(GROUP)) {
+    if(f->type == UPB_TYPE(MESSAGE)) {
+    } else if(f->type == UPB_TYPE(GROUP)) {
     } else if(upb_isstring(f)) {
     } else {
       //upb_serialize_value(buf, end, f->type, p, status);
@@ -339,29 +339,29 @@ bool upb_value_eql(union upb_value_ptr p1, union upb_value_ptr p2,
 {
 #define CMP(type) return *p1.type == *p2.type;
   switch(type) {
-    case UPB_TYPENUM(DOUBLE):
+    case UPB_TYPE(DOUBLE):
       CMP(_double)
-    case UPB_TYPENUM(FLOAT):
+    case UPB_TYPE(FLOAT):
       CMP(_float)
-    case UPB_TYPENUM(INT64):
-    case UPB_TYPENUM(SFIXED64):
-    case UPB_TYPENUM(SINT64):
+    case UPB_TYPE(INT64):
+    case UPB_TYPE(SFIXED64):
+    case UPB_TYPE(SINT64):
       CMP(int64)
-    case UPB_TYPENUM(UINT64):
-    case UPB_TYPENUM(FIXED64):
+    case UPB_TYPE(UINT64):
+    case UPB_TYPE(FIXED64):
       CMP(uint64)
-    case UPB_TYPENUM(INT32):
-    case UPB_TYPENUM(SFIXED32):
-    case UPB_TYPENUM(SINT32):
+    case UPB_TYPE(INT32):
+    case UPB_TYPE(SFIXED32):
+    case UPB_TYPE(SINT32):
       CMP(int32)
-    case UPB_TYPENUM(UINT32):
-    case UPB_TYPENUM(FIXED32):
-    case UPB_TYPENUM(ENUM):
+    case UPB_TYPE(UINT32):
+    case UPB_TYPE(FIXED32):
+    case UPB_TYPE(ENUM):
       CMP(uint32);
-    case UPB_TYPENUM(BOOL):
+    case UPB_TYPE(BOOL):
       CMP(_bool);
-    case UPB_TYPENUM(STRING):
-    case UPB_TYPENUM(BYTES):
+    case UPB_TYPE(STRING):
+    case UPB_TYPE(BYTES):
       return upb_streql(*p1.str, *p2.str);
     default: return false;
   }

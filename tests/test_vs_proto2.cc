@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
 #include "upb_parse.h"
-#include "upb_context.h"
-#include "upb_context.h"
+#include "upb_def.h"
 #include "upb_msg.h"
 #include "upb_mm.h"
 
@@ -33,43 +32,43 @@ void compare_arrays(const google::protobuf::Reflection *r,
     switch(upb_f->type) {
       default:
         ASSERT(false);
-      case UPB_TYPENUM(DOUBLE):
+      case UPB_TYPE(DOUBLE):
         ASSERT(r->GetRepeatedDouble(proto2_msg, proto2_f, i) == *p._double);
         break;
-      case UPB_TYPENUM(FLOAT):
+      case UPB_TYPE(FLOAT):
         ASSERT(r->GetRepeatedFloat(proto2_msg, proto2_f, i) == *p._float);
         break;
-      case UPB_TYPENUM(INT64):
-      case UPB_TYPENUM(SINT64):
-      case UPB_TYPENUM(SFIXED64):
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SINT64):
+      case UPB_TYPE(SFIXED64):
         ASSERT(r->GetRepeatedInt64(proto2_msg, proto2_f, i) == *p.int64);
         break;
-      case UPB_TYPENUM(UINT64):
-      case UPB_TYPENUM(FIXED64):
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64):
         ASSERT(r->GetRepeatedUInt64(proto2_msg, proto2_f, i) == *p.uint64);
         break;
-      case UPB_TYPENUM(SFIXED32):
-      case UPB_TYPENUM(SINT32):
-      case UPB_TYPENUM(INT32):
-      case UPB_TYPENUM(ENUM):
+      case UPB_TYPE(SFIXED32):
+      case UPB_TYPE(SINT32):
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(ENUM):
         ASSERT(r->GetRepeatedInt32(proto2_msg, proto2_f, i) == *p.int32);
         break;
-      case UPB_TYPENUM(FIXED32):
-      case UPB_TYPENUM(UINT32):
+      case UPB_TYPE(FIXED32):
+      case UPB_TYPE(UINT32):
         ASSERT(r->GetRepeatedUInt32(proto2_msg, proto2_f, i) == *p.uint32);
         break;
-      case UPB_TYPENUM(BOOL):
+      case UPB_TYPE(BOOL):
         ASSERT(r->GetRepeatedBool(proto2_msg, proto2_f, i) == *p._bool);
         break;
-      case UPB_TYPENUM(STRING):
-      case UPB_TYPENUM(BYTES): {
+      case UPB_TYPE(STRING):
+      case UPB_TYPE(BYTES): {
         std::string str = r->GetRepeatedString(proto2_msg, proto2_f, i);
         std::string str2((*p.str)->ptr, (*p.str)->byte_len);
         ASSERT(str == str2);
         break;
       }
-      case UPB_TYPENUM(GROUP):
-      case UPB_TYPENUM(MESSAGE):
+      case UPB_TYPE(GROUP):
+      case UPB_TYPE(MESSAGE):
         compare(r->GetRepeatedMessage(proto2_msg, proto2_f, i), *p.msg);
     }
   }
@@ -84,43 +83,43 @@ void compare_values(const google::protobuf::Reflection *r,
   switch(upb_f->type) {
     default:
       ASSERT(false);
-    case UPB_TYPENUM(DOUBLE):
+    case UPB_TYPE(DOUBLE):
       ASSERT(r->GetDouble(proto2_msg, proto2_f) == *p._double);
       break;
-    case UPB_TYPENUM(FLOAT):
+    case UPB_TYPE(FLOAT):
       ASSERT(r->GetFloat(proto2_msg, proto2_f) == *p._float);
       break;
-    case UPB_TYPENUM(INT64):
-    case UPB_TYPENUM(SINT64):
-    case UPB_TYPENUM(SFIXED64):
+    case UPB_TYPE(INT64):
+    case UPB_TYPE(SINT64):
+    case UPB_TYPE(SFIXED64):
       ASSERT(r->GetInt64(proto2_msg, proto2_f) == *p.int64);
       break;
-    case UPB_TYPENUM(UINT64):
-    case UPB_TYPENUM(FIXED64):
+    case UPB_TYPE(UINT64):
+    case UPB_TYPE(FIXED64):
       ASSERT(r->GetUInt64(proto2_msg, proto2_f) == *p.uint64);
       break;
-    case UPB_TYPENUM(SFIXED32):
-    case UPB_TYPENUM(SINT32):
-    case UPB_TYPENUM(INT32):
-    case UPB_TYPENUM(ENUM):
+    case UPB_TYPE(SFIXED32):
+    case UPB_TYPE(SINT32):
+    case UPB_TYPE(INT32):
+    case UPB_TYPE(ENUM):
       ASSERT(r->GetInt32(proto2_msg, proto2_f) == *p.int32);
       break;
-    case UPB_TYPENUM(FIXED32):
-    case UPB_TYPENUM(UINT32):
+    case UPB_TYPE(FIXED32):
+    case UPB_TYPE(UINT32):
       ASSERT(r->GetUInt32(proto2_msg, proto2_f) == *p.uint32);
       break;
-    case UPB_TYPENUM(BOOL):
+    case UPB_TYPE(BOOL):
       ASSERT(r->GetBool(proto2_msg, proto2_f) == *p._bool);
       break;
-    case UPB_TYPENUM(STRING):
-    case UPB_TYPENUM(BYTES): {
+    case UPB_TYPE(STRING):
+    case UPB_TYPE(BYTES): {
       std::string str = r->GetString(proto2_msg, proto2_f);
       std::string str2((*p.str)->ptr, (*p.str)->byte_len);
       ASSERT(str == str2);
       break;
     }
-    case UPB_TYPENUM(GROUP):
-    case UPB_TYPENUM(MESSAGE):
+    case UPB_TYPE(GROUP):
+    case UPB_TYPE(MESSAGE):
       compare(r->GetMessage(proto2_msg, proto2_f), *p.msg);
   }
 }
@@ -189,13 +188,13 @@ int main(int argc, char *argv[])
 
   // Initialize upb state, parse descriptor.
   struct upb_status status = UPB_STATUS_INIT;
-  struct upb_context *c = upb_context_new();
+  struct upb_symtab *c = upb_symtab_new();
   struct upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(!fds) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
     return 1;
   }
-  upb_context_parsefds(c, fds, &status);
+  upb_symtab_add_desc(c, fds, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
             status.msg);
@@ -204,7 +203,7 @@ int main(int argc, char *argv[])
   upb_string_unref(fds);
 
   struct upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
-  struct upb_msgdef *def = upb_downcast_msgdef(upb_context_lookup(c, proto_name));
+  struct upb_msgdef *def = upb_downcast_msgdef(upb_symtab_lookup(c, proto_name));
   if(!def) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));
@@ -228,7 +227,7 @@ int main(int argc, char *argv[])
 
   upb_msg_unref(upb_msg);
   upb_string_unref(str);
-  upb_context_unref(c);
+  upb_symtab_unref(c);
 
   return 0;
 }

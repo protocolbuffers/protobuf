@@ -3,7 +3,7 @@
  * It was created by the upb compiler (upbc) with the following
  * command-line:
  *
- *   /Users/haberman/code/upb/tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
+ *   ./tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
  *
  * This file is a dump of 'descriptor/descriptor.proto.pb'.
  * It contains exactly the same data, but in a C structure form

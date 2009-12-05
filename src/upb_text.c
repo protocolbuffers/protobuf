@@ -15,29 +15,29 @@ void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
 {
 #define CASE(fmtstr, member) fprintf(file, fmtstr, val.member); break;
   switch(type) {
-    case UPB_TYPENUM(DOUBLE):
+    case UPB_TYPE(DOUBLE):
       CASE("%0.f", _double);
-    case UPB_TYPENUM(FLOAT):
+    case UPB_TYPE(FLOAT):
       CASE("%0.f", _float)
-    case UPB_TYPENUM(INT64):
-    case UPB_TYPENUM(SFIXED64):
-    case UPB_TYPENUM(SINT64):
+    case UPB_TYPE(INT64):
+    case UPB_TYPE(SFIXED64):
+    case UPB_TYPE(SINT64):
       CASE("%" PRId64, int64)
-    case UPB_TYPENUM(UINT64):
-    case UPB_TYPENUM(FIXED64):
+    case UPB_TYPE(UINT64):
+    case UPB_TYPE(FIXED64):
       CASE("%" PRIu64, uint64)
-    case UPB_TYPENUM(INT32):
-    case UPB_TYPENUM(SFIXED32):
-    case UPB_TYPENUM(SINT32):
+    case UPB_TYPE(INT32):
+    case UPB_TYPE(SFIXED32):
+    case UPB_TYPE(SINT32):
       CASE("%" PRId32, int32)
-    case UPB_TYPENUM(UINT32):
-    case UPB_TYPENUM(FIXED32):
-    case UPB_TYPENUM(ENUM):
+    case UPB_TYPE(UINT32):
+    case UPB_TYPE(FIXED32):
+    case UPB_TYPE(ENUM):
       CASE("%" PRIu32, uint32);
-    case UPB_TYPENUM(BOOL):
+    case UPB_TYPE(BOOL):
       CASE("%hhu", _bool);
-    case UPB_TYPENUM(STRING):
-    case UPB_TYPENUM(BYTES):
+    case UPB_TYPE(STRING):
+    case UPB_TYPE(BYTES):
       /* TODO: escaping. */
       fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(val.str)); break;
   }

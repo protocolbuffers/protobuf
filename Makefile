@@ -47,7 +47,7 @@ clean:
 
 # The core library (src/libupb.a)
 SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c \
-    src/upb_def.c src/upb_context.c src/upb_string.c src/upb_text.c \
+    src/upb_def.c src/upb_string.c src/upb_text.c \
     descriptor/descriptor.c
     #src/upb_serialize.c descriptor/descriptor.c
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))

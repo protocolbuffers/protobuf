@@ -24,7 +24,7 @@ void upb_msg_destroy(struct upb_msg *msg) {
     if(!upb_msg_isset(msg, f) || !upb_field_ismm(f)) continue;
     upb_mm_destroy(upb_msg_getptr(msg, f), upb_field_ptrtype(f));
   }
-  upb_msgdef_unref(msg->def);
+  upb_def_unref(UPB_UPCAST(msg->def));
   free(msg);
 }
 

@@ -1,11 +1,11 @@
 
 #include "main.c"
 
-#include "upb_context.h"
-#include "upb_msg.h"
+#include "upb_def.h"
 #include "upb_mm.h"
+#include "upb_msg.h"
 
-static struct upb_context *c;
+static struct upb_symtab *s;
 static struct upb_string *str;
 static struct upb_msgdef *def;
 static struct upb_msg *msgs[NUM_MESSAGES];
@@ -15,14 +15,14 @@ static bool initialize()
 {
   // Initialize upb state, parse descriptor.
   struct upb_status status = UPB_STATUS_INIT;
-  c = upb_context_new();
+  s = upb_symtab_new();
   struct upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(!fds) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
             status.msg);
     return false;
   }
-  upb_context_parsefds(c, fds, &status);
+  upb_symtab_add_desc(s, fds, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
             status.msg);
@@ -31,7 +31,7 @@ static bool initialize()
   upb_string_unref(fds);
 
   struct upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
-  def = upb_downcast_msgdef(upb_context_lookup(c, proto_name));
+  def = upb_downcast_msgdef(upb_symtab_lookup(s, proto_name));
   if(!def) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));
@@ -57,7 +57,7 @@ static void cleanup()
   for(int i = 0; i < NUM_MESSAGES; i++)
     upb_msg_unref(msgs[i]);
   upb_string_unref(str);
-  upb_context_unref(c);
+  upb_symtab_unref(s);
   upb_msgparser_free(mp);
 }
 

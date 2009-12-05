@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "upb_parse.c"
-#include "upb_context.h"
+#include "upb_def.h"
 
 int num_assertions = 0;
 #define ASSERT(expr) do { \
@@ -227,10 +227,10 @@ static void test_get_f_uint32_t()
 #undef TEST
 }
 
-static void test_upb_context() {
-  struct upb_context *c = upb_context_new();
+static void test_upb_symtab() {
+  struct upb_symtab *c = upb_symtab_new();
   ASSERT(c);
-  upb_context_unref(c);
+  upb_symtab_unref(c);
 }
 
 
@@ -247,7 +247,7 @@ int main()
   TEST(test_get_v_uint32_t);
   TEST(test_skip_v_uint64_t);
   TEST(test_get_f_uint32_t);
-  TEST(test_upb_context);
+  TEST(test_upb_symtab);
   printf("All tests passed (%d assertions).\n", num_assertions);
   return 0;
 }

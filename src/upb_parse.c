@@ -276,7 +276,7 @@ uint8_t *upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
                          union upb_value_ptr v, struct upb_status *status)
 {
 #define CASE(t, member_name) \
-  case UPB_TYPENUM(t): return upb_get_ ## t(buf, end, v.member_name, status);
+  case UPB_TYPE(t): return upb_get_ ## t(buf, end, v.member_name, status);
 
   switch(ft) {
     CASE(DOUBLE,   _double)
@@ -448,13 +448,13 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, void *_buf, size_t len,
       continue;
     }
 
-    struct upb_fielddef *f = upb_msg_fieldbynum(msgdef, tag.field_number);
+    struct upb_fielddef *f = upb_msg_itof(msgdef, tag.field_number);
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
       buf = upb_get_INT32(buf, end, &delim_len, status);
       CHECK_STATUS();
       uint8_t *delim_end = buf + delim_len;
-      if(f && f->type == UPB_TYPENUM(MESSAGE)) {
+      if(f && f->type == UPB_TYPE(MESSAGE)) {
         submsg_end = push(p, start, delim_end - start, f, status);
         msgdef = p->top->msgdef;
       } else {
@@ -469,7 +469,7 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, void *_buf, size_t len,
     } else {
       //if(!f || !upb_check_type(tag.wire_type, f->type)) {
       //  buf = skip_wire_value(buf, end, tag.wire_type, status);
-      if (f->type == UPB_TYPENUM(GROUP)) {
+      if (f->type == UPB_TYPE(GROUP)) {
         submsg_end = push(p, start, 0, f, status);
         msgdef = p->top->msgdef;
       } else {

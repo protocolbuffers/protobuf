@@ -60,14 +60,15 @@ typedef uint8_t upb_wire_type_t;
 typedef uint8_t upb_field_type_t;
 
 // For referencing the type constants tersely.
-#define UPB_TYPENUM(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## type
+#define UPB_TYPE(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## type
+#define UPB_LABEL(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_ ## type
 
 INLINE bool upb_issubmsgtype(upb_field_type_t type) {
-  return type == UPB_TYPENUM(GROUP) || type == UPB_TYPENUM(MESSAGE);
+  return type == UPB_TYPE(GROUP) || type == UPB_TYPE(MESSAGE);
 }
 
 INLINE bool upb_isstringtype(upb_field_type_t type) {
-  return type == UPB_TYPENUM(STRING) || type == UPB_TYPENUM(BYTES);
+  return type == UPB_TYPE(STRING) || type == UPB_TYPE(BYTES);
 }
 
 // Info for a given field type.
@@ -155,7 +156,7 @@ INLINE union upb_value upb_value_read(union upb_value_ptr ptr,
   union upb_value val;
 
 #define CASE(t, member_name) \
-  case UPB_TYPENUM(t): val.member_name = *ptr.member_name; break;
+  case UPB_TYPE(t): val.member_name = *ptr.member_name; break;
 
   switch(ft) {
     CASE(DOUBLE,   _double)
@@ -191,7 +192,7 @@ INLINE union upb_value upb_value_read(union upb_value_ptr ptr,
 INLINE void upb_value_write(union upb_value_ptr ptr, union upb_value val,
                             upb_field_type_t ft) {
 #define CASE(t, member_name) \
-  case UPB_TYPENUM(t): *ptr.member_name = val.member_name; break;
+  case UPB_TYPE(t): *ptr.member_name = val.member_name; break;
 
   switch(ft) {
     CASE(DOUBLE,   _double)

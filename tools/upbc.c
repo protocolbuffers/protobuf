@@ -12,11 +12,11 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include "descriptor.h"
-#include "upb_context.h"
+#include "upb_array.h"
+#include "upb_def.h"
+#include "upb_mm.h"
 #include "upb_msg.h"
 #include "upb_text.h"
-#include "upb_array.h"
-#include "upb_mm.h"
 
 /* These are in-place string transformations that do not change the length of
  * the string (and thus never need to re-allocate). */
@@ -79,10 +79,10 @@ static void write_const_h(struct upb_def *defs[], int num_entries,
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     if(defs[i]->type != UPB_DEF_ENUM) continue;
     struct upb_enumdef *enumdef = upb_downcast_enumdef(defs[i]);
-    struct upb_string *enum_name = upb_strdup(enumdef->def.fqname);
+    struct upb_string *enum_name = upb_strdup(UPB_UPCAST(enumdef)->fqname);
+    struct upb_string *enum_val_prefix = upb_strdup(enum_name);
     to_cident(enum_name);
 
-    struct upb_string *enum_val_prefix = upb_strdup(enumdef->def.fqname);
     enum_val_prefix->byte_len = my_memrchr(enum_val_prefix->ptr,
                                            UPB_SYMBOL_SEPARATOR,
                                            enum_val_prefix->byte_len);
@@ -90,17 +90,17 @@ static void write_const_h(struct upb_def *defs[], int num_entries,
     to_preproc(enum_val_prefix);
 
     fprintf(stream, "typedef enum " UPB_STRFMT " {\n", UPB_STRARG(enum_name));
-    struct upb_enumdef_ntoi_entry *e = upb_strtable_begin(&enumdef->nametoint);
+    struct upb_enum_iter iter;
     bool first = true;
     /* Foreach enum value. */
-    for(; e; e = upb_strtable_next(&enumdef->nametoint, &e->e)) {
-      struct upb_string *value_name = upb_strdup(e->e.key);
+    for(upb_enum_begin(&iter, enumdef); !upb_enum_done(&iter); upb_enum_next(&iter)) {
+      struct upb_string *value_name = upb_strdup(iter.name);
       to_preproc(value_name);
       /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_UINT32 = 13," */
       if (!first) fputs(",\n", stream);
       first = false;
       fprintf(stream, "  " UPB_STRFMT UPB_STRFMT " = %" PRIu32,
-              UPB_STRARG(enum_val_prefix), UPB_STRARG(value_name), e->value);
+              UPB_STRARG(enum_val_prefix), UPB_STRARG(value_name), iter.val);
       upb_string_unref(value_name);
     }
     fprintf(stream, "\n} " UPB_STRFMT ";\n\n", UPB_STRARG(enum_name));
@@ -147,9 +147,9 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
   fputs("possibly-recursive ways. */\n\n", stream);
 
   for(int i = 0; i < num_defs; i++) {  /* Foreach message */
-    if(defs[i]->type != UPB_DEF_MESSAGE) continue;
     struct upb_msgdef *m = upb_downcast_msgdef(defs[i]);
-    struct upb_string *msg_name = upb_strdup(m->def.fqname);
+    if(!m) continue;
+    struct upb_string *msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
     fprintf(stream, "struct " UPB_STRFMT ";\n", UPB_STRARG(msg_name));
     fprintf(stream, "typedef struct " UPB_STRFMT "\n    " UPB_STRFMT ";\n\n",
@@ -160,9 +160,9 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
   /* Message Declarations. */
   fputs("/* The message definitions themselves. */\n\n", stream);
   for(int i = 0; i < num_defs; i++) {  /* Foreach message */
-    if(defs[i]->type != UPB_DEF_MESSAGE) continue;
     struct upb_msgdef *m = upb_downcast_msgdef(defs[i]);
-    struct upb_string *msg_name = upb_strdup(m->def.fqname);
+    if(!m) continue;
+    struct upb_string *msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
     fprintf(stream, "struct " UPB_STRFMT " {\n", UPB_STRARG(msg_name));
     fputs("  struct upb_mmhead mmhead;\n", stream);
@@ -456,8 +456,8 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
   union upb_value val = {.msg = msg};
   /* A fake field to get the recursion going. */
   struct upb_fielddef fake_field = {
-      .type = UPB_TYPENUM(MESSAGE),
-      .def = &msg->def->def,
+      .type = UPB_TYPE(MESSAGE),
+      .def = UPB_UPCAST(msg->def),
   };
   add_value(upb_value_addrof(&val), &fake_field, &types);
   add_submsgs(msg, &types);
@@ -656,23 +656,21 @@ int main(int argc, char *argv[])
   if(!input_file) usage_err("You must specify an input file.");
   if(!outfile_base) outfile_base = input_file;
 
-  /* Read input file. */
+  // Read and parse input file.
   struct upb_string *descriptor = upb_strreadfile(input_file);
   if(!descriptor)
     error("Couldn't read input file.");
-
-  /* Parse input file. */
-  struct upb_context *c = upb_context_new();
-  struct upb_msg *fds_msg = upb_msg_new(c->fds_msgdef);
+  struct upb_symtab *s = upb_symtab_new();
+  struct upb_msg *fds_msg = upb_msg_new(s->fds_msgdef);
   struct upb_status status = UPB_STATUS_INIT;
   upb_msg_parsestr(fds_msg, descriptor->ptr, descriptor->byte_len, &status);
   if(!upb_ok(&status))
     error("Failed to parse input file descriptor: %s", status.msg);
-  //upb_msg_print(fds_msg, false, stderr);
   google_protobuf_FileDescriptorSet *fds = (void*)fds_msg;
-  upb_context_addfds(c, fds, &status);
+
+  upb_symtab_add_desc(s, descriptor, &status);
   if(!upb_ok(&status))
-    error("Failed to resolve symbols in descriptor: %s", status.msg);
+    error("Failed to add descriptor: %s", status.msg);
 
   // We need to sort the fields of all the descriptors.  This is currently
   // somewhat special-cased to when we are emitting a descriptor for
@@ -708,7 +706,7 @@ int main(int argc, char *argv[])
   if(!h_const_file) error("Failed to open _const.h output file");
 
   int symcount;
-  struct upb_def **defs = upb_context_getandref_defs(c, &symcount);
+  struct upb_def **defs = upb_symtab_getandref_defs(s, &symcount);
   write_h(defs, symcount, h_filename, cident, h_file);
   write_const_h(defs, symcount, h_filename, h_const_file);
   for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);
@@ -720,7 +718,7 @@ int main(int argc, char *argv[])
     fclose(c_file);
   }
   upb_msg_unref(fds_msg);
-  upb_context_unref(c);
+  upb_symtab_unref(s);
   upb_string_unref(descriptor);
   fclose(h_file);
   fclose(h_const_file);
