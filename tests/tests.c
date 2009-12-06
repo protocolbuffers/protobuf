@@ -228,9 +228,18 @@ static void test_get_f_uint32_t()
 }
 
 static void test_upb_symtab() {
-  struct upb_symtab *c = upb_symtab_new();
-  ASSERT(c);
-  upb_symtab_unref(c);
+  struct upb_symtab *s = upb_symtab_new();
+  ASSERT(s);
+  struct upb_string *descriptor = upb_strreadfile("tests/test.proto.pb");
+  if(!descriptor) {
+    fprintf(stderr, "Couldn't read input file tests/test.proto.pb\n");
+    exit(1);
+  }
+  struct upb_status status = UPB_STATUS_INIT;
+  upb_symtab_add_desc(s, descriptor, &status);
+  ASSERT(upb_ok(&status));
+  upb_string_unref(descriptor);
+  upb_symtab_unref(s);
 }
 
 

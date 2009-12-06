@@ -131,8 +131,8 @@ void compare(const google::protobuf::Message& proto2_msg,
   const google::protobuf::Descriptor *d = proto2_msg.GetDescriptor();
   struct upb_msgdef *def = upb_msg->def;
 
-  ASSERT((uint32_t)d->field_count() == def->num_fields);
-  for(uint32_t i = 0; i < def->num_fields; i++) {
+  ASSERT((upb_field_count_t)d->field_count() == def->num_fields);
+  for(upb_field_count_t i = 0; i < def->num_fields; i++) {
     struct upb_fielddef *upb_f = &def->fields[i];
     const google::protobuf::FieldDescriptor *proto2_f =
         d->FindFieldByNumber(upb_f->number);

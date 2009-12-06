@@ -74,10 +74,15 @@ python: $(LIBUPB_PIC)
 	cd lang_ext/python && python setup.py build
 
 # Tests
+tests/test.proto.pb: tests/test.proto
+	# TODO: replace with upbc
+	protoc tests/test.proto -otests/test.proto.pb
+
 tests: tests/tests \
     tests/test_table \
     tests/t.test_vs_proto2.googlemessage1 \
-    tests/t.test_vs_proto2.googlemessage2
+    tests/t.test_vs_proto2.googlemessage2 \
+    tests/test.proto.pb
 
 #VALGRIND=valgrind --leak-check=full --error-exitcode=1 
 VALGRIND=

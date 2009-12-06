@@ -708,6 +708,7 @@ int main(int argc, char *argv[])
 
   int symcount;
   struct upb_def **defs = upb_symtab_getandref_defs(s, &symcount);
+  upb_symtab_unref(s);
   write_h(defs, symcount, h_filename, cident, h_file);
   write_const_h(defs, symcount, h_filename, h_const_file);
   for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);
@@ -719,7 +720,6 @@ int main(int argc, char *argv[])
     fclose(c_file);
   }
   upb_msg_unref(fds_msg);
-  upb_symtab_unref(s);
   upb_string_unref(descriptor);
   fclose(h_file);
   fclose(h_const_file);

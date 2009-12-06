@@ -27,8 +27,9 @@ static int div_round_up(int numerator, int denominator) {
 //
 // Our scheme is as follows.  First we give each def a flag indicating whether
 // it is part of a cycle or not.  Because defs are immutable, this flag will
-// never change.  For acyclic defs, we can use a naive algorithm and avoid
-// the overhead of dealing with cycles.  Most defs will be acyclic.
+// never change.  For acyclic defs, we can use a naive algorithm and avoid the
+// overhead of dealing with cycles.  Most defs will be acyclic, and most cycles
+// will be very short.
 //
 // For defs that participate in cycles we keep two reference counts.  One
 // tracks references that come from outside the cycle (we call these external
