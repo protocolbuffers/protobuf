@@ -29,8 +29,11 @@ extern "C" {
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 #define UPB_MAX_NESTING 64
 
-// The maximum number of fields that any one .proto type can have.
-#define UPB_MAX_FIELDS (1<<16)
+// The maximum number of fields that any one .proto type can have.  Note that
+// this is very different than the max field number.  It is hard to imagine a
+// scenario where more than 32k fields makes sense.
+#define UPB_MAX_FIELDS (1<<15)
+typedef int16_t upb_field_count_t;
 
 // Nested type names are separated by periods.
 #define UPB_SYMBOL_SEPARATOR '.'

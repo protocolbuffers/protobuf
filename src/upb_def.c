@@ -19,11 +19,38 @@ static int div_round_up(int numerator, int denominator) {
 
 /* upb_def ********************************************************************/
 
+// Defs are reference counted, but can have cycles, so we need to be capable of
+// collecting the cycles.  In our situation defs are immutable (so cycles
+// cannot be created or destroyed post-initialization).  We need to be
+// thread-safe but want to avoid locks if at all possible and rely only on
+// atomic operations.
+//
+// Our scheme is as follows.  First we give each def a flag indicating whether
+// it is part of a cycle or not.  Because defs are immutable, this flag will
+// never change.  For acyclic defs, we can use a naive algorithm and avoid
+// the overhead of dealing with cycles.  Most defs will be acyclic.
+//
+// For defs that participate in cycles we keep two reference counts.  One
+// tracks references that come from outside the cycle (we call these external
+// references), and is incremented and decremented like a regular refcount.
+// The other is a count of how many defs within any of our cycles have external
+// references.  When a def that is part of a cycle has an external reference,
+// we say that it has a "cycle reference" on every def that it is part of a
+// cycle with.  We free the defs with cycles when the cycle refcount drops to
+// zero (which cannot happen unless the external refcount drops to zero first).
+//
+// Note that all refs in a cycle will have the same cycle refcount, except for
+// ones that belong to more than one cycle which will have the sum of the
+// cycle refcounts for all their cycles.
+//
+// This algorithm is relatively cheap, since it only requires extra work on
+// initialization and when the regular refcount drops to zero.
+
 static void msgdef_free(struct upb_msgdef *m);
 static void enumdef_free(struct upb_enumdef *e);
 static void unresolveddef_free(struct upb_unresolveddef *u);
 
-void _upb_def_free(struct upb_def *def)
+static void def_free(struct upb_def *def)
 {
   switch(def->type) {
     case UPB_DEF_MSG:
@@ -46,12 +73,35 @@ void _upb_def_free(struct upb_def *def)
   }
 }
 
+static void cycle_unref(struct upb_def *def) {
+  struct upb_msgdef *m = upb_downcast_msgdef(def);
+  assert(m);
+  for(int i = 0; i < m->num_fields; i++) {
+    struct upb_fielddef *f = &m->fields[i];
+    if(upb_issubmsg(f)) cycle_unref(f->def);
+  }
+  if(upb_atomic_unref(&def->cycle_refcount)) def_free(def);
+}
+
+void _upb_def_reftozero(struct upb_def *def) {
+  if(def->is_cyclic) {
+    // Traverse the graph, decrementing the cycle refcounts of all cyclic defs
+    // and deleting any of them that fall to zero.
+    cycle_unref(def);
+  } else {
+    def_free(def);
+  }
+}
+
 void upb_def_init(struct upb_def *def, enum upb_def_type type,
                   struct upb_string *fqname) {
   def->type = type;
+  def->is_cyclic = false;  // We check for this later, after resolving refs.
+  def->visiting_submsg = 0;
   def->fqname = fqname;
   upb_string_ref(fqname);
   upb_atomic_refcount_init(&def->refcount, 1);
+  upb_atomic_refcount_init(&def->cycle_refcount, 0);
 }
 
 void upb_def_uninit(struct upb_def *def) {
@@ -74,8 +124,8 @@ static struct upb_unresolveddef *upb_unresolveddef_new(struct upb_string *str) {
 }
 
 static void unresolveddef_free(struct upb_unresolveddef *def) {
-  upb_def_uninit(&def->base);
   upb_string_unref(def->name);
+  upb_def_uninit(&def->base);
   free(def);
 }
 
@@ -161,8 +211,15 @@ static void fielddef_sort(struct upb_fielddef **defs, size_t num)
 
 static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
                                      int num_fields,
-                                     struct upb_string *fqname)
+                                     struct upb_string *fqname,
+                                     struct upb_status *status)
 {
+  if(num_fields > UPB_MAX_FIELDS) {
+    upb_seterr(status, UPB_STATUS_ERROR,
+               "Tried to create a msgdef with more than %d fields", num_fields);
+    free(fields);
+    return NULL;
+  }
   struct upb_msgdef *m = malloc(sizeof(*m));
   upb_def_init(&m->base, UPB_DEF_MSG, fqname);
   upb_inttable_init(&m->itof, num_fields, sizeof(struct upb_itof_ent));
@@ -207,14 +264,20 @@ static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
 
 static void msgdef_free(struct upb_msgdef *m)
 {
-  //upb_def_uninit(&m->base);
-  upb_inttable_free(&m->itof);
-  upb_strtable_free(&m->ntof);
-  for (unsigned int i = 0; i < m->num_fields; i++) {
+  for (upb_field_count_t i = 0; i < m->num_fields; i++)
     fielddef_uninit(&m->fields[i]);
-  }
-  upb_def_uninit(&m->base);
   free(m->fields);
+
+  // Free refs from the strtable.
+  // TODO: once memory management for data is more developed, let the table
+  // handle freeing the refs itself.
+  struct upb_strtable_entry *e = upb_strtable_begin(&m->ntof);
+  for(; e; e = upb_strtable_next(&m->ntof, e)) {
+    upb_string_unref(e->key);
+  }
+  upb_strtable_free(&m->ntof);
+  upb_inttable_free(&m->itof);
+  upb_def_uninit(&m->base);
   free(m);
 }
 
@@ -223,6 +286,7 @@ static void upb_msgdef_resolve(struct upb_msgdef *m, struct upb_fielddef *f,
   (void)m;
   upb_def_unref(f->def);
   f->def = def;
+  // We will later remove this ref if it is a part of a cycle.
   upb_def_ref(def);
 }
 
@@ -258,9 +322,17 @@ static struct upb_enumdef *enumdef_new(google_protobuf_EnumDescriptorProto *ed,
 }
 
 static void enumdef_free(struct upb_enumdef *e) {
-  upb_def_uninit(&e->base);
+  // Free refs from the strtable.
+  // TODO: once memory management for data is more developed, let the table
+  // handle freeing the refs itself.
+  struct upb_strtable_entry *ent = upb_strtable_begin(&e->ntoi);
+  for(; ent; ent = upb_strtable_next(&e->ntoi, ent)) {
+    upb_string_unref(ent->key);
+  }
+
   upb_strtable_free(&e->ntoi);
   upb_inttable_free(&e->iton);
+  upb_def_uninit(&e->base);
   free(e);
 }
 
@@ -414,12 +486,16 @@ static void insert_message(struct upb_strtable *t,
     fielddefs[i] = fielddef_new(fd);
   }
   if(sort) fielddef_sort(fielddefs, d->field->len);
-  e.def = UPB_UPCAST(msgdef_new(fielddefs, d->field->len, fqname));
-  upb_strtable_insert(t, &e.e);
+  e.def = UPB_UPCAST(msgdef_new(fielddefs, d->field->len, fqname, status));
   for (int i = 0; i < num_fields; i++) {
     fielddef_uninit(fielddefs[i]);
     free(fielddefs[i]);
   }
+  free(fielddefs);
+
+  if(!upb_ok(status)) return;
+
+  upb_strtable_insert(t, &e.e);
 
   /* Add nested messages and enums. */
   if(d->set_flags.has.nested_type)
@@ -429,6 +505,55 @@ static void insert_message(struct upb_strtable *t,
   if(d->set_flags.has.enum_type)
     for(unsigned int i = 0; i < d->enum_type->len; i++)
       insert_enum(t, d->enum_type->elements[i], fqname, status);
+}
+
+// Traverses the cycle again to count its length and adjust reference counts.
+// Returns the total length of the cycle.
+static int process_cycle(struct upb_msgdef *m, struct upb_msgdef *cycle_base,
+                         int partial_cycle_len) {
+  if(m == cycle_base && partial_cycle_len > 0) {
+    return partial_cycle_len;
+  } else {
+    partial_cycle_len++;
+    struct upb_fielddef *f = &m->fields[UPB_UPCAST(m)->visiting_submsg - 1];
+    struct upb_msgdef *sub_m = upb_downcast_msgdef(f->def);
+    assert(sub_m);
+    int cycle_len = process_cycle(sub_m, cycle_base, partial_cycle_len);
+
+    // Since we know that each def has exactly one external ref (the symtab's
+    // ref), the number of defs in the cycle is the number of cycle refs we
+    // should add to each def in the cycle.
+    upb_atomic_add(&UPB_UPCAST(m)->cycle_refcount, cycle_len);
+
+    // Remove the regular ref that comes from the cycle.
+    bool zero = upb_atomic_unref(&UPB_UPCAST(m)->refcount);
+    assert(!zero);  // The symtab should hold an external ref.
+    (void)zero;  // Silence "zero not used" warnings on non-debug builds.
+
+    return cycle_len;
+  }
+}
+
+// Depth-first search, detecting and marking cycles.
+static void find_cycles(struct upb_def *def) {
+  struct upb_msgdef *m = upb_downcast_msgdef(def);
+  if(!m) return;
+  if(def->visiting_submsg) {
+    // Cycle detected!
+    process_cycle(m, m, 0);
+  } else if(upb_atomic_read(&def->cycle_refcount)) {
+    // This def is part of at least one cycle, but we have already discovered
+    // this node (and consequently all of its cycles) by some other path.
+  } else {
+    for(int i = 0; i < m->num_fields; i++) {
+      struct upb_fielddef *f = &m->fields[i];
+      // Mark the path we are currently on so we can easily retrace it in
+      // process_cycle().
+      UPB_UPCAST(m)->visiting_submsg = i + 1;
+      if(upb_issubmsg(f)) find_cycles(f->def);
+    }
+    UPB_UPCAST(m)->visiting_submsg = 0;
+  }
 }
 
 void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
@@ -457,17 +582,20 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
 
   if(should_unref) upb_string_unref(pkg);
 
-  if(!upb_ok(status)) return;
+  if(!upb_ok(status)) {
+    // TODO: make sure we don't leak any memory in this case.
+    return;
+  }
 
   /* TODO: handle extensions and services. */
 
   // Attempt to resolve all references.
   struct symtab_ent *e;
   for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-    if(e->def->type != UPB_DEF_MSG) continue;
     struct upb_msgdef *m = upb_downcast_msgdef(e->def);
+    if(!m) continue;
     struct upb_string *base = e->e.key;
-    for(unsigned int i = 0; i < m->num_fields; i++) {
+    for(upb_field_count_t i = 0; i < m->num_fields; i++) {
       struct upb_fielddef *f = &m->fields[i];
       if(!upb_hasdef(f)) continue;  // No resolving necessary.
       struct upb_string *name = upb_downcast_unresolveddef(f->def)->name;
@@ -486,6 +614,11 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
       }
       upb_msgdef_resolve(m, f, found->def);
     }
+  }
+
+  // Find cycles and update refcounts appropriately.
+  for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
+    find_cycles(e->def);
   }
 }
 
@@ -575,8 +708,8 @@ void upb_symtab_addfds(struct upb_symtab *s,
                         struct upb_status *status)
 {
   if(fds->set_flags.has.file) {
-    /* Insert new symbols into a temporary table until we have verified that
-     * the descriptor is valid. */
+    // Insert new symbols into a temporary table until we have verified that
+    // the descriptor is valid.
     struct upb_strtable tmp;
     upb_strtable_init(&tmp, 0, sizeof(struct symtab_ent));
     upb_rwlock_rdlock(&s->lock);
@@ -590,7 +723,7 @@ void upb_symtab_addfds(struct upb_symtab *s,
     }
     upb_rwlock_unlock(&s->lock);
 
-    /* Everything was successfully added, copy from the tmp symtable. */
+    // Everything was successfully added, copy from the tmp symtable.
     struct symtab_ent *e;
     {
       upb_rwlock_wrlock(&s->lock);

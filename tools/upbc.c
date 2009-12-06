@@ -170,7 +170,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
     fputs("  union {\n", stream);
     fprintf(stream, "    uint8_t bytes[%" PRIu32 "];\n", m->set_flags_bytes);
     fputs("    struct {\n", stream);
-    for(uint32_t j = 0; j < m->num_fields; j++) {
+    for(upb_field_count_t j = 0; j < m->num_fields; j++) {
       static char* labels[] = {"", "optional", "required", "repeated"};
       struct upb_fielddef *f = &m->fields[j];
       fprintf(stream, "      bool " UPB_STRFMT ":1;  /* = %" PRIu32 ", %s. */\n",
@@ -178,7 +178,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
     }
     fputs("    } has;\n", stream);
     fputs("  } set_flags;\n", stream);
-    for(uint32_t j = 0; j < m->num_fields; j++) {
+    for(upb_field_count_t j = 0; j < m->num_fields; j++) {
       struct upb_fielddef *f = &m->fields[j];
       if(upb_issubmsg(f)) {
         struct upb_string *type_name = upb_strdup(f->def->fqname);
@@ -288,7 +288,7 @@ static void add_strings_from_value(union upb_value_ptr p,
 static void add_strings_from_msg(struct upb_msg *msg, struct upb_strtable *t)
 {
   struct upb_msgdef *m = msg->def;
-  for(uint32_t i = 0; i < m->num_fields; i++) {
+  for(upb_field_count_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
     if(!upb_msg_isset(msg, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(msg, f);
@@ -345,7 +345,7 @@ static void add_value(union upb_value_ptr p, struct upb_fielddef *f,
 static void add_submsgs(struct upb_msg *msg, struct upb_strtable *t)
 {
   struct upb_msgdef *m = msg->def;
-  for(uint32_t i = 0; i < m->num_fields; i++) {
+  for(upb_field_count_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
     if(!upb_msg_isset(msg, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(msg, f);
@@ -502,7 +502,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
         void *msgdata = val.msg;
         /* Print set flags. */
         fputs("  {.set_flags = {.has = {\n", stream);
-        for(unsigned int j = 0; j < m->num_fields; j++) {
+        for(upb_field_count_t j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(upb_msg_isset(msgdata, f))
@@ -513,7 +513,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
         }
         fputs("  }},\n", stream);
         /* Print msg data. */
-        for(unsigned int j = 0; j < m->num_fields; j++) {
+        for(upb_field_count_t j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
           union upb_value val = upb_value_read(upb_msg_getptr(msgdata, f), f->type);
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
@@ -583,6 +583,7 @@ static void write_message_c(struct upb_msg *msg, char *cident, char *hfile_name,
 
   /* Free tables. */
   for(e = upb_strtable_begin(&types); e; e = upb_strtable_next(&types, &e->e)) {
+    upb_string_unref(e->e.key);
     upb_string_unref(e->cident);
     free(e->values);
     free(e->arrays);

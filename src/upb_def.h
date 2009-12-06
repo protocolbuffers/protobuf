@@ -46,21 +46,36 @@ enum upb_def_type {
   UPB_DEF_UNRESOLVED
 };
 
+// This typedef is more space-efficient than declaring an enum var directly.
+typedef uint8_t upb_def_type_t;
+
 // Common members.
 struct upb_def {
   struct upb_string *fqname;  // Fully qualified.
-  enum upb_def_type type;
+  upb_def_type_t type;
+
+  // These members that pertain to cyclic collection could technically go in
+  // upb_msgdef instead of here, because only messages can be involved in
+  // cycles.  However, putting them here is free from a space perspective
+  // because structure alignment will otherwise leave three bytes empty between
+  // type and refcount.  It is also makes ref and unref more efficient, because
+  // we don't have to downcast to msgdef before checking the is_cyclic flag.
+  bool is_cyclic;   // Is this def part of a cycle?
+  upb_field_count_t visiting_submsg;  // Helper for depth-first search.
+
+  // See .c file for description of refcounting scheme.
   upb_atomic_refcount_t refcount;
+  upb_atomic_refcount_t cycle_refcount;
 };
 
-void _upb_def_free(struct upb_def *def);  // Must not be called directly!
+void _upb_def_reftozero(struct upb_def *def);  // Must not be called directly!
 
 // Call to ref/deref a def.
 INLINE void upb_def_ref(struct upb_def *def) {
   upb_atomic_ref(&def->refcount);
 }
 INLINE void upb_def_unref(struct upb_def *def) {
-  if(upb_atomic_unref(&def->refcount)) _upb_def_free(def);
+  if(upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
 }
 
 // Downcasts.  They are checked only if asserts are enabled.
@@ -93,8 +108,8 @@ struct upb_fielddef {
   struct upb_string *name;
 
   // These are set only when this fielddef is part of a msgdef.
-  uint32_t byte_offset;     // Where in a upb_msg to find the data.
-  uint16_t field_index;     // Indicates set bit.
+  uint32_t byte_offset;           // Where in a upb_msg to find the data.
+  upb_field_count_t field_index;  // Indicates set bit.
 
   // For the case of an enum or a submessage, points to the def for that type.
   // We own a ref on this def.
@@ -156,7 +171,7 @@ struct upb_msgdef {
   struct upb_def base;
   struct upb_msg *default_msg;   // Message with all default values set.
   size_t size;
-  uint32_t num_fields;
+  upb_field_count_t num_fields;
   uint32_t set_flags_bytes;
   uint32_t num_required_fields;  // Required fields have the lowest set bytemasks.
   struct upb_fielddef *fields;   // We have exclusive ownership of these.

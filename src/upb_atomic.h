@@ -50,6 +50,14 @@ INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
   return --a->val == 0;
 }
 
+INLINE int upb_atomic_read(upb_atomic_refcount_t *a) {
+  return a->val;
+}
+
+INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int val) {
+  return a->val += val;
+}
+
 typedef struct {
 } upb_rwlock_t;
 
@@ -84,8 +92,20 @@ INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
   return __sync_fetch_and_add(&a->val, 1) == 0;
 }
 
+INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int n) {
+  return __sync_fetch_and_add(&a->val, n) == 0;
+}
+
 INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
   return __sync_sub_and_fetch(&a->val, 1) == 0;
+}
+
+INLINE bool upb_atomic_read(upb_atomic_refcount_t *a) {
+  return __sync_fetch_and_add(&a->val, 0);
+}
+
+INLINE bool upb_atomic_write(upb_atomic_refcount_t *a, int val) {
+  a->val = val;
 }
 
 #elif defined(WIN32)

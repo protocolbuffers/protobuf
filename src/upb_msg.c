@@ -401,7 +401,7 @@ bool upb_msg_eql(struct upb_msg *msg1, struct upb_msg *msg2, bool recursive)
    * contain only primitive values (not strings, arrays, submessages, or
    * padding) and memcmp the masked messages. */
 
-  for(uint32_t i = 0; i < m->num_fields; i++) {
+  for(upb_field_count_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
     bool msg1set = upb_msg_isset(msg1, f);
     bool msg2set = upb_msg_isset(msg2, f);

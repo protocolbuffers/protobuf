@@ -90,7 +90,7 @@ static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
                      FILE *stream)
 {
   struct upb_msgdef *m = msg->def;
-  for(uint32_t i = 0; i < m->num_fields; i++) {
+  for(upb_field_count_t i = 0; i < m->num_fields; i++) {
     struct upb_fielddef *f = &m->fields[i];
     if(!upb_msg_isset(msg, f)) continue;
     union upb_value_ptr p = upb_msg_getptr(msg, f);

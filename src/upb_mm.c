@@ -18,8 +18,7 @@ static void upb_mm_destroy(union upb_value_ptr p, upb_mm_ptrtype type)
 }
 
 void upb_msg_destroy(struct upb_msg *msg) {
-  uint32_t i;
-  for(i = 0; i < msg->def->num_fields; i++) {
+  for(upb_field_count_t i = 0; i < msg->def->num_fields; i++) {
     struct upb_fielddef *f = &msg->def->fields[i];
     if(!upb_msg_isset(msg, f) || !upb_field_ismm(f)) continue;
     upb_mm_destroy(upb_msg_getptr(msg, f), upb_field_ptrtype(f));
@@ -196,7 +195,7 @@ void upb_mm_msgclear(struct upb_mm_ref *from_msg_ref, struct upb_fielddef *f)
 void upb_mm_msgclear_all(struct upb_mm_ref *from)
 {
   struct upb_msgdef *def = from->p.msg->def;
-  for(uint32_t i = 0; i < def->num_fields; i++) {
+  for(upb_field_count_t i = 0; i < def->num_fields; i++) {
     struct upb_fielddef *f = &def->fields[i];
     if(!upb_field_ismm(f)) continue;
     upb_mm_msgclear(from, f);
