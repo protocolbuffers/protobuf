@@ -1,0 +1,31 @@
+
+// A series of messages with various kinds of cycles in them.
+//      +-+---+    +---+
+//      V |   |    |   |
+// A -> B-+-> C -> D<--+
+// ^          |    |
+// +----------+----+
+//
+// This tests the following cases:
+//  - B and C are together in multiple cycles
+//  - B and D are cycles to themselves.
+
+message A {
+  optional B b = 1;
+}
+
+message B {
+  optional B b = 1;
+  optional C c = 2;
+}
+
+message C {
+  optional A a = 1;
+  optional B b = 2;
+  optional D d = 3;
+}
+
+message D {
+  optional A a = 1;
+  optional D d = 2;
+}

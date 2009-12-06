@@ -19,11 +19,11 @@ static int div_round_up(int numerator, int denominator) {
 
 /* upb_def ********************************************************************/
 
-// Defs are reference counted, but can have cycles, so we need to be capable of
-// collecting the cycles.  In our situation defs are immutable (so cycles
-// cannot be created or destroyed post-initialization).  We need to be
-// thread-safe but want to avoid locks if at all possible and rely only on
-// atomic operations.
+// Defs are reference counted, but can have cycles when types are
+// self-recursive or mutually recursive, so we need to be capable of collecting
+// the cycles.  In our situation defs are immutable (so cycles cannot be
+// created or destroyed post-initialization).  We need to be thread-safe but
+// want to avoid locks if at all possible and rely only on atomic operations.
 //
 // Our scheme is as follows.  First we give each def a flag indicating whether
 // it is part of a cycle or not.  Because defs are immutable, this flag will
@@ -74,21 +74,52 @@ static void def_free(struct upb_def *def)
   }
 }
 
-static void cycle_unref(struct upb_def *def) {
-  struct upb_msgdef *m = upb_downcast_msgdef(def);
-  assert(m);
-  for(int i = 0; i < m->num_fields; i++) {
-    struct upb_fielddef *f = &m->fields[i];
-    if(upb_issubmsg(f)) cycle_unref(f->def);
+// Depth-first search for all cycles that include cycle_base.  Returns the
+// number of paths from def that lead to cycle_base, which is equivalent to the
+// number of cycles def is in that include cycle_base.
+static int cycle_unref(struct upb_def *def, struct upb_def *cycle_base,
+                       struct upb_def **open_defs, int num_open_defs) {
+  for(int i = 0; i < num_open_defs; i++) {
+    if(open_defs[i] == def) {
+      // We encountered a cycle that did not involve cycle_base.
+      return 0;
+    }
   }
-  if(upb_atomic_unref(&def->cycle_refcount)) def_free(def);
+  if(def == cycle_base) {
+    return 1;
+  } else {
+    int path_count = 0;
+    if(cycle_base == NULL) {
+      cycle_base = def;
+    } else {
+      open_defs[num_open_defs++] = def;
+    }
+    struct upb_msgdef *m = upb_downcast_msgdef(def);
+    assert(m);
+    for(int i = 0; i < m->num_fields; i++) {
+      struct upb_fielddef *f = &m->fields[i];
+      if(upb_issubmsg(f) && f->def->max_cycle_len > 0)
+        path_count += cycle_unref(f->def, cycle_base, open_defs, num_open_defs);
+    }
+    fprintf(stderr, "removing %d cycle refs from " UPB_STRFMT "\n", path_count, UPB_STRARG(def->fqname));
+    if(upb_atomic_add(&def->cycle_refcount, -path_count))
+      def_free(def);
+    return path_count;
+  }
 }
 
 void _upb_def_reftozero(struct upb_def *def) {
-  if(def->is_cyclic) {
+  if(def->max_cycle_len > 0) {
+    fprintf(stderr, "cycle unreffing " UPB_STRFMT ", max len=%d\n", UPB_STRARG(def->fqname), def->max_cycle_len);
     // Traverse the graph, decrementing the cycle refcounts of all cyclic defs
     // and deleting any of them that fall to zero.
-    cycle_unref(def);
+    //
+    // We track the set of nodes that are currently being visited in the search
+    // so we can detect cycles that do not involve this def and stop the
+    // search.  We can't color the nodes as we go by writing to a member of the
+    // def, because another thread could be performing the search concurrently.
+    struct upb_def *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
+    cycle_unref(def, NULL, open_defs, 0);
   } else {
     def_free(def);
   }
@@ -97,7 +128,7 @@ void _upb_def_reftozero(struct upb_def *def) {
 void upb_def_init(struct upb_def *def, enum upb_def_type type,
                   struct upb_string *fqname) {
   def->type = type;
-  def->is_cyclic = false;  // We check for this later, after resolving refs.
+  def->max_cycle_len = 0;  // We increment this later, after resolving refs.
   def->visiting_submsg = 0;
   def->fqname = fqname;
   upb_string_ref(fqname);
@@ -140,9 +171,11 @@ static void fielddef_init(struct upb_fielddef *f,
   f->number = fd->number;
   f->name = upb_strdup(fd->name);
   f->def = NULL;
+  f->owned = false;
   assert(fd->set_flags.has.type_name == upb_hasdef(f));
   if(fd->set_flags.has.type_name) {
     f->def = UPB_UPCAST(upb_unresolveddef_new(fd->type_name));
+    f->owned = true;
   }
 }
 
@@ -156,7 +189,7 @@ static struct upb_fielddef *fielddef_new(
 static void fielddef_uninit(struct upb_fielddef *f)
 {
   upb_string_unref(f->name);
-  if(upb_hasdef(f)) {
+  if(upb_hasdef(f) && f->owned) {
     upb_def_unref(f->def);
   }
 }
@@ -167,6 +200,7 @@ static void fielddef_copy(struct upb_fielddef *dst, struct upb_fielddef *src)
   dst->name = upb_strdup(src->name);
   if(upb_hasdef(src)) {
     upb_def_ref(dst->def);
+    dst->owned = true;
   }
 }
 
@@ -223,6 +257,7 @@ static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
   }
   struct upb_msgdef *m = malloc(sizeof(*m));
   upb_def_init(&m->base, UPB_DEF_MSG, fqname);
+  fprintf(stderr, "Created msg: " UPB_STRFMT "\n", UPB_STRARG(fqname));
   upb_inttable_init(&m->itof, num_fields, sizeof(struct upb_itof_ent));
   upb_strtable_init(&m->ntof, num_fields, sizeof(struct upb_ntof_ent));
 
@@ -265,6 +300,7 @@ static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
 
 static void msgdef_free(struct upb_msgdef *m)
 {
+  fprintf(stderr, "Freed msg: " UPB_STRFMT "\n", UPB_STRARG(UPB_UPCAST(m)->fqname));
   for (upb_field_count_t i = 0; i < m->num_fields; i++)
     fielddef_uninit(&m->fields[i]);
   free(m->fields);
@@ -285,9 +321,10 @@ static void msgdef_free(struct upb_msgdef *m)
 static void upb_msgdef_resolve(struct upb_msgdef *m, struct upb_fielddef *f,
                                struct upb_def *def) {
   (void)m;
-  upb_def_unref(f->def);
+  if(f->owned) upb_def_unref(f->def);
   f->def = def;
-  // We will later remove this ref if it is a part of a cycle.
+  // We will later make the ref unowned if it is a part of a cycle.
+  f->owned = true;
   upb_def_ref(def);
 }
 
@@ -511,38 +548,51 @@ static void insert_message(struct upb_strtable *t,
 // Traverses the cycle again to count its length and adjust reference counts.
 // Returns the total length of the cycle.
 static int process_cycle(struct upb_msgdef *m, struct upb_msgdef *cycle_base,
-                         int partial_cycle_len) {
+                         int partial_cycle_len, struct upb_status *status) {
   if(m == cycle_base && partial_cycle_len > 0) {
     return partial_cycle_len;
   } else {
+    struct upb_def *def = UPB_UPCAST(m);
     partial_cycle_len++;
-    struct upb_fielddef *f = &m->fields[UPB_UPCAST(m)->visiting_submsg - 1];
+    struct upb_fielddef *f = &m->fields[def->visiting_submsg - 1];
     struct upb_msgdef *sub_m = upb_downcast_msgdef(f->def);
     assert(sub_m);
-    int cycle_len = process_cycle(sub_m, cycle_base, partial_cycle_len);
+    int cycle_len = process_cycle(sub_m, cycle_base, partial_cycle_len, status);
+    if(cycle_len > UPB_MAX_TYPE_CYCLE_LEN) {
+      upb_seterr(status, UPB_STATUS_ERROR, "Cycle in type " UPB_STRFMT " is of "
+                 "length %d, exceeds maximum type cycle length of %d",
+                 cycle_len, UPB_MAX_TYPE_CYCLE_LEN);
+      return 0;
+    }
 
     // Since we know that each def has exactly one external ref (the symtab's
     // ref), the number of defs in the cycle is the number of cycle refs we
     // should add to each def in the cycle.
-    upb_atomic_add(&UPB_UPCAST(m)->cycle_refcount, cycle_len);
+    upb_atomic_add(&def->cycle_refcount, cycle_len);
 
     // Remove the regular ref that comes from the cycle.
-    bool zero = upb_atomic_unref(&UPB_UPCAST(m)->refcount);
-    assert(!zero);  // The symtab should hold an external ref.
-    (void)zero;  // Silence "zero not used" warnings on non-debug builds.
+    fprintf(stderr, UPB_STRFMT "\n", UPB_STRARG(def->fqname));
+    if(f->owned) {
+      bool zero = upb_atomic_unref(&f->def->refcount);
+      f->owned = false;
+      assert(!zero);  // The symtab should hold an external ref.
+      (void)zero;     // Silence "zero not used" warnings on non-debug builds.
+    }
+    def->max_cycle_len = UPB_MAX(def->max_cycle_len, cycle_len);
 
     return cycle_len;
   }
 }
 
 // Depth-first search, detecting and marking cycles.
-static void find_cycles(struct upb_def *def) {
+static void find_cycles(struct upb_def *def, struct upb_status *status) {
   struct upb_msgdef *m = upb_downcast_msgdef(def);
   if(!m) return;
   if(def->visiting_submsg) {
     // Cycle detected!
-    process_cycle(m, m, 0);
-  } else if(upb_atomic_read(&def->cycle_refcount)) {
+    fprintf(stderr, "Found cycle in " UPB_STRFMT "\n", UPB_STRARG(def->fqname));
+    process_cycle(m, m, 0, status);
+  } else if(def->max_cycle_len > 0) {
     // This def is part of at least one cycle, but we have already discovered
     // this node (and consequently all of its cycles) by some other path.
   } else {
@@ -551,7 +601,7 @@ static void find_cycles(struct upb_def *def) {
       // Mark the path we are currently on so we can easily retrace it in
       // process_cycle().
       UPB_UPCAST(m)->visiting_submsg = i + 1;
-      if(upb_issubmsg(f)) find_cycles(f->def);
+      if(upb_issubmsg(f)) find_cycles(f->def, status);
     }
     UPB_UPCAST(m)->visiting_submsg = 0;
   }
@@ -619,7 +669,9 @@ void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
 
   // Find cycles and update refcounts appropriately.
   for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-    find_cycles(e->def);
+    // TODO: make sure we don't leak memory if this fails due to excessive
+    // cycle len.
+    find_cycles(e->def, status);
   }
 }
 

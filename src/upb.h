@@ -37,10 +37,20 @@ typedef int16_t upb_field_count_t;
 
 // Nested type names are separated by periods.
 #define UPB_SYMBOL_SEPARATOR '.'
+// This limit is for the longest fully-qualified symbol, eg. foo.bar.MsgType
 #define UPB_SYMBOL_MAXLEN 128
 
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
+// The longest chain that mutually-recursive types are allowed to form.  For
+// example, this is a type cycle of length 2:
+//   message A {
+//     B b = 1;
+//   }
+//   message B {
+//     A a = 1;
+//   }
+#define UPB_MAX_TYPE_CYCLE_LEN 16
 
 /* Fundamental types and type constants. **************************************/
 

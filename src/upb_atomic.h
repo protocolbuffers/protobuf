@@ -55,7 +55,8 @@ INLINE int upb_atomic_read(upb_atomic_refcount_t *a) {
 }
 
 INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int val) {
-  return a->val += val;
+  a->val += val;
+  return a->val == 0;
 }
 
 typedef struct {
@@ -93,7 +94,7 @@ INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
 }
 
 INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int n) {
-  return __sync_fetch_and_add(&a->val, n) == 0;
+  return __sync_add_and_fetch(&a->val, n) == 0;
 }
 
 INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {

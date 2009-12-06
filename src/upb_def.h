@@ -49,9 +49,9 @@ enum upb_def_type {
 // This typedef is more space-efficient than declaring an enum var directly.
 typedef uint8_t upb_def_type_t;
 
-// Common members.
 struct upb_def {
   struct upb_string *fqname;  // Fully qualified.
+  upb_atomic_refcount_t refcount;
   upb_def_type_t type;
 
   // These members that pertain to cyclic collection could technically go in
@@ -60,11 +60,10 @@ struct upb_def {
   // because structure alignment will otherwise leave three bytes empty between
   // type and refcount.  It is also makes ref and unref more efficient, because
   // we don't have to downcast to msgdef before checking the is_cyclic flag.
-  bool is_cyclic;   // Is this def part of a cycle?
-  upb_field_count_t visiting_submsg;  // Helper for depth-first search.
-
+  //
   // See .c file for description of refcounting scheme.
-  upb_atomic_refcount_t refcount;
+  uint8_t max_cycle_len;
+  upb_field_count_t visiting_submsg;  // Used during initialization dfs.
   upb_atomic_refcount_t cycle_refcount;
 };
 
@@ -113,6 +112,7 @@ struct upb_fielddef {
 
   // For the case of an enum or a submessage, points to the def for that type.
   // We own a ref on this def.
+  bool owned;
   struct upb_def *def;
 };
 
