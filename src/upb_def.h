@@ -38,16 +38,19 @@ extern "C" {
 // All the different kind of defs we support.  These correspond 1:1 with
 // declarations in a .proto file.
 enum upb_def_type {
-  UPB_DEF_MSG,
+  UPB_DEF_MSG = 0,
   UPB_DEF_ENUM,
   UPB_DEF_SVC,
   UPB_DEF_EXT,
   // Internal-only, placeholder for a def that hasn't be resolved yet.
-  UPB_DEF_UNRESOLVED
+  UPB_DEF_UNRESOLVED,
+
+  // For specifying that defs of any type are requsted from getdefs.
+  UPB_DEF_ANY = -1
 };
 
 // This typedef is more space-efficient than declaring an enum var directly.
-typedef uint8_t upb_def_type_t;
+typedef int8_t upb_def_type_t;
 
 struct upb_def {
   struct upb_string *fqname;  // Fully qualified.
@@ -288,20 +291,23 @@ INLINE void upb_symtab_unref(struct upb_symtab *s) {
 //    within this message are searched, then within the parent, on up to the
 //    root namespace).
 //
-// Returns NULL if no such symbol has been defined.
+// If a def is found, the caller owns one ref on the returned def.  Otherwise
+// returns NULL.
 struct upb_def *upb_symtab_resolve(struct upb_symtab *s,
                                    struct upb_string *base,
                                    struct upb_string *symbol);
 
-// Find an entry in the symbol table with this exact name.  Returns NULL if no
-// such symbol name has been defined.
+// Find an entry in the symbol table with this exact name.  If a def is found,
+// the caller owns one ref on the returned def.  Otherwise returns NULL.
 struct upb_def *upb_symtab_lookup(struct upb_symtab *s,
                                   struct upb_string *sym);
 
 // Gets an array of pointers to all currently active defs in this symtab.  The
 // caller owns the returned array (which is of length *count) as well as a ref
-// to each symbol inside.
-struct upb_def **upb_symtab_getandref_defs(struct upb_symtab *s, int *count);
+// to each symbol inside.  If type is UPB_DEF_ANY then defs of all types are
+// returned, otherwise only defs of the required type are returned.
+struct upb_def **upb_symtab_getdefs(struct upb_symtab *s, int *count,
+                                    upb_def_type_t type);
 
 // Adds the definitions in the given serialized descriptor to this symtab.  All
 // types that are referenced from desc must have previously been defined (or be

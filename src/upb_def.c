@@ -147,8 +147,8 @@ void _upb_def_cyclic_ref(struct upb_def *def) {
   cycle_ref_or_unref(upb_downcast_msgdef(def), NULL, open_defs, 0, true);
 }
 
-void upb_def_init(struct upb_def *def, enum upb_def_type type,
-                  struct upb_string *fqname) {
+static void upb_def_init(struct upb_def *def, enum upb_def_type type,
+                         struct upb_string *fqname) {
   def->type = type;
   def->is_cyclic = 0;  // We detect this later, after resolving refs.
   def->search_depth = 0;
@@ -157,7 +157,7 @@ void upb_def_init(struct upb_def *def, enum upb_def_type type,
   upb_atomic_refcount_init(&def->refcount, 1);
 }
 
-void upb_def_uninit(struct upb_def *def) {
+static void upb_def_uninit(struct upb_def *def) {
   upb_string_unref(def->fqname);
 }
 
@@ -732,20 +732,26 @@ void _upb_symtab_free(struct upb_symtab *s)
   free(s);
 }
 
-struct upb_def **upb_symtab_getandref_defs(struct upb_symtab *s, int *count)
+struct upb_def **upb_symtab_getdefs(struct upb_symtab *s, int *count,
+                                    upb_def_type_t type)
 {
-  upb_rwlock_wrlock(&s->lock);
-  *count = upb_strtable_count(&s->symtab);
-  struct upb_def **defs = malloc(sizeof(*defs) * (*count));
+  upb_rwlock_rdlock(&s->lock);
+  int total = upb_strtable_count(&s->symtab);
+  // We may only use part of this, depending on how many symbols are of the
+  // correct type.
+  struct upb_def **defs = malloc(sizeof(*defs) * total);
   struct symtab_ent *e = upb_strtable_begin(&s->symtab);
   int i = 0;
-  for(; e; e = upb_strtable_next(&s->symtab, &e->e), i++) {
-    assert(e->def);
-    defs[i] = e->def;
-    upb_def_ref(defs[i]);
+  for(; e; e = upb_strtable_next(&s->symtab, &e->e)) {
+    struct upb_def *def = e->def;
+    assert(def);
+    if(type == UPB_DEF_ANY || def->type == type)
+      defs[i++] = def;
   }
-  assert(*count == i);
   upb_rwlock_unlock(&s->lock);
+  *count = i;
+  for(i = 0; i < *count; i++)
+    upb_def_ref(defs[i]);
   return defs;
 }
 
@@ -769,8 +775,13 @@ struct upb_def *upb_symtab_resolve(struct upb_symtab *s,
                                     struct upb_string *symbol) {
   upb_rwlock_rdlock(&s->lock);
   struct symtab_ent *e = resolve(&s->symtab, base, symbol);
+  struct upb_def *ret = NULL;
+  if(e) {
+    ret = e->def;
+    upb_def_ref(ret);
+  }
   upb_rwlock_unlock(&s->lock);
-  return e ? e->def : NULL;
+  return ret;
 }
 
 void upb_symtab_addfds(struct upb_symtab *s,
@@ -782,23 +793,40 @@ void upb_symtab_addfds(struct upb_symtab *s,
     // the descriptor is valid.
     struct upb_strtable tmp;
     upb_strtable_init(&tmp, 0, sizeof(struct symtab_ent));
-    upb_rwlock_rdlock(&s->lock);
-    for(uint32_t i = 0; i < fds->file->len; i++) {
-      addfd(&tmp, &s->symtab, fds->file->elements[i], true, status);
-      if(!upb_ok(status)) {
-        free_symtab(&tmp);
-        upb_rwlock_unlock(&s->lock);
-        return;
+
+    {  // Read lock scope
+      upb_rwlock_rdlock(&s->lock);
+      for(uint32_t i = 0; i < fds->file->len; i++) {
+        addfd(&tmp, &s->symtab, fds->file->elements[i], true, status);
+        if(!upb_ok(status)) {
+          free_symtab(&tmp);
+          upb_rwlock_unlock(&s->lock);
+          return;
+        }
       }
+      upb_rwlock_unlock(&s->lock);
     }
-    upb_rwlock_unlock(&s->lock);
 
     // Everything was successfully added, copy from the tmp symtable.
-    struct symtab_ent *e;
-    {
+    {  // Write lock scope
       upb_rwlock_wrlock(&s->lock);
-      for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e))
+      struct symtab_ent *e;
+      for(e = upb_strtable_begin(&tmp); e; e = upb_strtable_next(&tmp, &e->e)) {
+        // We checked for duplicates when we had only the read lock, but it is
+        // theoretically possible that a duplicate symbol when we dropped the
+        // read lock to acquire a write lock.
+        if(upb_strtable_lookup(&s->symtab, e->e.key)) {
+          upb_seterr(status, UPB_STATUS_ERROR, "Attempted to insert duplicate "
+                     "symbol: " UPB_STRFMT, UPB_STRARG(e->e.key));
+          // To truly handle this situation we would need to remove any symbols
+          // from tmp that were successfully inserted into s->symtab.  Because
+          // this case is exceedingly unlikely, and because our hashtable
+          // doesn't support deletions right now, we leave them in there, which
+          // means we must not call free_symtab(&s->symtab), so we will leak it.
+          break;
+        }
         upb_strtable_insert(&s->symtab, &e->e);
+      }
       upb_rwlock_unlock(&s->lock);
     }
     upb_strtable_free(&tmp);
