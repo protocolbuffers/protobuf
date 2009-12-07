@@ -239,7 +239,22 @@ static void test_upb_symtab() {
   upb_symtab_add_desc(s, descriptor, &status);
   ASSERT(upb_ok(&status));
   upb_string_unref(descriptor);
+
+  // Test cycle detection by making a cyclic def's main refcount go to zero
+  // and then be incremented to one again.
+  struct upb_string *symname = upb_strdupc("A");
+  struct upb_def *def = upb_symtab_lookup(s, symname);
+  upb_string_unref(symname);
+  ASSERT(def);
   upb_symtab_unref(s);
+  struct upb_msgdef *m = upb_downcast_msgdef(def);
+  struct upb_fielddef *f = &m->fields[0];
+  ASSERT(upb_hasdef(f));
+  struct upb_def *def2 = f->def;
+  ASSERT(upb_downcast_msgdef(def2));
+  upb_def_ref(def2);
+  upb_def_unref(def);
+  upb_def_unref(def2);
 }
 
 

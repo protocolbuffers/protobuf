@@ -25,6 +25,7 @@ extern "C" {
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
+#define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 #define UPB_MAX_NESTING 64
@@ -37,10 +38,9 @@ typedef int16_t upb_field_count_t;
 
 // Nested type names are separated by periods.
 #define UPB_SYMBOL_SEPARATOR '.'
+
 // This limit is for the longest fully-qualified symbol, eg. foo.bar.MsgType
 #define UPB_SYMBOL_MAXLEN 128
-
-#define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
 // The longest chain that mutually-recursive types are allowed to form.  For
 // example, this is a type cycle of length 2:
@@ -51,6 +51,9 @@ typedef int16_t upb_field_count_t;
 //     A a = 1;
 //   }
 #define UPB_MAX_TYPE_CYCLE_LEN 16
+
+// The maximum depth that the type graph can have.
+#define UPB_MAX_TYPE_DEPTH 64
 
 /* Fundamental types and type constants. **************************************/
 

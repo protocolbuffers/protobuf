@@ -54,34 +54,48 @@ struct upb_def {
   upb_atomic_refcount_t refcount;
   upb_def_type_t type;
 
-  // These members that pertain to cyclic collection could technically go in
-  // upb_msgdef instead of here, because only messages can be involved in
-  // cycles.  However, putting them here is free from a space perspective
-  // because structure alignment will otherwise leave three bytes empty between
-  // type and refcount.  It is also makes ref and unref more efficient, because
-  // we don't have to downcast to msgdef before checking the is_cyclic flag.
-  //
-  // See .c file for description of refcounting scheme.
-  uint8_t max_cycle_len;
-  upb_field_count_t visiting_submsg;  // Used during initialization dfs.
-  upb_atomic_refcount_t cycle_refcount;
+  // The is_cyclic flag could go in upb_msgdef instead of here, because only
+  // messages can be involved in cycles.  However, putting them here is free
+  // from a space perspective because structure alignment will otherwise leave
+  // three bytes empty after type.  It is also makes ref and unref more
+  // efficient, because we don't have to downcast to msgdef before checking the
+  // is_cyclic flag.
+  bool is_cyclic;
+  uint16_t search_depth;  // Used during initialization dfs.
 };
 
-void _upb_def_reftozero(struct upb_def *def);  // Must not be called directly!
+// These must not be called directly!
+void _upb_def_cyclic_ref(struct upb_def *def);
+void _upb_def_reftozero(struct upb_def *def);
 
 // Call to ref/deref a def.
 INLINE void upb_def_ref(struct upb_def *def) {
-  upb_atomic_ref(&def->refcount);
+  if(upb_atomic_ref(&def->refcount) && def->is_cyclic) _upb_def_cyclic_ref(def);
 }
 INLINE void upb_def_unref(struct upb_def *def) {
   if(upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
 }
 
-// Downcasts.  They are checked only if asserts are enabled.
+// Dynamic casts, for determining if a def is of a particular type at runtime.
+#define UPB_DYNAMIC_CAST_DEF(lower, upper) \
+  struct upb_ ## lower;  /* Forward-declare. */ \
+  INLINE struct upb_ ## lower *upb_dyncast_ ## lower(struct upb_def *def) { \
+    if(def->type != UPB_DEF_ ## upper) return NULL; \
+    return (struct upb_ ## lower*)def; \
+  }
+UPB_DYNAMIC_CAST_DEF(msgdef, MSG);
+UPB_DYNAMIC_CAST_DEF(enumdef, ENUM);
+UPB_DYNAMIC_CAST_DEF(svcdef, SVC);
+UPB_DYNAMIC_CAST_DEF(extdef, EXT);
+UPB_DYNAMIC_CAST_DEF(unresolveddef, UNRESOLVED);
+#undef UPB_DYNAMIC_CAST_DEF
+
+// Downcasts, for when some wants to assert that a def is of a particular type.
+// These are only checked if we are building debug.
 #define UPB_DOWNCAST_DEF(lower, upper) \
   struct upb_ ## lower;  /* Forward-declare. */ \
   INLINE struct upb_ ## lower *upb_downcast_ ## lower(struct upb_def *def) { \
-    if(def->type != UPB_DEF_ ## upper) return NULL; \
+    assert(def->type == UPB_DEF_ ## upper); \
     return (struct upb_ ## lower*)def; \
   }
 UPB_DOWNCAST_DEF(msgdef, MSG);
@@ -169,6 +183,7 @@ struct google_protobuf_DescriptorProto;
 // Structure that describes a single .proto message type.
 struct upb_msgdef {
   struct upb_def base;
+  upb_atomic_refcount_t cycle_refcount;
   struct upb_msg *default_msg;   // Message with all default values set.
   size_t size;
   upb_field_count_t num_fields;
