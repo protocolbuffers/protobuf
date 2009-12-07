@@ -44,12 +44,13 @@ static int div_round_up(int numerator, int denominator) {
 //
 // The cycles in this graph are AB and ABC.  When A's external refcount
 // transitions from 0->1, we say that A takes "cycle references" on both
-// cycles.  Since A and B are common to both cycles, A and B's cycle refcounts
-// will be incremented by two, and C's will be incremented by one.  Likewise,
-// when A's external refcount transitions from 1->0, we decrement A and B's
-// cycle refcounts by two and C's by one.  We collect a cyclic type when its
-// cycle refcount drops to zero.  A precondition for this is that the external
-// refcount has dropped to zero also.
+// cycles.  Taking a cycle reference means incrementing the cycle refcount of
+// all defs in the cycle.  Since A and B are common to both cycles, A and B's
+// cycle refcounts will be incremented by two, and C's will be incremented by
+// one.  Likewise, when A's external refcount transitions from 1->0, we
+// decrement A and B's cycle refcounts by two and C's by one.  We collect a
+// cyclic type when its cycle refcount drops to zero.  A precondition for this
+// is that the external refcount has dropped to zero also.
 //
 // This algorithm is relatively cheap, since it only requires extra work when
 // the external refcount on a cyclic type transitions from 0->1 or 1->0.
