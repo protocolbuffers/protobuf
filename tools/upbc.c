@@ -147,7 +147,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
   fputs("possibly-recursive ways. */\n\n", stream);
 
   for(int i = 0; i < num_defs; i++) {  /* Foreach message */
-    struct upb_msgdef *m = upb_downcast_msgdef(defs[i]);
+    struct upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
     if(!m) continue;
     struct upb_string *msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
@@ -160,7 +160,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
   /* Message Declarations. */
   fputs("/* The message definitions themselves. */\n\n", stream);
   for(int i = 0; i < num_defs; i++) {  /* Foreach message */
-    struct upb_msgdef *m = upb_downcast_msgdef(defs[i]);
+    struct upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
     if(!m) continue;
     struct upb_string *msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
@@ -707,7 +707,7 @@ int main(int argc, char *argv[])
   if(!h_const_file) error("Failed to open _const.h output file");
 
   int symcount;
-  struct upb_def **defs = upb_symtab_getandref_defs(s, &symcount);
+  struct upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
   upb_symtab_unref(s);
   write_h(defs, symcount, h_filename, cident, h_file);
   write_const_h(defs, symcount, h_filename, h_const_file);
