@@ -371,36 +371,44 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   // Do state-table scan
   int e = 0;
   uint8 c;
-
-  // Do fast for groups of 8 identity bytes.
-  // This covers a lot of 7-bit ASCII ~8x faster then the 1-byte loop,
-  // including slowing slightly on cr/lf/ht
-  //----------------------------
   const uint8* Tbl2 = &st->fast_state[0];
-  uint32 losub = st->losub;
-  uint32 hiadd = st->hiadd;
-  while (src < srclimit8) {
-    uint32 s0123 = (reinterpret_cast<const uint32 *>(src))[0];
-    uint32 s4567 = (reinterpret_cast<const uint32 *>(src))[1];
-    src += 8;
-    // This is a fast range check for all bytes in [lowsub..0x80-hiadd)
-    uint32 temp = (s0123 - losub) | (s0123 + hiadd) |
-                  (s4567 - losub) | (s4567 + hiadd);
-    if ((temp & 0x80808080) != 0) {
-      // We typically end up here on cr/lf/ht; src was incremented
-      int e0123 = (Tbl2[src[-8]] | Tbl2[src[-7]]) |
-                  (Tbl2[src[-6]] | Tbl2[src[-5]]);
-      if (e0123 != 0) {
-        src -= 8;
-        break;
-      }    // Exit on Non-interchange
-      e0123 = (Tbl2[src[-4]] | Tbl2[src[-3]]) |
-              (Tbl2[src[-2]] | Tbl2[src[-1]]);
-      if (e0123 != 0) {
-        src -= 4;
-        break;
-      }    // Exit on Non-interchange
-      // Else OK, go around again
+  const uint32 losub = st->losub;
+  const uint32 hiadd = st->hiadd;
+  // Check initial few bytes one at a time until 8-byte aligned
+  //----------------------------
+  while ((((uintptr_t)src & 0x07) != 0) &&
+         (src < srclimit) &&
+         Tbl2[src[0]] == 0) {
+    src++;
+  }
+  if (((uintptr_t)src & 0x07) == 0) {
+    // Do fast for groups of 8 identity bytes.
+    // This covers a lot of 7-bit ASCII ~8x faster then the 1-byte loop,
+    // including slowing slightly on cr/lf/ht
+    //----------------------------
+    while (src < srclimit8) {
+      uint32 s0123 = (reinterpret_cast<const uint32 *>(src))[0];
+      uint32 s4567 = (reinterpret_cast<const uint32 *>(src))[1];
+      src += 8;
+      // This is a fast range check for all bytes in [lowsub..0x80-hiadd)
+      uint32 temp = (s0123 - losub) | (s0123 + hiadd) |
+                    (s4567 - losub) | (s4567 + hiadd);
+      if ((temp & 0x80808080) != 0) {
+        // We typically end up here on cr/lf/ht; src was incremented
+        int e0123 = (Tbl2[src[-8]] | Tbl2[src[-7]]) |
+                    (Tbl2[src[-6]] | Tbl2[src[-5]]);
+        if (e0123 != 0) {
+          src -= 8;
+          break;
+        }    // Exit on Non-interchange
+        e0123 = (Tbl2[src[-4]] | Tbl2[src[-3]]) |
+                (Tbl2[src[-2]] | Tbl2[src[-1]]);
+        if (e0123 != 0) {
+          src -= 4;
+          break;
+        }    // Exit on Non-interchange
+        // Else OK, go around again
+      }
     }
   }
   //----------------------------
@@ -470,10 +478,17 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   int rest_consumed;
   int exit_reason;
   do {
-    while ((src < srclimit8) &&
-           (((reinterpret_cast<const uint32*>(src)[0] |
-              reinterpret_cast<const uint32*>(src)[1]) & 0x80808080) == 0)) {
-      src += 8;
+    // Check initial few bytes one at a time until 8-byte aligned
+    while ((((uintptr_t)src & 0x07) != 0) &&
+           (src < srclimit) && (src[0] < 0x80)) {
+      src++;
+    }
+    if (((uintptr_t)src & 0x07) == 0) {
+      while ((src < srclimit8) &&
+             (((reinterpret_cast<const uint32*>(src)[0] |
+                reinterpret_cast<const uint32*>(src)[1]) & 0x80808080) == 0)) {
+        src += 8;
+      }
     }
     while ((src < srclimit) && (src[0] < 0x80)) {
       src++;
