@@ -86,7 +86,7 @@ public abstract class AbstractMessageLite implements MessageLite {
         CodedOutputStream.computeRawVarint32Size(serialized) + serialized);
     final CodedOutputStream codedOutput =
         CodedOutputStream.newInstance(output, bufferSize);
-    codedOutput.writeRawVarint32(getSerializedSize());
+    codedOutput.writeRawVarint32(serialized);
     writeTo(codedOutput);
     codedOutput.flush();
   }
@@ -105,13 +105,7 @@ public abstract class AbstractMessageLite implements MessageLite {
 
     public BuilderType mergeFrom(final CodedInputStream input)
                                  throws IOException {
-      // TODO(kenton):  Don't use null here.  Currently we have to because
-      //   using ExtensionRegistry.getEmptyRegistry() would imply a dependency
-      //   on ExtensionRegistry.  However, AbstractMessage overrides this with
-      //   a correct implementation, and lite messages don't yet support
-      //   extensions, so it ends up not mattering for now.  It will matter
-      //   once lite messages support extensions.
-      return mergeFrom(input, null);
+      return mergeFrom(input, ExtensionRegistryLite.getEmptyRegistry());
     }
 
     // Re-defined here for return type covariance.
@@ -275,20 +269,24 @@ public abstract class AbstractMessageLite implements MessageLite {
       }
     }
 
-    public BuilderType mergeDelimitedFrom(
+    public boolean mergeDelimitedFrom(
         final InputStream input,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      final int size = CodedInputStream.readRawVarint32(input);
+      final int firstByte = input.read();
+      if (firstByte == -1) {
+        return false;
+      }
+      final int size = CodedInputStream.readRawVarint32(firstByte, input);
       final InputStream limitedInput = new LimitedInputStream(input, size);
-      return mergeFrom(limitedInput, extensionRegistry);
+      mergeFrom(limitedInput, extensionRegistry);
+      return true;
     }
 
-    public BuilderType mergeDelimitedFrom(final InputStream input)
+    public boolean mergeDelimitedFrom(final InputStream input)
         throws IOException {
-      final int size = CodedInputStream.readRawVarint32(input);
-      final InputStream limitedInput = new LimitedInputStream(input, size);
-      return mergeFrom(limitedInput);
+      return mergeDelimitedFrom(input,
+          ExtensionRegistryLite.getEmptyRegistry());
     }
 
     /**

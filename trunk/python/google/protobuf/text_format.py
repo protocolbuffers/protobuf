@@ -149,6 +149,10 @@ def _MergeField(tokenizer, message):
       name.append(tokenizer.ConsumeIdentifier())
     name = '.'.join(name)
 
+    if not message_descriptor.is_extendable:
+      raise tokenizer.ParseErrorPreviousToken(
+          'Message type "%s" does not have extensions.' %
+          message_descriptor.full_name)
     field = message.Extensions._FindExtensionByName(name)
     if not field:
       raise tokenizer.ParseErrorPreviousToken(
@@ -198,6 +202,7 @@ def _MergeField(tokenizer, message):
         sub_message = message.Extensions[field]
       else:
         sub_message = getattr(message, field.name)
+        sub_message.SetInParent()
 
     while not tokenizer.TryConsume(end_token):
       if tokenizer.AtEnd():

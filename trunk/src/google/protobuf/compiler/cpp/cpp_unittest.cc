@@ -49,6 +49,7 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
+#include <google/protobuf/unittest_no_generic_services.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h>
 #include <google/protobuf/compiler/importer.h>
@@ -154,6 +155,16 @@ TEST(GeneratedMessageTest, FloatingPointDefaults) {
   EXPECT_EQ(-1.5f, extreme_default.negative_float());
   EXPECT_EQ(2.0e8f, extreme_default.large_float());
   EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
+  EXPECT_EQ(numeric_limits<double>::infinity(),
+            extreme_default.inf_double());
+  EXPECT_EQ(-numeric_limits<double>::infinity(),
+            extreme_default.neg_inf_double());
+  EXPECT_TRUE(extreme_default.nan_double() != extreme_default.nan_double());
+  EXPECT_EQ(numeric_limits<float>::infinity(),
+            extreme_default.inf_float());
+  EXPECT_EQ(-numeric_limits<float>::infinity(),
+            extreme_default.neg_inf_float());
+  EXPECT_TRUE(extreme_default.nan_float() != extreme_default.nan_float());
 }
 
 TEST(GeneratedMessageTest, Accessors) {
@@ -779,22 +790,39 @@ TEST(GeneratedEnumTest, IsValidValue) {
 }
 
 TEST(GeneratedEnumTest, MinAndMax) {
-  EXPECT_EQ(unittest::TestAllTypes::FOO,unittest::TestAllTypes::NestedEnum_MIN);
-  EXPECT_EQ(unittest::TestAllTypes::BAZ,unittest::TestAllTypes::NestedEnum_MAX);
+  EXPECT_EQ(unittest::TestAllTypes::FOO,
+            unittest::TestAllTypes::NestedEnum_MIN);
+  EXPECT_EQ(unittest::TestAllTypes::BAZ,
+            unittest::TestAllTypes::NestedEnum_MAX);
+  EXPECT_EQ(4, unittest::TestAllTypes::NestedEnum_ARRAYSIZE);
 
   EXPECT_EQ(unittest::FOREIGN_FOO, unittest::ForeignEnum_MIN);
   EXPECT_EQ(unittest::FOREIGN_BAZ, unittest::ForeignEnum_MAX);
+  EXPECT_EQ(7, unittest::ForeignEnum_ARRAYSIZE);
 
   EXPECT_EQ(1, unittest::TestEnumWithDupValue_MIN);
   EXPECT_EQ(3, unittest::TestEnumWithDupValue_MAX);
+  EXPECT_EQ(4, unittest::TestEnumWithDupValue_ARRAYSIZE);
 
   EXPECT_EQ(unittest::SPARSE_E, unittest::TestSparseEnum_MIN);
   EXPECT_EQ(unittest::SPARSE_C, unittest::TestSparseEnum_MAX);
+  EXPECT_EQ(12589235, unittest::TestSparseEnum_ARRAYSIZE);
 
-  // Make sure we can use _MIN and _MAX as switch cases.
-  switch(unittest::SPARSE_A) {
+  // Make sure we can take the address of _MIN, _MAX and _ARRAYSIZE.
+  void* nullptr = 0;  // NULL may be integer-type, not pointer-type.
+  EXPECT_NE(nullptr, &unittest::TestAllTypes::NestedEnum_MIN);
+  EXPECT_NE(nullptr, &unittest::TestAllTypes::NestedEnum_MAX);
+  EXPECT_NE(nullptr, &unittest::TestAllTypes::NestedEnum_ARRAYSIZE);
+
+  EXPECT_NE(nullptr, &unittest::ForeignEnum_MIN);
+  EXPECT_NE(nullptr, &unittest::ForeignEnum_MAX);
+  EXPECT_NE(nullptr, &unittest::ForeignEnum_ARRAYSIZE);
+
+  // Make sure we can use _MIN, _MAX and _ARRAYSIZE as switch cases.
+  switch (unittest::SPARSE_A) {
     case unittest::TestSparseEnum_MIN:
     case unittest::TestSparseEnum_MAX:
+    case unittest::TestSparseEnum_ARRAYSIZE:
       break;
     default:
       break;
@@ -1134,6 +1162,43 @@ TEST_F(GeneratedServiceTest, NotImplemented) {
                             done_.get());
 
   EXPECT_TRUE(controller.called_);
+}
+
+}  // namespace cpp_unittest
+}  // namespace cpp
+}  // namespace compiler
+
+namespace no_generic_services_test {
+  // Verify that no class called "TestService" was defined in
+  // unittest_no_generic_services.pb.h by defining a different type by the same
+  // name.  If such a service was generated, this will not compile.
+  struct TestService {
+    int i;
+  };
+}
+
+namespace compiler {
+namespace cpp {
+namespace cpp_unittest {
+
+TEST_F(GeneratedServiceTest, NoGenericServices) {
+  // Verify that non-services in unittest_no_generic_services.proto were
+  // generated.
+  no_generic_services_test::TestMessage message;
+  message.set_a(1);
+  message.SetExtension(no_generic_services_test::test_extension, 123);
+  no_generic_services_test::TestEnum e = no_generic_services_test::FOO;
+  EXPECT_EQ(e, 1);
+
+  // Verify that a ServiceDescriptor is generated for the service even if the
+  // class itself is not.
+  const FileDescriptor* file =
+      no_generic_services_test::TestMessage::descriptor()->file();
+
+  ASSERT_EQ(1, file->service_count());
+  EXPECT_EQ("TestService", file->service(0)->name());
+  ASSERT_EQ(1, file->service(0)->method_count());
+  EXPECT_EQ("Foo", file->service(0)->method(0)->name());
 }
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS

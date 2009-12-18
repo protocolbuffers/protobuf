@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -551,19 +553,23 @@ public final class UnknownFieldSet implements MessageLite {
       return this;
     }
 
-    public Builder mergeDelimitedFrom(InputStream input)
+    public boolean mergeDelimitedFrom(InputStream input)
         throws IOException {
-      final int size = CodedInputStream.readRawVarint32(input);
-      final InputStream limitedInput =
-        new AbstractMessage.Builder.LimitedInputStream(input, size);
-      return mergeFrom(limitedInput, null);
+      final int firstByte = input.read();
+      if (firstByte == -1) {
+        return false;
+      }
+      final int size = CodedInputStream.readRawVarint32(firstByte, input);
+      final InputStream limitedInput = new LimitedInputStream(input, size);
+      mergeFrom(limitedInput);
+      return true;
     }
 
-    public Builder mergeDelimitedFrom(
+    public boolean mergeDelimitedFrom(
         InputStream input,
         ExtensionRegistryLite extensionRegistry) throws IOException {
       // UnknownFieldSet has no extensions.
-      return mergeFrom(input);
+      return mergeDelimitedFrom(input);
     }
 
     public Builder mergeFrom(

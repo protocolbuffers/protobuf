@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -50,13 +51,12 @@ UnknownFieldSet::~UnknownFieldSet() {
   delete fields_;
 }
 
-void UnknownFieldSet::Clear() {
-  if (fields_ != NULL) {
-    for (int i = 0; i < fields_->size(); i++) {
-      (*fields_)[i].Delete();
-    }
-    fields_->clear();
+void UnknownFieldSet::ClearFallback() {
+  GOOGLE_DCHECK(fields_ != NULL);
+  for (int i = 0; i < fields_->size(); i++) {
+    (*fields_)[i].Delete();
   }
+  fields_->clear();
 }
 
 void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {

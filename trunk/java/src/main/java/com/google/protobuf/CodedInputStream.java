@@ -84,8 +84,9 @@ public final class CodedInputStream {
     }
 
     lastTag = readRawVarint32();
-    if (lastTag == 0) {
-      // If we actually read zero, that's not a valid tag.
+    if (WireFormat.getTagFieldNumber(lastTag) == 0) {
+      // If we actually read zero (or any tag number corresponding to field
+      // number zero), that's not a valid tag.
       throw InvalidProtocolBufferException.invalidTag();
     }
     return lastTag;
@@ -355,8 +356,26 @@ public final class CodedInputStream {
    * CodedInputStream buffers its input.
    */
   static int readRawVarint32(final InputStream input) throws IOException {
-    int result = 0;
-    int offset = 0;
+    final int firstByte = input.read();
+    if (firstByte == -1) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    return readRawVarint32(firstByte, input);
+  }
+
+  /**
+   * Like {@link #readRawVarint32(InputStream)}, but expects that the caller
+   * has already read one byte.  This allows the caller to determine if EOF
+   * has been reached before attempting to read.
+   */
+  static int readRawVarint32(final int firstByte,
+                             final InputStream input) throws IOException {
+    if ((firstByte & 0x80) == 0) {
+      return firstByte;
+    }
+
+    int result = firstByte & 0x7f;
+    int offset = 7;
     for (; offset < 32; offset += 7) {
       final int b = input.read();
       if (b == -1) {

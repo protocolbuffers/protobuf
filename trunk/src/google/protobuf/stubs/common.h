@@ -171,7 +171,13 @@ static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;
 static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 
-#undef GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+// -------------------------------------------------------------------
+// Annotations:  Some parts of the code have been annotated in ways that might
+//   be useful to some compilers or tools, but are not supported universally.
+//   You can #define these annotations yourself if the default implementation
+//   is not right for you.
+
+#ifndef GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force inline.
 // Introduced in gcc 3.1.
@@ -180,13 +186,34 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 // Other compilers will have to figure it out for themselves.
 #define GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #endif
+#endif
 
-#undef GOOGLE_ATTRIBUTE_DEPRECATED
+#ifndef GOOGLE_ATTRIBUTE_DEPRECATED
 #ifdef __GNUC__
 // If the method/variable/type is used anywhere, produce a warning.
 #define GOOGLE_ATTRIBUTE_DEPRECATED __attribute__((deprecated))
 #else
 #define GOOGLE_ATTRIBUTE_DEPRECATED
+#endif
+#endif
+
+#ifndef GOOGLE_PREDICT_TRUE
+#ifdef __GNUC__
+// Provided at least since GCC 3.0.
+#define GOOGLE_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
+#else
+#define GOOGLE_PREDICT_TRUE
+#endif
+#endif
+
+// Delimits a block of code which may write to memory which is simultaneously
+// written by other threads, but which has been determined to be thread-safe
+// (e.g. because it is an idempotent write).
+#ifndef GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN
+#define GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN()
+#endif
+#ifndef GOOGLE_SAFE_CONCURRENT_WRITES_END
+#define GOOGLE_SAFE_CONCURRENT_WRITES_END()
 #endif
 
 // ===================================================================

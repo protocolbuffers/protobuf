@@ -58,16 +58,13 @@ def MakeTestSuite():
   generate_proto("../src/google/protobuf/unittest.proto")
   generate_proto("../src/google/protobuf/unittest_import.proto")
   generate_proto("../src/google/protobuf/unittest_mset.proto")
+  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
   generate_proto("google/protobuf/internal/more_extensions.proto")
   generate_proto("google/protobuf/internal/more_messages.proto")
 
   import unittest
   import google.protobuf.internal.generator_test     as generator_test
-  import google.protobuf.internal.decoder_test       as decoder_test
   import google.protobuf.internal.descriptor_test    as descriptor_test
-  import google.protobuf.internal.encoder_test       as encoder_test
-  import google.protobuf.internal.input_stream_test  as input_stream_test
-  import google.protobuf.internal.output_stream_test as output_stream_test
   import google.protobuf.internal.reflection_test    as reflection_test
   import google.protobuf.internal.service_reflection_test \
     as service_reflection_test
@@ -77,11 +74,7 @@ def MakeTestSuite():
   loader = unittest.defaultTestLoader
   suite = unittest.TestSuite()
   for test in [ generator_test,
-                decoder_test,
                 descriptor_test,
-                encoder_test,
-                input_stream_test,
-                output_stream_test,
                 reflection_test,
                 service_reflection_test,
                 text_format_test,
@@ -114,9 +107,7 @@ if __name__ == '__main__':
           'google.protobuf.internal.containers',
           'google.protobuf.internal.decoder',
           'google.protobuf.internal.encoder',
-          'google.protobuf.internal.input_stream',
           'google.protobuf.internal.message_listener',
-          'google.protobuf.internal.output_stream',
           'google.protobuf.internal.type_checkers',
           'google.protobuf.internal.wire_format',
           'google.protobuf.descriptor',

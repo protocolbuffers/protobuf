@@ -242,6 +242,24 @@ TEST_1D(CodedStreamTest, ExpectTag, kVarintCases) {
   }
 }
 
+TEST_1D(CodedStreamTest, ExpectTagFromArray, kVarintCases) {
+  memcpy(buffer_, kVarintCases_case.bytes, kVarintCases_case.size);
+
+  const uint32 expected_value = static_cast<uint32>(kVarintCases_case.value);
+
+  // If the expectation succeeds, it should return a pointer past the tag.
+  if (kVarintCases_case.size <= 2) {
+    EXPECT_TRUE(NULL ==
+                CodedInputStream::ExpectTagFromArray(buffer_,
+                                                     expected_value + 1));
+    EXPECT_TRUE(buffer_ + kVarintCases_case.size ==
+                CodedInputStream::ExpectTagFromArray(buffer_, expected_value));
+  } else {
+    EXPECT_TRUE(NULL ==
+                CodedInputStream::ExpectTagFromArray(buffer_, expected_value));
+  }
+}
+
 TEST_2D(CodedStreamTest, ReadVarint64, kVarintCases, kBlockSizes) {
   memcpy(buffer_, kVarintCases_case.bytes, kVarintCases_case.size);
   ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
@@ -529,10 +547,32 @@ TEST_2D(CodedStreamTest, WriteLittleEndian64, kFixed64Cases, kBlockSizes) {
   EXPECT_EQ(0, memcmp(buffer_, kFixed64Cases_case.bytes, sizeof(uint64)));
 }
 
+// Tests using the static methods to read fixed-size values from raw arrays.
+
+TEST_1D(CodedStreamTest, ReadLittleEndian32FromArray, kFixed32Cases) {
+  memcpy(buffer_, kFixed32Cases_case.bytes, sizeof(kFixed32Cases_case.bytes));
+
+  uint32 value;
+  const uint8* end = CodedInputStream::ReadLittleEndian32FromArray(
+      buffer_, &value);
+  EXPECT_EQ(kFixed32Cases_case.value, value);
+  EXPECT_TRUE(end == buffer_ + sizeof(value));
+}
+
+TEST_1D(CodedStreamTest, ReadLittleEndian64FromArray, kFixed64Cases) {
+  memcpy(buffer_, kFixed64Cases_case.bytes, sizeof(kFixed64Cases_case.bytes));
+
+  uint64 value;
+  const uint8* end = CodedInputStream::ReadLittleEndian64FromArray(
+      buffer_, &value);
+  EXPECT_EQ(kFixed64Cases_case.value, value);
+  EXPECT_TRUE(end == buffer_ + sizeof(value));
+}
+
 // -------------------------------------------------------------------
 // Raw reads and writes
 
-const char kRawBytes[] = "Some bytes which will be writted and read raw.";
+const char kRawBytes[] = "Some bytes which will be written and read raw.";
 
 TEST_1D(CodedStreamTest, ReadRaw, kBlockSizes) {
   memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
@@ -593,6 +633,22 @@ TEST_1D(CodedStreamTest, ReadStringImpossiblyLarge, kBlockSizes) {
   }
 }
 
+TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnStack) {
+  // Same test as above, except directly use a buffer. This used to cause
+  // crashes while the above did not.
+  uint8 buffer[8];
+  CodedInputStream coded_input(buffer, 8);
+  string str;
+  EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
+}
+
+TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnHeap) {
+  scoped_array<uint8> buffer(new uint8[8]);
+  CodedInputStream coded_input(buffer.get(), 8);
+  string str;
+  EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
+}
+
 
 // -------------------------------------------------------------------
 // Skip
@@ -650,6 +706,36 @@ TEST_F(CodedStreamTest, GetDirectBufferPointerInput) {
   EXPECT_TRUE(coded_input.GetDirectBufferPointer(&ptr, &size));
   EXPECT_EQ(buffer_ + 8, ptr);
   EXPECT_EQ(8, size);
+}
+
+TEST_F(CodedStreamTest, GetDirectBufferPointerInlineInput) {
+  ArrayInputStream input(buffer_, sizeof(buffer_), 8);
+  CodedInputStream coded_input(&input);
+
+  const void* ptr;
+  int size;
+
+  coded_input.GetDirectBufferPointerInline(&ptr, &size);
+  EXPECT_EQ(buffer_, ptr);
+  EXPECT_EQ(8, size);
+
+  // Peeking again should return the same pointer.
+  coded_input.GetDirectBufferPointerInline(&ptr, &size);
+  EXPECT_EQ(buffer_, ptr);
+  EXPECT_EQ(8, size);
+
+  // Skip forward in the same buffer then peek again.
+  EXPECT_TRUE(coded_input.Skip(3));
+  coded_input.GetDirectBufferPointerInline(&ptr, &size);
+  EXPECT_EQ(buffer_ + 3, ptr);
+  EXPECT_EQ(5, size);
+
+  // Skip to end of buffer and peek -- should return false and provide an empty
+  // buffer. It does not try to Refresh().
+  EXPECT_TRUE(coded_input.Skip(5));
+  coded_input.GetDirectBufferPointerInline(&ptr, &size);
+  EXPECT_EQ(buffer_ + 8, ptr);
+  EXPECT_EQ(0, size);
 }
 
 TEST_F(CodedStreamTest, GetDirectBufferPointerOutput) {

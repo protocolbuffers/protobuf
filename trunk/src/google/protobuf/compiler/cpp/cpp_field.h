@@ -118,6 +118,11 @@ class FieldGenerator {
   // message's MergeFromCodedStream() method.
   virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
 
+  // Generate lines to decode this field from a packed value, which will be
+  // placed inside the message's MergeFromCodedStream() method.
+  virtual void GenerateMergeFromCodedStreamWithPacking(io::Printer* printer)
+      const;
+
   // Generate lines to serialize this field, which are placed within the
   // message's SerializeWithCachedSizes() method.
   virtual void GenerateSerializeWithCachedSizes(io::Printer* printer) const = 0;
@@ -152,6 +157,7 @@ class FieldGeneratorMap {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };
+
 
 }  // namespace cpp
 }  // namespace compiler

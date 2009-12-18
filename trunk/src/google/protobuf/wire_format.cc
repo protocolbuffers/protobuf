@@ -391,7 +391,12 @@ bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
 
       // If that failed, check if the field is an extension.
       if (field == NULL && descriptor->IsExtensionNumber(field_number)) {
-        field = message_reflection->FindKnownExtensionByNumber(field_number);
+        if (input->GetExtensionPool() == NULL) {
+          field = message_reflection->FindKnownExtensionByNumber(field_number);
+        } else {
+          field = input->GetExtensionPool()
+                       ->FindExtensionByNumber(descriptor, field_number);
+        }
       }
 
       // If that failed, but we're a MessageSet, and this is the tag for a
@@ -419,52 +424,67 @@ bool WireFormat::ParseAndMergeField(
     io::CodedInputStream* input) {
   const Reflection* message_reflection = message->GetReflection();
 
-  if (field == NULL ||
-      WireFormatLite::GetTagWireType(tag) != WireTypeForField(field)) {
-    // We don't recognize this field.  Either the field number is unknown
-    // or the wire type doesn't match.  Put it in our unknown field set.
-    return SkipField(input, tag,
-                     message_reflection->MutableUnknownFields(message));
+  enum { UNKNOWN, NORMAL_FORMAT, PACKED_FORMAT } value_format;
+
+  if (field == NULL) {
+    value_format = UNKNOWN;
+  } else if (WireFormatLite::GetTagWireType(tag) ==
+             WireTypeForFieldType(field->type())) {
+    value_format = NORMAL_FORMAT;
+  } else if (field->is_packable() &&
+             WireFormatLite::GetTagWireType(tag) ==
+             WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+    value_format = PACKED_FORMAT;
+  } else {
+    // We don't recognize this field. Either the field number is unknown
+    // or the wire type doesn't match. Put it in our unknown field set.
+    value_format = UNKNOWN;
   }
 
-  if (field->options().packed()) {
+  if (value_format == UNKNOWN) {
+    return SkipField(input, tag,
+                     message_reflection->MutableUnknownFields(message));
+  } else if (value_format == PACKED_FORMAT) {
     uint32 length;
     if (!input->ReadVarint32(&length)) return false;
     io::CodedInputStream::Limit limit = input->PushLimit(length);
 
     switch (field->type()) {
-#define HANDLE_PACKED_TYPE(TYPE, TYPE_METHOD, CPPTYPE, CPPTYPE_METHOD)         \
+#define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                      \
       case FieldDescriptor::TYPE_##TYPE: {                                     \
         while (input->BytesUntilLimit() > 0) {                                 \
           CPPTYPE value;                                                       \
-          if (!WireFormatLite::Read##TYPE_METHOD(input, &value)) return false; \
+          if (!WireFormatLite::ReadPrimitive<                                  \
+                CPPTYPE, WireFormatLite::TYPE_##TYPE>(input, &value))          \
+            return false;                                                      \
           message_reflection->Add##CPPTYPE_METHOD(message, field, value);      \
         }                                                                      \
         break;                                                                 \
       }
 
-      HANDLE_PACKED_TYPE( INT32,  Int32,  int32,  Int32)
-      HANDLE_PACKED_TYPE( INT64,  Int64,  int64,  Int64)
-      HANDLE_PACKED_TYPE(SINT32, SInt32,  int32,  Int32)
-      HANDLE_PACKED_TYPE(SINT64, SInt64,  int64,  Int64)
-      HANDLE_PACKED_TYPE(UINT32, UInt32, uint32, UInt32)
-      HANDLE_PACKED_TYPE(UINT64, UInt64, uint64, UInt64)
+      HANDLE_PACKED_TYPE( INT32,  int32,  Int32)
+      HANDLE_PACKED_TYPE( INT64,  int64,  Int64)
+      HANDLE_PACKED_TYPE(SINT32,  int32,  Int32)
+      HANDLE_PACKED_TYPE(SINT64,  int64,  Int64)
+      HANDLE_PACKED_TYPE(UINT32, uint32, UInt32)
+      HANDLE_PACKED_TYPE(UINT64, uint64, UInt64)
 
-      HANDLE_PACKED_TYPE( FIXED32,  Fixed32, uint32, UInt32)
-      HANDLE_PACKED_TYPE( FIXED64,  Fixed64, uint64, UInt64)
-      HANDLE_PACKED_TYPE(SFIXED32, SFixed32,  int32,  Int32)
-      HANDLE_PACKED_TYPE(SFIXED64, SFixed64,  int64,  Int64)
+      HANDLE_PACKED_TYPE( FIXED32, uint32, UInt32)
+      HANDLE_PACKED_TYPE( FIXED64, uint64, UInt64)
+      HANDLE_PACKED_TYPE(SFIXED32,  int32,  Int32)
+      HANDLE_PACKED_TYPE(SFIXED64,  int64,  Int64)
 
-      HANDLE_PACKED_TYPE(FLOAT , Float , float , Float )
-      HANDLE_PACKED_TYPE(DOUBLE, Double, double, Double)
+      HANDLE_PACKED_TYPE(FLOAT , float , Float )
+      HANDLE_PACKED_TYPE(DOUBLE, double, Double)
 
-      HANDLE_PACKED_TYPE(BOOL, Bool, bool, Bool)
+      HANDLE_PACKED_TYPE(BOOL, bool, Bool)
 #undef HANDLE_PACKED_TYPE
 
       case FieldDescriptor::TYPE_ENUM: {
         while (input->BytesUntilLimit() > 0) {
           int value;
-          if (!WireFormatLite::ReadEnum(input, &value)) return false;
+          if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
+                  input, &value)) return false;
           const EnumValueDescriptor* enum_value =
               field->enum_type()->FindValueByNumber(value);
           if (enum_value != NULL) {
@@ -487,11 +507,14 @@ bool WireFormat::ParseAndMergeField(
 
     input->PopLimit(limit);
   } else {
+    // Non-packed value (value_format == NORMAL_FORMAT)
     switch (field->type()) {
-#define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE, CPPTYPE_METHOD)               \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                            \
       case FieldDescriptor::TYPE_##TYPE: {                                    \
         CPPTYPE value;                                                        \
-        if (!WireFormatLite::Read##TYPE_METHOD(input, &value)) return false;  \
+        if (!WireFormatLite::ReadPrimitive<                                   \
+                CPPTYPE, WireFormatLite::TYPE_##TYPE>(input, &value))         \
+          return false;                                                       \
         if (field->is_repeated()) {                                           \
           message_reflection->Add##CPPTYPE_METHOD(message, field, value);     \
         } else {                                                              \
@@ -500,31 +523,28 @@ bool WireFormat::ParseAndMergeField(
         break;                                                                \
       }
 
-      HANDLE_TYPE( INT32,  Int32,  int32,  Int32)
-      HANDLE_TYPE( INT64,  Int64,  int64,  Int64)
-      HANDLE_TYPE(SINT32, SInt32,  int32,  Int32)
-      HANDLE_TYPE(SINT64, SInt64,  int64,  Int64)
-      HANDLE_TYPE(UINT32, UInt32, uint32, UInt32)
-      HANDLE_TYPE(UINT64, UInt64, uint64, UInt64)
+      HANDLE_TYPE( INT32,  int32,  Int32)
+      HANDLE_TYPE( INT64,  int64,  Int64)
+      HANDLE_TYPE(SINT32,  int32,  Int32)
+      HANDLE_TYPE(SINT64,  int64,  Int64)
+      HANDLE_TYPE(UINT32, uint32, UInt32)
+      HANDLE_TYPE(UINT64, uint64, UInt64)
 
-      HANDLE_TYPE( FIXED32,  Fixed32, uint32, UInt32)
-      HANDLE_TYPE( FIXED64,  Fixed64, uint64, UInt64)
-      HANDLE_TYPE(SFIXED32, SFixed32,  int32,  Int32)
-      HANDLE_TYPE(SFIXED64, SFixed64,  int64,  Int64)
+      HANDLE_TYPE( FIXED32, uint32, UInt32)
+      HANDLE_TYPE( FIXED64, uint64, UInt64)
+      HANDLE_TYPE(SFIXED32,  int32,  Int32)
+      HANDLE_TYPE(SFIXED64,  int64,  Int64)
 
-      HANDLE_TYPE(FLOAT , Float , float , Float )
-      HANDLE_TYPE(DOUBLE, Double, double, Double)
+      HANDLE_TYPE(FLOAT , float , Float )
+      HANDLE_TYPE(DOUBLE, double, Double)
 
-      HANDLE_TYPE(BOOL, Bool, bool, Bool)
-
-      HANDLE_TYPE(STRING, String, string, String)
-      HANDLE_TYPE(BYTES, Bytes, string, String)
-
+      HANDLE_TYPE(BOOL, bool, Bool)
 #undef HANDLE_TYPE
 
       case FieldDescriptor::TYPE_ENUM: {
         int value;
-        if (!WireFormatLite::ReadEnum(input, &value)) return false;
+        if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
+                input, &value)) return false;
         const EnumValueDescriptor* enum_value =
           field->enum_type()->FindValueByNumber(value);
         if (enum_value != NULL) {
@@ -544,13 +564,38 @@ bool WireFormat::ParseAndMergeField(
         break;
       }
 
+      // Handle strings separately so that we can optimize the ctype=CORD case.
+      case FieldDescriptor::TYPE_STRING: {
+        string value;
+        if (!WireFormatLite::ReadString(input, &value)) return false;
+        VerifyUTF8String(value.data(), value.length(), PARSE);
+        if (field->is_repeated()) {
+          message_reflection->AddString(message, field, value);
+        } else {
+          message_reflection->SetString(message, field, value);
+        }
+        break;
+      }
+
+      case FieldDescriptor::TYPE_BYTES: {
+        string value;
+        if (!WireFormatLite::ReadBytes(input, &value)) return false;
+        if (field->is_repeated()) {
+          message_reflection->AddString(message, field, value);
+        } else {
+          message_reflection->SetString(message, field, value);
+        }
+        break;
+      }
 
       case FieldDescriptor::TYPE_GROUP: {
         Message* sub_message;
         if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(message, field);
+          sub_message = message_reflection->AddMessage(
+              message, field, input->GetExtensionFactory());
         } else {
-          sub_message = message_reflection->MutableMessage(message, field);
+          sub_message = message_reflection->MutableMessage(
+              message, field, input->GetExtensionFactory());
         }
 
         if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
@@ -562,9 +607,11 @@ bool WireFormat::ParseAndMergeField(
       case FieldDescriptor::TYPE_MESSAGE: {
         Message* sub_message;
         if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(message, field);
+          sub_message = message_reflection->AddMessage(
+              message, field, input->GetExtensionFactory());
         } else {
-          sub_message = message_reflection->MutableMessage(message, field);
+          sub_message = message_reflection->MutableMessage(
+              message, field, input->GetExtensionFactory());
         }
 
         if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
@@ -782,23 +829,23 @@ void WireFormat::SerializeFieldWithCachedSizes(
       // Handle strings separately so that we can get string references
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
-          string scratch;
-          const string& value = field->is_repeated() ?
-            message_reflection->GetRepeatedStringReference(
-              message, field, j, &scratch) :
-            message_reflection->GetStringReference(message, field, &scratch);
-          VerifyUTF8String(value.data(), value.length(), SERIALIZE);
-          WireFormatLite::WriteString(field->number(), value, output);
+        string scratch;
+        const string& value = field->is_repeated() ?
+          message_reflection->GetRepeatedStringReference(
+            message, field, j, &scratch) :
+          message_reflection->GetStringReference(message, field, &scratch);
+        VerifyUTF8String(value.data(), value.length(), SERIALIZE);
+        WireFormatLite::WriteString(field->number(), value, output);
         break;
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-          string scratch;
-          const string& value = field->is_repeated() ?
-            message_reflection->GetRepeatedStringReference(
-              message, field, j, &scratch) :
-            message_reflection->GetStringReference(message, field, &scratch);
-          WireFormatLite::WriteBytes(field->number(), value, output);
+        string scratch;
+        const string& value = field->is_repeated() ?
+          message_reflection->GetRepeatedStringReference(
+            message, field, j, &scratch) :
+          message_reflection->GetStringReference(message, field, &scratch);
+        WireFormatLite::WriteBytes(field->number(), value, output);
         break;
       }
     }
@@ -961,14 +1008,14 @@ int WireFormat::FieldDataOnlyByteSize(
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-        for (int j = 0; j < count; j++) {
-          string scratch;
-          const string& value = field->is_repeated() ?
-            message_reflection->GetRepeatedStringReference(
-              message, field, j, &scratch) :
-            message_reflection->GetStringReference(message, field, &scratch);
-          data_size += WireFormatLite::StringSize(value);
-        }
+      for (int j = 0; j < count; j++) {
+        string scratch;
+        const string& value = field->is_repeated() ?
+          message_reflection->GetRepeatedStringReference(
+            message, field, j, &scratch) :
+          message_reflection->GetStringReference(message, field, &scratch);
+        data_size += WireFormatLite::StringSize(value);
+      }
       break;
     }
   }

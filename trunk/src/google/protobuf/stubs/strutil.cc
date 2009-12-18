@@ -425,8 +425,8 @@ string UnescapeCEscapeString(const string& src) {
 //
 //    Currently only \n, \r, \t, ", ', \ and !isprint() chars are escaped.
 // ----------------------------------------------------------------------
-static int CEscapeInternal(const char* src, int src_len, char* dest,
-                           int dest_len, bool use_hex) {
+int CEscapeInternal(const char* src, int src_len, char* dest,
+                    int dest_len, bool use_hex, bool utf8_safe) {
   const char* src_end = src + src_len;
   int used = 0;
   bool last_hex_escape = false; // true if last output char was \xNN
@@ -447,7 +447,9 @@ static int CEscapeInternal(const char* src, int src_len, char* dest,
         // Note that if we emit \xNN and the src character after that is a hex
         // digit then that digit must be escaped too to prevent it being
         // interpreted as part of the character code by C.
-        if (!isprint(*src) || (last_hex_escape && isxdigit(*src))) {
+        if ((!utf8_safe || static_cast<uint8>(*src) < 0x80) &&
+            (!isprint(*src) ||
+             (last_hex_escape && isxdigit(*src)))) {
           if (dest_len - used < 4) // need space for 4 letter escape
             return -1;
           sprintf(dest + used, (use_hex ? "\\x%02x" : "\\%03o"),
@@ -469,7 +471,7 @@ static int CEscapeInternal(const char* src, int src_len, char* dest,
 }
 
 int CEscapeString(const char* src, int src_len, char* dest, int dest_len) {
-  return CEscapeInternal(src, src_len, dest, dest_len, false);
+  return CEscapeInternal(src, src_len, dest, dest_len, false, false);
 }
 
 // ----------------------------------------------------------------------
@@ -486,10 +488,32 @@ string CEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
   scoped_array<char> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
-                                  dest.get(), dest_length, false);
+                                  dest.get(), dest_length, false, false);
   GOOGLE_DCHECK_GE(len, 0);
   return string(dest.get(), len);
 }
+
+namespace strings {
+
+string Utf8SafeCEscape(const string& src) {
+  const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
+  scoped_array<char> dest(new char[dest_length]);
+  const int len = CEscapeInternal(src.data(), src.size(),
+                                  dest.get(), dest_length, false, true);
+  GOOGLE_DCHECK_GE(len, 0);
+  return string(dest.get(), len);
+}
+
+string CHexEscape(const string& src) {
+  const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
+  scoped_array<char> dest(new char[dest_length]);
+  const int len = CEscapeInternal(src.data(), src.size(),
+                                  dest.get(), dest_length, true, false);
+  GOOGLE_DCHECK_GE(len, 0);
+  return string(dest.get(), len);
+}
+
+}  // namespace strings
 
 // ----------------------------------------------------------------------
 // strto32_adaptor()

@@ -99,13 +99,22 @@ class Message(object):
     Args:
       other_msg: Message to copy into the current one.
     """
-    if self == other_msg:
+    if self is other_msg:
       return
     self.Clear()
     self.MergeFrom(other_msg)
 
   def Clear(self):
     """Clears all data that was set in the message."""
+    raise NotImplementedError
+
+  def SetInParent(self):
+    """Mark this as present in the parent.
+
+    This normally happens automatically when you assign a field of a
+    sub-message, but sometimes you want to make the sub-message
+    present while keeping it empty.  If you find yourself using this,
+    you may want to reconsider your design."""
     raise NotImplementedError
 
   def IsInitialized(self):

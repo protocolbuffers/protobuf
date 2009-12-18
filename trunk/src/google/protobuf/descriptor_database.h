@@ -280,6 +280,10 @@ class LIBPROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   // need to keep it around.
   bool AddCopy(const void* encoded_file_descriptor, int size);
 
+  // Like FindFileContainingSymbol but returns only the name of the file.
+  bool FindNameOfFileContainingSymbol(const string& symbol_name,
+                                      string* output);
+
   // implements DescriptorDatabase -----------------------------------
   bool FindFileByName(const string& filename,
                       FileDescriptorProto* output);

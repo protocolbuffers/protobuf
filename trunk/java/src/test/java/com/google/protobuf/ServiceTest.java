@@ -30,7 +30,9 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import google.protobuf.no_generic_services_test.UnittestNoGenericServices;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.ServiceWithNoOuter;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -43,6 +45,9 @@ import protobuf_unittest.UnittestProto.BarResponse;
 import org.easymock.classextension.EasyMock;
 import org.easymock.classextension.IMocksControl;
 import org.easymock.IArgumentMatcher;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -218,6 +223,48 @@ public class ServiceTest extends TestCase {
     assertEquals(expectedResponse, response);
 
     control.verify();
+  }
+
+  public void testNoGenericServices() throws Exception {
+    // Non-services should be usable.
+    UnittestNoGenericServices.TestMessage message =
+      UnittestNoGenericServices.TestMessage.newBuilder()
+        .setA(123)
+        .setExtension(UnittestNoGenericServices.testExtension, 456)
+        .build();
+    assertEquals(123, message.getA());
+    assertEquals(1, UnittestNoGenericServices.TestEnum.FOO.getNumber());
+
+    // Build a list of the class names nested in UnittestNoGenericServices.
+    String outerName = "google.protobuf.no_generic_services_test." +
+                       "UnittestNoGenericServices";
+    Class<?> outerClass = Class.forName(outerName);
+
+    Set<String> innerClassNames = new HashSet<String>();
+    for (Class<?> innerClass : outerClass.getClasses()) {
+      String fullName = innerClass.getName();
+      // Figure out the unqualified name of the inner class.
+      // Note:  Surprisingly, the full name of an inner class will be separated
+      //   from the outer class name by a '$' rather than a '.'.  This is not
+      //   mentioned in the documentation for java.lang.Class.  I don't want to
+      //   make assumptions, so I'm just going to accept any character as the
+      //   separator.
+      assertTrue(fullName.startsWith(outerName));
+      innerClassNames.add(fullName.substring(outerName.length() + 1));
+    }
+
+    // No service class should have been generated.
+    assertTrue(innerClassNames.contains("TestMessage"));
+    assertTrue(innerClassNames.contains("TestEnum"));
+    assertFalse(innerClassNames.contains("TestService"));
+
+    // But descriptors are there.
+    FileDescriptor file = UnittestNoGenericServices.getDescriptor();
+    assertEquals(1, file.getServices().size());
+    assertEquals("TestService", file.getServices().get(0).getName());
+    assertEquals(1, file.getServices().get(0).getMethods().size());
+    assertEquals("Foo",
+        file.getServices().get(0).getMethods().get(0).getName());
   }
 
   // =================================================================

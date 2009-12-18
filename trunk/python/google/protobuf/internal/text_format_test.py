@@ -43,7 +43,7 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_mset_pb2
 
 
-class TextFormatTest(test_util.GoldenMessageTestCase):
+class TextFormatTest(unittest.TestCase):
   def ReadGolden(self, golden_filename):
     f = test_util.GoldenFile(golden_filename)
     golden_lines = f.readlines()
@@ -149,7 +149,7 @@ class TextFormatTest(test_util.GoldenMessageTestCase):
     parsed_message = unittest_pb2.TestAllTypes()
     text_format.Merge(ascii_text, parsed_message)
     self.assertEqual(message, parsed_message)
-    self.ExpectAllFieldsSet(message)
+    test_util.ExpectAllFieldsSet(self, message)
 
   def testMergeAllExtensions(self):
     message = unittest_pb2.TestAllExtensions()
@@ -212,11 +212,17 @@ class TextFormatTest(test_util.GoldenMessageTestCase):
         text_format.Merge, text, message)
 
   def testMergeBadExtension(self):
-    message = unittest_pb2.TestAllTypes()
+    message = unittest_pb2.TestAllExtensions()
     text = '[unknown_extension]: 8\n'
     self.assertRaisesWithMessage(
         text_format.ParseError,
         '1:2 : Extension "unknown_extension" not registered.',
+        text_format.Merge, text, message)
+    message = unittest_pb2.TestAllTypes()
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
+         'extensions.'),
         text_format.Merge, text, message)
 
   def testMergeGroupNotClosed(self):
@@ -230,6 +236,19 @@ class TextFormatTest(test_util.GoldenMessageTestCase):
     self.assertRaisesWithMessage(
         text_format.ParseError, '1:16 : Expected "}".',
         text_format.Merge, text, message)
+
+  def testMergeEmptyGroup(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'OptionalGroup: {}'
+    text_format.Merge(text, message)
+    self.assertTrue(message.HasField('optionalgroup'))
+
+    message.Clear()
+
+    message = unittest_pb2.TestAllTypes()
+    text = 'OptionalGroup: <>'
+    text_format.Merge(text, message)
+    self.assertTrue(message.HasField('optionalgroup'))
 
   def testMergeBadEnumValue(self):
     message = unittest_pb2.TestAllTypes()

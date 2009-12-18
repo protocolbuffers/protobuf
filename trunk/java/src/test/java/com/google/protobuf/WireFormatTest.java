@@ -235,6 +235,9 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertPackedFieldsSet(TestPackedTypes.parseDelimitedFrom(input));
     assertEquals(34, input.read());
     assertEquals(-1, input.read());
+
+    // We're at EOF, so parsing again should return null.
+    assertTrue(TestAllTypes.parseDelimitedFrom(input) == null);
   }
 
   private void assertFieldsInOrder(ByteString data) throws Exception {

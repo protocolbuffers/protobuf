@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <limits>
 #include <vector>
 #include <google/protobuf/stubs/hash.h>
 
@@ -39,6 +40,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+
 
 namespace google {
 namespace protobuf {
@@ -111,6 +113,7 @@ const char kThinSeparator[] =
   "// -------------------------------------------------------------------\n";
 
 string ClassName(const Descriptor* descriptor, bool qualified) {
+
   // Find "outer", the descriptor of the top-level message in which
   // "descriptor" is embedded.
   const Descriptor* outer = descriptor;
@@ -141,6 +144,12 @@ string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
   }
 }
 
+
+string SuperClassName(const Descriptor* descriptor) {
+  return HasDescriptorMethods(descriptor->file()) ?
+      "::google::protobuf::Message" : "::google::protobuf::MessageLite";
+}
+
 string FieldName(const FieldDescriptor* field) {
   string result = field->name();
   LowerString(&result);
@@ -164,6 +173,12 @@ string FieldConstantName(const FieldDescriptor *field) {
   }
 
   return result;
+}
+
+string FieldMessageTypeName(const FieldDescriptor* field) {
+  // Note:  The Google-internal version of Protocol Buffers uses this function
+  //   as a hook point for hacks to support legacy code.
+  return ClassName(field->message_type(), true);
 }
 
 string StripProto(const string& filename) {
@@ -235,17 +250,37 @@ string DefaultValue(const FieldDescriptor* field) {
       return "GOOGLE_LONGLONG(" + SimpleItoa(field->default_value_int64()) + ")";
     case FieldDescriptor::CPPTYPE_UINT64:
       return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return SimpleDtoa(field->default_value_double());
+    case FieldDescriptor::CPPTYPE_DOUBLE: {
+      double value = field->default_value_double();
+      if (value == numeric_limits<double>::infinity()) {
+        return "::google::protobuf::internal::Infinity()";
+      } else if (value == -numeric_limits<double>::infinity()) {
+        return "-::google::protobuf::internal::Infinity()";
+      } else if (value != value) {
+        return "::google::protobuf::internal::NaN()";
+      } else {
+        return SimpleDtoa(value);
+      }
+    }
     case FieldDescriptor::CPPTYPE_FLOAT:
       {
-        // If floating point value contains a period (.) or an exponent (either
-        // E or e), then append suffix 'f' to make it a floating-point literal.
-        string float_value = SimpleFtoa(field->default_value_float());
-        if (float_value.find_first_of(".eE") != string::npos) {
-          float_value.push_back('f');
+        float value = field->default_value_float();
+        if (value == numeric_limits<float>::infinity()) {
+          return "static_cast<float>(::google::protobuf::internal::Infinity())";
+        } else if (value == -numeric_limits<float>::infinity()) {
+          return "static_cast<float>(-::google::protobuf::internal::Infinity())";
+        } else if (value != value) {
+          return "static_cast<float>(::google::protobuf::internal::NaN())";
+        } else {
+          string float_value = SimpleFtoa(value);
+          // If floating point value contains a period (.) or an exponent
+          // (either E or e), then append suffix 'f' to make it a float
+          // literal.
+          if (float_value.find_first_of(".eE") != string::npos) {
+            float_value.push_back('f');
+          }
+          return float_value;
         }
-        return float_value;
       }
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
@@ -259,7 +294,7 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_STRING:
       return "\"" + CEscape(field->default_value_string()) + "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return ClassName(field->message_type(), true) + "::default_instance()";
+      return FieldMessageTypeName(field) + "::default_instance()";
   }
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a

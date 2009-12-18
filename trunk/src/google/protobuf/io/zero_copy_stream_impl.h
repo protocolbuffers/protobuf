@@ -133,10 +133,11 @@ class LIBPROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
 
 // A ZeroCopyOutputStream which writes to a file descriptor.
 //
-// FileInputStream is preferred over using an ofstream with OstreamOutputStream.
-// The latter will introduce an extra layer of buffering, harming performance.
-// Also, it's conceivable that FileInputStream could someday be enhanced
-// to use zero-copy file descriptors on OSs which support them.
+// FileOutputStream is preferred over using an ofstream with
+// OstreamOutputStream.  The latter will introduce an extra layer of buffering,
+// harming performance.  Also, it's conceivable that FileOutputStream could
+// someday be enhanced to use zero-copy file descriptors on OSs which
+// support them.
 class LIBPROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
  public:
   // Creates a stream that writes to the given Unix file descriptor.

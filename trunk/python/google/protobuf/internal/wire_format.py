@@ -33,16 +33,17 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import struct
+from google.protobuf import descriptor
 from google.protobuf import message
 
 
 TAG_TYPE_BITS = 3  # Number of bits used to hold type info in a proto tag.
-_TAG_TYPE_MASK = (1 << TAG_TYPE_BITS) - 1  # 0x7
+TAG_TYPE_MASK = (1 << TAG_TYPE_BITS) - 1  # 0x7
 
 # These numbers identify the wire type of a protocol buffer value.
 # We use the least-significant TAG_TYPE_BITS bits of the varint-encoded
 # tag-and-type to store one of these WIRETYPE_* constants.
-# These values must match WireType enum in //net/proto2/public/wire_format.h.
+# These values must match WireType enum in google/protobuf/wire_format.h.
 WIRETYPE_VARINT = 0
 WIRETYPE_FIXED64 = 1
 WIRETYPE_LENGTH_DELIMITED = 2
@@ -93,7 +94,7 @@ def UnpackTag(tag):
   """The inverse of PackTag().  Given an unsigned 32-bit number,
   returns a (field_number, wire_type) tuple.
   """
-  return (tag >> TAG_TYPE_BITS), (tag & _TAG_TYPE_MASK)
+  return (tag >> TAG_TYPE_BITS), (tag & TAG_TYPE_MASK)
 
 
 def ZigZagEncode(value):
@@ -245,3 +246,23 @@ def _VarUInt64ByteSizeNoTag(uint64):
   if uint64 > UINT64_MAX:
     raise message.EncodeError('Value out of range: %d' % uint64)
   return 10
+
+
+NON_PACKABLE_TYPES = (
+  descriptor.FieldDescriptor.TYPE_STRING,
+  descriptor.FieldDescriptor.TYPE_GROUP,
+  descriptor.FieldDescriptor.TYPE_MESSAGE,
+  descriptor.FieldDescriptor.TYPE_BYTES
+)
+
+
+def IsTypePackable(field_type):
+  """Return true iff packable = true is valid for fields of this type.
+
+  Args:
+    field_type: a FieldDescriptor::Type value.
+
+  Returns:
+    True iff fields of this type are packable.
+  """
+  return field_type not in NON_PACKABLE_TYPES

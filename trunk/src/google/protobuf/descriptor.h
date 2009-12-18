@@ -395,6 +395,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   bool is_required() const;      // shorthand for label() == LABEL_REQUIRED
   bool is_optional() const;      // shorthand for label() == LABEL_OPTIONAL
   bool is_repeated() const;      // shorthand for label() == LABEL_REPEATED
+  bool is_packable() const;      // shorthand for is_repeated() &&
+                                 //               IsTypePackable(type())
 
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
@@ -473,6 +475,9 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
 
   // Helper method to get the CppType for a particular Type.
   static CppType TypeToCppType(Type type);
+
+  // Return true iff [packed = true] is valid for fields of this type.
+  static inline bool IsTypePackable(Type field_type);
 
  private:
   typedef FieldOptions OptionsType;
@@ -1069,10 +1074,6 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // These methods may contain hidden pitfalls and may be removed in a
   // future library version.
 
-  // DEPRECATED:  Use of underlays can lead to many subtle gotchas.  Instead,
-  //   try to formulate what you want to do in terms of DescriptorDatabases.
-  //   This constructor will be removed soon.
-  //
   // Create a DescriptorPool which is overlaid on top of some other pool.
   // If you search for a descriptor in the overlay and it is not found, the
   // underlay will be searched as a backup.  If the underlay has its own
@@ -1090,6 +1091,9 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // types directly into generated_pool(): this is not allowed, and would be
   // bad design anyway.  So, instead, you could use generated_pool() as an
   // underlay for a new DescriptorPool in which you add only the new file.
+  //
+  // WARNING:  Use of underlays can lead to many subtle gotchas.  Instead,
+  //   try to formulate what you want to do in terms of DescriptorDatabases.
   explicit DescriptorPool(const DescriptorPool* underlay);
 
   // Called by generated classes at init time to add their descriptors to
@@ -1294,6 +1298,10 @@ inline bool FieldDescriptor::is_repeated() const {
   return label() == LABEL_REPEATED;
 }
 
+inline bool FieldDescriptor::is_packable() const {
+  return is_repeated() && IsTypePackable(type());
+}
+
 // To save space, index() is computed by looking at the descriptor's position
 // in the parent's array of children.
 inline int FieldDescriptor::index() const {
@@ -1340,6 +1348,13 @@ inline FieldDescriptor::CppType FieldDescriptor::cpp_type() const {
 
 inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
   return kTypeToCppTypeMap[type];
+}
+
+inline bool FieldDescriptor::IsTypePackable(Type field_type) {
+  return (field_type != FieldDescriptor::TYPE_STRING &&
+          field_type != FieldDescriptor::TYPE_GROUP &&
+          field_type != FieldDescriptor::TYPE_MESSAGE &&
+          field_type != FieldDescriptor::TYPE_BYTES);
 }
 
 inline const FileDescriptor* FileDescriptor::dependency(int index) const {

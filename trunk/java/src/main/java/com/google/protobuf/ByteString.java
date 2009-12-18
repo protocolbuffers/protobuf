@@ -99,6 +99,24 @@ public final class ByteString {
   }
 
   /**
+   * Copies {@code size} bytes from a {@code java.nio.ByteBuffer} into
+   * a {@code ByteString}.
+   */
+  public static ByteString copyFrom(final ByteBuffer bytes, final int size) {
+    final byte[] copy = new byte[size];
+    bytes.get(copy);
+    return new ByteString(copy);
+  }
+
+  /**
+   * Copies the remaining bytes from a {@code java.nio.ByteBuffer} into
+   * a {@code ByteString}.
+   */
+  public static ByteString copyFrom(final ByteBuffer bytes) {
+    return copyFrom(bytes, bytes.remaining());
+  }
+
+  /**
    * Encodes {@code text} into a sequence of bytes using the named charset
    * and returns the result as a {@code ByteString}.
    */

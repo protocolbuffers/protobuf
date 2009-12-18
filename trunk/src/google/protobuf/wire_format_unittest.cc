@@ -126,6 +126,38 @@ TEST(WireFormatTest, ParsePacked) {
   TestUtil::ExpectPackedFieldsSet(dest);
 }
 
+TEST(WireFormatTest, ParsePackedFromUnpacked) {
+  // Serialize using the generated code.
+  unittest::TestUnpackedTypes source;
+  TestUtil::SetUnpackedFields(&source);
+  string data = source.SerializeAsString();
+
+  // Parse using WireFormat.
+  unittest::TestPackedTypes dest;
+  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::CodedInputStream input(&raw_input);
+  WireFormat::ParseAndMergePartial(&input, &dest);
+
+  // Check.
+  TestUtil::ExpectPackedFieldsSet(dest);
+}
+
+TEST(WireFormatTest, ParseUnpackedFromPacked) {
+  // Serialize using the generated code.
+  unittest::TestPackedTypes source;
+  TestUtil::SetPackedFields(&source);
+  string data = source.SerializeAsString();
+
+  // Parse using WireFormat.
+  unittest::TestUnpackedTypes dest;
+  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::CodedInputStream input(&raw_input);
+  WireFormat::ParseAndMergePartial(&input, &dest);
+
+  // Check.
+  TestUtil::ExpectUnpackedFieldsSet(dest);
+}
+
 TEST(WireFormatTest, ParsePackedExtensions) {
   unittest::TestPackedExtensions source, dest;
   string data;
@@ -566,6 +598,45 @@ TEST(WireFormatTest, ZigZag) {
             LL(856912304801416))));
   EXPECT_EQ(LL(-75123905439571256), ZigZagDecode64(ZigZagEncode64(
             LL(-75123905439571256))));
+}
+
+TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
+  // At one point checks would trigger when parsing repeated fixed scalar
+  // fields.
+  protobuf_unittest::TestRepeatedScalarDifferentTagSizes msg1, msg2;
+  for (int i = 0; i < 100; ++i) {
+    msg1.add_repeated_fixed32(i);
+    msg1.add_repeated_int32(i);
+    msg1.add_repeated_fixed64(i);
+    msg1.add_repeated_int64(i);
+    msg1.add_repeated_float(i);
+    msg1.add_repeated_uint64(i);
+  }
+
+  // Make sure that we have a variety of tag sizes.
+  const google::protobuf::Descriptor* desc = msg1.GetDescriptor();
+  const google::protobuf::FieldDescriptor* field;
+  field = desc->FindFieldByName("repeated_fixed32");
+  ASSERT_TRUE(field != NULL);
+  ASSERT_EQ(1, WireFormat::TagSize(field->number(), field->type()));
+  field = desc->FindFieldByName("repeated_int32");
+  ASSERT_TRUE(field != NULL);
+  ASSERT_EQ(1, WireFormat::TagSize(field->number(), field->type()));
+  field = desc->FindFieldByName("repeated_fixed64");
+  ASSERT_TRUE(field != NULL);
+  ASSERT_EQ(2, WireFormat::TagSize(field->number(), field->type()));
+  field = desc->FindFieldByName("repeated_int64");
+  ASSERT_TRUE(field != NULL);
+  ASSERT_EQ(2, WireFormat::TagSize(field->number(), field->type()));
+  field = desc->FindFieldByName("repeated_float");
+  ASSERT_TRUE(field != NULL);
+  ASSERT_EQ(3, WireFormat::TagSize(field->number(), field->type()));
+  field = desc->FindFieldByName("repeated_uint64");
+  ASSERT_TRUE(field != NULL);
+  ASSERT_EQ(3, WireFormat::TagSize(field->number(), field->type()));
+
+  EXPECT_TRUE(msg2.ParseFromString(msg1.SerializeAsString()));
+  EXPECT_EQ(msg1.DebugString(), msg2.DebugString());
 }
 
 class WireFormatInvalidInputTest : public testing::Test {

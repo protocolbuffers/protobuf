@@ -39,7 +39,9 @@
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/io/coded_stream.h>
 
 
@@ -47,106 +49,295 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-inline bool WireFormatLite::ReadInt32(io::CodedInputStream* input,
-                                      int32* value) {
+// Implementation details of ReadPrimitive.
+
+template <>
+inline bool WireFormatLite::ReadPrimitive<int32, WireFormatLite::TYPE_INT32>(
+    io::CodedInputStream* input,
+    int32* value) {
   uint32 temp;
   if (!input->ReadVarint32(&temp)) return false;
   *value = static_cast<int32>(temp);
   return true;
 }
-inline bool WireFormatLite::ReadInt64(io::CodedInputStream* input,
-                                      int64* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<int64, WireFormatLite::TYPE_INT64>(
+    io::CodedInputStream* input,
+    int64* value) {
   uint64 temp;
   if (!input->ReadVarint64(&temp)) return false;
   *value = static_cast<int64>(temp);
   return true;
 }
-inline bool WireFormatLite::ReadUInt32(io::CodedInputStream* input,
-                                       uint32* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<uint32, WireFormatLite::TYPE_UINT32>(
+    io::CodedInputStream* input,
+    uint32* value) {
   return input->ReadVarint32(value);
 }
-inline bool WireFormatLite::ReadUInt64(io::CodedInputStream* input,
-                                       uint64* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<uint64, WireFormatLite::TYPE_UINT64>(
+    io::CodedInputStream* input,
+    uint64* value) {
   return input->ReadVarint64(value);
 }
-inline bool WireFormatLite::ReadSInt32(io::CodedInputStream* input,
-                                       int32* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<int32, WireFormatLite::TYPE_SINT32>(
+    io::CodedInputStream* input,
+    int32* value) {
   uint32 temp;
   if (!input->ReadVarint32(&temp)) return false;
   *value = ZigZagDecode32(temp);
   return true;
 }
-inline bool WireFormatLite::ReadSInt64(io::CodedInputStream* input,
-                                       int64* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<int64, WireFormatLite::TYPE_SINT64>(
+    io::CodedInputStream* input,
+    int64* value) {
   uint64 temp;
   if (!input->ReadVarint64(&temp)) return false;
   *value = ZigZagDecode64(temp);
   return true;
 }
-inline bool WireFormatLite::ReadFixed32(io::CodedInputStream* input,
-                                        uint32* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<uint32, WireFormatLite::TYPE_FIXED32>(
+    io::CodedInputStream* input,
+    uint32* value) {
   return input->ReadLittleEndian32(value);
 }
-inline bool WireFormatLite::ReadFixed64(io::CodedInputStream* input,
-                                        uint64* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<uint64, WireFormatLite::TYPE_FIXED64>(
+    io::CodedInputStream* input,
+    uint64* value) {
   return input->ReadLittleEndian64(value);
 }
-inline bool WireFormatLite::ReadSFixed32(io::CodedInputStream* input,
-                                         int32* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<int32, WireFormatLite::TYPE_SFIXED32>(
+    io::CodedInputStream* input,
+    int32* value) {
   uint32 temp;
   if (!input->ReadLittleEndian32(&temp)) return false;
   *value = static_cast<int32>(temp);
   return true;
 }
-inline bool WireFormatLite::ReadSFixed64(io::CodedInputStream* input,
-                                         int64* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<int64, WireFormatLite::TYPE_SFIXED64>(
+    io::CodedInputStream* input,
+    int64* value) {
   uint64 temp;
   if (!input->ReadLittleEndian64(&temp)) return false;
   *value = static_cast<int64>(temp);
   return true;
 }
-inline bool WireFormatLite::ReadFloat(io::CodedInputStream* input,
-                                      float* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<float, WireFormatLite::TYPE_FLOAT>(
+    io::CodedInputStream* input,
+    float* value) {
   uint32 temp;
   if (!input->ReadLittleEndian32(&temp)) return false;
   *value = DecodeFloat(temp);
   return true;
 }
-inline bool WireFormatLite::ReadDouble(io::CodedInputStream* input,
-                                       double* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<double, WireFormatLite::TYPE_DOUBLE>(
+    io::CodedInputStream* input,
+    double* value) {
   uint64 temp;
   if (!input->ReadLittleEndian64(&temp)) return false;
   *value = DecodeDouble(temp);
   return true;
 }
-inline bool WireFormatLite::ReadBool(io::CodedInputStream* input,
-                                     bool* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<bool, WireFormatLite::TYPE_BOOL>(
+    io::CodedInputStream* input,
+    bool* value) {
   uint32 temp;
   if (!input->ReadVarint32(&temp)) return false;
   *value = temp != 0;
   return true;
 }
-inline bool WireFormatLite::ReadEnum(io::CodedInputStream* input,
-                                     int* value) {
+template <>
+inline bool WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
+    io::CodedInputStream* input,
+    int* value) {
   uint32 temp;
   if (!input->ReadVarint32(&temp)) return false;
   *value = static_cast<int>(temp);
   return true;
 }
 
-inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                       string* value) {
-  // String is for UTF-8 text only
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
-  if (!input->ReadString(value, length)) return false;
+template <>
+inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
+  uint32, WireFormatLite::TYPE_FIXED32>(
+    const uint8* buffer,
+    uint32* value) {
+  return io::CodedInputStream::ReadLittleEndian32FromArray(buffer, value);
+}
+template <>
+inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
+  uint64, WireFormatLite::TYPE_FIXED64>(
+    const uint8* buffer,
+    uint64* value) {
+  return io::CodedInputStream::ReadLittleEndian64FromArray(buffer, value);
+}
+template <>
+inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
+  int32, WireFormatLite::TYPE_SFIXED32>(
+    const uint8* buffer,
+    int32* value) {
+  uint32 temp;
+  buffer = io::CodedInputStream::ReadLittleEndian32FromArray(buffer, &temp);
+  *value = static_cast<int32>(temp);
+  return buffer;
+}
+template <>
+inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
+  int64, WireFormatLite::TYPE_SFIXED64>(
+    const uint8* buffer,
+    int64* value) {
+  uint64 temp;
+  buffer = io::CodedInputStream::ReadLittleEndian64FromArray(buffer, &temp);
+  *value = static_cast<int64>(temp);
+  return buffer;
+}
+template <>
+inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
+  float, WireFormatLite::TYPE_FLOAT>(
+    const uint8* buffer,
+    float* value) {
+  uint32 temp;
+  buffer = io::CodedInputStream::ReadLittleEndian32FromArray(buffer, &temp);
+  *value = DecodeFloat(temp);
+  return buffer;
+}
+template <>
+inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
+  double, WireFormatLite::TYPE_DOUBLE>(
+    const uint8* buffer,
+    double* value) {
+  uint64 temp;
+  buffer = io::CodedInputStream::ReadLittleEndian64FromArray(buffer, &temp);
+  *value = DecodeDouble(temp);
+  return buffer;
+}
+
+template <typename CType, enum WireFormatLite::FieldType DeclaredType>
+inline bool WireFormatLite::ReadRepeatedPrimitive(int tag_size,
+                                               uint32 tag,
+                                               io::CodedInputStream* input,
+                                               RepeatedField<CType>* values) {
+  CType value;
+  if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
+  values->Add(value);
+  int elements_already_reserved = values->Capacity() - values->size();
+  while (elements_already_reserved > 0 && input->ExpectTag(tag)) {
+    if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
+    values->AddAlreadyReserved(value);
+    elements_already_reserved--;
+  }
   return true;
 }
-inline bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
-                                      string* value) {
+
+template <typename CType, enum WireFormatLite::FieldType DeclaredType>
+inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
+    int tag_size,
+    uint32 tag,
+    io::CodedInputStream* input,
+    RepeatedField<CType>* values) {
+  GOOGLE_DCHECK_EQ(UInt32Size(tag), tag_size);
+  CType value;
+  if (!ReadPrimitive<CType, DeclaredType>(input, &value))
+    return false;
+  values->Add(value);
+
+  // For fixed size values, repeated values can be read more quickly by
+  // reading directly from a raw array.
+  //
+  // We can get a tight loop by only reading as many elements as can be
+  // added to the RepeatedField without having to do any resizing. Additionally,
+  // we only try to read as many elements as are available from the current
+  // buffer space. Doing so avoids having to perform boundary checks when
+  // reading the value: the maximum number of elements that can be read is
+  // known outside of the loop.
+  const void* void_pointer;
+  int size;
+  input->GetDirectBufferPointerInline(&void_pointer, &size);
+  if (size > 0) {
+    const uint8* buffer = reinterpret_cast<const uint8*>(void_pointer);
+    // The number of bytes each type occupies on the wire.
+    const int per_value_size = tag_size + sizeof(value);
+
+    int elements_available = min(values->Capacity() - values->size(),
+                                 size / per_value_size);
+    int num_read = 0;
+    while (num_read < elements_available &&
+           (buffer = io::CodedInputStream::ExpectTagFromArray(
+               buffer, tag)) != NULL) {
+      buffer = ReadPrimitiveFromArray<CType, DeclaredType>(buffer, &value);
+      values->AddAlreadyReserved(value);
+      ++num_read;
+    }
+    const int read_bytes = num_read * per_value_size;
+    if (read_bytes > 0) {
+      input->Skip(read_bytes);
+    }
+  }
+  return true;
+}
+
+// Specializations of ReadRepeatedPrimitive for the fixed size types, which use 
+// the optimized code path.
+#define READ_REPEATED_FIXED_SIZE_PRIMITIVE(CPPTYPE, DECLARED_TYPE)             \
+template <>                                                                    \
+inline bool WireFormatLite::ReadRepeatedPrimitive<                             \
+  CPPTYPE, WireFormatLite::DECLARED_TYPE>(                                     \
+    int tag_size,                                                              \
+    uint32 tag,                                                                \
+    io::CodedInputStream* input,                                               \
+    RepeatedField<CPPTYPE>* values) {                                          \
+  return ReadRepeatedFixedSizePrimitive<                                       \
+    CPPTYPE, WireFormatLite::DECLARED_TYPE>(                                   \
+      tag_size, tag, input, values);                                           \
+}
+
+READ_REPEATED_FIXED_SIZE_PRIMITIVE(uint32, TYPE_FIXED32);
+READ_REPEATED_FIXED_SIZE_PRIMITIVE(uint64, TYPE_FIXED64);
+READ_REPEATED_FIXED_SIZE_PRIMITIVE(int32, TYPE_SFIXED32);
+READ_REPEATED_FIXED_SIZE_PRIMITIVE(int64, TYPE_SFIXED64);
+READ_REPEATED_FIXED_SIZE_PRIMITIVE(float, TYPE_FLOAT);
+READ_REPEATED_FIXED_SIZE_PRIMITIVE(double, TYPE_DOUBLE);
+
+#undef READ_REPEATED_FIXED_SIZE_PRIMITIVE
+
+template <typename CType, enum WireFormatLite::FieldType DeclaredType>
+bool WireFormatLite::ReadRepeatedPrimitiveNoInline(
+    int tag_size,
+    uint32 tag,
+    io::CodedInputStream* input,
+    RepeatedField<CType>* value) {
+  return ReadRepeatedPrimitive<CType, DeclaredType>(
+      tag_size, tag, input, value);
+}
+
+template <typename CType, enum WireFormatLite::FieldType DeclaredType>
+inline bool WireFormatLite::ReadPackedPrimitive(io::CodedInputStream* input,
+                                                RepeatedField<CType>* values) {
   uint32 length;
   if (!input->ReadVarint32(&length)) return false;
-  return input->ReadString(value, length);
+  io::CodedInputStream::Limit limit = input->PushLimit(length);
+  while (input->BytesUntilLimit() > 0) {
+    CType value;
+    if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
+    values->Add(value);
+  }
+  input->PopLimit(limit);
+  return true;
+}
+
+template <typename CType, enum WireFormatLite::FieldType DeclaredType>
+bool WireFormatLite::ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
+                                                 RepeatedField<CType>* values) {
+  return ReadPackedPrimitive<CType, DeclaredType>(input, values);
 }
 
 
@@ -268,107 +459,6 @@ inline void WireFormatLite::WriteBoolNoTag(bool value,
 inline void WireFormatLite::WriteEnumNoTag(int value,
                                            io::CodedOutputStream* output) {
   output->WriteVarint32SignExtended(value);
-}
-
-inline void WireFormatLite::WriteInt32(int field_number, int32 value,
-                                       io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteInt32NoTag(value, output);
-}
-inline void WireFormatLite::WriteInt64(int field_number, int64 value,
-                                       io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteInt64NoTag(value, output);
-}
-inline void WireFormatLite::WriteUInt32(int field_number, uint32 value,
-                                        io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteUInt32NoTag(value, output);
-}
-inline void WireFormatLite::WriteUInt64(int field_number, uint64 value,
-                                        io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteUInt64NoTag(value, output);
-}
-inline void WireFormatLite::WriteSInt32(int field_number, int32 value,
-                                        io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteSInt32NoTag(value, output);
-}
-inline void WireFormatLite::WriteSInt64(int field_number, int64 value,
-                                        io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteSInt64NoTag(value, output);
-}
-inline void WireFormatLite::WriteFixed32(int field_number, uint32 value,
-                                         io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_FIXED32, output);
-  WriteFixed32NoTag(value, output);
-}
-inline void WireFormatLite::WriteFixed64(int field_number, uint64 value,
-                                         io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_FIXED64, output);
-  WriteFixed64NoTag(value, output);
-}
-inline void WireFormatLite::WriteSFixed32(int field_number, int32 value,
-                                          io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_FIXED32, output);
-  WriteSFixed32NoTag(value, output);
-}
-inline void WireFormatLite::WriteSFixed64(int field_number, int64 value,
-                                          io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_FIXED64, output);
-  WriteSFixed64NoTag(value, output);
-}
-inline void WireFormatLite::WriteFloat(int field_number, float value,
-                                       io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_FIXED32, output);
-  WriteFloatNoTag(value, output);
-}
-inline void WireFormatLite::WriteDouble(int field_number, double value,
-                                        io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_FIXED64, output);
-  WriteDoubleNoTag(value, output);
-}
-inline void WireFormatLite::WriteBool(int field_number, bool value,
-                                      io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteBoolNoTag(value, output);
-}
-inline void WireFormatLite::WriteEnum(int field_number, int value,
-                                      io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_VARINT, output);
-  WriteEnumNoTag(value, output);
-}
-
-inline void WireFormatLite::WriteString(int field_number, const string& value,
-                                        io::CodedOutputStream* output) {
-  // String is for UTF-8 text only
-  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  output->WriteVarint32(value.size());
-  output->WriteString(value);
-}
-inline void WireFormatLite::WriteBytes(int field_number, const string& value,
-                                       io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  output->WriteVarint32(value.size());
-  output->WriteString(value);
-}
-
-
-inline void WireFormatLite::WriteGroup(int field_number,
-                                       const MessageLite& value,
-                                       io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_START_GROUP, output);
-  value.SerializeWithCachedSizes(output);
-  WriteTag(field_number, WIRETYPE_END_GROUP, output);
-}
-inline void WireFormatLite::WriteMessage(int field_number,
-                                         const MessageLite& value,
-                                         io::CodedOutputStream* output) {
-  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  output->WriteVarint32(value.GetCachedSize());
-  value.SerializeWithCachedSizes(output);
 }
 
 template<typename MessageType>

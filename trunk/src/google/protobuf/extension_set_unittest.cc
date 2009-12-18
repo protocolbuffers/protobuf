@@ -35,10 +35,15 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
@@ -476,6 +481,160 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
+
+TEST(ExtensionSetTest, DynamicExtensions) {
+  // Test adding a dynamic extension to a compiled-in message object.
+
+  FileDescriptorProto dynamic_proto;
+  dynamic_proto.set_name("dynamic_extensions_test.proto");
+  dynamic_proto.add_dependency(
+      unittest::TestAllExtensions::descriptor()->file()->name());
+  dynamic_proto.set_package("dynamic_extensions");
+
+  // Copy the fields and nested types from TestDynamicExtensions into our new
+  // proto, converting the fields into extensions.
+  const Descriptor* template_descriptor =
+      unittest::TestDynamicExtensions::descriptor();
+  DescriptorProto template_descriptor_proto;
+  template_descriptor->CopyTo(&template_descriptor_proto);
+  dynamic_proto.mutable_message_type()->MergeFrom(
+      template_descriptor_proto.nested_type());
+  dynamic_proto.mutable_enum_type()->MergeFrom(
+      template_descriptor_proto.enum_type());
+  dynamic_proto.mutable_extension()->MergeFrom(
+      template_descriptor_proto.field());
+
+  // For each extension that we added...
+  for (int i = 0; i < dynamic_proto.extension_size(); i++) {
+    // Set its extendee to TestAllExtensions.
+    FieldDescriptorProto* extension = dynamic_proto.mutable_extension(i);
+    extension->set_extendee(
+        unittest::TestAllExtensions::descriptor()->full_name());
+
+    // If the field refers to one of the types nested in TestDynamicExtensions,
+    // make it refer to the type in our dynamic proto instead.
+    string prefix = "." + template_descriptor->full_name() + ".";
+    if (extension->has_type_name()) {
+      string* type_name = extension->mutable_type_name();
+      if (HasPrefixString(*type_name, prefix)) {
+        type_name->replace(0, prefix.size(), ".dynamic_extensions.");
+      }
+    }
+  }
+
+  // Now build the file, using the generated pool as an underlay.
+  DescriptorPool dynamic_pool(DescriptorPool::generated_pool());
+  const FileDescriptor* file = dynamic_pool.BuildFile(dynamic_proto);
+  ASSERT_TRUE(file != NULL);
+  DynamicMessageFactory dynamic_factory(&dynamic_pool);
+  dynamic_factory.SetDelegateToGeneratedFactory(true);
+
+  // Construct a message that we can parse with the extensions we defined.
+  // Since the extensions were based off of the fields of TestDynamicExtensions,
+  // we can use that message to create this test message.
+  string data;
+  {
+    unittest::TestDynamicExtensions message;
+    message.set_scalar_extension(123);
+    message.set_enum_extension(unittest::FOREIGN_BAR);
+    message.set_dynamic_enum_extension(
+        unittest::TestDynamicExtensions::DYNAMIC_BAZ);
+    message.mutable_message_extension()->set_c(456);
+    message.mutable_dynamic_message_extension()->set_dynamic_field(789);
+    message.add_repeated_extension("foo");
+    message.add_repeated_extension("bar");
+    message.add_packed_extension(12);
+    message.add_packed_extension(-34);
+    message.add_packed_extension(56);
+    message.add_packed_extension(-78);
+
+    // Also add some unknown fields.
+
+    // An unknown enum value (for a known field).
+    message.mutable_unknown_fields()->AddVarint(
+      unittest::TestDynamicExtensions::kDynamicEnumExtensionFieldNumber,
+      12345);
+    // A regular unknown field.
+    message.mutable_unknown_fields()->AddLengthDelimited(54321, "unknown");
+
+    message.SerializeToString(&data);
+  }
+
+  // Now we can parse this using our dynamic extension definitions...
+  unittest::TestAllExtensions message;
+  {
+    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::CodedInputStream input(&raw_input);
+    input.SetExtensionRegistry(&dynamic_pool, &dynamic_factory);
+    ASSERT_TRUE(message.ParseFromCodedStream(&input));
+    ASSERT_TRUE(input.ConsumedEntireMessage());
+  }
+
+  // Can we print it?
+  EXPECT_EQ(
+    "[dynamic_extensions.scalar_extension]: 123\n"
+    "[dynamic_extensions.enum_extension]: FOREIGN_BAR\n"
+    "[dynamic_extensions.dynamic_enum_extension]: DYNAMIC_BAZ\n"
+    "[dynamic_extensions.message_extension] {\n"
+    "  c: 456\n"
+    "}\n"
+    "[dynamic_extensions.dynamic_message_extension] {\n"
+    "  dynamic_field: 789\n"
+    "}\n"
+    "[dynamic_extensions.repeated_extension]: \"foo\"\n"
+    "[dynamic_extensions.repeated_extension]: \"bar\"\n"
+    "[dynamic_extensions.packed_extension]: 12\n"
+    "[dynamic_extensions.packed_extension]: -34\n"
+    "[dynamic_extensions.packed_extension]: 56\n"
+    "[dynamic_extensions.packed_extension]: -78\n"
+    "2002: 12345\n"
+    "54321: \"unknown\"\n",
+    message.DebugString());
+
+  // Can we serialize it?
+  // (Don't use EXPECT_EQ because we don't want to dump raw binary data to the
+  // terminal on failure.)
+  EXPECT_TRUE(message.SerializeAsString() == data);
+
+  // What if we parse using the reflection-based parser?
+  {
+    unittest::TestAllExtensions message2;
+    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::CodedInputStream input(&raw_input);
+    input.SetExtensionRegistry(&dynamic_pool, &dynamic_factory);
+    ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &message2));
+    ASSERT_TRUE(input.ConsumedEntireMessage());
+    EXPECT_EQ(message.DebugString(), message2.DebugString());
+  }
+
+  // Are the embedded generated types actually using the generated objects?
+  {
+    const FieldDescriptor* message_extension =
+        file->FindExtensionByName("message_extension");
+    ASSERT_TRUE(message_extension != NULL);
+    const Message& sub_message =
+        message.GetReflection()->GetMessage(message, message_extension);
+    const unittest::ForeignMessage* typed_sub_message =
+        dynamic_cast<const unittest::ForeignMessage*>(&sub_message);
+    ASSERT_TRUE(typed_sub_message != NULL);
+    EXPECT_EQ(456, typed_sub_message->c());
+  }
+
+  // What does GetMessage() return for the embedded dynamic type if it isn't
+  // present?
+  {
+    const FieldDescriptor* dynamic_message_extension =
+        file->FindExtensionByName("dynamic_message_extension");
+    ASSERT_TRUE(dynamic_message_extension != NULL);
+    const Message& parent = unittest::TestAllExtensions::default_instance();
+    const Message& sub_message =
+        parent.GetReflection()->GetMessage(parent, dynamic_message_extension,
+                                           &dynamic_factory);
+    const Message* prototype =
+        dynamic_factory.GetPrototype(dynamic_message_extension->message_type());
+    EXPECT_EQ(prototype, &sub_message);
+  }
+}
 
 }  // namespace
 }  // namespace internal

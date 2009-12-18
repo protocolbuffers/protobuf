@@ -103,6 +103,13 @@ class LIBPROTOC_EXPORT OutputDirectory {
   // contain "." or ".." components.
   virtual io::ZeroCopyOutputStream* Open(const string& filename) = 0;
 
+  // Creates a ZeroCopyOutputStream which will insert code into the given file
+  // at the given insertion point.  See plugin.proto for more information on
+  // insertion points.  The default implementation assert-fails -- it exists
+  // only for backwards-compatibility.
+  virtual io::ZeroCopyOutputStream* OpenForInsert(
+      const string& filename, const string& insertion_point);
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OutputDirectory);
 };
@@ -114,7 +121,7 @@ class LIBPROTOC_EXPORT OutputDirectory {
 // parses to the pairs:
 //   ("foo", "bar"), ("baz", ""), ("qux", "corge")
 extern void ParseGeneratorParameter(const string&,
-				    vector<pair<string, string> >*);
+            vector<pair<string, string> >*);
 
 }  // namespace compiler
 }  // namespace protobuf

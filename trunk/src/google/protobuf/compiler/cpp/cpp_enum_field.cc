@@ -114,7 +114,9 @@ void EnumFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
     "int value;\n"
-    "DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));\n"
+    "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
+    "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
+    "       input, &value)));\n"
     "if ($type$_IsValid(value)) {\n"
     "  set_$name$(static_cast< $type$ >(value));\n");
   if (HasUnknownFields(descriptor_->file())) {
@@ -170,24 +172,17 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedField<int>& $name$() const$deprecation$;\n"
-    "inline ::google::protobuf::RepeatedField<int>* mutable_$name$()$deprecation$;\n"
     "inline $type$ $name$(int index) const$deprecation$;\n"
     "inline void set_$name$(int index, $type$ value)$deprecation$;\n"
     "inline void add_$name$($type$ value)$deprecation$;\n");
+  printer->Print(variables_,
+    "inline const ::google::protobuf::RepeatedField<int>& $name$() const$deprecation$;\n"
+    "inline ::google::protobuf::RepeatedField<int>* mutable_$name$()$deprecation$;\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedField<int>&\n"
-    "$classname$::$name$() const {\n"
-    "  return $name$_;\n"
-    "}\n"
-    "inline ::google::protobuf::RepeatedField<int>*\n"
-    "$classname$::mutable_$name$() {\n"
-    "  return &$name$_;\n"
-    "}\n"
     "inline $type$ $classname$::$name$(int index) const {\n"
     "  return static_cast< $type$ >($name$_.Get(index));\n"
     "}\n"
@@ -198,6 +193,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "inline void $classname$::add_$name$($type$ value) {\n"
     "  GOOGLE_DCHECK($type$_IsValid(value));\n"
     "  $name$_.Add(value);\n"
+    "}\n");
+  printer->Print(variables_,
+    "inline const ::google::protobuf::RepeatedField<int>&\n"
+    "$classname$::$name$() const {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "inline ::google::protobuf::RepeatedField<int>*\n"
+    "$classname$::mutable_$name$() {\n"
+    "  return &$name$_;\n"
     "}\n");
 }
 
@@ -223,7 +227,33 @@ GenerateConstructorCode(io::Printer* printer) const {
 
 void RepeatedEnumFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
+  // Don't use ReadRepeatedPrimitive here so that the enum can be validated.
+  printer->Print(variables_,
+    "int value;\n"
+    "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
+    "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
+    "       input, &value)));\n"
+    "if ($type$_IsValid(value)) {\n"
+    "  add_$name$(static_cast< $type$ >(value));\n");
+  if (HasUnknownFields(descriptor_->file())) {
+    printer->Print(variables_,
+      "} else {\n"
+      "  mutable_unknown_fields()->AddVarint($number$, value);\n");
+  }
+  printer->Print("}\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
+  if (!descriptor_->options().packed()) {
+    // We use a non-inlined implementation in this case, since this path will
+    // rarely be executed.
+    printer->Print(variables_,
+      "DO_((::google::protobuf::internal::WireFormatLite::ReadPackedEnumNoInline(\n"
+      "       input,\n"
+      "       &$type$_IsValid,\n"
+      "       this->mutable_$name$())));\n");
+  } else {
     printer->Print(variables_,
       "::google::protobuf::uint32 length;\n"
       "DO_(input->ReadVarint32(&length));\n"
@@ -231,25 +261,14 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
           "input->PushLimit(length);\n"
       "while (input->BytesUntilLimit() > 0) {\n"
       "  int value;\n"
-      "  DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));\n"
+      "  DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
+      "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
+      "       input, &value)));\n"
       "  if ($type$_IsValid(value)) {\n"
       "    add_$name$(static_cast< $type$ >(value));\n"
       "  }\n"
       "}\n"
       "input->PopLimit(limit);\n");
-  } else {
-    printer->Print(variables_,
-      "int value;\n"
-      "DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));\n"
-      "if ($type$_IsValid(value)) {\n"
-      "  add_$name$(static_cast< $type$ >(value));\n");
-    if (HasUnknownFields(descriptor_->file())) {
-      printer->Print(variables_,
-        "} else {\n"
-        "  mutable_unknown_fields()->AddVarint($number$, value);\n");
-    }
-    printer->Print(variables_,
-      "}\n");
   }
 }
 

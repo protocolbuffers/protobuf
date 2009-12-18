@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/command_line_interface.h>
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -46,15 +48,19 @@
 #include <iostream>
 #include <ctype.h>
 
-#include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/plugin.pb.h>
+#include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/stubs/map-util.h>
 
 
 namespace google {
@@ -182,6 +188,8 @@ class CommandLineInterface::DiskOutputDirectory : public OutputDirectory {
 
   // implements OutputDirectory --------------------------------------
   io::ZeroCopyOutputStream* Open(const string& filename);
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const string& filename, const string& insertion_point);
 
  private:
   string root_;
@@ -209,9 +217,43 @@ class CommandLineInterface::ErrorReportingFileOutput
 
  private:
   scoped_ptr<io::FileOutputStream> file_stream_;
-  int file_descriptor_;
   string filename_;
   DiskOutputDirectory* directory_;
+};
+
+// Kind of like ErrorReportingFileOutput, but used when inserting
+// (OutputDirectory::OpenForInsert()).  In this case, we are writing to a
+// temporary file, since we must copy data from the original.  We copy the
+// data up to the insertion point in the constructor, and the remainder in the
+// destructor.  We then replace the original file with the temporary, also in
+// the destructor.
+class CommandLineInterface::InsertionOutputStream
+    : public io::ZeroCopyOutputStream {
+ public:
+  InsertionOutputStream(
+      const string& filename,
+      const string& temp_filename,
+      const string& insertion_point,
+      int original_file_descriptor,            // Takes ownership.
+      int temp_file_descriptor,                // Takes ownership.
+      DiskOutputDirectory* directory);         // Does not take ownership.
+  ~InsertionOutputStream();
+
+  // implements ZeroCopyOutputStream ---------------------------------
+  bool Next(void** data, int* size) { return temp_file_->Next(data, size); }
+  void BackUp(int count)            {        temp_file_->BackUp(count);    }
+  int64 ByteCount() const           { return temp_file_->ByteCount();      }
+
+ private:
+  scoped_ptr<io::FileInputStream> original_file_;
+  scoped_ptr<io::FileOutputStream> temp_file_;
+
+  string filename_;
+  string temp_filename_;
+  DiskOutputDirectory* directory_;
+
+  // The contents of the line containing the insertion point.
+  string magic_line_;
 };
 
 // -------------------------------------------------------------------
@@ -241,6 +283,8 @@ bool CommandLineInterface::DiskOutputDirectory::VerifyExistence() {
 
   return true;
 }
+
+// -------------------------------------------------------------------
 
 io::ZeroCopyOutputStream* CommandLineInterface::DiskOutputDirectory::Open(
     const string& filename) {
@@ -286,7 +330,6 @@ CommandLineInterface::ErrorReportingFileOutput::ErrorReportingFileOutput(
     const string& filename,
     DiskOutputDirectory* directory)
   : file_stream_(new io::FileOutputStream(file_descriptor)),
-    file_descriptor_(file_descriptor),
     filename_(filename),
     directory_(directory) {}
 
@@ -300,6 +343,201 @@ CommandLineInterface::ErrorReportingFileOutput::~ErrorReportingFileOutput() {
   // Close the file stream.
   if (!file_stream_->Close()) {
     cerr << filename_ << ": " << strerror(file_stream_->GetErrno()) << endl;
+    directory_->set_had_error(true);
+  }
+}
+
+// -------------------------------------------------------------------
+
+io::ZeroCopyOutputStream*
+CommandLineInterface::DiskOutputDirectory::OpenForInsert(
+    const string& filename, const string& insertion_point) {
+  string path = root_ + filename;
+
+  // Put the temp file in the same directory so that we can simply rename() it
+  // into place later.
+  string temp_path = path + ".protoc_temp";
+
+  // Open the original file.
+  int original_file;
+  do {
+    original_file = open(path.c_str(), O_RDONLY | O_BINARY);
+  } while (original_file < 0 && errno == EINTR);
+
+  if (original_file < 0) {
+    // Failed to open.
+    cerr << path << ": " << strerror(errno) << endl;
+    had_error_ = true;
+    // Return a dummy stream.
+    return new io::ArrayOutputStream(NULL, 0);
+  }
+
+  // Create the temp file.
+  int temp_file;
+  do {
+    temp_file =
+      open(temp_path.c_str(),
+           O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (temp_file < 0 && errno == EINTR);
+
+  if (temp_file < 0) {
+    // Failed to open.
+    cerr << temp_path << ": " << strerror(errno) << endl;
+    had_error_ = true;
+    close(original_file);
+    // Return a dummy stream.
+    return new io::ArrayOutputStream(NULL, 0);
+  }
+
+  return new InsertionOutputStream(
+      path, temp_path, insertion_point, original_file, temp_file, this);
+}
+
+namespace {
+
+// Helper for reading lines from a ZeroCopyInputStream.
+// TODO(kenton):  Put somewhere reusable?
+class LineReader {
+ public:
+  LineReader(io::ZeroCopyInputStream* input)
+      : input_(input), buffer_(NULL), size_(0) {}
+
+  ~LineReader() {
+    if (size_ > 0) {
+      input_->BackUp(size_);
+    }
+  }
+
+  bool ReadLine(string* line) {
+    line->clear();
+
+    while (true) {
+      for (int i = 0; i < size_; i++) {
+        if (buffer_[i] == '\n') {
+          line->append(buffer_, i + 1);
+          buffer_ += i + 1;
+          size_ -= i + 1;
+          return true;
+        }
+      }
+
+      line->append(buffer_, size_);
+
+      const void* void_buffer;
+      if (!input_->Next(&void_buffer, &size_)) {
+        buffer_ = NULL;
+        size_ = 0;
+        return false;
+      }
+
+      buffer_ = reinterpret_cast<const char*>(void_buffer);
+    }
+  }
+
+ private:
+  io::ZeroCopyInputStream* input_;
+  const char* buffer_;
+  int size_;
+};
+
+}  // namespace
+
+CommandLineInterface::InsertionOutputStream::InsertionOutputStream(
+    const string& filename,
+    const string& temp_filename,
+    const string& insertion_point,
+    int original_file_descriptor,
+    int temp_file_descriptor,
+    DiskOutputDirectory* directory)
+    : original_file_(new io::FileInputStream(original_file_descriptor)),
+      temp_file_(new io::FileOutputStream(temp_file_descriptor)),
+      filename_(filename),
+      temp_filename_(temp_filename),
+      directory_(directory) {
+  string magic_string = strings::Substitute(
+      "@@protoc_insertion_point($0)", insertion_point);
+
+  LineReader reader(original_file_.get());
+  io::Printer writer(temp_file_.get(), '$');
+  string line;
+
+  while (true) {
+    if (!reader.ReadLine(&line)) {
+      int error = temp_file_->GetErrno();
+      if (error == 0) {
+        cerr << filename << ": Insertion point not found: "
+             << insertion_point << endl;
+      } else {
+        cerr << filename << ": " << strerror(error) << endl;
+      }
+      original_file_->Close();
+      original_file_.reset();
+      // Will finish handling error in the destructor.
+      break;
+    }
+
+    if (line.find(magic_string) != string::npos) {
+      // Found the magic line.  Since we want to insert before it, save it for
+      // later.
+      magic_line_ = line;
+      break;
+    }
+
+    writer.PrintRaw(line);
+  }
+}
+
+CommandLineInterface::InsertionOutputStream::~InsertionOutputStream() {
+  // C-style error handling is teh best.
+  bool had_error = false;
+
+  if (original_file_ == NULL) {
+    // We had an error in the constructor.
+    had_error = true;
+  } else {
+    // Use CodedOutputStream for convenience, so we don't have to deal with
+    // copying buffers ourselves.
+    io::CodedOutputStream out(temp_file_.get());
+    out.WriteRaw(magic_line_.data(), magic_line_.size());
+
+    // Write the rest of the original file.
+    const void* buffer;
+    int size;
+    while (original_file_->Next(&buffer, &size)) {
+      out.WriteRaw(buffer, size);
+    }
+
+    // Close the original file.
+    if (!original_file_->Close()) {
+      cerr << filename_ << ": " << strerror(original_file_->GetErrno()) << endl;
+      had_error = true;
+    }
+  }
+
+  // Check if we had any errors while writing.
+  if (temp_file_->GetErrno() != 0) {
+    cerr << filename_ << ": " << strerror(temp_file_->GetErrno()) << endl;
+    had_error = true;
+  }
+
+  // Close the temp file.
+  if (!temp_file_->Close()) {
+    cerr << filename_ << ": " << strerror(temp_file_->GetErrno()) << endl;
+    had_error = true;
+  }
+
+  // If everything was successful, overwrite the original file with the temp
+  // file.
+  if (!had_error) {
+    if (rename(temp_filename_.c_str(), filename_.c_str()) < 0) {
+      cerr << filename_ << ": rename: " << strerror(errno) << endl;
+      had_error = true;
+    }
+  }
+
+  if (had_error) {
+    // We had some sort of error so let's try to delete the temp file.
+    remove(temp_filename_.c_str());
     directory_->set_had_error(true);
   }
 }
@@ -321,6 +559,10 @@ void CommandLineInterface::RegisterGenerator(const string& flag_name,
   info.generator = generator;
   info.help_text = help_text;
   generators_[flag_name] = info;
+}
+
+void CommandLineInterface::AllowPlugins(const string& exe_name_prefix) {
+  plugin_prefix_ = exe_name_prefix;
 }
 
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
@@ -346,7 +588,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   vector<const FileDescriptor*> parsed_files;
 
-  // Parse each file and generate output.
+  // Parse each file.
   for (int i = 0; i < input_files_.size(); i++) {
     // Import the file.
     const FileDescriptor* parsed_file = importer.Import(input_files_[i]);
@@ -359,13 +601,13 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
               "--disallow_services was used." << endl;
       return 1;
     }
+  }
 
-    if (mode_ == MODE_COMPILE) {
-      // Generate output files.
-      for (int i = 0; i < output_directives_.size(); i++) {
-        if (!GenerateOutput(parsed_file, output_directives_[i])) {
-          return 1;
-        }
+  // Generate output.
+  if (mode_ == MODE_COMPILE) {
+    for (int i = 0; i < output_directives_.size(); i++) {
+      if (!GenerateOutput(parsed_files, output_directives_[i])) {
+        return 1;
       }
     }
   }
@@ -686,10 +928,37 @@ bool CommandLineInterface::InterpretArgument(const string& name,
       return false;
     }
 
+  } else if (name == "--plugin") {
+    if (plugin_prefix_.empty()) {
+      cerr << "This compiler does not support plugins." << endl;
+      return false;
+    }
+
+    string name;
+    string path;
+
+    string::size_type equals_pos = value.find_first_of('=');
+    if (equals_pos == string::npos) {
+      // Use the basename of the file.
+      string::size_type slash_pos = value.find_last_of('/');
+      if (slash_pos == string::npos) {
+        name = value;
+      } else {
+        name = value.substr(slash_pos + 1);
+      }
+      path = value;
+    } else {
+      name = value.substr(0, equals_pos);
+      path = value.substr(equals_pos + 1);
+    }
+
+    plugins_[name] = path;
+
   } else {
     // Some other flag.  Look it up in the generators list.
-    GeneratorMap::const_iterator iter = generators_.find(name);
-    if (iter == generators_.end()) {
+    const GeneratorInfo* generator_info = FindOrNull(generators_, name);
+    if (generator_info == NULL &&
+        (plugin_prefix_.empty() || !HasSuffixString(name, "_out"))) {
       cerr << "Unknown flag: " << name << endl;
       return false;
     }
@@ -703,7 +972,11 @@ bool CommandLineInterface::InterpretArgument(const string& name,
 
     OutputDirective directive;
     directive.name = name;
-    directive.generator = iter->second.generator;
+    if (generator_info == NULL) {
+      directive.generator = NULL;
+    } else {
+      directive.generator = generator_info->generator;
+    }
 
     // Split value at ':' to separate the generator parameter from the
     // filename.  However, avoid doing this if the colon is part of a valid
@@ -755,6 +1028,17 @@ void CommandLineInterface::PrintHelpText() {
 "  --error_format=FORMAT       Set the format in which to print errors.\n"
 "                              FORMAT may be 'gcc' (the default) or 'msvs'\n"
 "                              (Microsoft Visual Studio format)." << endl;
+  if (!plugin_prefix_.empty()) {
+    cerr <<
+"  --plugin=EXECUTABLE         Specifies a plugin executable to use.\n"
+"                              Normally, protoc searches the PATH for\n"
+"                              plugins, but you may specify additional\n"
+"                              executables not in the path using this flag.\n"
+"                              Additionally, EXECUTABLE may be of the form\n"
+"                              NAME=PATH, in which case the given plugin name\n"
+"                              is mapped to the given executable even if\n"
+"                              the executable's own name differs." << endl;
+  }
 
   for (GeneratorMap::iterator iter = generators_.begin();
        iter != generators_.end(); ++iter) {
@@ -768,7 +1052,7 @@ void CommandLineInterface::PrintHelpText() {
 }
 
 bool CommandLineInterface::GenerateOutput(
-    const FileDescriptor* parsed_file,
+    const vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive) {
   // Create the output directory.
   DiskOutputDirectory output_directory(output_directive.output_location);
@@ -780,16 +1064,116 @@ bool CommandLineInterface::GenerateOutput(
 
   // Call the generator.
   string error;
-  if (!output_directive.generator->Generate(
-      parsed_file, output_directive.parameter, &output_directory, &error)) {
-    // Generator returned an error.
-    cerr << parsed_file->name() << ": " << output_directive.name << ": "
-         << error << endl;
-    return false;
+  if (output_directive.generator == NULL) {
+    // This is a plugin.
+    GOOGLE_CHECK(HasPrefixString(output_directive.name, "--") &&
+          HasSuffixString(output_directive.name, "_out"))
+        << "Bad name for plugin generator: " << output_directive.name;
+
+    // Strip the "--" and "_out" and add the plugin prefix.
+    string plugin_name = plugin_prefix_ + "gen-" +
+        output_directive.name.substr(2, output_directive.name.size() - 6);
+
+    if (!GeneratePluginOutput(parsed_files, plugin_name,
+                              output_directive.parameter,
+                              &output_directory, &error)) {
+      cerr << output_directive.name << ": " << error << endl;
+      return false;
+    }
+  } else {
+    // Regular generator.
+    for (int i = 0; i < parsed_files.size(); i++) {
+      if (!output_directive.generator->Generate(
+          parsed_files[i], output_directive.parameter,
+          &output_directory, &error)) {
+        // Generator returned an error.
+        cerr << output_directive.name << ": " << parsed_files[i]->name() << ": "
+             << error << endl;
+        return false;
+      }
+    }
   }
 
   // Check for write errors.
   if (output_directory.had_error()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::GeneratePluginOutput(
+    const vector<const FileDescriptor*>& parsed_files,
+    const string& plugin_name,
+    const string& parameter,
+    OutputDirectory* output_directory,
+    string* error) {
+  CodeGeneratorRequest request;
+  CodeGeneratorResponse response;
+
+  // Build the request.
+  if (!parameter.empty()) {
+    request.set_parameter(parameter);
+  }
+
+  set<const FileDescriptor*> already_seen;
+  for (int i = 0; i < parsed_files.size(); i++) {
+    request.add_file_to_generate(parsed_files[i]->name());
+    GetTransitiveDependencies(parsed_files[i], &already_seen,
+                              request.mutable_proto_file());
+  }
+
+  // Invoke the plugin.
+  Subprocess subprocess;
+
+  if (plugins_.count(plugin_name) > 0) {
+    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
+  } else {
+    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
+  }
+
+  string communicate_error;
+  if (!subprocess.Communicate(request, &response, &communicate_error)) {
+    *error = strings::Substitute("$0: $1", plugin_name, communicate_error);
+    return false;
+  }
+
+  // Write the files.  We do this even if there was a generator error in order
+  // to match the behavior of a compiled-in generator.
+  scoped_ptr<io::ZeroCopyOutputStream> current_output;
+  for (int i = 0; i < response.file_size(); i++) {
+    const CodeGeneratorResponse::File& output_file = response.file(i);
+
+    if (!output_file.insertion_point().empty()) {
+      // Open a file for insert.
+      // We reset current_output to NULL first so that the old file is closed
+      // before the new one is opened.
+      current_output.reset();
+      current_output.reset(output_directory->OpenForInsert(
+          output_file.name(), output_file.insertion_point()));
+    } else if (!output_file.name().empty()) {
+      // Starting a new file.  Open it.
+      // We reset current_output to NULL first so that the old file is closed
+      // before the new one is opened.
+      current_output.reset();
+      current_output.reset(output_directory->Open(output_file.name()));
+    } else if (current_output == NULL) {
+      *error = strings::Substitute(
+        "$0: First file chunk returned by plugin did not specify a file name.",
+        plugin_name);
+      return false;
+    }
+
+    // Use CodedOutputStream for convenience; otherwise we'd need to provide
+    // our own buffer-copying loop.
+    io::CodedOutputStream writer(current_output.get());
+    writer.WriteString(output_file.content());
+  }
+
+  // Check for errors.
+  if (!response.error().empty()) {
+    // Generator returned an error.
+    *error = response.error();
     return false;
   }
 
@@ -862,22 +1246,16 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 bool CommandLineInterface::WriteDescriptorSet(
     const vector<const FileDescriptor*> parsed_files) {
   FileDescriptorSet file_set;
-  set<const FileDescriptor*> already_added;
-  vector<const FileDescriptor*> to_add(parsed_files);
 
-  while (!to_add.empty()) {
-    const FileDescriptor* file = to_add.back();
-    to_add.pop_back();
-    if (already_added.insert(file).second) {
-      // This file was not already in the set.
-      file->CopyTo(file_set.add_file());
-
-      if (imports_in_descriptor_set_) {
-        // Add all of this file's dependencies.
-        for (int i = 0; i < file->dependency_count(); i++) {
-          to_add.push_back(file->dependency(i));
-        }
-      }
+  if (imports_in_descriptor_set_) {
+    set<const FileDescriptor*> already_seen;
+    for (int i = 0; i < parsed_files.size(); i++) {
+      GetTransitiveDependencies(
+          parsed_files[i], &already_seen, file_set.mutable_file());
+    }
+  } else {
+    for (int i = 0; i < parsed_files.size(); i++) {
+      parsed_files[i]->CopyTo(file_set.add_file());
     }
   }
 
@@ -904,6 +1282,24 @@ bool CommandLineInterface::WriteDescriptorSet(
   }
 
   return true;
+}
+
+void CommandLineInterface::GetTransitiveDependencies(
+    const FileDescriptor* file,
+    set<const FileDescriptor*>* already_seen,
+    RepeatedPtrField<FileDescriptorProto>* output) {
+  if (!already_seen->insert(file).second) {
+    // Already saw this file.  Skip.
+    return;
+  }
+
+  // Add all dependencies.
+  for (int i = 0; i < file->dependency_count(); i++) {
+    GetTransitiveDependencies(file->dependency(i), already_seen, output);
+  }
+
+  // Add this file.
+  file->CopyTo(output->Add());
 }
 
 

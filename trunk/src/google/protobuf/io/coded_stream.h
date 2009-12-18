@@ -114,10 +114,15 @@
 #include <sys/param.h>
 #endif  // !_MSC_VER
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/common.h>          // for GOOGLE_PREDICT_TRUE macro
 
 namespace google {
 
 namespace protobuf {
+
+class DescriptorPool;
+class MessageFactory;
+
 namespace io {
 
 // Defined in this file.
@@ -166,6 +171,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // types of data not covered by the CodedInputStream interface.
   bool GetDirectBufferPointer(const void** data, int* size);
 
+  // Like GetDirectBufferPointer, but this method is inlined, and does not
+  // attempt to Refresh() if the buffer is currently empty.
+  inline void GetDirectBufferPointerInline(const void** data,
+                                           int* size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
@@ -177,12 +187,25 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // could claim that a string is going to be MAX_INT bytes long in order to
   // crash the server because it can't allocate this much space at once.
   bool ReadString(string* buffer, int size);
+  // Like the above, with inlined optimizations. This should only be used
+  // by the protobuf implementation.
+  inline bool InternalReadStringInline(string* buffer,
+                                       int size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
 
 
   // Read a 32-bit little-endian integer.
   bool ReadLittleEndian32(uint32* value);
   // Read a 64-bit little-endian integer.
   bool ReadLittleEndian64(uint64* value);
+
+  // These methods read from an externally provided buffer. The caller is
+  // responsible for ensuring that the buffer has sufficient space.
+  // Read a 32-bit little-endian integer.
+  static const uint8* ReadLittleEndian32FromArray(const uint8* buffer,
+                                                   uint32* value);
+  // Read a 64-bit little-endian integer.
+  static const uint8* ReadLittleEndian64FromArray(const uint8* buffer,
+                                                   uint64* value);
 
   // Read an unsigned integer with Varint encoding, truncating to 32 bits.
   // Reading a 32-bit value is equivalent to reading a 64-bit one and casting
@@ -207,6 +230,17 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Always inline because this collapses to a small number of instructions
   // when given a constant parameter, but GCC doesn't want to inline by default.
   bool ExpectTag(uint32 expected) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+
+  // Like above, except this reads from the specified buffer. The caller is
+  // responsible for ensuring that the buffer is large enough to read a varint
+  // of the expected size. For best performance, use a compile-time constant as
+  // the expected tag parameter.
+  //
+  // Returns a pointer beyond the expected tag if it was found, or NULL if it
+  // was not.
+  static const uint8* ExpectTagFromArray(
+      const uint8* buffer,
+      uint32 expected) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
 
   // Usually returns true if no more bytes can be read.  Always returns false
   // if more bytes can be read.  If ExpectAtEnd() returns true, a subsequent
@@ -318,12 +352,90 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Decrements the recursion depth.
   void DecrementRecursionDepth();
 
+  // Extension Registry ----------------------------------------------
+  // ADVANCED USAGE:  99.9% of people can ignore this section.
+  //
+  // By default, when parsing extensions, the parser looks for extension
+  // definitions in the pool which owns the outer message's Descriptor.
+  // However, you may call SetExtensionRegistry() to provide an alternative
+  // pool instead.  This makes it possible, for example, to parse a message
+  // using a generated class, but represent some extensions using
+  // DynamicMessage.
+
+  // Set the pool used to look up extensions.  Most users do not need to call
+  // this as the correct pool will be chosen automatically.
+  //
+  // WARNING:  It is very easy to misuse this.  Carefully read the requirements
+  //   below.  Do not use this unless you are sure you need it.  Almost no one
+  //   does.
+  //
+  // Let's say you are parsing a message into message object m, and you want
+  // to take advantage of SetExtensionRegistry().  You must follow these
+  // requirements:
+  //
+  // The given DescriptorPool must contain m->GetDescriptor().  It is not
+  // sufficient for it to simply contain a descriptor that has the same name
+  // and content -- it must be the *exact object*.  In other words:
+  //   assert(pool->FindMessageTypeByName(m->GetDescriptor()->full_name()) ==
+  //          m->GetDescriptor());
+  // There are two ways to satisfy this requirement:
+  // 1) Use m->GetDescriptor()->pool() as the pool.  This is generally useless
+  //    because this is the pool that would be used anyway if you didn't call
+  //    SetExtensionRegistry() at all.
+  // 2) Use a DescriptorPool which has m->GetDescriptor()->pool() as an
+  //    "underlay".  Read the documentation for DescriptorPool for more
+  //    information about underlays.
+  //
+  // You must also provide a MessageFactory.  This factory will be used to
+  // construct Message objects representing extensions.  The factory's
+  // GetPrototype() MUST return non-NULL for any Descriptor which can be found
+  // through the provided pool.
+  //
+  // If the provided factory might return instances of protocol-compiler-
+  // generated (i.e. compiled-in) types, or if the outer message object m is
+  // a generated type, then the given factory MUST have this property:  If
+  // GetPrototype() is given a Descriptor which resides in
+  // DescriptorPool::generated_pool(), the factory MUST return the same
+  // prototype which MessageFactory::generated_factory() would return.  That
+  // is, given a descriptor for a generated type, the factory must return an
+  // instance of the generated class (NOT DynamicMessage).  However, when
+  // given a descriptor for a type that is NOT in generated_pool, the factory
+  // is free to return any implementation.
+  //
+  // The reason for this requirement is that generated sub-objects may be
+  // accessed via the standard (non-reflection) extension accessor methods,
+  // and these methods will down-cast the object to the generated class type.
+  // If the object is not actually of that type, the results would be undefined.
+  // On the other hand, if an extension is not compiled in, then there is no
+  // way the code could end up accessing it via the standard accessors -- the
+  // only way to access the extension is via reflection.  When using reflection,
+  // DynamicMessage and generated messages are indistinguishable, so it's fine
+  // if these objects are represented using DynamicMessage.
+  //
+  // Using DynamicMessageFactory on which you have called
+  // SetDelegateToGeneratedFactory(true) should be sufficient to satisfy the
+  // above requirement.
+  //
+  // If either pool or factory is NULL, both must be NULL.
+  //
+  // Note that this feature is ignored when parsing "lite" messages as they do
+  // not have descriptors.
+  void SetExtensionRegistry(DescriptorPool* pool, MessageFactory* factory);
+
+  // Get the DescriptorPool set via SetExtensionRegistry(), or NULL if no pool
+  // has been provided.
+  const DescriptorPool* GetExtensionPool();
+
+  // Get the MessageFactory set via SetExtensionRegistry(), or NULL if no
+  // factory has been provided.
+  MessageFactory* GetExtensionFactory();
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedInputStream);
 
   ZeroCopyInputStream* input_;
   const uint8* buffer_;
-  int buffer_size_;       // size of current buffer
+  const uint8* buffer_end_;     // pointer to the end of the buffer.
   int total_bytes_read_;  // total bytes read from input_, including
                           // the current buffer
 
@@ -334,7 +446,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // LastTagWas() stuff.
   uint32 last_tag_;         // result of last ReadTag().
 
-  // This is set true by ReadVarint32Fallback() if it is called when exactly
+  // This is set true by ReadTag{Fallback/Slow}() if it is called when exactly
   // at EOF, or by ExpectAtEnd() when it returns true.  This happens when we
   // reach the end of a message and attempt to read another tag.
   bool legitimate_message_end_;
@@ -365,6 +477,12 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Recursion depth limit, set by SetRecursionLimit().
   int recursion_limit_;
 
+  // See SetExtensionRegistry().
+  const DescriptorPool* extension_pool_;
+  MessageFactory* extension_factory_;
+
+  // Private member functions.
+
   // Advance the buffer by a given number of bytes.
   void Advance(int amount);
 
@@ -379,10 +497,36 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   void PrintTotalBytesLimitError();
 
   // Called when the buffer runs out to request more data.  Implies an
-  // Advance(buffer_size_).
+  // Advance(BufferSize()).
   bool Refresh();
 
+  // When parsing varints, we optimize for the common case of small values, and
+  // then optimize for the case when the varint fits within the current buffer
+  // piece. The Fallback method is used when we can't use the one-byte
+  // optimization. The Slow method is yet another fallback when the buffer is
+  // not large enough. Making the slow path out-of-line speeds up the common
+  // case by 10-15%. The slow path is fairly uncommon: it only triggers when a
+  // message crosses multiple buffers.
   bool ReadVarint32Fallback(uint32* value);
+  bool ReadVarint64Fallback(uint64* value);
+  bool ReadVarint32Slow(uint32* value);
+  bool ReadVarint64Slow(uint64* value);
+  bool ReadLittleEndian32Fallback(uint32* value);
+  bool ReadLittleEndian64Fallback(uint64* value);
+  // Fallback/slow methods for reading tags. These do not update last_tag_,
+  // but will set legitimate_message_end_ if we are at the end of the input
+  // stream.
+  uint32 ReadTagFallback();
+  uint32 ReadTagSlow();
+  bool ReadStringFallback(string* buffer, int size);
+
+  // Return the size of the buffer.
+  int BufferSize() const;
+
+  static const int kDefaultTotalBytesLimit = 64 << 20;  // 64MB
+
+  static const int kDefaultTotalBytesWarningThreshold = 32 << 20;  // 32MB
+  static const int kDefaultRecursionLimit = 64;
 };
 
 // Class which encodes and writes binary data which is composed of varint-
@@ -568,7 +712,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
 // methods optimize for that case.
 
 inline bool CodedInputStream::ReadVarint32(uint32* value) {
-  if (buffer_size_ != 0 && *buffer_ < 0x80) {
+  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
     *value = *buffer_;
     Advance(1);
     return true;
@@ -577,20 +721,93 @@ inline bool CodedInputStream::ReadVarint32(uint32* value) {
   }
 }
 
+inline bool CodedInputStream::ReadVarint64(uint64* value) {
+  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
+    *value = *buffer_;
+    Advance(1);
+    return true;
+  } else {
+    return ReadVarint64Fallback(value);
+  }
+}
+
+// static
+inline const uint8* CodedInputStream::ReadLittleEndian32FromArray(
+    const uint8* buffer,
+    uint32* value) {
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  memcpy(value, buffer, sizeof(*value));
+  return buffer + sizeof(*value);
+#else
+  *value = (static_cast<uint32>(buffer[0])      ) |
+           (static_cast<uint32>(buffer[1]) <<  8) |
+           (static_cast<uint32>(buffer[2]) << 16) |
+           (static_cast<uint32>(buffer[3]) << 24);
+  return buffer + sizeof(*value);
+#endif
+}
+// static
+inline const uint8* CodedInputStream::ReadLittleEndian64FromArray(
+    const uint8* buffer,
+    uint64* value) {
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  memcpy(value, buffer, sizeof(*value));
+  return buffer + sizeof(*value);
+#else
+  uint32 part0 = (static_cast<uint32>(buffer[0])      ) |
+                 (static_cast<uint32>(buffer[1]) <<  8) |
+                 (static_cast<uint32>(buffer[2]) << 16) |
+                 (static_cast<uint32>(buffer[3]) << 24);
+  uint32 part1 = (static_cast<uint32>(buffer[4])      ) |
+                 (static_cast<uint32>(buffer[5]) <<  8) |
+                 (static_cast<uint32>(buffer[6]) << 16) |
+                 (static_cast<uint32>(buffer[7]) << 24);
+  *value = static_cast<uint64>(part0) |
+          (static_cast<uint64>(part1) << 32);
+  return buffer + sizeof(*value);
+#endif
+}
+
+inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  if (GOOGLE_PREDICT_TRUE(BufferSize() >= sizeof(*value))) {
+    memcpy(value, buffer_, sizeof(*value));
+    Advance(sizeof(*value));
+    return true;
+  } else {
+    return ReadLittleEndian32Fallback(value);
+  }
+#else
+  return ReadLittleEndian32Fallback(value);
+#endif
+}
+
+inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+  if (GOOGLE_PREDICT_TRUE(BufferSize() >= sizeof(*value))) {
+    memcpy(value, buffer_, sizeof(*value));
+    Advance(sizeof(*value));
+    return true;
+  } else {
+    return ReadLittleEndian64Fallback(value);
+  }
+#else
+  return ReadLittleEndian64Fallback(value);
+#endif
+}
+
 inline uint32 CodedInputStream::ReadTag() {
-  if (buffer_size_ != 0 && buffer_[0] < 0x80) {
+  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] < 0x80) {
     last_tag_ = buffer_[0];
     Advance(1);
     return last_tag_;
-  } else if (buffer_size_ >= 2 && buffer_[1] < 0x80) {
-    last_tag_ = (buffer_[0] & 0x7f) + (buffer_[1] << 7);
-    Advance(2);
-    return last_tag_;
-  } else if (ReadVarint32Fallback(&last_tag_)) {
-    return last_tag_;
   } else {
-    last_tag_ = 0;
-    return 0;
+    last_tag_ = ReadTagFallback();
+    return last_tag_;
   }
 }
 
@@ -604,14 +821,14 @@ inline bool CodedInputStream::ConsumedEntireMessage() {
 
 inline bool CodedInputStream::ExpectTag(uint32 expected) {
   if (expected < (1 << 7)) {
-    if (buffer_size_ != 0 && buffer_[0] == expected) {
+    if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] == expected) {
       Advance(1);
       return true;
     } else {
       return false;
     }
   } else if (expected < (1 << 14)) {
-    if (buffer_size_ >= 2 &&
+    if (GOOGLE_PREDICT_TRUE(BufferSize() >= 2) &&
         buffer_[0] == static_cast<uint8>(expected | 0x80) &&
         buffer_[1] == static_cast<uint8>(expected >> 7)) {
       Advance(2);
@@ -625,11 +842,32 @@ inline bool CodedInputStream::ExpectTag(uint32 expected) {
   }
 }
 
+inline const uint8* CodedInputStream::ExpectTagFromArray(
+    const uint8* buffer, uint32 expected) {
+  if (expected < (1 << 7)) {
+    if (buffer[0] == expected) {
+      return buffer + 1;
+    }
+  } else if (expected < (1 << 14)) {
+    if (buffer[0] == static_cast<uint8>(expected | 0x80) &&
+        buffer[1] == static_cast<uint8>(expected >> 7)) {
+      return buffer + 2;
+    }
+  }
+  return NULL;
+}
+
+inline void CodedInputStream::GetDirectBufferPointerInline(const void** data,
+                                                           int* size) {
+  *data = buffer_;
+  *size = buffer_end_ - buffer_;
+}
+
 inline bool CodedInputStream::ExpectAtEnd() {
   // If we are at a limit we know no more bytes can be read.  Otherwise, it's
   // hard to say without calling Refresh(), and we'd rather not do that.
 
-  if (buffer_size_ == 0 && buffer_size_after_limit_ != 0) {
+  if (buffer_ == buffer_end_ && buffer_size_after_limit_ != 0) {
     last_tag_ = 0;                   // Pretend we called ReadTag()...
     legitimate_message_end_ = true;  // ... and it hit EOF.
     return true;
@@ -677,11 +915,11 @@ inline uint8* CodedOutputStream::WriteVarint32SignExtendedToArray(
 
 inline uint8* CodedOutputStream::WriteLittleEndian32ToArray(uint32 value,
                                                             uint8* target) {
-#if !defined(PROTOBUF_TEST_NOT_LITTLE_ENDIAN) && \
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
     defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
   memcpy(target, &value, sizeof(value));
 #else
-  target[0] = static_cast<uint8>(value      );
+  target[0] = static_cast<uint8>(value);
   target[1] = static_cast<uint8>(value >>  8);
   target[2] = static_cast<uint8>(value >> 16);
   target[3] = static_cast<uint8>(value >> 24);
@@ -691,18 +929,18 @@ inline uint8* CodedOutputStream::WriteLittleEndian32ToArray(uint32 value,
 
 inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
                                                             uint8* target) {
-#if !defined(PROTOBUF_TEST_NOT_LITTLE_ENDIAN) && \
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
     defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
   memcpy(target, &value, sizeof(value));
 #else
   uint32 part0 = static_cast<uint32>(value);
   uint32 part1 = static_cast<uint32>(value >> 32);
 
-  target[0] = static_cast<uint8>(part0      );
+  target[0] = static_cast<uint8>(part0);
   target[1] = static_cast<uint8>(part0 >>  8);
   target[2] = static_cast<uint8>(part0 >> 16);
   target[3] = static_cast<uint8>(part0 >> 24);
-  target[4] = static_cast<uint8>(part1      );
+  target[4] = static_cast<uint8>(part1);
   target[5] = static_cast<uint8>(part1 >>  8);
   target[6] = static_cast<uint8>(part1 >> 16);
   target[7] = static_cast<uint8>(part1 >> 24);
@@ -759,7 +997,6 @@ inline int CodedOutputStream::ByteCount() const {
 
 inline void CodedInputStream::Advance(int amount) {
   buffer_ += amount;
-  buffer_size_ -= amount;
 }
 
 inline void CodedOutputStream::Advance(int amount) {
@@ -778,6 +1015,72 @@ inline bool CodedInputStream::IncrementRecursionDepth() {
 
 inline void CodedInputStream::DecrementRecursionDepth() {
   if (recursion_depth_ > 0) --recursion_depth_;
+}
+
+inline void CodedInputStream::SetExtensionRegistry(DescriptorPool* pool,
+                                                   MessageFactory* factory) {
+  extension_pool_ = pool;
+  extension_factory_ = factory;
+}
+
+inline const DescriptorPool* CodedInputStream::GetExtensionPool() {
+  return extension_pool_;
+}
+
+inline MessageFactory* CodedInputStream::GetExtensionFactory() {
+  return extension_factory_;
+}
+
+inline int CodedInputStream::BufferSize() const {
+  return buffer_end_ - buffer_;
+}
+
+inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
+  : input_(input),
+    buffer_(NULL),
+    buffer_end_(NULL),
+    total_bytes_read_(0),
+    overflow_bytes_(0),
+    last_tag_(0),
+    legitimate_message_end_(false),
+    aliasing_enabled_(false),
+    current_limit_(INT_MAX),
+    buffer_size_after_limit_(0),
+    total_bytes_limit_(kDefaultTotalBytesLimit),
+    total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
+    recursion_depth_(0),
+    recursion_limit_(kDefaultRecursionLimit),
+    extension_pool_(NULL),
+    extension_factory_(NULL) {
+  // Eagerly Refresh() so buffer space is immediately available.
+  Refresh();
+}
+
+inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
+  : input_(NULL),
+    buffer_(buffer),
+    buffer_end_(buffer + size),
+    total_bytes_read_(size),
+    overflow_bytes_(0),
+    last_tag_(0),
+    legitimate_message_end_(false),
+    aliasing_enabled_(false),
+    current_limit_(size),
+    buffer_size_after_limit_(0),
+    total_bytes_limit_(kDefaultTotalBytesLimit),
+    total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
+    recursion_depth_(0),
+    recursion_limit_(kDefaultRecursionLimit),
+    extension_pool_(NULL),
+    extension_factory_(NULL) {
+  // Note that setting current_limit_ == size is important to prevent some
+  // code paths from trying to access input_ and segfaulting.
+}
+
+inline CodedInputStream::~CodedInputStream() {
+  if (input_ != NULL) {
+    BackUpInputToCurrentPosition();
+  }
 }
 
 }  // namespace io

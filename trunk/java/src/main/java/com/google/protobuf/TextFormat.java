@@ -426,7 +426,7 @@ public final class TextFormat {
       Pattern.compile("(\\s|(#.*$))++", Pattern.MULTILINE);
     private static final Pattern TOKEN = Pattern.compile(
       "[a-zA-Z_][0-9a-zA-Z_+-]*+|" +                // an identifier
-      "[0-9+-][0-9a-zA-Z_.+-]*+|" +                 // a number
+      "[.]?[0-9+-][0-9a-zA-Z_.+-]*+|" +             // a number
       "\"([^\"\n\\\\]|\\\\.)*+(\"|\\\\?$)|" +       // a double-quoted string
       "\'([^\"\n\\\\]|\\\\.)*+(\'|\\\\?$)",         // a single-quoted string
       Pattern.MULTILINE);

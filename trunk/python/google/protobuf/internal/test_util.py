@@ -31,14 +31,13 @@
 """Utilities for Python proto2 tests.
 
 This is intentionally modeled on C++ code in
-//net/proto2/internal/test_util.*.
+//google/protobuf/test_util.*.
 """
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import os.path
 
-import unittest
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 
@@ -353,198 +352,198 @@ def ExpectAllFieldsAndExtensionsInOrder(serialized):
     raise ValueError('Expected %r, found %r' % (expected, serialized))
 
 
-class GoldenMessageTestCase(unittest.TestCase):
-  """This adds methods to TestCase useful for verifying our Golden Message."""
+def ExpectAllFieldsSet(test_case, message):
+  """Check all fields for correct values have after Set*Fields() is called."""
+  test_case.assertTrue(message.HasField('optional_int32'))
+  test_case.assertTrue(message.HasField('optional_int64'))
+  test_case.assertTrue(message.HasField('optional_uint32'))
+  test_case.assertTrue(message.HasField('optional_uint64'))
+  test_case.assertTrue(message.HasField('optional_sint32'))
+  test_case.assertTrue(message.HasField('optional_sint64'))
+  test_case.assertTrue(message.HasField('optional_fixed32'))
+  test_case.assertTrue(message.HasField('optional_fixed64'))
+  test_case.assertTrue(message.HasField('optional_sfixed32'))
+  test_case.assertTrue(message.HasField('optional_sfixed64'))
+  test_case.assertTrue(message.HasField('optional_float'))
+  test_case.assertTrue(message.HasField('optional_double'))
+  test_case.assertTrue(message.HasField('optional_bool'))
+  test_case.assertTrue(message.HasField('optional_string'))
+  test_case.assertTrue(message.HasField('optional_bytes'))
 
-  def ExpectAllFieldsSet(self, message):
-    """Check all fields for correct values have after Set*Fields() is called."""
-    self.assertTrue(message.HasField('optional_int32'))
-    self.assertTrue(message.HasField('optional_int64'))
-    self.assertTrue(message.HasField('optional_uint32'))
-    self.assertTrue(message.HasField('optional_uint64'))
-    self.assertTrue(message.HasField('optional_sint32'))
-    self.assertTrue(message.HasField('optional_sint64'))
-    self.assertTrue(message.HasField('optional_fixed32'))
-    self.assertTrue(message.HasField('optional_fixed64'))
-    self.assertTrue(message.HasField('optional_sfixed32'))
-    self.assertTrue(message.HasField('optional_sfixed64'))
-    self.assertTrue(message.HasField('optional_float'))
-    self.assertTrue(message.HasField('optional_double'))
-    self.assertTrue(message.HasField('optional_bool'))
-    self.assertTrue(message.HasField('optional_string'))
-    self.assertTrue(message.HasField('optional_bytes'))
+  test_case.assertTrue(message.HasField('optionalgroup'))
+  test_case.assertTrue(message.HasField('optional_nested_message'))
+  test_case.assertTrue(message.HasField('optional_foreign_message'))
+  test_case.assertTrue(message.HasField('optional_import_message'))
 
-    self.assertTrue(message.HasField('optionalgroup'))
-    self.assertTrue(message.HasField('optional_nested_message'))
-    self.assertTrue(message.HasField('optional_foreign_message'))
-    self.assertTrue(message.HasField('optional_import_message'))
+  test_case.assertTrue(message.optionalgroup.HasField('a'))
+  test_case.assertTrue(message.optional_nested_message.HasField('bb'))
+  test_case.assertTrue(message.optional_foreign_message.HasField('c'))
+  test_case.assertTrue(message.optional_import_message.HasField('d'))
 
-    self.assertTrue(message.optionalgroup.HasField('a'))
-    self.assertTrue(message.optional_nested_message.HasField('bb'))
-    self.assertTrue(message.optional_foreign_message.HasField('c'))
-    self.assertTrue(message.optional_import_message.HasField('d'))
+  test_case.assertTrue(message.HasField('optional_nested_enum'))
+  test_case.assertTrue(message.HasField('optional_foreign_enum'))
+  test_case.assertTrue(message.HasField('optional_import_enum'))
 
-    self.assertTrue(message.HasField('optional_nested_enum'))
-    self.assertTrue(message.HasField('optional_foreign_enum'))
-    self.assertTrue(message.HasField('optional_import_enum'))
+  test_case.assertTrue(message.HasField('optional_string_piece'))
+  test_case.assertTrue(message.HasField('optional_cord'))
 
-    self.assertTrue(message.HasField('optional_string_piece'))
-    self.assertTrue(message.HasField('optional_cord'))
+  test_case.assertEqual(101, message.optional_int32)
+  test_case.assertEqual(102, message.optional_int64)
+  test_case.assertEqual(103, message.optional_uint32)
+  test_case.assertEqual(104, message.optional_uint64)
+  test_case.assertEqual(105, message.optional_sint32)
+  test_case.assertEqual(106, message.optional_sint64)
+  test_case.assertEqual(107, message.optional_fixed32)
+  test_case.assertEqual(108, message.optional_fixed64)
+  test_case.assertEqual(109, message.optional_sfixed32)
+  test_case.assertEqual(110, message.optional_sfixed64)
+  test_case.assertEqual(111, message.optional_float)
+  test_case.assertEqual(112, message.optional_double)
+  test_case.assertEqual(True, message.optional_bool)
+  test_case.assertEqual('115', message.optional_string)
+  test_case.assertEqual('116', message.optional_bytes)
 
-    self.assertEqual(101, message.optional_int32)
-    self.assertEqual(102, message.optional_int64)
-    self.assertEqual(103, message.optional_uint32)
-    self.assertEqual(104, message.optional_uint64)
-    self.assertEqual(105, message.optional_sint32)
-    self.assertEqual(106, message.optional_sint64)
-    self.assertEqual(107, message.optional_fixed32)
-    self.assertEqual(108, message.optional_fixed64)
-    self.assertEqual(109, message.optional_sfixed32)
-    self.assertEqual(110, message.optional_sfixed64)
-    self.assertEqual(111, message.optional_float)
-    self.assertEqual(112, message.optional_double)
-    self.assertEqual(True, message.optional_bool)
-    self.assertEqual('115', message.optional_string)
-    self.assertEqual('116', message.optional_bytes)
+  test_case.assertEqual(117, message.optionalgroup.a)
+  test_case.assertEqual(118, message.optional_nested_message.bb)
+  test_case.assertEqual(119, message.optional_foreign_message.c)
+  test_case.assertEqual(120, message.optional_import_message.d)
 
-    self.assertEqual(117, message.optionalgroup.a);
-    self.assertEqual(118, message.optional_nested_message.bb)
-    self.assertEqual(119, message.optional_foreign_message.c)
-    self.assertEqual(120, message.optional_import_message.d)
+  test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
+                        message.optional_nested_enum)
+  test_case.assertEqual(unittest_pb2.FOREIGN_BAZ,
+                        message.optional_foreign_enum)
+  test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
+                        message.optional_import_enum)
 
-    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
-                     message.optional_nested_enum)
-    self.assertEqual(unittest_pb2.FOREIGN_BAZ, message.optional_foreign_enum)
-    self.assertEqual(unittest_import_pb2.IMPORT_BAZ,
-                     message.optional_import_enum)
+  # -----------------------------------------------------------------
 
-    # -----------------------------------------------------------------
+  test_case.assertEqual(2, len(message.repeated_int32))
+  test_case.assertEqual(2, len(message.repeated_int64))
+  test_case.assertEqual(2, len(message.repeated_uint32))
+  test_case.assertEqual(2, len(message.repeated_uint64))
+  test_case.assertEqual(2, len(message.repeated_sint32))
+  test_case.assertEqual(2, len(message.repeated_sint64))
+  test_case.assertEqual(2, len(message.repeated_fixed32))
+  test_case.assertEqual(2, len(message.repeated_fixed64))
+  test_case.assertEqual(2, len(message.repeated_sfixed32))
+  test_case.assertEqual(2, len(message.repeated_sfixed64))
+  test_case.assertEqual(2, len(message.repeated_float))
+  test_case.assertEqual(2, len(message.repeated_double))
+  test_case.assertEqual(2, len(message.repeated_bool))
+  test_case.assertEqual(2, len(message.repeated_string))
+  test_case.assertEqual(2, len(message.repeated_bytes))
 
-    self.assertEqual(2, len(message.repeated_int32))
-    self.assertEqual(2, len(message.repeated_int64))
-    self.assertEqual(2, len(message.repeated_uint32))
-    self.assertEqual(2, len(message.repeated_uint64))
-    self.assertEqual(2, len(message.repeated_sint32))
-    self.assertEqual(2, len(message.repeated_sint64))
-    self.assertEqual(2, len(message.repeated_fixed32))
-    self.assertEqual(2, len(message.repeated_fixed64))
-    self.assertEqual(2, len(message.repeated_sfixed32))
-    self.assertEqual(2, len(message.repeated_sfixed64))
-    self.assertEqual(2, len(message.repeated_float))
-    self.assertEqual(2, len(message.repeated_double))
-    self.assertEqual(2, len(message.repeated_bool))
-    self.assertEqual(2, len(message.repeated_string))
-    self.assertEqual(2, len(message.repeated_bytes))
+  test_case.assertEqual(2, len(message.repeatedgroup))
+  test_case.assertEqual(2, len(message.repeated_nested_message))
+  test_case.assertEqual(2, len(message.repeated_foreign_message))
+  test_case.assertEqual(2, len(message.repeated_import_message))
+  test_case.assertEqual(2, len(message.repeated_nested_enum))
+  test_case.assertEqual(2, len(message.repeated_foreign_enum))
+  test_case.assertEqual(2, len(message.repeated_import_enum))
 
-    self.assertEqual(2, len(message.repeatedgroup))
-    self.assertEqual(2, len(message.repeated_nested_message))
-    self.assertEqual(2, len(message.repeated_foreign_message))
-    self.assertEqual(2, len(message.repeated_import_message))
-    self.assertEqual(2, len(message.repeated_nested_enum))
-    self.assertEqual(2, len(message.repeated_foreign_enum))
-    self.assertEqual(2, len(message.repeated_import_enum))
+  test_case.assertEqual(2, len(message.repeated_string_piece))
+  test_case.assertEqual(2, len(message.repeated_cord))
 
-    self.assertEqual(2, len(message.repeated_string_piece))
-    self.assertEqual(2, len(message.repeated_cord))
+  test_case.assertEqual(201, message.repeated_int32[0])
+  test_case.assertEqual(202, message.repeated_int64[0])
+  test_case.assertEqual(203, message.repeated_uint32[0])
+  test_case.assertEqual(204, message.repeated_uint64[0])
+  test_case.assertEqual(205, message.repeated_sint32[0])
+  test_case.assertEqual(206, message.repeated_sint64[0])
+  test_case.assertEqual(207, message.repeated_fixed32[0])
+  test_case.assertEqual(208, message.repeated_fixed64[0])
+  test_case.assertEqual(209, message.repeated_sfixed32[0])
+  test_case.assertEqual(210, message.repeated_sfixed64[0])
+  test_case.assertEqual(211, message.repeated_float[0])
+  test_case.assertEqual(212, message.repeated_double[0])
+  test_case.assertEqual(True, message.repeated_bool[0])
+  test_case.assertEqual('215', message.repeated_string[0])
+  test_case.assertEqual('216', message.repeated_bytes[0])
 
-    self.assertEqual(201, message.repeated_int32[0])
-    self.assertEqual(202, message.repeated_int64[0])
-    self.assertEqual(203, message.repeated_uint32[0])
-    self.assertEqual(204, message.repeated_uint64[0])
-    self.assertEqual(205, message.repeated_sint32[0])
-    self.assertEqual(206, message.repeated_sint64[0])
-    self.assertEqual(207, message.repeated_fixed32[0])
-    self.assertEqual(208, message.repeated_fixed64[0])
-    self.assertEqual(209, message.repeated_sfixed32[0])
-    self.assertEqual(210, message.repeated_sfixed64[0])
-    self.assertEqual(211, message.repeated_float[0])
-    self.assertEqual(212, message.repeated_double[0])
-    self.assertEqual(True, message.repeated_bool[0])
-    self.assertEqual('215', message.repeated_string[0])
-    self.assertEqual('216', message.repeated_bytes[0])
+  test_case.assertEqual(217, message.repeatedgroup[0].a)
+  test_case.assertEqual(218, message.repeated_nested_message[0].bb)
+  test_case.assertEqual(219, message.repeated_foreign_message[0].c)
+  test_case.assertEqual(220, message.repeated_import_message[0].d)
 
-    self.assertEqual(217, message.repeatedgroup[0].a)
-    self.assertEqual(218, message.repeated_nested_message[0].bb)
-    self.assertEqual(219, message.repeated_foreign_message[0].c)
-    self.assertEqual(220, message.repeated_import_message[0].d)
+  test_case.assertEqual(unittest_pb2.TestAllTypes.BAR,
+                        message.repeated_nested_enum[0])
+  test_case.assertEqual(unittest_pb2.FOREIGN_BAR,
+                        message.repeated_foreign_enum[0])
+  test_case.assertEqual(unittest_import_pb2.IMPORT_BAR,
+                        message.repeated_import_enum[0])
 
-    self.assertEqual(unittest_pb2.TestAllTypes.BAR,
-                     message.repeated_nested_enum[0])
-    self.assertEqual(unittest_pb2.FOREIGN_BAR,
-                     message.repeated_foreign_enum[0])
-    self.assertEqual(unittest_import_pb2.IMPORT_BAR,
-                     message.repeated_import_enum[0])
+  test_case.assertEqual(301, message.repeated_int32[1])
+  test_case.assertEqual(302, message.repeated_int64[1])
+  test_case.assertEqual(303, message.repeated_uint32[1])
+  test_case.assertEqual(304, message.repeated_uint64[1])
+  test_case.assertEqual(305, message.repeated_sint32[1])
+  test_case.assertEqual(306, message.repeated_sint64[1])
+  test_case.assertEqual(307, message.repeated_fixed32[1])
+  test_case.assertEqual(308, message.repeated_fixed64[1])
+  test_case.assertEqual(309, message.repeated_sfixed32[1])
+  test_case.assertEqual(310, message.repeated_sfixed64[1])
+  test_case.assertEqual(311, message.repeated_float[1])
+  test_case.assertEqual(312, message.repeated_double[1])
+  test_case.assertEqual(False, message.repeated_bool[1])
+  test_case.assertEqual('315', message.repeated_string[1])
+  test_case.assertEqual('316', message.repeated_bytes[1])
 
-    self.assertEqual(301, message.repeated_int32[1])
-    self.assertEqual(302, message.repeated_int64[1])
-    self.assertEqual(303, message.repeated_uint32[1])
-    self.assertEqual(304, message.repeated_uint64[1])
-    self.assertEqual(305, message.repeated_sint32[1])
-    self.assertEqual(306, message.repeated_sint64[1])
-    self.assertEqual(307, message.repeated_fixed32[1])
-    self.assertEqual(308, message.repeated_fixed64[1])
-    self.assertEqual(309, message.repeated_sfixed32[1])
-    self.assertEqual(310, message.repeated_sfixed64[1])
-    self.assertEqual(311, message.repeated_float[1])
-    self.assertEqual(312, message.repeated_double[1])
-    self.assertEqual(False, message.repeated_bool[1])
-    self.assertEqual('315', message.repeated_string[1])
-    self.assertEqual('316', message.repeated_bytes[1])
+  test_case.assertEqual(317, message.repeatedgroup[1].a)
+  test_case.assertEqual(318, message.repeated_nested_message[1].bb)
+  test_case.assertEqual(319, message.repeated_foreign_message[1].c)
+  test_case.assertEqual(320, message.repeated_import_message[1].d)
 
-    self.assertEqual(317, message.repeatedgroup[1].a)
-    self.assertEqual(318, message.repeated_nested_message[1].bb)
-    self.assertEqual(319, message.repeated_foreign_message[1].c)
-    self.assertEqual(320, message.repeated_import_message[1].d)
+  test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
+                        message.repeated_nested_enum[1])
+  test_case.assertEqual(unittest_pb2.FOREIGN_BAZ,
+                        message.repeated_foreign_enum[1])
+  test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
+                        message.repeated_import_enum[1])
 
-    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
-                     message.repeated_nested_enum[1])
-    self.assertEqual(unittest_pb2.FOREIGN_BAZ,
-                     message.repeated_foreign_enum[1])
-    self.assertEqual(unittest_import_pb2.IMPORT_BAZ,
-                     message.repeated_import_enum[1])
+  # -----------------------------------------------------------------
 
-    # -----------------------------------------------------------------
+  test_case.assertTrue(message.HasField('default_int32'))
+  test_case.assertTrue(message.HasField('default_int64'))
+  test_case.assertTrue(message.HasField('default_uint32'))
+  test_case.assertTrue(message.HasField('default_uint64'))
+  test_case.assertTrue(message.HasField('default_sint32'))
+  test_case.assertTrue(message.HasField('default_sint64'))
+  test_case.assertTrue(message.HasField('default_fixed32'))
+  test_case.assertTrue(message.HasField('default_fixed64'))
+  test_case.assertTrue(message.HasField('default_sfixed32'))
+  test_case.assertTrue(message.HasField('default_sfixed64'))
+  test_case.assertTrue(message.HasField('default_float'))
+  test_case.assertTrue(message.HasField('default_double'))
+  test_case.assertTrue(message.HasField('default_bool'))
+  test_case.assertTrue(message.HasField('default_string'))
+  test_case.assertTrue(message.HasField('default_bytes'))
 
-    self.assertTrue(message.HasField('default_int32'))
-    self.assertTrue(message.HasField('default_int64'))
-    self.assertTrue(message.HasField('default_uint32'))
-    self.assertTrue(message.HasField('default_uint64'))
-    self.assertTrue(message.HasField('default_sint32'))
-    self.assertTrue(message.HasField('default_sint64'))
-    self.assertTrue(message.HasField('default_fixed32'))
-    self.assertTrue(message.HasField('default_fixed64'))
-    self.assertTrue(message.HasField('default_sfixed32'))
-    self.assertTrue(message.HasField('default_sfixed64'))
-    self.assertTrue(message.HasField('default_float'))
-    self.assertTrue(message.HasField('default_double'))
-    self.assertTrue(message.HasField('default_bool'))
-    self.assertTrue(message.HasField('default_string'))
-    self.assertTrue(message.HasField('default_bytes'))
+  test_case.assertTrue(message.HasField('default_nested_enum'))
+  test_case.assertTrue(message.HasField('default_foreign_enum'))
+  test_case.assertTrue(message.HasField('default_import_enum'))
 
-    self.assertTrue(message.HasField('default_nested_enum'))
-    self.assertTrue(message.HasField('default_foreign_enum'))
-    self.assertTrue(message.HasField('default_import_enum'))
+  test_case.assertEqual(401, message.default_int32)
+  test_case.assertEqual(402, message.default_int64)
+  test_case.assertEqual(403, message.default_uint32)
+  test_case.assertEqual(404, message.default_uint64)
+  test_case.assertEqual(405, message.default_sint32)
+  test_case.assertEqual(406, message.default_sint64)
+  test_case.assertEqual(407, message.default_fixed32)
+  test_case.assertEqual(408, message.default_fixed64)
+  test_case.assertEqual(409, message.default_sfixed32)
+  test_case.assertEqual(410, message.default_sfixed64)
+  test_case.assertEqual(411, message.default_float)
+  test_case.assertEqual(412, message.default_double)
+  test_case.assertEqual(False, message.default_bool)
+  test_case.assertEqual('415', message.default_string)
+  test_case.assertEqual('416', message.default_bytes)
 
-    self.assertEqual(401, message.default_int32)
-    self.assertEqual(402, message.default_int64)
-    self.assertEqual(403, message.default_uint32)
-    self.assertEqual(404, message.default_uint64)
-    self.assertEqual(405, message.default_sint32)
-    self.assertEqual(406, message.default_sint64)
-    self.assertEqual(407, message.default_fixed32)
-    self.assertEqual(408, message.default_fixed64)
-    self.assertEqual(409, message.default_sfixed32)
-    self.assertEqual(410, message.default_sfixed64)
-    self.assertEqual(411, message.default_float)
-    self.assertEqual(412, message.default_double)
-    self.assertEqual(False, message.default_bool)
-    self.assertEqual('415', message.default_string)
-    self.assertEqual('416', message.default_bytes)
-
-    self.assertEqual(unittest_pb2.TestAllTypes.FOO, message.default_nested_enum)
-    self.assertEqual(unittest_pb2.FOREIGN_FOO, message.default_foreign_enum)
-    self.assertEqual(unittest_import_pb2.IMPORT_FOO,
-                     message.default_import_enum)
+  test_case.assertEqual(unittest_pb2.TestAllTypes.FOO,
+                        message.default_nested_enum)
+  test_case.assertEqual(unittest_pb2.FOREIGN_FOO,
+                        message.default_foreign_enum)
+  test_case.assertEqual(unittest_import_pb2.IMPORT_FOO,
+                        message.default_import_enum)
 
 def GoldenFile(filename):
   """Finds the given golden file and returns a file object representing it."""
@@ -570,21 +569,21 @@ def SetAllPackedFields(message):
   Args:
     message: A unittest_pb2.TestPackedTypes instance.
   """
-  message.packed_int32.extend([101, 102])
-  message.packed_int64.extend([103, 104])
-  message.packed_uint32.extend([105, 106])
-  message.packed_uint64.extend([107, 108])
-  message.packed_sint32.extend([109, 110])
-  message.packed_sint64.extend([111, 112])
-  message.packed_fixed32.extend([113, 114])
-  message.packed_fixed64.extend([115, 116])
-  message.packed_sfixed32.extend([117, 118])
-  message.packed_sfixed64.extend([119, 120])
-  message.packed_float.extend([121.0, 122.0])
-  message.packed_double.extend([122.0, 123.0])
+  message.packed_int32.extend([601, 701])
+  message.packed_int64.extend([602, 702])
+  message.packed_uint32.extend([603, 703])
+  message.packed_uint64.extend([604, 704])
+  message.packed_sint32.extend([605, 705])
+  message.packed_sint64.extend([606, 706])
+  message.packed_fixed32.extend([607, 707])
+  message.packed_fixed64.extend([608, 708])
+  message.packed_sfixed32.extend([609, 709])
+  message.packed_sfixed64.extend([610, 710])
+  message.packed_float.extend([611.0, 711.0])
+  message.packed_double.extend([612.0, 712.0])
   message.packed_bool.extend([True, False])
-  message.packed_enum.extend([unittest_pb2.FOREIGN_FOO,
-                              unittest_pb2.FOREIGN_BAR])
+  message.packed_enum.extend([unittest_pb2.FOREIGN_BAR,
+                              unittest_pb2.FOREIGN_BAZ])
 
 
 def SetAllPackedExtensions(message):
@@ -596,17 +595,41 @@ def SetAllPackedExtensions(message):
   extensions = message.Extensions
   pb2 = unittest_pb2
 
-  extensions[pb2.packed_int32_extension].append(101)
-  extensions[pb2.packed_int64_extension].append(102)
-  extensions[pb2.packed_uint32_extension].append(103)
-  extensions[pb2.packed_uint64_extension].append(104)
-  extensions[pb2.packed_sint32_extension].append(105)
-  extensions[pb2.packed_sint64_extension].append(106)
-  extensions[pb2.packed_fixed32_extension].append(107)
-  extensions[pb2.packed_fixed64_extension].append(108)
-  extensions[pb2.packed_sfixed32_extension].append(109)
-  extensions[pb2.packed_sfixed64_extension].append(110)
-  extensions[pb2.packed_float_extension].append(111.0)
-  extensions[pb2.packed_double_extension].append(112.0)
-  extensions[pb2.packed_bool_extension].append(True)
-  extensions[pb2.packed_enum_extension].append(pb2.FOREIGN_BAZ)
+  extensions[pb2.packed_int32_extension].extend([601, 701])
+  extensions[pb2.packed_int64_extension].extend([602, 702])
+  extensions[pb2.packed_uint32_extension].extend([603, 703])
+  extensions[pb2.packed_uint64_extension].extend([604, 704])
+  extensions[pb2.packed_sint32_extension].extend([605, 705])
+  extensions[pb2.packed_sint64_extension].extend([606, 706])
+  extensions[pb2.packed_fixed32_extension].extend([607, 707])
+  extensions[pb2.packed_fixed64_extension].extend([608, 708])
+  extensions[pb2.packed_sfixed32_extension].extend([609, 709])
+  extensions[pb2.packed_sfixed64_extension].extend([610, 710])
+  extensions[pb2.packed_float_extension].extend([611.0, 711.0])
+  extensions[pb2.packed_double_extension].extend([612.0, 712.0])
+  extensions[pb2.packed_bool_extension].extend([True, False])
+  extensions[pb2.packed_enum_extension].extend([unittest_pb2.FOREIGN_BAR,
+                                                unittest_pb2.FOREIGN_BAZ])
+
+
+def SetAllUnpackedFields(message):
+  """Sets every field in the message to a unique value.
+
+  Args:
+    message: A unittest_pb2.TestUnpackedTypes instance.
+  """
+  message.unpacked_int32.extend([601, 701])
+  message.unpacked_int64.extend([602, 702])
+  message.unpacked_uint32.extend([603, 703])
+  message.unpacked_uint64.extend([604, 704])
+  message.unpacked_sint32.extend([605, 705])
+  message.unpacked_sint64.extend([606, 706])
+  message.unpacked_fixed32.extend([607, 707])
+  message.unpacked_fixed64.extend([608, 708])
+  message.unpacked_sfixed32.extend([609, 709])
+  message.unpacked_sfixed64.extend([610, 710])
+  message.unpacked_float.extend([611.0, 711.0])
+  message.unpacked_double.extend([612.0, 712.0])
+  message.unpacked_bool.extend([True, False])
+  message.unpacked_enum.extend([unittest_pb2.FOREIGN_BAR,
+                                unittest_pb2.FOREIGN_BAZ])

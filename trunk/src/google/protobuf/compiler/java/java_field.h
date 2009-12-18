@@ -57,9 +57,11 @@ class FieldGenerator {
 
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
+  virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
   virtual void GenerateBuildingCode(io::Printer* printer) const = 0;
   virtual void GenerateParsingCode(io::Printer* printer) const = 0;
+  virtual void GenerateParsingCodeFromPacked(io::Printer* printer) const;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
 

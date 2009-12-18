@@ -217,6 +217,7 @@ import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
+import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import com.google.protobuf.test.UnittestImport.ImportMessage;
@@ -286,6 +287,12 @@ class TestUtil {
   public static TestPackedTypes getPackedSet() {
     TestPackedTypes.Builder builder = TestPackedTypes.newBuilder();
     setPackedFields(builder);
+    return builder.build();
+  }
+
+  public static TestUnpackedTypes getUnpackedSet() {
+    TestUnpackedTypes.Builder builder = TestUnpackedTypes.newBuilder();
+    setUnpackedFields(builder);
     return builder.build();
   }
 
@@ -956,6 +963,42 @@ class TestUtil {
   }
 
   /**
+   * Set every field of {@code message} to a unique value. Must correspond with
+   * the values applied by {@code setPackedFields}.
+   */
+  public static void setUnpackedFields(TestUnpackedTypes.Builder message) {
+    message.addUnpackedInt32   (601);
+    message.addUnpackedInt64   (602);
+    message.addUnpackedUint32  (603);
+    message.addUnpackedUint64  (604);
+    message.addUnpackedSint32  (605);
+    message.addUnpackedSint64  (606);
+    message.addUnpackedFixed32 (607);
+    message.addUnpackedFixed64 (608);
+    message.addUnpackedSfixed32(609);
+    message.addUnpackedSfixed64(610);
+    message.addUnpackedFloat   (611);
+    message.addUnpackedDouble  (612);
+    message.addUnpackedBool    (true);
+    message.addUnpackedEnum    (ForeignEnum.FOREIGN_BAR);
+    // Add a second one of each field.
+    message.addUnpackedInt32   (701);
+    message.addUnpackedInt64   (702);
+    message.addUnpackedUint32  (703);
+    message.addUnpackedUint64  (704);
+    message.addUnpackedSint32  (705);
+    message.addUnpackedSint64  (706);
+    message.addUnpackedFixed32 (707);
+    message.addUnpackedFixed64 (708);
+    message.addUnpackedSfixed32(709);
+    message.addUnpackedSfixed64(710);
+    message.addUnpackedFloat   (711);
+    message.addUnpackedDouble  (712);
+    message.addUnpackedBool    (false);
+    message.addUnpackedEnum    (ForeignEnum.FOREIGN_BAZ);
+  }
+
+  /**
    * Assert (using {@code junit.framework.Assert}} that all fields of
    * {@code message} are set to the values assigned by {@code setPackedFields}.
    */
@@ -1002,6 +1045,55 @@ class TestUtil {
     Assert.assertEquals(712  , message.getPackedDouble  (1), 0.0);
     Assert.assertEquals(false, message.getPackedBool    (1));
     Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getPackedEnum(1));
+  }
+
+  /**
+   * Assert (using {@code junit.framework.Assert}} that all fields of
+   * {@code message} are set to the values assigned by {@code setUnpackedFields}.
+   */
+  public static void assertUnpackedFieldsSet(TestUnpackedTypes message) {
+    Assert.assertEquals(2, message.getUnpackedInt32Count   ());
+    Assert.assertEquals(2, message.getUnpackedInt64Count   ());
+    Assert.assertEquals(2, message.getUnpackedUint32Count  ());
+    Assert.assertEquals(2, message.getUnpackedUint64Count  ());
+    Assert.assertEquals(2, message.getUnpackedSint32Count  ());
+    Assert.assertEquals(2, message.getUnpackedSint64Count  ());
+    Assert.assertEquals(2, message.getUnpackedFixed32Count ());
+    Assert.assertEquals(2, message.getUnpackedFixed64Count ());
+    Assert.assertEquals(2, message.getUnpackedSfixed32Count());
+    Assert.assertEquals(2, message.getUnpackedSfixed64Count());
+    Assert.assertEquals(2, message.getUnpackedFloatCount   ());
+    Assert.assertEquals(2, message.getUnpackedDoubleCount  ());
+    Assert.assertEquals(2, message.getUnpackedBoolCount    ());
+    Assert.assertEquals(2, message.getUnpackedEnumCount   ());
+    Assert.assertEquals(601  , message.getUnpackedInt32   (0));
+    Assert.assertEquals(602  , message.getUnpackedInt64   (0));
+    Assert.assertEquals(603  , message.getUnpackedUint32  (0));
+    Assert.assertEquals(604  , message.getUnpackedUint64  (0));
+    Assert.assertEquals(605  , message.getUnpackedSint32  (0));
+    Assert.assertEquals(606  , message.getUnpackedSint64  (0));
+    Assert.assertEquals(607  , message.getUnpackedFixed32 (0));
+    Assert.assertEquals(608  , message.getUnpackedFixed64 (0));
+    Assert.assertEquals(609  , message.getUnpackedSfixed32(0));
+    Assert.assertEquals(610  , message.getUnpackedSfixed64(0));
+    Assert.assertEquals(611  , message.getUnpackedFloat   (0), 0.0);
+    Assert.assertEquals(612  , message.getUnpackedDouble  (0), 0.0);
+    Assert.assertEquals(true , message.getUnpackedBool    (0));
+    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getUnpackedEnum(0));
+    Assert.assertEquals(701  , message.getUnpackedInt32   (1));
+    Assert.assertEquals(702  , message.getUnpackedInt64   (1));
+    Assert.assertEquals(703  , message.getUnpackedUint32  (1));
+    Assert.assertEquals(704  , message.getUnpackedUint64  (1));
+    Assert.assertEquals(705  , message.getUnpackedSint32  (1));
+    Assert.assertEquals(706  , message.getUnpackedSint64  (1));
+    Assert.assertEquals(707  , message.getUnpackedFixed32 (1));
+    Assert.assertEquals(708  , message.getUnpackedFixed64 (1));
+    Assert.assertEquals(709  , message.getUnpackedSfixed32(1));
+    Assert.assertEquals(710  , message.getUnpackedSfixed64(1));
+    Assert.assertEquals(711  , message.getUnpackedFloat   (1), 0.0);
+    Assert.assertEquals(712  , message.getUnpackedDouble  (1), 0.0);
+    Assert.assertEquals(false, message.getUnpackedBool    (1));
+    Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getUnpackedEnum(1));
   }
 
   // ===================================================================

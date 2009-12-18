@@ -119,7 +119,7 @@ namespace {
 CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' ||
                             c == '\r' || c == '\v');
 
-CHARACTER_CLASS(Unprintable, c < ' ' && c != '\0');
+CHARACTER_CLASS(Unprintable, c < ' ' && c > '\0');
 
 CHARACTER_CLASS(Digit, '0' <= c && c <= '9');
 CHARACTER_CLASS(OctalDigit, '0' <= c && c <= '7');

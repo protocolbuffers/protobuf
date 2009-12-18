@@ -796,9 +796,10 @@ bool DescriptorPool::InternalIsFileLoaded(const string& filename) const {
 
 namespace {
 
+
 EncodedDescriptorDatabase* generated_database_ = NULL;
 DescriptorPool* generated_pool_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(generated_pool_init_);
+GoogleOnceType generated_pool_init_;
 
 void DeleteGeneratedPool() {
   delete generated_database_;
@@ -810,6 +811,7 @@ void DeleteGeneratedPool() {
 void InitGeneratedPool() {
   generated_database_ = new EncodedDescriptorDatabase;
   generated_pool_ = new DescriptorPool(generated_database_);
+
   internal::OnShutdown(&DeleteGeneratedPool);
 }
 
@@ -3651,17 +3653,11 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
   }
 
   // Only repeated primitive fields may be packed.
-  if (field->options().packed()) {
-    if (!field->is_repeated() ||
-        field->type() == FieldDescriptor::TYPE_STRING ||
-        field->type() == FieldDescriptor::TYPE_GROUP ||
-        field->type() == FieldDescriptor::TYPE_MESSAGE ||
-        field->type() == FieldDescriptor::TYPE_BYTES) {
-      AddError(
-        field->full_name(), proto,
-        DescriptorPool::ErrorCollector::TYPE,
-        "[packed = true] can only be specified for repeated primitive fields.");
-    }
+  if (field->options().packed() && !field->is_packable()) {
+    AddError(
+      field->full_name(), proto,
+      DescriptorPool::ErrorCollector::TYPE,
+      "[packed = true] can only be specified for repeated primitive fields.");
   }
 
   // Note:  Default instance may not yet be initialized here, so we have to

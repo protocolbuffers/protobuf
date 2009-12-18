@@ -24,7 +24,8 @@ AM_LDFLAGS = $(PTHREAD_CFLAGS)
 # If I say "dist_include_DATA", automake complains that $(includedir) is not
 # a "legitimate" directory for DATA.  Screw you, automake.
 protodir = $(includedir)
-nobase_dist_proto_DATA = google/protobuf/descriptor.proto
+nobase_dist_proto_DATA = google/protobuf/descriptor.proto \
+                         google/protobuf/compiler/plugin.proto
 
 # Not sure why these don't get cleaned automatically.
 clean-local:
@@ -66,6 +67,8 @@ nobase_include_HEADERS =                                       \
   google/protobuf/compiler/command_line_interface.h            \
   google/protobuf/compiler/importer.h                          \
   google/protobuf/compiler/parser.h                            \
+  google/protobuf/compiler/plugin.h                            \
+  google/protobuf/compiler/plugin.pb.h                         \
   google/protobuf/compiler/cpp/cpp_generator.h                 \
   google/protobuf/compiler/java/java_generator.h               \
   google/protobuf/compiler/python/python_generator.h
@@ -87,6 +90,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
   google/protobuf/io/coded_stream.cc                           \
+  google/protobuf/io/coded_stream_inl.h                        \
   google/protobuf/io/zero_copy_stream.cc                       \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
@@ -123,6 +127,10 @@ libprotoc_la_LDFLAGS = -version-info 5:0:0
 libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
+  google/protobuf/compiler/plugin.cc                           \
+  google/protobuf/compiler/plugin.pb.cc                        \
+  google/protobuf/compiler/subprocess.cc                       \
+  google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/cpp/cpp_enum.cc                     \
   google/protobuf/compiler/cpp/cpp_enum.h                      \
   google/protobuf/compiler/cpp/cpp_enum_field.cc               \
@@ -186,6 +194,7 @@ protoc_inputs =                                                \
   google/protobuf/unittest_lite.proto                          \
   google/protobuf/unittest_import_lite.proto                   \
   google/protobuf/unittest_lite_imports_nonlite.proto          \
+  google/protobuf/unittest_no_generic_services.proto           \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
 
 EXTRA_DIST =                                                   \
@@ -226,6 +235,8 @@ protoc_outputs =                                               \
   google/protobuf/unittest_custom_options.pb.h                 \
   google/protobuf/unittest_lite_imports_nonlite.pb.cc          \
   google/protobuf/unittest_lite_imports_nonlite.pb.h           \
+  google/protobuf/unittest_no_generic_services.pb.cc           \
+  google/protobuf/unittest_no_generic_services.pb.h            \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 
@@ -265,7 +276,7 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/testing/file.cc                              \
   google/protobuf/testing/file.h
 
-check_PROGRAMS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test $(GZCHECKPROGRAMS)
+check_PROGRAMS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       $(top_builddir)/gtest/lib/libgtest.la       \
                       $(top_builddir)/gtest/lib/libgtest_main.la
@@ -297,9 +308,14 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/io/zero_copy_stream_unittest.cc              \
   google/protobuf/compiler/command_line_interface_unittest.cc  \
   google/protobuf/compiler/importer_unittest.cc                \
+  google/protobuf/compiler/mock_code_generator.cc              \
+  google/protobuf/compiler/mock_code_generator.h               \
   google/protobuf/compiler/parser_unittest.cc                  \
   google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc       \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
+  google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
+  google/protobuf/compiler/java/java_plugin_unittest.cc        \
+  google/protobuf/compiler/python/python_plugin_unittest.cc    \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
 
@@ -324,6 +340,15 @@ protobuf_lite_test_SOURCES =                                           \
   google/protobuf/test_util_lite.cc                                    \
   google/protobuf/test_util_lite.h
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+
+# Test plugin binary.
+test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
+                    $(top_builddir)/gtest/lib/libgtest.la
+test_plugin_SOURCES =                                          \
+  google/protobuf/compiler/mock_code_generator.cc              \
+  google/protobuf/testing/file.cc                              \
+  google/protobuf/testing/file.h                               \
+  google/protobuf/compiler/test_plugin.cc
 
 if HAVE_ZLIB
 zcgzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la

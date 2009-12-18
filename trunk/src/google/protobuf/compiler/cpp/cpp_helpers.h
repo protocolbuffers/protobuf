@@ -60,6 +60,8 @@ extern const char kThinSeparator[];
 string ClassName(const Descriptor* descriptor, bool qualified);
 string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
 
+string SuperClassName(const Descriptor* descriptor);
+
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
 // should be using lowercase-with-underscores style for proto field names
@@ -76,6 +78,10 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
   return field->is_extension() ?
     field->extension_scope() : field->containing_type();
 }
+
+// Returns the fully-qualified type name field->message_type().  Usually this
+// is just ClassName(field->message_type(), true);
+string FieldMessageTypeName(const FieldDescriptor* field);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
@@ -107,32 +113,40 @@ string GlobalAssignDescriptorsName(const string& filename);
 string GlobalShutdownFileName(const string& filename);
 
 // Do message classes in this file keep track of unknown fields?
-inline const bool HasUnknownFields(const FileDescriptor *file) {
+inline bool HasUnknownFields(const FileDescriptor *file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
-inline const bool HasGeneratedMethods(const FileDescriptor *file) {
+inline bool HasGeneratedMethods(const FileDescriptor *file) {
   return file->options().optimize_for() != FileOptions::CODE_SIZE;
 }
 
 // Do message classes in this file have descriptor and refelction methods?
-inline const bool HasDescriptorMethods(const FileDescriptor *file) {
+inline bool HasDescriptorMethods(const FileDescriptor *file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
+// Should we generate generic services for this file?
+inline bool HasGenericServices(const FileDescriptor *file) {
+  return file->service_count() > 0 &&
+         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+         file->options().cc_generic_services();
+}
+
 // Should string fields in this file verify that their contents are UTF-8?
-inline const bool HasUtf8Verification(const FileDescriptor* file) {
+inline bool HasUtf8Verification(const FileDescriptor* file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate a separate, super-optimized code path for serializing to
 // flat arrays?  We don't do this in Lite mode because we'd rather reduce code
 // size.
-inline const bool HasFastArraySerialization(const FileDescriptor* file) {
+inline bool HasFastArraySerialization(const FileDescriptor* file) {
   return file->options().optimize_for() == FileOptions::SPEED;
 }
+
 
 }  // namespace cpp
 }  // namespace compiler
