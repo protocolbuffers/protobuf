@@ -296,9 +296,9 @@ public interface Message extends MessageLite {
     Builder mergeFrom(InputStream input,
                       ExtensionRegistryLite extensionRegistry)
                       throws IOException;
-    Builder mergeDelimitedFrom(InputStream input)
+    boolean mergeDelimitedFrom(InputStream input)
                                throws IOException;
-    Builder mergeDelimitedFrom(InputStream input,
+    boolean mergeDelimitedFrom(InputStream input,
                                ExtensionRegistryLite extensionRegistry)
                                throws IOException;
   }

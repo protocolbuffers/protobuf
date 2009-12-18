@@ -403,7 +403,8 @@ TEST_F(IoTest, CompressionOptions) {
 
   string golden;
   File::ReadFileToStringOrDie(
-      TestSourceDir() + "/google/protobuf/testdata/golden_message", &golden);
+    TestSourceDir() + "/google/protobuf/testdata/golden_message",
+    &golden);
 
   GzipOutputStream::Options options;
   string gzip_compressed = Compress(golden, options);

@@ -35,6 +35,7 @@
 // A proto file that has an extremely large descriptor.  Used to test that
 // descriptors over 64k don't break the string literal length limit in Java.
 
+
 package google.protobuf;
 option java_package = "com.google.protobuf";
 

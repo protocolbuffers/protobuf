@@ -32,14 +32,13 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/wire_format_lite_inl.h>
+
 #include <stack>
 #include <string>
 #include <vector>
-
-#include <google/protobuf/wire_format_lite_inl.h>
-
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/coded_stream_inl.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
@@ -185,6 +184,174 @@ bool FieldSkipper::SkipMessage(io::CodedInputStream* input) {
 void FieldSkipper::SkipUnknownEnum(
     int field_number, int value) {
   // Nothing.
+}
+
+bool WireFormatLite::ReadPackedEnumNoInline(io::CodedInputStream* input,
+                                            bool (*is_valid)(int),
+                                            RepeatedField<int>* values) {
+  uint32 length;
+  if (!input->ReadVarint32(&length)) return false;
+  io::CodedInputStream::Limit limit = input->PushLimit(length);
+  while (input->BytesUntilLimit() > 0) {
+    int value;
+    if (!google::protobuf::internal::WireFormatLite::ReadPrimitive<
+        int, WireFormatLite::TYPE_ENUM>(input, &value)) {
+      return false;
+    }
+    if (is_valid(value)) {
+      values->Add(value);
+    }
+  }
+  input->PopLimit(limit);
+  return true;
+}
+
+void WireFormatLite::WriteInt32(int field_number, int32 value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteInt32NoTag(value, output);
+}
+void WireFormatLite::WriteInt64(int field_number, int64 value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteInt64NoTag(value, output);
+}
+void WireFormatLite::WriteUInt32(int field_number, uint32 value,
+                                 io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteUInt32NoTag(value, output);
+}
+void WireFormatLite::WriteUInt64(int field_number, uint64 value,
+                                 io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteUInt64NoTag(value, output);
+}
+void WireFormatLite::WriteSInt32(int field_number, int32 value,
+                                 io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteSInt32NoTag(value, output);
+}
+void WireFormatLite::WriteSInt64(int field_number, int64 value,
+                                 io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteSInt64NoTag(value, output);
+}
+void WireFormatLite::WriteFixed32(int field_number, uint32 value,
+                                  io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_FIXED32, output);
+  WriteFixed32NoTag(value, output);
+}
+void WireFormatLite::WriteFixed64(int field_number, uint64 value,
+                                  io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_FIXED64, output);
+  WriteFixed64NoTag(value, output);
+}
+void WireFormatLite::WriteSFixed32(int field_number, int32 value,
+                                   io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_FIXED32, output);
+  WriteSFixed32NoTag(value, output);
+}
+void WireFormatLite::WriteSFixed64(int field_number, int64 value,
+                                   io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_FIXED64, output);
+  WriteSFixed64NoTag(value, output);
+}
+void WireFormatLite::WriteFloat(int field_number, float value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_FIXED32, output);
+  WriteFloatNoTag(value, output);
+}
+void WireFormatLite::WriteDouble(int field_number, double value,
+                                 io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_FIXED64, output);
+  WriteDoubleNoTag(value, output);
+}
+void WireFormatLite::WriteBool(int field_number, bool value,
+                               io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteBoolNoTag(value, output);
+}
+void WireFormatLite::WriteEnum(int field_number, int value,
+                               io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_VARINT, output);
+  WriteEnumNoTag(value, output);
+}
+
+void WireFormatLite::WriteString(int field_number, const string& value,
+                                 io::CodedOutputStream* output) {
+  // String is for UTF-8 text only
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  output->WriteVarint32(value.size());
+  output->WriteString(value);
+}
+void WireFormatLite::WriteBytes(int field_number, const string& value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  output->WriteVarint32(value.size());
+  output->WriteString(value);
+}
+
+
+void WireFormatLite::WriteGroup(int field_number,
+                                const MessageLite& value,
+                                io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_START_GROUP, output);
+  value.SerializeWithCachedSizes(output);
+  WriteTag(field_number, WIRETYPE_END_GROUP, output);
+}
+
+void WireFormatLite::WriteMessage(int field_number,
+                                  const MessageLite& value,
+                                  io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  const int size = value.GetCachedSize();
+  output->WriteVarint32(size);
+  value.SerializeWithCachedSizes(output);
+}
+
+void WireFormatLite::WriteGroupMaybeToArray(int field_number,
+                                            const MessageLite& value,
+                                            io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_START_GROUP, output);
+  const int size = value.GetCachedSize();
+  uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
+  if (target != NULL) {
+    uint8* end = value.SerializeWithCachedSizesToArray(target);
+    GOOGLE_DCHECK_EQ(end - target, size);
+  } else {
+    value.SerializeWithCachedSizes(output);
+  }
+  WriteTag(field_number, WIRETYPE_END_GROUP, output);
+}
+
+void WireFormatLite::WriteMessageMaybeToArray(int field_number,
+                                              const MessageLite& value,
+                                              io::CodedOutputStream* output) {
+  WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
+  const int size = value.GetCachedSize();
+  output->WriteVarint32(size);
+  uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
+  if (target != NULL) {
+    uint8* end = value.SerializeWithCachedSizesToArray(target);
+    GOOGLE_DCHECK_EQ(end - target, size);
+  } else {
+    value.SerializeWithCachedSizes(output);
+  }
+}
+
+bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                string* value) {
+  // String is for UTF-8 text only
+  uint32 length;
+  if (!input->ReadVarint32(&length)) return false;
+  if (!input->InternalReadStringInline(value, length)) return false;
+  return true;
+}
+bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
+                               string* value) {
+  uint32 length;
+  if (!input->ReadVarint32(&length)) return false;
+  return input->InternalReadStringInline(value, length);
 }
 
 }  // namespace internal

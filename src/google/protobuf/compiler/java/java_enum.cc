@@ -223,6 +223,11 @@ void EnumGenerator::Generate(io::Printer* printer) {
       "file", ClassName(descriptor_->file()));
   }
 
+  printer->Print(
+    "\n"
+    "// @@protoc_insertion_point(enum_scope:$full_name$)\n",
+    "full_name", descriptor_->full_name());
+
   printer->Outdent();
   printer->Print("}\n\n");
 }

@@ -192,47 +192,72 @@ TYPE_TO_BYTE_SIZE_FN = {
     }
 
 
-# Maps from field type to an unbound Encoder method F, such that
-# F(encoder, field_number, value) will append the serialization
-# of a value of this type to the encoder.
-_Encoder = encoder.Encoder
-TYPE_TO_SERIALIZE_METHOD = {
-    _FieldDescriptor.TYPE_DOUBLE: _Encoder.AppendDouble,
-    _FieldDescriptor.TYPE_FLOAT: _Encoder.AppendFloat,
-    _FieldDescriptor.TYPE_INT64: _Encoder.AppendInt64,
-    _FieldDescriptor.TYPE_UINT64: _Encoder.AppendUInt64,
-    _FieldDescriptor.TYPE_INT32: _Encoder.AppendInt32,
-    _FieldDescriptor.TYPE_FIXED64: _Encoder.AppendFixed64,
-    _FieldDescriptor.TYPE_FIXED32: _Encoder.AppendFixed32,
-    _FieldDescriptor.TYPE_BOOL: _Encoder.AppendBool,
-    _FieldDescriptor.TYPE_STRING: _Encoder.AppendString,
-    _FieldDescriptor.TYPE_GROUP: _Encoder.AppendGroup,
-    _FieldDescriptor.TYPE_MESSAGE: _Encoder.AppendMessage,
-    _FieldDescriptor.TYPE_BYTES: _Encoder.AppendBytes,
-    _FieldDescriptor.TYPE_UINT32: _Encoder.AppendUInt32,
-    _FieldDescriptor.TYPE_ENUM: _Encoder.AppendEnum,
-    _FieldDescriptor.TYPE_SFIXED32: _Encoder.AppendSFixed32,
-    _FieldDescriptor.TYPE_SFIXED64: _Encoder.AppendSFixed64,
-    _FieldDescriptor.TYPE_SINT32: _Encoder.AppendSInt32,
-    _FieldDescriptor.TYPE_SINT64: _Encoder.AppendSInt64,
+# Maps from field types to encoder constructors.
+TYPE_TO_ENCODER = {
+    _FieldDescriptor.TYPE_DOUBLE: encoder.DoubleEncoder,
+    _FieldDescriptor.TYPE_FLOAT: encoder.FloatEncoder,
+    _FieldDescriptor.TYPE_INT64: encoder.Int64Encoder,
+    _FieldDescriptor.TYPE_UINT64: encoder.UInt64Encoder,
+    _FieldDescriptor.TYPE_INT32: encoder.Int32Encoder,
+    _FieldDescriptor.TYPE_FIXED64: encoder.Fixed64Encoder,
+    _FieldDescriptor.TYPE_FIXED32: encoder.Fixed32Encoder,
+    _FieldDescriptor.TYPE_BOOL: encoder.BoolEncoder,
+    _FieldDescriptor.TYPE_STRING: encoder.StringEncoder,
+    _FieldDescriptor.TYPE_GROUP: encoder.GroupEncoder,
+    _FieldDescriptor.TYPE_MESSAGE: encoder.MessageEncoder,
+    _FieldDescriptor.TYPE_BYTES: encoder.BytesEncoder,
+    _FieldDescriptor.TYPE_UINT32: encoder.UInt32Encoder,
+    _FieldDescriptor.TYPE_ENUM: encoder.EnumEncoder,
+    _FieldDescriptor.TYPE_SFIXED32: encoder.SFixed32Encoder,
+    _FieldDescriptor.TYPE_SFIXED64: encoder.SFixed64Encoder,
+    _FieldDescriptor.TYPE_SINT32: encoder.SInt32Encoder,
+    _FieldDescriptor.TYPE_SINT64: encoder.SInt64Encoder,
     }
 
 
-TYPE_TO_NOTAG_SERIALIZE_METHOD = {
-    _FieldDescriptor.TYPE_DOUBLE: _Encoder.AppendDoubleNoTag,
-    _FieldDescriptor.TYPE_FLOAT: _Encoder.AppendFloatNoTag,
-    _FieldDescriptor.TYPE_INT64: _Encoder.AppendInt64NoTag,
-    _FieldDescriptor.TYPE_UINT64: _Encoder.AppendUInt64NoTag,
-    _FieldDescriptor.TYPE_INT32: _Encoder.AppendInt32NoTag,
-    _FieldDescriptor.TYPE_FIXED64: _Encoder.AppendFixed64NoTag,
-    _FieldDescriptor.TYPE_FIXED32: _Encoder.AppendFixed32NoTag,
-    _FieldDescriptor.TYPE_BOOL: _Encoder.AppendBoolNoTag,
-    _FieldDescriptor.TYPE_UINT32: _Encoder.AppendUInt32NoTag,
-    _FieldDescriptor.TYPE_ENUM: _Encoder.AppendEnumNoTag,
-    _FieldDescriptor.TYPE_SFIXED32: _Encoder.AppendSFixed32NoTag,
-    _FieldDescriptor.TYPE_SFIXED64: _Encoder.AppendSFixed64NoTag,
-    _FieldDescriptor.TYPE_SINT32: _Encoder.AppendSInt32NoTag,
-    _FieldDescriptor.TYPE_SINT64: _Encoder.AppendSInt64NoTag,
+# Maps from field types to sizer constructors.
+TYPE_TO_SIZER = {
+    _FieldDescriptor.TYPE_DOUBLE: encoder.DoubleSizer,
+    _FieldDescriptor.TYPE_FLOAT: encoder.FloatSizer,
+    _FieldDescriptor.TYPE_INT64: encoder.Int64Sizer,
+    _FieldDescriptor.TYPE_UINT64: encoder.UInt64Sizer,
+    _FieldDescriptor.TYPE_INT32: encoder.Int32Sizer,
+    _FieldDescriptor.TYPE_FIXED64: encoder.Fixed64Sizer,
+    _FieldDescriptor.TYPE_FIXED32: encoder.Fixed32Sizer,
+    _FieldDescriptor.TYPE_BOOL: encoder.BoolSizer,
+    _FieldDescriptor.TYPE_STRING: encoder.StringSizer,
+    _FieldDescriptor.TYPE_GROUP: encoder.GroupSizer,
+    _FieldDescriptor.TYPE_MESSAGE: encoder.MessageSizer,
+    _FieldDescriptor.TYPE_BYTES: encoder.BytesSizer,
+    _FieldDescriptor.TYPE_UINT32: encoder.UInt32Sizer,
+    _FieldDescriptor.TYPE_ENUM: encoder.EnumSizer,
+    _FieldDescriptor.TYPE_SFIXED32: encoder.SFixed32Sizer,
+    _FieldDescriptor.TYPE_SFIXED64: encoder.SFixed64Sizer,
+    _FieldDescriptor.TYPE_SINT32: encoder.SInt32Sizer,
+    _FieldDescriptor.TYPE_SINT64: encoder.SInt64Sizer,
+    }
+
+
+# Maps from field type to a decoder constructor.
+TYPE_TO_DECODER = {
+    _FieldDescriptor.TYPE_DOUBLE: decoder.DoubleDecoder,
+    _FieldDescriptor.TYPE_FLOAT: decoder.FloatDecoder,
+    _FieldDescriptor.TYPE_INT64: decoder.Int64Decoder,
+    _FieldDescriptor.TYPE_UINT64: decoder.UInt64Decoder,
+    _FieldDescriptor.TYPE_INT32: decoder.Int32Decoder,
+    _FieldDescriptor.TYPE_FIXED64: decoder.Fixed64Decoder,
+    _FieldDescriptor.TYPE_FIXED32: decoder.Fixed32Decoder,
+    _FieldDescriptor.TYPE_BOOL: decoder.BoolDecoder,
+    _FieldDescriptor.TYPE_STRING: decoder.StringDecoder,
+    _FieldDescriptor.TYPE_GROUP: decoder.GroupDecoder,
+    _FieldDescriptor.TYPE_MESSAGE: decoder.MessageDecoder,
+    _FieldDescriptor.TYPE_BYTES: decoder.BytesDecoder,
+    _FieldDescriptor.TYPE_UINT32: decoder.UInt32Decoder,
+    _FieldDescriptor.TYPE_ENUM: decoder.EnumDecoder,
+    _FieldDescriptor.TYPE_SFIXED32: decoder.SFixed32Decoder,
+    _FieldDescriptor.TYPE_SFIXED64: decoder.SFixed64Decoder,
+    _FieldDescriptor.TYPE_SINT32: decoder.SInt32Decoder,
+    _FieldDescriptor.TYPE_SINT64: decoder.SInt64Decoder,
     }
 
 # Maps from field type to expected wiretype.
@@ -258,30 +283,4 @@ FIELD_TYPE_TO_WIRE_TYPE = {
     _FieldDescriptor.TYPE_SFIXED64: wire_format.WIRETYPE_FIXED64,
     _FieldDescriptor.TYPE_SINT32: wire_format.WIRETYPE_VARINT,
     _FieldDescriptor.TYPE_SINT64: wire_format.WIRETYPE_VARINT,
-    }
-
-
-# Maps from field type to an unbound Decoder method F,
-# such that F(decoder) will read a field of the requested type.
-#
-# Note that Message and Group are intentionally missing here.
-# They're handled by _RecursivelyMerge().
-_Decoder = decoder.Decoder
-TYPE_TO_DESERIALIZE_METHOD = {
-    _FieldDescriptor.TYPE_DOUBLE: _Decoder.ReadDouble,
-    _FieldDescriptor.TYPE_FLOAT: _Decoder.ReadFloat,
-    _FieldDescriptor.TYPE_INT64: _Decoder.ReadInt64,
-    _FieldDescriptor.TYPE_UINT64: _Decoder.ReadUInt64,
-    _FieldDescriptor.TYPE_INT32: _Decoder.ReadInt32,
-    _FieldDescriptor.TYPE_FIXED64: _Decoder.ReadFixed64,
-    _FieldDescriptor.TYPE_FIXED32: _Decoder.ReadFixed32,
-    _FieldDescriptor.TYPE_BOOL: _Decoder.ReadBool,
-    _FieldDescriptor.TYPE_STRING: _Decoder.ReadString,
-    _FieldDescriptor.TYPE_BYTES: _Decoder.ReadBytes,
-    _FieldDescriptor.TYPE_UINT32: _Decoder.ReadUInt32,
-    _FieldDescriptor.TYPE_ENUM: _Decoder.ReadEnum,
-    _FieldDescriptor.TYPE_SFIXED32: _Decoder.ReadSFixed32,
-    _FieldDescriptor.TYPE_SFIXED64: _Decoder.ReadSFixed64,
-    _FieldDescriptor.TYPE_SINT32: _Decoder.ReadSInt32,
-    _FieldDescriptor.TYPE_SINT64: _Decoder.ReadSInt64,
     }

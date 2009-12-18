@@ -43,19 +43,31 @@
 
 namespace google {
 namespace protobuf {
+  namespace io {
+    class CodedInputStream;      // coded_stream.h
+  }
+}
+
+namespace protobuf {
 namespace internal {
 
 // Annotation for the compiler to emit a deprecation message if a field marked
-// with option 'deprecated=true' is used in the code.
+// with option 'deprecated=true' is used in the code, or for other things in
+// generated code which are deprecated.
 //
 // For internal use in the pb.cc files, deprecation warnings are suppressed
 // there.
 #undef DEPRECATED_PROTOBUF_FIELD
 #if !defined(INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION)
-#  define DEPRECATED_PROTOBUF_FIELD GOOGLE_ATTRIBUTE_DEPRECATED
+#  define PROTOBUF_DEPRECATED GOOGLE_ATTRIBUTE_DEPRECATED
 #else
-#  define DEPRECATED_PROTOBUF_FIELD
+#  define PROTOBUF_DEPRECATED
 #endif
+
+
+// Constants for special floating point values.
+double Infinity();
+double NaN();
 
 
 }  // namespace internal

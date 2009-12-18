@@ -47,7 +47,11 @@ namespace {
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, variables);
-  (*variables)["type"] = ClassName(descriptor->message_type(), true);
+  (*variables)["type"] = FieldMessageTypeName(descriptor);
+  (*variables)["stream_writer"] = (*variables)["declared_type"] +
+      (HasFastArraySerialization(descriptor->message_type()->file()) ?
+       "MaybeToArray" :
+       "");
 }
 
 }  // namespace
@@ -125,7 +129,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "::google::protobuf::internal::WireFormatLite::Write$declared_type$NoVirtual(\n"
+    "::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
     "  $number$, this->$name$(), output);\n");
 }
 
@@ -164,26 +168,19 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< $type$ >& $name$() const"
-                 "$deprecation$;\n"
-    "inline ::google::protobuf::RepeatedPtrField< $type$ >* mutable_$name$()"
-                 "$deprecation$;\n"
     "inline const $type$& $name$(int index) const$deprecation$;\n"
     "inline $type$* mutable_$name$(int index)$deprecation$;\n"
     "inline $type$* add_$name$()$deprecation$;\n");
+  printer->Print(variables_,
+    "inline const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
+    "    $name$() const$deprecation$;\n"
+    "inline ::google::protobuf::RepeatedPtrField< $type$ >*\n"
+    "    mutable_$name$()$deprecation$;\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
-    "$classname$::$name$() const {\n"
-    "  return $name$_;\n"
-    "}\n"
-    "inline ::google::protobuf::RepeatedPtrField< $type$ >*\n"
-    "$classname$::mutable_$name$() {\n"
-    "  return &$name$_;\n"
-    "}\n"
     "inline const $type$& $classname$::$name$(int index) const {\n"
     "  return $name$_.Get(index);\n"
     "}\n"
@@ -192,6 +189,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "}\n"
     "inline $type$* $classname$::add_$name$() {\n"
     "  return $name$_.Add();\n"
+    "}\n");
+  printer->Print(variables_,
+    "inline const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
+    "$classname$::$name$() const {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "inline ::google::protobuf::RepeatedPtrField< $type$ >*\n"
+    "$classname$::mutable_$name$() {\n"
+    "  return &$name$_;\n"
     "}\n");
 }
 
@@ -232,7 +238,7 @@ void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
     "for (int i = 0; i < this->$name$_size(); i++) {\n"
-    "  ::google::protobuf::internal::WireFormatLite::Write$declared_type$NoVirtual(\n"
+    "  ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
     "    $number$, this->$name$(i), output);\n"
     "}\n");
 }

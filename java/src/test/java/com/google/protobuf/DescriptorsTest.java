@@ -30,6 +30,10 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
+import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -63,6 +67,22 @@ import java.util.Collections;
  * @author kenton@google.com Kenton Varda
  */
 public class DescriptorsTest extends TestCase {
+
+  // Regression test for bug where referencing a FieldDescriptor.Type value
+  // before a FieldDescriptorProto.Type value would yield a
+  // ExceptionInInitializerError.
+  private static final Object STATIC_INIT_TEST = FieldDescriptor.Type.BOOL;
+
+  public void testFieldTypeEnumMapping() throws Exception {
+    assertEquals(FieldDescriptor.Type.values().length,
+        FieldDescriptorProto.Type.values().length);
+    for (FieldDescriptor.Type type : FieldDescriptor.Type.values()) {
+      FieldDescriptorProto.Type protoType = type.toProto();
+      assertEquals("TYPE_" + type.name(), protoType.name());
+      assertEquals(type, FieldDescriptor.Type.valueOf(protoType));
+    }
+  }
+
   public void testFileDescriptor() throws Exception {
     FileDescriptor file = UnittestProto.getDescriptor();
 
@@ -404,5 +424,36 @@ public class DescriptorsTest extends TestCase {
     assertTrue(
         UnittestEnormousDescriptor.getDescriptor()
           .toProto().getSerializedSize() > 65536);
+  }
+  
+  /**
+   * Tests that the DescriptorValidationException works as intended.
+   */
+  public void testDescriptorValidatorException() throws Exception {
+    FileDescriptorProto fileDescriptorProto = FileDescriptorProto.newBuilder()
+      .setName("foo.proto")
+      .addMessageType(DescriptorProto.newBuilder()
+      .setName("Foo")
+        .addField(FieldDescriptorProto.newBuilder()
+          .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+          .setType(FieldDescriptorProto.Type.TYPE_INT32)
+          .setName("foo")
+          .setNumber(1)
+          .setDefaultValue("invalid")
+          .build())
+        .build())
+      .build();
+    try {
+      Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, 
+          new FileDescriptor[0]);
+      fail("DescriptorValidationException expected");
+    } catch (DescriptorValidationException e) {
+      // Expected; check that the error message contains some useful hints
+      assertTrue(e.getMessage().indexOf("foo") != -1);
+      assertTrue(e.getMessage().indexOf("Foo") != -1);
+      assertTrue(e.getMessage().indexOf("invalid") != -1);
+      assertTrue(e.getCause() instanceof NumberFormatException);
+      assertTrue(e.getCause().getMessage().indexOf("invalid") != -1);
+    }
   }
 }

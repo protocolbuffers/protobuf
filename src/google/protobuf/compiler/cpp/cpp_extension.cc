@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
+#include <map>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
@@ -42,6 +43,18 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+namespace {
+
+// Returns the fully-qualified class name of the message that this field
+// extends. This function is used in the Google-internal code to handle some
+// legacy cases.
+string ExtendeeClassName(const FieldDescriptor* descriptor) {
+  const Descriptor* extendee = descriptor->containing_type();
+  return ClassName(extendee, true);
+}
+
+}  // anonymous namespace
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const string& dllexport_decl)
@@ -80,7 +93,7 @@ ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
   map<string, string> vars;
-  vars["extendee"     ] = ClassName(descriptor_->containing_type(), true);
+  vars["extendee"     ] = ExtendeeClassName(descriptor_);
   vars["number"       ] = SimpleItoa(descriptor_->number());
   vars["type_traits"  ] = type_traits_;
   vars["name"         ] = descriptor_->name();
@@ -106,6 +119,7 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
     "    ::google::protobuf::internal::$type_traits$, $field_type$, $packed$ >\n"
     "  $name$;\n"
     );
+
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
@@ -115,7 +129,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   string name = scope + descriptor_->name();
 
   map<string, string> vars;
-  vars["extendee"     ] = ClassName(descriptor_->containing_type(), true);
+  vars["extendee"     ] = ExtendeeClassName(descriptor_);
   vars["type_traits"  ] = type_traits_;
   vars["name"         ] = name;
   vars["constant_name"] = FieldConstantName(descriptor_);
@@ -154,7 +168,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
 
 void ExtensionGenerator::GenerateRegistration(io::Printer* printer) {
   map<string, string> vars;
-  vars["extendee"   ] = ClassName(descriptor_->containing_type(), true);
+  vars["extendee"   ] = ExtendeeClassName(descriptor_);
   vars["number"     ] = SimpleItoa(descriptor_->number());
   vars["field_type" ] = SimpleItoa(static_cast<int>(descriptor_->type()));
   vars["is_repeated"] = descriptor_->is_repeated() ? "true" : "false";
@@ -193,5 +207,4 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* printer) {
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google

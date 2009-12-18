@@ -37,6 +37,7 @@
 
 #include <algorithm>
 #include <list>
+#include <vector>
 
 #include <google/protobuf/repeated_field.h>
 
@@ -241,6 +242,29 @@ TEST(RepeatedField, MutableDataIsMutable) {
   EXPECT_EQ(2, field.Get(0));
 }
 
+TEST(RepeatedField, Truncate) {
+  RepeatedField<int> field;
+
+  field.Add(12);
+  field.Add(34);
+  field.Add(56);
+  field.Add(78);
+  EXPECT_EQ(4, field.size());
+
+  field.Truncate(3);
+  EXPECT_EQ(3, field.size());
+
+  field.Add(90);
+  EXPECT_EQ(4, field.size());
+  EXPECT_EQ(90, field.Get(3));
+
+  // Truncations that don't change the size are allowed, but growing is not
+  // allowed.
+  field.Truncate(field.size());
+  EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
+}
+
+
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.
@@ -443,6 +467,52 @@ TEST(RepeatedPtrField, ClearedElements) {
   EXPECT_EQ(field.ClearedCount(), 0);
 }
 
+// Test all code paths in AddAllocated().
+TEST(RepeatedPtrField, AddAlocated) {
+  RepeatedPtrField<string> field;
+  while (field.size() < field.Capacity()) {
+    field.Add()->assign("filler");
+  }
+
+  int index = field.size();
+
+  // First branch:  Field is at capacity with no cleared objects.
+  string* foo = new string("foo");
+  field.AddAllocated(foo);
+  EXPECT_EQ(index + 1, field.size());
+  EXPECT_EQ(0, field.ClearedCount());
+  EXPECT_EQ(foo, &field.Get(index));
+
+  // Last branch:  Field is not at capacity and there are no cleared objects.
+  string* bar = new string("bar");
+  field.AddAllocated(bar);
+  ++index;
+  EXPECT_EQ(index + 1, field.size());
+  EXPECT_EQ(0, field.ClearedCount());
+  EXPECT_EQ(bar, &field.Get(index));
+
+  // Third branch:  Field is not at capacity and there are no cleared objects.
+  field.RemoveLast();
+  string* baz = new string("baz");
+  field.AddAllocated(baz);
+  EXPECT_EQ(index + 1, field.size());
+  EXPECT_EQ(1, field.ClearedCount());
+  EXPECT_EQ(baz, &field.Get(index));
+
+  // Second branch:  Field is at capacity but has some cleared objects.
+  while (field.size() < field.Capacity()) {
+    field.Add()->assign("filler2");
+  }
+  field.RemoveLast();
+  index = field.size();
+  string* qux = new string("qux");
+  field.AddAllocated(qux);
+  EXPECT_EQ(index + 1, field.size());
+  // We should have discarded the cleared object.
+  EXPECT_EQ(0, field.ClearedCount());
+  EXPECT_EQ(qux, &field.Get(index));
+}
+
 TEST(RepeatedPtrField, MergeFrom) {
   RepeatedPtrField<string> source, destination;
 
@@ -614,6 +684,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, STLAlgorithms_lower_bound) {
   string v = "f";
   RepeatedPtrField<string>::const_iterator it =
       lower_bound(proto_array_.begin(), proto_array_.end(), v);
+
   EXPECT_EQ(*it, "n");
   EXPECT_TRUE(it == proto_array_.begin() + 3);
 }
@@ -623,6 +694,149 @@ TEST_F(RepeatedPtrFieldIteratorTest, Mutation) {
   *iter = "qux";
   EXPECT_EQ("qux", proto_array_.Get(0));
 }
+
+// -------------------------------------------------------------------
+
+class RepeatedPtrFieldPtrsIteratorTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    proto_array_.Add()->assign("foo");
+    proto_array_.Add()->assign("bar");
+    proto_array_.Add()->assign("baz");
+  }
+
+  RepeatedPtrField<string> proto_array_;
+};
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, ConvertiblePtr) {
+  RepeatedPtrField<string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+}
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, MutablePtrIteration) {
+  RepeatedPtrField<string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+  EXPECT_EQ("foo", **iter);
+  ++iter;
+  EXPECT_EQ("bar", **(iter++));
+  EXPECT_EQ("baz", **iter);
+  ++iter;
+  EXPECT_TRUE(proto_array_.pointer_end() == iter);
+  EXPECT_EQ("baz", **(--proto_array_.pointer_end()));
+}
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, RandomPtrAccess) {
+  RepeatedPtrField<string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+  RepeatedPtrField<string>::pointer_iterator iter2 = iter;
+  ++iter2;
+  ++iter2;
+  EXPECT_TRUE(iter + 2 == iter2);
+  EXPECT_TRUE(iter == iter2 - 2);
+  EXPECT_EQ("baz", *iter[2]);
+  EXPECT_EQ("baz", **(iter + 2));
+  EXPECT_EQ(3, proto_array_.end() - proto_array_.begin());
+}
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, ComparablePtr) {
+  RepeatedPtrField<string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+  RepeatedPtrField<string>::pointer_iterator iter2 = iter + 1;
+  EXPECT_TRUE(iter == iter);
+  EXPECT_TRUE(iter != iter2);
+  EXPECT_TRUE(iter < iter2);
+  EXPECT_TRUE(iter <= iter2);
+  EXPECT_TRUE(iter <= iter);
+  EXPECT_TRUE(iter2 > iter);
+  EXPECT_TRUE(iter2 >= iter);
+  EXPECT_TRUE(iter >= iter);
+}
+
+// Uninitialized iterator does not point to any of the RepeatedPtrOverPtrs.
+// Dereferencing an uninitialized iterator crashes the process.
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, UninitializedPtrIterator) {
+  RepeatedPtrField<string>::pointer_iterator iter;
+  EXPECT_TRUE(iter != proto_array_.pointer_begin());
+  EXPECT_TRUE(iter != proto_array_.pointer_begin() + 1);
+  EXPECT_TRUE(iter != proto_array_.pointer_begin() + 2);
+  EXPECT_TRUE(iter != proto_array_.pointer_begin() + 3);
+  EXPECT_TRUE(iter != proto_array_.pointer_end());
+}
+
+
+// This comparison functor is required by the tests for RepeatedPtrOverPtrs.
+// They operate on strings and need to compare strings as strings in
+// any stl algorithm, even though the iterator returns a pointer to a string
+// - i.e. *iter has type string*.
+struct StringLessThan {
+  bool operator()(const string* z, const string& y) {
+    return *z < y;
+  }
+  bool operator()(const string* z, const string* y) {
+    return *z < *y;
+  }
+};
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
+  proto_array_.Clear();
+  proto_array_.Add()->assign("a");
+  proto_array_.Add()->assign("c");
+  proto_array_.Add()->assign("d");
+  proto_array_.Add()->assign("n");
+  proto_array_.Add()->assign("p");
+  proto_array_.Add()->assign("x");
+  proto_array_.Add()->assign("y");
+
+  RepeatedPtrField<string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+  string v = "f";
+  RepeatedPtrField<string>::pointer_iterator it =
+      lower_bound(proto_array_.pointer_begin(), proto_array_.pointer_end(),
+                  v, StringLessThan());
+
+  GOOGLE_CHECK(*it != NULL);
+
+  EXPECT_EQ(**it, "n");
+  EXPECT_TRUE(it == proto_array_.pointer_begin() + 3);
+}
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrMutation) {
+  RepeatedPtrField<string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+  **iter = "qux";
+  EXPECT_EQ("qux", proto_array_.Get(0));
+
+  EXPECT_EQ("bar", proto_array_.Get(1));
+  EXPECT_EQ("baz", proto_array_.Get(2));
+  ++iter;
+  delete *iter;
+  *iter = new string("a");
+  ++iter;
+  delete *iter;
+  *iter = new string("b");
+  EXPECT_EQ("a", proto_array_.Get(1));
+  EXPECT_EQ("b", proto_array_.Get(2));
+}
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
+  proto_array_.Add()->assign("c");
+  proto_array_.Add()->assign("d");
+  proto_array_.Add()->assign("n");
+  proto_array_.Add()->assign("p");
+  proto_array_.Add()->assign("a");
+  proto_array_.Add()->assign("y");
+  proto_array_.Add()->assign("x");
+  EXPECT_EQ("foo", proto_array_.Get(0));
+  EXPECT_EQ("n", proto_array_.Get(5));
+  EXPECT_EQ("x", proto_array_.Get(9));
+  sort(proto_array_.pointer_begin(),
+       proto_array_.pointer_end(),
+       StringLessThan());
+  EXPECT_EQ("a", proto_array_.Get(0));
+  EXPECT_EQ("baz", proto_array_.Get(2));
+  EXPECT_EQ("y", proto_array_.Get(9));
+}
+
 
 // -----------------------------------------------------------------------------
 // Unit-tests for the insert iterators

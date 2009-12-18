@@ -98,6 +98,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     "$dllexport$bool $classname$_IsValid(int value);\n"
     "const $classname$ $prefix$$short_name$_MIN = $prefix$$min_name$;\n"
     "const $classname$ $prefix$$short_name$_MAX = $prefix$$max_name$;\n"
+    "const int $prefix$$short_name$_ARRAYSIZE = $prefix$$short_name$_MAX + 1;\n"
     "\n");
 
   if (HasDescriptorMethods(descriptor_->file())) {
@@ -149,17 +150,21 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
     "static const $nested_name$ $nested_name$_MIN =\n"
     "  $classname$_$nested_name$_MIN;\n"
     "static const $nested_name$ $nested_name$_MAX =\n"
-    "  $classname$_$nested_name$_MAX;\n");
+    "  $classname$_$nested_name$_MAX;\n"
+    "static const int $nested_name$_ARRAYSIZE =\n"
+    "  $classname$_$nested_name$_ARRAYSIZE;\n");
 
   if (HasDescriptorMethods(descriptor_->file())) {
     printer->Print(vars,
       "static inline const ::google::protobuf::EnumDescriptor*\n"
       "$nested_name$_descriptor() {\n"
       "  return $classname$_descriptor();\n"
-      "}\n"
+      "}\n");
+    printer->Print(vars,
       "static inline const ::std::string& $nested_name$_Name($nested_name$ value) {\n"
       "  return $classname$_Name(value);\n"
-      "}\n"
+      "}\n");
+    printer->Print(vars,
       "static inline bool $nested_name$_Parse(const ::std::string& name,\n"
       "    $nested_name$* value) {\n"
       "  return $classname$_Parse(name, value);\n"
@@ -240,7 +245,8 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
     }
     printer->Print(vars,
       "const $classname$ $parent$::$nested_name$_MIN;\n"
-      "const $classname$ $parent$::$nested_name$_MAX;\n");
+      "const $classname$ $parent$::$nested_name$_MAX;\n"
+      "const int $parent$::$nested_name$_ARRAYSIZE;\n");
 
     printer->Print("#endif  // _MSC_VER\n");
   }

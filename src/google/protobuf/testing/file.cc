@@ -84,10 +84,13 @@ void File::ReadFileToStringOrDie(const string& name, string* output) {
 
 void File::WriteStringToFileOrDie(const string& contents, const string& name) {
   FILE* file = fopen(name.c_str(), "wb");
-  GOOGLE_CHECK(file != NULL);
+  GOOGLE_CHECK(file != NULL)
+      << "fopen(" << name << ", \"wb\"): " << strerror(errno);
   GOOGLE_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
-                  contents.size());
-  GOOGLE_CHECK(fclose(file) == 0);
+                  contents.size())
+      << "fwrite(" << name << "): " << strerror(errno);
+  GOOGLE_CHECK(fclose(file) == 0)
+      << "fclose(" << name << "): " << strerror(errno);
 }
 
 bool File::CreateDir(const string& name, int mode) {
@@ -97,8 +100,10 @@ bool File::CreateDir(const string& name, int mode) {
 bool File::RecursivelyCreateDir(const string& path, int mode) {
   if (CreateDir(path, mode)) return true;
 
+  if (Exists(path)) return false;
+
   // Try creating the parent.
-  string::size_type slashpos = path.find_first_of('/');
+  string::size_type slashpos = path.find_last_of('/');
   if (slashpos == string::npos) {
     // No parent given.
     return false;

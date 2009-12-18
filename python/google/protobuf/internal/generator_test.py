@@ -35,15 +35,20 @@
 # indirect testing of the protocol compiler output.
 
 """Unittest that directly tests the output of the pure-Python protocol
-compiler.  See //net/proto2/internal/reflection_test.py for a test which
+compiler.  See //google/protobuf/reflection_test.py for a test which
 further ensures that we can use Python protocol message objects as we expect.
 """
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
+from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf import unittest_no_generic_services_pb2
+
+
+MAX_EXTENSION = 536870912
 
 
 class GeneratorTest(unittest.TestCase):
@@ -71,6 +76,31 @@ class GeneratorTest(unittest.TestCase):
     self.assertEqual(3, proto.BAZ)
     self.assertEqual(3, unittest_pb2.TestAllTypes.BAZ)
 
+  def testExtremeDefaultValues(self):
+    message = unittest_pb2.TestExtremeDefaultValues()
+    self.assertEquals(float('inf'), message.inf_double)
+    self.assertEquals(float('-inf'), message.neg_inf_double)
+    self.assert_(message.nan_double != message.nan_double)
+    self.assertEquals(float('inf'), message.inf_float)
+    self.assertEquals(float('-inf'), message.neg_inf_float)
+    self.assert_(message.nan_float != message.nan_float)
+
+  def testHasDefaultValues(self):
+    desc = unittest_pb2.TestAllTypes.DESCRIPTOR
+
+    expected_has_default_by_name = {
+        'optional_int32': False,
+        'repeated_int32': False,
+        'optional_nested_message': False,
+        'default_int32': True,
+    }
+
+    has_default_by_name = dict(
+        [(f.name, f.has_default_value)
+         for f in desc.fields
+         if f.name in expected_has_default_by_name])
+    self.assertEqual(expected_has_default_by_name, has_default_by_name)
+
   def testContainingTypeBehaviorForExtensions(self):
     self.assertEqual(unittest_pb2.optional_int32_extension.containing_type,
                      unittest_pb2.TestAllExtensions.DESCRIPTOR)
@@ -94,6 +124,81 @@ class GeneratorTest(unittest.TestCase):
   def testOptions(self):
     proto = unittest_mset_pb2.TestMessageSet()
     self.assertTrue(proto.DESCRIPTOR.GetOptions().message_set_wire_format)
+
+  def testNestedTypes(self):
+    self.assertEquals(
+        set(unittest_pb2.TestAllTypes.DESCRIPTOR.nested_types),
+        set([
+            unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
+            unittest_pb2.TestAllTypes.OptionalGroup.DESCRIPTOR,
+            unittest_pb2.TestAllTypes.RepeatedGroup.DESCRIPTOR,
+        ]))
+    self.assertEqual(unittest_pb2.TestEmptyMessage.DESCRIPTOR.nested_types, [])
+    self.assertEqual(
+        unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.nested_types, [])
+
+  def testContainingType(self):
+    self.assertTrue(
+        unittest_pb2.TestEmptyMessage.DESCRIPTOR.containing_type is None)
+    self.assertTrue(
+        unittest_pb2.TestAllTypes.DESCRIPTOR.containing_type is None)
+    self.assertEqual(
+        unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.containing_type,
+        unittest_pb2.TestAllTypes.DESCRIPTOR)
+    self.assertEqual(
+        unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.containing_type,
+        unittest_pb2.TestAllTypes.DESCRIPTOR)
+    self.assertEqual(
+        unittest_pb2.TestAllTypes.RepeatedGroup.DESCRIPTOR.containing_type,
+        unittest_pb2.TestAllTypes.DESCRIPTOR)
+
+  def testContainingTypeInEnumDescriptor(self):
+    self.assertTrue(unittest_pb2._FOREIGNENUM.containing_type is None)
+    self.assertEqual(unittest_pb2._TESTALLTYPES_NESTEDENUM.containing_type,
+                     unittest_pb2.TestAllTypes.DESCRIPTOR)
+
+  def testPackage(self):
+    self.assertEqual(
+        unittest_pb2.TestAllTypes.DESCRIPTOR.file.package,
+        'protobuf_unittest')
+    desc = unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR
+    self.assertEqual(desc.file.package, 'protobuf_unittest')
+    self.assertEqual(
+        unittest_import_pb2.ImportMessage.DESCRIPTOR.file.package,
+        'protobuf_unittest_import')
+
+    self.assertEqual(
+        unittest_pb2._FOREIGNENUM.file.package, 'protobuf_unittest')
+    self.assertEqual(
+        unittest_pb2._TESTALLTYPES_NESTEDENUM.file.package,
+        'protobuf_unittest')
+    self.assertEqual(
+        unittest_import_pb2._IMPORTENUM.file.package,
+        'protobuf_unittest_import')
+
+  def testExtensionRange(self):
+    self.assertEqual(
+        unittest_pb2.TestAllTypes.DESCRIPTOR.extension_ranges, [])
+    self.assertEqual(
+        unittest_pb2.TestAllExtensions.DESCRIPTOR.extension_ranges,
+        [(1, MAX_EXTENSION)])
+    self.assertEqual(
+        unittest_pb2.TestMultipleExtensionRanges.DESCRIPTOR.extension_ranges,
+        [(42, 43), (4143, 4244), (65536, MAX_EXTENSION)])
+
+  def testFileDescriptor(self):
+    self.assertEqual(unittest_pb2.DESCRIPTOR.name,
+                     'google/protobuf/unittest.proto')
+    self.assertEqual(unittest_pb2.DESCRIPTOR.package, 'protobuf_unittest')
+    self.assertFalse(unittest_pb2.DESCRIPTOR.serialized_pb is None)
+
+  def testNoGenericServices(self):
+    # unittest_no_generic_services.proto should contain defs for everything
+    # except services.
+    self.assertTrue(hasattr(unittest_no_generic_services_pb2, "TestMessage"))
+    self.assertTrue(hasattr(unittest_no_generic_services_pb2, "FOO"))
+    self.assertTrue(hasattr(unittest_no_generic_services_pb2, "test_extension"))
+    self.assertFalse(hasattr(unittest_no_generic_services_pb2, "TestService"))
 
 
 if __name__ == '__main__':

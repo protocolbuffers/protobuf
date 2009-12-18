@@ -157,6 +157,11 @@ public final class ExtensionRegistry extends ExtensionRegistryLite {
   public void add(final GeneratedMessage.GeneratedExtension<?, ?> extension) {
     if (extension.getDescriptor().getJavaType() ==
         FieldDescriptor.JavaType.MESSAGE) {
+      if (extension.getMessageDefaultInstance() == null) {
+        throw new IllegalStateException(
+            "Registered message-type extension had null default instance: " +
+            extension.getDescriptor().getFullName());
+      }
       add(new ExtensionInfo(extension.getDescriptor(),
                             extension.getMessageDefaultInstance()));
     } else {

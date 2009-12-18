@@ -48,7 +48,7 @@ import java.io.UnsupportedEncodingException;
  * (given a message object of the type) {@code message.getDescriptorForType()}.
  *
  * Descriptors are built from DescriptorProtos, as defined in
- * {@code net/proto2/proto/descriptor.proto}.
+ * {@code google/protobuf/descriptor.proto}.
  *
  * @author kenton@google.com Kenton Varda
  */
@@ -699,6 +699,11 @@ public final class Descriptors {
       return getOptions().getPacked();
     }
 
+    /** Can this field be packed? i.e. is it a repeated primitive field? */
+    public boolean isPackable() {
+      return isRepeated() && getLiteType().isPackable();
+    }
+
     /** Returns true if the field had an explicitly-defined default value. */
     public boolean hasDefaultValue() { return proto.hasDefaultValue(); }
 
@@ -810,39 +815,34 @@ public final class Descriptors {
     private Object defaultValue;
 
     public enum Type {
-      DOUBLE  (FieldDescriptorProto.Type.TYPE_DOUBLE  , JavaType.DOUBLE     ),
-      FLOAT   (FieldDescriptorProto.Type.TYPE_FLOAT   , JavaType.FLOAT      ),
-      INT64   (FieldDescriptorProto.Type.TYPE_INT64   , JavaType.LONG       ),
-      UINT64  (FieldDescriptorProto.Type.TYPE_UINT64  , JavaType.LONG       ),
-      INT32   (FieldDescriptorProto.Type.TYPE_INT32   , JavaType.INT        ),
-      FIXED64 (FieldDescriptorProto.Type.TYPE_FIXED64 , JavaType.LONG       ),
-      FIXED32 (FieldDescriptorProto.Type.TYPE_FIXED32 , JavaType.INT        ),
-      BOOL    (FieldDescriptorProto.Type.TYPE_BOOL    , JavaType.BOOLEAN    ),
-      STRING  (FieldDescriptorProto.Type.TYPE_STRING  , JavaType.STRING     ),
-      GROUP   (FieldDescriptorProto.Type.TYPE_GROUP   , JavaType.MESSAGE    ),
-      MESSAGE (FieldDescriptorProto.Type.TYPE_MESSAGE , JavaType.MESSAGE    ),
-      BYTES   (FieldDescriptorProto.Type.TYPE_BYTES   , JavaType.BYTE_STRING),
-      UINT32  (FieldDescriptorProto.Type.TYPE_UINT32  , JavaType.INT        ),
-      ENUM    (FieldDescriptorProto.Type.TYPE_ENUM    , JavaType.ENUM       ),
-      SFIXED32(FieldDescriptorProto.Type.TYPE_SFIXED32, JavaType.INT        ),
-      SFIXED64(FieldDescriptorProto.Type.TYPE_SFIXED64, JavaType.LONG       ),
-      SINT32  (FieldDescriptorProto.Type.TYPE_SINT32  , JavaType.INT        ),
-      SINT64  (FieldDescriptorProto.Type.TYPE_SINT64  , JavaType.LONG       );
+      DOUBLE  (JavaType.DOUBLE     ),
+      FLOAT   (JavaType.FLOAT      ),
+      INT64   (JavaType.LONG       ),
+      UINT64  (JavaType.LONG       ),
+      INT32   (JavaType.INT        ),
+      FIXED64 (JavaType.LONG       ),
+      FIXED32 (JavaType.INT        ),
+      BOOL    (JavaType.BOOLEAN    ),
+      STRING  (JavaType.STRING     ),
+      GROUP   (JavaType.MESSAGE    ),
+      MESSAGE (JavaType.MESSAGE    ),
+      BYTES   (JavaType.BYTE_STRING),
+      UINT32  (JavaType.INT        ),
+      ENUM    (JavaType.ENUM       ),
+      SFIXED32(JavaType.INT        ),
+      SFIXED64(JavaType.LONG       ),
+      SINT32  (JavaType.INT        ),
+      SINT64  (JavaType.LONG       );
 
-      Type(final FieldDescriptorProto.Type proto, final JavaType javaType) {
-        this.proto = proto;
+      Type(final JavaType javaType) {
         this.javaType = javaType;
-
-        if (ordinal() != proto.getNumber() - 1) {
-          throw new RuntimeException(
-            "descriptor.proto changed but Desrciptors.java wasn't updated.");
-        }
       }
 
-      private FieldDescriptorProto.Type proto;
       private JavaType javaType;
 
-      public FieldDescriptorProto.Type toProto() { return proto; }
+      public FieldDescriptorProto.Type toProto() {
+        return FieldDescriptorProto.Type.valueOf(ordinal() + 1);
+      }
       public JavaType getJavaType() { return javaType; }
 
       public static Type valueOf(final FieldDescriptorProto.Type type) {
@@ -902,16 +902,10 @@ public final class Descriptors {
       }
 
       // Only repeated primitive fields may be packed.
-      if (proto.getOptions().getPacked()) {
-        if (proto.getLabel() != FieldDescriptorProto.Label.LABEL_REPEATED ||
-            proto.getType() == FieldDescriptorProto.Type.TYPE_STRING ||
-            proto.getType() == FieldDescriptorProto.Type.TYPE_GROUP ||
-            proto.getType() == FieldDescriptorProto.Type.TYPE_MESSAGE ||
-            proto.getType() == FieldDescriptorProto.Type.TYPE_BYTES) {
-          throw new DescriptorValidationException(this,
-            "[packed = true] can only be specified for repeated primitive " +
-            "fields.");
-        }
+      if (proto.getOptions().getPacked() && !isPackable()) {
+        throw new DescriptorValidationException(this,
+          "[packed = true] can only be specified for repeated primitive " +
+          "fields.");
       }
 
       if (isExtension) {
@@ -1030,10 +1024,26 @@ public final class Descriptors {
               defaultValue = TextFormat.parseUInt64(proto.getDefaultValue());
               break;
             case FLOAT:
-              defaultValue = Float.valueOf(proto.getDefaultValue());
+              if (proto.getDefaultValue().equals("inf")) {
+                defaultValue = Float.POSITIVE_INFINITY;
+              } else if (proto.getDefaultValue().equals("-inf")) {
+                defaultValue = Float.NEGATIVE_INFINITY;
+              } else if (proto.getDefaultValue().equals("nan")) {
+                defaultValue = Float.NaN;
+              } else {
+                defaultValue = Float.valueOf(proto.getDefaultValue());
+              }
               break;
             case DOUBLE:
-              defaultValue = Double.valueOf(proto.getDefaultValue());
+              if (proto.getDefaultValue().equals("inf")) {
+                defaultValue = Double.POSITIVE_INFINITY;
+              } else if (proto.getDefaultValue().equals("-inf")) {
+                defaultValue = Double.NEGATIVE_INFINITY;
+              } else if (proto.getDefaultValue().equals("nan")) {
+                defaultValue = Double.NaN;
+              } else {
+                defaultValue = Double.valueOf(proto.getDefaultValue());
+              }
               break;
             case BOOL:
               defaultValue = Boolean.valueOf(proto.getDefaultValue());
@@ -1064,12 +1074,9 @@ public final class Descriptors {
                 "Message type had default value.");
           }
         } catch (NumberFormatException e) {
-          final DescriptorValidationException validationException =
-            new DescriptorValidationException(this,
-              "Could not parse default value: \"" +
-              proto.getDefaultValue() + '\"');
-          validationException.initCause(e);
-          throw validationException;
+          throw new DescriptorValidationException(this, 
+              "Could not parse default value: \"" + 
+              proto.getDefaultValue() + '\"', e);
         }
       } else {
         // Determine the default default for this field.
@@ -1536,14 +1543,7 @@ public final class Descriptors {
     private DescriptorValidationException(
         final GenericDescriptor problemDescriptor,
         final String description) {
-      this(problemDescriptor, description, null);
-    }
-
-    private DescriptorValidationException(
-        final GenericDescriptor problemDescriptor,
-        final String description,
-        final Throwable cause) {
-      super(problemDescriptor.getFullName() + ": " + description, cause);
+      super(problemDescriptor.getFullName() + ": " + description);
 
       // Note that problemDescriptor may be partially uninitialized, so we
       // don't want to expose it directly to the user.  So, we only provide
@@ -1551,6 +1551,14 @@ public final class Descriptors {
       name = problemDescriptor.getFullName();
       proto = problemDescriptor.toProto();
       this.description = description;
+    }
+
+    private DescriptorValidationException(
+        final GenericDescriptor problemDescriptor,
+        final String description,
+        final Throwable cause) {
+      this(problemDescriptor, description);
+      initCause(cause);
     }
 
     private DescriptorValidationException(

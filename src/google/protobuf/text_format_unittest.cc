@@ -138,12 +138,53 @@ TEST_F(TextFormatTest, ShortDebugString) {
             proto_.ShortDebugString());
 }
 
+TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
+  proto_.set_optional_int32(123);
+  proto_.add_repeated_int32(456);
+  proto_.add_repeated_int32(789);
+  proto_.add_repeated_string("foo");
+  proto_.add_repeated_string("bar");
+  proto_.add_repeated_nested_message()->set_bb(2);
+  proto_.add_repeated_nested_message()->set_bb(3);
+  proto_.add_repeated_nested_enum(unittest::TestAllTypes::FOO);
+  proto_.add_repeated_nested_enum(unittest::TestAllTypes::BAR);
+
+  TextFormat::Printer printer;
+  printer.SetUseShortRepeatedPrimitives(true);
+  string text;
+  printer.PrintToString(proto_, &text);
+
+  EXPECT_EQ("optional_int32: 123\n"
+            "repeated_int32: [456, 789]\n"
+            "repeated_string: \"foo\"\n"
+            "repeated_string: \"bar\"\n"
+            "repeated_nested_message {\n  bb: 2\n}\n"
+            "repeated_nested_message {\n  bb: 3\n}\n"
+            "repeated_nested_enum: [FOO, BAR]\n",
+            text);
+
+  // Try in single-line mode.
+  printer.SetSingleLineMode(true);
+  printer.PrintToString(proto_, &text);
+
+  EXPECT_EQ("optional_int32: 123 "
+            "repeated_int32: [456, 789] "
+            "repeated_string: \"foo\" "
+            "repeated_string: \"bar\" "
+            "repeated_nested_message { bb: 2 } "
+            "repeated_nested_message { bb: 3 } "
+            "repeated_nested_enum: [FOO, BAR] ",
+            text);
+}
+
+
 TEST_F(TextFormatTest, StringEscape) {
   // Set the string value to test.
   proto_.set_optional_string(kEscapeTestString);
 
   // Get the DebugString from the proto.
   string debug_string = proto_.DebugString();
+  string utf8_debug_string = proto_.Utf8DebugString();
 
   // Hardcode a correct value to test against.
   string correct_string = "optional_string: "
@@ -152,10 +193,34 @@ TEST_F(TextFormatTest, StringEscape) {
 
   // Compare.
   EXPECT_EQ(correct_string, debug_string);
+  // UTF-8 string is the same as non-UTF-8 because
+  // the protocol buffer contains no UTF-8 text.
+  EXPECT_EQ(correct_string, utf8_debug_string);
 
   string expected_short_debug_string = "optional_string: "
       + kEscapeTestStringEscaped;
   EXPECT_EQ(expected_short_debug_string, proto_.ShortDebugString());
+}
+
+TEST_F(TextFormatTest, Utf8DebugString) {
+  // Set the string value to test.
+  proto_.set_optional_string("\350\260\267\346\255\214");
+
+  // Get the DebugString from the proto.
+  string debug_string = proto_.DebugString();
+  string utf8_debug_string = proto_.Utf8DebugString();
+
+  // Hardcode a correct value to test against.
+  string correct_utf8_string = "optional_string: "
+      "\"\350\260\267\346\255\214\""
+      "\n";
+  string correct_string = "optional_string: "
+      "\"\\350\\260\\267\\346\\255\\214\""
+      "\n";
+
+  // Compare.
+  EXPECT_EQ(correct_utf8_string, utf8_debug_string);
+  EXPECT_EQ(correct_string, debug_string);
 }
 
 TEST_F(TextFormatTest, PrintUnknownFields) {
@@ -603,10 +668,15 @@ class TextFormatParserTest : public testing::Test {
 
   void ExpectFailure(const string& input, const string& message, int line,
                      int col, Message* proto) {
+    ExpectMessage(input, message, line, col, proto, false);
+  }
+
+  void ExpectMessage(const string& input, const string& message, int line,
+                     int col, Message* proto, bool expected_result) {
     TextFormat::Parser parser;
     MockErrorCollector error_collector;
     parser.RecordErrorsTo(&error_collector);
-    EXPECT_FALSE(parser.ParseFromString(input, proto));
+    EXPECT_EQ(parser.ParseFromString(input, proto), expected_result);
     EXPECT_EQ(SimpleItoa(line) + ":" + SimpleItoa(col) + ": " + message + "\n",
               error_collector.text_);
   }
@@ -624,6 +694,10 @@ class TextFormatParserTest : public testing::Test {
     void AddError(int line, int column, const string& message) {
       strings::SubstituteAndAppend(&text_, "$0:$1: $2\n",
                                    line + 1, column + 1, message);
+    }
+
+    void AddWarning(int line, int column, const string& message) {
+      AddError(line, column, "WARNING:" + message);
     }
   };
 };
@@ -945,6 +1019,12 @@ TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
             errors[0]);
 }
 
+TEST_F(TextFormatParserTest, ParseDeprecatedField) {
+  unittest::TestDeprecatedFields message;
+  ExpectMessage("deprecated_int32: 42",
+                "WARNING:text format contains deprecated field "
+                "\"deprecated_int32\"", 1, 21, &message, true);
+}
 
 class TextFormatMessageSetTest : public testing::Test {
  protected:
@@ -991,5 +1071,4 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
 
 }  // namespace text_format_unittest
 }  // namespace protobuf
-
 }  // namespace google

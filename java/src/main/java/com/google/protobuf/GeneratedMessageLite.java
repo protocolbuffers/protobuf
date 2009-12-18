@@ -303,7 +303,7 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
         final ExtensionRegistryLite extensionRegistry,
         final int tag) throws IOException {
       final FieldSet<ExtensionDescriptor> extensions =
-          internalGetResult().extensions;
+          ((ExtendableMessage) internalGetResult()).extensions;
 
       final int wireType = WireFormat.getTagWireType(tag);
       final int fieldNumber = WireFormat.getTagFieldNumber(tag);
@@ -312,15 +312,29 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
         extensionRegistry.findLiteExtensionByNumber(
             getDefaultInstanceForType(), fieldNumber);
 
-      if (extension == null || wireType !=
-            FieldSet.getWireFormatForFieldType(
-                extension.descriptor.getLiteType(),
-                extension.descriptor.isPacked())) {
-        // Unknown field or wrong wire type.  Skip.
+      boolean unknown = false;
+      boolean packed = false;
+      if (extension == null) {
+        unknown = true;  // Unknown field.
+      } else if (wireType == FieldSet.getWireFormatForFieldType(
+                   extension.descriptor.getLiteType(),
+                   false  /* isPacked */)) {
+        packed = false;  // Normal, unpacked value.
+      } else if (extension.descriptor.isRepeated &&
+                 extension.descriptor.type.isPackable() &&
+                 wireType == FieldSet.getWireFormatForFieldType(
+                   extension.descriptor.getLiteType(),
+                   true  /* isPacked */)) {
+        packed = true;  // Packed value.
+      } else {
+        unknown = true;  // Wrong wire type.
+      }
+
+      if (unknown) {  // Unknown field or wrong wire type.  Skip.
         return input.skipField(tag);
       }
 
-      if (extension.descriptor.isPacked()) {
+      if (packed) {
         final int length = input.readRawVarint32();
         final int limit = input.pushLimit(length);
         if (extension.descriptor.getLiteType() == WireFormat.FieldType.ENUM) {
@@ -396,7 +410,8 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
     }
 
     protected final void mergeExtensionFields(final MessageType other) {
-      internalGetResult().extensions.mergeFrom(other.extensions);
+      ((ExtendableMessage) internalGetResult()).extensions.mergeFrom(
+          ((ExtendableMessage) other).extensions);
     }
   }
 

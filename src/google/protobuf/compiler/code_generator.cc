@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/code_generator.h>
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -43,9 +44,15 @@ namespace compiler {
 CodeGenerator::~CodeGenerator() {}
 OutputDirectory::~OutputDirectory() {}
 
+io::ZeroCopyOutputStream* OutputDirectory::OpenForInsert(
+    const string& filename, const string& insertion_point) {
+  GOOGLE_LOG(FATAL) << "This OutputDirectory does not support insertion.";
+  return NULL;  // make compiler happy
+}
+
 // Parses a set of comma-delimited name/value pairs.
 void ParseGeneratorParameter(const string& text,
-			     vector<pair<string, string> >* output) {
+                             vector<pair<string, string> >* output) {
   vector<string> parts;
   SplitStringUsing(text, ",", &parts);
 

@@ -265,6 +265,14 @@ LIBPROTOBUF_EXPORT int CEscapeString(const char* src, int src_len,
 // ----------------------------------------------------------------------
 LIBPROTOBUF_EXPORT string CEscape(const string& src);
 
+namespace strings {
+// Like CEscape() but does not escape bytes with the upper bit set.
+LIBPROTOBUF_EXPORT string Utf8SafeCEscape(const string& src);
+
+// Like CEscape() but uses hex (\x) escapes instead of octals.
+LIBPROTOBUF_EXPORT string CHexEscape(const string& src);
+}  // namespace strings
+
 // ----------------------------------------------------------------------
 // strto32()
 // strtou32()

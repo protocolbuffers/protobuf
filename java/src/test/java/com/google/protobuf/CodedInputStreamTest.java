@@ -490,4 +490,18 @@ public class CodedInputStreamTest extends TestCase {
     assertEquals(0, in.readTag());
     assertEquals(5, in.getTotalBytesRead());
   }
+
+  public void testInvalidTag() throws Exception {
+    // Any tag number which corresponds to field number zero is invalid and
+    // should throw InvalidProtocolBufferException.
+    for (int i = 0; i < 8; i++) {
+      try {
+        CodedInputStream.newInstance(bytes(i)).readTag();
+        fail("Should have thrown an exception.");
+      } catch (InvalidProtocolBufferException e) {
+        assertEquals(InvalidProtocolBufferException.invalidTag().getMessage(),
+                     e.getMessage());
+      }
+    }
+  }
 }

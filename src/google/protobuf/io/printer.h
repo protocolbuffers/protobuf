@@ -59,8 +59,8 @@ class ZeroCopyOutputStream;     // zero_copy_stream.h
 // The above writes "My name is Bob." to the output stream.
 //
 // Printer aggressively enforces correct usage, crashing (with assert failures)
-// in the case of undefined variables.  This helps greatly in debugging code
-// which uses it.  This class is not intended to be used by production servers.
+// in the case of undefined variables in debug builds. This helps greatly in
+// debugging code which uses it.
 class LIBPROTOBUF_EXPORT Printer {
  public:
   // Create a printer that writes text to the given output stream.  Use the
@@ -94,15 +94,24 @@ class LIBPROTOBUF_EXPORT Printer {
   // level is zero.
   void Outdent();
 
+  // Write a string to the output buffer.
+  // This method does not look for newlines to add indentation.
+  void PrintRaw(const string& data);
+
+  // Write a zero-delimited string to output buffer.
+  // This method does not look for newlines to add indentation.
+  void PrintRaw(const char* data);
+
+  // Write some bytes to the output buffer.
+  // This method does not look for newlines to add indentation.
+  void WriteRaw(const char* data, int size);
+
   // True if any write to the underlying stream failed.  (We don't just
   // crash in this case because this is an I/O failure, not a programming
   // error.)
   bool failed() const { return failed_; }
 
  private:
-  // Write some text to the output buffer.
-  void Write(const char* data, int size);
-
   const char variable_delimiter_;
 
   ZeroCopyOutputStream* const output_;

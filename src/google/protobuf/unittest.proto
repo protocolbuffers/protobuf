@@ -155,6 +155,10 @@ message TestAllTypes {
   optional string default_cord = 85 [ctype=CORD,default="123"];
 }
 
+message TestDeprecatedFields {
+  optional int32 deprecated_int32 = 1 [deprecated=true];
+}
+
 // Define these after TestAllTypes to make sure the compiler can handle
 // that.
 message ForeignMessage {
@@ -348,6 +352,12 @@ message TestEmptyMessageWithExtensions {
   extensions 1 to max;
 }
 
+message TestMultipleExtensionRanges {
+  extensions 42;
+  extensions 4143 to 4243;
+  extensions 65536 to max;
+}
+
 // Test that really large tag numbers don't break anything.
 message TestReallyLargeTagNumber {
   // The largest possible tag number is 2^28 - 1, since the wire format uses
@@ -372,13 +382,14 @@ message TestMutualRecursionB {
 }
 
 // Test that groups have disjoint field numbers from their siblings and
-// parents.  This is NOT possible in proto1; only proto2.  When outputting
-// proto1, the dup fields should be dropped.
-message TestDupFieldNumber {
-  optional int32 a = 1;
-  optional group Foo = 2 { optional int32 a = 1; }
-  optional group Bar = 3 { optional int32 a = 1; }
-}
+// parents.  This is NOT possible in proto1; only proto2.  When attempting
+// to compile with proto1, this will emit an error; so we only include it
+// in protobuf_unittest_proto.
+message TestDupFieldNumber {                        // NO_PROTO1
+  optional int32 a = 1;                             // NO_PROTO1
+  optional group Foo = 2 { optional int32 a = 1; }  // NO_PROTO1
+  optional group Bar = 3 { optional int32 a = 1; }  // NO_PROTO1
+}                                                   // NO_PROTO1
 
 
 // Needed for a Python test.
@@ -468,6 +479,14 @@ message TestExtremeDefaultValues {
   // Using exponents
   optional float large_float = 12 [default = 2E8];
   optional float small_negative_float = 13 [default = -8e-28];
+
+  // Text for nonfinite floating-point values.
+  optional double inf_double = 14 [default = inf];
+  optional double neg_inf_double = 15 [default = -inf];
+  optional double nan_double = 16 [default = nan];
+  optional float inf_float = 17 [default = inf];
+  optional float neg_inf_float = 18 [default = -inf];
+  optional float nan_float = 19 [default = nan];
 }
 
 // Test String and Bytes: string is for valid UTF-8 strings
@@ -498,6 +517,25 @@ message TestPackedTypes {
   repeated ForeignEnum packed_enum  = 103 [packed = true];
 }
 
+// A message with the same fields as TestPackedTypes, but without packing. Used
+// to test packed <-> unpacked wire compatibility.
+message TestUnpackedTypes {
+  repeated    int32 unpacked_int32    =  90 [packed = false];
+  repeated    int64 unpacked_int64    =  91 [packed = false];
+  repeated   uint32 unpacked_uint32   =  92 [packed = false];
+  repeated   uint64 unpacked_uint64   =  93 [packed = false];
+  repeated   sint32 unpacked_sint32   =  94 [packed = false];
+  repeated   sint64 unpacked_sint64   =  95 [packed = false];
+  repeated  fixed32 unpacked_fixed32  =  96 [packed = false];
+  repeated  fixed64 unpacked_fixed64  =  97 [packed = false];
+  repeated sfixed32 unpacked_sfixed32 =  98 [packed = false];
+  repeated sfixed64 unpacked_sfixed64 =  99 [packed = false];
+  repeated    float unpacked_float    = 100 [packed = false];
+  repeated   double unpacked_double   = 101 [packed = false];
+  repeated     bool unpacked_bool     = 102 [packed = false];
+  repeated ForeignEnum unpacked_enum  = 103 [packed = false];
+}
+
 message TestPackedExtensions {
   extensions 1 to max;
 }
@@ -517,6 +555,47 @@ extend TestPackedExtensions {
   repeated   double packed_double_extension   = 101 [packed = true];
   repeated     bool packed_bool_extension     = 102 [packed = true];
   repeated ForeignEnum packed_enum_extension  = 103 [packed = true];
+}
+
+// Used by ExtensionSetTest/DynamicExtensions.  The test actually builds
+// a set of extensions to TestAllExtensions dynamically, based on the fields
+// of this message type.
+message TestDynamicExtensions {
+  enum DynamicEnumType {
+    DYNAMIC_FOO = 2200;
+    DYNAMIC_BAR = 2201;
+    DYNAMIC_BAZ = 2202;
+  }
+  message DynamicMessageType {
+    optional int32 dynamic_field = 2100;
+  }
+
+  optional fixed32 scalar_extension = 2000;
+  optional ForeignEnum enum_extension = 2001;
+  optional DynamicEnumType dynamic_enum_extension = 2002;
+
+  optional ForeignMessage message_extension = 2003;
+  optional DynamicMessageType dynamic_message_extension = 2004;
+
+  repeated string repeated_extension = 2005;
+  repeated sint32 packed_extension = 2006 [packed = true];
+}
+
+message TestRepeatedScalarDifferentTagSizes {
+  // Parsing repeated fixed size values used to fail. This message needs to be
+  // used in order to get a tag of the right size; all of the repeated fields
+  // in TestAllTypes didn't trigger the check.
+  repeated fixed32 repeated_fixed32 = 12;
+  // Check for a varint type, just for good measure.
+  repeated int32   repeated_int32   = 13;
+
+  // These have two-byte tags.
+  repeated fixed64 repeated_fixed64 = 2046;
+  repeated int64   repeated_int64   = 2047;
+
+  // Three byte tags.
+  repeated float   repeated_float   = 262142;
+  repeated uint64  repeated_uint64  = 262143;
 }
 
 // Test that RPC services work.

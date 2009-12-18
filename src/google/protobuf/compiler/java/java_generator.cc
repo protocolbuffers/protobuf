@@ -45,6 +45,7 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
+
 JavaGenerator::JavaGenerator() {}
 JavaGenerator::~JavaGenerator() {}
 

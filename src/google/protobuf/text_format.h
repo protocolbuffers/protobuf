@@ -117,6 +117,24 @@ class LIBPROTOBUF_EXPORT TextFormat {
       single_line_mode_ = single_line_mode;
     }
 
+    // Set true to print repeated primitives in a format like:
+    //   field_name: [1, 2, 3, 4]
+    // instead of printing each value on its own line.  Short format applies
+    // only to primitive values -- i.e. everything except strings and
+    // sub-messages/groups.  Note that at present this format is not recognized
+    // by the parser.
+    void SetUseShortRepeatedPrimitives(bool use_short_repeated_primitives) {
+      use_short_repeated_primitives_ = use_short_repeated_primitives;
+    }
+
+    // Set true to output UTF-8 instead of ASCII.  The only difference
+    // is that bytes >= 0x80 in string fields will not be escaped,
+    // because they are assumed to be part of UTF-8 multi-byte
+    // sequences.
+    void SetUseUtf8StringEscaping(bool as_utf8) {
+      utf8_string_escaping_ = as_utf8;
+    }
+
    private:
     // Forward declaration of an internal class used to print the text
     // output to the OutputStream (see text_format.cc for implementation).
@@ -132,6 +150,19 @@ class LIBPROTOBUF_EXPORT TextFormat {
                     const Reflection* reflection,
                     const FieldDescriptor* field,
                     TextGenerator& generator);
+
+    // Print a repeated primitive field in short form.
+    void PrintShortRepeatedField(const Message& message,
+                                 const Reflection* reflection,
+                                 const FieldDescriptor* field,
+                                 TextGenerator& generator);
+
+    // Print the name of a field -- i.e. everything that comes before the
+    // ':' for a single name/value pair.
+    void PrintFieldName(const Message& message,
+                        const Reflection* reflection,
+                        const FieldDescriptor* field,
+                        TextGenerator& generator);
 
     // Outputs a textual representation of the value of the field supplied on
     // the message supplied or the default value if not set.
@@ -150,6 +181,10 @@ class LIBPROTOBUF_EXPORT TextFormat {
     int initial_indent_level_;
 
     bool single_line_mode_;
+
+    bool use_short_repeated_primitives_;
+
+    bool utf8_string_escaping_;
   };
 
   // Parses a text-format protocol message from the given input stream to

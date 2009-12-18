@@ -133,7 +133,7 @@ void ExtensionGenerator::GenerateInitializationCode(io::Printer* printer) {
   vars["extendee"] = ClassName(descriptor_->containing_type());
   vars["default"] = descriptor_->is_repeated() ? "" : DefaultValue(descriptor_);
   vars["number"] = SimpleItoa(descriptor_->number());
-  vars["type_constant"] = TypeName(descriptor_->type());
+  vars["type_constant"] = TypeName(GetType(descriptor_));
   vars["packed"] = descriptor_->options().packed() ? "true" : "false";
   vars["enum_map"] = "null";
   vars["prototype"] = "null";
@@ -208,5 +208,4 @@ void ExtensionGenerator::GenerateRegistrationCode(io::Printer* printer) {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google

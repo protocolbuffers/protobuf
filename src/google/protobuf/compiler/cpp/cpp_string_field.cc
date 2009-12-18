@@ -91,7 +91,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   // files that applied the ctype.  The field can still be accessed via the
   // reflection interface since the reflection interface is independent of
   // the string's underlying representation.
-  if (descriptor_->options().has_ctype()) {
+  if (descriptor_->options().ctype() != FieldOptions::STRING) {
     printer->Outdent();
     printer->Print(
       " private:\n"
@@ -107,7 +107,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
                  "$deprecation$;\n"
     "inline ::std::string* mutable_$name$()$deprecation$;\n");
 
-  if (descriptor_->options().has_ctype()) {
+  if (descriptor_->options().ctype() != FieldOptions::STRING) {
     printer->Outdent();
     printer->Print(" public:\n");
     printer->Indent();
@@ -278,7 +278,7 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   // See comment above about unknown ctypes.
-  if (descriptor_->options().has_ctype()) {
+  if (descriptor_->options().ctype() != FieldOptions::STRING) {
     printer->Outdent();
     printer->Print(
       " private:\n"
@@ -287,10 +287,6 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() const"
-                 "$deprecation$;\n"
-    "inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
-                 "$deprecation$;\n"
     "inline const ::std::string& $name$(int index) const$deprecation$;\n"
     "inline ::std::string* mutable_$name$(int index)$deprecation$;\n"
     "inline void set_$name$(int index, const ::std::string& value)$deprecation$;\n"
@@ -304,7 +300,13 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     "inline void add_$name$(const $pointer_type$* value, size_t size)"
                  "$deprecation$;\n");
 
-  if (descriptor_->options().has_ctype()) {
+  printer->Print(variables_,
+    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() const"
+                 "$deprecation$;\n"
+    "inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
+                 "$deprecation$;\n");
+
+  if (descriptor_->options().ctype() != FieldOptions::STRING) {
     printer->Outdent();
     printer->Print(" public:\n");
     printer->Indent();
@@ -314,14 +316,6 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
-    "$classname$::$name$() const {\n"
-    "  return $name$_;\n"
-    "}\n"
-    "inline ::google::protobuf::RepeatedPtrField< ::std::string>*\n"
-    "$classname$::mutable_$name$() {\n"
-    "  return &$name$_;\n"
-    "}\n"
     "inline const ::std::string& $classname$::$name$(int index) const {\n"
     "  return $name$_.Get(index);\n"
     "}\n"
@@ -352,6 +346,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "inline void "
     "$classname$::add_$name$(const $pointer_type$* value, size_t size) {\n"
     "  $name$_.Add()->assign(reinterpret_cast<const char*>(value), size);\n"
+    "}\n");
+  printer->Print(variables_,
+    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
+    "$classname$::$name$() const {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "inline ::google::protobuf::RepeatedPtrField< ::std::string>*\n"
+    "$classname$::mutable_$name$() {\n"
+    "  return &$name$_;\n"
     "}\n");
 }
 

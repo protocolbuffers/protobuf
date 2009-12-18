@@ -71,6 +71,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
  private:
   void PrintImports() const;
+  void PrintFileDescriptor() const;
   void PrintTopLevelEnums() const;
   void PrintAllNestedEnumsInFile() const;
   void PrintNestedEnums(const Descriptor& descriptor) const;
@@ -97,13 +98,19 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void PrintNestedMessages(const Descriptor& containing_descriptor) const;
 
   void FixForeignFieldsInDescriptors() const;
-  void FixForeignFieldsInDescriptor(const Descriptor& descriptor) const;
+  void FixForeignFieldsInDescriptor(
+      const Descriptor& descriptor,
+      const Descriptor* containing_descriptor) const;
   void FixForeignFieldsInField(const Descriptor* containing_type,
                                const FieldDescriptor& field,
                                const string& python_dict_name) const;
   string FieldReferencingExpression(const Descriptor* containing_type,
                                     const FieldDescriptor& field,
                                     const string& python_dict_name) const;
+  template <typename DescriptorT>
+  void FixContainingTypeInDescriptor(
+      const DescriptorT& descriptor,
+      const Descriptor* containing_descriptor) const;
 
   void FixForeignFieldsInExtensions() const;
   void FixForeignFieldsInExtension(
@@ -126,10 +133,15 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   string ModuleLevelServiceDescriptorName(
       const ServiceDescriptor& descriptor) const;
 
+  template <typename DescriptorT, typename DescriptorProtoT>
+  void PrintSerializedPbInterval(
+      const DescriptorT& descriptor, DescriptorProtoT& proto) const;
+
   // Very coarse-grained lock to ensure that Generate() is reentrant.
-  // Guards file_ and printer_.
+  // Guards file_, printer_ and file_descriptor_serialized_.
   mutable Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
+  mutable string file_descriptor_serialized_;
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Generator);

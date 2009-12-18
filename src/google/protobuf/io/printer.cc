@@ -65,10 +65,10 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
     if (text[i] == '\n') {
       // Saw newline.  If there is more text, we may need to insert an indent
       // here.  So, write what we have so far, including the '\n'.
-      Write(text + pos, i - pos + 1);
+      WriteRaw(text + pos, i - pos + 1);
       pos = i + 1;
 
-      // Setting this true will cause the next Write() to insert an indent
+      // Setting this true will cause the next WriteRaw() to insert an indent
       // first.
       at_start_of_line_ = true;
 
@@ -76,7 +76,7 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
       // Saw the start of a variable name.
 
       // Write what we have so far.
-      Write(text + pos, i - pos);
+      WriteRaw(text + pos, i - pos);
       pos = i + 1;
 
       // Find closing delimiter.
@@ -90,14 +90,14 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
       string varname(text + pos, endpos - pos);
       if (varname.empty()) {
         // Two delimiters in a row reduce to a literal delimiter character.
-        Write(&variable_delimiter_, 1);
+        WriteRaw(&variable_delimiter_, 1);
       } else {
         // Replace with the variable's value.
         map<string, string>::const_iterator iter = variables.find(varname);
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
-          Write(iter->second.data(), iter->second.size());
+          WriteRaw(iter->second.data(), iter->second.size());
         }
       }
 
@@ -108,7 +108,7 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
   }
 
   // Write the rest.
-  Write(text + pos, size - pos);
+  WriteRaw(text + pos, size - pos);
 }
 
 void Printer::Print(const char* text) {
@@ -145,14 +145,23 @@ void Printer::Outdent() {
   indent_.resize(indent_.size() - 2);
 }
 
-void Printer::Write(const char* data, int size) {
+void Printer::PrintRaw(const string& data) {
+  WriteRaw(data.data(), data.size());
+}
+
+void Printer::PrintRaw(const char* data) {
+  if (failed_) return;
+  WriteRaw(data, strlen(data));
+}
+
+void Printer::WriteRaw(const char* data, int size) {
   if (failed_) return;
   if (size == 0) return;
 
   if (at_start_of_line_) {
     // Insert an indent.
     at_start_of_line_ = false;
-    Write(indent_.data(), indent_.size());
+    WriteRaw(indent_.data(), indent_.size());
     if (failed_) return;
   }
 

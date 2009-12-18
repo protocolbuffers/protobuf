@@ -789,6 +789,10 @@ public abstract class GeneratedMessage extends AbstractMessage {
           messageDefaultInstance =
             (Message) invokeOrDie(getMethodOrDie(type, "getDefaultInstance"),
                                   null);
+          if (messageDefaultInstance == null) {
+            throw new IllegalStateException(
+                type.getName() + ".getDefaultInstance() returned null.");
+          }
           break;
         case ENUM:
           enumValueOf = getMethodOrDie(type, "valueOf",

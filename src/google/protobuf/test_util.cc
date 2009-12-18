@@ -229,11 +229,11 @@ void TestUtil::ModifyRepeatedFields(unittest::TestAllTypes* message) {
   message->GetReflection()->SetRepeatedString(
     message,
     message->GetDescriptor()->FindFieldByName("repeated_string_piece"),
-    1, "424");
+    1, "524");
   message->GetReflection()->SetRepeatedString(
     message,
     message->GetDescriptor()->FindFieldByName("repeated_cord"),
-    1, "425");
+    1, "525");
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 }
 
@@ -692,6 +692,40 @@ void TestUtil::SetPackedFields(unittest::TestPackedTypes* message) {
   message->add_packed_enum    (unittest::FOREIGN_BAZ);
 }
 
+void TestUtil::SetUnpackedFields(unittest::TestUnpackedTypes* message) {
+  // The values applied here must match those of SetPackedFields.
+
+  message->add_unpacked_int32   (601);
+  message->add_unpacked_int64   (602);
+  message->add_unpacked_uint32  (603);
+  message->add_unpacked_uint64  (604);
+  message->add_unpacked_sint32  (605);
+  message->add_unpacked_sint64  (606);
+  message->add_unpacked_fixed32 (607);
+  message->add_unpacked_fixed64 (608);
+  message->add_unpacked_sfixed32(609);
+  message->add_unpacked_sfixed64(610);
+  message->add_unpacked_float   (611);
+  message->add_unpacked_double  (612);
+  message->add_unpacked_bool    (true);
+  message->add_unpacked_enum    (unittest::FOREIGN_BAR);
+  // add a second one of each field
+  message->add_unpacked_int32   (701);
+  message->add_unpacked_int64   (702);
+  message->add_unpacked_uint32  (703);
+  message->add_unpacked_uint64  (704);
+  message->add_unpacked_sint32  (705);
+  message->add_unpacked_sint64  (706);
+  message->add_unpacked_fixed32 (707);
+  message->add_unpacked_fixed64 (708);
+  message->add_unpacked_sfixed32(709);
+  message->add_unpacked_sfixed64(710);
+  message->add_unpacked_float   (711);
+  message->add_unpacked_double  (712);
+  message->add_unpacked_bool    (false);
+  message->add_unpacked_enum    (unittest::FOREIGN_BAZ);
+}
+
 // -------------------------------------------------------------------
 
 void TestUtil::ModifyPackedFields(unittest::TestPackedTypes* message) {
@@ -758,6 +792,56 @@ void TestUtil::ExpectPackedFieldsSet(const unittest::TestPackedTypes& message) {
   EXPECT_EQ(712  , message.packed_double  (1));
   EXPECT_EQ(false, message.packed_bool    (1));
   EXPECT_EQ(unittest::FOREIGN_BAZ, message.packed_enum(1));
+}
+
+void TestUtil::ExpectUnpackedFieldsSet(
+    const unittest::TestUnpackedTypes& message) {
+  // The values expected here must match those of ExpectPackedFieldsSet.
+
+  ASSERT_EQ(2, message.unpacked_int32_size   ());
+  ASSERT_EQ(2, message.unpacked_int64_size   ());
+  ASSERT_EQ(2, message.unpacked_uint32_size  ());
+  ASSERT_EQ(2, message.unpacked_uint64_size  ());
+  ASSERT_EQ(2, message.unpacked_sint32_size  ());
+  ASSERT_EQ(2, message.unpacked_sint64_size  ());
+  ASSERT_EQ(2, message.unpacked_fixed32_size ());
+  ASSERT_EQ(2, message.unpacked_fixed64_size ());
+  ASSERT_EQ(2, message.unpacked_sfixed32_size());
+  ASSERT_EQ(2, message.unpacked_sfixed64_size());
+  ASSERT_EQ(2, message.unpacked_float_size   ());
+  ASSERT_EQ(2, message.unpacked_double_size  ());
+  ASSERT_EQ(2, message.unpacked_bool_size    ());
+  ASSERT_EQ(2, message.unpacked_enum_size    ());
+
+  EXPECT_EQ(601  , message.unpacked_int32   (0));
+  EXPECT_EQ(602  , message.unpacked_int64   (0));
+  EXPECT_EQ(603  , message.unpacked_uint32  (0));
+  EXPECT_EQ(604  , message.unpacked_uint64  (0));
+  EXPECT_EQ(605  , message.unpacked_sint32  (0));
+  EXPECT_EQ(606  , message.unpacked_sint64  (0));
+  EXPECT_EQ(607  , message.unpacked_fixed32 (0));
+  EXPECT_EQ(608  , message.unpacked_fixed64 (0));
+  EXPECT_EQ(609  , message.unpacked_sfixed32(0));
+  EXPECT_EQ(610  , message.unpacked_sfixed64(0));
+  EXPECT_EQ(611  , message.unpacked_float   (0));
+  EXPECT_EQ(612  , message.unpacked_double  (0));
+  EXPECT_EQ(true , message.unpacked_bool    (0));
+  EXPECT_EQ(unittest::FOREIGN_BAR, message.unpacked_enum(0));
+
+  EXPECT_EQ(701  , message.unpacked_int32   (1));
+  EXPECT_EQ(702  , message.unpacked_int64   (1));
+  EXPECT_EQ(703  , message.unpacked_uint32  (1));
+  EXPECT_EQ(704  , message.unpacked_uint64  (1));
+  EXPECT_EQ(705  , message.unpacked_sint32  (1));
+  EXPECT_EQ(706  , message.unpacked_sint64  (1));
+  EXPECT_EQ(707  , message.unpacked_fixed32 (1));
+  EXPECT_EQ(708  , message.unpacked_fixed64 (1));
+  EXPECT_EQ(709  , message.unpacked_sfixed32(1));
+  EXPECT_EQ(710  , message.unpacked_sfixed64(1));
+  EXPECT_EQ(711  , message.unpacked_float   (1));
+  EXPECT_EQ(712  , message.unpacked_double  (1));
+  EXPECT_EQ(false, message.unpacked_bool    (1));
+  EXPECT_EQ(unittest::FOREIGN_BAZ, message.unpacked_enum(1));
 }
 
 // -------------------------------------------------------------------

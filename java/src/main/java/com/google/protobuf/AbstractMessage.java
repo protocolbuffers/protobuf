@@ -311,6 +311,12 @@ public abstract class AbstractMessage extends AbstractMessageLite
           } else {
             field = extension.descriptor;
             defaultInstance = extension.defaultInstance;
+            if (defaultInstance == null &&
+                field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+              throw new IllegalStateException(
+                  "Message-typed extension lacked default instance: " +
+                  field.getFullName());
+            }
           }
         } else {
           field = null;
@@ -319,15 +325,28 @@ public abstract class AbstractMessage extends AbstractMessageLite
         field = type.findFieldByNumber(fieldNumber);
       }
 
-      if (field == null || wireType !=
-            FieldSet.getWireFormatForFieldType(
-                field.getLiteType(),
-                field.getOptions().getPacked())) {
-        // Unknown field or wrong wire type.  Skip.
+      boolean unknown = false;
+      boolean packed = false;
+      if (field == null) {
+        unknown = true;  // Unknown field.
+      } else if (wireType == FieldSet.getWireFormatForFieldType(
+                   field.getLiteType(),
+                   false  /* isPacked */)) {
+        packed = false;
+      } else if (field.isPackable() &&
+                 wireType == FieldSet.getWireFormatForFieldType(
+                   field.getLiteType(),
+                   true  /* isPacked */)) {
+        packed = true;
+      } else {
+        unknown = true;  // Unknown wire type.
+      }
+
+      if (unknown) {  // Unknown field or wrong wire type.  Skip.
         return unknownFields.mergeFieldFrom(tag, input);
       }
 
-      if (field.getOptions().getPacked()) {
+      if (packed) {
         final int length = input.readRawVarint32();
         final int limit = input.pushLimit(length);
         if (field.getLiteType() == WireFormat.FieldType.ENUM) {
@@ -673,13 +692,13 @@ public abstract class AbstractMessage extends AbstractMessageLite
     }
 
     @Override
-    public BuilderType mergeDelimitedFrom(final InputStream input)
+    public boolean mergeDelimitedFrom(final InputStream input)
         throws IOException {
       return super.mergeDelimitedFrom(input);
     }
 
     @Override
-    public BuilderType mergeDelimitedFrom(
+    public boolean mergeDelimitedFrom(
         final InputStream input,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {

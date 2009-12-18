@@ -39,6 +39,8 @@ import protobuf_unittest.UnittestProto.ForeignEnum;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
+import protobuf_unittest.UnittestProto.TestPackedTypes;
+import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 import protobuf_unittest.MultipleFilesTestProto;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.EnumWithNoOuter;
@@ -303,8 +305,15 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.assertClear(TestAllTypes.getDefaultInstance());
     TestUtil.assertClear(TestAllTypes.newBuilder().build());
 
-    assertEquals("\u1234",
-                 TestExtremeDefaultValues.getDefaultInstance().getUtf8String());
+    TestExtremeDefaultValues message =
+        TestExtremeDefaultValues.getDefaultInstance();
+    assertEquals("\u1234", message.getUtf8String());
+    assertEquals(Double.POSITIVE_INFINITY, message.getInfDouble());
+    assertEquals(Double.NEGATIVE_INFINITY, message.getNegInfDouble());
+    assertTrue(Double.isNaN(message.getNanDouble()));
+    assertEquals(Float.POSITIVE_INFINITY, message.getInfFloat());
+    assertEquals(Float.NEGATIVE_INFINITY, message.getNegInfFloat());
+    assertTrue(Float.isNaN(message.getNanFloat()));
   }
 
   public void testReflectionGetters() throws Exception {
@@ -359,6 +368,20 @@ public class GeneratedMessageTest extends TestCase {
     }
 
     assertTrue(map.findValueByNumber(12345) == null);
+  }
+
+  public void testParsePackedToUnpacked() throws Exception {
+    TestUnpackedTypes.Builder builder = TestUnpackedTypes.newBuilder();
+    TestUnpackedTypes message =
+      builder.mergeFrom(TestUtil.getPackedSet().toByteString()).build();
+    TestUtil.assertUnpackedFieldsSet(message);
+  }
+
+  public void testParseUnpackedToPacked() throws Exception {
+    TestPackedTypes.Builder builder = TestPackedTypes.newBuilder();
+    TestPackedTypes message =
+      builder.mergeFrom(TestUtil.getUnpackedSet().toByteString()).build();
+    TestUtil.assertPackedFieldsSet(message);
   }
 
   // =================================================================
@@ -614,5 +637,13 @@ public class GeneratedMessageTest extends TestCase {
     assertEquals(
       UnittestProto.REPEATED_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 48);
     assertEquals(UnittestProto.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER, 51);
+  }
+
+  public void testRecursiveMessageDefaultInstance() throws Exception {
+    UnittestProto.TestRecursiveMessage message =
+        UnittestProto.TestRecursiveMessage.getDefaultInstance();
+    assertTrue(message != null);
+    assertTrue(message.getA() != null);
+    assertTrue(message.getA() == message);
   }
 }

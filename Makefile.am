@@ -114,18 +114,12 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/internal/generator_test.py                          \
   python/google/protobuf/internal/containers.py                              \
   python/google/protobuf/internal/decoder.py                                 \
-  python/google/protobuf/internal/decoder_test.py                            \
   python/google/protobuf/internal/descriptor_test.py                         \
   python/google/protobuf/internal/encoder.py                                 \
-  python/google/protobuf/internal/encoder_test.py                            \
-  python/google/protobuf/internal/input_stream.py                            \
-  python/google/protobuf/internal/input_stream_test.py                       \
   python/google/protobuf/internal/message_listener.py                        \
   python/google/protobuf/internal/message_test.py                            \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_messages.proto                        \
-  python/google/protobuf/internal/output_stream.py                           \
-  python/google/protobuf/internal/output_stream_test.py                      \
   python/google/protobuf/internal/reflection_test.py                         \
   python/google/protobuf/internal/service_reflection_test.py                 \
   python/google/protobuf/internal/test_util.py                               \

@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <limits>
 #include <vector>
 
 #include <google/protobuf/compiler/java/java_helpers.h>
@@ -57,7 +58,7 @@ const string& FieldName(const FieldDescriptor* field) {
   // Groups are hacky:  The name of the field is just the lower-cased name
   // of the group type.  In Java, though, we would like to retain the original
   // capitalization of the type name.
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+  if (GetType(field) == FieldDescriptor::TYPE_GROUP) {
     return field->message_type()->name();
   } else {
     return field->name();
@@ -178,8 +179,12 @@ string FieldConstantName(const FieldDescriptor *field) {
   return name;
 }
 
-JavaType GetJavaType(FieldDescriptor::Type field_type) {
-  switch (field_type) {
+FieldDescriptor::Type GetType(const FieldDescriptor* field) {
+  return field->type();
+}
+
+JavaType GetJavaType(const FieldDescriptor* field) {
+  switch (GetType(field)) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_SINT32:
@@ -254,7 +259,7 @@ bool AllAscii(const string& text) {
 }
 
 string DefaultValue(const FieldDescriptor* field) {
-  // Switch on cpp_type since we need to know which default_value_* method
+  // Switch on CppType since we need to know which default_value_* method
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -267,14 +272,34 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_UINT64:
       return SimpleItoa(static_cast<int64>(field->default_value_uint64())) +
              "L";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return SimpleDtoa(field->default_value_double()) + "D";
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return SimpleFtoa(field->default_value_float()) + "F";
+    case FieldDescriptor::CPPTYPE_DOUBLE: {
+      double value = field->default_value_double();
+      if (value == numeric_limits<double>::infinity()) {
+        return "Double.POSITIVE_INFINITY";
+      } else if (value == -numeric_limits<double>::infinity()) {
+        return "Double.NEGATIVE_INFINITY";
+      } else if (value != value) {
+        return "Double.NaN";
+      } else {
+        return SimpleDtoa(value) + "D";
+      }
+    }
+    case FieldDescriptor::CPPTYPE_FLOAT: {
+      float value = field->default_value_float();
+      if (value == numeric_limits<float>::infinity()) {
+        return "Float.POSITIVE_INFINITY";
+      } else if (value == -numeric_limits<float>::infinity()) {
+        return "Float.NEGATIVE_INFINITY";
+      } else if (value != value) {
+        return "Float.NaN";
+      } else {
+        return SimpleFtoa(value) + "F";
+      }
+    }
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case FieldDescriptor::CPPTYPE_STRING:
-      if (field->type() == FieldDescriptor::TYPE_BYTES) {
+      if (GetType(field) == FieldDescriptor::TYPE_BYTES) {
         if (field->has_default_value()) {
           // See comments in Internal.java for gory details.
           return strings::Substitute(

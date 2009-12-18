@@ -50,10 +50,13 @@ namespace protobuf {
 
 class FileDescriptor;        // descriptor.h
 class DescriptorPool;        // descriptor.h
+class FileDescriptorProto;   // descriptor.pb.h
+template<typename T> class RepeatedPtrField;  // repeated_field.h
 
 namespace compiler {
 
 class CodeGenerator;        // code_generator.h
+class OutputDirectory;      // code_generator.h
 class DiskSourceTree;       // importer.h
 
 // This class implements the command-line interface to the protocol compiler.
@@ -109,6 +112,37 @@ class LIBPROTOC_EXPORT CommandLineInterface {
                          CodeGenerator* generator,
                          const string& help_text);
 
+  // Enables "plugins".  In this mode, if a command-line flag ends with "_out"
+  // but does not match any registered generator, the compiler will attempt to
+  // find a "plugin" to implement the generator.  Plugins are just executables.
+  // They should live somewhere in the PATH.
+  //
+  // The compiler determines the executable name to search for by concatenating
+  // exe_name_prefix with the unrecognized flag name, removing "_out".  So, for
+  // example, if exe_name_prefix is "protoc-" and you pass the flag --foo_out,
+  // the compiler will try to run the program "protoc-foo".
+  //
+  // The plugin program should implement the following usage:
+  //   plugin [--out=OUTDIR] [--parameter=PARAMETER] PROTO_FILES < DESCRIPTORS
+  // --out indicates the output directory (as passed to the --foo_out
+  // parameter); if omitted, the current directory should be used.  --parameter
+  // gives the generator parameter, if any was provided.  The PROTO_FILES list
+  // the .proto files which were given on the compiler command-line; these are
+  // the files for which the plugin is expected to generate output code.
+  // Finally, DESCRIPTORS is an encoded FileDescriptorSet (as defined in
+  // descriptor.proto).  This is piped to the plugin's stdin.  The set will
+  // include descriptors for all the files listed in PROTO_FILES as well as
+  // all files that they import.  The plugin MUST NOT attempt to read the
+  // PROTO_FILES directly -- it must use the FileDescriptorSet.
+  //
+  // The plugin should generate whatever files are necessary, as code generators
+  // normally do.  It should write the names of all files it generates to
+  // stdout.  The names should be relative to the output directory, NOT absolute
+  // names or relative to the current directory.  If any errors occur, error
+  // messages should be written to stderr.  If an error is fatal, the plugin
+  // should exit with a non-zero exit code.
+  void AllowPlugins(const string& exe_name_prefix);
+
   // Run the Protocol Compiler with the given command-line parameters.
   // Returns the error code which should be returned by main().
   //
@@ -142,6 +176,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   class ErrorPrinter;
   class DiskOutputDirectory;
   class ErrorReportingFileOutput;
+  class InsertionOutputStream;
 
   // Clear state from previous Run().
   void Clear();
@@ -176,14 +211,30 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   // Generate the given output file from the given input.
   struct OutputDirective;  // see below
-  bool GenerateOutput(const FileDescriptor* proto_file,
+  bool GenerateOutput(const vector<const FileDescriptor*>& parsed_files,
                       const OutputDirective& output_directive);
+  bool GeneratePluginOutput(const vector<const FileDescriptor*>& parsed_files,
+                            const string& plugin_name,
+                            const string& parameter,
+                            OutputDirectory* output_directory,
+                            string* error);
 
   // Implements --encode and --decode.
   bool EncodeOrDecode(const DescriptorPool* pool);
 
   // Implements the --descriptor_set_out option.
   bool WriteDescriptorSet(const vector<const FileDescriptor*> parsed_files);
+
+  // Get all transitive dependencies of the given file (including the file
+  // itself), adding them to the given list of FileDescriptorProtos.  The
+  // protos will be ordered such that every file is listed before any file that
+  // depends on it, so that you can call DescriptorPool::BuildFile() on them
+  // in order.  Any files in *already_seen will not be added, and each file
+  // added will be inserted into *already_seen.
+  static void GetTransitiveDependencies(
+      const FileDescriptor* file,
+      set<const FileDescriptor*>* already_seen,
+      RepeatedPtrField<FileDescriptorProto>* output);
 
   // -----------------------------------------------------------------
 
@@ -200,6 +251,14 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   };
   typedef map<string, GeneratorInfo> GeneratorMap;
   GeneratorMap generators_;
+
+  // See AllowPlugins().  If this is empty, plugins aren't allowed.
+  string plugin_prefix_;
+
+  // Maps specific plugin names to files.  When executing a plugin, this map
+  // is searched first to find the plugin executable.  If not found here, the
+  // PATH (or other OS-specific search strategy) is searched.
+  map<string, string> plugins_;
 
   // Stuff parsed from command line.
   enum Mode {
@@ -223,8 +282,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // output_directives_ lists all the files we are supposed to output and what
   // generator to use for each.
   struct OutputDirective {
-    string name;
-    CodeGenerator* generator;
+    string name;                // E.g. "--foo_out"
+    CodeGenerator* generator;   // NULL for plugins
     string parameter;
     string output_location;
   };

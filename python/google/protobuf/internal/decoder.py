@@ -28,182 +28,614 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Class for decoding protocol buffer primitives.
+"""Code for decoding protocol buffer primitives.
 
-Contains the logic for decoding every logical protocol field type
-from one of the 5 physical wire types.
+This code is very similar to encoder.py -- read the docs for that module first.
+
+A "decoder" is a function with the signature:
+  Decode(buffer, pos, end, message, field_dict)
+The arguments are:
+  buffer:     The string containing the encoded message.
+  pos:        The current position in the string.
+  end:        The position in the string where the current message ends.  May be
+              less than len(buffer) if we're reading a sub-message.
+  message:    The message object into which we're parsing.
+  field_dict: message._fields (avoids a hashtable lookup).
+The decoder reads the field and stores it into field_dict, returning the new
+buffer position.  A decoder for a repeated field may proactively decode all of
+the elements of that field, if they appear consecutively.
+
+Note that decoders may throw any of the following:
+  IndexError:  Indicates a truncated message.
+  struct.error:  Unpacking of a fixed-width field failed.
+  message.DecodeError:  Other errors.
+
+Decoders are expected to raise an exception if they are called with pos > end.
+This allows callers to be lax about bounds checking:  it's fineto read past
+"end" as long as you are sure that someone else will notice and throw an
+exception later on.
+
+Something up the call stack is expected to catch IndexError and struct.error
+and convert them to message.DecodeError.
+
+Decoders are constructed using decoder constructors with the signature:
+  MakeDecoder(field_number, is_repeated, is_packed, key, new_default)
+The arguments are:
+  field_number:  The field number of the field we want to decode.
+  is_repeated:   Is the field a repeated field? (bool)
+  is_packed:     Is the field a packed field? (bool)
+  key:           The key to use when looking up the field within field_dict.
+                 (This is actually the FieldDescriptor but nothing in this
+                 file should depend on that.)
+  new_default:   A function which takes a message object as a parameter and
+                 returns a new instance of the default value for this field.
+                 (This is called for repeated fields and sub-messages, when an
+                 instance does not already exist.)
+
+As with encoders, we define a decoder constructor for every type of field.
+Then, for every field of every message class we construct an actual decoder.
+That decoder goes into a dict indexed by tag, so when we decode a message
+we repeatedly read a tag, look up the corresponding decoder, and invoke it.
 """
 
-__author__ = 'robinson@google.com (Will Robinson)'
+__author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
-from google.protobuf import message
-from google.protobuf.internal import input_stream
+from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
+from google.protobuf import message
 
 
+# This is not for optimization, but rather to avoid conflicts with local
+# variables named "message".
+_DecodeError = message.DecodeError
 
-# Note that much of this code is ported from //net/proto/ProtocolBuffer, and
-# that the interface is strongly inspired by WireFormat from the C++ proto2
-# implementation.
+
+def _VarintDecoder(mask):
+  """Return an encoder for a basic varint value (does not include tag).
+
+  Decoded values will be bitwise-anded with the given mask before being
+  returned, e.g. to limit them to 32 bits.  The returned decoder does not
+  take the usual "end" parameter -- the caller is expected to do bounds checking
+  after the fact (often the caller can defer such checking until later).  The
+  decoder returns a (value, new_pos) pair.
+  """
+
+  local_ord = ord
+  def DecodeVarint(buffer, pos):
+    result = 0
+    shift = 0
+    while 1:
+      b = local_ord(buffer[pos])
+      result |= ((b & 0x7f) << shift)
+      pos += 1
+      if not (b & 0x80):
+        result &= mask
+        return (result, pos)
+      shift += 7
+      if shift >= 64:
+        raise _DecodeError('Too many bytes when decoding varint.')
+  return DecodeVarint
 
 
-class Decoder(object):
+def _SignedVarintDecoder(mask):
+  """Like _VarintDecoder() but decodes signed values."""
 
-  """Decodes logical protocol buffer fields from the wire."""
+  local_ord = ord
+  def DecodeVarint(buffer, pos):
+    result = 0
+    shift = 0
+    while 1:
+      b = local_ord(buffer[pos])
+      result |= ((b & 0x7f) << shift)
+      pos += 1
+      if not (b & 0x80):
+        if result > 0x7fffffffffffffff:
+          result -= (1 << 64)
+          result |= ~mask
+        else:
+          result &= mask
+        return (result, pos)
+      shift += 7
+      if shift >= 64:
+        raise _DecodeError('Too many bytes when decoding varint.')
+  return DecodeVarint
 
-  def __init__(self, s):
-    """Initializes the decoder to read from s.
 
-    Args:
-      s: An immutable sequence of bytes, which must be accessible
-        via the Python buffer() primitive (i.e., buffer(s)).
+_DecodeVarint = _VarintDecoder((1 << 64) - 1)
+_DecodeSignedVarint = _SignedVarintDecoder((1 << 64) - 1)
+
+# Use these versions for values which must be limited to 32 bits.
+_DecodeVarint32 = _VarintDecoder((1 << 32) - 1)
+_DecodeSignedVarint32 = _SignedVarintDecoder((1 << 32) - 1)
+
+
+def ReadTag(buffer, pos):
+  """Read a tag from the buffer, and return a (tag_bytes, new_pos) tuple.
+
+  We return the raw bytes of the tag rather than decoding them.  The raw
+  bytes can then be used to look up the proper decoder.  This effectively allows
+  us to trade some work that would be done in pure-python (decoding a varint)
+  for work that is done in C (searching for a byte string in a hash table).
+  In a low-level language it would be much cheaper to decode the varint and
+  use that, but not in Python.
+  """
+
+  start = pos
+  while ord(buffer[pos]) & 0x80:
+    pos += 1
+  pos += 1
+  return (buffer[start:pos], pos)
+
+
+# --------------------------------------------------------------------
+
+
+def _SimpleDecoder(wire_type, decode_value):
+  """Return a constructor for a decoder for fields of a particular type.
+
+  Args:
+      wire_type:  The field's wire type.
+      decode_value:  A function which decodes an individual value, e.g.
+        _DecodeVarint()
+  """
+
+  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default):
+    if is_packed:
+      local_DecodeVarint = _DecodeVarint
+      def DecodePackedField(buffer, pos, end, message, field_dict):
+        value = field_dict.get(key)
+        if value is None:
+          value = field_dict.setdefault(key, new_default(message))
+        (endpoint, pos) = local_DecodeVarint(buffer, pos)
+        endpoint += pos
+        if endpoint > end:
+          raise _DecodeError('Truncated message.')
+        while pos < endpoint:
+          (element, pos) = decode_value(buffer, pos)
+          value.append(element)
+        if pos > endpoint:
+          del value[-1]   # Discard corrupt value.
+          raise _DecodeError('Packed element was truncated.')
+        return pos
+      return DecodePackedField
+    elif is_repeated:
+      tag_bytes = encoder.TagBytes(field_number, wire_type)
+      tag_len = len(tag_bytes)
+      def DecodeRepeatedField(buffer, pos, end, message, field_dict):
+        value = field_dict.get(key)
+        if value is None:
+          value = field_dict.setdefault(key, new_default(message))
+        while 1:
+          (element, new_pos) = decode_value(buffer, pos)
+          value.append(element)
+          # Predict that the next tag is another copy of the same repeated
+          # field.
+          pos = new_pos + tag_len
+          if buffer[new_pos:pos] != tag_bytes or new_pos >= end:
+            # Prediction failed.  Return.
+            if new_pos > end:
+              raise _DecodeError('Truncated message.')
+            return new_pos
+      return DecodeRepeatedField
+    else:
+      def DecodeField(buffer, pos, end, message, field_dict):
+        (field_dict[key], pos) = decode_value(buffer, pos)
+        if pos > end:
+          del field_dict[key]  # Discard corrupt value.
+          raise _DecodeError('Truncated message.')
+        return pos
+      return DecodeField
+
+  return SpecificDecoder
+
+
+def _ModifiedDecoder(wire_type, decode_value, modify_value):
+  """Like SimpleDecoder but additionally invokes modify_value on every value
+  before storing it.  Usually modify_value is ZigZagDecode.
+  """
+
+  # Reusing _SimpleDecoder is slightly slower than copying a bunch of code, but
+  # not enough to make a significant difference.
+
+  def InnerDecode(buffer, pos):
+    (result, new_pos) = decode_value(buffer, pos)
+    return (modify_value(result), new_pos)
+  return _SimpleDecoder(wire_type, InnerDecode)
+
+
+def _StructPackDecoder(wire_type, format):
+  """Return a constructor for a decoder for a fixed-width field.
+
+  Args:
+      wire_type:  The field's wire type.
+      format:  The format string to pass to struct.unpack().
+  """
+
+  value_size = struct.calcsize(format)
+  local_unpack = struct.unpack
+
+  # Reusing _SimpleDecoder is slightly slower than copying a bunch of code, but
+  # not enough to make a significant difference.
+
+  # Note that we expect someone up-stack to catch struct.error and convert
+  # it to _DecodeError -- this way we don't have to set up exception-
+  # handling blocks every time we parse one value.
+
+  def InnerDecode(buffer, pos):
+    new_pos = pos + value_size
+    result = local_unpack(format, buffer[pos:new_pos])[0]
+    return (result, new_pos)
+  return _SimpleDecoder(wire_type, InnerDecode)
+
+
+# --------------------------------------------------------------------
+
+
+Int32Decoder = EnumDecoder = _SimpleDecoder(
+    wire_format.WIRETYPE_VARINT, _DecodeSignedVarint32)
+
+Int64Decoder = _SimpleDecoder(
+    wire_format.WIRETYPE_VARINT, _DecodeSignedVarint)
+
+UInt32Decoder = _SimpleDecoder(wire_format.WIRETYPE_VARINT, _DecodeVarint32)
+UInt64Decoder = _SimpleDecoder(wire_format.WIRETYPE_VARINT, _DecodeVarint)
+
+SInt32Decoder = _ModifiedDecoder(
+    wire_format.WIRETYPE_VARINT, _DecodeVarint32, wire_format.ZigZagDecode)
+SInt64Decoder = _ModifiedDecoder(
+    wire_format.WIRETYPE_VARINT, _DecodeVarint, wire_format.ZigZagDecode)
+
+# Note that Python conveniently guarantees that when using the '<' prefix on
+# formats, they will also have the same size across all platforms (as opposed
+# to without the prefix, where their sizes depend on the C compiler's basic
+# type sizes).
+Fixed32Decoder  = _StructPackDecoder(wire_format.WIRETYPE_FIXED32, '<I')
+Fixed64Decoder  = _StructPackDecoder(wire_format.WIRETYPE_FIXED64, '<Q')
+SFixed32Decoder = _StructPackDecoder(wire_format.WIRETYPE_FIXED32, '<i')
+SFixed64Decoder = _StructPackDecoder(wire_format.WIRETYPE_FIXED64, '<q')
+FloatDecoder    = _StructPackDecoder(wire_format.WIRETYPE_FIXED32, '<f')
+DoubleDecoder   = _StructPackDecoder(wire_format.WIRETYPE_FIXED64, '<d')
+
+BoolDecoder = _ModifiedDecoder(
+    wire_format.WIRETYPE_VARINT, _DecodeVarint, bool)
+
+
+def StringDecoder(field_number, is_repeated, is_packed, key, new_default):
+  """Returns a decoder for a string field."""
+
+  local_DecodeVarint = _DecodeVarint
+  local_unicode = unicode
+
+  assert not is_packed
+  if is_repeated:
+    tag_bytes = encoder.TagBytes(field_number,
+                                 wire_format.WIRETYPE_LENGTH_DELIMITED)
+    tag_len = len(tag_bytes)
+    def DecodeRepeatedField(buffer, pos, end, message, field_dict):
+      value = field_dict.get(key)
+      if value is None:
+        value = field_dict.setdefault(key, new_default(message))
+      while 1:
+        (size, pos) = local_DecodeVarint(buffer, pos)
+        new_pos = pos + size
+        if new_pos > end:
+          raise _DecodeError('Truncated string.')
+        value.append(local_unicode(buffer[pos:new_pos], 'utf-8'))
+        # Predict that the next tag is another copy of the same repeated field.
+        pos = new_pos + tag_len
+        if buffer[new_pos:pos] != tag_bytes or new_pos == end:
+          # Prediction failed.  Return.
+          return new_pos
+    return DecodeRepeatedField
+  else:
+    def DecodeField(buffer, pos, end, message, field_dict):
+      (size, pos) = local_DecodeVarint(buffer, pos)
+      new_pos = pos + size
+      if new_pos > end:
+        raise _DecodeError('Truncated string.')
+      field_dict[key] = local_unicode(buffer[pos:new_pos], 'utf-8')
+      return new_pos
+    return DecodeField
+
+
+def BytesDecoder(field_number, is_repeated, is_packed, key, new_default):
+  """Returns a decoder for a bytes field."""
+
+  local_DecodeVarint = _DecodeVarint
+
+  assert not is_packed
+  if is_repeated:
+    tag_bytes = encoder.TagBytes(field_number,
+                                 wire_format.WIRETYPE_LENGTH_DELIMITED)
+    tag_len = len(tag_bytes)
+    def DecodeRepeatedField(buffer, pos, end, message, field_dict):
+      value = field_dict.get(key)
+      if value is None:
+        value = field_dict.setdefault(key, new_default(message))
+      while 1:
+        (size, pos) = local_DecodeVarint(buffer, pos)
+        new_pos = pos + size
+        if new_pos > end:
+          raise _DecodeError('Truncated string.')
+        value.append(buffer[pos:new_pos])
+        # Predict that the next tag is another copy of the same repeated field.
+        pos = new_pos + tag_len
+        if buffer[new_pos:pos] != tag_bytes or new_pos == end:
+          # Prediction failed.  Return.
+          return new_pos
+    return DecodeRepeatedField
+  else:
+    def DecodeField(buffer, pos, end, message, field_dict):
+      (size, pos) = local_DecodeVarint(buffer, pos)
+      new_pos = pos + size
+      if new_pos > end:
+        raise _DecodeError('Truncated string.')
+      field_dict[key] = buffer[pos:new_pos]
+      return new_pos
+    return DecodeField
+
+
+def GroupDecoder(field_number, is_repeated, is_packed, key, new_default):
+  """Returns a decoder for a group field."""
+
+  end_tag_bytes = encoder.TagBytes(field_number,
+                                   wire_format.WIRETYPE_END_GROUP)
+  end_tag_len = len(end_tag_bytes)
+
+  assert not is_packed
+  if is_repeated:
+    tag_bytes = encoder.TagBytes(field_number,
+                                 wire_format.WIRETYPE_START_GROUP)
+    tag_len = len(tag_bytes)
+    def DecodeRepeatedField(buffer, pos, end, message, field_dict):
+      value = field_dict.get(key)
+      if value is None:
+        value = field_dict.setdefault(key, new_default(message))
+      while 1:
+        value = field_dict.get(key)
+        if value is None:
+          value = field_dict.setdefault(key, new_default(message))
+        # Read sub-message.
+        pos = value.add()._InternalParse(buffer, pos, end)
+        # Read end tag.
+        new_pos = pos+end_tag_len
+        if buffer[pos:new_pos] != end_tag_bytes or new_pos > end:
+          raise _DecodeError('Missing group end tag.')
+        # Predict that the next tag is another copy of the same repeated field.
+        pos = new_pos + tag_len
+        if buffer[new_pos:pos] != tag_bytes or new_pos == end:
+          # Prediction failed.  Return.
+          return new_pos
+    return DecodeRepeatedField
+  else:
+    def DecodeField(buffer, pos, end, message, field_dict):
+      value = field_dict.get(key)
+      if value is None:
+        value = field_dict.setdefault(key, new_default(message))
+      # Read sub-message.
+      pos = value._InternalParse(buffer, pos, end)
+      # Read end tag.
+      new_pos = pos+end_tag_len
+      if buffer[pos:new_pos] != end_tag_bytes or new_pos > end:
+        raise _DecodeError('Missing group end tag.')
+      return new_pos
+    return DecodeField
+
+
+def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
+  """Returns a decoder for a message field."""
+
+  local_DecodeVarint = _DecodeVarint
+
+  assert not is_packed
+  if is_repeated:
+    tag_bytes = encoder.TagBytes(field_number,
+                                 wire_format.WIRETYPE_LENGTH_DELIMITED)
+    tag_len = len(tag_bytes)
+    def DecodeRepeatedField(buffer, pos, end, message, field_dict):
+      value = field_dict.get(key)
+      if value is None:
+        value = field_dict.setdefault(key, new_default(message))
+      while 1:
+        value = field_dict.get(key)
+        if value is None:
+          value = field_dict.setdefault(key, new_default(message))
+        # Read length.
+        (size, pos) = local_DecodeVarint(buffer, pos)
+        new_pos = pos + size
+        if new_pos > end:
+          raise _DecodeError('Truncated message.')
+        # Read sub-message.
+        if value.add()._InternalParse(buffer, pos, new_pos) != new_pos:
+          # The only reason _InternalParse would return early is if it
+          # encountered an end-group tag.
+          raise _DecodeError('Unexpected end-group tag.')
+        # Predict that the next tag is another copy of the same repeated field.
+        pos = new_pos + tag_len
+        if buffer[new_pos:pos] != tag_bytes or new_pos == end:
+          # Prediction failed.  Return.
+          return new_pos
+    return DecodeRepeatedField
+  else:
+    def DecodeField(buffer, pos, end, message, field_dict):
+      value = field_dict.get(key)
+      if value is None:
+        value = field_dict.setdefault(key, new_default(message))
+      # Read length.
+      (size, pos) = local_DecodeVarint(buffer, pos)
+      new_pos = pos + size
+      if new_pos > end:
+        raise _DecodeError('Truncated message.')
+      # Read sub-message.
+      if value._InternalParse(buffer, pos, new_pos) != new_pos:
+        # The only reason _InternalParse would return early is if it encountered
+        # an end-group tag.
+        raise _DecodeError('Unexpected end-group tag.')
+      return new_pos
+    return DecodeField
+
+
+# --------------------------------------------------------------------
+
+MESSAGE_SET_ITEM_TAG = encoder.TagBytes(1, wire_format.WIRETYPE_START_GROUP)
+
+def MessageSetItemDecoder(extensions_by_number):
+  """Returns a decoder for a MessageSet item.
+
+  The parameter is the _extensions_by_number map for the message class.
+
+  The message set message looks like this:
+    message MessageSet {
+      repeated group Item = 1 {
+        required int32 type_id = 2;
+        required string message = 3;
+      }
+    }
+  """
+
+  type_id_tag_bytes = encoder.TagBytes(2, wire_format.WIRETYPE_VARINT)
+  message_tag_bytes = encoder.TagBytes(3, wire_format.WIRETYPE_LENGTH_DELIMITED)
+  item_end_tag_bytes = encoder.TagBytes(1, wire_format.WIRETYPE_END_GROUP)
+
+  local_ReadTag = ReadTag
+  local_DecodeVarint = _DecodeVarint
+  local_SkipField = SkipField
+
+  def DecodeItem(buffer, pos, end, message, field_dict):
+    type_id = -1
+    message_start = -1
+    message_end = -1
+
+    # Technically, type_id and message can appear in any order, so we need
+    # a little loop here.
+    while 1:
+      (tag_bytes, pos) = local_ReadTag(buffer, pos)
+      if tag_bytes == type_id_tag_bytes:
+        (type_id, pos) = local_DecodeVarint(buffer, pos)
+      elif tag_bytes == message_tag_bytes:
+        (size, message_start) = local_DecodeVarint(buffer, pos)
+        pos = message_end = message_start + size
+      elif tag_bytes == item_end_tag_bytes:
+        break
+      else:
+        pos = SkipField(buffer, pos, end, tag_bytes)
+        if pos == -1:
+          raise _DecodeError('Missing group end tag.')
+
+    if pos > end:
+      raise _DecodeError('Truncated message.')
+
+    if type_id == -1:
+      raise _DecodeError('MessageSet item missing type_id.')
+    if message_start == -1:
+      raise _DecodeError('MessageSet item missing message.')
+
+    extension = extensions_by_number.get(type_id)
+    if extension is not None:
+      value = field_dict.get(extension)
+      if value is None:
+        value = field_dict.setdefault(
+            extension, extension.message_type._concrete_class())
+      if value._InternalParse(buffer, message_start,message_end) != message_end:
+        # The only reason _InternalParse would return early is if it encountered
+        # an end-group tag.
+        raise _DecodeError('Unexpected end-group tag.')
+
+    return pos
+
+  return DecodeItem
+
+# --------------------------------------------------------------------
+# Optimization is not as heavy here because calls to SkipField() are rare,
+# except for handling end-group tags.
+
+def _SkipVarint(buffer, pos, end):
+  """Skip a varint value.  Returns the new position."""
+
+  while ord(buffer[pos]) & 0x80:
+    pos += 1
+  pos += 1
+  if pos > end:
+    raise _DecodeError('Truncated message.')
+  return pos
+
+def _SkipFixed64(buffer, pos, end):
+  """Skip a fixed64 value.  Returns the new position."""
+
+  pos += 8
+  if pos > end:
+    raise _DecodeError('Truncated message.')
+  return pos
+
+def _SkipLengthDelimited(buffer, pos, end):
+  """Skip a length-delimited value.  Returns the new position."""
+
+  (size, pos) = _DecodeVarint(buffer, pos)
+  pos += size
+  if pos > end:
+    raise _DecodeError('Truncated message.')
+  return pos
+
+def _SkipGroup(buffer, pos, end):
+  """Skip sub-group.  Returns the new position."""
+
+  while 1:
+    (tag_bytes, pos) = ReadTag(buffer, pos)
+    new_pos = SkipField(buffer, pos, end, tag_bytes)
+    if new_pos == -1:
+      return pos
+    pos = new_pos
+
+def _EndGroup(buffer, pos, end):
+  """Skipping an END_GROUP tag returns -1 to tell the parent loop to break."""
+
+  return -1
+
+def _SkipFixed32(buffer, pos, end):
+  """Skip a fixed32 value.  Returns the new position."""
+
+  pos += 4
+  if pos > end:
+    raise _DecodeError('Truncated message.')
+  return pos
+
+def _RaiseInvalidWireType(buffer, pos, end):
+  """Skip function for unknown wire types.  Raises an exception."""
+
+  raise _DecodeError('Tag had invalid wire type.')
+
+def _FieldSkipper():
+  """Constructs the SkipField function."""
+
+  WIRETYPE_TO_SKIPPER = [
+      _SkipVarint,
+      _SkipFixed64,
+      _SkipLengthDelimited,
+      _SkipGroup,
+      _EndGroup,
+      _SkipFixed32,
+      _RaiseInvalidWireType,
+      _RaiseInvalidWireType,
+      ]
+
+  wiretype_mask = wire_format.TAG_TYPE_MASK
+  local_ord = ord
+
+  def SkipField(buffer, pos, end, tag_bytes):
+    """Skips a field with the specified tag.
+
+    |pos| should point to the byte immediately after the tag.
+
+    Returns:
+        The new position (after the tag value), or -1 if the tag is an end-group
+        tag (in which case the calling loop should break).
     """
-    self._stream = input_stream.InputStream(s)
 
-  def EndOfStream(self):
-    """Returns true iff we've reached the end of the bytes we're reading."""
-    return self._stream.EndOfStream()
+    # The wire type is always in the first byte since varints are little-endian.
+    wire_type = local_ord(tag_bytes[0]) & wiretype_mask
+    return WIRETYPE_TO_SKIPPER[wire_type](buffer, pos, end)
 
-  def Position(self):
-    """Returns the 0-indexed position in |s|."""
-    return self._stream.Position()
+  return SkipField
 
-  def ReadFieldNumberAndWireType(self):
-    """Reads a tag from the wire. Returns a (field_number, wire_type) pair."""
-    tag_and_type = self.ReadUInt32()
-    return wire_format.UnpackTag(tag_and_type)
-
-  def SkipBytes(self, bytes):
-    """Skips the specified number of bytes on the wire."""
-    self._stream.SkipBytes(bytes)
-
-  # Note that the Read*() methods below are not exactly symmetrical with the
-  # corresponding Encoder.Append*() methods.  Those Encoder methods first
-  # encode a tag, but the Read*() methods below assume that the tag has already
-  # been read, and that the client wishes to read a field of the specified type
-  # starting at the current position.
-
-  def ReadInt32(self):
-    """Reads and returns a signed, varint-encoded, 32-bit integer."""
-    return self._stream.ReadVarint32()
-
-  def ReadInt64(self):
-    """Reads and returns a signed, varint-encoded, 64-bit integer."""
-    return self._stream.ReadVarint64()
-
-  def ReadUInt32(self):
-    """Reads and returns an signed, varint-encoded, 32-bit integer."""
-    return self._stream.ReadVarUInt32()
-
-  def ReadUInt64(self):
-    """Reads and returns an signed, varint-encoded,64-bit integer."""
-    return self._stream.ReadVarUInt64()
-
-  def ReadSInt32(self):
-    """Reads and returns a signed, zigzag-encoded, varint-encoded,
-    32-bit integer."""
-    return wire_format.ZigZagDecode(self._stream.ReadVarUInt32())
-
-  def ReadSInt64(self):
-    """Reads and returns a signed, zigzag-encoded, varint-encoded,
-    64-bit integer."""
-    return wire_format.ZigZagDecode(self._stream.ReadVarUInt64())
-
-  def ReadFixed32(self):
-    """Reads and returns an unsigned, fixed-width, 32-bit integer."""
-    return self._stream.ReadLittleEndian32()
-
-  def ReadFixed64(self):
-    """Reads and returns an unsigned, fixed-width, 64-bit integer."""
-    return self._stream.ReadLittleEndian64()
-
-  def ReadSFixed32(self):
-    """Reads and returns a signed, fixed-width, 32-bit integer."""
-    value = self._stream.ReadLittleEndian32()
-    if value >= (1 << 31):
-      value -= (1 << 32)
-    return value
-
-  def ReadSFixed64(self):
-    """Reads and returns a signed, fixed-width, 64-bit integer."""
-    value = self._stream.ReadLittleEndian64()
-    if value >= (1 << 63):
-      value -= (1 << 64)
-    return value
-
-  def ReadFloat(self):
-    """Reads and returns a 4-byte floating-point number."""
-    serialized = self._stream.ReadBytes(4)
-    return struct.unpack(wire_format.FORMAT_FLOAT_LITTLE_ENDIAN, serialized)[0]
-
-  def ReadDouble(self):
-    """Reads and returns an 8-byte floating-point number."""
-    serialized = self._stream.ReadBytes(8)
-    return struct.unpack(wire_format.FORMAT_DOUBLE_LITTLE_ENDIAN, serialized)[0]
-
-  def ReadBool(self):
-    """Reads and returns a bool."""
-    i = self._stream.ReadVarUInt32()
-    return bool(i)
-
-  def ReadEnum(self):
-    """Reads and returns an enum value."""
-    return self._stream.ReadVarUInt32()
-
-  def ReadString(self):
-    """Reads and returns a length-delimited string."""
-    bytes = self.ReadBytes()
-    return unicode(bytes, 'utf-8')
-
-  def ReadBytes(self):
-    """Reads and returns a length-delimited byte sequence."""
-    length = self._stream.ReadVarUInt32()
-    return self._stream.ReadBytes(length)
-
-  def ReadMessageInto(self, msg):
-    """Calls msg.MergeFromString() to merge
-    length-delimited serialized message data into |msg|.
-
-    REQUIRES: The decoder must be positioned at the serialized "length"
-      prefix to a length-delmiited serialized message.
-
-    POSTCONDITION: The decoder is positioned just after the
-      serialized message, and we have merged those serialized
-      contents into |msg|.
-    """
-    length = self._stream.ReadVarUInt32()
-    sub_buffer = self._stream.GetSubBuffer(length)
-    num_bytes_used = msg.MergeFromString(sub_buffer)
-    if num_bytes_used != length:
-      raise message.DecodeError(
-          'Submessage told to deserialize from %d-byte encoding, '
-          'but used only %d bytes' % (length, num_bytes_used))
-    self._stream.SkipBytes(num_bytes_used)
-
-  def ReadGroupInto(self, expected_field_number, group):
-    """Calls group.MergeFromString() to merge
-    END_GROUP-delimited serialized message data into |group|.
-    We'll raise an exception if we don't find an END_GROUP
-    tag immediately after the serialized message contents.
-
-    REQUIRES: The decoder is positioned just after the START_GROUP
-      tag for this group.
-
-    POSTCONDITION: The decoder is positioned just after the
-      END_GROUP tag for this group, and we have merged
-      the contents of the group into |group|.
-    """
-    sub_buffer = self._stream.GetSubBuffer()  # No a priori length limit.
-    num_bytes_used = group.MergeFromString(sub_buffer)
-    if num_bytes_used < 0:
-      raise message.DecodeError('Group message reported negative bytes read.')
-    self._stream.SkipBytes(num_bytes_used)
-    field_number, field_type = self.ReadFieldNumberAndWireType()
-    if field_type != wire_format.WIRETYPE_END_GROUP:
-      raise message.DecodeError('Group message did not end with an END_GROUP.')
-    if field_number != expected_field_number:
-      raise message.DecodeError('END_GROUP tag had field '
-                                'number %d, was expecting field number %d' % (
-          field_number, expected_field_number))
-    # We're now positioned just after the END_GROUP tag.  Perfect.
+SkipField = _FieldSkipper()

@@ -77,6 +77,11 @@ class FileGenerator {
   const string& classname()    { return classname_;    }
 
  private:
+  // Returns whether the dependency should be included in the output file.
+  // Always returns true for opensource, but used internally at Google to help
+  // improve compatibility with version 1 of protocol buffers.
+  bool ShouldIncludeDependency(const FileDescriptor* descriptor);
+
   const FileDescriptor* file_;
   string java_package_;
   string classname_;

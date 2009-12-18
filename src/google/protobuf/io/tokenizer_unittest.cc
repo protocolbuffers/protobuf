@@ -397,6 +397,12 @@ MultiTokenCase kMultiTokenCases[] = {
     { Tokenizer::TYPE_IDENTIFIER, "baz", 1,  0 },
     { Tokenizer::TYPE_END       , ""   , 1, 3 },
   }},
+
+  // Bytes with the high-order bit set should not be seen as control characters.
+  { "\300", {
+    { Tokenizer::TYPE_SYMBOL, "\300", 0, 0 },
+    { Tokenizer::TYPE_END   , ""    , 0, 1 },
+  }},
 };
 
 TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {

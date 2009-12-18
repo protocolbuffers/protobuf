@@ -66,7 +66,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   ~UnknownFieldSet();
 
   // Remove all fields.
-  void Clear();
+  inline void Clear();
 
   // Is this set empty?
   inline bool empty() const;
@@ -119,6 +119,8 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   }
 
  private:
+  void ClearFallback();
+
   vector<UnknownField>* fields_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
@@ -179,6 +181,12 @@ class LIBPROTOBUF_EXPORT UnknownField {
 
 // ===================================================================
 // inline implementations
+
+inline void UnknownFieldSet::Clear() {
+  if (fields_ != NULL) {
+    ClearFallback();
+  }
+}
 
 inline bool UnknownFieldSet::empty() const {
   return fields_ == NULL || fields_->empty();

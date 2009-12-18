@@ -33,9 +33,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-
 #include <google/protobuf/message_lite.h>
-
+#include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -51,6 +50,24 @@ string MessageLite::InitializationErrorString() const {
 }
 
 namespace {
+
+// When serializing, we first compute the byte size, then serialize the message.
+// If serialization produces a different number of bytes than expected, we
+// call this function, which crashes.  The problem could be due to a bug in the
+// protobuf implementation but is more likely caused by concurrent modification
+// of the message.  This function attempts to distinguish between the two and
+// provide a useful error message.
+void ByteSizeConsistencyError(int byte_size_before_serialization,
+                              int byte_size_after_serialization,
+                              int bytes_produced_by_serialization) {
+  GOOGLE_CHECK_EQ(byte_size_before_serialization, byte_size_after_serialization)
+      << "Protocol message was modified concurrently during serialization.";
+  GOOGLE_CHECK_EQ(bytes_produced_by_serialization, byte_size_before_serialization)
+      << "Byte size calculation and serialization were inconsistent.  This "
+         "may indicate a bug in protocol buffers or it may be caused by "
+         "concurrent modification of the message.";
+  GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
+}
 
 string InitializationErrorMessage(const char* action,
                                   const MessageLite& message) {
@@ -215,9 +232,29 @@ bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
 
 bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
-  ByteSize();  // Force size to be cached.
-  SerializeWithCachedSizes(output);
-  return !output->HadError();
+  const int size = ByteSize();  // Force size to be cached.
+  uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
+  if (buffer != NULL) {
+    uint8* end = SerializeWithCachedSizesToArray(buffer);
+    if (end - buffer != size) {
+      ByteSizeConsistencyError(size, ByteSize(), end - buffer);
+    }
+    return true;
+  } else {
+    int original_byte_count = output->ByteCount();
+    SerializeWithCachedSizes(output);
+    if (output->HadError()) {
+      return false;
+    }
+    int final_byte_count = output->ByteCount();
+
+    if (final_byte_count - original_byte_count != size) {
+      ByteSizeConsistencyError(size, ByteSize(),
+                               final_byte_count - original_byte_count);
+    }
+
+    return true;
+  }
 }
 
 bool MessageLite::SerializeToZeroCopyStream(
@@ -243,7 +280,9 @@ bool MessageLite::AppendPartialToString(string* output) const {
   STLStringResizeUninitialized(output, old_size + byte_size);
   uint8* start = reinterpret_cast<uint8*>(string_as_array(output) + old_size);
   uint8* end = SerializeWithCachedSizesToArray(start);
-  GOOGLE_CHECK_EQ(end - start, byte_size);
+  if (end - start != byte_size) {
+    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+  }
   return true;
 }
 
@@ -265,9 +304,11 @@ bool MessageLite::SerializeToArray(void* data, int size) const {
 bool MessageLite::SerializePartialToArray(void* data, int size) const {
   int byte_size = ByteSize();
   if (size < byte_size) return false;
-  uint8* end =
-    SerializeWithCachedSizesToArray(reinterpret_cast<uint8*>(data));
-  GOOGLE_CHECK_EQ(end, reinterpret_cast<uint8*>(data) + byte_size);
+  uint8* start = reinterpret_cast<uint8*>(data);
+  uint8* end = SerializeWithCachedSizesToArray(start);
+  if (end - start != byte_size) {
+    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+  }
   return true;
 }
 

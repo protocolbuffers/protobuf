@@ -39,6 +39,7 @@
 int main(int argc, char* argv[]) {
 
   google::protobuf::compiler::CommandLineInterface cli;
+  cli.AllowPlugins("protoc-");
 
   // Proto2 C++
   google::protobuf::compiler::cpp::CppGenerator cpp_generator;

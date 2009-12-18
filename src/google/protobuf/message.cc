@@ -212,7 +212,7 @@ class GeneratedMessageFactory : public MessageFactory {
 };
 
 GeneratedMessageFactory* generated_message_factory_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(generated_message_factory_once_init_);
+GoogleOnceType generated_message_factory_once_init_;
 
 void ShutdownGeneratedMessageFactory() {
   delete generated_message_factory_;
@@ -227,7 +227,7 @@ GeneratedMessageFactory::GeneratedMessageFactory() {}
 GeneratedMessageFactory::~GeneratedMessageFactory() {}
 
 GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
-  GoogleOnceInit(&generated_message_factory_once_init_,
+  ::google::protobuf::GoogleOnceInit(&generated_message_factory_once_init_,
                  &InitGeneratedMessageFactory);
   return generated_message_factory_;
 }

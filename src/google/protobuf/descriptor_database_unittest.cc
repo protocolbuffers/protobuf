@@ -480,6 +480,40 @@ INSTANTIATE_TEST_CASE_P(Pool, DescriptorDatabaseTest,
 
 #endif  // GTEST_HAS_PARAM_TEST
 
+TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
+  // Create two files, one of which is in two parts.
+  FileDescriptorProto file1, file2a, file2b;
+  file1.set_name("foo.proto");
+  file1.set_package("foo");
+  file1.add_message_type()->set_name("Foo");
+  file2a.set_name("bar.proto");
+  file2b.set_package("bar");
+  file2b.add_message_type()->set_name("Bar");
+
+  // Normal serialization allows our optimization to kick in.
+  string data1 = file1.SerializeAsString();
+
+  // Force out-of-order serialization to test slow path.
+  string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
+
+  // Create EncodedDescriptorDatabase containing both files.
+  EncodedDescriptorDatabase db;
+  db.Add(data1.data(), data1.size());
+  db.Add(data2.data(), data2.size());
+
+  // Test!
+  string filename;
+  EXPECT_TRUE(db.FindNameOfFileContainingSymbol("foo.Foo", &filename));
+  EXPECT_EQ("foo.proto", filename);
+  EXPECT_TRUE(db.FindNameOfFileContainingSymbol("foo.Foo.Blah", &filename));
+  EXPECT_EQ("foo.proto", filename);
+  EXPECT_TRUE(db.FindNameOfFileContainingSymbol("bar.Bar", &filename));
+  EXPECT_EQ("bar.proto", filename);
+  EXPECT_FALSE(db.FindNameOfFileContainingSymbol("foo", &filename));
+  EXPECT_FALSE(db.FindNameOfFileContainingSymbol("bar", &filename));
+  EXPECT_FALSE(db.FindNameOfFileContainingSymbol("baz.Baz", &filename));
+}
+
 // ===================================================================
 
 class MergedDescriptorDatabaseTest : public testing::Test {

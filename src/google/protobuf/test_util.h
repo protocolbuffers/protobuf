@@ -54,6 +54,7 @@ class TestUtil {
   static void SetAllFieldsAndExtensions(unittest::TestFieldOrderings* message);
   static void SetPackedFields(unittest::TestPackedTypes* message);
   static void SetPackedExtensions(unittest::TestPackedExtensions* message);
+  static void SetUnpackedFields(unittest::TestUnpackedTypes* message);
 
   // Use the repeated versions of the set_*() accessors to modify all the
   // repeated fields of the messsage (which should already have been
@@ -72,6 +73,8 @@ class TestUtil {
   static void ExpectPackedFieldsSet(const unittest::TestPackedTypes& message);
   static void ExpectPackedExtensionsSet(
       const unittest::TestPackedExtensions& message);
+  static void ExpectUnpackedFieldsSet(
+      const unittest::TestUnpackedTypes& message);
 
   // Expect that the message is modified as would be expected from
   // Modify*Fields().

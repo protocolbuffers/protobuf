@@ -38,6 +38,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
+import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 
 import junit.framework.TestCase;
 
@@ -236,6 +237,43 @@ public class AbstractMessageTest extends TestCase {
     AbstractMessageWrapper message =
       builder.mergeFrom(TestUtil.getPackedSet().toByteString()).build();
     TestUtil.assertPackedFieldsSet((TestPackedTypes) message.wrappedMessage);
+  }
+
+  public void testUnpackedSerialization() throws Exception {
+    Message abstractMessage =
+      new AbstractMessageWrapper(TestUtil.getUnpackedSet());
+
+    TestUtil.assertUnpackedFieldsSet(
+      TestUnpackedTypes.parseFrom(abstractMessage.toByteString()));
+
+    assertEquals(TestUtil.getUnpackedSet().toByteString(),
+                 abstractMessage.toByteString());
+  }
+
+  public void testParsePackedToUnpacked() throws Exception {
+    AbstractMessageWrapper.Builder builder =
+      new AbstractMessageWrapper.Builder(TestUnpackedTypes.newBuilder());
+    AbstractMessageWrapper message =
+      builder.mergeFrom(TestUtil.getPackedSet().toByteString()).build();
+    TestUtil.assertUnpackedFieldsSet(
+      (TestUnpackedTypes) message.wrappedMessage);
+  }
+
+  public void testParseUnpackedToPacked() throws Exception {
+    AbstractMessageWrapper.Builder builder =
+      new AbstractMessageWrapper.Builder(TestPackedTypes.newBuilder());
+    AbstractMessageWrapper message =
+      builder.mergeFrom(TestUtil.getUnpackedSet().toByteString()).build();
+    TestUtil.assertPackedFieldsSet((TestPackedTypes) message.wrappedMessage);
+  }
+
+  public void testUnpackedParsing() throws Exception {
+    AbstractMessageWrapper.Builder builder =
+      new AbstractMessageWrapper.Builder(TestUnpackedTypes.newBuilder());
+    AbstractMessageWrapper message =
+      builder.mergeFrom(TestUtil.getUnpackedSet().toByteString()).build();
+    TestUtil.assertUnpackedFieldsSet(
+      (TestUnpackedTypes) message.wrappedMessage);
   }
 
   public void testOptimizedForSize() throws Exception {

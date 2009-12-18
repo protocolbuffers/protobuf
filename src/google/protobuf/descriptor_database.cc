@@ -37,6 +37,7 @@
 #include <set>
 
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util-inl.h>
 #include <google/protobuf/stubs/map-util.h>
@@ -334,6 +335,35 @@ bool EncodedDescriptorDatabase::FindFileContainingSymbol(
     const string& symbol_name,
     FileDescriptorProto* output) {
   return MaybeParse(index_.FindSymbol(symbol_name), output);
+}
+
+bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
+    const string& symbol_name,
+    string* output) {
+  pair<const void*, int> encoded_file = index_.FindSymbol(symbol_name);
+  if (encoded_file.first == NULL) return false;
+
+  // Optimization:  The name should be the first field in the encoded message.
+  //   Try to just read it directly.
+  io::CodedInputStream input(reinterpret_cast<const uint8*>(encoded_file.first),
+                             encoded_file.second);
+
+  const uint32 kNameTag = internal::WireFormatLite::MakeTag(
+      FileDescriptorProto::kNameFieldNumber,
+      internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+
+  if (input.ReadTag() == kNameTag) {
+    // Success!
+    return internal::WireFormatLite::ReadString(&input, output);
+  } else {
+    // Slow path.  Parse whole message.
+    FileDescriptorProto file_proto;
+    if (!file_proto.ParseFromArray(encoded_file.first, encoded_file.second)) {
+      return false;
+    }
+    *output = file_proto.name();
+    return true;
+  }
 }
 
 bool EncodedDescriptorDatabase::FindFileContainingExtension(
