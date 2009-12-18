@@ -52,10 +52,10 @@ class OnceInitTest : public testing::Test {
     current_test_ = this;
   }
 
-  // Since GoogleOnceType is only allowed to be allocated in static storage,
-  // each test must use a different pair of GoogleOnceType objects which it
+  // Since ProtobufOnceType is only allowed to be allocated in static storage,
+  // each test must use a different pair of ProtobufOnceType objects which it
   // must declare itself.
-  void SetOnces(GoogleOnceType* once, GoogleOnceType* recursive_once) {
+  void SetOnces(ProtobufOnceType* once, ProtobufOnceType* recursive_once) {
     once_ = once;
     recursive_once_ = recursive_once;
   }
@@ -155,8 +155,8 @@ class OnceInitTest : public testing::Test {
   Mutex mutex_;
   Mutex init_blocker_;
   State state_;
-  GoogleOnceType* once_;
-  GoogleOnceType* recursive_once_;
+  ProtobufOnceType* once_;
+  ProtobufOnceType* recursive_once_;
 
   void Init() {
     MutexLock lock(&mutex_);
