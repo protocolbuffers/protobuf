@@ -146,6 +146,8 @@ class CommandLineInterfaceTest : public testing::Test {
                                      const string& proto_name,
                                      const string& message_name);
 
+  void ExpectNullCodeGeneratorCalled(const string& parameter);
+
   void ReadDescriptorSet(const string& filename,
                          FileDescriptorSet* descriptor_set);
 
@@ -170,6 +172,8 @@ class CommandLineInterfaceTest : public testing::Test {
 
   // Pointers which need to be deleted later.
   vector<CodeGenerator*> mock_generators_to_delete_;
+
+  NullCodeGenerator* null_generator_;
 };
 
 class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
@@ -220,7 +224,7 @@ void CommandLineInterfaceTest::SetUp() {
   mock_generators_to_delete_.push_back(generator);
   cli_.RegisterGenerator("--alt_out", generator, "Alt output.");
 
-  generator = new NullCodeGenerator();
+  generator = null_generator_ = new NullCodeGenerator();
   mock_generators_to_delete_.push_back(generator);
   cli_.RegisterGenerator("--null_out", generator, "Null output.");
 
@@ -336,6 +340,12 @@ void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
   MockCodeGenerator::ExpectGenerated(
       generator_name, parameter, insertions, proto_name, message_name,
       temp_directory_);
+}
+
+void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
+    const string& parameter) {
+  EXPECT_TRUE(null_generator_->called_);
+  EXPECT_EQ(parameter, null_generator_->parameter_);
 }
 
 void CommandLineInterfaceTest::ReadDescriptorSet(
@@ -481,8 +491,7 @@ TEST_F(CommandLineInterfaceTest, WindowsOutputPath) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectNoErrors();
-  EXPECT_TRUE(generator->called_);
-  EXPECT_EQ("", generator->parameter_);
+  ExpectNullCodeGeneratorCalled("");
 }
 
 TEST_F(CommandLineInterfaceTest, WindowsOutputPathAndParameter) {
@@ -495,8 +504,7 @@ TEST_F(CommandLineInterfaceTest, WindowsOutputPathAndParameter) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectNoErrors();
-  EXPECT_TRUE(generator->called_);
-  EXPECT_EQ("bar", generator->parameter_);
+  ExpectNullCodeGeneratorCalled("bar");
 }
 
 TEST_F(CommandLineInterfaceTest, TrailingBackslash) {

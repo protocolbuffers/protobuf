@@ -120,7 +120,14 @@ void ExtensionSet::RegisterExtension(const MessageLite* containing_type,
 }
 
 static bool CallNoArgValidityFunc(const void* arg, int number) {
-  return reinterpret_cast<const EnumValidityFunc*>(arg)(number);
+  // Note:  Must use C-style cast here rather than reinterpret_cast because
+  //   the C++ standard at one point did not allow casts between function and
+  //   data pointers and some compilers enforce this for C++-style casts.  No
+  //   compiler enforces it for C-style casts since lots of C-style code has
+  //   relied on these kinds of casts for a long time, despite being
+  //   technically undefined.  See:
+  //     http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#195
+  return ((const EnumValidityFunc*)arg)(number);
 }
 
 void ExtensionSet::RegisterEnumExtension(const MessageLite* containing_type,
@@ -130,7 +137,8 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* containing_type,
   GOOGLE_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
   ExtensionInfo info(type, is_repeated, is_packed);
   info.enum_is_valid = CallNoArgValidityFunc;
-  info.enum_is_valid_arg = reinterpret_cast<void*>(is_valid);
+  // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
+  info.enum_is_valid_arg = (void*)is_valid;
   Register(containing_type, number, info);
 }
 
