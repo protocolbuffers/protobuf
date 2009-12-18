@@ -115,8 +115,11 @@ bool Subprocess::Communicate(const Message& input, Message* output,
 
   GOOGLE_CHECK_NE(child_stdin_, -1) << "Must call Start() first.";
 
+  // The "sighandler_t" typedef is GNU-specific, so define our own.
+  typedef void SignalHandler(int);
+
   // Make sure SIGPIPE is disabled so that if the child dies it doesn't kill us.
-  sighandler_t old_pipe_handler = signal(SIGPIPE, SIG_IGN);
+  SignalHandler* old_pipe_handler = signal(SIGPIPE, SIG_IGN);
 
   string input_data = input.SerializeAsString();
   string output_data;
