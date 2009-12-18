@@ -12,7 +12,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[2.2.1-pre],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[2.3.0-pre],[protobuf@googlegroups.com],[protobuf])
 
 
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
