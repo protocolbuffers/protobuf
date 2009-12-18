@@ -344,6 +344,8 @@ nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                     $(top_builddir)/gtest/lib/libgtest.la
+test_plugin_CPPFLAGS = -I$(top_srcdir)/gtest/include         \
+                       -I$(top_builddir)/gtest/include
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/testing/file.cc                              \
