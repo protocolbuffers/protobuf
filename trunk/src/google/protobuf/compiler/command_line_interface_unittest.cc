@@ -248,7 +248,11 @@ void CommandLineInterfaceTest::Run(const string& command) {
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
+#ifdef _WIN32
+    args.push_back("--plugin=prefix-gen-plug=test_plugin.exe");
+#else
     args.push_back("--plugin=prefix-gen-plug=test_plugin");
+#endif
   }
 
   scoped_array<const char*> argv(new const char*[args.size()]);
@@ -1026,9 +1030,16 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginCrash) {
 
   ExpectErrorSubstring("Saw message type MockCodeGenerator_Abort.");
 
+#ifdef _WIN32
+  // Windows doesn't have signals.  It looks like abort()ing causes the process
+  // to exit with status code 3, but let's not depend on the exact number here.
+  ExpectErrorSubstring(
+      "--plug_out: prefix-gen-plug: Plugin failed with status code");
+#else
   // Don't depend on the exact signal number.
   ExpectErrorSubstring(
       "--plug_out: prefix-gen-plug: Plugin killed by signal");
+#endif
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
@@ -1042,11 +1053,19 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
       "--plugin=prefix-gen-badplug=no_such_file "
       "--proto_path=$tmpdir error.proto");
 
+#ifdef _WIN32
+  ExpectErrorSubstring(
+      "--badplug_out: prefix-gen-badplug: The system cannot find the file "
+        "specified.");
+#else
+  // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring(
       "no_such_file: program not found or is not executable");
 
+  // Error written by parent process when child fails.
   ExpectErrorSubstring(
       "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+#endif
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorPluginNotAllowed) {

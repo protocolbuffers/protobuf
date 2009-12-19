@@ -36,6 +36,11 @@
 #include <set>
 #include <unistd.h>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/code_generator.h>
@@ -79,6 +84,11 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
     cerr << argv[0] << ": Unknown option: " << argv[1] << endl;
     return 1;
   }
+
+#ifdef _WIN32
+  _setmode(STDIN_FILENO, _O_BINARY);
+  _setmode(STDOUT_FILENO, _O_BINARY);
+#endif
 
   CodeGeneratorRequest request;
   if (!request.ParseFromFileDescriptor(STDIN_FILENO)) {

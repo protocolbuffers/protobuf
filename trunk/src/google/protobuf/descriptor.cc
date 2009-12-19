@@ -37,6 +37,7 @@
 #include <set>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
@@ -3000,12 +3001,28 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
             strtou64(proto.default_value().c_str(), &end_pos, 0);
           break;
         case FieldDescriptor::CPPTYPE_FLOAT:
-          result->default_value_float_ =
-            NoLocaleStrtod(proto.default_value().c_str(), &end_pos);
+          if (proto.default_value() == "inf") {
+            result->default_value_float_ = numeric_limits<float>::infinity();
+          } else if (proto.default_value() == "-inf") {
+            result->default_value_float_ = -numeric_limits<float>::infinity();
+          } else if (proto.default_value() == "nan") {
+            result->default_value_float_ = numeric_limits<float>::quiet_NaN();
+          } else  {
+            result->default_value_float_ =
+              NoLocaleStrtod(proto.default_value().c_str(), &end_pos);
+          }
           break;
         case FieldDescriptor::CPPTYPE_DOUBLE:
-          result->default_value_double_ =
-            NoLocaleStrtod(proto.default_value().c_str(), &end_pos);
+          if (proto.default_value() == "inf") {
+            result->default_value_double_ = numeric_limits<double>::infinity();
+          } else if (proto.default_value() == "-inf") {
+            result->default_value_double_ = -numeric_limits<double>::infinity();
+          } else if (proto.default_value() == "nan") {
+            result->default_value_double_ = numeric_limits<double>::quiet_NaN();
+          } else  {
+            result->default_value_double_ =
+              NoLocaleStrtod(proto.default_value().c_str(), &end_pos);
+          }
           break;
         case FieldDescriptor::CPPTYPE_BOOL:
           if (proto.default_value() == "true") {

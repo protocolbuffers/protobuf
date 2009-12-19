@@ -33,12 +33,16 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
 #define GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
 
-#include <vector>
-#include <string>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN   // right...
+#include <windows.h>
+#else  // _WIN32
 #include <sys/types.h>
 #include <unistd.h>
-#include <google/protobuf/stubs/common.h>
+#endif  // !_WIN32
 
+#include <string>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
@@ -69,13 +73,31 @@ class Subprocess {
   // *error to a description of the problem.
   bool Communicate(const Message& input, Message* output, string* error);
 
+#ifdef _WIN32
+  // Given an error code, returns a human-readable error message.  This is
+  // defined here so that CommandLineInterface can share it.
+  static string Subprocess::Win32ErrorMessage(DWORD error_code);
+#endif
+
  private:
+#ifdef _WIN32
+  DWORD process_start_error_;
+  HANDLE child_handle_;
+
+  // The file handles for our end of the child's pipes.  We close each and
+  // set it to NULL when no longer needed.
+  HANDLE child_stdin_;
+  HANDLE child_stdout_;
+
+#else  // _WIN32
   pid_t child_pid_;
 
   // The file descriptors for our end of the child's pipes.  We close each and
   // set it to -1 when no longer needed.
   int child_stdin_;
   int child_stdout_;
+
+#endif  // !_WIN32
 };
 
 }  // namespace compiler
