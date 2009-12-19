@@ -32,9 +32,12 @@
 
 #include <google/protobuf/compiler/subprocess.h>
 
-#include <algorithm>
+#ifndef _WIN32
 #include <errno.h>
 #include <sys/wait.h>
+#endif
+
+#include <algorithm>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -42,6 +45,231 @@
 namespace google {
 namespace protobuf {
 namespace compiler {
+
+#ifdef _WIN32
+
+static void CloseHandleOrDie(HANDLE handle) {
+  if (!CloseHandle(handle)) {
+    GOOGLE_LOG(FATAL) << "CloseHandle: "
+                      << Subprocess::Win32ErrorMessage(GetLastError());
+  }
+}
+
+Subprocess::Subprocess()
+    : process_start_error_(ERROR_SUCCESS),
+      child_handle_(NULL), child_stdin_(NULL), child_stdout_(NULL) {}
+
+Subprocess::~Subprocess() {
+  if (child_stdin_ != NULL) {
+    CloseHandleOrDie(child_stdin_);
+  }
+  if (child_stdout_ != NULL) {
+    CloseHandleOrDie(child_stdout_);
+  }
+}
+
+void Subprocess::Start(const string& program, SearchMode search_mode) {
+  // Create the pipes.
+  HANDLE stdin_pipe_read;
+  HANDLE stdin_pipe_write;
+  HANDLE stdout_pipe_read;
+  HANDLE stdout_pipe_write;
+
+  if (!CreatePipe(&stdin_pipe_read, &stdin_pipe_write, NULL, 0)) {
+    GOOGLE_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
+  }
+  if (!CreatePipe(&stdout_pipe_read, &stdout_pipe_write, NULL, 0)) {
+    GOOGLE_LOG(FATAL) << "CreatePipe: " << Win32ErrorMessage(GetLastError());
+  }
+
+  // Make child side of the pipes inheritable.
+  if (!SetHandleInformation(stdin_pipe_read,
+                            HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT)) {
+    GOOGLE_LOG(FATAL) << "SetHandleInformation: "
+                      << Win32ErrorMessage(GetLastError());
+  }
+  if (!SetHandleInformation(stdout_pipe_write,
+                            HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT)) {
+    GOOGLE_LOG(FATAL) << "SetHandleInformation: "
+                      << Win32ErrorMessage(GetLastError());
+  }
+
+  // Setup STARTUPINFO to redirect handles.
+  STARTUPINFO startup_info;
+  ZeroMemory(&startup_info, sizeof(startup_info));
+  startup_info.cb = sizeof(startup_info);
+  startup_info.dwFlags = STARTF_USESTDHANDLES;
+  startup_info.hStdInput = stdin_pipe_read;
+  startup_info.hStdOutput = stdout_pipe_write;
+  startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
+  if (startup_info.hStdError == INVALID_HANDLE_VALUE) {
+    GOOGLE_LOG(FATAL) << "GetStdHandle: "
+                      << Win32ErrorMessage(GetLastError());
+  }
+
+  // CreateProcess() mutates its second parameter.  WTF?
+  char* name_copy = strdup(program.c_str());
+
+  // Create the process.
+  PROCESS_INFORMATION process_info;
+
+  if (CreateProcess((search_mode == SEARCH_PATH) ? NULL : program.c_str(),
+                    (search_mode == SEARCH_PATH) ? name_copy : NULL,
+                    NULL,  // process security attributes
+                    NULL,  // thread security attributes
+                    TRUE,  // inherit handles?
+                    0,     // obscure creation flags
+                    NULL,  // environment (inherit from parent)
+                    NULL,  // current directory (inherit from parent)
+                    &startup_info,
+                    &process_info)) {
+    child_handle_ = process_info.hProcess;
+    CloseHandleOrDie(process_info.hThread);
+    child_stdin_ = stdin_pipe_write;
+    child_stdout_ = stdout_pipe_read;
+  } else {
+    process_start_error_ = GetLastError();
+    CloseHandleOrDie(stdin_pipe_write);
+    CloseHandleOrDie(stdout_pipe_read);
+  }
+
+  CloseHandleOrDie(stdin_pipe_read);
+  CloseHandleOrDie(stdout_pipe_write);
+  free(name_copy);
+}
+
+bool Subprocess::Communicate(const Message& input, Message* output,
+                             string* error) {
+  if (process_start_error_ != ERROR_SUCCESS) {
+    *error = Win32ErrorMessage(process_start_error_);
+    return false;
+  }
+
+  GOOGLE_CHECK(child_handle_ != NULL) << "Must call Start() first.";
+
+  string input_data = input.SerializeAsString();
+  string output_data;
+
+  int input_pos = 0;
+
+  while (child_stdout_ != NULL) {
+    HANDLE handles[2];
+    int handle_count = 0;
+
+    if (child_stdin_ != NULL) {
+      handles[handle_count++] = child_stdin_;
+    }
+    if (child_stdout_ != NULL) {
+      handles[handle_count++] = child_stdout_;
+    }
+
+    DWORD wait_result =
+        WaitForMultipleObjects(handle_count, handles, FALSE, INFINITE);
+
+    HANDLE signaled_handle;
+    if (wait_result >= WAIT_OBJECT_0 &&
+        wait_result < WAIT_OBJECT_0 + handle_count) {
+      signaled_handle = handles[wait_result - WAIT_OBJECT_0];
+    } else if (wait_result == WAIT_FAILED) {
+      GOOGLE_LOG(FATAL) << "WaitForMultipleObjects: "
+                        << Win32ErrorMessage(GetLastError());
+    } else {
+      GOOGLE_LOG(FATAL) << "WaitForMultipleObjects: Unexpected return code: "
+                        << wait_result;
+    }
+
+    if (signaled_handle == child_stdin_) {
+      DWORD n;
+      if (!WriteFile(child_stdin_,
+                     input_data.data() + input_pos,
+                     input_data.size() - input_pos,
+                     &n, NULL)) {
+        // Child closed pipe.  Presumably it will report an error later.
+        // Pretend we're done for now.
+        input_pos = input_data.size();
+      } else {
+        input_pos += n;
+      }
+
+      if (input_pos == input_data.size()) {
+        // We're done writing.  Close.
+        CloseHandleOrDie(child_stdin_);
+        child_stdin_ = NULL;
+      }
+    } else if (signaled_handle == child_stdout_) {
+      char buffer[4096];
+      DWORD n;
+
+      if (!ReadFile(child_stdout_, buffer, sizeof(buffer), &n, NULL)) {
+        // We're done reading.  Close.
+        CloseHandleOrDie(child_stdout_);
+        child_stdout_ = NULL;
+      } else {
+        output_data.append(buffer, n);
+      }
+    }
+  }
+
+  if (child_stdin_ != NULL) {
+    // Child did not finish reading input before it closed the output.
+    // Presumably it exited with an error.
+    CloseHandleOrDie(child_stdin_);
+    child_stdin_ = NULL;
+  }
+
+  DWORD wait_result = WaitForSingleObject(child_handle_, INFINITE);
+
+  if (wait_result == WAIT_FAILED) {
+    GOOGLE_LOG(FATAL) << "WaitForSingleObject: "
+                      << Win32ErrorMessage(GetLastError());
+  } else if (wait_result != WAIT_OBJECT_0) {
+    GOOGLE_LOG(FATAL) << "WaitForSingleObject: Unexpected return code: "
+                      << wait_result;
+  }
+
+  DWORD exit_code;
+  if (!GetExitCodeProcess(child_handle_, &exit_code)) {
+    GOOGLE_LOG(FATAL) << "GetExitCodeProcess: "
+                      << Win32ErrorMessage(GetLastError());
+  }
+
+  CloseHandleOrDie(child_handle_);
+  child_handle_ = NULL;
+
+  if (exit_code != 0) {
+    *error = strings::Substitute(
+        "Plugin failed with status code $0.", exit_code);
+    return false;
+  }
+
+  if (!output->ParseFromString(output_data)) {
+    *error = "Plugin output is unparseable: " + CEscape(output_data);
+    return false;
+  }
+
+  return true;
+}
+
+string Subprocess::Win32ErrorMessage(DWORD error_code) {
+  char* message;
+
+  // WTF?
+  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL, error_code, 0,
+                (LPTSTR)&message,  // NOT A BUG!
+                0, NULL);
+
+  string result = message;
+  LocalFree(message);
+  return result;
+}
+
+// ===================================================================
+
+#else  // _WIN32
 
 Subprocess::Subprocess()
     : child_pid_(-1), child_stdin_(-1), child_stdout_(-1) {}
@@ -221,6 +449,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
 
   return true;
 }
+
+#endif  // !_WIN32
 
 }  // namespace compiler
 }  // namespace protobuf

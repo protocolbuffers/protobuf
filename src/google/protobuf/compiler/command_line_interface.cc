@@ -529,10 +529,19 @@ CommandLineInterface::InsertionOutputStream::~InsertionOutputStream() {
   // If everything was successful, overwrite the original file with the temp
   // file.
   if (!had_error) {
+#ifdef _WIN32
+    // rename() on Windows fails if the file exists.
+    if (!MoveFileEx(temp_filename_.c_str(), filename_.c_str(),
+                    MOVEFILE_REPLACE_EXISTING)) {
+      cerr << filename_ << ": MoveFileEx: "
+           << Subprocess::Win32ErrorMessage(GetLastError()) << endl;
+    }
+#else  // _WIN32
     if (rename(temp_filename_.c_str(), filename_.c_str()) < 0) {
       cerr << filename_ << ": rename: " << strerror(errno) << endl;
       had_error = true;
     }
+#endif  // !_WIN32
   }
 
   if (had_error) {
