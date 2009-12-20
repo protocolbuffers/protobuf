@@ -645,6 +645,11 @@ void MessageGenerator::GenerateBuilder(io::Printer* printer) {
                      .GenerateBuilderMembers(printer);
   }
 
+  printer->Print(
+    "\n"
+    "// @@protoc_insertion_point(builder_scope:$full_name$)\n",
+    "full_name", descriptor_->full_name());
+
   printer->Outdent();
   printer->Print("}\n");
 }

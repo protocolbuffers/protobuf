@@ -61,6 +61,8 @@ class TestGenerator : public CodeGenerator {
     TryInsert("Test.java", "outer_class_scope", output_directory);
     TryInsert("Test.java", "class_scope:foo.Bar", output_directory);
     TryInsert("Test.java", "class_scope:foo.Bar.Baz", output_directory);
+    TryInsert("Test.java", "builder_scope:foo.Bar", output_directory);
+    TryInsert("Test.java", "builder_scope:foo.Bar.Baz", output_directory);
     TryInsert("Test.java", "enum_scope:foo.Qux", output_directory);
     return true;
   }
