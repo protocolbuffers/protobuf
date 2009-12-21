@@ -54,6 +54,7 @@ EXTRA_DIST =                                                                 \
   vsprojects/protobuf.sln                                                    \
   vsprojects/protoc.vcproj                                                   \
   vsprojects/readme.txt                                                      \
+  vsprojects/test_plugin.vcproj                                              \
   vsprojects/tests.vcproj                                                    \
   vsprojects/lite-test.vcproj                                                \
   vsprojects/convert2008to2005.sh                                            \
