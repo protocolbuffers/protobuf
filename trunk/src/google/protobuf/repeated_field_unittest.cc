@@ -794,7 +794,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
   string v = "f";
   RepeatedPtrField<string>::pointer_iterator it =
       lower_bound(proto_array_.pointer_begin(), proto_array_.pointer_end(),
-                  v, StringLessThan());
+                  &v, StringLessThan());
 
   GOOGLE_CHECK(*it != NULL);
 

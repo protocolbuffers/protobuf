@@ -152,6 +152,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\io\coded_stream_inl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\stubs\common.h"
 				>
 			</File>
