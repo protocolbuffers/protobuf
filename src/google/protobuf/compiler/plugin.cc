@@ -34,11 +34,18 @@
 
 #include <iostream>
 #include <set>
-#include <unistd.h>
 
 #ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+#else
+#include <unistd.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>

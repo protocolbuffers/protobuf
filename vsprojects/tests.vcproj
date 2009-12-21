@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\mock_code_generator.h"
+				>
+			</File>
+			<File
 				RelativePath=".\google\protobuf\unittest.pb.h"
 				>
 			</File>
@@ -222,6 +226,10 @@
 				RelativePath=".\google\protobuf\unittest_optimize_for.pb.h"
 				>
 			</File>
+			<File
+				RelativePath=".\google\protobuf\unittest_no_generic_services.pb.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -243,6 +251,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\mock_code_generator.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\stubs\common_unittest.cc"
 				>
 			</File>
@@ -256,6 +268,18 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\cpp\cpp_unittest.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\cpp\cpp_plugin_unittest.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_plugin_unittest.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\python\python_plugin_unittest.cc"
 				>
 			</File>
 			<File
@@ -360,6 +384,10 @@
 			</File>
 			<File
 				RelativePath=".\google\protobuf\unittest_optimize_for.pb.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\google\protobuf\unittest_no_generic_services.pb.cc"
 				>
 			</File>
 			<File
@@ -564,6 +592,30 @@
 					Description="Generating unittest_optimize_for.pb.{h,cc}..."
 					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_optimize_for.proto&#x0D;&#x0A;"
 					Outputs="google\protobuf\unittest_optimize_for.pb.h;google\protobuf\unittest_optimize_for.pb.cc"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\src\google\protobuf\unittest_no_generic_services.proto"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating unittest_no_generic_services.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_no_generic_services.proto&#x0D;&#x0A;"
+					Outputs="google\protobuf\unittest_no_generic_services.pb.h;google\protobuf\unittest_no_generic_services.pb.cc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating unittest_no_generic_services.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_no_generic_services.proto&#x0D;&#x0A;"
+					Outputs="google\protobuf\unittest_no_generic_services.pb.h;google\protobuf\unittest_no_generic_services.pb.cc"
 				/>
 			</FileConfiguration>
 		</File>

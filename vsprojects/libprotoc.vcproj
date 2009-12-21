@@ -156,6 +156,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\subprocess.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\plugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\plugin.pb.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\cpp\cpp_enum.h"
 				>
 			</File>
@@ -269,6 +281,18 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\command_line_interface.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\subprocess.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\plugin.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\plugin.pb.cc"
 				>
 			</File>
 			<File
