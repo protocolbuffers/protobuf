@@ -48,8 +48,6 @@
 #include <set>
 #endif
 
-#include <ext/hash_map>
-
 namespace google {
 namespace protobuf {
 
