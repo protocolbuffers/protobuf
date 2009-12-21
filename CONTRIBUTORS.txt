@@ -58,6 +58,7 @@ Patch contributors:
     * Slicing support for repeated scalar fields for the Python API.
   Oleg Smolsky <oleg.smolsky@gmail.com>
     * MS Visual Studio error format option.
+    * Detect unordered_map in stl_hash.m4.
   Brian Olson <brianolson@google.com>
     * gzip/zlib I/O support.
   Michael Poole <mdpoole@troilus.org>
