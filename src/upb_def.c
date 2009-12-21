@@ -4,10 +4,10 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
+#include <stdlib.h>
 #include "descriptor.h"
 #include "upb_def.h"
-#include "upb_mm.h"
-#include "upb_msg.h"
+#include "upb_data.h"
 
 /* Rounds p up to the next multiple of t. */
 #define ALIGN_UP(p, t) ((p) % (t) == 0 ? (p) : (p) + ((t) - ((p) % (t))))
@@ -153,8 +153,7 @@ static void upb_def_init(struct upb_def *def, enum upb_def_type type,
   def->type = type;
   def->is_cyclic = 0;  // We detect this later, after resolving refs.
   def->search_depth = 0;
-  def->fqname = fqname;
-  upb_string_ref(fqname);
+  def->fqname = upb_string_getref(fqname, UPB_REF_FROZEN);
   upb_atomic_refcount_init(&def->refcount, 1);
 }
 
@@ -171,7 +170,7 @@ struct upb_unresolveddef {
 
 static struct upb_unresolveddef *upb_unresolveddef_new(struct upb_string *str) {
   struct upb_unresolveddef *def = malloc(sizeof(*def));
-  struct upb_string *name = upb_strdup(str);
+  upb_string *name = upb_string_getref(str, UPB_REF_THREADUNSAFE_READONLY);
   upb_def_init(&def->base, UPB_DEF_UNRESOLVED, name);
   def->name = name;
   return def;
@@ -191,7 +190,7 @@ static void fielddef_init(struct upb_fielddef *f,
   f->type = fd->type;
   f->label = fd->label;
   f->number = fd->number;
-  f->name = upb_strdup(fd->name);
+  f->name = upb_string_getref(fd->name, UPB_REF_FROZEN);
   f->def = NULL;
   f->owned = false;
   assert(fd->set_flags.has.type_name == upb_hasdef(f));
@@ -219,7 +218,7 @@ static void fielddef_uninit(struct upb_fielddef *f)
 static void fielddef_copy(struct upb_fielddef *dst, struct upb_fielddef *src)
 {
   *dst = *src;
-  dst->name = upb_strdup(src->name);
+  dst->name = upb_string_getref(src->name, UPB_REF_FROZEN);
   if(upb_hasdef(src)) {
     upb_def_ref(dst->def);
     dst->owned = true;
@@ -311,7 +310,7 @@ static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
 
     // Insert into the tables.
     struct upb_itof_ent itof_ent = {{f->number, 0}, f};
-    struct upb_ntof_ent ntof_ent = {{upb_strdup(f->name), 0}, f};
+    struct upb_ntof_ent ntof_ent = {{f->name, 0}, f};
     upb_inttable_insert(&m->itof, &itof_ent.e);
     upb_strtable_insert(&m->ntof, &ntof_ent.e);
   }
@@ -325,14 +324,6 @@ static void msgdef_free(struct upb_msgdef *m)
   for (upb_field_count_t i = 0; i < m->num_fields; i++)
     fielddef_uninit(&m->fields[i]);
   free(m->fields);
-
-  // Free refs from the strtable.
-  // TODO: once memory management for data is more developed, let the table
-  // handle freeing the refs itself.
-  struct upb_strtable_entry *e = upb_strtable_begin(&m->ntof);
-  for(; e; e = upb_strtable_next(&m->ntof, e)) {
-    upb_string_unref(e->key);
-  }
   upb_strtable_free(&m->ntof);
   upb_inttable_free(&m->itof);
   upb_def_uninit(&m->base);
@@ -372,7 +363,7 @@ static struct upb_enumdef *enumdef_new(google_protobuf_EnumDescriptorProto *ed,
 
   for(int i = 0; i < num_values; i++) {
     google_protobuf_EnumValueDescriptorProto *value = ed->value->elements[i];
-    struct ntoi_ent ntoi_ent = {{upb_strdup(value->name), 0}, value->number};
+    struct ntoi_ent ntoi_ent = {{value->name, 0}, value->number};
     struct iton_ent iton_ent = {{value->number, 0}, value->name};
     upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
     upb_inttable_insert(&e->iton, &iton_ent.e);
@@ -381,14 +372,6 @@ static struct upb_enumdef *enumdef_new(google_protobuf_EnumDescriptorProto *ed,
 }
 
 static void enumdef_free(struct upb_enumdef *e) {
-  // Free refs from the strtable.
-  // TODO: once memory management for data is more developed, let the table
-  // handle freeing the refs itself.
-  struct upb_strtable_entry *ent = upb_strtable_begin(&e->ntoi);
-  for(; ent; ent = upb_strtable_next(&e->ntoi, ent)) {
-    upb_string_unref(ent->key);
-  }
-
   upb_strtable_free(&e->ntoi);
   upb_inttable_free(&e->iton);
   upb_def_uninit(&e->base);
@@ -473,19 +456,19 @@ static struct symtab_ent *resolve(struct upb_strtable *t,
 /* Joins strings together, for example:
  *   join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
  *   join("", "Baz") -> "Baz"
- * Caller owns the returned string and must free it. */
+ * Caller owns a ref on the returned string. */
 static struct upb_string *join(struct upb_string *base, struct upb_string *name) {
   size_t len = base->byte_len + name->byte_len;
   if(base->byte_len > 0) len++;  /* For the separator. */
   struct upb_string *joined = upb_string_new();
-  upb_string_resize(joined, len);
+  char *joined_ptr = upb_string_getrwbuf(joined, len);
   if(base->byte_len > 0) {
     /* nested_base = base + '.' +  d->name */
-    memcpy(joined->ptr, base->ptr, base->byte_len);
-    joined->ptr[base->byte_len] = UPB_SYMBOL_SEPARATOR;
-    memcpy(&joined->ptr[base->byte_len+1], name->ptr, name->byte_len);
+    memcpy(joined_ptr, base->ptr, base->byte_len);
+    joined_ptr[base->byte_len] = UPB_SYMBOL_SEPARATOR;
+    memcpy(&joined_ptr[base->byte_len+1], name->ptr, name->byte_len);
   } else {
-    memcpy(joined->ptr, name->ptr, name->byte_len);
+    memcpy(joined_ptr, name->ptr, name->byte_len);
   }
   return joined;
 }
@@ -718,10 +701,8 @@ struct upb_symtab *upb_symtab_new()
 static void free_symtab(struct upb_strtable *t)
 {
   struct symtab_ent *e = upb_strtable_begin(t);
-  for(; e; e = upb_strtable_next(t, &e->e)) {
+  for(; e; e = upb_strtable_next(t, &e->e))
     upb_def_unref(e->def);
-    upb_string_unref(e->e.key);
-  }
   upb_strtable_free(t);
 }
 
@@ -838,10 +819,10 @@ void upb_symtab_addfds(struct upb_symtab *s,
 void upb_symtab_add_desc(struct upb_symtab *s, struct upb_string *desc,
                          struct upb_status *status)
 {
-  struct upb_msg *fds = upb_msg_new(s->fds_msgdef);
-  upb_msg_parsestr(fds, desc->ptr, desc->byte_len, status);
+  upb_msg *fds = upb_msg_new(s->fds_msgdef);
+  upb_msg_parsestr(fds, s->fds_msgdef, desc, status);
   if(!upb_ok(status)) return;
   upb_symtab_addfds(s, (google_protobuf_FileDescriptorSet*)fds, status);
-  upb_msg_unref(fds);
+  upb_msg_unref(fds, s->fds_msgdef);
   return;
 }

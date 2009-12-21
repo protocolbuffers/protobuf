@@ -3,7 +3,7 @@
 #ifndef DESCRIPTOR_DESCRIPTOR_H
 #define DESCRIPTOR_DESCRIPTOR_H
 
-#include <upb_struct.h>
+#include <upb_data.h>
 
 #ifdef __cplusplus
 extern "C" {

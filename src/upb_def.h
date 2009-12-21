@@ -156,21 +156,6 @@ INLINE bool upb_elem_ismm(struct upb_fielddef *f) {
   return upb_isstring(f) || upb_issubmsg(f);
 }
 
-/* Defined iff upb_field_ismm(f). */
-INLINE upb_mm_ptrtype upb_field_ptrtype(struct upb_fielddef *f) {
-  if(upb_isarray(f)) return UPB_MM_ARR_REF;
-  else if(upb_isstring(f)) return UPB_MM_STR_REF;
-  else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
-  else return -1;
-}
-
-/* Defined iff upb_elem_ismm(f). */
-INLINE upb_mm_ptrtype upb_elem_ptrtype(struct upb_fielddef *f) {
-  if(upb_isstring(f)) return UPB_MM_STR_REF;
-  else if(upb_issubmsg(f)) return UPB_MM_MSG_REF;
-  else return -1;
-}
-
 // Internal-only interface for the upb compiler.
 // Sorts the given fielddefs in-place, according to what we think is an optimal
 // ordering of fields.  This can change from upb release to upb release.

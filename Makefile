@@ -46,8 +46,7 @@ clean:
 	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
-SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_msg.c src/upb_mm.c \
-    src/upb_def.c src/upb_string.c src/upb_text.c \
+SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_def.c src/upb_data.c \
     descriptor/descriptor.c
     #src/upb_serialize.c descriptor/descriptor.c
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))

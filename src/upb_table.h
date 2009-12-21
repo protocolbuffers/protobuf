@@ -17,7 +17,7 @@
 
 #include <assert.h>
 #include "upb.h"
-#include "upb_string.h"
+#include "upb_data.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +39,7 @@ struct upb_inttable_entry {
 // performance by letting us compare hashes before comparing lengths or the
 // strings themselves.
 struct upb_strtable_entry {
-  struct upb_string *key;  // We own one ref.
+  struct upb_string *key;  // We own a frozen ref.
   uint32_t next;           // Internal chaining.
 };
 

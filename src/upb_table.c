@@ -47,7 +47,14 @@ void upb_strtable_init(struct upb_strtable *t, uint32_t size, uint16_t entsize)
 
 void upb_table_free(struct upb_table *t) { free(t->entries); }
 void upb_inttable_free(struct upb_inttable *t) { upb_table_free(&t->t); }
-void upb_strtable_free(struct upb_strtable *t) { upb_table_free(&t->t); }
+void upb_strtable_free(struct upb_strtable *t) {
+  // Free refs from the strtable.
+  struct upb_strtable_entry *e = upb_strtable_begin(t);
+  for(; e; e = upb_strtable_next(&m->ntof, e)) {
+    upb_string_unref(e->key);
+  }
+  upb_table_free(&t->t);
+}
 
 static uint32_t strtable_bucket(struct upb_strtable *t, struct upb_string *key)
 {
@@ -150,6 +157,7 @@ static uint32_t empty_strbucket(struct upb_strtable *table)
 static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
 {
   assert(upb_strtable_lookup(t, e->key) == NULL);
+  e->key = upb_string_getref(e->key, UPB_REF_FROZEN);
   t->t.count++;
   uint32_t bucket = strtable_bucket(t, e->key);
   struct upb_strtable_entry *table_e = strent(t, bucket);

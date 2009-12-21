@@ -17,30 +17,6 @@ static void upb_mm_destroy(union upb_value_ptr p, upb_mm_ptrtype type)
   }
 }
 
-void upb_msg_destroy(struct upb_msg *msg) {
-  for(upb_field_count_t i = 0; i < msg->def->num_fields; i++) {
-    struct upb_fielddef *f = &msg->def->fields[i];
-    if(!upb_msg_isset(msg, f) || !upb_field_ismm(f)) continue;
-    upb_mm_destroy(upb_msg_getptr(msg, f), upb_field_ptrtype(f));
-  }
-  upb_def_unref(UPB_UPCAST(msg->def));
-  free(msg);
-}
-
-void upb_array_destroy(struct upb_array *arr)
-{
-  if(upb_elem_ismm(arr->fielddef)) {
-    upb_arraylen_t i;
-    /* Unref elements. */
-    for(i = 0; i < arr->size; i++) {
-      union upb_value_ptr p = upb_array_getelementptr(arr, i);
-      upb_mm_destroy(p, upb_elem_ptrtype(arr->fielddef));
-    }
-  }
-  if(arr->size != 0) free(arr->elements._void);
-  free(arr);
-}
-
 static union upb_mmptr upb_mm_newptr(upb_mm_ptrtype type,
                                      struct upb_fielddef *f)
 {
