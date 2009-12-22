@@ -43,6 +43,7 @@
 #include <unistd.h>
 #endif
 #include <sstream>
+#include <fstream>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -77,9 +78,9 @@ TEST(MessageTest, SerializeHelpers) {
   string str1("foo");
   string str2("bar");
 
-  message.SerializeToString(&str1);
-  message.AppendToString(&str2);
-  message.SerializeToOstream(&stream);
+  EXPECT_TRUE(message.SerializeToString(&str1));
+  EXPECT_TRUE(message.AppendToString(&str2));
+  EXPECT_TRUE(message.SerializeToOstream(&stream));
 
   EXPECT_EQ(str1.size() + 3, str2.size());
   EXPECT_EQ("bar", str2.substr(0, 3));
@@ -93,6 +94,14 @@ TEST(MessageTest, SerializeHelpers) {
 
   EXPECT_TRUE(message.SerializeAsString() == str1);
 
+}
+
+TEST(MessageTest, SerializeToBrokenOstream) {
+  ofstream out;
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_int32(123);
+
+  EXPECT_FALSE(message.SerializeToOstream(&out));
 }
 
 TEST(MessageTest, ParseFromFileDescriptor) {
