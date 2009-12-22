@@ -30,6 +30,8 @@
     UTF-8 bytes.
   * Compiled-in message types can now contain dynamic extensions, through use
     of CodedInputStream::SetExtensionRegistry().
+  * Now compiles shared libraries (DLLs) by default on Cygwin and MinGW, to
+    match other platforms.  Use --disable-shared to avoid this.
 
   Java
   * parseDelimitedFrom() and mergeDelimitedFrom() now detect EOF and return

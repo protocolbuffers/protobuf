@@ -76,7 +76,7 @@ nobase_include_HEADERS =                                       \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 6:0:0
+libprotobuf_lite_la_LDFLAGS = -version-info 6:0:0 -export-dynamic -no-undefined
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/once.cc                                \
@@ -95,7 +95,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 6:0:0
+libprotobuf_la_LDFLAGS = -version-info 6:0:0 -export-dynamic -no-undefined
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/stubs/strutil.cc                             \
@@ -123,7 +123,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/compiler/parser.cc
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 6:0:0
+libprotoc_la_LDFLAGS = -version-info 6:0:0 -export-dynamic -no-undefined
 libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
