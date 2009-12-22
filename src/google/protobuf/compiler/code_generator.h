@@ -107,6 +107,8 @@ class LIBPROTOC_EXPORT OutputDirectory {
   // at the given insertion point.  See plugin.proto for more information on
   // insertion points.  The default implementation assert-fails -- it exists
   // only for backwards-compatibility.
+  //
+  // WARNING:  This feature is currently EXPERIMENTAL and is subject to change.
   virtual io::ZeroCopyOutputStream* OpenForInsert(
       const string& filename, const string& insertion_point);
 

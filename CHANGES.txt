@@ -20,6 +20,8 @@
     code generators.  Plugins are just binaries which accept a protocol buffer
     on stdin and write a protocol buffer to stdout, so they may be written in
     any language.  See src/google/protobuf/compiler/plugin.proto.
+    **WARNING**:  Plugins are experimental.  The interface may change in a
+    future version.
   * inf, -inf, and nan can now be used as default values for float and double
     fields.
 
