@@ -138,9 +138,9 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* containing_type,
                                          EnumValidityFunc* is_valid) {
   GOOGLE_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
   ExtensionInfo info(type, is_repeated, is_packed);
-  info.enum_is_valid = CallNoArgValidityFunc;
+  info.enum_validity_check.func = CallNoArgValidityFunc;
   // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
-  info.enum_is_valid_arg = (void*)is_valid;
+  info.enum_validity_check.arg = (void*)is_valid;
   Register(containing_type, number, info);
 }
 
@@ -761,7 +761,8 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
           int value;
           if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                   input, &value)) return false;
-          if (extension.enum_is_valid(extension.enum_is_valid_arg, value)) {
+          if (extension.enum_validity_check.func(
+                  extension.enum_validity_check.arg, value)) {
             AddEnum(number, WireFormatLite::TYPE_ENUM, true, value,
                     extension.descriptor);
           }
@@ -814,7 +815,8 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
         if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                 input, &value)) return false;
 
-        if (!extension.enum_is_valid(extension.enum_is_valid_arg, value)) {
+        if (!extension.enum_validity_check.func(
+                extension.enum_validity_check.arg, value)) {
           // Invalid value.  Treat as unknown.
           field_skipper->SkipUnknownEnum(number, value);
         } else if (extension.is_repeated) {

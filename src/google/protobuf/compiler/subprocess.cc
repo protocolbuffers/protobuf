@@ -35,6 +35,7 @@
 #ifndef _WIN32
 #include <errno.h>
 #include <sys/wait.h>
+#include <signal.h>
 #endif
 
 #include <algorithm>

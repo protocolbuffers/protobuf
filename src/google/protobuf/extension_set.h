@@ -99,9 +99,9 @@ struct ExtensionInfo {
 
   union {
     struct {
-      EnumValidityFuncWithArg* enum_is_valid;
-      const void* enum_is_valid_arg;
-    };
+      EnumValidityFuncWithArg* func;
+      const void* arg;
+    } enum_validity_check;
     const MessageLite* message_prototype;
   };
 
