@@ -68,6 +68,9 @@ namespace compiler {
 #ifndef STDOUT_FILENO
 #define STDOUT_FILENO 1
 #endif
+#ifndef F_OK
+#define F_OK 00  // not defined by MSVC for whatever reason
+#endif
 #endif
 
 namespace {
@@ -248,11 +251,40 @@ void CommandLineInterfaceTest::Run(const string& command) {
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
-#ifdef _WIN32
-    args.push_back("--plugin=prefix-gen-plug=test_plugin.exe");
-#else
-    args.push_back("--plugin=prefix-gen-plug=test_plugin");
-#endif
+
+    const char* possible_paths[] = {
+      // When building with shared libraries, libtool hides the real executable
+      // in .libs and puts a fake wrapper in the current directory.
+      // Unfortunately, due to an apparent bug on Cygwin/MinGW, if one program
+      // wrapped in this way (e.g. protobuf-tests.exe) tries to execute another
+      // program wrapped in this way (e.g. test_plugin.exe), the latter fails
+      // with error code 127 and no explanation message.  Presumably the problem
+      // is that the wrapper for protobuf-tests.exe set some environment
+      // variables that confuse the wrapper for test_plugin.exe.  Luckily, it
+      // turns out that if we simply invoke the wrapped test_plugin.exe
+      // directly, it works -- I guess the environment variables set by the
+      // protobuf-tests.exe wrapper happen to be correct for it too.  So we do
+      // that.
+      ".libs/test_plugin.exe",  // Win32 w/autotool (Cygwin / MinGW)
+      "test_plugin.exe",        // Other Win32 (MSVC)
+      "test_plugin",            // Unix
+    };
+
+    string plugin_path;
+
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(possible_paths); i++) {
+      if (access(possible_paths[i], F_OK) == 0) {
+        plugin_path = possible_paths[i];
+        break;
+      }
+    }
+
+    if (plugin_path.empty()) {
+      GOOGLE_LOG(ERROR)
+          << "Plugin executable not found.  Plugin tests are likely to fail.";
+    } else {
+      args.push_back("--plugin=prefix-gen-plug=" + plugin_path);
+    }
   }
 
   scoped_array<const char*> argv(new const char*[args.size()]);
