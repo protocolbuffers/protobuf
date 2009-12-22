@@ -14,23 +14,58 @@
 #include "upb.h"
 #include "upb_def.h"
 
-// Set if the object itself was allocated with malloc() and should be freed
-// with free().  This flag would be false if the object was allocated on the
-// stack or is data from the static segment of an object file.  Note that this
-// flag does not apply to the data being referenced by a string or array.
-//
-// If this flag is false, UPB_FLAG_HAS_REFCOUNT must be false also; there is
-// no sense refcounting something that does not need to be freed.
-#define UPB_FLAG_IS_HEAP_ALLOCATED (1<<2)
+/* upb_data *******************************************************************/
 
-// Set if the object is frozen against modification.  While an object is
-// frozen, it is suitable for concurrent access.  Note that this flag alone is
-// not a sufficient mechanism for preventing any kind of writes to the object's
-// memory, because the object could still have a refcount and/or reflist.
-#define UPB_FLAG_IS_FROZEN (1<<3)
+// The "base class" of strings, arrays, and messages.  Contains a few flags and
+// possibly a reference count.  None of the functions for upb_data are public,
+// but some of the constants are.
+typedef upb_atomic_t upb_data;
 
-// Set if the object has an embedded refcount.
-#define UPB_FLAG_HAS_REFCOUNT (1<<4)
+// The flags in upb_data.
+enum upb_data_flag {
+  // Set if the object itself was allocated with malloc() and should be freed
+  // with free().  This flag would be false if the object was allocated on the
+  // stack or is data from the static segment of an object file.  Note that this
+  // flag does not apply to the data being referenced by a string or array.
+  //
+  // If this flag is false, UPB_FLAG_HAS_REFCOUNT must be false also; there is
+  // no sense refcounting something that does not need to be freed.
+  UPB_DATA_HEAPALLOCATED = 1,
+
+  // Set if the object is frozen against modification.  While an object is
+  // frozen, it is suitable for concurrent readonly access.  Note that this
+  // flag alone is not a sufficient mechanism for preventing any kind of writes
+  // to the object's memory, because the object could still have a refcount.
+  UPB_DATA_FROZEN = (1<<1),
+
+  // Set if the object has an embedded refcount.
+  UPB_DATA_REFCOUNTED = (1<<2)
+};
+
+#define REFCOUNT_MASK 0xFFFFFFF8
+#define REFCOUNT_SHIFT 3
+#define REFCOUNT_ONE (1<<REFCOUNT_SHIFT)
+
+INLINE bool _upb_data_hasflag(upb_data *d, upb_data_flag flag) {
+  // We read this unsynchronized, because the is_frozen flag (the only flag
+  // that can change during the life of a upb_data) may not change if the
+  // data has more than one owner.
+  return d->v & flag;
+}
+
+INLINE uint32_t _upb_data_read_refcount(upb_data *d) {
+  if(upb_data_hasflag(d, UPB_DATA_FROZEN))
+    data = upb_atomic_read(d);
+  else
+    data = data->val;
+  return (data & REFCOUNT_MASK) >> REFCOUNT_SHIFT;
+}
+
+// Returns true if the given data has only one owner.
+INLINE bool _upb_data_only(upb_data *data) {
+  return !upb_data_hasflag(data, UPB_DATA_REFCOUNTED) ||
+         upb_data_read_refcount(data) == 1;
+}
 
 // Specifies the type of ref that is requested based on the kind of access the
 // caller needs to the object.
@@ -68,6 +103,30 @@ enum upb_ref_flags {
   UPB_REF_MUTABLE = 2
 }
 
+// Attempts to increment the reference on d with the given type of ref.  If
+// this is not possible, returns false.
+INLINE bool upb_data_incref(upb_data *d, upb_reftype reftype) {
+  if((reftype == UPB_REF_FROZEN && !upb_data_hasflag(d, UPB_DATA_FROZEN)) ||
+     (reftype == UPB_REF_MUTABLE && upb_data_hasflag(d, UPB_DATA_FROZEN)) ||
+     !upb_data_hasflag(d, UPB_DATA_REFCOUNTED)) {
+    return false;
+  }
+  // Increment the ref.  Only need to use atomic ops if the ref is frozen.
+  if(upb_data_hasflag(d, UPB_DATA_FROZEN)) upb_atomic_add(d, REFCOUNT_ONE);
+  else d->v += REFCOUNT_ONE;
+  return true;
+}
+
+INLINE bool upb_data_decref(upb_data *d) {
+  if(upb_data_hasflag(d, UPB_DATA_FROZEN)) {
+    int32_t old_val = upb_atomic_fetch_and_add(d, -REFCOUNT_ONE);
+    return old_val & REFCOUNT_MASK == REFCOUNT_ONE;
+  } else {
+    *d -= REFCOUNT_ONE;
+    return *d & REFCOUNT_MASK == 0;
+  }
+}
+
 typedef uint8_t upb_flags_t;
 struct upb_mmhead {};
 
@@ -77,22 +136,34 @@ typedef uint32_t upb_strlen_t;
 
 // The members of this struct are private.  Access should only be through the
 // associated functions.
-typedef struct upb_string {
-  unsigned int byte_size:29;  // How many bytes we own, 0 if we don't own.
-  bool is_heap_allocated:1;
-  bool is_frozen:1;
-  // TODO.  At the moment, all dynamically allocated strings have refcounts.
-  bool has_refcount:1;
+typedef struct {
+  upb_data base;
   upb_strlen_t byte_len;
   // We expect the data to be 8-bit clean (uint8_t), but char* is such an
   // ingrained convention that we follow it.
   char *ptr;
-} upb_string;
+} upb_string_common;
 
 typedef struct {
-  upb_string s;
-  upb_atomic_refcount_t refcount;
+  uint32_t byte_size_and_flags;
+  upb_strlen_t byte_len;
+  char *ptr;
+} upb_norefcount_string;
+
+typedef struct {
+  upb_data base;
+  upb_strlen_t byte_len;
+  char *ptr;
+  uint32_t byte_size;
 } upb_refcounted_string;
+
+typedef union {
+  upb_string_common common;
+  // Should only be accessed if flags indicate the string has *no* refcount.
+  upb_norefcount_string norefcount;
+  // Should only be accessed if flags indicate the string *has* a refcount.
+  upb_refcounted_string refcounted;
+} upb_string;
 
 // Returns a newly constructed string, which starts out empty.  Caller owns one
 // ref on it.
@@ -101,25 +172,15 @@ upb_string *upb_string_new(void);
 // Returns a string to which caller owns a ref, and contains the same contents
 // as src.  The returned value may be a copy of src, if the requested flags
 // were incompatible with src's.
-INLINE upb_string *upb_string_getref(upb_string *_s, upb_flags_t ref_flags) {
-  upb_refcount_string *s = _s;
-  if((ref_flags == UPB_REF_FROZEN && !s->is_frozen) ||
-     (ref_flags == UPB_REF_MUTABLE && s->is_frozen) ||
-     !s->has_refcount) {
-    // Copy should always be refcounted.  Should be frozen iff a frozen ref was req.
-    return upb_strdup(s, flags);
-  }
-  // Take a ref on the existing object.
-  if(s->is_frozen) upb_atomic_ref(s->refcount);
-  else s->refcount.val++;
-  return s;
+INLINE upb_string *upb_string_getref(upb_string *s, upb_flags_t ref_flags) {
+  if(upb_data_incref(&s->common.base, ref_flags)) return s;
+  return upb_strdup(s);
 }
 
 // The caller releases a ref on src, which it must previously have owned a ref
 // on.
 INLINE void upb_string_unref(upb_string *s) {
-  void *refcount = s + 1;
-  if(s->is_frozen) {
+  if(upb_data_unref(&s->common.base)) _upb_string_free(s);
 }
 
 // Returns a buffer to which the caller may write.  The string is resized to
@@ -130,12 +191,12 @@ char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len);
 // Returns a buffer that the caller may use to read the current contents of
 // the string.  The number of bytes available is upb_strlen(s).
 INLINE const char *upb_string_getrobuf(upb_string *s) {
-  return s->ptr;
+  return s->common.ptr;
 }
 
 // Returns the current length of the string.
 INLINE size_t upb_strlen(upb_string *s) {
-  return s->byte_len;
+  return s->common.byte_len;
 }
 
 /* upb_string library functions ***********************************************/

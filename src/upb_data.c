@@ -19,6 +19,10 @@ static uint32_t round_up_to_pow2(uint32_t v)
   return v;
 }
 
+static void check_not_frozen(upb_data *d) {
+  if(upb_data_hasflag(d, UPB_DATA_FROZEN)) abort();
+}
+
 upb_string *upb_string_new() {
   upb_string *s = malloc(sizeof(*s));
   s->byte_size = 0;
@@ -35,14 +39,9 @@ static void _upb_string_free(upb_string *s)
   free(s);
 }
 
-INLINE upb_string *upb_string_getref(upb_string *s, upb_flags_t ref_flags) {
-  if((ref_flags == UPB_REF_FROZEN && !s->is_frozen && s
-      upb_atomic_read((void*)(s + 1)) > 1) ||
-     (ref_flags == UPB_REF_MUTABLE && s->is_frozen && 
-}
-
 char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len)
 {
+  check_not_frozen(s);
   if(s->byte_size < byte_len) {
     // Need to resize.
     s->byte_size = round_up_to_pow2(byte_len);
