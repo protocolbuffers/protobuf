@@ -117,7 +117,7 @@ namespace {
   }
 
 CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' ||
-                            c == '\r' || c == '\v');
+                            c == '\r' || c == '\v' || c == '\f');
 
 CHARACTER_CLASS(Unprintable, c < ' ' && c > '\0');
 
