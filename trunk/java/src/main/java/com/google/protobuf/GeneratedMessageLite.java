@@ -420,34 +420,8 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
   /** For use by generated code only. */
   public static <ContainingType extends MessageLite, Type>
       GeneratedExtension<ContainingType, Type>
-      newGeneratedExtension(
-        final ContainingType containingTypeDefaultInstance,
-        final Type defaultValue,
-        final MessageLite messageDefaultInstance,
-        final Internal.EnumLiteMap<?> enumTypeMap,
-        final int number,
-        final WireFormat.FieldType type) {
-    return new GeneratedExtension<ContainingType, Type>(
-      containingTypeDefaultInstance, defaultValue, messageDefaultInstance,
-      new ExtensionDescriptor(enumTypeMap, number, type,
-        false /* isRepeated */, false /* isPacked */));
-  }
-
-  /** For use by generated code only. */
-  public static <ContainingType extends MessageLite, Type>
-      GeneratedExtension<ContainingType, List<Type>>
-      newRepeatedGeneratedExtension(
-        final ContainingType containingTypeDefaultInstance,
-        final MessageLite messageDefaultInstance,
-        final Internal.EnumLiteMap<?> enumTypeMap,
-        final int number,
-        final WireFormat.FieldType type,
-        final boolean isPacked) {
-    return new GeneratedExtension<ContainingType, List<Type>>(
-      containingTypeDefaultInstance, Collections.<Type>emptyList(),
-      messageDefaultInstance,
-      new ExtensionDescriptor(
-        enumTypeMap, number, type, true /* isRepeated */, isPacked));
+      newGeneratedExtension() {
+    return new GeneratedExtension<ContainingType, Type>();
   }
 
   private static final class ExtensionDescriptor
@@ -515,7 +489,16 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
    */
   public static final class GeneratedExtension<
       ContainingType extends MessageLite, Type> {
-    private GeneratedExtension(
+    // We can't always initialize a GeneratedExtension when we first construct
+    // it due to initialization order difficulties (namely, the default
+    // instances may not have been constructed yet).  So, we construct an
+    // uninitialized GeneratedExtension once, then call internalInit() on it
+    // later.  Generated code will always call internalInit() on all extensions
+    // as part of the static initialization code, and internalInit() throws an
+    // exception if called more than once, so this method is useless to users.
+    private GeneratedExtension() {}
+
+    private void internalInit(
         final ContainingType containingTypeDefaultInstance,
         final Type defaultValue,
         final MessageLite messageDefaultInstance,
@@ -526,10 +509,39 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
       this.descriptor = descriptor;
     }
 
-    private final ContainingType containingTypeDefaultInstance;
-    private final Type defaultValue;
-    private final MessageLite messageDefaultInstance;
-    private final ExtensionDescriptor descriptor;
+    /** For use by generated code only. */
+    public void internalInitSingular(
+        final ContainingType containingTypeDefaultInstance,
+        final Type defaultValue,
+        final MessageLite messageDefaultInstance,
+        final Internal.EnumLiteMap<?> enumTypeMap,
+        final int number,
+        final WireFormat.FieldType type) {
+      internalInit(
+        containingTypeDefaultInstance, defaultValue, messageDefaultInstance,
+        new ExtensionDescriptor(enumTypeMap, number, type,
+          false /* isRepeated */, false /* isPacked */));
+    }
+
+    /** For use by generated code only. */
+    public void internalInitRepeated(
+        final ContainingType containingTypeDefaultInstance,
+        final MessageLite messageDefaultInstance,
+        final Internal.EnumLiteMap<?> enumTypeMap,
+        final int number,
+        final WireFormat.FieldType type,
+        final boolean isPacked) {
+      internalInit(
+        containingTypeDefaultInstance, (Type) Collections.emptyList(),
+        messageDefaultInstance,
+        new ExtensionDescriptor(
+          enumTypeMap, number, type, true /* isRepeated */, isPacked));
+    }
+
+    private ContainingType containingTypeDefaultInstance;
+    private Type defaultValue;
+    private MessageLite messageDefaultInstance;
+    private ExtensionDescriptor descriptor;
 
     /**
      * Default instance of the type being extended, used to identify that type.
