@@ -352,7 +352,10 @@ public abstract class GeneratedMessage extends AbstractMessage {
       FieldDescriptor descriptor = extension.getDescriptor();
       final Object value = extensions.getField(descriptor);
       if (value == null) {
-        if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+        if (descriptor.isRepeated()) {
+          return (Type) Collections.emptyList();
+        } else if (descriptor.getJavaType() ==
+                   FieldDescriptor.JavaType.MESSAGE) {
           return (Type) extension.getMessageDefaultInstance();
         } else {
           return (Type) extension.fromReflectionType(

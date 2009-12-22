@@ -1664,6 +1664,34 @@ class TestUtil {
     Assert.assertEquals(0, message.getExtensionCount(repeatedStringPieceExtension));
     Assert.assertEquals(0, message.getExtensionCount(repeatedCordExtension));
 
+    // Repeated fields are empty via getExtension().size().
+    Assert.assertEquals(0, message.getExtension(repeatedInt32Extension   ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedInt64Extension   ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedUint32Extension  ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedUint64Extension  ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedSint32Extension  ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedSint64Extension  ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedFixed32Extension ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedFixed64Extension ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedSfixed32Extension).size());
+    Assert.assertEquals(0, message.getExtension(repeatedSfixed64Extension).size());
+    Assert.assertEquals(0, message.getExtension(repeatedFloatExtension   ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedDoubleExtension  ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedBoolExtension    ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedStringExtension  ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedBytesExtension   ).size());
+
+    Assert.assertEquals(0, message.getExtension(repeatedGroupExtension         ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedNestedMessageExtension ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedForeignMessageExtension).size());
+    Assert.assertEquals(0, message.getExtension(repeatedImportMessageExtension ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedNestedEnumExtension    ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedForeignEnumExtension   ).size());
+    Assert.assertEquals(0, message.getExtension(repeatedImportEnumExtension    ).size());
+
+    Assert.assertEquals(0, message.getExtension(repeatedStringPieceExtension).size());
+    Assert.assertEquals(0, message.getExtension(repeatedCordExtension).size());
+
     // hasBlah() should also be false for all default fields.
     Assert.assertFalse(message.hasExtension(defaultInt32Extension   ));
     Assert.assertFalse(message.hasExtension(defaultInt64Extension   ));
