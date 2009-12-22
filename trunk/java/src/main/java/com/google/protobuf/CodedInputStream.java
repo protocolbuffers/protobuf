@@ -576,6 +576,14 @@ public final class CodedInputStream {
    * Sets {@code currentLimit} to (current position) + {@code byteLimit}.  This
    * is called when descending into a length-delimited embedded message.
    *
+   * <p>Note that {@code pushLimit()} does NOT affect how many bytes the
+   * {@code CodedInputStream} reads from an underlying {@code InputStream} when
+   * refreshing its buffer.  If you need to prevent reading past a certain
+   * point in the underlying {@code InputStream} (e.g. because you expect it to
+   * contain more data after the end of the message which you need to handle
+   * differently) then you must place a wrapper around you {@code InputStream}
+   * which limits the amount of data that can be read from it.
+   *
    * @return the old limit.
    */
   public int pushLimit(int byteLimit) throws InvalidProtocolBufferException {
