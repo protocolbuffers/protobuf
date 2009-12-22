@@ -112,16 +112,20 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
     "public static final int $constant_name$ = $number$;\n");
   if (descriptor_->is_repeated()) {
     printer->Print(vars,
-      "public static\n"
+      "public static final\n"
       "  com.google.protobuf.GeneratedMessage$lite$.GeneratedExtension<\n"
       "    $containing_type$,\n"
-      "    java.util.List<$type$>> $name$;\n");
+      "    java.util.List<$type$>> $name$ =\n"
+      "      com.google.protobuf.GeneratedMessage$lite$\n"
+      "        .newGeneratedExtension();\n");
   } else {
     printer->Print(vars,
-      "public static\n"
+      "public static final\n"
       "  com.google.protobuf.GeneratedMessage$lite$.GeneratedExtension<\n"
       "    $containing_type$,\n"
-      "    $type$> $name$;\n");
+      "    $type$> $name$ =\n"
+      "      com.google.protobuf.GeneratedMessage$lite$\n"
+      "        .newGeneratedExtension();\n");
   }
 }
 
@@ -157,43 +161,29 @@ void ExtensionGenerator::GenerateInitializationCode(io::Printer* printer) {
   }
 
   if (HasDescriptorMethods(descriptor_->file())) {
-    if (descriptor_->is_repeated()) {
-      printer->Print(vars,
-        "$scope$.$name$ =\n"
-        "  com.google.protobuf.GeneratedMessage\n"
-        "    .newRepeatedGeneratedExtension(\n"
-        "      $scope$.getDescriptor().getExtensions().get($index$),\n"
-        "      $type$.class);\n");
-    } else {
-      printer->Print(vars,
-        "$scope$.$name$ =\n"
-        "  com.google.protobuf.GeneratedMessage.newGeneratedExtension(\n"
-        "    $scope$.getDescriptor().getExtensions().get($index$),\n"
-        "    $type$.class);\n");
-    }
+    printer->Print(vars,
+      "$scope$.$name$.internalInit(\n"
+      "    $scope$.getDescriptor().getExtensions().get($index$),\n"
+      "    $type$.class);\n");
   } else {
     if (descriptor_->is_repeated()) {
       printer->Print(vars,
-        "$scope$.$name$ =\n"
-        "  com.google.protobuf.GeneratedMessageLite\n"
-        "    .newRepeatedGeneratedExtension(\n"
-        "      $extendee$.getDefaultInstance(),\n"
-        "      $prototype$,\n"
-        "      $enum_map$,\n"
-        "      $number$,\n"
-        "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
-        "      $packed$);\n");
+        "$scope$.$name$.internalInitRepeated(\n"
+        "    $extendee$.getDefaultInstance(),\n"
+        "    $prototype$,\n"
+        "    $enum_map$,\n"
+        "    $number$,\n"
+        "    com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
+        "    $packed$);\n");
     } else {
       printer->Print(vars,
-        "$scope$.$name$ =\n"
-        "  com.google.protobuf.GeneratedMessageLite\n"
-        "    .newGeneratedExtension(\n"
-        "      $extendee$.getDefaultInstance(),\n"
-        "      $default$,\n"
-        "      $prototype$,\n"
-        "      $enum_map$,\n"
-        "      $number$,\n"
-        "      com.google.protobuf.WireFormat.FieldType.$type_constant$);\n");
+        "$scope$.$name$.internalInitSingular(\n"
+        "    $extendee$.getDefaultInstance(),\n"
+        "    $default$,\n"
+        "    $prototype$,\n"
+        "    $enum_map$,\n"
+        "    $number$,\n"
+        "    com.google.protobuf.WireFormat.FieldType.$type_constant$);\n");
     }
   }
 }
