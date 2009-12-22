@@ -168,8 +168,11 @@ bool Message::SerializePartialToFileDescriptor(int file_descriptor) const {
 }
 
 bool Message::SerializeToOstream(ostream* output) const {
-  io::OstreamOutputStream zero_copy_output(output);
-  return SerializeToZeroCopyStream(&zero_copy_output);
+  {
+    io::OstreamOutputStream zero_copy_output(output);
+    if (!SerializeToZeroCopyStream(&zero_copy_output)) return false;
+  }
+  return output->good();
 }
 
 bool Message::SerializePartialToOstream(ostream* output) const {
