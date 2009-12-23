@@ -169,14 +169,14 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
       double value = field.default_value_double();
       if (value == numeric_limits<double>::infinity()) {
         // Python pre-2.6 on Windows does not parse "inf" correctly.  However,
-        // parsing a number that is too big for a double will return infinity.
-        return "float('1e10000')";
+        // a numeric literal that is too big for a double will become infinity.
+        return "1e10000";
       } else if (value == -numeric_limits<double>::infinity()) {
         // See above.
-        return "float('-1e10000')";
+        return "-1e10000";
       } else if (value != value) {
         // infinity * 0 = nan
-        return "(float('1e10000') * 0)";
+        return "(1e10000 * 0)";
       } else {
         return SimpleDtoa(value);
       }
@@ -185,14 +185,14 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
       float value = field.default_value_float();
       if (value == numeric_limits<float>::infinity()) {
         // Python pre-2.6 on Windows does not parse "inf" correctly.  However,
-        // parsing a number that is too big for a double will return infinity.
-        return "float('1e10000')";
+        // a numeric literal that is too big for a double will become infinity.
+        return "1e10000";
       } else if (value == -numeric_limits<float>::infinity()) {
         // See above.
-        return "float('-1e10000')";
+        return "-1e10000";
       } else if (value != value) {
         // infinity - infinity = nan
-        return "(float('1e10000') - float('1e10000'))";
+        return "(1e10000 * 0)";
       } else {
         return SimpleFtoa(value);
       }
