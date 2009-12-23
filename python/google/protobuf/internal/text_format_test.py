@@ -325,10 +325,10 @@ class TokenizerTest(unittest.TestCase):
                '{',
                (tokenizer.ConsumeIdentifier, 'A'),
                ':',
-               (tokenizer.ConsumeFloat, float('inf')),
+               (tokenizer.ConsumeFloat, text_format._INFINITY),
                (tokenizer.ConsumeIdentifier, 'B'),
                ':',
-               (tokenizer.ConsumeFloat, float('-inf')),
+               (tokenizer.ConsumeFloat, -text_format._INFINITY),
                (tokenizer.ConsumeIdentifier, 'C'),
                ':',
                (tokenizer.ConsumeBool, True),
@@ -412,6 +412,16 @@ class TokenizerTest(unittest.TestCase):
     text = 'not-a-bool'
     tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeBool)
+
+  def testInfNan(self):
+    # Make sure our infinity and NaN definitions are sound.
+    self.assertEquals(float, type(text_format._INFINITY))
+    self.assertEquals(float, type(text_format._NAN))
+    self.assertTrue(text_format._NAN != text_format._NAN)
+
+    inf_times_zero = text_format._INFINITY * 0
+    self.assertTrue(inf_times_zero != inf_times_zero)
+    self.assertTrue(text_format._INFINITY > 0)
 
 
 if __name__ == '__main__':

@@ -43,6 +43,12 @@ __all__ = [ 'MessageToString', 'PrintMessage', 'PrintField',
             'PrintFieldValue', 'Merge' ]
 
 
+# Infinity and NaN are not explicitly supported by Python pre-2.6, and
+# float('inf') does not work on Windows (pre-2.6).
+_INFINITY = float('1e10000')
+_NAN = _INFINITY * 0
+
+
 class ParseError(Exception):
   """Thrown in case of ASCII parsing error."""
 
@@ -478,12 +484,12 @@ class _Tokenizer(object):
     if re.match(self._FLOAT_INFINITY, text):
       self.NextToken()
       if text.startswith('-'):
-        return float('-inf')
-      return float('inf')
+        return -_INFINITY
+      return _INFINITY
 
     if re.match(self._FLOAT_NAN, text):
       self.NextToken()
-      return float('nan')
+      return _NAN
 
     try:
       result = float(text)
