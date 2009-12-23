@@ -99,7 +99,7 @@ struct google_protobuf_UninterpretedOption_NamePart {
       bool is_extension:1;  /* = 2, required. */
     } has;
   } set_flags;
-  struct upb_string* name_part;
+  upb_string* name_part;
   bool is_extension;
 };
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption_NamePart)
@@ -119,7 +119,7 @@ struct google_protobuf_DescriptorProto {
       bool options:1;  /* = 7, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
+  upb_string* name;
   UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto)* field;
   UPB_MSG_ARRAY(google_protobuf_DescriptorProto)* nested_type;
   UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto)* enum_type;
@@ -140,7 +140,7 @@ struct google_protobuf_EnumDescriptorProto {
       bool options:1;  /* = 3, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
+  upb_string* name;
   UPB_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto)* value;
   google_protobuf_EnumOptions* options;
 };
@@ -161,11 +161,11 @@ struct google_protobuf_UninterpretedOption {
     } has;
   } set_flags;
   UPB_MSG_ARRAY(google_protobuf_UninterpretedOption_NamePart)* name;
-  struct upb_string* identifier_value;
+  upb_string* identifier_value;
   uint64_t positive_int_value;
   int64_t negative_int_value;
   double double_value;
-  struct upb_string* string_value;
+  upb_string* string_value;
 };
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption)
 
@@ -185,8 +185,8 @@ struct google_protobuf_FileDescriptorProto {
       bool options:1;  /* = 8, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
-  struct upb_string* package;
+  upb_string* name;
+  upb_string* package;
   struct upb_string_array* dependency;
   UPB_MSG_ARRAY(google_protobuf_DescriptorProto)* message_type;
   UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto)* enum_type;
@@ -208,9 +208,9 @@ struct google_protobuf_MethodDescriptorProto {
       bool options:1;  /* = 4, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
-  struct upb_string* input_type;
-  struct upb_string* output_type;
+  upb_string* name;
+  upb_string* input_type;
+  upb_string* output_type;
   google_protobuf_MethodOptions* options;
 };
 UPB_DEFINE_MSG_ARRAY(google_protobuf_MethodDescriptorProto)
@@ -239,7 +239,7 @@ struct google_protobuf_EnumValueDescriptorProto {
       bool options:1;  /* = 3, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
+  upb_string* name;
   int32_t number;
   google_protobuf_EnumValueOptions* options;
 };
@@ -256,7 +256,7 @@ struct google_protobuf_ServiceDescriptorProto {
       bool options:1;  /* = 3, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
+  upb_string* name;
   UPB_MSG_ARRAY(google_protobuf_MethodDescriptorProto)* method;
   google_protobuf_ServiceOptions* options;
 };
@@ -306,7 +306,7 @@ struct google_protobuf_FieldOptions {
   int32_t ctype;
   bool packed;
   bool deprecated;
-  struct upb_string* experimental_map_key;
+  upb_string* experimental_map_key;
   UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
 };
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldOptions)
@@ -324,8 +324,8 @@ struct google_protobuf_FileOptions {
       bool uninterpreted_option:1;  /* = 999, repeated. */
     } has;
   } set_flags;
-  struct upb_string* java_package;
-  struct upb_string* java_outer_classname;
+  upb_string* java_package;
+  upb_string* java_outer_classname;
   int32_t optimize_for;
   bool java_multiple_files;
   UPB_MSG_ARRAY(google_protobuf_UninterpretedOption)* uninterpreted_option;
@@ -376,13 +376,13 @@ struct google_protobuf_FieldDescriptorProto {
       bool options:1;  /* = 8, optional. */
     } has;
   } set_flags;
-  struct upb_string* name;
-  struct upb_string* extendee;
+  upb_string* name;
+  upb_string* extendee;
   int32_t number;
   int32_t label;
   int32_t type;
-  struct upb_string* type_name;
-  struct upb_string* default_value;
+  upb_string* type_name;
+  upb_string* default_value;
   google_protobuf_FieldOptions* options;
 };
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldDescriptorProto)

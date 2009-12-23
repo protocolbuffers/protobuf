@@ -35,28 +35,34 @@ extern "C" {
 /* Non-thread-safe implementations. ******************************************/
 
 typedef struct {
-  int val;
+  int v;
 } upb_atomic_refcount_t;
 
 INLINE void upb_atomic_refcount_init(upb_atomic_refcount_t *a, int val) {
-  a->val = val;
+  a->v = val;
 }
 
 INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
-  return a->val++ == 0;
+  return a->v++ == 0;
 }
 
 INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
-  return --a->val == 0;
+  return --a->v == 0;
 }
 
 INLINE int upb_atomic_read(upb_atomic_refcount_t *a) {
-  return a->val;
+  return a->v;
 }
 
 INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int val) {
-  a->val += val;
-  return a->val == 0;
+  a->v += val;
+  return a->v == 0;
+}
+
+INLINE bool upb_atomic_fetch_and_add(upb_atomic_refcount_t *a, int val) {
+  int ret = a->v;
+  a->v += val;
+  return ret;
 }
 
 typedef struct {
@@ -81,32 +87,32 @@ INLINE void upb_rwlock_unlock(upb_rwlock_t *l) { (void)l; }
 /* GCC includes atomic primitives. */
 
 typedef struct {
-  volatile int val;
+  volatile int v;
 } upb_atomic_refcount_t;
 
 INLINE void upb_atomic_refcount_init(upb_atomic_refcount_t *a, int val) {
-  a->val = val;
+  a->v = val;
   __sync_synchronize();   /* Ensure the initialized value is visible. */
 }
 
 INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
-  return __sync_fetch_and_add(&a->val, 1) == 0;
+  return __sync_fetch_and_add(&a->v, 1) == 0;
 }
 
 INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int n) {
-  return __sync_add_and_fetch(&a->val, n) == 0;
+  return __sync_add_and_fetch(&a->v, n) == 0;
 }
 
 INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
-  return __sync_sub_and_fetch(&a->val, 1) == 0;
+  return __sync_sub_and_fetch(&a->v, 1) == 0;
 }
 
 INLINE bool upb_atomic_read(upb_atomic_refcount_t *a) {
-  return __sync_fetch_and_add(&a->val, 0);
+  return __sync_fetch_and_add(&a->v, 0);
 }
 
 INLINE bool upb_atomic_write(upb_atomic_refcount_t *a, int val) {
-  a->val = val;
+  a->v = val;
 }
 
 #elif defined(WIN32)
