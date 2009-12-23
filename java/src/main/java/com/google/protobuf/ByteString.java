@@ -36,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * Immutable array of bytes.
@@ -135,6 +136,34 @@ public final class ByteString {
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException("UTF-8 not supported?", e);
     }
+  }
+
+  /**
+   * Concatenates all byte strings in the list and returns the result.
+   *
+   * <p>The returned {@code ByteString} is not necessarily a unique object.
+   * If the list is empty, the returned object is the singleton empty
+   * {@code ByteString}.  If the list has only one element, that
+   * {@code ByteString} will be returned without copying.
+   */
+  public static ByteString copyFrom(List<ByteString> list) {
+    if (list.size() == 0) {
+      return EMPTY;
+    } else if (list.size() == 1) {
+      return list.get(0);
+    }
+
+    int size = 0;
+    for (ByteString str : list) {
+      size += str.size();
+    }
+    byte[] bytes = new byte[size];
+    int pos = 0;
+    for (ByteString str : list) {
+      System.arraycopy(str.bytes, 0, bytes, pos, str.size());
+      pos += str.size();
+    }
+    return new ByteString(bytes);
   }
 
   // =================================================================
