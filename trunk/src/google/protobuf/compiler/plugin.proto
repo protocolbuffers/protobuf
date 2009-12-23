@@ -123,6 +123,13 @@ message CodeGeneratorResponse {
     // insertion_point "package_level_decls" to generate additional classes or
     // other declarations that should be placed in this scope.
     //
+    // Note that if the line containing the insertion point begins with
+    // whitespace, the same whitespace will be added to every line of the
+    // inserted text.  This is useful for languages like Python, where
+    // indentation matters.  In these languages, the insertion point comment
+    // should be indented the same amount as any inserted code will need to be
+    // in order to work correctly in that context.
+    //
     // If |insertion_point| is present, |name| must also be present.
     optional string insertion_point = 2;
 

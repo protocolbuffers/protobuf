@@ -61,6 +61,8 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/hash.h>
 
 
 namespace google {
@@ -132,6 +134,45 @@ void SetFdToBinaryMode(int fd) {
   // (Text and binary are the same on non-Windows platforms.)
 }
 
+void AddTrailingSlash(string* path) {
+  if (!path->empty() && path->at(path->size() - 1) != '/') {
+    path->push_back('/');
+  }
+}
+
+bool VerifyDirectoryExists(const string& path) {
+  if (path.empty()) return true;
+
+  if (access(path.c_str(), W_OK) == -1) {
+    cerr << path << ": " << strerror(errno) << endl;
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// Try to create the parent directory of the given file, creating the parent's
+// parent if necessary, and so on.  The full file name is actually
+// (prefix + filename), but we assume |prefix| already exists and only create
+// directories listed in |filename|.
+void TryCreateParentDirectory(const string& prefix, const string& filename) {
+  // Recursively create parent directories to the output file.
+  vector<string> parts;
+  SplitStringUsing(filename, "/", &parts);
+  string path_so_far = prefix;
+  for (int i = 0; i < parts.size() - 1; i++) {
+    path_so_far += parts[i];
+    if (mkdir(path_so_far.c_str(), 0777) != 0) {
+      if (errno != EEXIST) {
+        cerr << filename << ": while trying to create directory "
+             << path_so_far << ": " << strerror(errno) << endl;
+        return;
+      }
+    }
+    path_so_far += '/';
+  }
+}
+
 }  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
@@ -176,15 +217,12 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
 // -------------------------------------------------------------------
 
 // An OutputDirectory implementation that writes to disk.
-class CommandLineInterface::DiskOutputDirectory : public OutputDirectory {
+class CommandLineInterface::MemoryOutputDirectory : public OutputDirectory {
  public:
-  DiskOutputDirectory(const string& root);
-  ~DiskOutputDirectory();
+  MemoryOutputDirectory();
+  ~MemoryOutputDirectory();
 
-  bool VerifyExistence();
-
-  inline bool had_error() { return had_error_; }
-  inline void set_had_error(bool value) { had_error_ = value; }
+  bool WriteAllToDisk();
 
   // implements OutputDirectory --------------------------------------
   io::ZeroCopyOutputStream* Open(const string& filename);
@@ -192,91 +230,131 @@ class CommandLineInterface::DiskOutputDirectory : public OutputDirectory {
       const string& filename, const string& insertion_point);
 
  private:
-  string root_;
+  friend class MemoryOutputStream;
+
+  hash_map<string, string*> files_;
   bool had_error_;
 };
 
-// A FileOutputStream that checks for errors in the destructor and reports
-// them.  We extend FileOutputStream via wrapping rather than inheritance
-// for two reasons:
-// 1) Implementation inheritance is evil.
-// 2) We need to close the file descriptor *after* the FileOutputStream's
-//    destructor is run to make sure it flushes the file contents.
-class CommandLineInterface::ErrorReportingFileOutput
-    : public io::ZeroCopyOutputStream {
+// OutputDirectory that just adds some prefix to every file name.
+class CommandLineInterface::SubOutputDirectory : public OutputDirectory {
  public:
-  ErrorReportingFileOutput(int file_descriptor,
-                           const string& filename,
-                           DiskOutputDirectory* directory);
-  ~ErrorReportingFileOutput();
+  SubOutputDirectory(OutputDirectory* parent, const string& prefix)
+      : parent_(parent), prefix_(prefix) {}
+  ~SubOutputDirectory() {}
 
-  // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) { return file_stream_->Next(data, size); }
-  void BackUp(int count)            {        file_stream_->BackUp(count);    }
-  int64 ByteCount() const           { return file_stream_->ByteCount();      }
+  // implements OutputDirectory --------------------------------------
+  io::ZeroCopyOutputStream* Open(const string& filename) {
+    // TODO(kenton):  This is not the cleanest place to deal with creation of
+    //   parent directories, but it does the right thing given the way this
+    //   class is used, and this class is private to this file anyway, so it's
+    //   probably not worth fixing for now.
+    TryCreateParentDirectory(prefix_, filename);
+    return parent_->Open(prefix_ + filename);
+  }
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const string& filename, const string& insertion_point) {
+    return parent_->OpenForInsert(prefix_ + filename, insertion_point);
+  }
 
  private:
-  scoped_ptr<io::FileOutputStream> file_stream_;
-  string filename_;
-  DiskOutputDirectory* directory_;
+  OutputDirectory* parent_;
+  string prefix_;
 };
 
-// Kind of like ErrorReportingFileOutput, but used when inserting
-// (OutputDirectory::OpenForInsert()).  In this case, we are writing to a
-// temporary file, since we must copy data from the original.  We copy the
-// data up to the insertion point in the constructor, and the remainder in the
-// destructor.  We then replace the original file with the temporary, also in
-// the destructor.
-class CommandLineInterface::InsertionOutputStream
+class CommandLineInterface::MemoryOutputStream
     : public io::ZeroCopyOutputStream {
  public:
-  InsertionOutputStream(
-      const string& filename,
-      const string& temp_filename,
-      const string& insertion_point,
-      int original_file_descriptor,            // Takes ownership.
-      int temp_file_descriptor,                // Takes ownership.
-      DiskOutputDirectory* directory);         // Does not take ownership.
-  ~InsertionOutputStream();
+  MemoryOutputStream(MemoryOutputDirectory* directory, const string& filename);
+  MemoryOutputStream(MemoryOutputDirectory* directory, const string& filename,
+                     const string& insertion_point);
+  virtual ~MemoryOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) { return temp_file_->Next(data, size); }
-  void BackUp(int count)            {        temp_file_->BackUp(count);    }
-  int64 ByteCount() const           { return temp_file_->ByteCount();      }
+  virtual bool Next(void** data, int* size) { return inner_->Next(data, size); }
+  virtual void BackUp(int count)            {        inner_->BackUp(count);    }
+  virtual int64 ByteCount() const           { return inner_->ByteCount();      }
 
  private:
-  scoped_ptr<io::FileInputStream> original_file_;
-  scoped_ptr<io::FileOutputStream> temp_file_;
-
+  // Where to insert the string when it's done.
+  MemoryOutputDirectory* directory_;
   string filename_;
-  string temp_filename_;
-  DiskOutputDirectory* directory_;
+  string insertion_point_;
 
-  // The contents of the line containing the insertion point.
-  string magic_line_;
+  // The string we're building.
+  string data_;
+
+  // StringOutputStream writing to data_.
+  scoped_ptr<io::StringOutputStream> inner_;
 };
 
 // -------------------------------------------------------------------
 
-CommandLineInterface::DiskOutputDirectory::DiskOutputDirectory(
-    const string& root)
-  : root_(root), had_error_(false) {
-  // Add a '/' to the end if it doesn't already have one.  But don't add a
-  // '/' to an empty string since this probably means the current directory.
-  if (!root_.empty() && root[root_.size() - 1] != '/') {
-    root_ += '/';
+CommandLineInterface::MemoryOutputDirectory::MemoryOutputDirectory()
+    : had_error_(false) {}
+
+CommandLineInterface::MemoryOutputDirectory::~MemoryOutputDirectory() {
+  STLDeleteValues(&files_);
+}
+
+bool CommandLineInterface::MemoryOutputDirectory::WriteAllToDisk() {
+  if (had_error_) {
+    return false;
   }
-}
 
-CommandLineInterface::DiskOutputDirectory::~DiskOutputDirectory() {
-}
+  for (hash_map<string, string*>::const_iterator iter = files_.begin();
+       iter != files_.end(); ++iter) {
+    const string& filename = iter->first;
+    const char* data = iter->second->data();
+    int size = iter->second->size();
 
-bool CommandLineInterface::DiskOutputDirectory::VerifyExistence() {
-  if (!root_.empty()) {
-    // Make sure the directory exists.  If it isn't a directory, this will fail
-    // because we added a '/' to the end of the name in the constructor.
-    if (access(root_.c_str(), W_OK) == -1) {
-      cerr << root_ << ": " << strerror(errno) << endl;
+    // Create the output file.
+    int file_descriptor;
+    do {
+      file_descriptor =
+        open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+    } while (file_descriptor < 0 && errno == EINTR);
+
+    if (file_descriptor < 0) {
+      int error = errno;
+      cerr << filename << ": " << strerror(error);
+      return false;
+    }
+
+    // Write the file.
+    while (size > 0) {
+      int write_result;
+      do {
+        write_result = write(file_descriptor, data, size);
+      } while (write_result < 0 && errno == EINTR);
+
+      if (write_result <= 0) {
+        // Write error.
+
+        // FIXME(kenton):  According to the man page, if write() returns zero,
+        //   there was no error; write() simply did not write anything.  It's
+        //   unclear under what circumstances this might happen, but presumably
+        //   errno won't be set in this case.  I am confused as to how such an
+        //   event should be handled.  For now I'm treating it as an error,
+        //   since retrying seems like it could lead to an infinite loop.  I
+        //   suspect this never actually happens anyway.
+
+        if (write_result < 0) {
+          int error = errno;
+          cerr << filename << ": write: " << strerror(error);
+        } else {
+          cerr << filename << ": write() returned zero?" << endl;
+        }
+        return false;
+      }
+
+      data += write_result;
+      size -= write_result;
+    }
+
+    if (close(file_descriptor) != 0) {
+      int error = errno;
+      cerr << filename << ": close: " << strerror(error);
       return false;
     }
   }
@@ -284,270 +362,132 @@ bool CommandLineInterface::DiskOutputDirectory::VerifyExistence() {
   return true;
 }
 
-// -------------------------------------------------------------------
-
-io::ZeroCopyOutputStream* CommandLineInterface::DiskOutputDirectory::Open(
+io::ZeroCopyOutputStream* CommandLineInterface::MemoryOutputDirectory::Open(
     const string& filename) {
-  // Recursively create parent directories to the output file.
-  vector<string> parts;
-  SplitStringUsing(filename, "/", &parts);
-  string path_so_far = root_;
-  for (int i = 0; i < parts.size() - 1; i++) {
-    path_so_far += parts[i];
-    if (mkdir(path_so_far.c_str(), 0777) != 0) {
-      if (errno != EEXIST) {
-        cerr << filename << ": while trying to create directory "
-             << path_so_far << ": " << strerror(errno) << endl;
-        had_error_ = true;
-        // Return a dummy stream.
-        return new io::ArrayOutputStream(NULL, 0);
-      }
-    }
-    path_so_far += '/';
-  }
-
-  // Create the output file.
-  int file_descriptor;
-  do {
-    file_descriptor =
-      open((root_ + filename).c_str(),
-           O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
-  } while (file_descriptor < 0 && errno == EINTR);
-
-  if (file_descriptor < 0) {
-    // Failed to open.
-    cerr << filename << ": " << strerror(errno) << endl;
-    had_error_ = true;
-    // Return a dummy stream.
-    return new io::ArrayOutputStream(NULL, 0);
-  }
-
-  return new ErrorReportingFileOutput(file_descriptor, filename, this);
+  return new MemoryOutputStream(this, filename);
 }
-
-CommandLineInterface::ErrorReportingFileOutput::ErrorReportingFileOutput(
-    int file_descriptor,
-    const string& filename,
-    DiskOutputDirectory* directory)
-  : file_stream_(new io::FileOutputStream(file_descriptor)),
-    filename_(filename),
-    directory_(directory) {}
-
-CommandLineInterface::ErrorReportingFileOutput::~ErrorReportingFileOutput() {
-  // Check if we had any errors while writing.
-  if (file_stream_->GetErrno() != 0) {
-    cerr << filename_ << ": " << strerror(file_stream_->GetErrno()) << endl;
-    directory_->set_had_error(true);
-  }
-
-  // Close the file stream.
-  if (!file_stream_->Close()) {
-    cerr << filename_ << ": " << strerror(file_stream_->GetErrno()) << endl;
-    directory_->set_had_error(true);
-  }
-}
-
-// -------------------------------------------------------------------
 
 io::ZeroCopyOutputStream*
-CommandLineInterface::DiskOutputDirectory::OpenForInsert(
+CommandLineInterface::MemoryOutputDirectory::OpenForInsert(
     const string& filename, const string& insertion_point) {
-  string path = root_ + filename;
-
-  // Put the temp file in the same directory so that we can simply rename() it
-  // into place later.
-  string temp_path = path + ".protoc_temp";
-
-  // Open the original file.
-  int original_file;
-  do {
-    original_file = open(path.c_str(), O_RDONLY | O_BINARY);
-  } while (original_file < 0 && errno == EINTR);
-
-  if (original_file < 0) {
-    // Failed to open.
-    cerr << path << ": " << strerror(errno) << endl;
-    had_error_ = true;
-    // Return a dummy stream.
-    return new io::ArrayOutputStream(NULL, 0);
-  }
-
-  // Create the temp file.
-  int temp_file;
-  do {
-    temp_file =
-      open(temp_path.c_str(),
-           O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
-  } while (temp_file < 0 && errno == EINTR);
-
-  if (temp_file < 0) {
-    // Failed to open.
-    cerr << temp_path << ": " << strerror(errno) << endl;
-    had_error_ = true;
-    close(original_file);
-    // Return a dummy stream.
-    return new io::ArrayOutputStream(NULL, 0);
-  }
-
-  return new InsertionOutputStream(
-      path, temp_path, insertion_point, original_file, temp_file, this);
+  return new MemoryOutputStream(this, filename, insertion_point);
 }
 
-namespace {
+// -------------------------------------------------------------------
 
-// Helper for reading lines from a ZeroCopyInputStream.
-// TODO(kenton):  Put somewhere reusable?
-class LineReader {
- public:
-  LineReader(io::ZeroCopyInputStream* input)
-      : input_(input), buffer_(NULL), size_(0) {}
-
-  ~LineReader() {
-    if (size_ > 0) {
-      input_->BackUp(size_);
-    }
-  }
-
-  bool ReadLine(string* line) {
-    line->clear();
-
-    while (true) {
-      for (int i = 0; i < size_; i++) {
-        if (buffer_[i] == '\n') {
-          line->append(buffer_, i + 1);
-          buffer_ += i + 1;
-          size_ -= i + 1;
-          return true;
-        }
-      }
-
-      line->append(buffer_, size_);
-
-      const void* void_buffer;
-      if (!input_->Next(&void_buffer, &size_)) {
-        buffer_ = NULL;
-        size_ = 0;
-        return false;
-      }
-
-      buffer_ = reinterpret_cast<const char*>(void_buffer);
-    }
-  }
-
- private:
-  io::ZeroCopyInputStream* input_;
-  const char* buffer_;
-  int size_;
-};
-
-}  // namespace
-
-CommandLineInterface::InsertionOutputStream::InsertionOutputStream(
-    const string& filename,
-    const string& temp_filename,
-    const string& insertion_point,
-    int original_file_descriptor,
-    int temp_file_descriptor,
-    DiskOutputDirectory* directory)
-    : original_file_(new io::FileInputStream(original_file_descriptor)),
-      temp_file_(new io::FileOutputStream(temp_file_descriptor)),
+CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
+    MemoryOutputDirectory* directory, const string& filename)
+    : directory_(directory),
       filename_(filename),
-      temp_filename_(temp_filename),
-      directory_(directory) {
-  string magic_string = strings::Substitute(
-      "@@protoc_insertion_point($0)", insertion_point);
-
-  LineReader reader(original_file_.get());
-  io::Printer writer(temp_file_.get(), '$');
-  string line;
-
-  while (true) {
-    if (!reader.ReadLine(&line)) {
-      int error = temp_file_->GetErrno();
-      if (error == 0) {
-        cerr << filename << ": Insertion point not found: "
-             << insertion_point << endl;
-      } else {
-        cerr << filename << ": " << strerror(error) << endl;
-      }
-      original_file_->Close();
-      original_file_.reset();
-      // Will finish handling error in the destructor.
-      break;
-    }
-
-    if (line.find(magic_string) != string::npos) {
-      // Found the magic line.  Since we want to insert before it, save it for
-      // later.
-      magic_line_ = line;
-      break;
-    }
-
-    writer.PrintRaw(line);
-  }
+      inner_(new io::StringOutputStream(&data_)) {
 }
 
-CommandLineInterface::InsertionOutputStream::~InsertionOutputStream() {
-  // C-style error handling is teh best.
-  bool had_error = false;
+CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
+    MemoryOutputDirectory* directory, const string& filename,
+    const string& insertion_point)
+    : directory_(directory),
+      filename_(filename),
+      insertion_point_(insertion_point),
+      inner_(new io::StringOutputStream(&data_)) {
+}
 
-  if (original_file_ == NULL) {
-    // We had an error in the constructor.
-    had_error = true;
+CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
+  // Make sure all data has been written.
+  inner_.reset();
+
+  // Insert into the directory.
+  string** map_slot = &directory_->files_[filename_];
+
+  if (insertion_point_.empty()) {
+    // This was just a regular Open().
+    if (*map_slot != NULL) {
+      cerr << filename_ << ": Tried to write the same file twice." << endl;
+      directory_->had_error_ = true;
+      return;
+    }
+
+    *map_slot = new string;
+    (*map_slot)->swap(data_);
   } else {
-    // Use CodedOutputStream for convenience, so we don't have to deal with
-    // copying buffers ourselves.
-    io::CodedOutputStream out(temp_file_.get());
-    out.WriteRaw(magic_line_.data(), magic_line_.size());
+    // This was an OpenForInsert().
 
-    // Write the rest of the original file.
-    const void* buffer;
-    int size;
-    while (original_file_->Next(&buffer, &size)) {
-      out.WriteRaw(buffer, size);
+    // If the data doens't end with a clean line break, add one.
+    if (!data_.empty() && data_[data_.size() - 1] != '\n') {
+      data_.push_back('\n');
     }
 
-    // Close the original file.
-    if (!original_file_->Close()) {
-      cerr << filename_ << ": " << strerror(original_file_->GetErrno()) << endl;
-      had_error = true;
+    // Find the file we are going to insert into.
+    if (*map_slot == NULL) {
+      cerr << filename_ << ": Tried to insert into file that doesn't exist."
+           << endl;
+      directory_->had_error_ = true;
+      return;
     }
-  }
+    string* target = *map_slot;
 
-  // Check if we had any errors while writing.
-  if (temp_file_->GetErrno() != 0) {
-    cerr << filename_ << ": " << strerror(temp_file_->GetErrno()) << endl;
-    had_error = true;
-  }
+    // Find the insertion point.
+    string magic_string = strings::Substitute(
+        "@@protoc_insertion_point($0)", insertion_point_);
+    string::size_type pos = target->find(magic_string);
 
-  // Close the temp file.
-  if (!temp_file_->Close()) {
-    cerr << filename_ << ": " << strerror(temp_file_->GetErrno()) << endl;
-    had_error = true;
-  }
-
-  // If everything was successful, overwrite the original file with the temp
-  // file.
-  if (!had_error) {
-#ifdef _WIN32
-    // rename() on Windows fails if the file exists.
-    if (!MoveFileEx(temp_filename_.c_str(), filename_.c_str(),
-                    MOVEFILE_REPLACE_EXISTING)) {
-      cerr << filename_ << ": MoveFileEx: "
-           << Subprocess::Win32ErrorMessage(GetLastError()) << endl;
+    if (pos == string::npos) {
+      cerr << filename_ << ": insertion point \"" << insertion_point_
+           << "\" not found." << endl;
+      directory_->had_error_ = true;
+      return;
     }
-#else  // _WIN32
-    if (rename(temp_filename_.c_str(), filename_.c_str()) < 0) {
-      cerr << filename_ << ": rename: " << strerror(errno) << endl;
-      had_error = true;
-    }
-#endif  // !_WIN32
-  }
 
-  if (had_error) {
-    // We had some sort of error so let's try to delete the temp file.
-    remove(temp_filename_.c_str());
-    directory_->set_had_error(true);
+    // Seek backwards to the beginning of the line, which is where we will
+    // insert the data.  Note that this has the effect of pushing the insertion
+    // point down, so the data is inserted before it.  This is intentional
+    // because it means that multiple insertions at the same point will end
+    // up in the expected order in the final output.
+    pos = target->find_last_of('\n', pos);
+    if (pos == string::npos) {
+      // Insertion point is on the first line.
+      pos = 0;
+    } else {
+      // Advance to character after '\n'.
+      ++pos;
+    }
+
+    // Extract indent.
+    string indent_(*target, pos, target->find_first_not_of(" \t", pos) - pos);
+
+    if (indent_.empty()) {
+      // No indent.  This makes things easier.
+      target->insert(pos, data_);
+    } else {
+      // Calculate how much space we need.
+      int indent_size = 0;
+      for (int i = 0; i < data_.size(); i++) {
+        if (data_[i] == '\n') indent_size += indent_.size();
+      }
+
+      // Make a hole for it.
+      target->insert(pos, data_.size() + indent_size, '\0');
+
+      // Now copy in the data.
+      string::size_type data_pos = 0;
+      char* target_ptr = string_as_array(target) + pos;
+      while (data_pos < data_.size()) {
+        // Copy indent.
+        memcpy(target_ptr, indent_.data(), indent_.size());
+        target_ptr += indent_.size();
+
+        // Copy line from data_.
+        // We already guaranteed that data_ ends with a newline (above), so this
+        // search can't fail.
+        string::size_type line_length =
+            data_.find_first_of('\n', data_pos) + 1 - data_pos;
+        memcpy(target_ptr, data_.data() + data_pos, line_length);
+        target_ptr += line_length;
+        data_pos += line_length;
+      }
+
+      GOOGLE_CHECK_EQ(target_ptr,
+          string_as_array(target) + pos + data_.size() + indent_size);
+    }
   }
 }
 
@@ -613,12 +553,18 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   // Generate output.
+  MemoryOutputDirectory output_directory;
   if (mode_ == MODE_COMPILE) {
     for (int i = 0; i < output_directives_.size(); i++) {
-      if (!GenerateOutput(parsed_files, output_directives_[i])) {
+      if (!GenerateOutput(parsed_files, output_directives_[i],
+                          &output_directory)) {
         return 1;
       }
     }
+  }
+
+  if (!output_directory.WriteAllToDisk()) {
+    return 1;
   }
 
   if (!descriptor_set_name_.empty()) {
@@ -1062,14 +1008,15 @@ void CommandLineInterface::PrintHelpText() {
 
 bool CommandLineInterface::GenerateOutput(
     const vector<const FileDescriptor*>& parsed_files,
-    const OutputDirective& output_directive) {
-  // Create the output directory.
-  DiskOutputDirectory output_directory(output_directive.output_location);
-  if (!output_directory.VerifyExistence()) {
+    const OutputDirective& output_directive,
+    OutputDirectory* parent_output_directory) {
+  // Set up the OutputDirectory.
+  string path = output_directive.output_location;
+  AddTrailingSlash(&path);
+  if (!VerifyDirectoryExists(path)) {
     return false;
   }
-
-  // Opened successfully.  Write it.
+  SubOutputDirectory output_directory(parent_output_directory, path);
 
   // Call the generator.
   string error;
@@ -1101,11 +1048,6 @@ bool CommandLineInterface::GenerateOutput(
         return false;
       }
     }
-  }
-
-  // Check for write errors.
-  if (output_directory.had_error()) {
-    return false;
   }
 
   return true;

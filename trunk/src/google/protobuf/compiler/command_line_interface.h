@@ -174,9 +174,9 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // -----------------------------------------------------------------
 
   class ErrorPrinter;
-  class DiskOutputDirectory;
-  class ErrorReportingFileOutput;
-  class InsertionOutputStream;
+  class MemoryOutputDirectory;
+  class SubOutputDirectory;
+  class MemoryOutputStream;
 
   // Clear state from previous Run().
   void Clear();
@@ -212,7 +212,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Generate the given output file from the given input.
   struct OutputDirective;  // see below
   bool GenerateOutput(const vector<const FileDescriptor*>& parsed_files,
-                      const OutputDirective& output_directive);
+                      const OutputDirective& output_directive,
+                      OutputDirectory* parent_output_directory);
   bool GeneratePluginOutput(const vector<const FileDescriptor*>& parsed_files,
                             const string& plugin_name,
                             const string& parameter,
