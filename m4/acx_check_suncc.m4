@@ -26,7 +26,7 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
   AS_IF([test "$SUNCC" = "yes" -a "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
     dnl Sun Studio has a crashing bug with -xO4 in some cases. Keep this
     dnl at -xO3 until a proper test to detect those crashes can be done.
-    CXXFLAGS="-g0 -xO3 -xlibmil -xdepend -xbuiltin -mt -compat=5 -library=stlport4 -template=no%extdef ${CXXFLAGS}"
+    CXXFLAGS="-g0 -xO3 -xlibmil -xdepend -xbuiltin -mt -compat=5 -library=stlport4 -library=Crun -template=no%extdef ${CXXFLAGS}"
   ])
 
   case $host_os in
