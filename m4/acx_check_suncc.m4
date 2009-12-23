@@ -54,10 +54,17 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
 
           dnl This should just be set in CPPFLAGS and in LDFLAGS, but libtool
           dnl does the wrong thing if you don't put it into CXXFLAGS. sigh.
+          dnl (It also needs it in CFLAGS, or it does a different wrong thing!)
           AS_IF([test "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
             CXXFLAGS="${CXXFLAGS} -m64"
             ac_cv_env_CXXFLAGS_set=set
             ac_cv_env_CXXFLAGS_value='-m64'
+          ])
+
+          AS_IF([test "x${ac_cv_env_CFLAGS_set}" = "x"],[
+            CFLAGS="${CFLAGS} -m64"
+            ac_cv_env_CFLAGS_set=set
+            ac_cv_env_CFLAGS_value='-m64'
           ])
 
           AS_IF([test "$target_cpu" = "sparc" -a "x$SUNCC" = "xyes" ],[

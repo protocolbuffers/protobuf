@@ -77,6 +77,7 @@ Patch contributors:
     * HPUX support.
   Oliver Jowett <oliver.jowett@gmail.com>
     * Detect whether zlib is new enough in configure script.
+    * Fixes for Solaris 10 32/64-bit confusion.
   Evan Jones <evanj@mit.edu>
     * Optimize Java serialization code when writing a small message to a stream.
   Michael Kucharski <m.kucharski@gmail.com>
