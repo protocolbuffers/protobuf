@@ -191,7 +191,8 @@ class TextFormatTest(unittest.TestCase):
             'repeated_double: 1.23e+22\n'
             'repeated_double: 1.23e-18\n'
             'repeated_string: \n'
-            '\"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\\"\"\n')
+            '\"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\\"\"\n'
+            'repeated_string: "foo" \'corge\' "grault"')
     text_format.Merge(text, message)
 
     self.assertEqual(-9223372036854775808, message.repeated_int64[0])
@@ -201,6 +202,7 @@ class TextFormatTest(unittest.TestCase):
     self.assertEqual(1.23e-18, message.repeated_double[2])
     self.assertEqual(
         '\000\001\a\b\f\n\r\t\v\\\'\"', message.repeated_string[0])
+    self.assertEqual('foocorgegrault', message.repeated_string[1])
 
   def testMergeUnknownField(self):
     message = unittest_pb2.TestAllTypes()

@@ -298,7 +298,7 @@ class _Tokenizer(object):
       '[a-zA-Z_][0-9a-zA-Z_+-]*|'           # an identifier
       '[0-9+-][0-9a-zA-Z_.+-]*|'            # a number
       '\"([^\"\n\\\\]|\\\\.)*(\"|\\\\?$)|'  # a double-quoted string
-      '\'([^\"\n\\\\]|\\\\.)*(\'|\\\\?$)')  # a single-quoted string
+      '\'([^\'\n\\\\]|\\\\.)*(\'|\\\\?$)')  # a single-quoted string
   _IDENTIFIER = re.compile('\w+')
   _INTEGER_CHECKERS = [type_checkers.Uint32ValueChecker(),
                        type_checkers.Int32ValueChecker(),
@@ -530,6 +530,12 @@ class _Tokenizer(object):
     Raises:
       ParseError: If a byte array value couldn't be consumed.
     """
+    list = [self.ConsumeSingleByteString()]
+    while len(self.token) > 0 and self.token[0] in ('\'', '"'):
+      list.append(self.ConsumeSingleByteString())
+    return "".join(list)
+
+  def ConsumeSingleByteString(self):
     text = self.token
     if len(text) < 1 or text[0] not in ('\'', '"'):
       raise self._ParseError('Exptected string.')
