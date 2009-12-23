@@ -138,8 +138,10 @@ AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 ACX_PTHREAD
 AC_CXX_STL_HASH
 
-# HACK:  Make gtest's configure script pick up our copy of CXXFLAGS, since the
-#   flags added by ACX_CHECK_SUNCC must be used when compiling gtest too.
+# HACK:  Make gtest's configure script pick up our copy of CFLAGS and CXXFLAGS,
+#   since the flags added by ACX_CHECK_SUNCC must be used when compiling gtest
+#   too.
+export CFLAGS
 export CXXFLAGS
 AC_CONFIG_SUBDIRS([gtest])
 
