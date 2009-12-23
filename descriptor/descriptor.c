@@ -41,121 +41,121 @@ static char strdata[] =
   "dpositive_int_valueservicestartstring_valuetypetype_nameuninterpreted_optionv"
   "alue";
 
-static struct upb_string strings[] = {
-  {.ptr = &strdata[0], .byte_len=32},
-  {.ptr = &strdata[32], .byte_len=47},
-  {.ptr = &strdata[79], .byte_len=36},
-  {.ptr = &strdata[115], .byte_len=28},
-  {.ptr = &strdata[143], .byte_len=41},
-  {.ptr = &strdata[184], .byte_len=33},
-  {.ptr = &strdata[217], .byte_len=37},
-  {.ptr = &strdata[254], .byte_len=43},
-  {.ptr = &strdata[297], .byte_len=42},
-  {.ptr = &strdata[339], .byte_len=29},
-  {.ptr = &strdata[368], .byte_len=35},
-  {.ptr = &strdata[403], .byte_len=36},
-  {.ptr = &strdata[439], .byte_len=28},
-  {.ptr = &strdata[467], .byte_len=41},
-  {.ptr = &strdata[508], .byte_len=31},
-  {.ptr = &strdata[539], .byte_len=38},
-  {.ptr = &strdata[577], .byte_len=30},
-  {.ptr = &strdata[607], .byte_len=39},
-  {.ptr = &strdata[646], .byte_len=31},
-  {.ptr = &strdata[677], .byte_len=36},
-  {.ptr = &strdata[713], .byte_len=45},
-  {.ptr = &strdata[758], .byte_len=9},
-  {.ptr = &strdata[767], .byte_len=4},
-  {.ptr = &strdata[771], .byte_len=5},
-  {.ptr = &strdata[776], .byte_len=15},
-  {.ptr = &strdata[791], .byte_len=16},
-  {.ptr = &strdata[807], .byte_len=19},
-  {.ptr = &strdata[826], .byte_len=11},
-  {.ptr = &strdata[837], .byte_len=24},
-  {.ptr = &strdata[861], .byte_len=16},
-  {.ptr = &strdata[877], .byte_len=14},
-  {.ptr = &strdata[891], .byte_len=20},
-  {.ptr = &strdata[911], .byte_len=12},
-  {.ptr = &strdata[923], .byte_len=19},
-  {.ptr = &strdata[942], .byte_len=17},
-  {.ptr = &strdata[959], .byte_len=11},
-  {.ptr = &strdata[970], .byte_len=14},
-  {.ptr = &strdata[984], .byte_len=14},
-  {.ptr = &strdata[998], .byte_len=14},
-  {.ptr = &strdata[1012], .byte_len=5},
-  {.ptr = &strdata[1017], .byte_len=14},
-  {.ptr = &strdata[1031], .byte_len=21},
-  {.ptr = &strdata[1052], .byte_len=13},
-  {.ptr = &strdata[1065], .byte_len=8},
-  {.ptr = &strdata[1073], .byte_len=12},
-  {.ptr = &strdata[1085], .byte_len=5},
-  {.ptr = &strdata[1090], .byte_len=12},
-  {.ptr = &strdata[1102], .byte_len=22},
-  {.ptr = &strdata[1124], .byte_len=14},
-  {.ptr = &strdata[1138], .byte_len=9},
-  {.ptr = &strdata[1147], .byte_len=10},
-  {.ptr = &strdata[1157], .byte_len=11},
-  {.ptr = &strdata[1168], .byte_len=9},
-  {.ptr = &strdata[1177], .byte_len=12},
-  {.ptr = &strdata[1189], .byte_len=12},
-  {.ptr = &strdata[1201], .byte_len=10},
-  {.ptr = &strdata[1211], .byte_len=10},
-  {.ptr = &strdata[1221], .byte_len=10},
-  {.ptr = &strdata[1231], .byte_len=10},
-  {.ptr = &strdata[1241], .byte_len=12},
-  {.ptr = &strdata[1253], .byte_len=13},
-  {.ptr = &strdata[1266], .byte_len=13},
-  {.ptr = &strdata[1279], .byte_len=11},
-  {.ptr = &strdata[1290], .byte_len=11},
-  {.ptr = &strdata[1301], .byte_len=11},
-  {.ptr = &strdata[1312], .byte_len=11},
-  {.ptr = &strdata[1323], .byte_len=11},
-  {.ptr = &strdata[1334], .byte_len=4},
-  {.ptr = &strdata[1338], .byte_len=19},
-  {.ptr = &strdata[1357], .byte_len=19},
-  {.ptr = &strdata[1376], .byte_len=5},
-  {.ptr = &strdata[1381], .byte_len=13},
-  {.ptr = &strdata[1394], .byte_len=10},
-  {.ptr = &strdata[1404], .byte_len=10},
-  {.ptr = &strdata[1414], .byte_len=27},
-  {.ptr = &strdata[1441], .byte_len=12},
-  {.ptr = &strdata[1453], .byte_len=3},
-  {.ptr = &strdata[1456], .byte_len=9},
-  {.ptr = &strdata[1465], .byte_len=20},
-  {.ptr = &strdata[1485], .byte_len=8},
-  {.ptr = &strdata[1493], .byte_len=9},
-  {.ptr = &strdata[1502], .byte_len=15},
-  {.ptr = &strdata[1517], .byte_len=5},
-  {.ptr = &strdata[1522], .byte_len=5},
-  {.ptr = &strdata[1527], .byte_len=4},
-  {.ptr = &strdata[1531], .byte_len=15},
-  {.ptr = &strdata[1546], .byte_len=16},
-  {.ptr = &strdata[1562], .byte_len=10},
-  {.ptr = &strdata[1572], .byte_len=12},
-  {.ptr = &strdata[1584], .byte_len=19},
-  {.ptr = &strdata[1603], .byte_len=20},
-  {.ptr = &strdata[1623], .byte_len=12},
-  {.ptr = &strdata[1635], .byte_len=5},
-  {.ptr = &strdata[1640], .byte_len=23},
-  {.ptr = &strdata[1663], .byte_len=12},
-  {.ptr = &strdata[1675], .byte_len=6},
-  {.ptr = &strdata[1681], .byte_len=4},
-  {.ptr = &strdata[1685], .byte_len=9},
-  {.ptr = &strdata[1694], .byte_len=18},
-  {.ptr = &strdata[1712], .byte_len=11},
-  {.ptr = &strdata[1723], .byte_len=6},
-  {.ptr = &strdata[1729], .byte_len=12},
-  {.ptr = &strdata[1741], .byte_len=7},
-  {.ptr = &strdata[1748], .byte_len=11},
-  {.ptr = &strdata[1759], .byte_len=7},
-  {.ptr = &strdata[1766], .byte_len=6},
-  {.ptr = &strdata[1772], .byte_len=18},
-  {.ptr = &strdata[1790], .byte_len=7},
-  {.ptr = &strdata[1797], .byte_len=5},
-  {.ptr = &strdata[1802], .byte_len=12},
-  {.ptr = &strdata[1814], .byte_len=4},
-  {.ptr = &strdata[1818], .byte_len=9},
-  {.ptr = &strdata[1827], .byte_len=20},
-  {.ptr = &strdata[1847], .byte_len=5},
+static upb_norefcount_string strings[] = {
+  UPB_STRLIT_LEN(&strdata[0], 32),
+  UPB_STRLIT_LEN(&strdata[32], 47),
+  UPB_STRLIT_LEN(&strdata[79], 36),
+  UPB_STRLIT_LEN(&strdata[115], 28),
+  UPB_STRLIT_LEN(&strdata[143], 41),
+  UPB_STRLIT_LEN(&strdata[184], 33),
+  UPB_STRLIT_LEN(&strdata[217], 37),
+  UPB_STRLIT_LEN(&strdata[254], 43),
+  UPB_STRLIT_LEN(&strdata[297], 42),
+  UPB_STRLIT_LEN(&strdata[339], 29),
+  UPB_STRLIT_LEN(&strdata[368], 35),
+  UPB_STRLIT_LEN(&strdata[403], 36),
+  UPB_STRLIT_LEN(&strdata[439], 28),
+  UPB_STRLIT_LEN(&strdata[467], 41),
+  UPB_STRLIT_LEN(&strdata[508], 31),
+  UPB_STRLIT_LEN(&strdata[539], 38),
+  UPB_STRLIT_LEN(&strdata[577], 30),
+  UPB_STRLIT_LEN(&strdata[607], 39),
+  UPB_STRLIT_LEN(&strdata[646], 31),
+  UPB_STRLIT_LEN(&strdata[677], 36),
+  UPB_STRLIT_LEN(&strdata[713], 45),
+  UPB_STRLIT_LEN(&strdata[758], 9),
+  UPB_STRLIT_LEN(&strdata[767], 4),
+  UPB_STRLIT_LEN(&strdata[771], 5),
+  UPB_STRLIT_LEN(&strdata[776], 15),
+  UPB_STRLIT_LEN(&strdata[791], 16),
+  UPB_STRLIT_LEN(&strdata[807], 19),
+  UPB_STRLIT_LEN(&strdata[826], 11),
+  UPB_STRLIT_LEN(&strdata[837], 24),
+  UPB_STRLIT_LEN(&strdata[861], 16),
+  UPB_STRLIT_LEN(&strdata[877], 14),
+  UPB_STRLIT_LEN(&strdata[891], 20),
+  UPB_STRLIT_LEN(&strdata[911], 12),
+  UPB_STRLIT_LEN(&strdata[923], 19),
+  UPB_STRLIT_LEN(&strdata[942], 17),
+  UPB_STRLIT_LEN(&strdata[959], 11),
+  UPB_STRLIT_LEN(&strdata[970], 14),
+  UPB_STRLIT_LEN(&strdata[984], 14),
+  UPB_STRLIT_LEN(&strdata[998], 14),
+  UPB_STRLIT_LEN(&strdata[1012], 5),
+  UPB_STRLIT_LEN(&strdata[1017], 14),
+  UPB_STRLIT_LEN(&strdata[1031], 21),
+  UPB_STRLIT_LEN(&strdata[1052], 13),
+  UPB_STRLIT_LEN(&strdata[1065], 8),
+  UPB_STRLIT_LEN(&strdata[1073], 12),
+  UPB_STRLIT_LEN(&strdata[1085], 5),
+  UPB_STRLIT_LEN(&strdata[1090], 12),
+  UPB_STRLIT_LEN(&strdata[1102], 22),
+  UPB_STRLIT_LEN(&strdata[1124], 14),
+  UPB_STRLIT_LEN(&strdata[1138], 9),
+  UPB_STRLIT_LEN(&strdata[1147], 10),
+  UPB_STRLIT_LEN(&strdata[1157], 11),
+  UPB_STRLIT_LEN(&strdata[1168], 9),
+  UPB_STRLIT_LEN(&strdata[1177], 12),
+  UPB_STRLIT_LEN(&strdata[1189], 12),
+  UPB_STRLIT_LEN(&strdata[1201], 10),
+  UPB_STRLIT_LEN(&strdata[1211], 10),
+  UPB_STRLIT_LEN(&strdata[1221], 10),
+  UPB_STRLIT_LEN(&strdata[1231], 10),
+  UPB_STRLIT_LEN(&strdata[1241], 12),
+  UPB_STRLIT_LEN(&strdata[1253], 13),
+  UPB_STRLIT_LEN(&strdata[1266], 13),
+  UPB_STRLIT_LEN(&strdata[1279], 11),
+  UPB_STRLIT_LEN(&strdata[1290], 11),
+  UPB_STRLIT_LEN(&strdata[1301], 11),
+  UPB_STRLIT_LEN(&strdata[1312], 11),
+  UPB_STRLIT_LEN(&strdata[1323], 11),
+  UPB_STRLIT_LEN(&strdata[1334], 4),
+  UPB_STRLIT_LEN(&strdata[1338], 19),
+  UPB_STRLIT_LEN(&strdata[1357], 19),
+  UPB_STRLIT_LEN(&strdata[1376], 5),
+  UPB_STRLIT_LEN(&strdata[1381], 13),
+  UPB_STRLIT_LEN(&strdata[1394], 10),
+  UPB_STRLIT_LEN(&strdata[1404], 10),
+  UPB_STRLIT_LEN(&strdata[1414], 27),
+  UPB_STRLIT_LEN(&strdata[1441], 12),
+  UPB_STRLIT_LEN(&strdata[1453], 3),
+  UPB_STRLIT_LEN(&strdata[1456], 9),
+  UPB_STRLIT_LEN(&strdata[1465], 20),
+  UPB_STRLIT_LEN(&strdata[1485], 8),
+  UPB_STRLIT_LEN(&strdata[1493], 9),
+  UPB_STRLIT_LEN(&strdata[1502], 15),
+  UPB_STRLIT_LEN(&strdata[1517], 5),
+  UPB_STRLIT_LEN(&strdata[1522], 5),
+  UPB_STRLIT_LEN(&strdata[1527], 4),
+  UPB_STRLIT_LEN(&strdata[1531], 15),
+  UPB_STRLIT_LEN(&strdata[1546], 16),
+  UPB_STRLIT_LEN(&strdata[1562], 10),
+  UPB_STRLIT_LEN(&strdata[1572], 12),
+  UPB_STRLIT_LEN(&strdata[1584], 19),
+  UPB_STRLIT_LEN(&strdata[1603], 20),
+  UPB_STRLIT_LEN(&strdata[1623], 12),
+  UPB_STRLIT_LEN(&strdata[1635], 5),
+  UPB_STRLIT_LEN(&strdata[1640], 23),
+  UPB_STRLIT_LEN(&strdata[1663], 12),
+  UPB_STRLIT_LEN(&strdata[1675], 6),
+  UPB_STRLIT_LEN(&strdata[1681], 4),
+  UPB_STRLIT_LEN(&strdata[1685], 9),
+  UPB_STRLIT_LEN(&strdata[1694], 18),
+  UPB_STRLIT_LEN(&strdata[1712], 11),
+  UPB_STRLIT_LEN(&strdata[1723], 6),
+  UPB_STRLIT_LEN(&strdata[1729], 12),
+  UPB_STRLIT_LEN(&strdata[1741], 7),
+  UPB_STRLIT_LEN(&strdata[1748], 11),
+  UPB_STRLIT_LEN(&strdata[1759], 7),
+  UPB_STRLIT_LEN(&strdata[1766], 6),
+  UPB_STRLIT_LEN(&strdata[1772], 18),
+  UPB_STRLIT_LEN(&strdata[1790], 7),
+  UPB_STRLIT_LEN(&strdata[1797], 5),
+  UPB_STRLIT_LEN(&strdata[1802], 12),
+  UPB_STRLIT_LEN(&strdata[1814], 4),
+  UPB_STRLIT_LEN(&strdata[1818], 9),
+  UPB_STRLIT_LEN(&strdata[1827], 20),
+  UPB_STRLIT_LEN(&strdata[1847], 5),
 };
 
 /* Forward declarations of messages, and array decls. */
@@ -364,7 +364,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[34],   /* "FileDescriptorSet" */
+    .name = (upb_string*)&strings[34],   /* "FileDescriptorSet" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[0],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -381,7 +381,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[33],   /* "FileDescriptorProto" */
+    .name = (upb_string*)&strings[33],   /* "FileDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[1],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -398,7 +398,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[24],   /* "DescriptorProto" */
+    .name = (upb_string*)&strings[24],   /* "DescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[2],
     .nested_type = &google_protobuf_DescriptorProto_arrays[1],
     .enum_type = 0,   /* Not set. */
@@ -415,7 +415,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[31],   /* "FieldDescriptorProto" */
+    .name = (upb_string*)&strings[31],   /* "FieldDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[4],
     .nested_type = 0,   /* Not set. */
     .enum_type = &google_protobuf_EnumDescriptorProto_arrays[0],
@@ -432,7 +432,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[26],   /* "EnumDescriptorProto" */
+    .name = (upb_string*)&strings[26],   /* "EnumDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[5],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -449,7 +449,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[28],   /* "EnumValueDescriptorProto" */
+    .name = (upb_string*)&strings[28],   /* "EnumValueDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[6],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -466,7 +466,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[47],   /* "ServiceDescriptorProto" */
+    .name = (upb_string*)&strings[47],   /* "ServiceDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[7],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -483,7 +483,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[41],   /* "MethodDescriptorProto" */
+    .name = (upb_string*)&strings[41],   /* "MethodDescriptorProto" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[8],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -500,7 +500,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[35],   /* "FileOptions" */
+    .name = (upb_string*)&strings[35],   /* "FileOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[9],
     .nested_type = 0,   /* Not set. */
     .enum_type = &google_protobuf_EnumDescriptorProto_arrays[1],
@@ -517,7 +517,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[40],   /* "MessageOptions" */
+    .name = (upb_string*)&strings[40],   /* "MessageOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[10],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -534,7 +534,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[32],   /* "FieldOptions" */
+    .name = (upb_string*)&strings[32],   /* "FieldOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[11],
     .nested_type = 0,   /* Not set. */
     .enum_type = &google_protobuf_EnumDescriptorProto_arrays[2],
@@ -551,7 +551,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[27],   /* "EnumOptions" */
+    .name = (upb_string*)&strings[27],   /* "EnumOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[12],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -568,7 +568,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[29],   /* "EnumValueOptions" */
+    .name = (upb_string*)&strings[29],   /* "EnumValueOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[13],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -585,7 +585,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[48],   /* "ServiceOptions" */
+    .name = (upb_string*)&strings[48],   /* "ServiceOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[14],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -602,7 +602,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[42],   /* "MethodOptions" */
+    .name = (upb_string*)&strings[42],   /* "MethodOptions" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[15],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -619,7 +619,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[68],   /* "UninterpretedOption" */
+    .name = (upb_string*)&strings[68],   /* "UninterpretedOption" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[16],
     .nested_type = &google_protobuf_DescriptorProto_arrays[2],
     .enum_type = 0,   /* Not set. */
@@ -636,7 +636,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[30],   /* "ExtensionRange" */
+    .name = (upb_string*)&strings[30],   /* "ExtensionRange" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[3],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -653,7 +653,7 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = false,
     .options = false,
   }},
-    .name = &strings[43],   /* "NamePart" */
+    .name = (upb_string*)&strings[43],   /* "NamePart" */
     .field = &google_protobuf_FieldDescriptorProto_arrays[17],
     .nested_type = 0,   /* Not set. */
     .enum_type = 0,   /* Not set. */
@@ -674,8 +674,8 @@ static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_v
     .extension = false,
     .options = true,
   }},
-    .name = &strings[74],   /* "descriptor/descriptor.proto" */
-    .package = &strings[85],   /* "google.protobuf" */
+    .name = (upb_string*)&strings[74],   /* "descriptor/descriptor.proto" */
+    .package = (upb_string*)&strings[85],   /* "google.protobuf" */
     .dependency = 0,   /* Not set. */
     .message_type = &google_protobuf_DescriptorProto_arrays[0],
     .enum_type = 0,   /* Not set. */
@@ -753,8 +753,8 @@ static google_protobuf_FileOptions google_protobuf_FileOptions_values[1] = {
     .java_multiple_files = false,
     .uninterpreted_option = false,
   }},
-    .java_package = &strings[69],   /* "com.google.protobuf" */
-    .java_outer_classname = &strings[25],   /* "DescriptorProtos" */
+    .java_package = (upb_string*)&strings[69],   /* "com.google.protobuf" */
+    .java_outer_classname = (upb_string*)&strings[25],   /* "DescriptorProtos" */
     .optimize_for = 1,
     .java_multiple_files = 0,   /* Not set. */
     .uninterpreted_option = 0,   /* Not set. */
@@ -767,7 +767,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = true,
     .options = false,
   }},
-    .name = &strings[67],   /* "Type" */
+    .name = (upb_string*)&strings[67],   /* "Type" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[0],
     .options = 0,   /* Not set. */
   },
@@ -776,7 +776,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = true,
     .options = false,
   }},
-    .name = &strings[39],   /* "Label" */
+    .name = (upb_string*)&strings[39],   /* "Label" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[1],
     .options = 0,   /* Not set. */
   },
@@ -785,7 +785,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = true,
     .options = false,
   }},
-    .name = &strings[44],   /* "OptimizeMode" */
+    .name = (upb_string*)&strings[44],   /* "OptimizeMode" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[2],
     .options = 0,   /* Not set. */
   },
@@ -794,7 +794,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = true,
     .options = false,
   }},
-    .name = &strings[23],   /* "CType" */
+    .name = (upb_string*)&strings[23],   /* "CType" */
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[3],
     .options = 0,   /* Not set. */
   },
@@ -811,12 +811,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[84],   /* "file" */
+    .name = (upb_string*)&strings[84],   /* "file" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 3,
     .type = 11,
-    .type_name = &strings[11],   /* ".google.protobuf.FileDescriptorProto" */
+    .type_name = (upb_string*)&strings[11],   /* ".google.protobuf.FileDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -830,7 +830,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -849,7 +849,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[104],   /* "package" */
+    .name = (upb_string*)&strings[104],   /* "package" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
@@ -868,7 +868,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[72],   /* "dependency" */
+    .name = (upb_string*)&strings[72],   /* "dependency" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 3,
@@ -887,12 +887,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[94],   /* "message_type" */
+    .name = (upb_string*)&strings[94],   /* "message_type" */
     .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 3,
     .type = 11,
-    .type_name = &strings[0],   /* ".google.protobuf.DescriptorProto" */
+    .type_name = (upb_string*)&strings[0],   /* ".google.protobuf.DescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -906,12 +906,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[77],   /* "enum_type" */
+    .name = (upb_string*)&strings[77],   /* "enum_type" */
     .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 3,
     .type = 11,
-    .type_name = &strings[2],   /* ".google.protobuf.EnumDescriptorProto" */
+    .type_name = (upb_string*)&strings[2],   /* ".google.protobuf.EnumDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -925,12 +925,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[107],   /* "service" */
+    .name = (upb_string*)&strings[107],   /* "service" */
     .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 3,
     .type = 11,
-    .type_name = &strings[17],   /* ".google.protobuf.ServiceDescriptorProto" */
+    .type_name = (upb_string*)&strings[17],   /* ".google.protobuf.ServiceDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -944,12 +944,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[80],   /* "extension" */
+    .name = (upb_string*)&strings[80],   /* "extension" */
     .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 3,
     .type = 11,
-    .type_name = &strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
+    .type_name = (upb_string*)&strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -963,12 +963,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 8,
     .label = 1,
     .type = 11,
-    .type_name = &strings[12],   /* ".google.protobuf.FileOptions" */
+    .type_name = (upb_string*)&strings[12],   /* ".google.protobuf.FileOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -982,7 +982,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1001,12 +1001,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[83],   /* "field" */
+    .name = (upb_string*)&strings[83],   /* "field" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
-    .type_name = &strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
+    .type_name = (upb_string*)&strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1020,12 +1020,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[99],   /* "nested_type" */
+    .name = (upb_string*)&strings[99],   /* "nested_type" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 3,
     .type = 11,
-    .type_name = &strings[0],   /* ".google.protobuf.DescriptorProto" */
+    .type_name = (upb_string*)&strings[0],   /* ".google.protobuf.DescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1039,12 +1039,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[77],   /* "enum_type" */
+    .name = (upb_string*)&strings[77],   /* "enum_type" */
     .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 3,
     .type = 11,
-    .type_name = &strings[2],   /* ".google.protobuf.EnumDescriptorProto" */
+    .type_name = (upb_string*)&strings[2],   /* ".google.protobuf.EnumDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1058,12 +1058,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[81],   /* "extension_range" */
+    .name = (upb_string*)&strings[81],   /* "extension_range" */
     .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 3,
     .type = 11,
-    .type_name = &strings[1],   /* ".google.protobuf.DescriptorProto.ExtensionRange" */
+    .type_name = (upb_string*)&strings[1],   /* ".google.protobuf.DescriptorProto.ExtensionRange" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1077,12 +1077,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[80],   /* "extension" */
+    .name = (upb_string*)&strings[80],   /* "extension" */
     .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 3,
     .type = 11,
-    .type_name = &strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
+    .type_name = (upb_string*)&strings[6],   /* ".google.protobuf.FieldDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1096,12 +1096,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 1,
     .type = 11,
-    .type_name = &strings[14],   /* ".google.protobuf.MessageOptions" */
+    .type_name = (upb_string*)&strings[14],   /* ".google.protobuf.MessageOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1115,7 +1115,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[108],   /* "start" */
+    .name = (upb_string*)&strings[108],   /* "start" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1134,7 +1134,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[76],   /* "end" */
+    .name = (upb_string*)&strings[76],   /* "end" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
@@ -1153,7 +1153,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1172,7 +1172,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[79],   /* "extendee" */
+    .name = (upb_string*)&strings[79],   /* "extendee" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
@@ -1191,7 +1191,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[100],   /* "number" */
+    .name = (upb_string*)&strings[100],   /* "number" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
@@ -1210,12 +1210,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[92],   /* "label" */
+    .name = (upb_string*)&strings[92],   /* "label" */
     .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 1,
     .type = 14,
-    .type_name = &strings[7],   /* ".google.protobuf.FieldDescriptorProto.Label" */
+    .type_name = (upb_string*)&strings[7],   /* ".google.protobuf.FieldDescriptorProto.Label" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1229,12 +1229,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[110],   /* "type" */
+    .name = (upb_string*)&strings[110],   /* "type" */
     .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 1,
     .type = 14,
-    .type_name = &strings[8],   /* ".google.protobuf.FieldDescriptorProto.Type" */
+    .type_name = (upb_string*)&strings[8],   /* ".google.protobuf.FieldDescriptorProto.Type" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1248,7 +1248,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[111],   /* "type_name" */
+    .name = (upb_string*)&strings[111],   /* "type_name" */
     .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 1,
@@ -1267,7 +1267,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[71],   /* "default_value" */
+    .name = (upb_string*)&strings[71],   /* "default_value" */
     .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 1,
@@ -1286,12 +1286,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 8,
     .label = 1,
     .type = 11,
-    .type_name = &strings[9],   /* ".google.protobuf.FieldOptions" */
+    .type_name = (upb_string*)&strings[9],   /* ".google.protobuf.FieldOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1305,7 +1305,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1324,12 +1324,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[113],   /* "value" */
+    .name = (upb_string*)&strings[113],   /* "value" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
-    .type_name = &strings[4],   /* ".google.protobuf.EnumValueDescriptorProto" */
+    .type_name = (upb_string*)&strings[4],   /* ".google.protobuf.EnumValueDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1343,12 +1343,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 11,
-    .type_name = &strings[3],   /* ".google.protobuf.EnumOptions" */
+    .type_name = (upb_string*)&strings[3],   /* ".google.protobuf.EnumOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1362,7 +1362,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1381,7 +1381,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[100],   /* "number" */
+    .name = (upb_string*)&strings[100],   /* "number" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
@@ -1400,12 +1400,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 11,
-    .type_name = &strings[5],   /* ".google.protobuf.EnumValueOptions" */
+    .type_name = (upb_string*)&strings[5],   /* ".google.protobuf.EnumValueOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1419,7 +1419,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1438,12 +1438,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[95],   /* "method" */
+    .name = (upb_string*)&strings[95],   /* "method" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
-    .type_name = &strings[15],   /* ".google.protobuf.MethodDescriptorProto" */
+    .type_name = (upb_string*)&strings[15],   /* ".google.protobuf.MethodDescriptorProto" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1457,12 +1457,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 11,
-    .type_name = &strings[18],   /* ".google.protobuf.ServiceOptions" */
+    .type_name = (upb_string*)&strings[18],   /* ".google.protobuf.ServiceOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1476,7 +1476,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1495,7 +1495,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[87],   /* "input_type" */
+    .name = (upb_string*)&strings[87],   /* "input_type" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
@@ -1514,7 +1514,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[103],   /* "output_type" */
+    .name = (upb_string*)&strings[103],   /* "output_type" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
@@ -1533,12 +1533,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[102],   /* "options" */
+    .name = (upb_string*)&strings[102],   /* "options" */
     .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 1,
     .type = 11,
-    .type_name = &strings[16],   /* ".google.protobuf.MethodOptions" */
+    .type_name = (upb_string*)&strings[16],   /* ".google.protobuf.MethodOptions" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1552,7 +1552,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[91],   /* "java_package" */
+    .name = (upb_string*)&strings[91],   /* "java_package" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
@@ -1571,7 +1571,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[90],   /* "java_outer_classname" */
+    .name = (upb_string*)&strings[90],   /* "java_outer_classname" */
     .extendee = 0,   /* Not set. */
     .number = 8,
     .label = 1,
@@ -1590,13 +1590,13 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = true,
     .options = false,
   }},
-    .name = &strings[101],   /* "optimize_for" */
+    .name = (upb_string*)&strings[101],   /* "optimize_for" */
     .extendee = 0,   /* Not set. */
     .number = 9,
     .label = 1,
     .type = 14,
-    .type_name = &strings[13],   /* ".google.protobuf.FileOptions.OptimizeMode" */
-    .default_value = &strings[45],   /* "SPEED" */
+    .type_name = (upb_string*)&strings[13],   /* ".google.protobuf.FileOptions.OptimizeMode" */
+    .default_value = (upb_string*)&strings[45],   /* "SPEED" */
     .options = 0,   /* Not set. */
   },
   {.set_flags = {.has = {
@@ -1609,13 +1609,13 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = true,
     .options = false,
   }},
-    .name = &strings[89],   /* "java_multiple_files" */
+    .name = (upb_string*)&strings[89],   /* "java_multiple_files" */
     .extendee = 0,   /* Not set. */
     .number = 10,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .default_value = &strings[82],   /* "false" */
+    .default_value = (upb_string*)&strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
   {.set_flags = {.has = {
@@ -1628,12 +1628,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1647,13 +1647,13 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = true,
     .options = false,
   }},
-    .name = &strings[93],   /* "message_set_wire_format" */
+    .name = (upb_string*)&strings[93],   /* "message_set_wire_format" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .default_value = &strings[82],   /* "false" */
+    .default_value = (upb_string*)&strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
   {.set_flags = {.has = {
@@ -1666,12 +1666,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1685,12 +1685,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[70],   /* "ctype" */
+    .name = (upb_string*)&strings[70],   /* "ctype" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 1,
     .type = 14,
-    .type_name = &strings[10],   /* ".google.protobuf.FieldOptions.CType" */
+    .type_name = (upb_string*)&strings[10],   /* ".google.protobuf.FieldOptions.CType" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1704,7 +1704,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[105],   /* "packed" */
+    .name = (upb_string*)&strings[105],   /* "packed" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 1,
@@ -1723,13 +1723,13 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = true,
     .options = false,
   }},
-    .name = &strings[73],   /* "deprecated" */
+    .name = (upb_string*)&strings[73],   /* "deprecated" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
     .type = 8,
     .type_name = 0,   /* Not set. */
-    .default_value = &strings[82],   /* "false" */
+    .default_value = (upb_string*)&strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
   {.set_flags = {.has = {
@@ -1742,7 +1742,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[78],   /* "experimental_map_key" */
+    .name = (upb_string*)&strings[78],   /* "experimental_map_key" */
     .extendee = 0,   /* Not set. */
     .number = 9,
     .label = 1,
@@ -1761,12 +1761,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1780,12 +1780,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1799,12 +1799,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1818,12 +1818,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1837,12 +1837,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[112],   /* "uninterpreted_option" */
+    .name = (upb_string*)&strings[112],   /* "uninterpreted_option" */
     .extendee = 0,   /* Not set. */
     .number = 999,
     .label = 3,
     .type = 11,
-    .type_name = &strings[19],   /* ".google.protobuf.UninterpretedOption" */
+    .type_name = (upb_string*)&strings[19],   /* ".google.protobuf.UninterpretedOption" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1856,12 +1856,12 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[96],   /* "name" */
+    .name = (upb_string*)&strings[96],   /* "name" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 3,
     .type = 11,
-    .type_name = &strings[20],   /* ".google.protobuf.UninterpretedOption.NamePart" */
+    .type_name = (upb_string*)&strings[20],   /* ".google.protobuf.UninterpretedOption.NamePart" */
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
@@ -1875,7 +1875,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[86],   /* "identifier_value" */
+    .name = (upb_string*)&strings[86],   /* "identifier_value" */
     .extendee = 0,   /* Not set. */
     .number = 3,
     .label = 1,
@@ -1894,7 +1894,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[106],   /* "positive_int_value" */
+    .name = (upb_string*)&strings[106],   /* "positive_int_value" */
     .extendee = 0,   /* Not set. */
     .number = 4,
     .label = 1,
@@ -1913,7 +1913,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[98],   /* "negative_int_value" */
+    .name = (upb_string*)&strings[98],   /* "negative_int_value" */
     .extendee = 0,   /* Not set. */
     .number = 5,
     .label = 1,
@@ -1932,7 +1932,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[75],   /* "double_value" */
+    .name = (upb_string*)&strings[75],   /* "double_value" */
     .extendee = 0,   /* Not set. */
     .number = 6,
     .label = 1,
@@ -1951,7 +1951,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[109],   /* "string_value" */
+    .name = (upb_string*)&strings[109],   /* "string_value" */
     .extendee = 0,   /* Not set. */
     .number = 7,
     .label = 1,
@@ -1970,7 +1970,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[97],   /* "name_part" */
+    .name = (upb_string*)&strings[97],   /* "name_part" */
     .extendee = 0,   /* Not set. */
     .number = 1,
     .label = 2,
@@ -1989,7 +1989,7 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = false,
     .options = false,
   }},
-    .name = &strings[88],   /* "is_extension" */
+    .name = (upb_string*)&strings[88],   /* "is_extension" */
     .extendee = 0,   /* Not set. */
     .number = 2,
     .label = 2,
@@ -2006,7 +2006,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[51],   /* "TYPE_DOUBLE" */
+    .name = (upb_string*)&strings[51],   /* "TYPE_DOUBLE" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
@@ -2015,7 +2015,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[55],   /* "TYPE_FLOAT" */
+    .name = (upb_string*)&strings[55],   /* "TYPE_FLOAT" */
     .number = 2,
     .options = 0,   /* Not set. */
   },
@@ -2024,7 +2024,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[58],   /* "TYPE_INT64" */
+    .name = (upb_string*)&strings[58],   /* "TYPE_INT64" */
     .number = 3,
     .options = 0,   /* Not set. */
   },
@@ -2033,7 +2033,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[66],   /* "TYPE_UINT64" */
+    .name = (upb_string*)&strings[66],   /* "TYPE_UINT64" */
     .number = 4,
     .options = 0,   /* Not set. */
   },
@@ -2042,7 +2042,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[57],   /* "TYPE_INT32" */
+    .name = (upb_string*)&strings[57],   /* "TYPE_INT32" */
     .number = 5,
     .options = 0,   /* Not set. */
   },
@@ -2051,7 +2051,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[54],   /* "TYPE_FIXED64" */
+    .name = (upb_string*)&strings[54],   /* "TYPE_FIXED64" */
     .number = 6,
     .options = 0,   /* Not set. */
   },
@@ -2060,7 +2060,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[53],   /* "TYPE_FIXED32" */
+    .name = (upb_string*)&strings[53],   /* "TYPE_FIXED32" */
     .number = 7,
     .options = 0,   /* Not set. */
   },
@@ -2069,7 +2069,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[49],   /* "TYPE_BOOL" */
+    .name = (upb_string*)&strings[49],   /* "TYPE_BOOL" */
     .number = 8,
     .options = 0,   /* Not set. */
   },
@@ -2078,7 +2078,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[64],   /* "TYPE_STRING" */
+    .name = (upb_string*)&strings[64],   /* "TYPE_STRING" */
     .number = 9,
     .options = 0,   /* Not set. */
   },
@@ -2087,7 +2087,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[56],   /* "TYPE_GROUP" */
+    .name = (upb_string*)&strings[56],   /* "TYPE_GROUP" */
     .number = 10,
     .options = 0,   /* Not set. */
   },
@@ -2096,7 +2096,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[59],   /* "TYPE_MESSAGE" */
+    .name = (upb_string*)&strings[59],   /* "TYPE_MESSAGE" */
     .number = 11,
     .options = 0,   /* Not set. */
   },
@@ -2105,7 +2105,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[50],   /* "TYPE_BYTES" */
+    .name = (upb_string*)&strings[50],   /* "TYPE_BYTES" */
     .number = 12,
     .options = 0,   /* Not set. */
   },
@@ -2114,7 +2114,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[65],   /* "TYPE_UINT32" */
+    .name = (upb_string*)&strings[65],   /* "TYPE_UINT32" */
     .number = 13,
     .options = 0,   /* Not set. */
   },
@@ -2123,7 +2123,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[52],   /* "TYPE_ENUM" */
+    .name = (upb_string*)&strings[52],   /* "TYPE_ENUM" */
     .number = 14,
     .options = 0,   /* Not set. */
   },
@@ -2132,7 +2132,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[60],   /* "TYPE_SFIXED32" */
+    .name = (upb_string*)&strings[60],   /* "TYPE_SFIXED32" */
     .number = 15,
     .options = 0,   /* Not set. */
   },
@@ -2141,7 +2141,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[61],   /* "TYPE_SFIXED64" */
+    .name = (upb_string*)&strings[61],   /* "TYPE_SFIXED64" */
     .number = 16,
     .options = 0,   /* Not set. */
   },
@@ -2150,7 +2150,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[62],   /* "TYPE_SINT32" */
+    .name = (upb_string*)&strings[62],   /* "TYPE_SINT32" */
     .number = 17,
     .options = 0,   /* Not set. */
   },
@@ -2159,7 +2159,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[63],   /* "TYPE_SINT64" */
+    .name = (upb_string*)&strings[63],   /* "TYPE_SINT64" */
     .number = 18,
     .options = 0,   /* Not set. */
   },
@@ -2168,7 +2168,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[36],   /* "LABEL_OPTIONAL" */
+    .name = (upb_string*)&strings[36],   /* "LABEL_OPTIONAL" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
@@ -2177,7 +2177,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[38],   /* "LABEL_REQUIRED" */
+    .name = (upb_string*)&strings[38],   /* "LABEL_REQUIRED" */
     .number = 2,
     .options = 0,   /* Not set. */
   },
@@ -2186,7 +2186,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[37],   /* "LABEL_REPEATED" */
+    .name = (upb_string*)&strings[37],   /* "LABEL_REPEATED" */
     .number = 3,
     .options = 0,   /* Not set. */
   },
@@ -2195,7 +2195,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[45],   /* "SPEED" */
+    .name = (upb_string*)&strings[45],   /* "SPEED" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
@@ -2204,7 +2204,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[21],   /* "CODE_SIZE" */
+    .name = (upb_string*)&strings[21],   /* "CODE_SIZE" */
     .number = 2,
     .options = 0,   /* Not set. */
   },
@@ -2213,7 +2213,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[22],   /* "CORD" */
+    .name = (upb_string*)&strings[22],   /* "CORD" */
     .number = 1,
     .options = 0,   /* Not set. */
   },
@@ -2222,7 +2222,7 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = true,
     .options = false,
   }},
-    .name = &strings[46],   /* "STRING_PIECE" */
+    .name = (upb_string*)&strings[46],   /* "STRING_PIECE" */
     .number = 2,
     .options = 0,   /* Not set. */
   },

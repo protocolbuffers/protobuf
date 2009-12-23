@@ -50,19 +50,19 @@ void upb_inttable_free(struct upb_inttable *t) { upb_table_free(&t->t); }
 void upb_strtable_free(struct upb_strtable *t) {
   // Free refs from the strtable.
   struct upb_strtable_entry *e = upb_strtable_begin(t);
-  for(; e; e = upb_strtable_next(&m->ntof, e)) {
+  for(; e; e = upb_strtable_next(t, e)) {
     upb_string_unref(e->key);
   }
   upb_table_free(&t->t);
 }
 
-static uint32_t strtable_bucket(struct upb_strtable *t, struct upb_string *key)
+static uint32_t strtable_bucket(struct upb_strtable *t, upb_string *key)
 {
-  uint32_t hash = MurmurHash2(key->ptr, key->byte_len, 0);
+  uint32_t hash = MurmurHash2(upb_string_getrobuf(key), upb_strlen(key), 0);
   return (hash & (upb_strtable_size(t)-1)) + 1;
 }
 
-void *upb_strtable_lookup(struct upb_strtable *t, struct upb_string *key)
+void *upb_strtable_lookup(struct upb_strtable *t, upb_string *key)
 {
   uint32_t bucket = strtable_bucket(t, key);
   struct upb_strtable_entry *e;

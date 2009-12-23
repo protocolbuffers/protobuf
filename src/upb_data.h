@@ -190,8 +190,8 @@ typedef struct {
 } upb_refcounted_string;
 
 typedef union {
-  upb_string_common common;
   upb_norefcount_string norefcount;
+  upb_string_common common;
   upb_refcounted_string refcounted;
 } upb_string;
 
@@ -303,6 +303,7 @@ upb_string *upb_strreadfile(const char *filename);
 // Initialize with the given macro, which must resolve to a const char*.  You
 // must not dynamically allocate this type.
 typedef upb_string upb_static_string;
+#define UPB_STRLIT_LEN(str, len) {0 | UPB_DATA_FROZEN, len, str}
 #define UPB_STRLIT(str) {{{0 | UPB_DATA_FROZEN}, sizeof(str), str}}
 
 // Allows using upb_strings in printf, ie:
