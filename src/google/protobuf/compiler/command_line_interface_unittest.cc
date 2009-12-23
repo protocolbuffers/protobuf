@@ -933,7 +933,10 @@ TEST_F(CommandLineInterfaceTest, OutputWriteError) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectErrorSubstring("MockCodeGenerator detected write error.");
+  // MockCodeGenerator no longer detects an error because we actually write to
+  // an in-memory location first, then dump to disk at the end.  This is no
+  // big deal.
+  //   ExpectErrorSubstring("MockCodeGenerator detected write error.");
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
   // Windows with MSVCRT.dll produces EPERM instead of EISDIR.

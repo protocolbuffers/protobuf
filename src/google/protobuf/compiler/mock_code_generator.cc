@@ -50,7 +50,7 @@ static const char* kSecondInsertionPointName = "second_mock_insertion_point";
 static const char* kFirstInsertionPoint =
     "# @@protoc_insertion_point(first_mock_insertion_point) is here\n";
 static const char* kSecondInsertionPoint =
-    "# @@protoc_insertion_point(second_mock_insertion_point) is here\n";
+    "  # @@protoc_insertion_point(second_mock_insertion_point) is here\n";
 
 MockCodeGenerator::MockCodeGenerator(const string& name)
     : name_(name) {}
@@ -94,8 +94,10 @@ void MockCodeGenerator::ExpectGenerated(
     EXPECT_EQ(GetOutputFileContent(insertion_list[i], "first_insert",
                                    file, first_message_name),
               lines[1 + i]);
-    EXPECT_EQ(GetOutputFileContent(insertion_list[i], "second_insert",
-                                   file, first_message_name),
+    // Second insertion point is indented, so the inserted text should
+    // automatically be indented too.
+    EXPECT_EQ("  " + GetOutputFileContent(insertion_list[i], "second_insert",
+                                          file, first_message_name),
               lines[2 + insertion_list.size() + i]);
   }
 }
