@@ -196,12 +196,12 @@ public class TextFormatTest extends TestCase {
     final FieldDescriptor optionalField =
       TestAllTypes.getDescriptor().findFieldByName("optional_nested_message");
     final Object value = NestedMessage.newBuilder().setBb(42).build();
-    
+
     assertEquals(
       "optional_nested_message {\n  bb: 42\n}\n",
       TextFormat.printFieldToString(optionalField, value));
   }
-  
+
   /**
    * Helper to construct a ByteString from a String containing only 8-bit
    * characters.  The characters are converted directly to bytes, *not*
@@ -648,5 +648,11 @@ public class TextFormatTest extends TestCase {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("optional_string: \"" + longText + "\"", builder);
     assertEquals(longText, builder.getOptionalString());
+  }
+
+  public void testParseAdjacentStringLiterals() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TextFormat.merge("optional_string: \"foo\" 'corge' \"grault\"", builder);
+    assertEquals("foocorgegrault", builder.getOptionalString());
   }
 }
