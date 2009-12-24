@@ -175,7 +175,6 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   class ErrorPrinter;
   class MemoryOutputDirectory;
-  class SubOutputDirectory;
   class MemoryOutputStream;
 
   // Clear state from previous Run().
@@ -213,7 +212,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   struct OutputDirective;  // see below
   bool GenerateOutput(const vector<const FileDescriptor*>& parsed_files,
                       const OutputDirective& output_directive,
-                      OutputDirectory* parent_output_directory);
+                      OutputDirectory* output_directory);
   bool GeneratePluginOutput(const vector<const FileDescriptor*>& parsed_files,
                             const string& plugin_name,
                             const string& parameter,

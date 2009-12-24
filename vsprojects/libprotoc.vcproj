@@ -159,6 +159,10 @@
 				RelativePath="..\src\google\protobuf\compiler\subprocess.h"
 				>
 			</File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\zip_writer.h"
+        >
+      </File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\plugin.h"
 				>
@@ -287,6 +291,10 @@
 				RelativePath="..\src\google\protobuf\compiler\subprocess.cc"
 				>
 			</File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\zip_writer.cc"
+        >
+      </File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\plugin.cc"
 				>

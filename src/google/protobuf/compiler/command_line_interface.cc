@@ -52,6 +52,7 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/subprocess.h>
+#include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/dynamic_message.h>
@@ -155,7 +156,7 @@ bool VerifyDirectoryExists(const string& path) {
 // parent if necessary, and so on.  The full file name is actually
 // (prefix + filename), but we assume |prefix| already exists and only create
 // directories listed in |filename|.
-void TryCreateParentDirectory(const string& prefix, const string& filename) {
+bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   // Recursively create parent directories to the output file.
   vector<string> parts;
   SplitStringUsing(filename, "/", &parts);
@@ -166,11 +167,13 @@ void TryCreateParentDirectory(const string& prefix, const string& filename) {
       if (errno != EEXIST) {
         cerr << filename << ": while trying to create directory "
              << path_so_far << ": " << strerror(errno) << endl;
-        return;
+        return false;
       }
     }
     path_so_far += '/';
   }
+
+  return true;
 }
 
 }  // namespace
@@ -222,7 +225,8 @@ class CommandLineInterface::MemoryOutputDirectory : public OutputDirectory {
   MemoryOutputDirectory();
   ~MemoryOutputDirectory();
 
-  bool WriteAllToDisk();
+  bool WriteAllToDisk(const string& prefix);
+  bool WriteAllToZip(const string& filename);
 
   // implements OutputDirectory --------------------------------------
   io::ZeroCopyOutputStream* Open(const string& filename);
@@ -232,34 +236,10 @@ class CommandLineInterface::MemoryOutputDirectory : public OutputDirectory {
  private:
   friend class MemoryOutputStream;
 
-  hash_map<string, string*> files_;
+  // map instead of hash_map so that files are written in order (good when
+  // writing zips).
+  map<string, string*> files_;
   bool had_error_;
-};
-
-// OutputDirectory that just adds some prefix to every file name.
-class CommandLineInterface::SubOutputDirectory : public OutputDirectory {
- public:
-  SubOutputDirectory(OutputDirectory* parent, const string& prefix)
-      : parent_(parent), prefix_(prefix) {}
-  ~SubOutputDirectory() {}
-
-  // implements OutputDirectory --------------------------------------
-  io::ZeroCopyOutputStream* Open(const string& filename) {
-    // TODO(kenton):  This is not the cleanest place to deal with creation of
-    //   parent directories, but it does the right thing given the way this
-    //   class is used, and this class is private to this file anyway, so it's
-    //   probably not worth fixing for now.
-    TryCreateParentDirectory(prefix_, filename);
-    return parent_->Open(prefix_ + filename);
-  }
-  io::ZeroCopyOutputStream* OpenForInsert(
-      const string& filename, const string& insertion_point) {
-    return parent_->OpenForInsert(prefix_ + filename, insertion_point);
-  }
-
- private:
-  OutputDirectory* parent_;
-  string prefix_;
 };
 
 class CommandLineInterface::MemoryOutputStream
@@ -297,16 +277,26 @@ CommandLineInterface::MemoryOutputDirectory::~MemoryOutputDirectory() {
   STLDeleteValues(&files_);
 }
 
-bool CommandLineInterface::MemoryOutputDirectory::WriteAllToDisk() {
+bool CommandLineInterface::MemoryOutputDirectory::WriteAllToDisk(
+    const string& prefix) {
   if (had_error_) {
     return false;
   }
 
-  for (hash_map<string, string*>::const_iterator iter = files_.begin();
+  if (!VerifyDirectoryExists(prefix)) {
+    return false;
+  }
+
+  for (map<string, string*>::const_iterator iter = files_.begin();
        iter != files_.end(); ++iter) {
-    const string& filename = iter->first;
+    const string& relative_filename = iter->first;
     const char* data = iter->second->data();
     int size = iter->second->size();
+
+    if (!TryCreateParentDirectory(prefix, relative_filename)) {
+      return false;
+    }
+    string filename = prefix + relative_filename;
 
     // Create the output file.
     int file_descriptor;
@@ -357,6 +347,47 @@ bool CommandLineInterface::MemoryOutputDirectory::WriteAllToDisk() {
       cerr << filename << ": close: " << strerror(error);
       return false;
     }
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::MemoryOutputDirectory::WriteAllToZip(
+    const string& filename) {
+  if (had_error_) {
+    return false;
+  }
+
+  // Create the output file.
+  int file_descriptor;
+  do {
+    file_descriptor =
+      open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (file_descriptor < 0 && errno == EINTR);
+
+  if (file_descriptor < 0) {
+    int error = errno;
+    cerr << filename << ": " << strerror(error);
+    return false;
+  }
+
+  // Create the ZipWriter
+  io::FileOutputStream stream(file_descriptor);
+  ZipWriter zip_writer(&stream);
+
+  for (map<string, string*>::const_iterator iter = files_.begin();
+       iter != files_.end(); ++iter) {
+    zip_writer.Write(iter->first, *iter->second);
+  }
+
+  zip_writer.WriteDirectory();
+
+  if (stream.GetErrno() != 0) {
+    cerr << filename << ": " << strerror(stream.GetErrno()) << endl;
+  }
+
+  if (!stream.Close()) {
+    cerr << filename << ": " << strerror(stream.GetErrno()) << endl;
   }
 
   return true;
@@ -552,19 +583,51 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
+  // We construct a separate OutputDirectory for each output location.  Note
+  // that two code generators may output to the same location, in which case
+  // they should share a single OutputDirectory (so that OpenForInsert() works).
+  typedef hash_map<string, MemoryOutputDirectory*> OutputDirectoryMap;
+  OutputDirectoryMap output_directories_;
+
   // Generate output.
   MemoryOutputDirectory output_directory;
   if (mode_ == MODE_COMPILE) {
     for (int i = 0; i < output_directives_.size(); i++) {
-      if (!GenerateOutput(parsed_files, output_directives_[i],
-                          &output_directory)) {
+      string output_location = output_directives_[i].output_location;
+      cout << "location: " << output_location << endl;
+      if (!HasSuffixString(output_location, ".zip") &&
+          !HasSuffixString(output_location, ".jar") &&
+          !HasSuffixString(output_location, ".war") &&
+          !HasSuffixString(output_location, ".par")) {
+        AddTrailingSlash(&output_location);
+      }
+      MemoryOutputDirectory** map_slot = &output_directories_[output_location];
+
+      if (*map_slot == NULL) {
+        // First time we've seen this output location.
+        *map_slot = new MemoryOutputDirectory;
+      }
+
+      if (!GenerateOutput(parsed_files, output_directives_[i], *map_slot)) {
         return 1;
       }
     }
   }
 
-  if (!output_directory.WriteAllToDisk()) {
-    return 1;
+  // Write all output to disk.
+  for (OutputDirectoryMap::iterator iter = output_directories_.begin();
+       iter != output_directories_.end(); ++iter) {
+    const string& location = iter->first;
+    MemoryOutputDirectory* directory = iter->second;
+    if (HasSuffixString(location, "/")) {
+      if (!directory->WriteAllToDisk(location)) {
+        return 1;
+      }
+    } else {
+      if (!directory->WriteAllToZip(location)) {
+        return 1;
+      }
+    }
   }
 
   if (!descriptor_set_name_.empty()) {
@@ -1009,15 +1072,7 @@ void CommandLineInterface::PrintHelpText() {
 bool CommandLineInterface::GenerateOutput(
     const vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
-    OutputDirectory* parent_output_directory) {
-  // Set up the OutputDirectory.
-  string path = output_directive.output_location;
-  AddTrailingSlash(&path);
-  if (!VerifyDirectoryExists(path)) {
-    return false;
-  }
-  SubOutputDirectory output_directory(parent_output_directory, path);
-
+    OutputDirectory* output_directory) {
   // Call the generator.
   string error;
   if (output_directive.generator == NULL) {
@@ -1032,7 +1087,7 @@ bool CommandLineInterface::GenerateOutput(
 
     if (!GeneratePluginOutput(parsed_files, plugin_name,
                               output_directive.parameter,
-                              &output_directory, &error)) {
+                              output_directory, &error)) {
       cerr << output_directive.name << ": " << error << endl;
       return false;
     }
@@ -1041,7 +1096,7 @@ bool CommandLineInterface::GenerateOutput(
     for (int i = 0; i < parsed_files.size(); i++) {
       if (!output_directive.generator->Generate(
           parsed_files[i], output_directive.parameter,
-          &output_directory, &error)) {
+          output_directory, &error)) {
         // Generator returned an error.
         cerr << output_directive.name << ": " << parsed_files[i]->name() << ": "
              << error << endl;

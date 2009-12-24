@@ -131,6 +131,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/plugin.pb.cc                        \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
+  google/protobuf/compiler/zip_writer.cc                       \
+  google/protobuf/compiler/zip_writer.h                        \
   google/protobuf/compiler/cpp/cpp_enum.cc                     \
   google/protobuf/compiler/cpp/cpp_enum.h                      \
   google/protobuf/compiler/cpp/cpp_enum_field.cc               \
