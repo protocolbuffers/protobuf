@@ -438,21 +438,22 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
     upb_string *s = str_entries[i]->e.key;
     str_entries[i]->offset = offset;
     str_entries[i]->num = i;
-    for(uint32_t j = 0; j < s->byte_len; j++) {
+    const char *buf = upb_string_getrobuf(s);
+    for(uint32_t j = 0; j < upb_strlen(s); j++) {
       if(++col == 80) {
         fputs("\"\n  \"", stream);
         col = 3;
       }
-      fputc(s->ptr[j], stream);
+      fputc(buf[j], stream);
     }
-    offset += s->byte_len;
+    offset += upb_strlen(s);
   }
   fputs("\";\n\n", stream);
 
   fputs("static struct upb_string strings[] = {\n", stream);
   for(int i = 0; i < size; i++) {
     struct strtable_entry *e = str_entries[i];
-    fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d},\n", e->offset, e->e.key->byte_len);
+    fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d},\n", e->offset, upb_strlen(e->e.key));
   }
   fputs("};\n\n", stream);
   free(str_entries);
@@ -465,10 +466,10 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
   /* A fake field to get the recursion going. */
   struct upb_fielddef fake_field = {
       .type = UPB_TYPE(MESSAGE),
-      .def = UPB_UPCAST(msg->def),
+      .def = UPB_UPCAST(md),
   };
-  add_value(upb_value_addrof(&val), &fake_field, &types);
-  add_submsgs(msg, &types);
+  add_value(val, &fake_field, &types);
+  add_submsgs(msg, md, &types);
 
   /* Emit foward declarations for all msgs of all types, and define arrays. */
   fprintf(stream, "/* Forward declarations of messages, and array decls. */\n");
@@ -513,7 +514,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
         for(upb_field_count_t j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
-          if(upb_msg_isset(msgdata, f))
+          if(upb_msg_has(msgdata, f))
             fprintf(stream, "true");
           else
             fprintf(stream, "false");
@@ -523,9 +524,9 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
         /* Print msg data. */
         for(upb_field_count_t j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
-          union upb_value val = upb_value_read(upb_msg_getptr(msgdata, f), f->type);
+          union upb_value val = upb_msg_get(msgdata, f);
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
-          if(!upb_msg_isset(msgdata, f)) {
+          if(!upb_msg_has(msgdata, f)) {
             fputs("0,   /* Not set. */", stream);
           } else if(upb_isstring(f)) {
             if(upb_isarray(f)) {
@@ -666,13 +667,13 @@ int main(int argc, char *argv[])
   if(!outfile_base) outfile_base = input_file;
 
   // Read and parse input file.
-  struct upb_string *descriptor = upb_strreadfile(input_file);
+  upb_string *descriptor = upb_strreadfile(input_file);
   if(!descriptor)
     error("Couldn't read input file.");
   struct upb_symtab *s = upb_symtab_new();
-  struct upb_msg *fds_msg = upb_msg_new(s->fds_msgdef);
+  upb_msg *fds_msg = upb_msg_new(s->fds_msgdef);
   struct upb_status status = UPB_STATUS_INIT;
-  upb_msg_parsestr(fds_msg, descriptor->ptr, descriptor->byte_len, &status);
+  upb_msg_parsestr(fds_msg, s->fds_msgdef, descriptor, &status);
   if(!upb_ok(&status))
     error("Failed to parse input file descriptor: %s", status.msg);
   google_protobuf_FileDescriptorSet *fds = (void*)fds_msg;
@@ -724,10 +725,10 @@ int main(int argc, char *argv[])
   if(cident) {
     FILE *c_file = fopen(c_filename, "w");
     if(!c_file) error("Failed to open .h output file");
-    write_message_c(fds_msg, cident, h_filename, argc, argv, input_file, c_file);
+    write_message_c(fds_msg, s->fds_msgdef, cident, h_filename, argc, argv, input_file, c_file);
     fclose(c_file);
   }
-  upb_msg_unref(fds_msg);
+  upb_msg_unref(fds_msg, s->fds_msgdef);
   upb_string_unref(descriptor);
   fclose(h_file);
   fclose(h_const_file);

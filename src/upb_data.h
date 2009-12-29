@@ -160,8 +160,6 @@ INLINE bool _upb_data_unref(upb_data *d) {
   }
 }
 
-struct upb_mmhead {};
-
 /* upb_string *****************************************************************/
 
 typedef uint32_t upb_strlen_t;
@@ -248,7 +246,7 @@ INLINE const char *upb_string_getrobuf(upb_string *s) {
 }
 
 // Returns the current length of the string.
-INLINE size_t upb_strlen(upb_string *s) {
+INLINE upb_strlen_t upb_strlen(upb_string *s) {
   return s->common.byte_len;
 }
 
