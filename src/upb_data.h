@@ -8,7 +8,15 @@
  * protobufs).
  *
  * The members of all structs should be considered private.  Access should
- * only happen through the provided functions. */
+ * only happen through the provided functions.
+ *
+ * Unlike Google's protobuf, messages contain *pointers* to strings and arrays
+ * instead of including them by value.  This makes unused strings and arrays
+ * use less memory, and lets the strings and arrays have multiple possible
+ * representations (for example, a string could be a slice).  It also gives
+ * us more flexibility wrt refcounting.  The cost is that when a field *is*
+ * being used, the net memory usage is one pointer more than if we had
+ * included the thing directly. */
 
 #ifndef UPB_DATA_H
 #define UPB_DATA_H
@@ -189,7 +197,7 @@ typedef struct {
   uint32_t byte_size;
 } upb_refcounted_string;
 
-typedef union {
+typedef union upb_string {
   upb_norefcount_string norefcount;
   upb_string_common common;
   upb_refcounted_string refcounted;
@@ -197,12 +205,12 @@ typedef union {
 
 // Returns a newly constructed, refcounted string which starts out empty.
 // Caller owns one ref on it.  The returned string will not be frozen.
-upb_string *upb_string_new();
+upb_string *upb_string_new(void);
 
 // Creates a new string which is a duplicate of the given string.  If
 // refcounted is true, the new string is refcounted, otherwise the caller
 // has exlusive ownership of it.
-INLINE upb_string *upb_strdup(upb_string *s, bool refcounted);
+INLINE upb_string *upb_strdup(upb_string *s);
 
 // INTERNAL-ONLY:
 // Frees the given string, alone with any memory the string owned.
@@ -213,7 +221,7 @@ void _upb_string_free(upb_string *s);
 // were incompatible with src's.
 INLINE upb_string *upb_string_getref(upb_string *s, int ref_flags) {
   if(_upb_data_incref(&s->common.base, ref_flags)) return s;
-  return upb_strdup(s, true);
+  return upb_strdup(s);
 }
 
 // The caller releases a ref on src, which it must previously have owned a ref
@@ -226,6 +234,8 @@ INLINE void upb_string_unref(upb_string *s) {
 // byte_len (which may or may not trigger a reallocation).  The src string must
 // not be frozen otherwise the program will assert-fail or abort().
 char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len);
+
+void upb_string_resize(upb_string *s, upb_strlen_t len);
 
 INLINE void upb_string_clear(upb_string *s) {
   upb_string_getrwbuf(s, 0);
@@ -270,9 +280,17 @@ INLINE void upb_strcpy(upb_string *dest, upb_string *src) {
   memcpy(upb_string_getrwbuf(dest, src_len), upb_string_getrobuf(src), src_len);
 }
 
-INLINE upb_string *upb_strdup(upb_string *s, bool refcounted) {
-  upb_string *copy = upb_string_new(refcounted);
+INLINE upb_string *upb_strdup(upb_string *s) {
+  upb_string *copy = upb_string_new();
   upb_strcpy(copy, s);
+  return copy;
+}
+
+INLINE upb_string *upb_strdupc(const char *src) {
+  upb_string *copy = upb_string_new();
+  upb_strlen_t len = strlen(src);
+  char *buf = upb_string_getrwbuf(copy, len);
+  memcpy(buf, src, len);
   return copy;
 }
 
@@ -290,7 +308,7 @@ INLINE void upb_strcat(upb_string *s, upb_string *append) {
 // the original string data instead of copying it.  Both now and in the future,
 // the caller owns a ref on whatever is returned.
 INLINE upb_string *upb_strslice(upb_string *s, int offset, int len) {
-  upb_string *slice = upb_string_new(true);
+  upb_string *slice = upb_string_new();
   len = UPB_MIN((upb_strlen_t)len, upb_strlen(s) - (upb_strlen_t)offset);
   memcpy(upb_string_getrwbuf(slice, len), upb_string_getrobuf(s) + offset, len);
   return slice;
@@ -304,7 +322,7 @@ upb_string *upb_strreadfile(const char *filename);
 // must not dynamically allocate this type.
 typedef upb_string upb_static_string;
 #define UPB_STRLIT_LEN(str, len) {0 | UPB_DATA_FROZEN, len, str}
-#define UPB_STRLIT(str) {{{0 | UPB_DATA_FROZEN}, sizeof(str), str}}
+#define UPB_STRLIT(str) {{0 | UPB_DATA_FROZEN, sizeof(str), str}}
 
 // Allows using upb_strings in printf, ie:
 //   upb_string str = UPB_STRLIT("Hello, World!\n");
@@ -316,33 +334,50 @@ typedef upb_string upb_static_string;
 
 typedef uint32_t upb_arraylen_t;
 
-// The members of this struct are private.  Access should only be through the
-// associated functions.
+// The comments attached to upb_string above also apply here.
 typedef struct {
-  unsigned int size:29;  // How many bytes we own, 0 if we don't own.
-  bool is_heap_allocated:1;
-  bool is_frozen:1;
-  bool has_refcount:1;
+  upb_data base;
   upb_arraylen_t len;
-  union upb_value_ptr *elements;
+  union upb_value_ptr elements;
+} upb_array_common;
+
+typedef struct {
+  uint32_t size_and_flags;
+  upb_arraylen_t len;
+  union upb_value_ptr elements;
+} upb_norefcount_array;
+
+typedef struct {
+  upb_data base;
+  upb_arraylen_t len;
+  union upb_value_ptr elements;
+  upb_arraylen_t size;
+} upb_refcounted_array;
+
+typedef union upb_array {
+  upb_norefcount_array norefcount;
+  upb_array_common common;
+  upb_refcounted_array refcounted;
 } upb_array;
 
+// This type can be used either to perform read-only access on an array,
+// or to statically define a non-reference-counted static array.
 #define UPB_DEFINE_MSG_ARRAY(type) \
-typedef struct type ## array { \
-  unsigned int size:29;  \
-  bool is_heap_allocated:1; \
-  bool is_frozen:1;\
-  bool has_refcount:1;\
+typedef struct type ## _array { \
+  upb_data base; \
   upb_arraylen_t len;\
   type **elements; \
-} type ## array; \
+} type ## _array; \
 
-#define UPB_MSG_ARRAY(type) struct type ## array
+#define UPB_MSG_ARRAY(type) struct type ## _array
 
-// Constructs a newly-allocated array, which starts out empty.  Caller owns one
-// ref on it.
+// Constructs a newly-allocated, reference-counted array which starts out
+// empty.  Caller owns one ref on it.
 upb_array *upb_array_new(void);
 
+union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f, int elem);
+
+#if 0
 // Returns an array to which caller owns a ref, and contains the same contents
 // as src.  The returned value may be a copy of src, if the requested flags
 // were incompatible with src's.
@@ -358,12 +393,6 @@ INLINE void upb_array_unref(upb_array *a, struct upb_fielddef *f);
 INLINE void upb_array_set(upb_array *a, struct upb_fielddef *f, int elem,
                           union upb_value val);
 
-// Note that the caller does *not* own a ref on the returned value.
-INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
-                                     int elem);
-INLINE union upb_value upb_array_getmutable(upb_array *a,
-                                            struct upb_fielddef *f, int elem,
-                                            union upb_value val);
 
 // Note that array_append will attempt to take a reference on the given value,
 // so to avoid a copy use append_default and get.
@@ -371,15 +400,16 @@ INLINE void upb_array_append(upb_array *a, struct upb_fielddef *f,
                              union upb_value val);
 INLINE void upb_array_append_default(upb_array *a, struct upb_fielddef *f,
                              union upb_value val);
+#endif
 
 // Returns the current number of elements in the array.
 INLINE size_t upb_array_len(upb_array *a) {
-  return a->len;
+  return a->common.len;
 }
 
 /* upb_msg ********************************************************************/
 
-typedef struct {
+typedef union upb_msg {
   uint8_t data[1];
 } upb_msg;
 
@@ -390,13 +420,12 @@ void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md);
 
 // Tests whether the given field is explicitly set, or whether it will return
 // a default.
-bool upb_msg_isset(upb_msg *msg, struct upb_fielddef *f);
+bool upb_msg_has(upb_msg *msg, struct upb_fielddef *f);
 
 // Returns the current value if set, or the default value if not set, of the
 // specified field.  The mutable version will first replace the value with a
 // mutable copy if it is not already mutable.
 union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f);
-union upb_value upb_msg_getmutable(upb_msg *msg, struct upb_fielddef *f);
 
 // Sets the given field to the given value.  The msg will take a ref on val,
 // and will drop a ref on whatever was there before.

@@ -437,7 +437,7 @@ static struct symtab_ent *resolve(struct upb_strtable *t,
     return e;
   } else {
     // Remove components from base until we find an entry or run out.
-    upb_string *sym_str = upb_string_new(true);
+    upb_string *sym_str = upb_string_new();
     int baselen = upb_strlen(base);
     while(1) {
       // sym_str = base[0...base_len] + UPB_SYMBOL_SEPARATOR + symbol
@@ -461,7 +461,7 @@ static struct symtab_ent *resolve(struct upb_strtable *t,
  *   join("", "Baz") -> "Baz"
  * Caller owns a ref on the returned string. */
 static upb_string *join(upb_string *base, upb_string *name) {
-  upb_string *joined = upb_strdup(base, true);
+  upb_string *joined = upb_strdup(base);
   upb_strlen_t len = upb_strlen(joined);
   if(len > 0) {
     upb_string_getrwbuf(joined, len + 1)[len] = UPB_SYMBOL_SEPARATOR;

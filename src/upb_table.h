@@ -39,7 +39,7 @@ struct upb_inttable_entry {
 // performance by letting us compare hashes before comparing lengths or the
 // strings themselves.
 struct upb_strtable_entry {
-  upb_string *key;  // We own a frozen ref.
+  upb_string *key;         // We own a frozen ref.
   uint32_t next;           // Internal chaining.
 };
 

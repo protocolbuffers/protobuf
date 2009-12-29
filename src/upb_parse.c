@@ -272,8 +272,8 @@ static uint8_t *skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
   }
 }
 
-uint8_t *upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
-                         union upb_value_ptr v, struct upb_status *status)
+static uint8_t *upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
+                                union upb_value_ptr v, struct upb_status *status)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_get_ ## t(buf, end, v.member_name, status);

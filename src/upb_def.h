@@ -173,7 +173,7 @@ struct google_protobuf_DescriptorProto;
 struct upb_msgdef {
   struct upb_def base;
   upb_atomic_refcount_t cycle_refcount;
-  struct upb_msg *default_msg;   // Message with all default values set.
+  upb_msg *default_msg;   // Message with all default values set.
   size_t size;
   upb_field_count_t num_fields;
   uint32_t set_flags_bytes;
