@@ -378,12 +378,29 @@ typedef struct type ## _array { \
 // empty.  Caller owns one ref on it.
 upb_array *upb_array_new(void);
 
-INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
-                                     int elem) {
+// INTERNAL-ONLY:
+// Frees the given message and releases references on members.
+void _upb_array_free(upb_array *a, struct upb_fielddef *f);
+
+// INTERNAL-ONLY:
+// Returns a pointer to the given elem.
+INLINE union upb_value_ptr _upb_array_getptr(upb_array *a,
+                                             struct upb_fielddef *f, int elem) {
   assert(elem < upb_array_len(a));
   size_t type_size = upb_type_info[f->type].size;
   union upb_value_ptr p = {._void = &a->common.elements.uint8[elem * type_size]};
-  return upb_value_read(p, f->type);
+  return p;
+}
+
+INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
+                                     int elem) {
+  return upb_value_read(_upb_array_getptr(a, f, elem), f->type);
+}
+
+// The caller releases a ref on the given array, which it must previously have
+// owned a ref on.
+INLINE void upb_array_unref(upb_array *a, struct upb_fielddef *f) {
+  if(_upb_data_unref(&a->common.base)) _upb_array_free(a, f);
 }
 
 #if 0
@@ -391,10 +408,6 @@ INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
 // as src.  The returned value may be a copy of src, if the requested flags
 // were incompatible with src's.
 INLINE upb_array *upb_array_getref(upb_array *src, int ref_flags);
-
-// The caller releases a ref on the given array, which it must previously have
-// owned a ref on.
-INLINE void upb_array_unref(upb_array *a, struct upb_fielddef *f);
 
 // Sets the given element in the array to val.  The current length of the array
 // must be greater than elem.  If the field type is dynamic, the array will
@@ -429,20 +442,33 @@ struct upb_msg {
 // Creates a new msg of the given type.
 upb_msg *upb_msg_new(struct upb_msgdef *md);
 
+// INTERNAL-ONLY:
+// Frees the given message and releases references on members.
+void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md);
+
+// INTERNAL-ONLY:
+// Returns a pointer to the given field.
+INLINE union upb_value_ptr _upb_msg_getptr(upb_msg *msg, struct upb_fielddef *f) {
+  union upb_value_ptr p = {._void = &msg->data[f->byte_offset]};
+  return p;
+}
+
+// Releases a references on msg.
+INLINE void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md) {
+  if(_upb_data_unref(&msg->base)) _upb_msg_free(msg, md);
+}
+
 // Tests whether the given field is explicitly set, or whether it will return
 // a default.
 INLINE bool upb_msg_has(upb_msg *msg, struct upb_fielddef *f) {
   return msg->data[f->field_index/8] % (1 << (f->field_index % 8));
 }
 
-void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md);
-
 // Returns the current value if set, or the default value if not set, of the
 // specified field.  The caller does *not* own a ref.
 INLINE union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f) {
   if(upb_msg_has(msg, f)) {
-    union upb_value_ptr p = {._void = &msg->data[f->byte_offset]};
-    return upb_value_read(p, f->type);
+    return upb_value_read(_upb_msg_getptr(msg, f), f->type);
   } else {
     return f->default_value;
   }

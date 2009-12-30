@@ -8,10 +8,6 @@
 #include "upb_data.h"
 #include "upb_def.h"
 
-INLINE void data_init(upb_data *d, int flags) {
-  d->v = flags;
-}
-
 static uint32_t round_up_to_pow2(uint32_t v)
 {
   /* cf. http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 */
@@ -23,6 +19,28 @@ static uint32_t round_up_to_pow2(uint32_t v)
   v |= v >> 16;
   v++;
   return v;
+}
+
+/* upb_data *******************************************************************/
+
+static void data_elem_unref(void *d, struct upb_fielddef *f) {
+  if(f->type == UPB_TYPE(MESSAGE) || f->type == UPB_TYPE(GROUP)) {
+    upb_msg_unref((upb_msg*)d, upb_downcast_msgdef(f->def));
+  } else if(f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES)) {
+    upb_string_unref((upb_string*)d);
+  }
+}
+
+static void data_unref(void *d, struct upb_fielddef *f) {
+  if(upb_isarray(f)) {
+    upb_array_unref((upb_array*)d, f);
+  } else {
+    data_elem_unref(d, f);
+  }
+}
+
+INLINE void data_init(upb_data *d, int flags) {
+  d->v = flags;
 }
 
 static void check_not_frozen(upb_data *d) {
@@ -50,6 +68,9 @@ static void string_set_bytesize(upb_string *s, upb_strlen_t newsize) {
   }
 }
 
+
+/* upb_string *******************************************************************/
+
 upb_string *upb_string_new() {
   upb_string *s = malloc(sizeof(upb_refcounted_string));
   data_init(&s->common.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
@@ -76,6 +97,43 @@ void upb_string_resize(upb_string *s, upb_strlen_t byte_len) {
   s->common.byte_len = byte_len;
 }
 
+upb_string *upb_strreadfile(const char *filename) {
+  FILE *f = fopen(filename, "rb");
+  if(!f) return false;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
+  long size = ftell(f);
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  upb_string *s = upb_string_new();
+  char *buf = upb_string_getrwbuf(s, size);
+  if(fread(buf, size, 1, f) != 1) goto error;
+  fclose(f);
+  return s;
+
+error:
+  fclose(f);
+  return NULL;
+}
+
+
+/* upb_array ******************************************************************/
+
+// ONLY handles refcounted arrays for the moment.
+void _upb_array_free(upb_array *a, struct upb_fielddef *f)
+{
+  if(upb_elem_ismm(f)) {
+    for(upb_arraylen_t i = 0; i < a->refcounted.size; i++) {
+      union upb_value_ptr p = _upb_array_getptr(a, f, i);
+      data_elem_unref(p._void, f);
+    }
+  }
+  if(a->refcounted.size != 0) free(a->common.elements._void);
+  free(a);
+}
+
+
+/* upb_msg ********************************************************************/
+
 upb_msg *upb_msg_new(struct upb_msgdef *md) {
   upb_msg *msg = malloc(md->size);
   memset(msg, 0, md->size);
@@ -83,28 +141,16 @@ upb_msg *upb_msg_new(struct upb_msgdef *md) {
   return msg;
 }
 
-#if 0
-void upb_msg_destroy(struct upb_msg *msg) {
-  for(upb_field_count_t i = 0; i < msg->def->num_fields; i++) {
-    struct upb_fielddef *f = &msg->def->fields[i];
-    if(!upb_msg_isset(msg, f) || !upb_field_ismm(f)) continue;
-    upb_mm_destroy(upb_msg_getptr(msg, f), upb_field_ptrtype(f));
+// ONLY handles refcounted messages for the moment.
+void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
+{
+  for(int i = 0; i < md->num_fields; i++) {
+    struct upb_fielddef *f = &md->fields[i];
+    union upb_value_ptr p = _upb_msg_getptr(msg, f);
+    if(!upb_field_ismm(f) || !p._void) continue;
+    data_unref(p._void, f);
   }
-  upb_def_unref(UPB_UPCAST(msg->def));
+  upb_def_unref(UPB_UPCAST(md));
   free(msg);
 }
 
-void upb_array_destroy(struct upb_array *arr)
-{
-  if(upb_elem_ismm(arr->fielddef)) {
-    upb_arraylen_t i;
-    /* Unref elements. */
-    for(i = 0; i < arr->size; i++) {
-      union upb_value_ptr p = upb_array_getelementptr(arr, i);
-      upb_mm_destroy(p, upb_elem_ptrtype(arr->fielddef));
-    }
-  }
-  if(arr->size != 0) free(arr->elements._void);
-  free(arr);
-}
-#endif

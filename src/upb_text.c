@@ -7,9 +7,7 @@
 #include <inttypes.h>
 #include "descriptor.h"
 #include "upb_text.h"
-#include "upb_string.h"
-#include "upb_msg.h"
-#include "upb_array.h"
+#include "upb_data.h"
 
 void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
 {
@@ -51,7 +49,7 @@ static void print_indent(struct upb_text_printer *p, FILE *stream)
 }
 
 void upb_text_printfield(struct upb_text_printer *p,
-                         struct upb_string *name,
+                         upb_string *name,
                          upb_field_type_t valtype, union upb_value val,
                          FILE *stream)
 {
@@ -65,7 +63,7 @@ void upb_text_printfield(struct upb_text_printer *p,
 }
 
 void upb_text_push(struct upb_text_printer *p,
-                   struct upb_string *submsg_type,
+                   upb_string *submsg_type,
                    FILE *stream)
 {
   print_indent(p, stream);
@@ -82,49 +80,48 @@ void upb_text_pop(struct upb_text_printer *p,
   fprintf(stream, "}\n");
 }
 
-static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
+static void printval(struct upb_text_printer *printer, union upb_value v,
                      struct upb_fielddef *f,
                      FILE *stream);
 
-static void printmsg(struct upb_text_printer *printer, struct upb_msg *msg,
-                     FILE *stream)
+static void printmsg(struct upb_text_printer *printer,
+                     upb_msg *msg, struct upb_msgdef *md, FILE *stream)
 {
-  struct upb_msgdef *m = msg->def;
-  for(upb_field_count_t i = 0; i < m->num_fields; i++) {
-    struct upb_fielddef *f = &m->fields[i];
-    if(!upb_msg_isset(msg, f)) continue;
-    union upb_value_ptr p = upb_msg_getptr(msg, f);
+  for(upb_field_count_t i = 0; i < md->num_fields; i++) {
+    struct upb_fielddef *f = &md->fields[i];
+    if(!upb_msg_has(msg, f)) continue;
+    union upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
-      struct upb_array *arr = *p.arr;
-      for(uint32_t j = 0; j < arr->len; j++) {
-        union upb_value_ptr elem_p = upb_array_getelementptr(arr, j);
-        printval(printer, elem_p, f, stream);
+      upb_array *arr = v.arr;
+      for(uint32_t j = 0; j < upb_array_len(arr); j++) {
+        union upb_value elem = upb_array_get(arr, f, j);
+        printval(printer, elem, f, stream);
       }
     } else {
-      printval(printer, p, f, stream);
+      printval(printer, v, f, stream);
     }
   }
 }
 
-static void printval(struct upb_text_printer *printer, union upb_value_ptr p,
+static void printval(struct upb_text_printer *printer, union upb_value v,
                      struct upb_fielddef *f,
                      FILE *stream)
 {
   if(upb_issubmsg(f)) {
     upb_text_push(printer, f->name, stream);
-    printmsg(printer, *p.msg, stream);
+    printmsg(printer, v.msg, upb_downcast_msgdef(f->def), stream);
     upb_text_pop(printer, stream);
   } else {
-    upb_text_printfield(printer, f->name, f->type,
-                        upb_value_read(p, f->type), stream);
+    upb_text_printfield(printer, f->name, f->type, v, stream);
   }
 }
 
 
-void upb_msg_print(struct upb_msg *msg, bool single_line, FILE *stream)
+void upb_msg_print(upb_msg *msg, struct upb_msgdef *md, bool single_line,
+                   FILE *stream)
 {
   struct upb_text_printer printer;
   upb_text_printer_init(&printer, single_line);
-  printmsg(&printer, msg, stream);
+  printmsg(&printer, msg, md, stream);
 }
 

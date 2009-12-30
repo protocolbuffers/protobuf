@@ -47,7 +47,7 @@ clean:
 
 # The core library (src/libupb.a)
 SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_def.c src/upb_data.c \
-    descriptor/descriptor.c
+    descriptor/descriptor.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
