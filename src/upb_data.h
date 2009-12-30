@@ -206,11 +206,6 @@ union upb_string {
 // Caller owns one ref on it.  The returned string will not be frozen.
 upb_string *upb_string_new(void);
 
-// Creates a new string which is a duplicate of the given string.  If
-// refcounted is true, the new string is refcounted, otherwise the caller
-// has exlusive ownership of it.
-INLINE upb_string *upb_strdup(upb_string *s);
-
 // INTERNAL-ONLY:
 // Frees the given string, alone with any memory the string owned.
 void _upb_string_free(upb_string *s);
@@ -218,10 +213,7 @@ void _upb_string_free(upb_string *s);
 // Returns a string to which caller owns a ref, and contains the same contents
 // as src.  The returned value may be a copy of src, if the requested flags
 // were incompatible with src's.
-INLINE upb_string *upb_string_getref(upb_string *s, int ref_flags) {
-  if(_upb_data_incref(&s->common.base, ref_flags)) return s;
-  return upb_strdup(s);
-}
+upb_string *upb_string_getref(upb_string *s, int ref_flags);
 
 // The caller releases a ref on src, which it must previously have owned a ref
 // on.
@@ -270,52 +262,26 @@ INLINE bool upb_streql(upb_string *s1, upb_string *s2) {
   }
 }
 
-INLINE int upb_strcmp(upb_string *s1, upb_string *s2) {
-  upb_strlen_t common_length = UPB_MIN(upb_strlen(s1), upb_strlen(s2));
-  int common_diff = memcmp(upb_string_getrobuf(s1), upb_string_getrobuf(s2),
-                           common_length);
-  return common_diff ==
-      0 ? ((int)upb_strlen(s1) - (int)upb_strlen(s2)) : common_diff;
-}
+// Like strcmp().
+int upb_strcmp(upb_string *s1, upb_string *s2);
 
-INLINE void upb_strcpy(upb_string *dest, upb_string *src) {
-  upb_strlen_t src_len = upb_strlen(src);
-  memcpy(upb_string_getrwbuf(dest, src_len), upb_string_getrobuf(src), src_len);
-}
+// Replaces the contents of "dest" with the contents of "src".
+void upb_strcpy(upb_string *dest, upb_string *src);
 
-INLINE upb_string *upb_strdup(upb_string *s) {
-  upb_string *copy = upb_string_new();
-  upb_strcpy(copy, s);
-  return copy;
-}
+// Returns a new string whose contents are a copy of s.
+upb_string *upb_strdup(upb_string *s);
 
-INLINE upb_string *upb_strdupc(const char *src) {
-  upb_string *copy = upb_string_new();
-  upb_strlen_t len = strlen(src);
-  char *buf = upb_string_getrwbuf(copy, len);
-  memcpy(buf, src, len);
-  return copy;
-}
+// Like upb_strdup(), but duplicates a C NULL-terminated string.
+upb_string *upb_strdupc(const char *src);
 
 // Appends 'append' to 's' in-place, resizing s if necessary.
-INLINE void upb_strcat(upb_string *s, upb_string *append) {
-  upb_strlen_t s_len = upb_strlen(s);
-  upb_strlen_t append_len = upb_strlen(append);
-  upb_strlen_t newlen = s_len + append_len;
-  memcpy(upb_string_getrwbuf(s, newlen) + s_len,
-         upb_string_getrobuf(append), append_len);
-}
+void upb_strcat(upb_string *s, upb_string *append);
 
 // Returns a string that is a substring of the given string.  Currently this
 // returns a copy, but in the future this may return an object that references
 // the original string data instead of copying it.  Both now and in the future,
 // the caller owns a ref on whatever is returned.
-INLINE upb_string *upb_strslice(upb_string *s, int offset, int len) {
-  upb_string *slice = upb_string_new();
-  len = UPB_MIN((upb_strlen_t)len, upb_strlen(s) - (upb_strlen_t)offset);
-  memcpy(upb_string_getrwbuf(slice, len), upb_string_getrobuf(s) + offset, len);
-  return slice;
-}
+upb_string *upb_strslice(upb_string *s, int offset, int len);
 
 // Reads an entire file into a newly-allocated string (caller owns one ref).
 upb_string *upb_strreadfile(const char *filename);

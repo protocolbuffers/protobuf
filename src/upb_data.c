@@ -97,6 +97,11 @@ void upb_string_resize(upb_string *s, upb_strlen_t byte_len) {
   s->common.byte_len = byte_len;
 }
 
+upb_string *upb_string_getref(upb_string *s, int ref_flags) {
+  if(_upb_data_incref(&s->common.base, ref_flags)) return s;
+  return upb_strdup(s);
+}
+
 upb_string *upb_strreadfile(const char *filename) {
   FILE *f = fopen(filename, "rb");
   if(!f) return false;
@@ -113,6 +118,48 @@ upb_string *upb_strreadfile(const char *filename) {
 error:
   fclose(f);
   return NULL;
+}
+
+upb_string *upb_strdupc(const char *src) {
+  upb_string *copy = upb_string_new();
+  upb_strlen_t len = strlen(src);
+  char *buf = upb_string_getrwbuf(copy, len);
+  memcpy(buf, src, len);
+  return copy;
+}
+
+void upb_strcat(upb_string *s, upb_string *append) {
+  upb_strlen_t s_len = upb_strlen(s);
+  upb_strlen_t append_len = upb_strlen(append);
+  upb_strlen_t newlen = s_len + append_len;
+  memcpy(upb_string_getrwbuf(s, newlen) + s_len,
+         upb_string_getrobuf(append), append_len);
+}
+
+void upb_strcpy(upb_string *dest, upb_string *src) {
+  upb_strlen_t src_len = upb_strlen(src);
+  memcpy(upb_string_getrwbuf(dest, src_len), upb_string_getrobuf(src), src_len);
+}
+
+upb_string *upb_strslice(upb_string *s, int offset, int len) {
+  upb_string *slice = upb_string_new();
+  len = UPB_MIN((upb_strlen_t)len, upb_strlen(s) - (upb_strlen_t)offset);
+  memcpy(upb_string_getrwbuf(slice, len), upb_string_getrobuf(s) + offset, len);
+  return slice;
+}
+
+upb_string *upb_strdup(upb_string *s) {
+  upb_string *copy = upb_string_new();
+  upb_strcpy(copy, s);
+  return copy;
+}
+
+int upb_strcmp(upb_string *s1, upb_string *s2) {
+  upb_strlen_t common_length = UPB_MIN(upb_strlen(s1), upb_strlen(s2));
+  int common_diff = memcmp(upb_string_getrobuf(s1), upb_string_getrobuf(s2),
+                           common_length);
+  return common_diff ==
+      0 ? ((int)upb_strlen(s1) - (int)upb_strlen(s2)) : common_diff;
 }
 
 
