@@ -12,13 +12,9 @@
  */
 
 #define INLINE
-#include "upb_array.h"
-#include "upb_context.h"
+#include "upb.h"
+#include "upb_data.h"
 #include "upb_def.h"
-#include "upb_mm.h"
-#include "upb_msg.h"
 #include "upb_parse.h"
-#include "upb_serialize.h"
-#include "upb_string.h"
 #include "upb_table.h"
 #include "upb_text.h"

@@ -25,6 +25,7 @@
 #include <string.h>
 #include "upb.h"
 #include "upb_atomic.h"
+#include "upb_def.h"
 
 struct upb_msgdef;
 struct upb_fielddef;
@@ -195,11 +196,11 @@ typedef struct {
   uint32_t byte_size;
 } upb_refcounted_string;
 
-typedef union upb_string {
+union upb_string {
   upb_norefcount_string norefcount;
   upb_string_common common;
   upb_refcounted_string refcounted;
-} upb_string;
+};
 
 // Returns a newly constructed, refcounted string which starts out empty.
 // Caller owns one ref on it.  The returned string will not be frozen.
@@ -228,12 +229,16 @@ INLINE void upb_string_unref(upb_string *s) {
   if(_upb_data_unref(&s->common.base)) _upb_string_free(s);
 }
 
-// Returns a buffer to which the caller may write.  The string is resized to
-// byte_len (which may or may not trigger a reallocation).  The src string must
-// not be frozen otherwise the program will assert-fail or abort().
-char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len);
-
+// The string is resized to byte_len.  The string must not be frozen.
 void upb_string_resize(upb_string *s, upb_strlen_t len);
+
+// Returns a buffer to which the caller may write.  The string is resized to
+// byte_len (which may or may not trigger a reallocation).  The string must not
+// be frozen.
+INLINE char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len) {
+  upb_string_resize(s, byte_len);
+  return s->common.ptr;
+}
 
 INLINE void upb_string_clear(upb_string *s) {
   upb_string_getrwbuf(s, 0);
@@ -352,11 +357,11 @@ typedef struct {
   upb_arraylen_t size;
 } upb_refcounted_array;
 
-typedef union upb_array {
+union upb_array {
   upb_norefcount_array norefcount;
   upb_array_common common;
   upb_refcounted_array refcounted;
-} upb_array;
+};
 
 // This type can be used either to perform read-only access on an array,
 // or to statically define a non-reference-counted static array.
@@ -373,7 +378,13 @@ typedef struct type ## _array { \
 // empty.  Caller owns one ref on it.
 upb_array *upb_array_new(void);
 
-union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f, int elem);
+INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
+                                     int elem) {
+  assert(elem < upb_array_len(a));
+  size_t type_size = upb_type_info[f->type].size;
+  union upb_value_ptr p = {._void = &a->common.elements.uint8[elem * type_size]};
+  return upb_value_read(p, f->type);
+}
 
 #if 0
 // Returns an array to which caller owns a ref, and contains the same contents
@@ -407,23 +418,35 @@ INLINE size_t upb_array_len(upb_array *a) {
 
 /* upb_msg ********************************************************************/
 
-typedef union upb_msg {
-  uint8_t data[1];
-} upb_msg;
+// Note that some inline functions for upb_msg are defined in upb_def.h since
+// they rely on the defs.
+
+struct upb_msg {
+  upb_data base;
+  uint8_t data[4];  // We allocate the appropriate amount per message.
+};
 
 // Creates a new msg of the given type.
 upb_msg *upb_msg_new(struct upb_msgdef *md);
 
-void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md);
-
 // Tests whether the given field is explicitly set, or whether it will return
 // a default.
-bool upb_msg_has(upb_msg *msg, struct upb_fielddef *f);
+INLINE bool upb_msg_has(upb_msg *msg, struct upb_fielddef *f) {
+  return msg->data[f->field_index/8] % (1 << (f->field_index % 8));
+}
+
+void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md);
 
 // Returns the current value if set, or the default value if not set, of the
-// specified field.  The mutable version will first replace the value with a
-// mutable copy if it is not already mutable.
-union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f);
+// specified field.  The caller does *not* own a ref.
+INLINE union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f) {
+  if(upb_msg_has(msg, f)) {
+    union upb_value_ptr p = {._void = &msg->data[f->byte_offset]};
+    return upb_value_read(p, f->type);
+  } else {
+    return f->default_value;
+  }
+}
 
 // Sets the given field to the given value.  The msg will take a ref on val,
 // and will drop a ref on whatever was there before.

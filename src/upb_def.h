@@ -26,7 +26,6 @@
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_
 
-#include "upb_data.h"
 #include "upb_atomic.h"
 #include "upb_table.h"
 
@@ -123,6 +122,7 @@ struct upb_fielddef {
   upb_label_t label;
   upb_field_number_t number;
   upb_string *name;
+  union upb_value default_value;
 
   // These are set only when this fielddef is part of a msgdef.
   uint32_t byte_offset;           // Where in a upb_msg to find the data.

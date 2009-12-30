@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include "upb.h"
-#include "upb_data.h"
 
 #ifdef __cplusplus
 extern "C" {

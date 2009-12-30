@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include "upb_data.h"
+#include "upb_def.h"
 
 INLINE void data_init(upb_data *d, int flags) {
   d->v = flags;
@@ -64,8 +65,7 @@ void _upb_string_free(upb_string *s)
   free(s);
 }
 
-char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len)
-{
+void upb_string_resize(upb_string *s, upb_strlen_t byte_len) {
   check_not_frozen(&s->common.base);
   if(string_get_bytesize(s) < byte_len) {
     // Need to resize.
@@ -74,7 +74,13 @@ char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len)
     string_set_bytesize(s, new_byte_size);
   }
   s->common.byte_len = byte_len;
-  return s->common.ptr;
+}
+
+upb_msg *upb_msg_new(struct upb_msgdef *md) {
+  upb_msg *msg = malloc(md->size);
+  memset(msg, 0, md->size);
+  data_init(&msg->base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
+  return msg;
 }
 
 #if 0

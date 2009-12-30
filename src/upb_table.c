@@ -5,6 +5,7 @@
  */
 
 #include "upb_table.h"
+#include "upb_data.h"
 
 #include <assert.h>
 #include <stdlib.h>

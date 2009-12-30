@@ -122,9 +122,15 @@ struct upb_tag {
 
 /* Polymorphic values of .proto types *****************************************/
 
+// INTERNAL-ONLY: never refer to these types with a tag ("union", "struct").
+// Always use the typedefs.
 union upb_string;
 union upb_array;
-union upb_msg;
+struct upb_msg;
+
+typedef union upb_string upb_string;
+typedef union upb_array upb_array;
+typedef struct upb_msg upb_msg;
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -138,7 +144,7 @@ union upb_value {
   bool _bool;
   union upb_string *str;
   union upb_array *arr;
-  union upb_msg *msg;
+  struct upb_msg *msg;
 };
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
@@ -148,12 +154,13 @@ union upb_value_ptr {
   float *_float;
   int32_t *int32;
   int64_t *int64;
+  uint8_t *uint8;
   uint32_t *uint32;
   uint64_t *uint64;
   bool *_bool;
   union upb_string **str;
   union upb_array **arr;
-  union upb_msg **msg;
+  struct upb_msg **msg;
   void *_void;
 };
 
