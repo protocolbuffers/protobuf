@@ -185,6 +185,7 @@ upb_msg *upb_msg_new(struct upb_msgdef *md) {
   upb_msg *msg = malloc(md->size);
   memset(msg, 0, md->size);
   data_init(&msg->base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
+  upb_def_ref(UPB_UPCAST(md));
   return msg;
 }
 
@@ -201,3 +202,138 @@ void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
   free(msg);
 }
 
+
+/* Parsing.  ******************************************************************/
+
+struct upb_msgparser_frame {
+  upb_msg *msg;
+  struct upb_msgdef *md;
+};
+
+struct upb_msgparser {
+  struct upb_cbparser *s;
+  bool merge;
+  struct upb_msgparser_frame stack[UPB_MAX_NESTING], *top;
+};
+
+/* Helper function that returns a pointer to where the next value for field "f"
+ * should be stored, taking into account whether f is an array that may need to
+ * be allocated or resized. */
+static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
+                                         struct upb_fielddef *f)
+{
+  union upb_value_ptr p = upb_msg_getptr(msg, f);
+  if(upb_isarray(f)) {
+    if(!upb_msg_isset(msg, f)) {
+      if(!*p.arr || !upb_mmhead_only(&((*p.arr)->mmhead))) {
+        if(*p.arr)
+          upb_array_unref(*p.arr);
+        *p.arr = upb_array_new(f);
+      }
+      upb_array_truncate(*p.arr);
+      upb_msg_set(msg, f);
+    }
+    p = upb_array_append(*p.arr);
+  }
+  return p;
+}
+
+/* Callbacks for the stream parser. */
+
+static bool value_cb(void *udata, struct upb_msgdef *msgdef,
+                     struct upb_fielddef *f, union upb_value val)
+{
+  (void)msgdef;
+  struct upb_msgparser *mp = udata;
+  struct upb_msg *msg = mp->top->msg;
+  union upb_value_ptr p = get_value_ptr(msg, f);
+  upb_msg_set(msg, f);
+  upb_value_write(p, val, f->type);
+  return true;
+}
+
+static bool str_cb(void *udata, struct upb_msgdef *msgdef,
+                   struct upb_fielddef *f, uint8_t *str, size_t avail_len,
+                   size_t total_len)
+{
+  (void)msgdef;
+  struct upb_msgparser *mp = udata;
+  struct upb_msg *msg = mp->top->msg;
+  union upb_value_ptr p = get_value_ptr(msg, f);
+  upb_msg_set(msg, f);
+  if(avail_len != total_len) abort();  /* TODO: support streaming. */
+  if(!*p.str || !upb_mmhead_only(&((*p.str)->mmhead))) {
+    if(*p.str)
+      upb_string_unref(*p.str);
+    *p.str = upb_string_new();
+  }
+  upb_string_resize(*p.str, total_len);
+  memcpy((*p.str)->ptr, str, avail_len);
+  (*p.str)->byte_len = avail_len;
+  return true;
+}
+
+static void start_cb(void *udata, struct upb_fielddef *f)
+{
+  struct upb_msgparser *mp = udata;
+  struct upb_msg *oldmsg = mp->top->msg;
+  union upb_value_ptr p = get_value_ptr(oldmsg, f);
+
+  if(upb_isarray(f) || !upb_msg_isset(oldmsg, f)) {
+    if(!*p.msg || !upb_mmhead_only(&((*p.msg)->mmhead))) {
+      if(*p.msg)
+        upb_msg_unref(*p.msg);
+      *p.msg = upb_msg_new(upb_downcast_msgdef(f->def));
+    }
+    upb_msg_clear(*p.msg);
+    upb_msg_set(oldmsg, f);
+  }
+
+  mp->top++;
+  mp->top->msg = *p.msg;
+}
+
+static void end_cb(void *udata)
+{
+  struct upb_msgparser *mp = udata;
+  mp->top--;
+}
+
+/* Externally-visible functions for the msg parser. */
+
+struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def)
+{
+  struct upb_msgparser *mp = malloc(sizeof(struct upb_msgparser));
+  mp->s = upb_cbparser_new(def, value_cb, str_cb, start_cb, end_cb);
+  return mp;
+}
+
+void upb_msgparser_reset(struct upb_msgparser *s, struct upb_msg *msg, bool byref)
+{
+  upb_cbparser_reset(s->s, s);
+  s->byref = byref;
+  s->top = s->stack;
+  s->top->msg = msg;
+}
+
+void upb_msgparser_free(struct upb_msgparser *s)
+{
+  upb_cbparser_free(s->s);
+  free(s);
+}
+
+void upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len,
+                      struct upb_status *status)
+{
+  struct upb_msgparser *mp = upb_msgparser_new(msg->def);
+  upb_msgparser_reset(mp, msg, false);
+  upb_msg_clear(msg);
+  upb_msgparser_parse(mp, buf, len, status);
+  upb_msgparser_free(mp);
+}
+
+size_t upb_msgparser_parse(struct upb_msgparser *s, upb_string *str,
+                           struct upb_status *status)
+{
+  return upb_cbparser_parse(s->s, str, status);
+}

@@ -446,7 +446,17 @@ void upb_msg_set(upb_msg *msg, struct upb_fielddef *f, union upb_value val);
 
 void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md);
 
-void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_string *data,
+/* Parsing ********************************************************************/
+
+void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_string *str,
                       struct upb_status *status);
+
+struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def);
+void upb_msgparser_free(struct upb_msgparser *mp);
+
+void upb_msgparser_reset(struct upb_msgparser *mp, upb_msg *m);
+
+size_t upb_msgparser_parse(struct upb_msgparser *mp, upb_string *str,
+                           struct upb_status *status);
 
 #endif
