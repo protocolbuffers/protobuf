@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "upb_data.h"
 #include "upb_def.h"
+#include "upb_parse.h"
 
 static uint32_t round_up_to_pow2(uint32_t v)
 {
@@ -51,6 +52,18 @@ static void check_not_frozen(upb_data *d) {
   if(upb_data_hasflag(d, UPB_DATA_FROZEN)) abort();
 }
 
+
+/* upb_string *******************************************************************/
+
+upb_string *upb_string_new() {
+  upb_string *s = malloc(sizeof(upb_refcounted_string));
+  data_init(&s->common.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
+  s->refcounted.byte_size = 0;
+  s->common.byte_len = 0;
+  s->common.ptr = NULL;
+  return s;
+}
+
 static upb_strlen_t string_get_bytesize(upb_string *s) {
   if(upb_data_hasflag(&s->common.base, UPB_DATA_REFCOUNTED)) {
     return s->refcounted.byte_size;
@@ -66,18 +79,6 @@ static void string_set_bytesize(upb_string *s, upb_strlen_t newsize) {
     s->norefcount.byte_size_and_flags &= 0x7;
     s->norefcount.byte_size_and_flags |= (newsize << 3);
   }
-}
-
-
-/* upb_string *******************************************************************/
-
-upb_string *upb_string_new() {
-  upb_string *s = malloc(sizeof(upb_refcounted_string));
-  data_init(&s->common.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
-  s->refcounted.byte_size = 0;
-  s->common.byte_len = 0;
-  s->common.ptr = NULL;
-  return s;
 }
 
 void _upb_string_free(upb_string *s)
@@ -136,11 +137,6 @@ void upb_strcat(upb_string *s, upb_string *append) {
          upb_string_getrobuf(append), append_len);
 }
 
-void upb_strcpy(upb_string *dest, upb_string *src) {
-  upb_strlen_t src_len = upb_strlen(src);
-  memcpy(upb_string_getrwbuf(dest, src_len), upb_string_getrobuf(src), src_len);
-}
-
 upb_string *upb_strslice(upb_string *s, int offset, int len) {
   upb_string *slice = upb_string_new();
   len = UPB_MIN((upb_strlen_t)len, upb_strlen(s) - (upb_strlen_t)offset);
@@ -165,6 +161,15 @@ int upb_strcmp(upb_string *s1, upb_string *s2) {
 
 /* upb_array ******************************************************************/
 
+upb_array *upb_array_new() {
+  upb_array *a = malloc(sizeof(upb_refcounted_array));
+  data_init(&a->common.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
+  a->refcounted.size = 0;
+  a->common.len = 0;
+  a->common.elements._void = NULL;
+  return a;
+}
+
 // ONLY handles refcounted arrays for the moment.
 void _upb_array_free(upb_array *a, struct upb_fielddef *f)
 {
@@ -178,8 +183,41 @@ void _upb_array_free(upb_array *a, struct upb_fielddef *f)
   free(a);
 }
 
+static upb_arraylen_t array_get_size(upb_array *a) {
+  if(upb_data_hasflag(&a->common.base, UPB_DATA_REFCOUNTED)) {
+    return a->refcounted.size;
+  } else {
+    return (a->norefcount.size_and_flags & 0xFFFFFFF8) >> 3;
+  }
+}
+
+static void array_set_size(upb_array *a, upb_arraylen_t newsize) {
+  if(upb_data_hasflag(&a->common.base, UPB_DATA_REFCOUNTED)) {
+    a->refcounted.size = newsize;
+  } else {
+    a->norefcount.size_and_flags &= 0x7;
+    a->norefcount.size_and_flags |= (newsize << 3);
+  }
+}
+
+void upb_array_resize(upb_array *a, upb_strlen_t len) {
+  check_not_frozen(&a->common.base);
+  if(array_get_size(a) < len) {
+    // Need to resize.
+    size_t new_size = round_up_to_pow2(len);
+    a->common.elements._void = realloc(a->common.elements._void, new_size);
+    array_set_size(a, new_size);
+  }
+  a->common.len = len;
+}
+
+
 
 /* upb_msg ********************************************************************/
+
+static void upb_msg_sethas(upb_msg *msg, struct upb_fielddef *f) {
+  msg->data[f->field_index/8] |= (1 << (f->field_index % 8));
+}
 
 upb_msg *upb_msg_new(struct upb_msgdef *md) {
   upb_msg *msg = malloc(md->size);
@@ -219,74 +257,75 @@ struct upb_msgparser {
 /* Helper function that returns a pointer to where the next value for field "f"
  * should be stored, taking into account whether f is an array that may need to
  * be allocated or resized. */
-static union upb_value_ptr get_value_ptr(struct upb_msg *msg,
-                                         struct upb_fielddef *f)
+static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
 {
-  union upb_value_ptr p = upb_msg_getptr(msg, f);
+  union upb_value_ptr p = _upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
-    if(!upb_msg_isset(msg, f)) {
-      if(!*p.arr || !upb_mmhead_only(&((*p.arr)->mmhead))) {
+    if(!upb_msg_has(msg, f)) {
+      if(!*p.arr || !upb_data_only(*p.data)) {
         if(*p.arr)
-          upb_array_unref(*p.arr);
-        *p.arr = upb_array_new(f);
+          upb_array_unref(*p.arr, f);
+        *p.arr = upb_array_new();
       }
       upb_array_truncate(*p.arr);
-      upb_msg_set(msg, f);
+      upb_msg_sethas(msg, f);
     }
-    p = upb_array_append(*p.arr);
+    upb_arraylen_t oldlen = upb_array_len(*p.arr);
+    upb_array_resize(*p.arr, oldlen + 1);
+    p = _upb_array_getptr(*p.arr, f, oldlen);
   }
   return p;
 }
 
-/* Callbacks for the stream parser. */
+// Callbacks for the stream parser.
+// TODO: implement these in terms of public interfaces.
 
 static bool value_cb(void *udata, struct upb_msgdef *msgdef,
                      struct upb_fielddef *f, union upb_value val)
 {
   (void)msgdef;
   struct upb_msgparser *mp = udata;
-  struct upb_msg *msg = mp->top->msg;
+  upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
-  upb_msg_set(msg, f);
+  upb_msg_sethas(msg, f);
   upb_value_write(p, val, f->type);
   return true;
 }
 
 static bool str_cb(void *udata, struct upb_msgdef *msgdef,
-                   struct upb_fielddef *f, uint8_t *str, size_t avail_len,
+                   struct upb_fielddef *f, const uint8_t *str, size_t avail_len,
                    size_t total_len)
 {
   (void)msgdef;
   struct upb_msgparser *mp = udata;
-  struct upb_msg *msg = mp->top->msg;
+  upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
-  upb_msg_set(msg, f);
+  upb_msg_sethas(msg, f);
   if(avail_len != total_len) abort();  /* TODO: support streaming. */
-  if(!*p.str || !upb_mmhead_only(&((*p.str)->mmhead))) {
+  if(!*p.str || !upb_data_only(*p.data)) {
     if(*p.str)
       upb_string_unref(*p.str);
     *p.str = upb_string_new();
   }
-  upb_string_resize(*p.str, total_len);
-  memcpy((*p.str)->ptr, str, avail_len);
-  (*p.str)->byte_len = avail_len;
+  upb_strcpylen(*p.str, str, avail_len);
   return true;
 }
 
 static void start_cb(void *udata, struct upb_fielddef *f)
 {
   struct upb_msgparser *mp = udata;
-  struct upb_msg *oldmsg = mp->top->msg;
+  upb_msg *oldmsg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
 
-  if(upb_isarray(f) || !upb_msg_isset(oldmsg, f)) {
-    if(!*p.msg || !upb_mmhead_only(&((*p.msg)->mmhead))) {
+  if(upb_isarray(f) || !upb_msg_has(oldmsg, f)) {
+    struct upb_msgdef *md = upb_downcast_msgdef(f->def);
+    if(!*p.msg || !upb_data_only(*p.data)) {
       if(*p.msg)
-        upb_msg_unref(*p.msg);
-      *p.msg = upb_msg_new(upb_downcast_msgdef(f->def));
+        upb_msg_unref(*p.msg, md);
+      *p.msg = upb_msg_new(md);
     }
-    upb_msg_clear(*p.msg);
-    upb_msg_set(oldmsg, f);
+    upb_msg_clear(*p.msg, md);
+    upb_msg_sethas(oldmsg, f);
   }
 
   mp->top++;
@@ -308,10 +347,9 @@ struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def)
   return mp;
 }
 
-void upb_msgparser_reset(struct upb_msgparser *s, struct upb_msg *msg, bool byref)
+void upb_msgparser_reset(struct upb_msgparser *s, upb_msg *msg)
 {
   upb_cbparser_reset(s->s, s);
-  s->byref = byref;
   s->top = s->stack;
   s->top->msg = msg;
 }
@@ -322,13 +360,13 @@ void upb_msgparser_free(struct upb_msgparser *s)
   free(s);
 }
 
-void upb_msg_parsestr(struct upb_msg *msg, void *buf, size_t len,
+void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_string *str,
                       struct upb_status *status)
 {
-  struct upb_msgparser *mp = upb_msgparser_new(msg->def);
-  upb_msgparser_reset(mp, msg, false);
-  upb_msg_clear(msg);
-  upb_msgparser_parse(mp, buf, len, status);
+  struct upb_msgparser *mp = upb_msgparser_new(md);
+  upb_msgparser_reset(mp, msg);
+  upb_msg_clear(msg, md);
+  upb_msgparser_parse(mp, str, status);
   upb_msgparser_free(mp);
 }
 

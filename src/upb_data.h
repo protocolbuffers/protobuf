@@ -35,7 +35,8 @@ struct upb_fielddef;
 // The "base class" of strings, arrays, and messages.  Contains a few flags and
 // possibly a reference count.  None of the functions for upb_data are public,
 // but some of the constants are.
-typedef upb_atomic_refcount_t upb_data;
+
+// typedef upb_atomic_refcount_t upb_data;
 
 // The flags in upb_data.
 typedef enum {
@@ -196,7 +197,7 @@ typedef struct {
   uint32_t byte_size;
 } upb_refcounted_string;
 
-union upb_string {
+union _upb_string {
   upb_norefcount_string norefcount;
   upb_string_common common;
   upb_refcounted_string refcounted;
@@ -265,8 +266,22 @@ INLINE bool upb_streql(upb_string *s1, upb_string *s2) {
 // Like strcmp().
 int upb_strcmp(upb_string *s1, upb_string *s2);
 
+// Like upb_strcpy, but copies from a buffer and length.
+INLINE void upb_strcpylen(upb_string *dest, const void *src, upb_strlen_t len) {
+  memcpy(upb_string_getrwbuf(dest, len), src, len);
+}
+
 // Replaces the contents of "dest" with the contents of "src".
-void upb_strcpy(upb_string *dest, upb_string *src);
+INLINE void upb_strcpy(upb_string *dest, upb_string *src) {
+  upb_strcpylen(dest, upb_string_getrobuf(src), upb_strlen(src));
+}
+
+// Like upb_strcpy, but copies from a NULL-terminated string.
+INLINE void upb_strcpyc(upb_string *dest, const char *src) {
+  // This does two passes over src, but that is necessary unless we want to
+  // repeatedly re-allocate dst, which seems worse.
+  upb_strcpylen(dest, src, strlen(src));
+}
 
 // Returns a new string whose contents are a copy of s.
 upb_string *upb_strdup(upb_string *s);
@@ -323,7 +338,7 @@ typedef struct {
   upb_arraylen_t size;
 } upb_refcounted_array;
 
-union upb_array {
+union _upb_array {
   upb_norefcount_array norefcount;
   upb_array_common common;
   upb_refcounted_array refcounted;
@@ -395,12 +410,17 @@ INLINE size_t upb_array_len(upb_array *a) {
   return a->common.len;
 }
 
+INLINE void upb_array_truncate(upb_array *a) {
+  a->common.len = 0;
+}
+
+
 /* upb_msg ********************************************************************/
 
 // Note that some inline functions for upb_msg are defined in upb_def.h since
 // they rely on the defs.
 
-struct upb_msg {
+struct _upb_msg {
   upb_data base;
   uint8_t data[4];  // We allocate the appropriate amount per message.
 };
@@ -444,7 +464,9 @@ INLINE union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f) {
 // and will drop a ref on whatever was there before.
 void upb_msg_set(upb_msg *msg, struct upb_fielddef *f, union upb_value val);
 
-void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md);
+INLINE void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md) {
+  memset(msg->data, 0, md->set_flags_bytes);
+}
 
 /* Parsing ********************************************************************/
 

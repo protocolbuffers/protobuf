@@ -18,12 +18,14 @@
 // generation, because the generated code would want to inline these functions.
 // The same applies to the functions to read .proto values below.
 
-uint8_t *upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
-                                 struct upb_status *status);
+const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
+                                       uint64_t *val,
+                                       struct upb_status *status);
 
 // Gets a varint (wire type: UPB_WIRE_TYPE_VARINT).
-INLINE uint8_t *upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
-                                   struct upb_status *status)
+INLINE const uint8_t *upb_get_v_uint64_t(const uint8_t *buf, const uint8_t *end,
+                                         uint64_t *val,
+                                         struct upb_status *status)
 {
   // We inline this common case (1-byte varints), if that fails we dispatch to
   // the full (non-inlined) version.
@@ -36,20 +38,21 @@ INLINE uint8_t *upb_get_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t *val,
 }
 
 // Gets a varint -- called when we only need 32 bits of it.
-INLINE uint8_t *upb_get_v_uint32_t(uint8_t *buf, uint8_t *end,
-                                   uint32_t *val, struct upb_status *status)
+INLINE const uint8_t *upb_get_v_uint32_t(const uint8_t *buf, const uint8_t *end,
+                                         uint32_t *val,
+                                         struct upb_status *status)
 {
   uint64_t val64;
-  uint8_t *ret = upb_get_v_uint64_t(buf, end, &val64, status);
+  const uint8_t *ret = upb_get_v_uint64_t(buf, end, &val64, status);
   *val = (uint32_t)val64;  // Discard the high bits.
   return ret;
 }
 
 // Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).
-INLINE uint8_t *upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
-                                   uint32_t *val, struct upb_status *status)
+INLINE const uint8_t *upb_get_f_uint32_t(const uint8_t *buf, const uint8_t *end,
+                                         uint32_t *val, struct upb_status *status)
 {
-  uint8_t *uint32_end = buf + sizeof(uint32_t);
+  const uint8_t *uint32_end = buf + sizeof(uint32_t);
   if(uint32_end > end) {
     status->code = UPB_STATUS_NEED_MORE_DATA;
     return end;
@@ -65,10 +68,11 @@ INLINE uint8_t *upb_get_f_uint32_t(uint8_t *buf, uint8_t *end,
 }
 
 // Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).
-INLINE uint8_t *upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
-                                   uint64_t *val, struct upb_status *status)
+INLINE const uint8_t *upb_get_f_uint64_t(const uint8_t *buf, const uint8_t *end,
+                                         uint64_t *val,
+                                         struct upb_status *status)
 {
-  uint8_t *uint64_end = buf + sizeof(uint64_t);
+  const uint8_t *uint64_end = buf + sizeof(uint64_t);
   if(uint64_end > end) {
     status->code = UPB_STATUS_NEED_MORE_DATA;
     return end;
@@ -84,10 +88,11 @@ INLINE uint8_t *upb_get_f_uint64_t(uint8_t *buf, uint8_t *end,
   return uint64_end;
 }
 
-INLINE uint8_t *upb_skip_v_uint64_t(uint8_t *buf, uint8_t *end,
-                                    struct upb_status *status)
+INLINE const uint8_t *upb_skip_v_uint64_t(const uint8_t *buf,
+                                          const uint8_t *end,
+                                          struct upb_status *status)
 {
-  uint8_t *const maxend = buf + 10;
+  const uint8_t *const maxend = buf + 10;
   uint8_t last = 0x80;
   for(; buf < (uint8_t*)end && (last & 0x80); buf++)
     last = *buf;
@@ -102,10 +107,11 @@ INLINE uint8_t *upb_skip_v_uint64_t(uint8_t *buf, uint8_t *end,
   return buf;
 }
 
-INLINE uint8_t *upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end,
-                                    struct upb_status *status)
+INLINE const uint8_t *upb_skip_f_uint32_t(const uint8_t *buf,
+                                          const uint8_t *end,
+                                          struct upb_status *status)
 {
-  uint8_t *uint32_end = buf + sizeof(uint32_t);
+  const uint8_t *uint32_end = buf + sizeof(uint32_t);
   if(uint32_end > end) {
     status->code = UPB_STATUS_NEED_MORE_DATA;
     return end;
@@ -113,10 +119,11 @@ INLINE uint8_t *upb_skip_f_uint32_t(uint8_t *buf, uint8_t *end,
   return uint32_end;
 }
 
-INLINE uint8_t *upb_skip_f_uint64_t(uint8_t *buf, uint8_t *end,
-                                    struct upb_status *status)
+INLINE const uint8_t *upb_skip_f_uint64_t(const uint8_t *buf,
+                                          const uint8_t *end,
+                                          struct upb_status *status)
 {
-  uint8_t *uint64_end = buf + sizeof(uint64_t);
+  const uint8_t *uint64_end = buf + sizeof(uint64_t);
   if(uint64_end > end) {
     status->code = UPB_STATUS_NEED_MORE_DATA;
     return end;
@@ -137,8 +144,8 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 //  // not contain the entire value UPB_STATUS_NEED_MORE_DATA is returned).
 //  // On success, a pointer will be returned to the first byte that was
 //  // not consumed.
-//  uint8_t *upb_get_INT32(uint8_t *buf, uint8_t *end, int32_t *d,
-//                         struct upb_status *status);
+//  const uint8_t *upb_get_INT32(const uint8_t *buf, const uint8_t *end,
+//                               int32_t *d, struct upb_status *status);
 //
 //  // Given an already read wire value s (source), convert it to a .proto
 //  // value and return it.
@@ -151,10 +158,10 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
   INLINE val_t upb_wvtov_ ## type(wire_t s)
 
 #define GET(type, v_or_f, wire_t, val_t, member_name) \
-  INLINE uint8_t *upb_get_ ## type(uint8_t *buf, uint8_t *end, val_t *d, \
-                                   struct upb_status *status) { \
+  INLINE const uint8_t *upb_get_ ## type(const uint8_t *buf, const uint8_t *end, \
+                                         val_t *d, struct upb_status *status) { \
     wire_t tmp = 0; \
-    uint8_t *ret = upb_get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, status); \
+    const uint8_t *ret = upb_get_ ## v_or_f ## _ ## wire_t(buf, end, &tmp, status); \
     *d = upb_wvtov_ ## type(tmp); \
     return ret; \
   }
@@ -192,11 +199,11 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef T
 
 // Parses a tag, places the result in *tag.
-INLINE uint8_t *parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
-                          struct upb_status *status)
+INLINE const uint8_t *parse_tag(const uint8_t *buf, const uint8_t *end,
+                                struct upb_tag *tag, struct upb_status *status)
 {
   uint32_t tag_int;
-  uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
+  const uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
   tag->wire_type    = (upb_wire_type_t)(tag_int & 0x07);
   tag->field_number = tag_int >> 3;
   return ret;
@@ -207,10 +214,10 @@ INLINE uint8_t *parse_tag(uint8_t *buf, uint8_t *end, struct upb_tag *tag,
  * Parses a 64-bit varint that is known to be >= 2 bytes (the inline version
  * handles 1 and 2 byte varints).
  */
-uint8_t *upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
-                                 struct upb_status *status)
+const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
+                                       uint64_t *val, struct upb_status *status)
 {
-  uint8_t *const maxend = buf + 10;
+  const uint8_t *const maxend = buf + 10;
   uint8_t last = 0x80;
   *val = 0;
   int bitpos;
@@ -231,9 +238,10 @@ uint8_t *upb_get_v_uint64_t_full(uint8_t *buf, uint8_t *end, uint64_t *val,
   return buf;
 }
 
-uint8_t *upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
-                              union upb_wire_value *wv,
-                              struct upb_status *status)
+const uint8_t *upb_parse_wire_value(uint8_t *buf, uint8_t *end,
+                                    upb_wire_type_t wt,
+                                    union upb_wire_value *wv,
+                                    struct upb_status *status)
 {
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT:
@@ -252,8 +260,9 @@ uint8_t *upb_parse_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
  * Advances buf past the current wire value (of type wt), saving the result in
  * outbuf.
  */
-static uint8_t *skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
-                                struct upb_status *status)
+static const uint8_t *skip_wire_value(const uint8_t *buf, const uint8_t *end,
+                                      upb_wire_type_t wt,
+                                      struct upb_status *status)
 {
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT:
@@ -272,8 +281,10 @@ static uint8_t *skip_wire_value(uint8_t *buf, uint8_t *end, upb_wire_type_t wt,
   }
 }
 
-static uint8_t *upb_parse_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
-                                union upb_value_ptr v, struct upb_status *status)
+static const uint8_t *upb_parse_value(const uint8_t *buf, const uint8_t *end,
+                                      upb_field_type_t ft,
+                                      union upb_value_ptr v,
+                                      struct upb_status *status)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_get_ ## t(buf, end, v.member_name, status);
@@ -349,7 +360,7 @@ void upb_cbparser_reset(struct upb_cbparser *p, void *udata)
   p->top->end_offset = 0;
 }
 
-static void *get_msgend(struct upb_cbparser *p, uint8_t *start)
+static const void *get_msgend(struct upb_cbparser *p, const uint8_t *start)
 {
   if(p->top->end_offset > 0)
     return start + (p->top->end_offset - p->completed_offset);
@@ -357,7 +368,7 @@ static void *get_msgend(struct upb_cbparser *p, uint8_t *start)
     return (void*)UINTPTR_MAX;  // group.
 }
 
-static bool isgroup(void *submsg_end)
+static bool isgroup(const void *submsg_end)
 {
   return submsg_end == (void*)UINTPTR_MAX;
 }
@@ -374,9 +385,9 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
  * Pushes a new stack frame for a submessage with the given len (which will
  * be zero if the submessage is a group).
  */
-static uint8_t *push(struct upb_cbparser *p, uint8_t *start,
-                     uint32_t submsg_len, struct upb_fielddef *f,
-                     struct upb_status *status)
+static const uint8_t *push(struct upb_cbparser *p, const uint8_t *start,
+                           uint32_t submsg_len, struct upb_fielddef *f,
+                           struct upb_status *status)
 {
   p->top++;
   if(p->top >= p->limit) {
@@ -397,7 +408,7 @@ static uint8_t *push(struct upb_cbparser *p, uint8_t *start,
  * Pops a stack frame, returning a pointer for where the next submsg should
  * end (or a pointer that is out of range for a group).
  */
-static void *pop(struct upb_cbparser *p, uint8_t *start)
+static const void *pop(struct upb_cbparser *p, const uint8_t *start)
 {
   if(p->end_cb) p->end_cb(p->udata);
   p->top--;
@@ -405,18 +416,18 @@ static void *pop(struct upb_cbparser *p, uint8_t *start)
 }
 
 
-size_t upb_cbparser_parse(struct upb_cbparser *p, void *_buf, size_t len,
+size_t upb_cbparser_parse(struct upb_cbparser *p, upb_string *str,
                           struct upb_status *status)
 {
   // buf is our current offset, moves from start to end.
-  uint8_t *buf = _buf;
-  uint8_t *const start = buf;  // ptr equivalent of p->completed_offset
-  uint8_t *end = buf + len;
+  const uint8_t *buf = (uint8_t*)upb_string_getrobuf(str);
+  const uint8_t *const start = buf;  // ptr equivalent of p->completed_offset
+  const uint8_t *const end = buf + upb_strlen(str);
 
   // When we have fully parsed a tag/value pair, we advance this.
-  uint8_t *completed = buf;
+  const uint8_t *completed = buf;
 
-  uint8_t *submsg_end = get_msgend(p, start);
+  const uint8_t *submsg_end = get_msgend(p, start);
   struct upb_msgdef *msgdef = p->top->msgdef;
   bool keep_going = true;
 
@@ -453,7 +464,7 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, void *_buf, size_t len,
       int32_t delim_len;
       buf = upb_get_INT32(buf, end, &delim_len, status);
       CHECK_STATUS();
-      uint8_t *delim_end = buf + delim_len;
+      const uint8_t *delim_end = buf + delim_len;
       if(f && f->type == UPB_TYPE(MESSAGE)) {
         submsg_end = push(p, start, delim_end - start, f, status);
         msgdef = p->top->msgdef;

@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdio.h>  // only for size_t.
 #include "descriptor_const.h"
+#include "upb_atomic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -124,13 +125,14 @@ struct upb_tag {
 
 // INTERNAL-ONLY: never refer to these types with a tag ("union", "struct").
 // Always use the typedefs.
-union upb_string;
-union upb_array;
-struct upb_msg;
+union _upb_string;
+union _upb_array;
+struct _upb_msg;
 
-typedef union upb_string upb_string;
-typedef union upb_array upb_array;
-typedef struct upb_msg upb_msg;
+typedef union _upb_string upb_string;
+typedef union _upb_array upb_array;
+typedef struct _upb_msg upb_msg;
+typedef upb_atomic_refcount_t upb_data;
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -142,9 +144,10 @@ union upb_value {
   uint32_t uint32;
   uint64_t uint64;
   bool _bool;
-  union upb_string *str;
-  union upb_array *arr;
-  struct upb_msg *msg;
+  upb_string *str;
+  upb_array *arr;
+  upb_msg *msg;
+  upb_data *data;
 };
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
@@ -158,9 +161,10 @@ union upb_value_ptr {
   uint32_t *uint32;
   uint64_t *uint64;
   bool *_bool;
-  union upb_string **str;
-  union upb_array **arr;
-  struct upb_msg **msg;
+  upb_string **str;
+  upb_array **arr;
+  upb_msg **msg;
+  upb_data **data;
   void *_void;
 };
 

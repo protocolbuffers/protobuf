@@ -40,7 +40,7 @@ typedef bool (*upb_value_cb)(void *udata, struct upb_msgdef *msgdef,
 // available at str.  If the client is streaming and the current buffer ends in
 // the middle of the string, this number could be less than total_len.
 typedef bool (*upb_str_cb)(void *udata, struct upb_msgdef *msgdef,
-                           struct upb_fielddef *f, uint8_t *str,
+                           struct upb_fielddef *f, const uint8_t *str,
                            size_t avail_len, size_t total_len);
 
 // The start and end callbacks are called when a submessage begins and ends,
@@ -80,7 +80,7 @@ void upb_cbparser_reset(struct upb_cbparser *p, void *udata);
 //
 // TODO: see if we can provide the following guarantee efficiently:
 //   retval will always be >= len. */
-size_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
+size_t upb_cbparser_parse(struct upb_cbparser *p, upb_string *str,
                           struct upb_status *status);
 
 /* Pick parser interface. ************************************************/
@@ -117,10 +117,10 @@ struct upb_pickparser *upb_pickparser_new(struct upb_msgdef *msgdef,
                                           char *fields[],
                                           upb_pp_value_cb value_cb,
                                           upb_pp_str_cb str_cb);
-void upb_pickparser_free(struct upb_cbparser *p);
+void upb_pickparser_free(struct upb_pickparser *p);
 void upb_pickparser_reset(struct upb_pickparser *p, void *udata);
-size_t upb_cbparser_parse(struct upb_cbparser *p, void *buf, size_t len,
-                          struct upb_status *status);
+size_t upb_pickparser_parse(struct upb_pickparser *p, upb_string *str,
+                            struct upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */
