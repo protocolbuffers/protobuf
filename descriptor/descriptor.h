@@ -90,6 +90,7 @@ typedef struct google_protobuf_MethodOptions
 /* The message definitions themselves. */
 
 struct google_protobuf_UninterpretedOption_NamePart {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -103,6 +104,7 @@ struct google_protobuf_UninterpretedOption_NamePart {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption_NamePart)
 
 struct google_protobuf_DescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -126,6 +128,7 @@ struct google_protobuf_DescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_DescriptorProto)
 
 struct google_protobuf_EnumDescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -141,6 +144,7 @@ struct google_protobuf_EnumDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumDescriptorProto)
 
 struct google_protobuf_UninterpretedOption {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -162,6 +166,7 @@ struct google_protobuf_UninterpretedOption {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_UninterpretedOption)
 
 struct google_protobuf_FileDescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -187,6 +192,7 @@ struct google_protobuf_FileDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FileDescriptorProto)
 
 struct google_protobuf_MethodDescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -204,6 +210,7 @@ struct google_protobuf_MethodDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_MethodDescriptorProto)
 
 struct google_protobuf_EnumValueOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -215,6 +222,7 @@ struct google_protobuf_EnumValueOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumValueOptions)
 
 struct google_protobuf_EnumValueDescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -230,6 +238,7 @@ struct google_protobuf_EnumValueDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto)
 
 struct google_protobuf_ServiceDescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -245,6 +254,7 @@ struct google_protobuf_ServiceDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_ServiceDescriptorProto)
 
 struct google_protobuf_FileDescriptorSet {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -256,6 +266,7 @@ struct google_protobuf_FileDescriptorSet {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FileDescriptorSet)
 
 struct google_protobuf_DescriptorProto_ExtensionRange {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -269,6 +280,7 @@ struct google_protobuf_DescriptorProto_ExtensionRange {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange)
 
 struct google_protobuf_FieldOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -288,6 +300,7 @@ struct google_protobuf_FieldOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldOptions)
 
 struct google_protobuf_FileOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -307,6 +320,7 @@ struct google_protobuf_FileOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FileOptions)
 
 struct google_protobuf_MessageOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -320,6 +334,7 @@ struct google_protobuf_MessageOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_MessageOptions)
 
 struct google_protobuf_EnumOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -331,6 +346,7 @@ struct google_protobuf_EnumOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_EnumOptions)
 
 struct google_protobuf_FieldDescriptorProto {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -356,6 +372,7 @@ struct google_protobuf_FieldDescriptorProto {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_FieldDescriptorProto)
 
 struct google_protobuf_ServiceOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
@@ -367,6 +384,7 @@ struct google_protobuf_ServiceOptions {
 UPB_DEFINE_MSG_ARRAY(google_protobuf_ServiceOptions)
 
 struct google_protobuf_MethodOptions {
+  upb_data base;
   union {
     uint8_t bytes[1];
     struct {
