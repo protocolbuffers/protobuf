@@ -3,7 +3,7 @@
  * It was created by the upb compiler (upbc) with the following
  * command-line:
  *
- *   ./tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
+ *   tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
  *
  * This file is a dump of 'descriptor/descriptor.proto.pb'.
  * It contains exactly the same data, but in a C structure form
@@ -355,7 +355,8 @@ static UPB_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto) google_protobuf_E
 };
 static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -372,7 +373,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -389,7 +391,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = true,
@@ -406,7 +409,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -423,7 +427,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -440,7 +445,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -457,7 +463,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -474,7 +481,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -491,7 +499,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -508,7 +517,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -525,7 +535,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -542,7 +553,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -559,7 +571,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -576,7 +589,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -593,7 +607,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -610,7 +625,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = true,
@@ -627,7 +643,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -644,7 +661,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .extension = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .field = true,
     .nested_type = false,
@@ -664,7 +682,8 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
 };
 static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_values[1] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .package = true,
     .dependency = false,
@@ -686,7 +705,8 @@ static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_v
 };
 static google_protobuf_FileDescriptorSet google_protobuf_FileDescriptorSet_values[1] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .file = true,
   }},
     .file = &google_protobuf_FileDescriptorProto_arrays[0],
@@ -694,49 +714,56 @@ static google_protobuf_FileDescriptorSet google_protobuf_FileDescriptorSet_value
 };
 static google_protobuf_DescriptorProto_ExtensionRange google_protobuf_DescriptorProto_ExtensionRange_values[7] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
     .start = 1000,
     .end = 536870912,
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .start = true,
     .end = true,
   }},
@@ -746,7 +773,8 @@ static google_protobuf_DescriptorProto_ExtensionRange google_protobuf_Descriptor
 };
 static google_protobuf_FileOptions google_protobuf_FileOptions_values[1] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .java_package = true,
     .java_outer_classname = true,
     .optimize_for = true,
@@ -762,7 +790,8 @@ static google_protobuf_FileOptions google_protobuf_FileOptions_values[1] = {
 };
 static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_values[4] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .value = true,
     .options = false,
@@ -771,7 +800,8 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[0],
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .value = true,
     .options = false,
@@ -780,7 +810,8 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[1],
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .value = true,
     .options = false,
@@ -789,7 +820,8 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .value = &google_protobuf_EnumValueDescriptorProto_arrays[2],
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .value = true,
     .options = false,
@@ -801,7 +833,8 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
 };
 static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_values[63] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -820,7 +853,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -839,7 +873,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -858,7 +893,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -877,7 +913,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -896,7 +933,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -915,7 +953,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -934,7 +973,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -953,7 +993,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -972,7 +1013,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -991,7 +1033,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1010,7 +1053,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1029,7 +1073,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1048,7 +1093,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1067,7 +1113,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1086,7 +1133,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1105,7 +1153,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1124,7 +1173,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1143,7 +1193,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1162,7 +1213,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1181,7 +1233,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1200,7 +1253,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1219,7 +1273,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1238,7 +1293,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1257,7 +1313,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1276,7 +1333,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1295,7 +1353,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1314,7 +1373,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1333,7 +1393,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1352,7 +1413,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1371,7 +1433,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1390,7 +1453,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1409,7 +1473,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1428,7 +1493,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1447,7 +1513,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1466,7 +1533,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1485,7 +1553,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1504,7 +1573,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1523,7 +1593,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1542,7 +1613,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1561,7 +1633,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1580,7 +1653,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1599,7 +1673,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = (upb_string*)&strings[45],   /* "SPEED" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1618,7 +1693,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = (upb_string*)&strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1637,7 +1713,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1656,7 +1733,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = (upb_string*)&strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1675,7 +1753,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1694,7 +1773,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1713,7 +1793,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1732,7 +1813,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = (upb_string*)&strings[82],   /* "false" */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1751,7 +1833,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1770,7 +1853,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1789,7 +1873,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1808,7 +1893,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1827,7 +1913,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1846,7 +1933,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1865,7 +1953,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1884,7 +1973,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1903,7 +1993,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1922,7 +2013,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1941,7 +2033,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1960,7 +2053,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -1979,7 +2073,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
     .default_value = 0,   /* Not set. */
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .extendee = false,
     .number = true,
@@ -2001,7 +2096,8 @@ static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto
 };
 static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescriptorProto_values[25] = {
 
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2010,7 +2106,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2019,7 +2116,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 2,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2028,7 +2126,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 3,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2037,7 +2136,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 4,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2046,7 +2146,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 5,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2055,7 +2156,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 6,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2064,7 +2166,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 7,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2073,7 +2176,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 8,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2082,7 +2186,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 9,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2091,7 +2196,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 10,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2100,7 +2206,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 11,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2109,7 +2216,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 12,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2118,7 +2226,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 13,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2127,7 +2236,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 14,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2136,7 +2246,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 15,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2145,7 +2256,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 16,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2154,7 +2266,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 17,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2163,7 +2276,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 18,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2172,7 +2286,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2181,7 +2296,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 2,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2190,7 +2306,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 3,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2199,7 +2316,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2208,7 +2326,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 2,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
@@ -2217,7 +2336,8 @@ static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescrip
     .number = 1,
     .options = 0,   /* Not set. */
   },
-  {.set_flags = {.has = {
+  {.base = {UPB_DATA_FROZEN},
+   .set_flags = {.has = {
     .name = true,
     .number = true,
     .options = false,
