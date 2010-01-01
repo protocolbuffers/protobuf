@@ -287,7 +287,7 @@ static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
   m->set_flags_bytes = div_round_up(m->num_fields, 8);
   // These are incremented in the loop.
   m->num_required_fields = 0;
-  m->size = m->set_flags_bytes;
+  m->size = m->set_flags_bytes + 4;  // 4 for the refcount.
   m->fields = malloc(sizeof(struct upb_fielddef) * num_fields);
 
   size_t max_align = 0;
@@ -300,8 +300,9 @@ static struct upb_msgdef *msgdef_new(struct upb_fielddef **fields,
     // multiple of that type's alignment.  Also, the size of the structure as
     // a whole must be a multiple of the greatest alignment of any member. */
     f->field_index = i;
-    f->byte_offset = ALIGN_UP(m->size, type_info->align);
-    m->size = f->byte_offset + type_info->size;
+    size_t offset = ALIGN_UP(m->size, type_info->align);
+    f->byte_offset = offset - 4;  // Offsets are relative to the refcount.
+    m->size = offset + type_info->size;
     max_align = UPB_MAX(max_align, type_info->align);
     if(f->label == UPB_LABEL(REQUIRED)) {
       // We currently rely on the fact that required fields are always sorted
@@ -516,7 +517,7 @@ static void insert_message(struct upb_strtable *t,
 
   int num_fields = d->set_flags.has.field ? d->field->len : 0;
   struct symtab_ent e;
-  e.e.key = fqname;  // Donating our ref to the table.
+  e.e.key = fqname;
   struct upb_fielddef **fielddefs = malloc(sizeof(*fielddefs) * num_fields);
   for (int i = 0; i < num_fields; i++) {
     google_protobuf_FieldDescriptorProto *fd = d->field->elements[i];
@@ -530,7 +531,7 @@ static void insert_message(struct upb_strtable *t,
   }
   free(fielddefs);
 
-  if(!upb_ok(status)) return;
+  if(!upb_ok(status)) goto error;
 
   upb_strtable_insert(t, &e.e);
 
@@ -542,6 +543,9 @@ static void insert_message(struct upb_strtable *t,
   if(d->set_flags.has.enum_type)
     for(unsigned int i = 0; i < d->enum_type->len; i++)
       insert_enum(t, d->enum_type->elements[i], fqname, status);
+
+error:
+  upb_string_unref(fqname);
 }
 
 static bool find_cycles(struct upb_msgdef *m, int search_depth,

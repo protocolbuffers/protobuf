@@ -41,7 +41,7 @@ static void data_unref(void *d, struct upb_fielddef *f) {
 }
 
 INLINE void data_init(upb_data *d, int flags) {
-  d->v = flags;
+  d->v = REFCOUNT_ONE | flags;
 }
 
 static void check_not_frozen(upb_data *d) {
@@ -100,7 +100,10 @@ void upb_string_resize(upb_string *s, upb_strlen_t byte_len) {
 
 upb_string *upb_string_getref(upb_string *s, int ref_flags) {
   if(_upb_data_incref(&s->common.base, ref_flags)) return s;
-  return upb_strdup(s);
+  upb_string *copy = upb_strdup(s);
+  if(ref_flags == UPB_REF_FROZEN)
+    upb_data_setflag(&copy->common.base, UPB_DATA_FROZEN);
+  return copy;
 }
 
 upb_string *upb_strreadfile(const char *filename) {
@@ -200,13 +203,18 @@ static void array_set_size(upb_array *a, upb_arraylen_t newsize) {
   }
 }
 
-void upb_array_resize(upb_array *a, upb_strlen_t len) {
+void upb_array_resize(upb_array *a, struct upb_fielddef *f, upb_strlen_t len) {
   check_not_frozen(&a->common.base);
-  if(array_get_size(a) < len) {
+  size_t type_size = upb_type_info[f->type].size;
+  upb_arraylen_t old_size = array_get_size(a);
+  if(old_size < len) {
     // Need to resize.
     size_t new_size = round_up_to_pow2(len);
-    a->common.elements._void = realloc(a->common.elements._void, new_size);
+    a->common.elements._void = realloc(a->common.elements._void, new_size * type_size);
     array_set_size(a, new_size);
+    memset(UPB_INDEX(a->common.elements._void, old_size, type_size),
+           0,
+           (new_size - old_size) * type_size);
   }
   a->common.len = len;
 }
@@ -269,9 +277,11 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
       }
       upb_array_truncate(*p.arr);
       upb_msg_sethas(msg, f);
+    } else {
+      assert(*p.arr);
     }
     upb_arraylen_t oldlen = upb_array_len(*p.arr);
-    upb_array_resize(*p.arr, oldlen + 1);
+    upb_array_resize(*p.arr, f, oldlen + 1);
     p = _upb_array_getptr(*p.arr, f, oldlen);
   }
   return p;

@@ -130,8 +130,9 @@ typedef enum {
 // Attempts to increment the reference on d with the given type of ref.  If
 // this is not possible, returns false.
 INLINE bool _upb_data_incref(upb_data *d, upb_reftype reftype) {
-  if((reftype == UPB_REF_FROZEN && !upb_data_hasflag(d, UPB_DATA_FROZEN)) ||
-     (reftype == UPB_REF_MUTABLE && upb_data_hasflag(d, UPB_DATA_FROZEN)) ||
+  bool frozen = upb_data_hasflag(d, UPB_DATA_FROZEN);
+  if((reftype == UPB_REF_FROZEN && !frozen) ||
+     (reftype == UPB_REF_MUTABLE && frozen) ||
      (upb_data_hasflag(d, UPB_DATA_HEAPALLOCATED) &&
       !upb_data_hasflag(d, UPB_DATA_REFCOUNTED))) {
     return false;
@@ -306,7 +307,7 @@ upb_string *upb_strreadfile(const char *filename);
 // must not dynamically allocate this type.
 typedef upb_string upb_static_string;
 #define UPB_STRLIT_LEN(str, len) {0 | UPB_DATA_FROZEN, len, str}
-#define UPB_STRLIT(str) {{0 | UPB_DATA_FROZEN, sizeof(str), str}}
+#define UPB_STRLIT(str) {{0 | UPB_DATA_FROZEN, sizeof(str)-1, str}}
 
 // Allows using upb_strings in printf, ie:
 //   upb_string str = UPB_STRLIT("Hello, World!\n");
@@ -359,6 +360,11 @@ typedef struct type ## _array { \
 // empty.  Caller owns one ref on it.
 upb_array *upb_array_new(void);
 
+// Returns the current number of elements in the array.
+INLINE size_t upb_array_len(upb_array *a) {
+  return a->common.len;
+}
+
 // INTERNAL-ONLY:
 // Frees the given message and releases references on members.
 void _upb_array_free(upb_array *a, struct upb_fielddef *f);
@@ -366,7 +372,8 @@ void _upb_array_free(upb_array *a, struct upb_fielddef *f);
 // INTERNAL-ONLY:
 // Returns a pointer to the given elem.
 INLINE union upb_value_ptr _upb_array_getptr(upb_array *a,
-                                             struct upb_fielddef *f, int elem) {
+                                             struct upb_fielddef *f,
+                                             upb_arraylen_t elem) {
   assert(elem < upb_array_len(a));
   size_t type_size = upb_type_info[f->type].size;
   union upb_value_ptr p = {._void = &a->common.elements.uint8[elem * type_size]};
@@ -405,11 +412,6 @@ INLINE void upb_array_append_default(upb_array *a, struct upb_fielddef *f,
                              union upb_value val);
 #endif
 
-// Returns the current number of elements in the array.
-INLINE size_t upb_array_len(upb_array *a) {
-  return a->common.len;
-}
-
 INLINE void upb_array_truncate(upb_array *a) {
   a->common.len = 0;
 }
@@ -447,7 +449,7 @@ INLINE void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md) {
 // Tests whether the given field is explicitly set, or whether it will return
 // a default.
 INLINE bool upb_msg_has(upb_msg *msg, struct upb_fielddef *f) {
-  return msg->data[f->field_index/8] % (1 << (f->field_index % 8));
+  return (msg->data[f->field_index/8] & (1 << (f->field_index % 8))) != 0;
 }
 
 // Returns the current value if set, or the default value if not set, of the

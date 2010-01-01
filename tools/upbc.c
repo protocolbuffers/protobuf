@@ -136,7 +136,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
         "Do not edit. */\n\n", stream),
   fprintf(stream, "#ifndef " UPB_STRFMT "\n", UPB_STRARG(include_guard_name));
   fprintf(stream, "#define " UPB_STRFMT "\n\n", UPB_STRARG(include_guard_name));
-  fputs("#include <upb_struct.h>\n\n", stream);
+  fputs("#include <upb_data.h>\n\n", stream);
   fputs("#ifdef __cplusplus\n", stream);
   fputs("extern \"C\" {\n", stream);
   fputs("#endif\n\n", stream);
@@ -171,8 +171,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
     upb_string *msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
     fprintf(stream, "struct " UPB_STRFMT " {\n", UPB_STRARG(msg_name));
-    fputs("  struct upb_mmhead mmhead;\n", stream);
-    fputs("  struct upb_msgdef *def;\n", stream);
+    fputs("  upb_data base;\n", stream);
     fputs("  union {\n", stream);
     fprintf(stream, "    uint8_t bytes[%" PRIu32 "];\n", m->set_flags_bytes);
     fputs("    struct {\n", stream);
@@ -214,8 +213,8 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
       } else {
         static char* c_types[] = {
           "", "double", "float", "int64_t", "uint64_t", "int32_t", "uint64_t",
-          "uint32_t", "bool", "struct upb_string*", "", "",
-          "struct upb_string*", "uint32_t", "int32_t", "int32_t", "int64_t",
+          "uint32_t", "bool", "upb_string*", "", "",
+          "upb_string*", "uint32_t", "int32_t", "int32_t", "int64_t",
           "int32_t", "int64_t"
         };
         fprintf(stream, "  %s " UPB_STRFMT ";\n",
@@ -450,10 +449,10 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
   }
   fputs("\";\n\n", stream);
 
-  fputs("static struct upb_string strings[] = {\n", stream);
+  fputs("static upb_norefcount_string strings[] = {\n", stream);
   for(int i = 0; i < size; i++) {
     struct strtable_entry *e = str_entries[i];
-    fprintf(stream, "  {.ptr = &strdata[%d], .byte_len=%d},\n", e->offset, upb_strlen(e->e.key));
+    fprintf(stream, "  UPB_STRLIT_LEN(&strdata[%d], %d),\n", e->offset, upb_strlen(e->e.key));
   }
   fputs("};\n\n", stream);
   free(str_entries);
@@ -509,8 +508,9 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
       if(upb_issubmsg(e->field)) {
         struct upb_msgdef *m = upb_downcast_msgdef(e->field->def);
         void *msgdata = val.msg;
+        fputs("  {.base = {UPB_DATA_FROZEN},\n", stream);
         /* Print set flags. */
-        fputs("  {.set_flags = {.has = {\n", stream);
+        fputs("   .set_flags = {.has = {\n", stream);
         for(upb_field_count_t j = 0; j < m->num_fields; j++) {
           struct upb_fielddef *f = &m->fields[j];
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
@@ -535,7 +535,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
             } else {
               struct strtable_entry *str_e = upb_strtable_lookup(&strings, val.str);
               assert(str_e);
-              fprintf(stream, "&strings[%d],   /* \"" UPB_STRFMT "\" */",
+              fprintf(stream, "(upb_string*)&strings[%d],   /* \"" UPB_STRFMT "\" */",
                       str_e->num, UPB_STRARG(val.str));
             }
           } else if(upb_isarray(f)) {
@@ -717,7 +717,6 @@ int main(int argc, char *argv[])
 
   int symcount;
   struct upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
-  upb_symtab_unref(s);
   write_h(defs, symcount, h_filename, cident, h_file);
   write_const_h(defs, symcount, h_filename, h_const_file);
   for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);
@@ -730,6 +729,7 @@ int main(int argc, char *argv[])
   }
   upb_msg_unref(fds_msg, s->fds_msgdef);
   upb_string_unref(descriptor);
+  upb_symtab_unref(s);
   fclose(h_file);
   fclose(h_const_file);
 
