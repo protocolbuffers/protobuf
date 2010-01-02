@@ -320,20 +320,20 @@ struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
                                             upb_strdupc(upb_type_info[f->type].ctype);
   struct typetable_entry *type_e = upb_strtable_lookup(t, type_name);
   if(type_e == NULL) {
+    upb_string *cident = upb_strdup(type_name);
+    to_cident(cident);
     struct typetable_entry new_type_e = {
-      .e = {.key = type_name}, .field = f, .cident = upb_strdup(type_name),
+      .e = {.key = type_name}, .field = f, .cident = cident,
       .values = NULL, .values_size = 0, .values_len = 0,
       .arrays = NULL, .arrays_size = 0, .arrays_len = 0
     };
-    to_cident(new_type_e.cident);
     assert(upb_strtable_lookup(t, type_name) == NULL);
     assert(upb_strtable_lookup(t, new_type_e.e.key) == NULL);
     upb_strtable_insert(t, &new_type_e.e);
     type_e = upb_strtable_lookup(t, type_name);
     assert(type_e);
-  } else {
-    upb_string_unref(type_name);
   }
+  upb_string_unref(type_name);
   return type_e;
 }
 
@@ -592,7 +592,6 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
 
   /* Free tables. */
   for(e = upb_strtable_begin(&types); e; e = upb_strtable_next(&types, &e->e)) {
-    upb_string_unref(e->e.key);
     upb_string_unref(e->cident);
     free(e->values);
     free(e->arrays);

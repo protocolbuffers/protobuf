@@ -374,14 +374,14 @@ void _upb_array_free(upb_array *a, struct upb_fielddef *f);
 INLINE union upb_value_ptr _upb_array_getptr(upb_array *a,
                                              struct upb_fielddef *f,
                                              upb_arraylen_t elem) {
-  assert(elem < upb_array_len(a));
   size_t type_size = upb_type_info[f->type].size;
   union upb_value_ptr p = {._void = &a->common.elements.uint8[elem * type_size]};
   return p;
 }
 
 INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
-                                     int elem) {
+                                     upb_arraylen_t elem) {
+  assert(elem < upb_array_len(a));
   return upb_value_read(_upb_array_getptr(a, f, elem), f->type);
 }
 

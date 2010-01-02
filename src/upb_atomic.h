@@ -59,7 +59,7 @@ INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int val) {
   return a->v == 0;
 }
 
-INLINE bool upb_atomic_fetch_and_add(upb_atomic_refcount_t *a, int val) {
+INLINE int upb_atomic_fetch_and_add(upb_atomic_refcount_t *a, int val) {
   int ret = a->v;
   a->v += val;
   return ret;

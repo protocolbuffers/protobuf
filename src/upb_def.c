@@ -216,6 +216,11 @@ static void fielddef_uninit(struct upb_fielddef *f)
   }
 }
 
+static void fielddef_free(struct upb_fielddef *f) {
+  fielddef_uninit(f);
+  free(f);
+}
+
 static void fielddef_copy(struct upb_fielddef *dst, struct upb_fielddef *src)
 {
   *dst = *src;
@@ -501,9 +506,10 @@ static void insert_enum(struct upb_strtable *t,
   if(!fqname) return;
 
   struct symtab_ent e;
-  e.e.key = fqname;  // Donating our ref to the table.
+  e.e.key = fqname;
   e.def = UPB_UPCAST(enumdef_new(ed, fqname));
   upb_strtable_insert(t, &e.e);
+  upb_string_unref(fqname);
 }
 
 static void insert_message(struct upb_strtable *t,
@@ -518,17 +524,20 @@ static void insert_message(struct upb_strtable *t,
   int num_fields = d->set_flags.has.field ? d->field->len : 0;
   struct symtab_ent e;
   e.e.key = fqname;
+
+  // Gather our list of fields, sorting if necessary.
   struct upb_fielddef **fielddefs = malloc(sizeof(*fielddefs) * num_fields);
   for (int i = 0; i < num_fields; i++) {
     google_protobuf_FieldDescriptorProto *fd = d->field->elements[i];
     fielddefs[i] = fielddef_new(fd);
   }
   if(sort) fielddef_sort(fielddefs, d->field->len);
+
+  // Create the msgdef with that list of fields.
   e.def = UPB_UPCAST(msgdef_new(fielddefs, d->field->len, fqname, status));
-  for (int i = 0; i < num_fields; i++) {
-    fielddef_uninit(fielddefs[i]);
-    free(fielddefs[i]);
-  }
+
+  // Cleanup.
+  for (int i = 0; i < num_fields; i++) fielddef_free(fielddefs[i]);
   free(fielddefs);
 
   if(!upb_ok(status)) goto error;
@@ -545,6 +554,7 @@ static void insert_message(struct upb_strtable *t,
       insert_enum(t, d->enum_type->elements[i], fqname, status);
 
 error:
+  // Free the ref we got from try_define().
   upb_string_unref(fqname);
 }
 
@@ -601,15 +611,10 @@ static void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
                   struct upb_status *status)
 {
   upb_string *pkg;
-  // Temporary hack until the static data is integrated into our
-  // memory-management scheme.
-  bool should_unref;
   if(fd->set_flags.has.package) {
-    pkg = fd->package;
-    should_unref = false;
+    pkg = upb_string_getref(fd->package, UPB_REF_FROZEN);
   } else {
     pkg = upb_string_new();
-    should_unref = true;
   }
 
   if(fd->set_flags.has.message_type)
@@ -620,7 +625,7 @@ static void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
     for(unsigned int i = 0; i < fd->enum_type->len; i++)
       insert_enum(addto, fd->enum_type->elements[i], pkg, status);
 
-  if(should_unref) upb_string_unref(pkg);
+  upb_string_unref(pkg);
 
   if(!upb_ok(status)) {
     // TODO: make sure we don't leak any memory in this case.

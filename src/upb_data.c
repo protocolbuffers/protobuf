@@ -24,19 +24,21 @@ static uint32_t round_up_to_pow2(uint32_t v)
 
 /* upb_data *******************************************************************/
 
-static void data_elem_unref(void *d, struct upb_fielddef *f) {
-  if(f->type == UPB_TYPE(MESSAGE) || f->type == UPB_TYPE(GROUP)) {
-    upb_msg_unref((upb_msg*)d, upb_downcast_msgdef(f->def));
-  } else if(f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES)) {
-    upb_string_unref((upb_string*)d);
+static void data_elem_unref(union upb_value_ptr p, struct upb_fielddef *f) {
+  if(upb_issubmsg(f)) {
+    upb_msg_unref(*p.msg, upb_downcast_msgdef(f->def));
+  } else if(upb_isstring(f)) {
+    upb_string_unref(*p.str);
+  } else {
+    assert(false);
   }
 }
 
-static void data_unref(void *d, struct upb_fielddef *f) {
+static void data_unref(union upb_value_ptr p, struct upb_fielddef *f) {
   if(upb_isarray(f)) {
-    upb_array_unref((upb_array*)d, f);
+    upb_array_unref(*p.arr, f);
   } else {
-    data_elem_unref(d, f);
+    data_elem_unref(p, f);
   }
 }
 
@@ -179,7 +181,8 @@ void _upb_array_free(upb_array *a, struct upb_fielddef *f)
   if(upb_elem_ismm(f)) {
     for(upb_arraylen_t i = 0; i < a->refcounted.size; i++) {
       union upb_value_ptr p = _upb_array_getptr(a, f, i);
-      data_elem_unref(p._void, f);
+      if(!*p.data) continue;
+      data_elem_unref(p, f);
     }
   }
   if(a->refcounted.size != 0) free(a->common.elements._void);
@@ -241,8 +244,8 @@ void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
   for(int i = 0; i < md->num_fields; i++) {
     struct upb_fielddef *f = &md->fields[i];
     union upb_value_ptr p = _upb_msg_getptr(msg, f);
-    if(!upb_field_ismm(f) || !p._void) continue;
-    data_unref(p._void, f);
+    if(!upb_field_ismm(f) || !*p.data) continue;
+    data_unref(p, f);
   }
   upb_def_unref(UPB_UPCAST(md));
   free(msg);

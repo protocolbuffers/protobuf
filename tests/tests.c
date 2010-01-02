@@ -16,8 +16,8 @@ static void test_get_v_uint64_t()
 {
 #define TEST(name, bytes, val) {\
     struct upb_status status = UPB_STATUS_INIT; \
-    uint8_t name[] = bytes; \
-    uint8_t *name ## _buf = name; \
+    const uint8_t name[] = bytes; \
+    const uint8_t *name ## _buf = name; \
     uint64_t name ## _val = 0; \
     name ## _buf = upb_get_v_uint64_t(name, name + sizeof(name) - 1, &name ## _val, &status); \
     ASSERT(upb_ok(&status)); \
@@ -80,8 +80,8 @@ static void test_get_v_uint32_t()
 {
 #define TEST(name, bytes, val) {\
     struct upb_status status = UPB_STATUS_INIT; \
-    uint8_t name[] = bytes; \
-    uint8_t *name ## _buf = name; \
+    const uint8_t name[] = bytes; \
+    const uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
     name ## _buf = upb_get_v_uint32_t(name, name + sizeof(name), &name ## _val, &status); \
     ASSERT(upb_ok(&status)); \
@@ -145,8 +145,8 @@ static void test_skip_v_uint64_t()
 {
 #define TEST(name, bytes) {\
     struct upb_status status = UPB_STATUS_INIT; \
-    uint8_t name[] = bytes; \
-    uint8_t *name ## _buf = name; \
+    const uint8_t name[] = bytes; \
+    const uint8_t *name ## _buf = name; \
     name ## _buf = upb_skip_v_uint64_t(name ## _buf, name + sizeof(name), &status); \
     ASSERT(upb_ok(&status)); \
     ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
@@ -206,8 +206,8 @@ static void test_get_f_uint32_t()
 {
 #define TEST(name, bytes, val) {\
     struct upb_status status = UPB_STATUS_INIT; \
-    uint8_t name[] = bytes; \
-    uint8_t *name ## _buf = name; \
+    const uint8_t name[] = bytes; \
+    const uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
     name ## _buf = upb_get_f_uint32_t(name ## _buf, name + sizeof(name), &name ## _val, &status); \
     ASSERT(upb_ok(&status)); \
@@ -230,7 +230,7 @@ static void test_get_f_uint32_t()
 static void test_upb_symtab() {
   struct upb_symtab *s = upb_symtab_new();
   ASSERT(s);
-  struct upb_string *descriptor = upb_strreadfile("tests/test.proto.pb");
+  upb_string *descriptor = upb_strreadfile("tests/test.proto.pb");
   if(!descriptor) {
     fprintf(stderr, "Couldn't read input file tests/test.proto.pb\n");
     exit(1);
@@ -242,7 +242,7 @@ static void test_upb_symtab() {
 
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
-  struct upb_string *symname = upb_strdupc("A");
+  upb_string *symname = upb_strdupc("A");
   struct upb_def *def = upb_symtab_lookup(s, symname);
   upb_string_unref(symname);
   ASSERT(def);
