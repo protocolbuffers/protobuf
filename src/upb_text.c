@@ -49,7 +49,7 @@ static void print_indent(struct upb_text_printer *p, FILE *stream)
 }
 
 void upb_text_printfield(struct upb_text_printer *p,
-                         upb_string *name,
+                         upb_strptr name,
                          upb_field_type_t valtype, union upb_value val,
                          FILE *stream)
 {
@@ -63,7 +63,7 @@ void upb_text_printfield(struct upb_text_printer *p,
 }
 
 void upb_text_push(struct upb_text_printer *p,
-                   upb_string *submsg_type,
+                   upb_strptr submsg_type,
                    FILE *stream)
 {
   print_indent(p, stream);

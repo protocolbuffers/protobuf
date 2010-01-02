@@ -416,7 +416,7 @@ static const void *pop(struct upb_cbparser *p, const uint8_t *start)
 }
 
 
-size_t upb_cbparser_parse(struct upb_cbparser *p, upb_string *str,
+size_t upb_cbparser_parse(struct upb_cbparser *p, upb_strptr str,
                           struct upb_status *status)
 {
   // buf is our current offset, moves from start to end.

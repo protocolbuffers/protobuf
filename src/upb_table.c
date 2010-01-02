@@ -57,19 +57,19 @@ void upb_strtable_free(struct upb_strtable *t) {
   upb_table_free(&t->t);
 }
 
-static uint32_t strtable_bucket(struct upb_strtable *t, upb_string *key)
+static uint32_t strtable_bucket(struct upb_strtable *t, upb_strptr key)
 {
   uint32_t hash = MurmurHash2(upb_string_getrobuf(key), upb_strlen(key), 0);
   return (hash & (upb_strtable_size(t)-1)) + 1;
 }
 
-void *upb_strtable_lookup(struct upb_strtable *t, upb_string *key)
+void *upb_strtable_lookup(struct upb_strtable *t, upb_strptr key)
 {
   uint32_t bucket = strtable_bucket(t, key);
   struct upb_strtable_entry *e;
   do {
     e = strent(t, bucket);
-    if(e->key && upb_streql(e->key, key)) return e;
+    if(!upb_string_isnull(e->key) && upb_streql(e->key, key)) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;
 }
@@ -149,7 +149,7 @@ static uint32_t empty_strbucket(struct upb_strtable *table)
   /* TODO: does it matter that this is biased towards the front of the table? */
   for(uint32_t i = 1; i <= upb_strtable_size(table); i++) {
     struct upb_strtable_entry *e = strent(table, i);
-    if(e->key == NULL) return i;
+    if(upb_string_isnull(e->key)) return i;
   }
   assert(false);
   return 0;
@@ -162,7 +162,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
   t->t.count++;
   uint32_t bucket = strtable_bucket(t, e->key);
   struct upb_strtable_entry *table_e = strent(t, bucket);
-  if(table_e->key != NULL) {  /* Collision. */
+  if(!upb_string_isnull(table_e->key)) {  /* Collision. */
     if(bucket == strtable_bucket(t, table_e->key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
        * place our new element and append it to this key's chain. */
@@ -179,7 +179,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
       memcpy(strent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
       struct upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
       while(1) {
-        assert(evictee_e->key != NULL);
+        assert(!upb_string_isnull(evictee_e->key));
         assert(evictee_e->next != UPB_END_OF_CHAIN);
         if(evictee_e->next == bucket) {
           evictee_e->next = empty_bucket;
@@ -232,7 +232,7 @@ void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) 
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;
-  } while(cur->key == NULL);
+  } while(upb_string_isnull(cur->key));
   return cur;
 }
 

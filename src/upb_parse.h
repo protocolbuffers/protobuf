@@ -80,7 +80,7 @@ void upb_cbparser_reset(struct upb_cbparser *p, void *udata);
 //
 // TODO: see if we can provide the following guarantee efficiently:
 //   retval will always be >= len. */
-size_t upb_cbparser_parse(struct upb_cbparser *p, upb_string *str,
+size_t upb_cbparser_parse(struct upb_cbparser *p, upb_strptr str,
                           struct upb_status *status);
 
 /* Pick parser interface. ************************************************/
@@ -119,7 +119,7 @@ struct upb_pickparser *upb_pickparser_new(struct upb_msgdef *msgdef,
                                           upb_pp_str_cb str_cb);
 void upb_pickparser_free(struct upb_pickparser *p);
 void upb_pickparser_reset(struct upb_pickparser *p, void *udata);
-size_t upb_pickparser_parse(struct upb_pickparser *p, upb_string *str,
+size_t upb_pickparser_parse(struct upb_pickparser *p, upb_strptr str,
                             struct upb_status *status);
 
 #ifdef __cplusplus

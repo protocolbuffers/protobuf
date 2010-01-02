@@ -165,88 +165,70 @@ INLINE bool _upb_data_unref(upb_data *d) {
 
 /* upb_string *****************************************************************/
 
-typedef uint32_t upb_strlen_t;
-
-// We have several different representations for string, depending on whether
-// it has a refcount (and likely in the future, depending on whether it is a
-// slice of another string).  We could just have one representation with
-// members that are sometimes unused, but this is wasteful in memory.  The
-// flags that are always part of the first word tell us which representation
-// to use.
-//
-// upb_string_common is the members that are common to all representations.
-typedef struct {
-  upb_data base;
-  upb_strlen_t byte_len;
-  // We expect the data to be 8-bit clean (uint8_t), but char* is such an
-  // ingrained convention that we follow it.
-  char *ptr;
-} upb_string_common;
-
-// Used for a string without a refcount.
-typedef struct {
-  uint32_t byte_size_and_flags;
-  upb_strlen_t byte_len;
-  char *ptr;
-} upb_norefcount_string;
-
-// Used for a string with a refcount.
-typedef struct {
-  upb_data base;
-  upb_strlen_t byte_len;
-  char *ptr;
-  uint32_t byte_size;
-} upb_refcounted_string;
-
-union _upb_string {
-  upb_norefcount_string norefcount;
-  upb_string_common common;
-  upb_refcounted_string refcounted;
-};
-
 // Returns a newly constructed, refcounted string which starts out empty.
 // Caller owns one ref on it.  The returned string will not be frozen.
-upb_string *upb_string_new(void);
+upb_strptr upb_string_new(void);
 
 // INTERNAL-ONLY:
 // Frees the given string, alone with any memory the string owned.
-void _upb_string_free(upb_string *s);
+void _upb_string_free(upb_strptr s);
 
 // Returns a string to which caller owns a ref, and contains the same contents
 // as src.  The returned value may be a copy of src, if the requested flags
 // were incompatible with src's.
-upb_string *upb_string_getref(upb_string *s, int ref_flags);
+upb_strptr upb_string_getref(upb_strptr s, int ref_flags);
+
+#define UPB_STRING_NULL_INITIALIZER {NULL}
+static const upb_strptr UPB_STRING_NULL = UPB_STRING_NULL_INITIALIZER;
+INLINE bool upb_string_isnull(upb_strptr s) {
+  return s.base == NULL;
+}
 
 // The caller releases a ref on src, which it must previously have owned a ref
 // on.
-INLINE void upb_string_unref(upb_string *s) {
-  if(_upb_data_unref(&s->common.base)) _upb_string_free(s);
+INLINE void upb_string_unref(upb_strptr s) {
+  if(_upb_data_unref(s.base)) _upb_string_free(s);
 }
 
 // The string is resized to byte_len.  The string must not be frozen.
-void upb_string_resize(upb_string *s, upb_strlen_t len);
+void upb_string_resize(upb_strptr s, upb_strlen_t len);
 
 // Returns a buffer to which the caller may write.  The string is resized to
 // byte_len (which may or may not trigger a reallocation).  The string must not
 // be frozen.
-INLINE char *upb_string_getrwbuf(upb_string *s, upb_strlen_t byte_len) {
+INLINE char *upb_string_getrwbuf(upb_strptr s, upb_strlen_t byte_len) {
   upb_string_resize(s, byte_len);
-  return s->common.ptr;
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED))
+    return s.refcounted->ptr;
+  else
+    return s.norefcount->ptr;
 }
 
-INLINE void upb_string_clear(upb_string *s) {
+INLINE void upb_string_clear(upb_strptr s) {
   upb_string_getrwbuf(s, 0);
+}
+
+// INTERNAL-ONLY:
+// Gets/sets the pointer.
+INLINE char *_upb_string_getptr(upb_strptr s) {
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED))
+    return s.refcounted->ptr;
+  else
+    return s.norefcount->ptr;
 }
 
 // Returns a buffer that the caller may use to read the current contents of
 // the string.  The number of bytes available is upb_strlen(s).
-INLINE const char *upb_string_getrobuf(upb_string *s) {
-  return s->common.ptr;
+INLINE const char *upb_string_getrobuf(upb_strptr s) {
+  return _upb_string_getptr(s);
 }
 
 // Returns the current length of the string.
-INLINE upb_strlen_t upb_strlen(upb_string *s) {
-  return s->common.byte_len;
+INLINE upb_strlen_t upb_strlen(upb_strptr s) {
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED))
+    return s.refcounted->byte_len;
+  else
+    return s.norefcount->byte_len;
 }
 
 /* upb_string library functions ***********************************************/
@@ -255,7 +237,7 @@ INLINE upb_strlen_t upb_strlen(upb_string *s) {
 // overflow.  These only use the public upb_string interface.
 
 // More efficient than upb_strcmp if all you need is to test equality.
-INLINE bool upb_streql(upb_string *s1, upb_string *s2) {
+INLINE bool upb_streql(upb_strptr s1, upb_strptr s2) {
   upb_strlen_t len = upb_strlen(s1);
   if(len != upb_strlen(s2)) {
     return false;
@@ -265,54 +247,65 @@ INLINE bool upb_streql(upb_string *s1, upb_string *s2) {
 }
 
 // Like strcmp().
-int upb_strcmp(upb_string *s1, upb_string *s2);
+int upb_strcmp(upb_strptr s1, upb_strptr s2);
 
 // Like upb_strcpy, but copies from a buffer and length.
-INLINE void upb_strcpylen(upb_string *dest, const void *src, upb_strlen_t len) {
+INLINE void upb_strcpylen(upb_strptr dest, const void *src, upb_strlen_t len) {
   memcpy(upb_string_getrwbuf(dest, len), src, len);
 }
 
 // Replaces the contents of "dest" with the contents of "src".
-INLINE void upb_strcpy(upb_string *dest, upb_string *src) {
+INLINE void upb_strcpy(upb_strptr dest, upb_strptr src) {
   upb_strcpylen(dest, upb_string_getrobuf(src), upb_strlen(src));
 }
 
 // Like upb_strcpy, but copies from a NULL-terminated string.
-INLINE void upb_strcpyc(upb_string *dest, const char *src) {
+INLINE void upb_strcpyc(upb_strptr dest, const char *src) {
   // This does two passes over src, but that is necessary unless we want to
   // repeatedly re-allocate dst, which seems worse.
   upb_strcpylen(dest, src, strlen(src));
 }
 
 // Returns a new string whose contents are a copy of s.
-upb_string *upb_strdup(upb_string *s);
+upb_strptr upb_strdup(upb_strptr s);
 
 // Like upb_strdup(), but duplicates a C NULL-terminated string.
-upb_string *upb_strdupc(const char *src);
+upb_strptr upb_strdupc(const char *src);
 
 // Appends 'append' to 's' in-place, resizing s if necessary.
-void upb_strcat(upb_string *s, upb_string *append);
+void upb_strcat(upb_strptr s, upb_strptr append);
 
 // Returns a string that is a substring of the given string.  Currently this
 // returns a copy, but in the future this may return an object that references
 // the original string data instead of copying it.  Both now and in the future,
 // the caller owns a ref on whatever is returned.
-upb_string *upb_strslice(upb_string *s, int offset, int len);
+upb_strptr upb_strslice(upb_strptr s, int offset, int len);
 
 // Reads an entire file into a newly-allocated string (caller owns one ref).
-upb_string *upb_strreadfile(const char *filename);
+upb_strptr upb_strreadfile(const char *filename);
 
 // Typedef for a read-only string that is allocated statically or on the stack.
 // Initialize with the given macro, which must resolve to a const char*.  You
-// must not dynamically allocate this type.
-typedef upb_string upb_static_string;
-#define UPB_STRLIT_LEN(str, len) {0 | UPB_DATA_FROZEN, len, str}
-#define UPB_STRLIT(str) {{0 | UPB_DATA_FROZEN, sizeof(str)-1, str}}
+// must not dynamically allocate this type.  Example usage:
+//
+//   upb_static_string mystr = UPB_STATIC_STRING_INIT("biscuits");
+//   upb_strptr mystr_ptr = UPB_STATIC_STRING_PTR_INIT(mystr);
+//
+// If C99 compund literals are available, the much nicer UPB_STRLIT macro is
+// available instead:
+//
+//   upb_strtr mystr_ptr = UPB_STRLIT("biscuits");
+//
+typedef upb_norefcount_string upb_static_string;
+#define UPB_STATIC_STRING_INIT_LEN(str, len) {0 | UPB_DATA_FROZEN, len, str}
+#define UPB_STATIC_STRING_INIT(str) UPB_STATIC_STRING_INIT_LEN(str, sizeof(str)-1)
+#define UPB_STATIC_STRING_PTR_INIT(static_string) {&static_string}
+#define UPB_STRLIT(str) (upb_strptr){&(upb_static_string)UPB_STATIC_STRING_INIT(str)}
 
 // Allows using upb_strings in printf, ie:
-//   upb_string str = UPB_STRLIT("Hello, World!\n");
+//   upb_strptr str = UPB_STRLIT("Hello, World!\n");
 //   printf("String is: " UPB_STRFMT, UPB_STRARG(str)); */
-#define UPB_STRARG(str) (str)->common.byte_len, (str)->common.ptr
+#define UPB_STRARG(str) upb_strlen(str), upb_string_getrobuf(str)
 #define UPB_STRFMT "%.*s"
 
 /* upb_array ******************************************************************/
@@ -472,7 +465,7 @@ INLINE void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md) {
 
 /* Parsing ********************************************************************/
 
-void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_string *str,
+void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
                       struct upb_status *status);
 
 struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def);
@@ -480,7 +473,7 @@ void upb_msgparser_free(struct upb_msgparser *mp);
 
 void upb_msgparser_reset(struct upb_msgparser *mp, upb_msg *m);
 
-size_t upb_msgparser_parse(struct upb_msgparser *mp, upb_string *str,
+size_t upb_msgparser_parse(struct upb_msgparser *mp, upb_strptr str,
                            struct upb_status *status);
 
 #endif

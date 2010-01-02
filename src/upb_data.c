@@ -57,65 +57,81 @@ static void check_not_frozen(upb_data *d) {
 
 /* upb_string *******************************************************************/
 
-upb_string *upb_string_new() {
-  upb_string *s = malloc(sizeof(upb_refcounted_string));
-  data_init(&s->common.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
-  s->refcounted.byte_size = 0;
-  s->common.byte_len = 0;
-  s->common.ptr = NULL;
+static char *_upb_string_setptr(upb_strptr s, char *ptr) {
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED))
+    return s.refcounted->ptr = ptr;
+  else
+    return s.norefcount->ptr = ptr;
+}
+
+static void _upb_string_set_bytelen(upb_strptr s, upb_strlen_t newlen) {
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED)) {
+    s.refcounted->byte_len = newlen;
+  } else {
+    s.norefcount->byte_len = newlen;
+  }
+}
+
+upb_strptr upb_string_new() {
+  upb_strptr s;
+  s.refcounted = malloc(sizeof(upb_refcounted_string));
+  data_init(s.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
+  s.refcounted->byte_size = 0;
+  s.refcounted->byte_len = 0;
+  s.refcounted->ptr = NULL;
   return s;
 }
 
-static upb_strlen_t string_get_bytesize(upb_string *s) {
-  if(upb_data_hasflag(&s->common.base, UPB_DATA_REFCOUNTED)) {
-    return s->refcounted.byte_size;
+static upb_strlen_t string_get_bytesize(upb_strptr s) {
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED)) {
+    return s.refcounted->byte_size;
   } else {
-    return (s->norefcount.byte_size_and_flags & 0xFFFFFFF8) >> 3;
+    return (s.norefcount->byte_size_and_flags & 0xFFFFFFF8) >> 3;
   }
 }
 
-static void string_set_bytesize(upb_string *s, upb_strlen_t newsize) {
-  if(upb_data_hasflag(&s->common.base, UPB_DATA_REFCOUNTED)) {
-    s->refcounted.byte_size = newsize;
+static void string_set_bytesize(upb_strptr s, upb_strlen_t newsize) {
+  if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED)) {
+    s.refcounted->byte_size = newsize;
   } else {
-    s->norefcount.byte_size_and_flags &= 0x7;
-    s->norefcount.byte_size_and_flags |= (newsize << 3);
+    s.norefcount->byte_size_and_flags &= 0x7;
+    s.norefcount->byte_size_and_flags |= (newsize << 3);
   }
 }
 
-void _upb_string_free(upb_string *s)
+void _upb_string_free(upb_strptr s)
 {
-  if(string_get_bytesize(s) != 0) free(s->common.ptr);
-  free(s);
+  if(string_get_bytesize(s) != 0) free((void*)upb_string_getrobuf(s));
+  free(s.base);
 }
 
-void upb_string_resize(upb_string *s, upb_strlen_t byte_len) {
-  check_not_frozen(&s->common.base);
+void upb_string_resize(upb_strptr s, upb_strlen_t byte_len) {
+  check_not_frozen(s.base);
   if(string_get_bytesize(s) < byte_len) {
     // Need to resize.
     size_t new_byte_size = round_up_to_pow2(byte_len);
-    s->common.ptr = realloc(s->common.ptr, new_byte_size);
+    _upb_string_setptr(s, realloc(_upb_string_getptr(s), new_byte_size));
     string_set_bytesize(s, new_byte_size);
   }
-  s->common.byte_len = byte_len;
+  _upb_string_set_bytelen(s, byte_len);
 }
 
-upb_string *upb_string_getref(upb_string *s, int ref_flags) {
-  if(_upb_data_incref(&s->common.base, ref_flags)) return s;
-  upb_string *copy = upb_strdup(s);
+upb_strptr upb_string_getref(upb_strptr s, int ref_flags) {
+  if(_upb_data_incref(s.base, ref_flags)) return s;
+  upb_strptr copy = upb_strdup(s);
   if(ref_flags == UPB_REF_FROZEN)
-    upb_data_setflag(&copy->common.base, UPB_DATA_FROZEN);
+    upb_data_setflag(copy.base, UPB_DATA_FROZEN);
   return copy;
 }
 
-upb_string *upb_strreadfile(const char *filename) {
+upb_strptr upb_strreadfile(const char *filename) {
   FILE *f = fopen(filename, "rb");
-  if(!f) return false;
+  if(!f) return UPB_STRING_NULL;
   if(fseek(f, 0, SEEK_END) != 0) goto error;
   long size = ftell(f);
   if(size < 0) goto error;
   if(fseek(f, 0, SEEK_SET) != 0) goto error;
-  upb_string *s = upb_string_new();
+  upb_strptr s = upb_string_new();
   char *buf = upb_string_getrwbuf(s, size);
   if(fread(buf, size, 1, f) != 1) goto error;
   fclose(f);
@@ -123,18 +139,18 @@ upb_string *upb_strreadfile(const char *filename) {
 
 error:
   fclose(f);
-  return NULL;
+  return UPB_STRING_NULL;
 }
 
-upb_string *upb_strdupc(const char *src) {
-  upb_string *copy = upb_string_new();
+upb_strptr upb_strdupc(const char *src) {
+  upb_strptr copy = upb_string_new();
   upb_strlen_t len = strlen(src);
   char *buf = upb_string_getrwbuf(copy, len);
   memcpy(buf, src, len);
   return copy;
 }
 
-void upb_strcat(upb_string *s, upb_string *append) {
+void upb_strcat(upb_strptr s, upb_strptr append) {
   upb_strlen_t s_len = upb_strlen(s);
   upb_strlen_t append_len = upb_strlen(append);
   upb_strlen_t newlen = s_len + append_len;
@@ -142,20 +158,20 @@ void upb_strcat(upb_string *s, upb_string *append) {
          upb_string_getrobuf(append), append_len);
 }
 
-upb_string *upb_strslice(upb_string *s, int offset, int len) {
-  upb_string *slice = upb_string_new();
+upb_strptr upb_strslice(upb_strptr s, int offset, int len) {
+  upb_strptr slice = upb_string_new();
   len = UPB_MIN((upb_strlen_t)len, upb_strlen(s) - (upb_strlen_t)offset);
   memcpy(upb_string_getrwbuf(slice, len), upb_string_getrobuf(s) + offset, len);
   return slice;
 }
 
-upb_string *upb_strdup(upb_string *s) {
-  upb_string *copy = upb_string_new();
+upb_strptr upb_strdup(upb_strptr s) {
+  upb_strptr copy = upb_string_new();
   upb_strcpy(copy, s);
   return copy;
 }
 
-int upb_strcmp(upb_string *s1, upb_string *s2) {
+int upb_strcmp(upb_strptr s1, upb_strptr s2) {
   upb_strlen_t common_length = UPB_MIN(upb_strlen(s1), upb_strlen(s2));
   int common_diff = memcmp(upb_string_getrobuf(s1), upb_string_getrobuf(s2),
                            common_length);
@@ -315,8 +331,8 @@ static bool str_cb(void *udata, struct upb_msgdef *msgdef,
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_sethas(msg, f);
   if(avail_len != total_len) abort();  /* TODO: support streaming. */
-  if(!*p.str || !upb_data_only(*p.data)) {
-    if(*p.str)
+  if(upb_string_isnull(*p.str) || !upb_data_only(*p.data)) {
+    if(!upb_string_isnull(*p.str))
       upb_string_unref(*p.str);
     *p.str = upb_string_new();
   }
@@ -373,7 +389,7 @@ void upb_msgparser_free(struct upb_msgparser *s)
   free(s);
 }
 
-void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_string *str,
+void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
                       struct upb_status *status)
 {
   struct upb_msgparser *mp = upb_msgparser_new(md);
@@ -383,7 +399,7 @@ void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_string *str,
   upb_msgparser_free(mp);
 }
 
-size_t upb_msgparser_parse(struct upb_msgparser *s, upb_string *str,
+size_t upb_msgparser_parse(struct upb_msgparser *s, upb_strptr str,
                            struct upb_status *status)
 {
   return upb_cbparser_parse(s->s, str, status);

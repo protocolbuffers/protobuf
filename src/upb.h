@@ -125,14 +125,49 @@ struct upb_tag {
 
 // INTERNAL-ONLY: never refer to these types with a tag ("union", "struct").
 // Always use the typedefs.
-union _upb_string;
 union _upb_array;
 struct _upb_msg;
 
-typedef union _upb_string upb_string;
 typedef union _upb_array upb_array;
 typedef struct _upb_msg upb_msg;
 typedef upb_atomic_refcount_t upb_data;
+
+typedef uint32_t upb_strlen_t;
+
+// We have several different representations for string, depending on whether
+// it has a refcount (and likely in the future, depending on whether it is a
+// slice of another string).  We could just have one representation with
+// members that are sometimes unused, but this is wasteful in memory.  The
+// flags that are always part of the first word tell us which representation
+// to use.
+//
+// In a way, this is like inheritance but instead of using a virtual pointer,
+// we do switch/case in every "virtual" method.  This may sound expensive but
+// in many cases the different cases compile to exactly the same code, so there
+// is no branch.
+
+typedef struct {
+  uint32_t byte_size_and_flags;
+  upb_strlen_t byte_len;
+  // We expect the data to be 8-bit clean (uint8_t), but char* is such an
+  // ingrained convention that we follow it.
+  char *ptr;
+} upb_norefcount_string;
+
+// Used for a string with a refcount.
+typedef struct {
+  upb_data base;
+  upb_strlen_t byte_len;
+  char *ptr;
+  uint32_t byte_size;
+} upb_refcounted_string;
+
+typedef union {
+  // Must be first, for the UPB_STATIC_STRING_PTR_INIT() macro.
+  upb_norefcount_string *norefcount;
+  upb_data *base;
+  upb_refcounted_string *refcounted;
+} upb_strptr;
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -144,7 +179,7 @@ union upb_value {
   uint32_t uint32;
   uint64_t uint64;
   bool _bool;
-  upb_string *str;
+  upb_strptr str;
   upb_array *arr;
   upb_msg *msg;
   upb_data *data;
@@ -161,7 +196,7 @@ union upb_value_ptr {
   uint32_t *uint32;
   uint64_t *uint64;
   bool *_bool;
-  upb_string **str;
+  upb_strptr *str;
   upb_array **arr;
   upb_msg **msg;
   upb_data **data;

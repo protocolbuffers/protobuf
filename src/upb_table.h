@@ -38,7 +38,7 @@ struct upb_inttable_entry {
 // performance by letting us compare hashes before comparing lengths or the
 // strings themselves.
 struct upb_strtable_entry {
-  upb_string *key;         // We own a frozen ref.
+  upb_strptr key;          // We own a frozen ref.
   uint32_t next;           // Internal chaining.
 };
 
@@ -116,7 +116,7 @@ INLINE void *upb_inttable_lookup(struct upb_inttable *t, uint32_t key) {
   return upb_inttable_fast_lookup(t, key, t->t.entry_size);
 }
 
-void *upb_strtable_lookup(struct upb_strtable *t, upb_string *key);
+void *upb_strtable_lookup(struct upb_strtable *t, upb_strptr key);
 
 /* Provides iteration over the table.  The order in which the entries are
  * returned is undefined.  Insertions invalidate iterators.  The _next
