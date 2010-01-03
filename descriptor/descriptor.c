@@ -41,7 +41,7 @@ static char strdata[] =
   "dpositive_int_valueservicestartstring_valuetypetype_nameuninterpreted_optionv"
   "alue";
 
-static upb_norefcount_string strings[] = {
+static upb_static_string strings[] = {
   UPB_STATIC_STRING_INIT_LEN(&strdata[0], 32),
   UPB_STATIC_STRING_INIT_LEN(&strdata[32], 47),
   UPB_STATIC_STRING_INIT_LEN(&strdata[79], 36),

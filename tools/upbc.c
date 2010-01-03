@@ -437,7 +437,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
   }
   fputs("\";\n\n", stream);
 
-  fputs("static upb_norefcount_string strings[] = {\n", stream);
+  fputs("static upb_static_string strings[] = {\n", stream);
   for(int i = 0; i < size; i++) {
     struct strtable_entry *e = str_entries[i];
     fprintf(stream, "  UPB_STATIC_STRING_INIT_LEN(&strdata[%d], %d),\n", e->offset, upb_strlen(e->e.key));

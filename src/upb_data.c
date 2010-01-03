@@ -74,7 +74,7 @@ static void _upb_string_set_bytelen(upb_strptr s, upb_strlen_t newlen) {
 
 upb_strptr upb_string_new() {
   upb_strptr s;
-  s.refcounted = malloc(sizeof(upb_refcounted_string));
+  s.refcounted = malloc(sizeof(struct upb_refcounted_string));
   data_init(s.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
   s.refcounted->byte_size = 0;
   s.refcounted->byte_len = 0;

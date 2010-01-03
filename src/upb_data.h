@@ -165,6 +165,35 @@ INLINE bool _upb_data_unref(upb_data *d) {
 
 /* upb_string *****************************************************************/
 
+// We have several different representations for string, depending on whether
+// it has a refcount (and likely in the future, depending on whether it is a
+// slice of another string).  We could just have one representation with
+// members that are sometimes unused, but this is wasteful in memory.  The
+// flags that are always part of the first word tell us which representation
+// to use.
+//
+// In a way, this is like inheritance but instead of using a virtual pointer,
+// we do switch/case in every "virtual" method.  This may sound expensive but
+// in many cases the different cases compile to exactly the same code, so there
+// is no branch.
+
+struct upb_norefcount_string {
+  uint32_t byte_size_and_flags;
+  upb_strlen_t byte_len;
+  // We expect the data to be 8-bit clean (uint8_t), but char* is such an
+  // ingrained convention that we follow it.
+  char *ptr;
+};
+
+// Used for a string with a refcount.
+struct upb_refcounted_string {
+  upb_data base;
+  upb_strlen_t byte_len;
+  char *ptr;
+  uint32_t byte_size;
+};
+
+
 // Returns a newly constructed, refcounted string which starts out empty.
 // Caller owns one ref on it.  The returned string will not be frozen.
 upb_strptr upb_string_new(void);
@@ -296,7 +325,7 @@ upb_strptr upb_strreadfile(const char *filename);
 //
 //   upb_strtr mystr_ptr = UPB_STRLIT("biscuits");
 //
-typedef upb_norefcount_string upb_static_string;
+typedef struct upb_norefcount_string upb_static_string;
 #define UPB_STATIC_STRING_INIT_LEN(str, len) {0 | UPB_DATA_FROZEN, len, str}
 #define UPB_STATIC_STRING_INIT(str) UPB_STATIC_STRING_INIT_LEN(str, sizeof(str)-1)
 #define UPB_STATIC_STRING_PTR_INIT(static_string) {&static_string}
