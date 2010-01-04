@@ -22,6 +22,11 @@
     any language.  See src/google/protobuf/compiler/plugin.proto.
     **WARNING**:  Plugins are experimental.  The interface may change in a
     future version.
+  * If the output location ends in .zip or .jar, protoc will write its output
+    to a zip/jar archive instead of a directory.  For example:
+      protoc --java_out=myproto_srcs.jar --python_out=myproto.zip myproto.proto
+    Currently the archive contents are not compressed, though this could change
+    in the future.
   * inf, -inf, and nan can now be used as default values for float and double
     fields.
 
