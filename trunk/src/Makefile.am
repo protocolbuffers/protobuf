@@ -31,7 +31,8 @@ nobase_dist_proto_DATA = google/protobuf/descriptor.proto \
 clean-local:
 	rm -f *.loT
 
-CLEANFILES = $(protoc_outputs) unittest_proto_middleman
+CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
+             testzip.jar testzip.list testzip.proto testzip.zip
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -278,7 +279,8 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/testing/file.cc                              \
   google/protobuf/testing/file.h
 
-check_PROGRAMS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
+check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
+                 protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       $(top_builddir)/gtest/lib/libgtest.la       \
                       $(top_builddir)/gtest/lib/libgtest_main.la
@@ -362,4 +364,5 @@ zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
 zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
-TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test $(GZTESTS)
+TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
+        google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)

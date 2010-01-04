@@ -227,6 +227,7 @@ class CommandLineInterface::MemoryOutputDirectory : public OutputDirectory {
 
   bool WriteAllToDisk(const string& prefix);
   bool WriteAllToZip(const string& filename);
+  void AddJarManifest();
 
   // implements OutputDirectory --------------------------------------
   io::ZeroCopyOutputStream* Open(const string& filename);
@@ -391,6 +392,16 @@ bool CommandLineInterface::MemoryOutputDirectory::WriteAllToZip(
   }
 
   return true;
+}
+
+void CommandLineInterface::MemoryOutputDirectory::AddJarManifest() {
+  string** map_slot = &files_["META-INF/MANIFEST.MF"];
+  if (*map_slot == NULL) {
+    *map_slot = new string(
+        "Manifest-Version: 1.0\n"
+        "Created-By: 1.6.0 (protoc)\n"
+        "\n");
+  }
 }
 
 io::ZeroCopyOutputStream* CommandLineInterface::MemoryOutputDirectory::Open(
@@ -594,11 +605,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   if (mode_ == MODE_COMPILE) {
     for (int i = 0; i < output_directives_.size(); i++) {
       string output_location = output_directives_[i].output_location;
-      cout << "location: " << output_location << endl;
       if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar") &&
-          !HasSuffixString(output_location, ".war") &&
-          !HasSuffixString(output_location, ".par")) {
+          !HasSuffixString(output_location, ".jar")) {
         AddTrailingSlash(&output_location);
       }
       MemoryOutputDirectory** map_slot = &output_directories_[output_location];
@@ -624,6 +632,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         return 1;
       }
     } else {
+      if (HasSuffixString(location, ".jar")) {
+        directory->AddJarManifest();
+      }
+
       if (!directory->WriteAllToZip(location)) {
         return 1;
       }

@@ -86,7 +86,6 @@ static const uint32 kCRC32Table[256] = {
   0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-// XXX this appears to be broken, but unzip -t accepts it anyway?  wtff?
 static uint32 ComputeCRC32(const string &buf) {
   uint32 x = ~0U;
   for (int i = 0; i < buf.size(); ++i) {
@@ -111,9 +110,9 @@ bool ZipWriter::Write(const string& filename, const string& contents) {
   FileInfo info;
 
   info.name = filename;
-  uint16 filename_size = filename.size();  // XXX check conversion
-  info.offset = raw_output_->ByteCount();  // XXX check conversion
-  info.size = contents.size();  // XXX check conversion
+  uint16 filename_size = filename.size();
+  info.offset = raw_output_->ByteCount();
+  info.size = contents.size();
   info.crc32 = ComputeCRC32(contents);
 
   files_.push_back(info);
@@ -138,14 +137,14 @@ bool ZipWriter::Write(const string& filename, const string& contents) {
 }
 
 bool ZipWriter::WriteDirectory() {
-  uint16 num_entries = files_.size();  // XXX check conversion
-  uint32 dir_ofs = raw_output_->ByteCount();  // XXX check conversion
+  uint16 num_entries = files_.size();
+  uint32 dir_ofs = raw_output_->ByteCount();
 
   // write central directory
   io::CodedOutputStream output(raw_output_);
   for (int i = 0; i < num_entries; ++i) {
     const string &filename = files_[i].name;
-    uint16 filename_size = filename.size();  // XXX check conversion
+    uint16 filename_size = filename.size();
     uint32 crc32 = files_[i].crc32;
     uint32 size = files_[i].size;
     uint32 offset = files_[i].offset;
@@ -169,7 +168,7 @@ bool ZipWriter::WriteDirectory() {
     output.WriteLittleEndian32(offset);  // local header offset
     output.WriteString(filename);  // file name
   }
-  uint32 dir_len = output.ByteCount();  // XXX check conversion
+  uint32 dir_len = output.ByteCount();
 
   // write end of central directory marker
   output.WriteLittleEndian32(0x06054b50);  // magic
