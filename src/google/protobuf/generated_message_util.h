@@ -66,8 +66,8 @@ namespace internal {
 
 
 // Constants for special floating point values.
-double Infinity();
-double NaN();
+LIBPROTOBUF_EXPORT double Infinity();
+LIBPROTOBUF_EXPORT double NaN();
 
 
 }  // namespace internal

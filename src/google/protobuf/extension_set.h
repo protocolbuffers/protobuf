@@ -136,24 +136,8 @@ class LIBPROTOBUF_EXPORT GeneratedExtensionFinder : public ExtensionFinder {
   const MessageLite* containing_type_;
 };
 
-// Implementation of ExtensionFinder which finds extensions in a given
-// DescriptorPool, using the given MessageFactory to construct sub-objects.
-// This class is implemented in extension_set_heavy.cc.
-class LIBPROTOBUF_EXPORT DescriptorPoolExtensionFinder : public ExtensionFinder {
- public:
-  DescriptorPoolExtensionFinder(const DescriptorPool* pool,
-                                MessageFactory* factory,
-                                const Descriptor* containing_type)
-      : pool_(pool), factory_(factory), containing_type_(containing_type) {}
-  virtual ~DescriptorPoolExtensionFinder() {}
-
-  virtual bool Find(int number, ExtensionInfo* output);
-
- private:
-  const DescriptorPool* pool_;
-  MessageFactory* factory_;
-  const Descriptor* containing_type_;
-};
+// Note:  extension_set_heavy.cc defines DescriptorPoolExtensionFinder for
+// finding extensions from a DescriptorPool.
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
