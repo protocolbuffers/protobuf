@@ -42,10 +42,6 @@ AC_DEFUN([ACX_CHECK_SUNCC],[
 
         AS_IF([test "x$ac_enable_64bit" = "xyes"],[
 
-          AS_IF([test "x${ac_cv_env_LDFLAGS_set}" = "x"],[
-            LDFLAGS="-L/usr/local/lib/${isainfo_k} ${LDFLAGS}"
-          ])
-
           AS_IF([test "x$libdir" = "x\${exec_prefix}/lib"],[
            dnl The user hasn't overridden the default libdir, so we'll
            dnl the dir suffix to match solaris 32/64-bit policy
