@@ -47,7 +47,7 @@ class CodeGenerator;    // code_generator.h
 //     MyCodeGenerator generator;
 //     return PluginMain(argc, argv, &generator);
 //   }
-int PluginMain(int argc, char* argv[], const CodeGenerator* generator);
+LIBPROTOC_EXPORT int PluginMain(int argc, char* argv[], const CodeGenerator* generator);
 
 }  // namespace compiler
 }  // namespace protobuf
