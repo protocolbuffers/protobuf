@@ -158,8 +158,10 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
     upb_strptr msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
     fprintf(stream, "struct " UPB_STRFMT ";\n", UPB_STRARG(msg_name));
-    fprintf(stream, "typedef struct " UPB_STRFMT "\n    " UPB_STRFMT ";\n\n",
+    fprintf(stream, "typedef struct " UPB_STRFMT "\n    " UPB_STRFMT ";\n",
             UPB_STRARG(msg_name), UPB_STRARG(msg_name));
+    fprintf(stream, "UPB_DEFINE_MSG_ARRAY(" UPB_STRFMT ")\n\n",
+            UPB_STRARG(msg_name));
     upb_string_unref(msg_name);
   }
 
@@ -189,7 +191,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
         upb_strptr type_name = upb_strdup(f->def->fqname);
         to_cident(type_name);
         if(f->label == UPB_LABEL(REPEATED)) {
-          fprintf(stream, "  UPB_MSG_ARRAY(" UPB_STRFMT ")* " UPB_STRFMT ";\n",
+          fprintf(stream, "  UPB_MSG_ARRAYPTR(" UPB_STRFMT ") " UPB_STRFMT ";\n",
                   UPB_STRARG(type_name), UPB_STRARG(f->name));
         } else {
           fprintf(stream, "  " UPB_STRFMT "* " UPB_STRFMT ";\n",
@@ -197,7 +199,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
         }
         upb_string_unref(type_name);
       } else if(f->label == UPB_LABEL(REPEATED)) {
-        fprintf(stream, "  upb_array* " UPB_STRFMT ";\n", UPB_STRARG(f->name));
+        fprintf(stream, "  upb_arrayptr " UPB_STRFMT ";\n", UPB_STRARG(f->name));
       } else {
         static char* c_types[] = {
           "", "double", "float", "int64_t", "uint64_t", "int32_t", "uint64_t",
@@ -209,9 +211,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
                 c_types[f->type], UPB_STRARG(f->name));
       }
     }
-    fputs("};\n", stream);
-    fprintf(stream, "UPB_DEFINE_MSG_ARRAY(" UPB_STRFMT ")\n\n",
-            UPB_STRARG(msg_name));
+    fputs("};\n\n", stream);
     upb_string_unref(msg_name);
   }
 
@@ -241,7 +241,7 @@ struct typetable_entry {
   struct array {
     int offset;
     int len;
-    upb_array *ptr;  /* So we can find it later. */
+    upb_arrayptr ptr;  /* So we can find it later. */
   } *arrays;
   int arrays_size, arrays_len;
 };
@@ -287,7 +287,7 @@ static void add_strings_from_msg(upb_msg *msg, struct upb_msgdef *md,
     if(!upb_msg_has(msg, f)) continue;
     union upb_value p = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
-      upb_array *arr = p.arr;
+      upb_arrayptr arr = p.arr;
       for(uint32_t j = 0; j < upb_array_len(arr); j++)
         add_strings_from_value(upb_array_get(arr, f, j), f, t);
     } else {
@@ -345,7 +345,7 @@ static void add_submsgs(upb_msg *msg, struct upb_msgdef *md,
     union upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
       if(upb_isstring(f)) continue;  /* Handled by a different code-path. */
-      upb_array *arr = v.arr;
+      upb_arrayptr arr = v.arr;
 
       /* Add to our list of arrays for this type. */
       struct typetable_entry *arr_type_e =
@@ -475,11 +475,11 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
       fprintf(stream, "};\n");
 
       int cum_offset = 0;
-      fprintf(stream, "static UPB_MSG_ARRAY(" UPB_STRFMT ") " UPB_STRFMT "_arrays[%d] = {\n",
-              UPB_STRARG(e->cident), UPB_STRARG(e->cident), e->arrays_len);
+      fprintf(stream, "static upb_static_array " UPB_STRFMT "_arrays[%d] = {\n",
+              UPB_STRARG(e->cident), e->arrays_len);
       for(int i = 0; i < e->arrays_len; i++) {
         struct array *arr = &e->arrays[i];
-        fprintf(stream, "  {.elements = &" UPB_STRFMT "_array_elems[%d], .len=%d},\n",
+        fprintf(stream, "  UPB_STATIC_ARRAY_INIT(&" UPB_STRFMT "_array_elems[%d], %d),\n",
                 UPB_STRARG(e->cident), cum_offset, arr->len);
         cum_offset += arr->len;
       }
@@ -515,7 +515,12 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
           union upb_value val = upb_msg_get(msgdata, f);
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(!upb_msg_has(msgdata, f)) {
-            if(upb_isstring(f) && !upb_isarray(f)) {
+            if(upb_isarray(f) && upb_issubmsg(f)) {
+              // This is gross and needs cleanup.
+              fputs("{UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */", stream);
+            } else if(upb_isarray(f)) {
+              fputs("UPB_ARRAY_NULL_INITIALIZER,   /* Not set. */", stream);
+            } else if(upb_isstring(f)) {
               fputs("UPB_STRING_NULL_INITIALIZER,   /* Not set. */", stream);
             } else {
               fputs("0,   /* Not set. */", stream);
@@ -536,13 +541,13 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
             assert(type_e);
             int arr_num = -1;
             for(int k = 0; k < type_e->arrays_len; k++) {
-              if(type_e->arrays[k].ptr == val.arr) {
+              if(upb_array_ptreql(type_e->arrays[k].ptr, val.arr)) {
                 arr_num = k;
                 break;
               }
             }
             assert(arr_num != -1);
-            fprintf(stream, "&" UPB_STRFMT "_arrays[%d],", UPB_STRARG(type_e->cident), arr_num);
+            fprintf(stream, "UPB_STATIC_ARRAY_PTR_TYPED_INIT(" UPB_STRFMT "_arrays[%d]),", UPB_STRARG(type_e->cident), arr_num);
           } else if(upb_issubmsg(f)) {
             /* Find this submessage in the list of msgs for that type. */
             struct typetable_entry  *type_e = get_or_insert_typeentry(&types, f);
@@ -625,10 +630,14 @@ void error(char *err, ...)
 
 void sort_fields_in_descriptor(google_protobuf_DescriptorProto *d)
 {
-  if(d->set_flags.has.field) upb_fielddef_sortfds(d->field->elements, d->field->len);
+  // XXX: modifying the array in place is totally not allowed.
+  if(d->set_flags.has.field) {
+    upb_fielddef_sortfds(_upb_array_getptr_raw(d->field.ptr, 0, 0)._void,
+                         google_protobuf_FieldDescriptorProto_array_len(d->field));
+  }
   if(d->set_flags.has.nested_type)
-    for(uint32_t i = 0; i < d->nested_type->len; i++)
-      sort_fields_in_descriptor(d->nested_type->elements[i]);
+    for(uint32_t i = 0; i < google_protobuf_DescriptorProto_array_len(d->nested_type); i++)
+      sort_fields_in_descriptor(google_protobuf_DescriptorProto_array_get(d->nested_type, i));
 }
 
 int main(int argc, char *argv[])
@@ -686,11 +695,11 @@ int main(int argc, char *argv[])
   // this scheme.
   //
   // If/when we ever make upbc more general, we'll have to revisit this.
-  for(uint32_t i = 0; i < fds->file->len; i++) {
-    google_protobuf_FileDescriptorProto *fd = fds->file->elements[i];
+  for(uint32_t i = 0; i < google_protobuf_FileDescriptorProto_array_len(fds->file); i++) {
+    google_protobuf_FileDescriptorProto *fd = google_protobuf_FileDescriptorProto_array_get(fds->file, i);
     if(!fd->set_flags.has.message_type) continue;
-    for(uint32_t j = 0; j < fd->message_type->len; j++)
-      sort_fields_in_descriptor(fd->message_type->elements[j]);
+    for(uint32_t j = 0; j < google_protobuf_DescriptorProto_array_len(fd->message_type); j++)
+      sort_fields_in_descriptor(google_protobuf_DescriptorProto_array_get(fd->message_type, j));
   }
 
   /* Emit output files. */

@@ -92,7 +92,7 @@ static void printmsg(struct upb_text_printer *printer,
     if(!upb_msg_has(msg, f)) continue;
     union upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
-      upb_array *arr = v.arr;
+      upb_arrayptr arr = v.arr;
       for(uint32_t j = 0; j < upb_array_len(arr); j++) {
         union upb_value elem = upb_array_get(arr, f, j);
         printval(printer, elem, f, stream);

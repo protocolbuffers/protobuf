@@ -125,11 +125,10 @@ struct upb_tag {
 
 // INTERNAL-ONLY: never refer to these types with a tag ("union", "struct").
 // Always use the typedefs.
-union _upb_array;
 struct _upb_msg;
 
-typedef union _upb_array upb_array;
 typedef struct _upb_msg upb_msg;
+
 typedef upb_atomic_refcount_t upb_data;
 
 typedef uint32_t upb_strlen_t;
@@ -143,6 +142,15 @@ typedef union {
   upb_data *base;
 } upb_strptr;
 
+typedef uint32_t upb_arraylen_t;
+
+typedef union {
+  // Must be first, for the UPB_STATIC_ARRAY_PTR_INIT() macro.
+  struct upb_norefcount_array *norefcount;
+  struct upb_refcounted_array *refcounted;
+  upb_data *base;
+} upb_arrayptr;
+
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
 union upb_value {
@@ -154,7 +162,7 @@ union upb_value {
   uint64_t uint64;
   bool _bool;
   upb_strptr str;
-  upb_array *arr;
+  upb_arrayptr arr;
   upb_msg *msg;
   upb_data *data;
 };
@@ -171,7 +179,7 @@ union upb_value_ptr {
   uint64_t *uint64;
   bool *_bool;
   upb_strptr *str;
-  upb_array **arr;
+  upb_arrayptr *arr;
   upb_msg **msg;
   upb_data **data;
   void *_void;
