@@ -97,11 +97,13 @@ struct ExtensionInfo {
   bool is_repeated;
   bool is_packed;
 
+  struct EnumValidityCheck {
+    EnumValidityFuncWithArg* func;
+    const void* arg;
+  };
+
   union {
-    struct {
-      EnumValidityFuncWithArg* func;
-      const void* arg;
-    } enum_validity_check;
+    EnumValidityCheck enum_validity_check;
     const MessageLite* message_prototype;
   };
 
