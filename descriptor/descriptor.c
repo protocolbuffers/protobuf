@@ -181,18 +181,18 @@ static google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_array_el
     &google_protobuf_DescriptorProto_values[16],
     &google_protobuf_DescriptorProto_values[17],
 };
-static UPB_MSG_ARRAY(google_protobuf_DescriptorProto) google_protobuf_DescriptorProto_arrays[3] = {
-  {.elements = &google_protobuf_DescriptorProto_array_elems[0], .len=16},
-  {.elements = &google_protobuf_DescriptorProto_array_elems[16], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_array_elems[17], .len=1},
+static upb_static_array google_protobuf_DescriptorProto_arrays[3] = {
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_array_elems[0], 16),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_array_elems[16], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_array_elems[17], 1),
 };
 static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_values[1];
 
 static google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_array_elems[] = {
     &google_protobuf_FileDescriptorProto_values[0],
 };
-static UPB_MSG_ARRAY(google_protobuf_FileDescriptorProto) google_protobuf_FileDescriptorProto_arrays[1] = {
-  {.elements = &google_protobuf_FileDescriptorProto_array_elems[0], .len=1},
+static upb_static_array google_protobuf_FileDescriptorProto_arrays[1] = {
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FileDescriptorProto_array_elems[0], 1),
 };
 static google_protobuf_FileDescriptorSet google_protobuf_FileDescriptorSet_values[1];
 
@@ -207,14 +207,14 @@ static google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_Descripto
     &google_protobuf_DescriptorProto_ExtensionRange_values[5],
     &google_protobuf_DescriptorProto_ExtensionRange_values[6],
 };
-static UPB_MSG_ARRAY(google_protobuf_DescriptorProto_ExtensionRange) google_protobuf_DescriptorProto_ExtensionRange_arrays[7] = {
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[0], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[1], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[2], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[3], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[4], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[5], .len=1},
-  {.elements = &google_protobuf_DescriptorProto_ExtensionRange_array_elems[6], .len=1},
+static upb_static_array google_protobuf_DescriptorProto_ExtensionRange_arrays[7] = {
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[0], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[1], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[2], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[3], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[4], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[5], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_DescriptorProto_ExtensionRange_array_elems[6], 1),
 };
 static google_protobuf_FileOptions google_protobuf_FileOptions_values[1];
 
@@ -226,10 +226,10 @@ static google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_
     &google_protobuf_EnumDescriptorProto_values[2],
     &google_protobuf_EnumDescriptorProto_values[3],
 };
-static UPB_MSG_ARRAY(google_protobuf_EnumDescriptorProto) google_protobuf_EnumDescriptorProto_arrays[3] = {
-  {.elements = &google_protobuf_EnumDescriptorProto_array_elems[0], .len=2},
-  {.elements = &google_protobuf_EnumDescriptorProto_array_elems[2], .len=1},
-  {.elements = &google_protobuf_EnumDescriptorProto_array_elems[3], .len=1},
+static upb_static_array google_protobuf_EnumDescriptorProto_arrays[3] = {
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumDescriptorProto_array_elems[0], 2),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumDescriptorProto_array_elems[2], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumDescriptorProto_array_elems[3], 1),
 };
 static google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto_values[63];
 
@@ -298,25 +298,25 @@ static google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProt
     &google_protobuf_FieldDescriptorProto_values[61],
     &google_protobuf_FieldDescriptorProto_values[62],
 };
-static UPB_MSG_ARRAY(google_protobuf_FieldDescriptorProto) google_protobuf_FieldDescriptorProto_arrays[18] = {
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[0], .len=1},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[1], .len=8},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[9], .len=7},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[16], .len=2},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[18], .len=8},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[26], .len=3},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[29], .len=3},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[32], .len=3},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[35], .len=4},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[39], .len=5},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[44], .len=2},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[46], .len=5},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[51], .len=1},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[52], .len=1},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[53], .len=1},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[54], .len=1},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[55], .len=6},
-  {.elements = &google_protobuf_FieldDescriptorProto_array_elems[61], .len=2},
+static upb_static_array google_protobuf_FieldDescriptorProto_arrays[18] = {
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[0], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[1], 8),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[9], 7),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[16], 2),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[18], 8),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[26], 3),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[29], 3),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[32], 3),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[35], 4),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[39], 5),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[44], 2),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[46], 5),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[51], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[52], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[53], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[54], 1),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[55], 6),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_FieldDescriptorProto_array_elems[61], 2),
 };
 static google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescriptorProto_values[25];
 
@@ -347,11 +347,11 @@ static google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescri
     &google_protobuf_EnumValueDescriptorProto_values[23],
     &google_protobuf_EnumValueDescriptorProto_values[24],
 };
-static UPB_MSG_ARRAY(google_protobuf_EnumValueDescriptorProto) google_protobuf_EnumValueDescriptorProto_arrays[4] = {
-  {.elements = &google_protobuf_EnumValueDescriptorProto_array_elems[0], .len=18},
-  {.elements = &google_protobuf_EnumValueDescriptorProto_array_elems[18], .len=3},
-  {.elements = &google_protobuf_EnumValueDescriptorProto_array_elems[21], .len=2},
-  {.elements = &google_protobuf_EnumValueDescriptorProto_array_elems[23], .len=2},
+static upb_static_array google_protobuf_EnumValueDescriptorProto_arrays[4] = {
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumValueDescriptorProto_array_elems[0], 18),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumValueDescriptorProto_array_elems[18], 3),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumValueDescriptorProto_array_elems[21], 2),
+  UPB_STATIC_ARRAY_INIT(&google_protobuf_EnumValueDescriptorProto_array_elems[23], 2),
 };
 static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18] = {
 
@@ -366,11 +366,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[34]),   /* "FileDescriptorSet" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[0],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[0]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -384,11 +384,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[33]),   /* "FileDescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[1],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[1]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -402,11 +402,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[24]),   /* "DescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[2],
-    .nested_type = &google_protobuf_DescriptorProto_arrays[1],
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[2]),
+    .nested_type = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_arrays[1]),
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -420,11 +420,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[31]),   /* "FieldDescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[4],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = &google_protobuf_EnumDescriptorProto_arrays[0],
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[4]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumDescriptorProto_arrays[0]),
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -438,11 +438,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[26]),   /* "EnumDescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[5],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[5]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -456,11 +456,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[28]),   /* "EnumValueDescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[6],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[6]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -474,11 +474,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[47]),   /* "ServiceDescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[7],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[7]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -492,11 +492,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[41]),   /* "MethodDescriptorProto" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[8],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[8]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -510,11 +510,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[35]),   /* "FileOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[9],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = &google_protobuf_EnumDescriptorProto_arrays[1],
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[0],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[9]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumDescriptorProto_arrays[1]),
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[0]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -528,11 +528,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[40]),   /* "MessageOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[10],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[1],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[10]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[1]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -546,11 +546,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[32]),   /* "FieldOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[11],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = &google_protobuf_EnumDescriptorProto_arrays[2],
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[2],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[11]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumDescriptorProto_arrays[2]),
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[2]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -564,11 +564,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[27]),   /* "EnumOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[12],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[3],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[12]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[3]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -582,11 +582,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[29]),   /* "EnumValueOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[13],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[4],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[13]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[4]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -600,11 +600,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[48]),   /* "ServiceOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[14],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[5],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[14]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[5]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -618,11 +618,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[42]),   /* "MethodOptions" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[15],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = &google_protobuf_DescriptorProto_ExtensionRange_arrays[6],
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[15]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_ExtensionRange_arrays[6]),
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -636,11 +636,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[68]),   /* "UninterpretedOption" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[16],
-    .nested_type = &google_protobuf_DescriptorProto_arrays[2],
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[16]),
+    .nested_type = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_arrays[2]),
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -654,11 +654,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[30]),   /* "ExtensionRange" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[3],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[3]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -672,11 +672,11 @@ static google_protobuf_DescriptorProto google_protobuf_DescriptorProto_values[18
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[43]),   /* "NamePart" */
-    .field = &google_protobuf_FieldDescriptorProto_arrays[17],
-    .nested_type = 0,   /* Not set. */
-    .enum_type = 0,   /* Not set. */
-    .extension_range = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .field = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FieldDescriptorProto_arrays[17]),
+    .nested_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension_range = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = 0,   /* Not set. */
   },
 };
@@ -695,11 +695,11 @@ static google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto_v
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[74]),   /* "descriptor/descriptor.proto" */
     .package = UPB_STATIC_STRING_PTR_INIT(strings[85]),   /* "google.protobuf" */
-    .dependency = 0,   /* Not set. */
-    .message_type = &google_protobuf_DescriptorProto_arrays[0],
-    .enum_type = 0,   /* Not set. */
-    .service = 0,   /* Not set. */
-    .extension = 0,   /* Not set. */
+    .dependency = UPB_ARRAY_NULL_INITIALIZER,   /* Not set. */
+    .message_type = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_DescriptorProto_arrays[0]),
+    .enum_type = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .service = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
+    .extension = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
     .options = &google_protobuf_FileOptions_values[0],
   },
 };
@@ -709,7 +709,7 @@ static google_protobuf_FileDescriptorSet google_protobuf_FileDescriptorSet_value
    .set_flags = {.has = {
     .file = true,
   }},
-    .file = &google_protobuf_FileDescriptorProto_arrays[0],
+    .file = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_FileDescriptorProto_arrays[0]),
   },
 };
 static google_protobuf_DescriptorProto_ExtensionRange google_protobuf_DescriptorProto_ExtensionRange_values[7] = {
@@ -785,7 +785,7 @@ static google_protobuf_FileOptions google_protobuf_FileOptions_values[1] = {
     .java_outer_classname = UPB_STATIC_STRING_PTR_INIT(strings[25]),   /* "DescriptorProtos" */
     .optimize_for = 1,
     .java_multiple_files = 0,   /* Not set. */
-    .uninterpreted_option = 0,   /* Not set. */
+    .uninterpreted_option = {UPB_ARRAY_NULL_INITIALIZER},   /* Not set. */
   },
 };
 static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_values[4] = {
@@ -797,7 +797,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[67]),   /* "Type" */
-    .value = &google_protobuf_EnumValueDescriptorProto_arrays[0],
+    .value = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumValueDescriptorProto_arrays[0]),
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -807,7 +807,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[39]),   /* "Label" */
-    .value = &google_protobuf_EnumValueDescriptorProto_arrays[1],
+    .value = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumValueDescriptorProto_arrays[1]),
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -817,7 +817,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[44]),   /* "OptimizeMode" */
-    .value = &google_protobuf_EnumValueDescriptorProto_arrays[2],
+    .value = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumValueDescriptorProto_arrays[2]),
     .options = 0,   /* Not set. */
   },
   {.base = {UPB_DATA_FROZEN},
@@ -827,7 +827,7 @@ static google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto_v
     .options = false,
   }},
     .name = UPB_STATIC_STRING_PTR_INIT(strings[23]),   /* "CType" */
-    .value = &google_protobuf_EnumValueDescriptorProto_arrays[3],
+    .value = UPB_STATIC_ARRAY_PTR_TYPED_INIT(google_protobuf_EnumValueDescriptorProto_arrays[3]),
     .options = 0,   /* Not set. */
   },
 };
