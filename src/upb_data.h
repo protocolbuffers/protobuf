@@ -213,9 +213,7 @@ upb_strptr upb_string_getref(upb_strptr s, int ref_flags);
 
 #define UPB_STRING_NULL_INITIALIZER {NULL}
 static const upb_strptr UPB_STRING_NULL = UPB_STRING_NULL_INITIALIZER;
-INLINE bool upb_string_isnull(upb_strptr s) {
-  return s.base == NULL;
-}
+INLINE bool upb_string_isnull(upb_strptr s) { return s.base == NULL; }
 
 // The caller releases a ref on src, which it must previously have owned a ref
 // on.
@@ -350,70 +348,77 @@ typedef struct upb_norefcount_string upb_static_string;
 
 /* upb_array ******************************************************************/
 
-typedef uint32_t upb_arraylen_t;
-
 // The comments attached to upb_string above also apply here.
-typedef struct {
-  upb_data base;
+struct upb_norefcount_array {
+  upb_data base;  // We co-opt the refcount for the size.
   upb_arraylen_t len;
   union upb_value_ptr elements;
-} upb_array_common;
+};
 
-typedef struct {
-  uint32_t size_and_flags;
-  upb_arraylen_t len;
-  union upb_value_ptr elements;
-} upb_norefcount_array;
-
-typedef struct {
+struct upb_refcounted_array {
   upb_data base;
   upb_arraylen_t len;
   union upb_value_ptr elements;
   upb_arraylen_t size;
-} upb_refcounted_array;
-
-union _upb_array {
-  upb_norefcount_array norefcount;
-  upb_array_common common;
-  upb_refcounted_array refcounted;
 };
 
-// This type can be used either to perform read-only access on an array,
-// or to statically define a non-reference-counted static array.
-#define UPB_DEFINE_MSG_ARRAY(type) \
-typedef struct type ## _array { \
-  upb_data base; \
-  upb_arraylen_t len;\
-  type **elements; \
-} type ## _array; \
+typedef struct upb_norefcount_array upb_static_array;
+#define UPB_STATIC_ARRAY_INIT(arr, len) {{0 | UPB_DATA_FROZEN}, len, {._void=arr}}
+#define UPB_STATIC_ARRAY_PTR_TYPED_INIT(static_arr) {{&static_arr}}
 
-#define UPB_MSG_ARRAY(type) struct type ## _array
+#define UPB_ARRAY_NULL_INITIALIZER {NULL}
+static const upb_arrayptr UPB_ARRAY_NULL = UPB_ARRAY_NULL_INITIALIZER;
+INLINE bool upb_array_isnull(upb_arrayptr a) { return a.base == NULL; }
+INLINE bool upb_array_ptreql(upb_arrayptr a1, upb_arrayptr a2) {
+  return a1.base == a2.base;
+}
+
+#define UPB_MSG_ARRAYPTR(type) type ## _array
+#define UPB_DEFINE_MSG_ARRAY(type) \
+typedef struct { upb_arrayptr ptr; } UPB_MSG_ARRAYPTR(type); \
+INLINE upb_arraylen_t type ## _array_len(UPB_MSG_ARRAYPTR(type) a) { \
+  return upb_array_len(a.ptr); \
+} \
+INLINE type* type ## _array_get(UPB_MSG_ARRAYPTR(type) a, upb_arraylen_t elem) { \
+  return *(type**)_upb_array_getptr_raw(a.ptr, elem, sizeof(void*))._void; \
+}
 
 // Constructs a newly-allocated, reference-counted array which starts out
 // empty.  Caller owns one ref on it.
-upb_array *upb_array_new(void);
+upb_arrayptr upb_array_new(void);
 
 // Returns the current number of elements in the array.
-INLINE size_t upb_array_len(upb_array *a) {
-  return a->common.len;
+INLINE size_t upb_array_len(upb_arrayptr a) {
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED))
+    return a.refcounted->len;
+  else
+    return a.norefcount->len;
 }
 
 // INTERNAL-ONLY:
 // Frees the given message and releases references on members.
-void _upb_array_free(upb_array *a, struct upb_fielddef *f);
+void _upb_array_free(upb_arrayptr a, struct upb_fielddef *f);
 
 // INTERNAL-ONLY:
 // Returns a pointer to the given elem.
-INLINE union upb_value_ptr _upb_array_getptr(upb_array *a,
-                                             struct upb_fielddef *f,
-                                             upb_arraylen_t elem) {
-  size_t type_size = upb_type_info[f->type].size;
+INLINE union upb_value_ptr _upb_array_getptr_raw(upb_arrayptr a,
+                                                 upb_arraylen_t elem,
+                                                 size_t type_size) {
   union upb_value_ptr p;
-  p._void = &a->common.elements.uint8[elem * type_size];
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED))
+    p._void = &a.refcounted->elements.uint8[elem * type_size];
+  else
+    p._void = &a.norefcount->elements.uint8[elem * type_size];
   return p;
 }
 
-INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
+INLINE union upb_value_ptr _upb_array_getptr(upb_arrayptr a,
+                                             struct upb_fielddef *f,
+                                             upb_arraylen_t elem) {
+  return _upb_array_getptr_raw(a, elem, upb_type_info[f->type].size);
+}
+
+INLINE union upb_value upb_array_get(upb_arrayptr a, struct upb_fielddef *f,
                                      upb_arraylen_t elem) {
   assert(elem < upb_array_len(a));
   return upb_value_read(_upb_array_getptr(a, f, elem), f->type);
@@ -421,33 +426,36 @@ INLINE union upb_value upb_array_get(upb_array *a, struct upb_fielddef *f,
 
 // The caller releases a ref on the given array, which it must previously have
 // owned a ref on.
-INLINE void upb_array_unref(upb_array *a, struct upb_fielddef *f) {
-  if(_upb_data_unref(&a->common.base)) _upb_array_free(a, f);
+INLINE void upb_array_unref(upb_arrayptr a, struct upb_fielddef *f) {
+  if(_upb_data_unref(a.base)) _upb_array_free(a, f);
 }
 
 #if 0
 // Returns an array to which caller owns a ref, and contains the same contents
 // as src.  The returned value may be a copy of src, if the requested flags
 // were incompatible with src's.
-INLINE upb_array *upb_array_getref(upb_array *src, int ref_flags);
+INLINE upb_arrayptr upb_array_getref(upb_arrayptr src, int ref_flags);
 
 // Sets the given element in the array to val.  The current length of the array
 // must be greater than elem.  If the field type is dynamic, the array will
 // take a ref on val and release a ref on what was previously in the array.
-INLINE void upb_array_set(upb_array *a, struct upb_fielddef *f, int elem,
+INLINE void upb_array_set(upb_arrayptr a, struct upb_fielddef *f, int elem,
                           union upb_value val);
 
 
 // Note that array_append will attempt to take a reference on the given value,
 // so to avoid a copy use append_default and get.
-INLINE void upb_array_append(upb_array *a, struct upb_fielddef *f,
+INLINE void upb_array_append(upb_arrayptr a, struct upb_fielddef *f,
                              union upb_value val);
-INLINE void upb_array_append_default(upb_array *a, struct upb_fielddef *f,
+INLINE void upb_array_append_default(upb_arrayptr a, struct upb_fielddef *f,
                              union upb_value val);
 #endif
 
-INLINE void upb_array_truncate(upb_array *a) {
-  a->common.len = 0;
+INLINE void upb_array_truncate(upb_arrayptr a) {
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED))
+    a.refcounted->len = 0;
+  else
+    a.norefcount->len = 0;
 }
 
 

@@ -57,11 +57,11 @@ static void check_not_frozen(upb_data *d) {
 
 /* upb_string *******************************************************************/
 
-static char *_upb_string_setptr(upb_strptr s, char *ptr) {
+void _upb_string_setptr(upb_strptr s, char *ptr) {
   if(upb_data_hasflag(s.base, UPB_DATA_REFCOUNTED))
-    return s.refcounted->ptr = ptr;
+    s.refcounted->ptr = ptr;
   else
-    return s.norefcount->ptr = ptr;
+    s.norefcount->ptr = ptr;
 }
 
 static void _upb_string_set_bytelen(upb_strptr s, upb_strlen_t newlen) {
@@ -182,62 +182,77 @@ int upb_strcmp(upb_strptr s1, upb_strptr s2) {
 
 /* upb_array ******************************************************************/
 
-upb_array *upb_array_new() {
-  upb_array *a = malloc(sizeof(upb_refcounted_array));
-  data_init(&a->common.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
-  a->refcounted.size = 0;
-  a->common.len = 0;
-  a->common.elements._void = NULL;
+static void _upb_array_setptr(upb_arrayptr a, void *ptr) {
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED))
+    a.refcounted->elements._void = ptr;
+  else
+    a.norefcount->elements._void = ptr;
+}
+
+static void _upb_array_setlen(upb_arrayptr a, upb_strlen_t newlen) {
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED)) {
+    a.refcounted->len = newlen;
+  } else {
+    a.norefcount->len = newlen;
+  }
+}
+
+upb_arrayptr upb_array_new() {
+  upb_arrayptr a;
+  a.refcounted = malloc(sizeof(struct upb_refcounted_array));
+  data_init(a.base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
+  a.refcounted->size = 0;
+  a.refcounted->len = 0;
+  a.refcounted->elements._void = NULL;
   return a;
 }
 
 // ONLY handles refcounted arrays for the moment.
-void _upb_array_free(upb_array *a, struct upb_fielddef *f)
+void _upb_array_free(upb_arrayptr a, struct upb_fielddef *f)
 {
   if(upb_elem_ismm(f)) {
-    for(upb_arraylen_t i = 0; i < a->refcounted.size; i++) {
+    for(upb_arraylen_t i = 0; i < a.refcounted->size; i++) {
       union upb_value_ptr p = _upb_array_getptr(a, f, i);
       if(!*p.data) continue;
       data_elem_unref(p, f);
     }
   }
-  if(a->refcounted.size != 0) free(a->common.elements._void);
-  free(a);
+  if(a.refcounted->size != 0) free(a.refcounted->elements._void);
+  free(a.refcounted);
 }
 
-static upb_arraylen_t array_get_size(upb_array *a) {
-  if(upb_data_hasflag(&a->common.base, UPB_DATA_REFCOUNTED)) {
-    return a->refcounted.size;
+static upb_arraylen_t array_get_size(upb_arrayptr a) {
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED)) {
+    return a.refcounted->size;
   } else {
-    return (a->norefcount.size_and_flags & 0xFFFFFFF8) >> 3;
+    return (a.norefcount->base.v & 0xFFFFFFF8) >> 3;
   }
 }
 
-static void array_set_size(upb_array *a, upb_arraylen_t newsize) {
-  if(upb_data_hasflag(&a->common.base, UPB_DATA_REFCOUNTED)) {
-    a->refcounted.size = newsize;
+static void array_set_size(upb_arrayptr a, upb_arraylen_t newsize) {
+  if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED)) {
+    a.refcounted->size = newsize;
   } else {
-    a->norefcount.size_and_flags &= 0x7;
-    a->norefcount.size_and_flags |= (newsize << 3);
+    a.norefcount->base.v &= 0x7;
+    a.norefcount->base.v |= (newsize << 3);
   }
 }
 
-void upb_array_resize(upb_array *a, struct upb_fielddef *f, upb_strlen_t len) {
-  check_not_frozen(&a->common.base);
+void upb_array_resize(upb_arrayptr a, struct upb_fielddef *f, upb_strlen_t len) {
+  check_not_frozen(a.base);
   size_t type_size = upb_type_info[f->type].size;
   upb_arraylen_t old_size = array_get_size(a);
   if(old_size < len) {
     // Need to resize.
     size_t new_size = round_up_to_pow2(len);
-    a->common.elements._void = realloc(a->common.elements._void, new_size * type_size);
+    _upb_array_setptr(a, realloc(_upb_array_getptr_raw(a, 0, 0)._void, new_size * type_size));
     array_set_size(a, new_size);
-    memset(UPB_INDEX(a->common.elements._void, old_size, type_size),
+    memset(_upb_array_getptr_raw(a, old_size, type_size)._void,
            0,
            (new_size - old_size) * type_size);
   }
-  a->common.len = len;
+  _upb_array_setlen(a, len);
 }
-
 
 
 /* upb_msg ********************************************************************/
@@ -289,19 +304,15 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
   union upb_value_ptr p = _upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
     if(!upb_msg_has(msg, f)) {
-      if(!*p.arr || !upb_data_only(*p.data)) {
-        printf("Initializing array field " UPB_STRFMT "\n", UPB_STRARG(f->name));
-        if(*p.arr)
+      if(upb_array_isnull(*p.arr) || !upb_data_only(*p.data)) {
+        if(!upb_array_isnull(*p.arr))
           upb_array_unref(*p.arr, f);
         *p.arr = upb_array_new();
-      } else {
-        printf("REUSING array field " UPB_STRFMT "\n", UPB_STRARG(f->name));
       }
       upb_array_truncate(*p.arr);
       upb_msg_sethas(msg, f);
     } else {
-      printf("APPENDING TO EXISTING array field " UPB_STRFMT "\n", UPB_STRARG(f->name));
-      assert(*p.arr);
+      assert(!upb_array_isnull(*p.arr));
     }
     upb_arraylen_t oldlen = upb_array_len(*p.arr);
     upb_array_resize(*p.arr, f, oldlen + 1);

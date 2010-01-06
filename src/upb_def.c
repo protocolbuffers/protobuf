@@ -364,12 +364,14 @@ static struct upb_enumdef *enumdef_new(google_protobuf_EnumDescriptorProto *ed,
 {
   struct upb_enumdef *e = malloc(sizeof(*e));
   upb_def_init(&e->base, UPB_DEF_ENUM, fqname);
-  int num_values = ed->set_flags.has.value ? ed->value->len : 0;
+  int num_values = ed->set_flags.has.value ?
+      google_protobuf_EnumValueDescriptorProto_array_len(ed->value) : 0;
   upb_strtable_init(&e->ntoi, num_values, sizeof(struct ntoi_ent));
   upb_inttable_init(&e->iton, num_values, sizeof(struct iton_ent));
 
   for(int i = 0; i < num_values; i++) {
-    google_protobuf_EnumValueDescriptorProto *value = ed->value->elements[i];
+    google_protobuf_EnumValueDescriptorProto *value =
+        google_protobuf_EnumValueDescriptorProto_array_get(ed->value, i);
     struct ntoi_ent ntoi_ent = {{value->name, 0}, value->number};
     struct iton_ent iton_ent = {{value->number, 0}, value->name};
     upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
@@ -521,20 +523,22 @@ static void insert_message(struct upb_strtable *t,
   upb_strptr fqname = try_define(t, base, name, status);
   if(upb_string_isnull(fqname)) return;
 
-  int num_fields = d->set_flags.has.field ? d->field->len : 0;
+  int num_fields = d->set_flags.has.field ?
+      google_protobuf_FieldDescriptorProto_array_len(d->field) : 0;
   struct symtab_ent e;
   e.e.key = fqname;
 
   // Gather our list of fields, sorting if necessary.
   struct upb_fielddef **fielddefs = malloc(sizeof(*fielddefs) * num_fields);
   for (int i = 0; i < num_fields; i++) {
-    google_protobuf_FieldDescriptorProto *fd = d->field->elements[i];
+    google_protobuf_FieldDescriptorProto *fd =
+        google_protobuf_FieldDescriptorProto_array_get(d->field, i);
     fielddefs[i] = fielddef_new(fd);
   }
-  if(sort) fielddef_sort(fielddefs, d->field->len);
+  if(sort) fielddef_sort(fielddefs, num_fields);
 
   // Create the msgdef with that list of fields.
-  e.def = UPB_UPCAST(msgdef_new(fielddefs, d->field->len, fqname, status));
+  e.def = UPB_UPCAST(msgdef_new(fielddefs, num_fields, fqname, status));
 
   // Cleanup.
   for (int i = 0; i < num_fields; i++) fielddef_free(fielddefs[i]);
@@ -546,12 +550,12 @@ static void insert_message(struct upb_strtable *t,
 
   /* Add nested messages and enums. */
   if(d->set_flags.has.nested_type)
-    for(unsigned int i = 0; i < d->nested_type->len; i++)
-      insert_message(t, d->nested_type->elements[i], fqname, sort, status);
+    for(unsigned int i = 0; i < google_protobuf_DescriptorProto_array_len(d->nested_type); i++)
+      insert_message(t, google_protobuf_DescriptorProto_array_get(d->nested_type, i), fqname, sort, status);
 
   if(d->set_flags.has.enum_type)
-    for(unsigned int i = 0; i < d->enum_type->len; i++)
-      insert_enum(t, d->enum_type->elements[i], fqname, status);
+    for(unsigned int i = 0; i < google_protobuf_EnumDescriptorProto_array_len(d->enum_type); i++)
+      insert_enum(t, google_protobuf_EnumDescriptorProto_array_get(d->enum_type, i), fqname, status);
 
 error:
   // Free the ref we got from try_define().
@@ -618,12 +622,12 @@ static void addfd(struct upb_strtable *addto, struct upb_strtable *existingdefs,
   }
 
   if(fd->set_flags.has.message_type)
-    for(unsigned int i = 0; i < fd->message_type->len; i++)
-      insert_message(addto, fd->message_type->elements[i], pkg, sort, status);
+    for(unsigned int i = 0; i < google_protobuf_DescriptorProto_array_len(fd->message_type); i++)
+      insert_message(addto, google_protobuf_DescriptorProto_array_get(fd->message_type, i), pkg, sort, status);
 
   if(fd->set_flags.has.enum_type)
-    for(unsigned int i = 0; i < fd->enum_type->len; i++)
-      insert_enum(addto, fd->enum_type->elements[i], pkg, status);
+    for(unsigned int i = 0; i < google_protobuf_EnumDescriptorProto_array_len(fd->enum_type); i++)
+      insert_enum(addto, google_protobuf_EnumDescriptorProto_array_get(fd->enum_type, i), pkg, status);
 
   upb_string_unref(pkg);
 
@@ -686,8 +690,9 @@ struct upb_symtab *upb_symtab_new()
   upb_strtable_init(&s->psymtab, 16, sizeof(struct symtab_ent));
 
   // Add descriptor.proto types to private symtable so we can parse descriptors.
+  // We know there is only 1.
   google_protobuf_FileDescriptorProto *fd =
-      upb_file_descriptor_set->file->elements[0];  // We know there is only 1.
+      google_protobuf_FileDescriptorProto_array_get(upb_file_descriptor_set->file, 0);
   struct upb_status status = UPB_STATUS_INIT;
   addfd(&s->psymtab, &s->symtab, fd, false, &status);
   if(!upb_ok(&status)) {
@@ -782,8 +787,8 @@ void upb_symtab_addfds(struct upb_symtab *s,
 
     {  // Read lock scope
       upb_rwlock_rdlock(&s->lock);
-      for(uint32_t i = 0; i < fds->file->len; i++) {
-        addfd(&tmp, &s->symtab, fds->file->elements[i], true, status);
+      for(uint32_t i = 0; i < google_protobuf_FileDescriptorProto_array_len(fds->file); i++) {
+        addfd(&tmp, &s->symtab, google_protobuf_FileDescriptorProto_array_get(fds->file, i), true, status);
         if(!upb_ok(status)) {
           free_symtab(&tmp);
           upb_rwlock_unlock(&s->lock);
