@@ -27,6 +27,10 @@
 #include "upb_atomic.h"
 #include "upb_def.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct upb_msgdef;
 struct upb_fielddef;
 
@@ -298,6 +302,13 @@ INLINE void upb_strcpyc(upb_strptr dest, const char *src) {
 // Returns a new string whose contents are a copy of s.
 upb_strptr upb_strdup(upb_strptr s);
 
+// Like upb_strdup(), but duplicates a given buffer and length.
+INLINE upb_strptr upb_strduplen(const void *src, upb_strlen_t len) {
+  upb_strptr s = upb_string_new();
+  upb_strcpylen(s, src, len);
+  return s;
+}
+
 // Like upb_strdup(), but duplicates a C NULL-terminated string.
 upb_strptr upb_strdupc(const char *src);
 
@@ -397,7 +408,8 @@ INLINE union upb_value_ptr _upb_array_getptr(upb_array *a,
                                              struct upb_fielddef *f,
                                              upb_arraylen_t elem) {
   size_t type_size = upb_type_info[f->type].size;
-  union upb_value_ptr p = {._void = &a->common.elements.uint8[elem * type_size]};
+  union upb_value_ptr p;
+  p._void = &a->common.elements.uint8[elem * type_size];
   return p;
 }
 
@@ -459,7 +471,8 @@ void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md);
 // INTERNAL-ONLY:
 // Returns a pointer to the given field.
 INLINE union upb_value_ptr _upb_msg_getptr(upb_msg *msg, struct upb_fielddef *f) {
-  union upb_value_ptr p = {._void = &msg->data[f->byte_offset]};
+  union upb_value_ptr p;
+  p._void = &msg->data[f->byte_offset];
   return p;
 }
 
@@ -504,5 +517,9 @@ void upb_msgparser_reset(struct upb_msgparser *mp, upb_msg *m);
 
 size_t upb_msgparser_parse(struct upb_msgparser *mp, upb_strptr str,
                            struct upb_status *status);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif

@@ -290,13 +290,17 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
   if(upb_isarray(f)) {
     if(!upb_msg_has(msg, f)) {
       if(!*p.arr || !upb_data_only(*p.data)) {
+        printf("Initializing array field " UPB_STRFMT "\n", UPB_STRARG(f->name));
         if(*p.arr)
           upb_array_unref(*p.arr, f);
         *p.arr = upb_array_new();
+      } else {
+        printf("REUSING array field " UPB_STRFMT "\n", UPB_STRARG(f->name));
       }
       upb_array_truncate(*p.arr);
       upb_msg_sethas(msg, f);
     } else {
+      printf("APPENDING TO EXISTING array field " UPB_STRFMT "\n", UPB_STRARG(f->name));
       assert(*p.arr);
     }
     upb_arraylen_t oldlen = upb_array_len(*p.arr);

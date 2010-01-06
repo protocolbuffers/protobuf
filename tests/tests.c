@@ -230,8 +230,8 @@ static void test_get_f_uint32_t()
 static void test_upb_symtab() {
   struct upb_symtab *s = upb_symtab_new();
   ASSERT(s);
-  upb_string *descriptor = upb_strreadfile("tests/test.proto.pb");
-  if(!descriptor) {
+  upb_strptr descriptor = upb_strreadfile("tests/test.proto.pb");
+  if(upb_string_isnull(descriptor)) {
     fprintf(stderr, "Couldn't read input file tests/test.proto.pb\n");
     exit(1);
   }
@@ -242,7 +242,7 @@ static void test_upb_symtab() {
 
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
-  upb_string *symname = upb_strdupc("A");
+  upb_strptr symname = upb_strdupc("A");
   struct upb_def *def = upb_symtab_lookup(s, symname);
   upb_string_unref(symname);
   ASSERT(def);
