@@ -212,6 +212,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
   google/protobuf/compiler/package_info.h                      \
+  google/protobuf/compiler/zip_output_unittest.sh              \
   google/protobuf/unittest_enormous_descriptor.proto
 
 protoc_lite_outputs =                                          \
