@@ -219,14 +219,23 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
 
 // -------------------------------------------------------------------
 
-// An OutputDirectory implementation that writes to disk.
+// An OutputDirectory implementation that buffers files in memory, then dumps
+// them all to disk on demand.
 class CommandLineInterface::MemoryOutputDirectory : public OutputDirectory {
  public:
   MemoryOutputDirectory();
   ~MemoryOutputDirectory();
 
+  // Write all files in the directory to disk at the given output location,
+  // which must end in a '/'.
   bool WriteAllToDisk(const string& prefix);
+
+  // Write the contents of this directory to a ZIP-format archive with the
+  // given name.
   bool WriteAllToZip(const string& filename);
+
+  // Add a boilerplate META-INF/MANIFEST.MF file as required by the Java JAR
+  // format, unless one has already been written.
   void AddJarManifest();
 
   // implements OutputDirectory --------------------------------------
