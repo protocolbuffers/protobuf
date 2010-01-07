@@ -22,8 +22,14 @@ AC_DEFUN([AC_CXX_STL_HASH],
 
          if test -z "$ac_cv_cxx_hash_map_header"; then
 
+           # On OSX 1.5 / GCC 4.0.1 (the standard compiler on that platform),
+           # calling find() on a const unordered_map does not compile.  So, we
+           # include a call to find() in our test to detect this broken
+           # implementation and avoid using it.  Note that ext/hash_map works
+           # fine on this platform, so we'll end up using that.
            AC_TRY_COMPILE([#include <$location>],
-                          [${namespace}::$name<int, int> t],
+                          [const ${namespace}::$name<int, int> t;
+                           t.find(1);],
                           [ac_cv_cxx_hash_map_header="<$location>";
                            ac_cv_cxx_hash_namespace="$namespace";
                            ac_cv_cxx_hash_map_class="$name";])
