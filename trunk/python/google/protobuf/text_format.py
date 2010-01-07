@@ -536,12 +536,18 @@ class _Tokenizer(object):
     Raises:
       ParseError: If a byte array value couldn't be consumed.
     """
-    list = [self.ConsumeSingleByteString()]
+    list = [self._ConsumeSingleByteString()]
     while len(self.token) > 0 and self.token[0] in ('\'', '"'):
-      list.append(self.ConsumeSingleByteString())
+      list.append(self._ConsumeSingleByteString())
     return "".join(list)
 
-  def ConsumeSingleByteString(self):
+  def _ConsumeSingleByteString(self):
+    """Consume one token of a string literal.
+
+    String literals (whether bytes or text) can come in multiple adjacent
+    tokens which are automatically concatenated, like in C or Python.  This
+    method only consumes one token.
+    """
     text = self.token
     if len(text) < 1 or text[0] not in ('\'', '"'):
       raise self._ParseError('Exptected string.')

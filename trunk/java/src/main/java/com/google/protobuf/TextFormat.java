@@ -704,7 +704,13 @@ public final class TextFormat {
       return ByteString.copyFrom(list);
     }
 
-    public void consumeByteString(List<ByteString> list) throws ParseException {
+    /**
+     * Like {@link #consumeByteString()} but adds each token of the string to
+     * the given list.  String literals (whether bytes or text) may come in
+     * multiple adjacent tokens which are automatically concatenated, like in
+     * C or Python.
+     */
+    private void consumeByteString(List<ByteString> list) throws ParseException {
       final char quote = currentToken.length() > 0 ? currentToken.charAt(0)
                                                    : '\0';
       if (quote != '\"' && quote != '\'') {
