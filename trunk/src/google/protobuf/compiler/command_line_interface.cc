@@ -607,10 +607,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // that two code generators may output to the same location, in which case
   // they should share a single OutputDirectory (so that OpenForInsert() works).
   typedef hash_map<string, MemoryOutputDirectory*> OutputDirectoryMap;
-  OutputDirectoryMap output_directories_;
+  OutputDirectoryMap output_directories;
 
   // Generate output.
-  MemoryOutputDirectory output_directory;
   if (mode_ == MODE_COMPILE) {
     for (int i = 0; i < output_directives_.size(); i++) {
       string output_location = output_directives_[i].output_location;
@@ -618,7 +617,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
           !HasSuffixString(output_location, ".jar")) {
         AddTrailingSlash(&output_location);
       }
-      MemoryOutputDirectory** map_slot = &output_directories_[output_location];
+      MemoryOutputDirectory** map_slot = &output_directories[output_location];
 
       if (*map_slot == NULL) {
         // First time we've seen this output location.
@@ -626,18 +625,20 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       }
 
       if (!GenerateOutput(parsed_files, output_directives_[i], *map_slot)) {
+        STLDeleteValues(&output_directories);
         return 1;
       }
     }
   }
 
   // Write all output to disk.
-  for (OutputDirectoryMap::iterator iter = output_directories_.begin();
-       iter != output_directories_.end(); ++iter) {
+  for (OutputDirectoryMap::iterator iter = output_directories.begin();
+       iter != output_directories.end(); ++iter) {
     const string& location = iter->first;
     MemoryOutputDirectory* directory = iter->second;
     if (HasSuffixString(location, "/")) {
       if (!directory->WriteAllToDisk(location)) {
+        STLDeleteValues(&output_directories);
         return 1;
       }
     } else {
@@ -646,10 +647,13 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       }
 
       if (!directory->WriteAllToZip(location)) {
+        STLDeleteValues(&output_directories);
         return 1;
       }
     }
   }
+
+  STLDeleteValues(&output_directories);
 
   if (!descriptor_set_name_.empty()) {
     if (!WriteDescriptorSet(parsed_files)) {
