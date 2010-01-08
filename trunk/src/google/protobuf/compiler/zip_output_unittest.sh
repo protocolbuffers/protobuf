@@ -34,7 +34,7 @@
 #
 # Test protoc's zip output mode.
 
-function fail {
+fail() {
   echo "$@" >&2
   exit 1
 }
