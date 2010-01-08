@@ -98,15 +98,15 @@ class LIBPROTOC_EXPORT OutputDirectory {
   //
   // The filename given should be relative to the root of the source tree.
   // E.g. the C++ generator, when generating code for "foo/bar.proto", will
-  // generate the files "foo/bar.pb2.h" and "foo/bar.pb2.cc"; note that
+  // generate the files "foo/bar.pb.h" and "foo/bar.pb.cc"; note that
   // "foo/" is included in these filenames.  The filename is not allowed to
   // contain "." or ".." components.
   virtual io::ZeroCopyOutputStream* Open(const string& filename) = 0;
 
   // Creates a ZeroCopyOutputStream which will insert code into the given file
-  // at the given insertion point.  See plugin.proto for more information on
-  // insertion points.  The default implementation assert-fails -- it exists
-  // only for backwards-compatibility.
+  // at the given insertion point.  See plugin.proto (plugin.pb.h) for more
+  // information on insertion points.  The default implementation
+  // assert-fails -- it exists only for backwards-compatibility.
   //
   // WARNING:  This feature is currently EXPERIMENTAL and is subject to change.
   virtual io::ZeroCopyOutputStream* OpenForInsert(

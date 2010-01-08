@@ -32,10 +32,14 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// This module declares the abstract interfaces underlying proto2 RPC
-// services.  These are intented to be independent of any particular RPC
+// DEPRECATED:  This module declares the abstract interfaces underlying proto2
+// RPC services.  These are intented to be independent of any particular RPC
 // implementation, so that proto2 services can be used on top of a variety
-// of implementations.
+// of implementations.  Starting with version 2.3.0, RPC implementations should
+// not try to build on these, but should instead provide code generator plugins
+// which generate code specific to the particular RPC implementation.  This way
+// the generated code can be more appropriate for the implementation in use
+// and can avoid unnecessary layers of indirection.
 //
 //
 // When you use the protocol compiler to compile a service definition, it

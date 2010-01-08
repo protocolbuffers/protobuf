@@ -117,10 +117,10 @@ message CodeGeneratorResponse {
     //
     // For example, the C++ code generator places the following line in the
     // .pb.h files that it generates:
-    //   // @@protoc_insertion_point(package_level_decls)
+    //   // @@protoc_insertion_point(namespace_scope)
     // This line appears within the scope of the file's package namespace, but
     // outside of any particular class.  Another plugin can then specify the
-    // insertion_point "package_level_decls" to generate additional classes or
+    // insertion_point "namespace_scope" to generate additional classes or
     // other declarations that should be placed in this scope.
     //
     // Note that if the line containing the insertion point begins with
@@ -129,6 +129,11 @@ message CodeGeneratorResponse {
     // indentation matters.  In these languages, the insertion point comment
     // should be indented the same amount as any inserted code will need to be
     // in order to work correctly in that context.
+    //
+    // The code generator that generates the initial file and the one which
+    // inserts into it must both run as part of a single invocatino of protoc.
+    // Code generators are executed in the order in which they appear on the
+    // command line.
     //
     // If |insertion_point| is present, |name| must also be present.
     optional string insertion_point = 2;

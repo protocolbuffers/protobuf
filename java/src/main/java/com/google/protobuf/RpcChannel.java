@@ -44,6 +44,12 @@ package com.google.protobuf;
  *   service.myMethod(controller, request, callback);
  * </pre>
  *
+ * <p>Starting with version 2.3.0, RPC implementations should not try to build
+ * on this, but should instead provide code generator plugins which generate
+ * code specific to the particular RPC implementation.  This way the generated
+ * code can be more appropriate for the implementation in use and can avoid
+ * unnecessary layers of indirection.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public interface RpcChannel {

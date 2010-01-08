@@ -28,12 +28,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Declares the RPC service interfaces.
+"""DEPRECATED:  Declares the RPC service interfaces.
 
 This module declares the abstract interfaces underlying proto2 RPC
 services.  These are intended to be independent of any particular RPC
 implementation, so that proto2 services can be used on top of a variety
-of implementations.
+of implementations.  Starting with version 2.3.0, RPC implementations should
+not try to build on these, but should instead provide code generator plugins
+which generate code specific to the particular RPC implementation.  This way
+the generated code can be more appropriate for the implementation in use
+and can avoid unnecessary layers of indirection.
 """
 
 __author__ = 'petar@google.com (Petar Petrov)'

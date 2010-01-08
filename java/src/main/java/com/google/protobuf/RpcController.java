@@ -35,6 +35,12 @@ package com.google.protobuf;
  * purpose of the controller is to provide a way to manipulate settings
  * specific to the RPC implementation and to find out about RPC-level errors.
  *
+ * <p>Starting with version 2.3.0, RPC implementations should not try to build
+ * on this, but should instead provide code generator plugins which generate
+ * code specific to the particular RPC implementation.  This way the generated
+ * code can be more appropriate for the implementation in use and can avoid
+ * unnecessary layers of indirection.
+ *
  * <p>The methods provided by the {@code RpcController} interface are intended
  * to be a "least common denominator" set of features which we expect all
  * implementations to support.  Specific implementations may provide more
