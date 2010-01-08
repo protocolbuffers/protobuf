@@ -254,18 +254,11 @@ unittest_proto_middleman: $(protoc_inputs)
 
 else
 
-# This rule is a little weird.  The first prereq is the protoc executable
-# and the rest are its inputs.  Therefore, $^ -- which expands to the
-# list of prereqs -- is actually a valid command.  We have to place "./" in
-# front of it in case protoc is in the current directory.  protoc allows
-# flags to appear after input file names, so we happily stick the flags on
-# the end.
-#
-# For reference, if we didn't have to worry about VPATH (i.e., building from
-# a directory other than the package root), we could have just written this:
-#   ./protoc$(EXEEXT) -I$(srcdir) --cpp_out=. $(protoc_inputs)
+# We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
+# relative to srcdir, which may not be the same as the current directory when
+# building out-of-tree.
 unittest_proto_middleman: protoc$(EXEEXT) $(protoc_inputs)
-	./$^ -I$(srcdir) --cpp_out=.
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/protoc$(EXEEXT) -I. --cpp_out=$$oldpwd $(protoc_inputs) )
 	touch unittest_proto_middleman
 
 endif
