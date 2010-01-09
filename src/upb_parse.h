@@ -32,16 +32,20 @@ extern "C" {
 //
 // Note that this callback can be called several times in a row for a single
 // call to tag_cb in the case of packed arrays.
-typedef bool (*upb_value_cb)(void *udata, struct upb_msgdef *msgdef,
-                             struct upb_fielddef *f, union upb_value val);
+typedef bool (*upb_value_cb)(void *udata, struct upb_fielddef *f,
+                             union upb_value val);
 
 // The string callback is called when a string that was defined in the
-// upb_msgdef is parsed.  avail_len is the number of bytes that are currently
-// available at str.  If the client is streaming and the current buffer ends in
-// the middle of the string, this number could be less than total_len.
-typedef bool (*upb_str_cb)(void *udata, struct upb_msgdef *msgdef,
-                           struct upb_fielddef *f, const uint8_t *str,
-                           size_t avail_len, size_t total_len);
+// upb_msgdef is parsed.  "str" is the protobuf data that is being parsed (NOT
+// the string in question); "start" and "end" are the start and end offset of
+// the string we parsed *within* str.  The data is supplied this way to give
+// you the opportunity to reference this data instead of copying it (perhaps
+// using upb_strslice), or to minimize copying if it is unavoidable.
+//
+// Note that if you are parsing in a streaming fashion, start could be <0 and
+// "end" could be >upb_strlen(str).
+typedef bool (*upb_str_cb)(void *udata, struct upb_fielddef *f, upb_strptr str,
+                           int32_t start, uint32_t end);
 
 // The start and end callbacks are called when a submessage begins and ends,
 // respectively.
@@ -114,11 +118,10 @@ typedef void (*upb_pp_str_cb)(void *udata, int fieldnum, uint8_t *str,
 // new function will return NULL if any of the field names are invalid, or are
 // repeated fields.
 struct upb_pickparser *upb_pickparser_new(struct upb_msgdef *msgdef,
-                                          char *fields[],
-                                          upb_pp_value_cb value_cb,
-                                          upb_pp_str_cb str_cb);
+                                          char *fields[]);
 void upb_pickparser_free(struct upb_pickparser *p);
-void upb_pickparser_reset(struct upb_pickparser *p, void *udata);
+void upb_pickparser_reset(struct upb_pickparser *p,
+                          bool found[], union upb_value vals[]);
 size_t upb_pickparser_parse(struct upb_pickparser *p, upb_strptr str,
                             struct upb_status *status);
 

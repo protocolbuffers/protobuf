@@ -324,10 +324,8 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
 // Callbacks for the stream parser.
 // TODO: implement these in terms of public interfaces.
 
-static bool value_cb(void *udata, struct upb_msgdef *msgdef,
-                     struct upb_fielddef *f, union upb_value val)
+static bool value_cb(void *udata, struct upb_fielddef *f, union upb_value val)
 {
-  (void)msgdef;
   struct upb_msgparser *mp = udata;
   upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
@@ -336,22 +334,20 @@ static bool value_cb(void *udata, struct upb_msgdef *msgdef,
   return true;
 }
 
-static bool str_cb(void *udata, struct upb_msgdef *msgdef,
-                   struct upb_fielddef *f, const uint8_t *str, size_t avail_len,
-                   size_t total_len)
+static bool str_cb(void *udata, struct upb_fielddef *f, upb_strptr str,
+                   int32_t start, uint32_t end)
 {
-  (void)msgdef;
   struct upb_msgparser *mp = udata;
   upb_msg *msg = mp->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_sethas(msg, f);
-  if(avail_len != total_len) abort();  /* TODO: support streaming. */
+  if(end > upb_strlen(str)) abort();  /* TODO: support streaming. */
   if(upb_string_isnull(*p.str) || !upb_data_only(*p.data)) {
     if(!upb_string_isnull(*p.str))
       upb_string_unref(*p.str);
     *p.str = upb_string_new();
   }
-  upb_strcpylen(*p.str, str, avail_len);
+  upb_strcpylen(*p.str, upb_string_getrobuf(str) + start, end - start);
   return true;
 }
 

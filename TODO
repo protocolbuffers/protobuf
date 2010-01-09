@@ -1,8 +1,15 @@
 - functionality
   - finish serialization
-  - text format to string (not just FILE*)
   - default values
-  - enums with 0
+  - extensions
+  - MessageSet
+  - create msgdef with subset of fields
+
+  - lazy parsing
+  - strings by reference
+
+  - enums with 0 (is this already fixed?)
+  - text format to string (not just FILE*)
   - python
     - _list() accessor
     - expose enums
@@ -15,8 +22,6 @@
   - low-level encoding/decoding
   - event parsing
   - python
-- performance
-  - strings by reference
 - checkin suite
   - benchmark diff (done)
   - memory footprint diff
@@ -25,3 +30,6 @@
   - -Werror no compiler warnings
   - test suite
   - verify that all headers compile with C++.
+- misc
+  - handle streaming where strings span buffer boundaries
+  - expose an unknown field callback

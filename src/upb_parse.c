@@ -432,17 +432,19 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, upb_strptr str,
   bool keep_going = true;
 
   // Make local copies so optimizer knows they won't change.
-  upb_str_cb str_cb = p->str_cb;
-  upb_value_cb value_cb = p->value_cb;
-  void *udata = p->udata;
+  const upb_str_cb str_cb = p->str_cb;
+  const upb_value_cb value_cb = p->value_cb;
+  void *const udata = p->udata;
 
   // We need to check the status of operations that can fail, but we do so as
   // late as possible to avoid introducing branches that have to wait on
-  // (status->code) which must be loaded from memory.
+  // (status->code) which must be loaded from memory.  We must always check
+  // before calling a user callback.
 #define CHECK_STATUS() do { if(!upb_ok(status)) goto err; } while(0)
 
-  // Main loop: parse a tag, find the appropriate fielddef.
+  // Main loop: executed once per tag/field pair.
   while(keep_going && buf < end) {
+    // Parse/handle tag.
     struct upb_tag tag;
     buf = parse_tag(buf, end, &tag, status);
     if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
@@ -459,20 +461,23 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, upb_strptr str,
       continue;
     }
 
+    // Look up field by tag number.
     struct upb_fielddef *f = upb_msg_itof(msgdef, tag.field_number);
+
+    // Parse/handle field.
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
       buf = upb_get_INT32(buf, end, &delim_len, status);
-      CHECK_STATUS();
+      CHECK_STATUS();  // Checking parse_tag() and upb_get_INT32().
       const uint8_t *delim_end = buf + delim_len;
       if(f && f->type == UPB_TYPE(MESSAGE)) {
         submsg_end = push(p, start, delim_end - start, f, status);
         msgdef = p->top->msgdef;
       } else {
         if(f && upb_isstringtype(f->type)) {
-          size_t avail_len = UPB_MIN(delim_end, end) - buf;
+          int32_t str_start = buf - start;
           keep_going =
-              str_cb(udata, msgdef, f, buf, avail_len, delim_end - buf);
+              str_cb(udata, f, str, str_start, str_start + delim_len);
         } // else { TODO: packed arrays }
         // If field was not found, it is skipped silently.
         buf = delim_end;  // Could be >end.
@@ -487,7 +492,8 @@ size_t upb_cbparser_parse(struct upb_cbparser *p, upb_strptr str,
         union upb_value val;
         buf = upb_parse_value(buf, end, f->type, upb_value_addrof(&val),
                               status);
-        keep_going = value_cb(udata, msgdef, f, val);
+        CHECK_STATUS();  // Checking upb_parse_value().
+        keep_going = value_cb(udata, f, val);
       }
     }
     CHECK_STATUS();
