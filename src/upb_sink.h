@@ -38,6 +38,8 @@
 extern "C" {
 #endif
 
+struct upb_fielddef;
+
 // Each of the upb_sink callbacks returns a status of this type.
 typedef enum {
   // The normal case, where the consumer wants to continue consuming.
