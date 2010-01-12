@@ -300,6 +300,39 @@ void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
 
 /* upb_msgsrc  ****************************************************************/
 
+static void _upb_msgsrc_produceval(union upb_value v, struct upb_fielddef *f,
+                                   upb_sink *sink)
+{
+  if(upb_issubmsg(f)) {
+    upb_sink_onstart(sink, f);
+    upb_msgsrc_produce(v.msg, upb_downcast_msgdef(f->def), sink);
+    upb_sink_onend(sink);
+  } else if(upb_isstring(f)) {
+    upb_sink_onstr(sink, f, v.str, 0, upb_strlen(v.str));
+  } else {
+    upb_sink_onvalue(sink, f, v);
+  }
+}
+
+void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink)
+{
+  for(int i = 0; i < md->num_fields; i++) {
+    struct upb_fielddef *f = &md->fields[i];
+    if(!upb_msg_has(msg, f)) continue;
+    union upb_value v = upb_msg_get(msg, f);
+    if(upb_isarray(f)) {
+      upb_arrayptr arr = v.arr;
+      for(upb_arraylen_t j = 0; j < upb_array_len(arr); j++) {
+        union upb_value elem = upb_array_get(arr, f, j);
+        _upb_msgsrc_produceval(elem, f, sink);
+      }
+    } else {
+      _upb_msgsrc_produceval(v, f, sink);
+    }
+  }
+}
+
+
 /* upb_msgsink  ***************************************************************/
 
 struct upb_msgsink_frame {

@@ -44,7 +44,9 @@ typedef enum {
   UPB_SINK_CONTINUE,
 
   // The consumer has consumed the current value, but it wants to stop for now.
-  // When the producer is next invoked, it should resume at the next value.
+  // When the source is next invoked, it should resume at the next value.  Note
+  // that sources are not necessarily resumable; if a source is not resumable,
+  // returning UPB_SINK_SUSPEND will simply halt it.
   UPB_SINK_SUSPEND,
 
   // The consumer wants to skip to the end of the current submessage and

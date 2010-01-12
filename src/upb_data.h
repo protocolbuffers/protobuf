@@ -522,22 +522,9 @@ void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
 
 /* upb_msgsrc *****************************************************************/
 
-// A upb_msgsrc can push the data of a upb_msg to a upb_sink.
-struct upb_msgsrc;
-typedef struct upb_msgsrc upb_msgsrc;
-
-// Allocate and free a msgsrc, respectively.
-upb_msgsrc *upb_msgsrc_new();
-void upb_msgsrc_free(upb_msgsrc *src);
-
-// Resets the msgsrc for the given msg, msgdef, and sink.  This must be
-// called before upb_msgsrc_produce().
-void upb_msgsrc_reset(upb_msgsrc *src, upb_msg *msg, struct upb_msgdef *md,
-                      upb_sink *sink);
-
-// Pushes data from the upb_msgsrc to the sink that was provided at the last
-// reset.  Returns true if the sink is finished, or false if it is suspended.
-bool upb_msgsrc_produce(upb_msgsrc *src);
+// A nonresumable, non-interruptable (but simple and fast) source for pushing
+// the data of a upb_msg to a upb_sink.
+void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink);
 
 
 /* upb_msgsink ****************************************************************/
