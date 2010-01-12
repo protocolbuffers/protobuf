@@ -3,12 +3,14 @@
 
 #include "upb_data.h"
 #include "upb_def.h"
+#include "upb_parse.h"
 
 static struct upb_symtab *s;
 static upb_strptr str;
 static struct upb_msgdef *def;
 static upb_msg *msgs[NUM_MESSAGES];
-static struct upb_msgparser *mp;
+static upb_parser *parser;
+static upb_msgsink *sink;
 
 static bool initialize()
 {
@@ -47,7 +49,8 @@ static bool initialize()
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
   }
-  mp = upb_msgparser_new(def);
+  parser = upb_parser_new(def);
+  sink = upb_msgsink_new(def);
   return true;
 }
 
@@ -57,17 +60,19 @@ static void cleanup()
     upb_msg_unref(msgs[i], def);
   upb_string_unref(str);
   upb_symtab_unref(s);
-  upb_msgparser_free(mp);
+  upb_parser_free(parser);
+  upb_msgsink_free(sink);
 }
 
 static size_t run(int i)
 {
   struct upb_status status = UPB_STATUS_INIT;
   upb_msg *msg = msgs[i%NUM_MESSAGES];
-  upb_msgparser_reset(mp, msg);
+  upb_msgsink_reset(sink, msg);
+  upb_parser_reset(parser, upb_msgsink_sink(sink));
   upb_msg_clear(msg, def);
-  upb_msgparser_parse(mp, str, &status);
-  if(!upb_ok(&status)) {
+  size_t parsed = upb_parser_parse(parser, str, &status);
+  if(!upb_ok(&status) || parsed != upb_strlen(str)) {
     fprintf(stderr, "Parse error: %s\n", status.msg);
     return 0;
   }

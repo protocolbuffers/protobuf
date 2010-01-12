@@ -282,18 +282,35 @@ void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
   free(msg);
 }
 
+void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
+                      struct upb_status *status)
+{
+  upb_parser *p = upb_parser_new(md);
+  upb_msgsink *s = upb_msgsink_new(md);
 
-/* Parsing.  ******************************************************************/
+  upb_msgsink_reset(s, msg);
+  upb_parser_reset(p, upb_msgsink_sink(s));
+  upb_msg_clear(msg, md);
+  upb_parser_parse(p, str, status);
 
-struct upb_msgparser_frame {
+  upb_parser_free(p);
+  upb_msgsink_free(s);
+}
+
+
+/* upb_msgsrc  ****************************************************************/
+
+/* upb_msgsink  ***************************************************************/
+
+struct upb_msgsink_frame {
   upb_msg *msg;
   struct upb_msgdef *md;
 };
 
-struct upb_msgparser {
-  struct upb_cbparser *s;
-  bool merge;
-  struct upb_msgparser_frame stack[UPB_MAX_NESTING], *top;
+struct upb_msgsink {
+  upb_sink base;
+  struct upb_msgdef *toplevel_msgdef;
+  struct upb_msgsink_frame stack[UPB_MAX_NESTING], *top;
 };
 
 /* Helper function that returns a pointer to where the next value for field "f"
@@ -321,24 +338,26 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
   return p;
 }
 
-// Callbacks for the stream parser.
+// Callbacks for upb_sink.
 // TODO: implement these in terms of public interfaces.
 
-static bool value_cb(void *udata, struct upb_fielddef *f, union upb_value val)
+static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, struct upb_fielddef *f,
+                                            union upb_value val)
 {
-  struct upb_msgparser *mp = udata;
-  upb_msg *msg = mp->top->msg;
+  upb_msgsink *ms = (upb_msgsink*)s;
+  upb_msg *msg = ms->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_sethas(msg, f);
   upb_value_write(p, val, f->type);
-  return true;
+  return UPB_SINK_CONTINUE;
 }
 
-static bool str_cb(void *udata, struct upb_fielddef *f, upb_strptr str,
-                   int32_t start, uint32_t end)
+static upb_sink_status _upb_msgsink_strcb(upb_sink *s, struct upb_fielddef *f,
+                                          upb_strptr str,
+                                          int32_t start, uint32_t end)
 {
-  struct upb_msgparser *mp = udata;
-  upb_msg *msg = mp->top->msg;
+  upb_msgsink *ms = (upb_msgsink*)s;
+  upb_msg *msg = ms->top->msg;
   union upb_value_ptr p = get_value_ptr(msg, f);
   upb_msg_sethas(msg, f);
   if(end > upb_strlen(str)) abort();  /* TODO: support streaming. */
@@ -348,13 +367,13 @@ static bool str_cb(void *udata, struct upb_fielddef *f, upb_strptr str,
     *p.str = upb_string_new();
   }
   upb_strcpylen(*p.str, upb_string_getrobuf(str) + start, end - start);
-  return true;
+  return UPB_SINK_CONTINUE;
 }
 
-static void start_cb(void *udata, struct upb_fielddef *f)
+static upb_sink_status _upb_msgsink_startcb(upb_sink *s, struct upb_fielddef *f)
 {
-  struct upb_msgparser *mp = udata;
-  upb_msg *oldmsg = mp->top->msg;
+  upb_msgsink *ms = (upb_msgsink*)s;
+  upb_msg *oldmsg = ms->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
 
   if(upb_isarray(f) || !upb_msg_has(oldmsg, f)) {
@@ -368,50 +387,50 @@ static void start_cb(void *udata, struct upb_fielddef *f)
     upb_msg_sethas(oldmsg, f);
   }
 
-  mp->top++;
-  mp->top->msg = *p.msg;
+  ms->top++;
+  ms->top->msg = *p.msg;
+  return UPB_SINK_CONTINUE;
 }
 
-static void end_cb(void *udata)
+static upb_sink_status _upb_msgsink_endcb(upb_sink *s)
 {
-  struct upb_msgparser *mp = udata;
-  mp->top--;
+  upb_msgsink *ms = (upb_msgsink*)s;
+  ms->top--;
+  return UPB_SINK_CONTINUE;
 }
 
-/* Externally-visible functions for the msg parser. */
+static upb_sink_callbacks _upb_msgsink_vtbl = {
+  _upb_msgsink_valuecb,
+  _upb_msgsink_strcb,
+  _upb_msgsink_startcb,
+  _upb_msgsink_endcb
+};
 
-struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def)
+//
+// External upb_msgsink interface.
+//
+
+upb_msgsink *upb_msgsink_new(struct upb_msgdef *md)
 {
-  struct upb_msgparser *mp = malloc(sizeof(struct upb_msgparser));
-  mp->s = upb_cbparser_new(def, value_cb, str_cb, start_cb, end_cb);
-  return mp;
+  upb_msgsink *ms = malloc(sizeof(*ms));
+  upb_sink_init(&ms->base, &_upb_msgsink_vtbl);
+  ms->toplevel_msgdef = md;
+  return ms;
 }
 
-void upb_msgparser_reset(struct upb_msgparser *s, upb_msg *msg)
+void upb_msgsink_free(upb_msgsink *sink)
 {
-  upb_cbparser_reset(s->s, s);
-  s->top = s->stack;
-  s->top->msg = msg;
+  free(sink);
 }
 
-void upb_msgparser_free(struct upb_msgparser *s)
+upb_sink *upb_msgsink_sink(upb_msgsink *sink)
 {
-  upb_cbparser_free(s->s);
-  free(s);
+  return &sink->base;
 }
 
-void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
-                      struct upb_status *status)
+void upb_msgsink_reset(upb_msgsink *ms, upb_msg *msg)
 {
-  struct upb_msgparser *mp = upb_msgparser_new(md);
-  upb_msgparser_reset(mp, msg);
-  upb_msg_clear(msg, md);
-  upb_msgparser_parse(mp, str, status);
-  upb_msgparser_free(mp);
-}
-
-size_t upb_msgparser_parse(struct upb_msgparser *s, upb_strptr str,
-                           struct upb_status *status)
-{
-  return upb_cbparser_parse(s->s, str, status);
+  ms->top = ms->stack;
+  ms->top->msg = msg;
+  ms->top->md = ms->toplevel_msgdef;
 }

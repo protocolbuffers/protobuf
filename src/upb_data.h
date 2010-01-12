@@ -26,6 +26,7 @@
 #include "upb.h"
 #include "upb_atomic.h"
 #include "upb_def.h"
+#include "upb_sink.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -513,18 +514,47 @@ INLINE void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md) {
   memset(msg->data, 0, md->set_flags_bytes);
 }
 
-/* Parsing ********************************************************************/
-
+// A convenience function for parsing an entire protobuf all at once, without
+// having to worry about setting up the appropriate objects.
 void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
                       struct upb_status *status);
 
-struct upb_msgparser *upb_msgparser_new(struct upb_msgdef *def);
-void upb_msgparser_free(struct upb_msgparser *mp);
 
-void upb_msgparser_reset(struct upb_msgparser *mp, upb_msg *m);
+/* upb_msgsrc *****************************************************************/
 
-size_t upb_msgparser_parse(struct upb_msgparser *mp, upb_strptr str,
-                           struct upb_status *status);
+// A upb_msgsrc can push the data of a upb_msg to a upb_sink.
+struct upb_msgsrc;
+typedef struct upb_msgsrc upb_msgsrc;
+
+// Allocate and free a msgsrc, respectively.
+upb_msgsrc *upb_msgsrc_new();
+void upb_msgsrc_free(upb_msgsrc *src);
+
+// Resets the msgsrc for the given msg, msgdef, and sink.  This must be
+// called before upb_msgsrc_produce().
+void upb_msgsrc_reset(upb_msgsrc *src, upb_msg *msg, struct upb_msgdef *md,
+                      upb_sink *sink);
+
+// Pushes data from the upb_msgsrc to the sink that was provided at the last
+// reset.  Returns true if the sink is finished, or false if it is suspended.
+bool upb_msgsrc_produce(upb_msgsrc *src);
+
+
+/* upb_msgsink ****************************************************************/
+
+// A upb_msgsink can accept the data from a source and write it into a message.
+struct upb_msgsink;
+typedef struct upb_msgsink upb_msgsink;
+
+// Allocate and free a msgsink, respectively.
+upb_msgsink *upb_msgsink_new(struct upb_msgdef *md);
+void upb_msgsink_free(upb_msgsink *sink);
+
+// Returns the upb_sink (like an upcast).
+upb_sink *upb_msgsink_sink(upb_msgsink *sink);
+
+// Resets the msgsink for the given msg.
+void upb_msgsink_reset(upb_msgsink *sink, upb_msg *msg);
 
 #ifdef __cplusplus
 }  /* extern "C" */
