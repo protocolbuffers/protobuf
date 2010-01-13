@@ -675,7 +675,7 @@ template <typename TypeHandler>
 inline void RepeatedPtrFieldBase::MergeFrom(const RepeatedPtrFieldBase& other) {
   Reserve(current_size_ + other.current_size_);
   for (int i = 0; i < other.current_size_; i++) {
-    TypeHandler::Merge(other.Get<TypeHandler>(i), Add<TypeHandler>());
+    TypeHandler::Merge(other.template Get<TypeHandler>(i), Add<TypeHandler>());
   }
 }
 
