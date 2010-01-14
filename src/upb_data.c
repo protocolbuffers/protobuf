@@ -306,7 +306,7 @@ static void _upb_msgsrc_produceval(union upb_value v, struct upb_fielddef *f,
   if(upb_issubmsg(f)) {
     upb_sink_onstart(sink, f);
     upb_msgsrc_produce(v.msg, upb_downcast_msgdef(f->def), sink);
-    upb_sink_onend(sink);
+    upb_sink_onend(sink, f);
   } else if(upb_isstring(f)) {
     upb_sink_onstr(sink, f, v.str, 0, upb_strlen(v.str));
   } else {
@@ -425,8 +425,9 @@ static upb_sink_status _upb_msgsink_startcb(upb_sink *s, struct upb_fielddef *f)
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_msgsink_endcb(upb_sink *s)
+static upb_sink_status _upb_msgsink_endcb(upb_sink *s, struct upb_fielddef *f)
 {
+  (void)f;  // Unused.
   upb_msgsink *ms = (upb_msgsink*)s;
   ms->top--;
   return UPB_SINK_CONTINUE;

@@ -37,7 +37,8 @@ INLINE const uint8_t *upb_get_v_uint64_t(const uint8_t *buf, const uint8_t *end,
   }
 }
 
-// Gets a varint -- called when we only need 32 bits of it.
+// Gets a varint -- called when we only need 32 bits of it.  Note that a 32-bit
+// varint is not a true wire type.
 INLINE const uint8_t *upb_get_v_uint32_t(const uint8_t *buf, const uint8_t *end,
                                          uint32_t *val,
                                          struct upb_status *status)
@@ -312,6 +313,7 @@ static const uint8_t *upb_parse_value(const uint8_t *buf, const uint8_t *end,
 
 struct upb_parser_frame {
   struct upb_msgdef *msgdef;
+  struct upb_fielddef *field;
   size_t end_offset;  // For groups, 0.
 };
 
@@ -380,6 +382,7 @@ static const uint8_t *push(upb_parser *p, const uint8_t *start,
                            uint32_t submsg_len, struct upb_fielddef *f,
                            struct upb_status *status)
 {
+  p->top->field = f;
   p->top++;
   if(p->top >= p->limit) {
     upb_seterr(status, UPB_STATUS_ERROR,
@@ -401,8 +404,8 @@ static const uint8_t *push(upb_parser *p, const uint8_t *start,
  */
 static const void *pop(upb_parser *p, const uint8_t *start)
 {
-  upb_sink_onend(p->sink);
   p->top--;
+  upb_sink_onend(p->sink, p->top->field);
   return get_msgend(p, start);
 }
 
