@@ -20,7 +20,8 @@
 extern "C" {
 #endif
 
-size_t upb_get_value_size(union upb_value v, struct upb_fielddef *f);
+size_t upb_get_serialized_tag_size(uint32_t fieldnum);
+size_t upb_get_serialized_value_size(union upb_value v, struct upb_fielddef *f);
 
 struct upb_serializer;
 typedef struct upb_serializer upb_serializer;

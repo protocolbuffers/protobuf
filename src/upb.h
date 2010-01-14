@@ -53,7 +53,9 @@ typedef int16_t upb_field_count_t;
 //   }
 #define UPB_MAX_TYPE_CYCLE_LEN 16
 
-// The maximum depth that the type graph can have.
+// The maximum depth that the type graph can have.  Note that this setting does
+// not automatically constrain UPB_MAX_NESTING, because type cycles allow for
+// unlimited nesting if we do not limit it.
 #define UPB_MAX_TYPE_DEPTH 64
 
 /* Fundamental types and type constants. **************************************/

@@ -9,9 +9,9 @@
 
 /* Functions for calculating sizes. *******************************************/
 
-INLINE size_t upb_v_uint64_t_size(uint64_t val) {
+static size_t upb_v_uint64_t_size(uint64_t val) {
 #ifdef __GNUC__
-  int high_bit = 63 - __builtin_clzll(val);  /* 0-based, undef if val == 0. */
+  int high_bit = 63 - __builtin_clzll(val);  // 0-based, undef if val == 0.
 #else
   int high_bit = 0;
   uint64_t tmp = val;
@@ -20,73 +20,68 @@ INLINE size_t upb_v_uint64_t_size(uint64_t val) {
   return val == 0 ? 1 : high_bit / 7 + 1;
 }
 
-INLINE size_t upb_v_int32_t_size(int32_t val) {
-  /* v_uint32's are sign-extended to maintain wire compatibility with int64s. */
+static size_t upb_v_int32_t_size(int32_t val) {
+  // v_uint32's are sign-extended to maintain wire compatibility with int64s.
   return upb_v_uint64_t_size((int64_t)val);
 }
-INLINE size_t upb_v_uint32_t_size(uint32_t val) {
+static size_t upb_v_uint32_t_size(uint32_t val) {
   return upb_v_uint64_t_size(val);
 }
-INLINE size_t upb_f_uint64_t_size(uint64_t val) {
-  (void)val;  /* Length is independent of value. */
+static size_t upb_f_uint64_t_size(uint64_t val) {
+  (void)val;  // Length is independent of value.
   return sizeof(uint64_t);
 }
-INLINE size_t upb_f_uint32_t_size(uint32_t val) {
-  (void)val;  /* Length is independent of value. */
+static size_t upb_f_uint32_t_size(uint32_t val) {
+  (void)val;  // Length is independent of value.
   return sizeof(uint32_t);
 }
+
+// The biggest possible single value is a 10-byte varint.
+#define UPB_MAX_SERIALIZED_SIZE 10
 
 
 /* Functions to write wire values. ********************************************/
 
-/* Puts a varint (wire type: UPB_WIRE_TYPE_VARINT). */
-uint8_t *upb_put_v_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
-                            struct upb_status *status)
+// Since we know in advance the longest that the value could be, we always make
+// sure that our buffer is long enough.  This saves us from having to perform
+// bounds checks.
+
+// Puts a varint (wire type: UPB_WIRE_TYPE_VARINT).
+static uint8_t *upb_put_v_uint64_t(uint8_t *buf, uint64_t val)
 {
   do {
     uint8_t byte = val & 0x7f;
     val >>= 7;
     if(val) byte |= 0x80;
-    if(buf >= end) {
-      status->code = UPB_STATUS_NEED_MORE_DATA;
-      return end;
-    }
     *buf++ = byte;
   } while(val);
   return buf;
 }
 
-/* Puts an unsigned 32-bit varint, verbatim.  Never uses the high 64 bits. */
-uint8_t *upb_put_v_uint32_t(uint8_t *buf, uint8_t *end, uint32_t val,
-                            struct upb_status *status)
+// Puts an unsigned 32-bit varint, verbatim.  Never uses the high 64 bits.
+static uint8_t *upb_put_v_uint32_t(uint8_t *buf, uint32_t val)
 {
-  return upb_put_v_uint64_t(buf, end, val, status);
+  return upb_put_v_uint64_t(buf, val);
 }
 
-/* Puts a signed 32-bit varint, first sign-extending to 64-bits.  We do this to
- * maintain wire-compatibility with 64-bit signed integers. */
-uint8_t *upb_put_v_int32_t(uint8_t *buf, uint8_t *end, int32_t val,
-                           struct upb_status *status)
+// Puts a signed 32-bit varint, first sign-extending to 64-bits.  We do this to
+// maintain wire-compatibility with 64-bit signed integers.
+static uint8_t *upb_put_v_int32_t(uint8_t *buf, int32_t val)
 {
-  return upb_put_v_uint64_t(buf, end, (int64_t)val, status);
+  return upb_put_v_uint64_t(buf, (int64_t)val);
 }
 
-void upb_put32(uint8_t *buf, uint32_t val) {
+static void upb_put32(uint8_t *buf, uint32_t val) {
   buf[0] = val & 0xff;
   buf[1] = (val >> 8) & 0xff;
   buf[2] = (val >> 16) & 0xff;
   buf[3] = (val >> 24);
 }
 
-/* Puts a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT). */
-uint8_t *upb_put_f_uint32_t(uint8_t *buf, uint8_t *end, uint32_t val,
-                            struct upb_status *status)
+// Puts a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).
+static uint8_t *upb_put_f_uint32_t(uint8_t *buf, uint32_t val)
 {
   uint8_t *uint32_end = buf + sizeof(uint32_t);
-  if(uint32_end > end) {
-    status->code = UPB_STATUS_NEED_MORE_DATA;
-    return end;
-  }
 #if UPB_UNALIGNED_READS_OK
   *(uint32_t*)buf = val;
 #else
@@ -95,15 +90,10 @@ uint8_t *upb_put_f_uint32_t(uint8_t *buf, uint8_t *end, uint32_t val,
   return uint32_end;
 }
 
-/* Puts a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT). */
-uint8_t *upb_put_f_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
-                            struct upb_status *status)
+// Puts a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).
+static uint8_t *upb_put_f_uint64_t(uint8_t *buf, uint64_t val)
 {
   uint8_t *uint64_end = buf + sizeof(uint64_t);
-  if(uint64_end > end) {
-    status->code = UPB_STATUS_NEED_MORE_DATA;
-    return end;
-  }
 #if UPB_UNALIGNED_READS_OK
   *(uint64_t*)buf = val;
 #else
@@ -116,8 +106,8 @@ uint8_t *upb_put_f_uint64_t(uint8_t *buf, uint8_t *end, uint64_t val,
 /* Functions to write .proto values. ******************************************/
 
 /* Performs zig-zag encoding, which is used by sint32 and sint64. */
-INLINE uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+static uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
+static uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
 
 /* Use macros to define a set of two functions for each .proto type:
  *
@@ -125,8 +115,7 @@ INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
  *  // of the current available buffer (if the buffer does not contain enough
  *  // space UPB_STATUS_NEED_MORE_DATA is returned).  On success, *outbuf will
  *  // point one past the data that was written.
- *  uint8_t *upb_put_INT32(uint8_t *buf, uint8_t *end, int32_t val,
- *                         struct upb_status *status);
+ *  uint8_t *upb_put_INT32(uint8_t *buf, int32_t val);
  *
  *  // Returns the number of bytes required to serialize val.
  *  size_t upb_get_INT32_size(int32_t val);
@@ -136,24 +125,23 @@ INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
  */
 
 #define VTOWV(type, wire_t, val_t) \
-  INLINE wire_t upb_vtowv_ ## type(val_t s)
+  static wire_t upb_vtowv_ ## type(val_t s)
 
 #define PUT(type, v_or_f, wire_t, val_t, member_name) \
-  INLINE uint8_t *upb_put_ ## type(uint8_t *buf, uint8_t *end, val_t val, \
-                                   struct upb_status *status) { \
+  static uint8_t *upb_put_ ## type(uint8_t *buf, val_t val) { \
     wire_t tmp = upb_vtowv_ ## type(val); \
-    return upb_put_ ## v_or_f ## _ ## wire_t(buf, end, tmp, status); \
+    return upb_put_ ## v_or_f ## _ ## wire_t(buf, tmp); \
   }
 
 #define T(type, v_or_f, wire_t, val_t, member_name) \
-  INLINE size_t upb_get_ ## type ## _size(val_t val) { \
+  static size_t upb_get_ ## type ## _size(val_t val) { \
     return upb_ ## v_or_f ## _ ## wire_t ## _size(val); \
   } \
   VTOWV(type, wire_t, val_t);  /* prototype for PUT below */ \
   PUT(type, v_or_f, wire_t, val_t, member_name) \
   VTOWV(type, wire_t, val_t)
 
-T(INT32,    v, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
+T(INT32,    v,  int32_t, int32_t,  int32)   { return (uint32_t)s;     }
 T(INT64,    v, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
 T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;               }
 T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;               }
@@ -179,16 +167,11 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef PUT
 #undef T
 
-INLINE size_t upb_get_tag_size(uint32_t fieldnum) {
-  return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
-}
-
-uint8_t *upb_serialize_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
-                             union upb_value_ptr v, struct upb_status *status)
+uint8_t *upb_serialize_value(uint8_t *buf, upb_field_type_t ft,
+                                    union upb_value v)
 {
 #define CASE(t, member_name) \
-  case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## t: \
-    return upb_put_ ## t(buf, end, *v.member_name, status);
+  case UPB_TYPE(t): return upb_put_ ## t(buf, v.member_name);
   switch(ft) {
     CASE(DOUBLE,   _double)
     CASE(FLOAT,    _float)
@@ -204,7 +187,134 @@ uint8_t *upb_serialize_value(uint8_t *buf, uint8_t *end, upb_field_type_t ft,
     CASE(SFIXED64, int64)
     CASE(BOOL,     _bool)
     CASE(ENUM,     int32)
-    default: return end;
+    default: assert(false); return buf;
   }
 #undef CASE
 }
+
+uint8_t *_upb_put_tag(uint8_t *buf, upb_field_number_t fn, upb_wire_type_t wt)
+{
+  return upb_put_UINT32(buf, wt | (fn << 3));
+}
+
+
+/* upb_sink callbacks *********************************************************/
+
+struct upb_serializer {
+  upb_sink base;
+  //upb_bytesink *bytesink;
+  uint32_t *sizes;
+  int size_offset;
+};
+
+
+// Within one callback we may need to serialize up to two separate values.
+#define UPB_SERIALIZER_BUFSIZE (UPB_MAX_SERIALIZED_SIZE * 2)
+
+static upb_sink_status _upb_serializer_push_buf(upb_serializer *s, const uint8_t *buf,
+                                                size_t len)
+{
+  // TODO: conjure a upb_strptr that points to buf.
+  //upb_strptr ptr;
+  (void)s;
+  (void)buf;
+  size_t written = 5;// = upb_bytesink_onbytes(s->bytesink, ptr);
+  if(written < len) {
+    // TODO: mark to skip "written" bytes next time.
+    return UPB_SINK_STOP;
+  } else {
+    return UPB_SINK_CONTINUE;
+  }
+}
+
+static upb_sink_status _upb_serializersink_valuecb(upb_sink *sink,
+                                               struct upb_fielddef *f,
+                                               union upb_value val)
+{
+  upb_serializer *s = (upb_serializer*)sink;
+  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  upb_wire_type_t wt = upb_type_info[f->type].expected_wire_type;
+  // TODO: handle packed encoding.
+  ptr = _upb_put_tag(ptr, f->number, wt);
+  ptr = upb_serialize_value(ptr, f->type, val);
+  return _upb_serializer_push_buf(s, buf, ptr - buf);
+}
+
+static upb_sink_status _upb_serializersink_strcb(upb_sink *sink, struct upb_fielddef *f,
+                                          upb_strptr str,
+                                          int32_t start, uint32_t end)
+{
+  upb_serializer *s = (upb_serializer*)sink;
+  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  if(start >= 0) {
+    ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
+    ptr = upb_put_UINT32(ptr, end - start);
+  }
+  // TODO: properly handle partially consumed strings and partially supplied
+  // strings.
+  _upb_serializer_push_buf(s, buf, ptr - buf);
+  return _upb_serializer_push_buf(s, upb_string_getrobuf(str), end - start);
+}
+
+static upb_sink_status _upb_serializersink_startcb(upb_sink *sink,
+                                            struct upb_fielddef *f)
+{
+  upb_serializer *s = (upb_serializer*)sink;
+  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  if(f->type == UPB_TYPE(GROUP)) {
+    ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_START_GROUP);
+  } else {
+    ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
+    ptr = upb_put_UINT32(ptr, s->sizes[--s->size_offset]);
+  }
+  return _upb_serializer_push_buf(s, buf, ptr - buf);
+}
+
+static upb_sink_status _upb_serializersink_endcb(upb_sink *sink,
+                                                 struct upb_fielddef *f)
+{
+  upb_serializer *s = (upb_serializer*)sink;
+  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  if(f->type != UPB_TYPE(GROUP)) return UPB_SINK_CONTINUE;
+  ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_END_GROUP);
+  return _upb_serializer_push_buf(s, buf, ptr - buf);
+}
+
+upb_sink_callbacks _upb_serializersink_vtbl = {
+  _upb_serializersink_valuecb,
+  _upb_serializersink_strcb,
+  _upb_serializersink_startcb,
+  _upb_serializersink_endcb
+};
+
+
+/* Public Interface ***********************************************************/
+
+size_t upb_get_serialized_size(union upb_value v, struct upb_fielddef *f)
+{
+#define CASE(t, member_name) \
+  case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);
+  switch(f->type) {
+    CASE(DOUBLE,   _double)
+    CASE(FLOAT,    _float)
+    CASE(INT32,    int32)
+    CASE(INT64,    int64)
+    CASE(UINT32,   uint32)
+    CASE(UINT64,   uint64)
+    CASE(SINT32,   int32)
+    CASE(SINT64,   int64)
+    CASE(FIXED32,  uint32)
+    CASE(FIXED64,  uint64)
+    CASE(SFIXED32, int32)
+    CASE(SFIXED64, int64)
+    CASE(BOOL,     _bool)
+    CASE(ENUM,     int32)
+    default: assert(false); return 0;
+  }
+#undef CASE
+}
+
+size_t upb_get_serialized_tag_size(uint32_t fieldnum) {
+  return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
+}
+
