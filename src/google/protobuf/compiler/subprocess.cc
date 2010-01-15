@@ -96,7 +96,7 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
   }
 
   // Setup STARTUPINFO to redirect handles.
-  STARTUPINFO startup_info;
+  STARTUPINFOA startup_info;
   ZeroMemory(&startup_info, sizeof(startup_info));
   startup_info.cb = sizeof(startup_info);
   startup_info.dwFlags = STARTF_USESTDHANDLES;
@@ -115,16 +115,16 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
   // Create the process.
   PROCESS_INFORMATION process_info;
 
-  if (CreateProcess((search_mode == SEARCH_PATH) ? NULL : program.c_str(),
-                    (search_mode == SEARCH_PATH) ? name_copy : NULL,
-                    NULL,  // process security attributes
-                    NULL,  // thread security attributes
-                    TRUE,  // inherit handles?
-                    0,     // obscure creation flags
-                    NULL,  // environment (inherit from parent)
-                    NULL,  // current directory (inherit from parent)
-                    &startup_info,
-                    &process_info)) {
+  if (CreateProcessA((search_mode == SEARCH_PATH) ? NULL : program.c_str(),
+                     (search_mode == SEARCH_PATH) ? name_copy : NULL,
+                     NULL,  // process security attributes
+                     NULL,  // thread security attributes
+                     TRUE,  // inherit handles?
+                     0,     // obscure creation flags
+                     NULL,  // environment (inherit from parent)
+                     NULL,  // current directory (inherit from parent)
+                     &startup_info,
+                     &process_info)) {
     child_handle_ = process_info.hProcess;
     CloseHandleOrDie(process_info.hThread);
     child_stdin_ = stdin_pipe_write;
