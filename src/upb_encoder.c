@@ -4,7 +4,7 @@
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
-#include "upb_serialize.h"
+#include "upb_encoder.h"
 #include "descriptor.h"
 
 /* Functions for calculating sizes. *******************************************/
@@ -37,7 +37,7 @@ static size_t upb_f_uint32_t_size(uint32_t val) {
 }
 
 // The biggest possible single value is a 10-byte varint.
-#define UPB_MAX_SERIALIZED_SIZE 10
+#define UPB_MAX_ENCODED_SIZE 10
 
 
 /* Functions to write wire values. ********************************************/
@@ -117,7 +117,7 @@ static uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
  *  // point one past the data that was written.
  *  uint8_t *upb_put_INT32(uint8_t *buf, int32_t val);
  *
- *  // Returns the number of bytes required to serialize val.
+ *  // Returns the number of bytes required to encode val.
  *  size_t upb_get_INT32_size(int32_t val);
  *
  *  // Given a .proto value s (source) convert it to a wire value.
@@ -167,8 +167,8 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef PUT
 #undef T
 
-uint8_t *upb_serialize_value(uint8_t *buf, upb_field_type_t ft,
-                                    union upb_value v)
+uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft,
+                          union upb_value v)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_put_ ## t(buf, v.member_name);
@@ -200,7 +200,7 @@ uint8_t *_upb_put_tag(uint8_t *buf, upb_field_number_t fn, upb_wire_type_t wt)
 
 /* upb_sink callbacks *********************************************************/
 
-struct upb_serializer {
+struct upb_encoder {
   upb_sink base;
   //upb_bytesink *bytesink;
   uint32_t *sizes;
@@ -208,11 +208,11 @@ struct upb_serializer {
 };
 
 
-// Within one callback we may need to serialize up to two separate values.
-#define UPB_SERIALIZER_BUFSIZE (UPB_MAX_SERIALIZED_SIZE * 2)
+// Within one callback we may need to encode up to two separate values.
+#define UPB_ENCODER_BUFSIZE (UPB_MAX_ENCODED_SIZE * 2)
 
-static upb_sink_status _upb_serializer_push_buf(upb_serializer *s, const uint8_t *buf,
-                                                size_t len)
+static upb_sink_status _upb_encoder_push_buf(upb_encoder *s, const uint8_t *buf,
+                                             size_t len)
 {
   // TODO: conjure a upb_strptr that points to buf.
   //upb_strptr ptr;
@@ -227,70 +227,71 @@ static upb_sink_status _upb_serializer_push_buf(upb_serializer *s, const uint8_t
   }
 }
 
-static upb_sink_status _upb_serializersink_valuecb(upb_sink *sink,
-                                               struct upb_fielddef *f,
-                                               union upb_value val)
+static upb_sink_status _upb_encoder_valuecb(upb_sink *sink,
+                                            struct upb_fielddef *f,
+                                            union upb_value val)
 {
-  upb_serializer *s = (upb_serializer*)sink;
-  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  upb_encoder *s = (upb_encoder*)sink;
+  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
   upb_wire_type_t wt = upb_type_info[f->type].expected_wire_type;
   // TODO: handle packed encoding.
   ptr = _upb_put_tag(ptr, f->number, wt);
-  ptr = upb_serialize_value(ptr, f->type, val);
-  return _upb_serializer_push_buf(s, buf, ptr - buf);
+  ptr = upb_encode_value(ptr, f->type, val);
+  return _upb_encoder_push_buf(s, buf, ptr - buf);
 }
 
-static upb_sink_status _upb_serializersink_strcb(upb_sink *sink, struct upb_fielddef *f,
+static upb_sink_status _upb_encoder_strcb(upb_sink *sink,
+                                          struct upb_fielddef *f,
                                           upb_strptr str,
                                           int32_t start, uint32_t end)
 {
-  upb_serializer *s = (upb_serializer*)sink;
-  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  upb_encoder *s = (upb_encoder*)sink;
+  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
   if(start >= 0) {
     ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
     ptr = upb_put_UINT32(ptr, end - start);
   }
   // TODO: properly handle partially consumed strings and partially supplied
   // strings.
-  _upb_serializer_push_buf(s, buf, ptr - buf);
-  return _upb_serializer_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start);
+  _upb_encoder_push_buf(s, buf, ptr - buf);
+  return _upb_encoder_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start);
 }
 
-static upb_sink_status _upb_serializersink_startcb(upb_sink *sink,
+static upb_sink_status _upb_encoder_startcb(upb_sink *sink,
                                             struct upb_fielddef *f)
 {
-  upb_serializer *s = (upb_serializer*)sink;
-  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  upb_encoder *s = (upb_encoder*)sink;
+  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
   if(f->type == UPB_TYPE(GROUP)) {
     ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_START_GROUP);
   } else {
     ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
     ptr = upb_put_UINT32(ptr, s->sizes[--s->size_offset]);
   }
-  return _upb_serializer_push_buf(s, buf, ptr - buf);
+  return _upb_encoder_push_buf(s, buf, ptr - buf);
 }
 
-static upb_sink_status _upb_serializersink_endcb(upb_sink *sink,
-                                                 struct upb_fielddef *f)
+static upb_sink_status _upb_encoder_endcb(upb_sink *sink,
+                                          struct upb_fielddef *f)
 {
-  upb_serializer *s = (upb_serializer*)sink;
-  uint8_t buf[UPB_SERIALIZER_BUFSIZE], *ptr = buf;
+  upb_encoder *s = (upb_encoder*)sink;
+  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
   if(f->type != UPB_TYPE(GROUP)) return UPB_SINK_CONTINUE;
   ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_END_GROUP);
-  return _upb_serializer_push_buf(s, buf, ptr - buf);
+  return _upb_encoder_push_buf(s, buf, ptr - buf);
 }
 
-upb_sink_callbacks _upb_serializersink_vtbl = {
-  _upb_serializersink_valuecb,
-  _upb_serializersink_strcb,
-  _upb_serializersink_startcb,
-  _upb_serializersink_endcb
+upb_sink_callbacks _upb_encoder_sink_vtbl = {
+  _upb_encoder_valuecb,
+  _upb_encoder_strcb,
+  _upb_encoder_startcb,
+  _upb_encoder_endcb
 };
 
 
 /* Public Interface ***********************************************************/
 
-size_t upb_get_serialized_size(union upb_value v, struct upb_fielddef *f)
+size_t upb_get_encoded_size(union upb_value v, struct upb_fielddef *f)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);
@@ -314,7 +315,7 @@ size_t upb_get_serialized_size(union upb_value v, struct upb_fielddef *f)
 #undef CASE
 }
 
-size_t upb_get_serialized_tag_size(uint32_t fieldnum) {
+size_t upb_get_encoded_tag_size(uint32_t fieldnum) {
   return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
 }
 
