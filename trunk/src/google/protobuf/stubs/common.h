@@ -48,6 +48,24 @@
 #include <stdint.h>
 #endif
 
+#if defined(_WIN32) && defined(GetMessage)
+// Allow GetMessage to be used as a valid method name in protobuf classes.
+// windows.h defines GetMessage() as a macro.  Let's re-define it as an inline
+// function.  The inline function should be equivalent for C++ users.
+inline BOOL GetMessage_Win32(
+    LPMSG lpMsg, HWND hWnd,
+    UINT wMsgFilterMin, UINT wMsgFilterMax) {
+  return GetMessage(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+}
+#undef GetMessage
+inline BOOL GetMessage(
+    LPMSG lpMsg, HWND hWnd,
+    UINT wMsgFilterMin, UINT wMsgFilterMax) {
+  return GetMessage_Win32(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+}
+#endif
+
+
 namespace std {}
 
 namespace google {
