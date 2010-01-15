@@ -524,7 +524,8 @@ void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
 
 // A nonresumable, non-interruptable (but simple and fast) source for pushing
 // the data of a upb_msg to a upb_sink.
-void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink);
+void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink,
+                        bool reverse);
 
 
 /* upb_msgsink ****************************************************************/

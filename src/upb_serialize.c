@@ -253,7 +253,7 @@ static upb_sink_status _upb_serializersink_strcb(upb_sink *sink, struct upb_fiel
   // TODO: properly handle partially consumed strings and partially supplied
   // strings.
   _upb_serializer_push_buf(s, buf, ptr - buf);
-  return _upb_serializer_push_buf(s, upb_string_getrobuf(str), end - start);
+  return _upb_serializer_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start);
 }
 
 static upb_sink_status _upb_serializersink_startcb(upb_sink *sink,
