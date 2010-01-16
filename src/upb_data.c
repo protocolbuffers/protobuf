@@ -24,7 +24,7 @@ static uint32_t round_up_to_pow2(uint32_t v)
 
 /* upb_data *******************************************************************/
 
-static void data_elem_unref(union upb_value_ptr p, upb_fielddef *f) {
+static void data_elem_unref(upb_valueptr p, upb_fielddef *f) {
   if(upb_issubmsg(f)) {
     upb_msg_unref(*p.msg, upb_downcast_msgdef(f->def));
   } else if(upb_isstring(f)) {
@@ -34,7 +34,7 @@ static void data_elem_unref(union upb_value_ptr p, upb_fielddef *f) {
   }
 }
 
-static void data_unref(union upb_value_ptr p, upb_fielddef *f) {
+static void data_unref(upb_valueptr p, upb_fielddef *f) {
   if(upb_isarray(f)) {
     upb_array_unref(*p.arr, f);
   } else {
@@ -212,7 +212,7 @@ void _upb_array_free(upb_arrayptr a, upb_fielddef *f)
 {
   if(upb_elem_ismm(f)) {
     for(upb_arraylen_t i = 0; i < a.refcounted->size; i++) {
-      union upb_value_ptr p = _upb_array_getptr(a, f, i);
+      upb_valueptr p = _upb_array_getptr(a, f, i);
       if(!*p.data) continue;
       data_elem_unref(p, f);
     }
@@ -274,7 +274,7 @@ void _upb_msg_free(upb_msg *msg, upb_msgdef *md)
 {
   for(int i = 0; i < md->num_fields; i++) {
     upb_fielddef *f = &md->fields[i];
-    union upb_value_ptr p = _upb_msg_getptr(msg, f);
+    upb_valueptr p = _upb_msg_getptr(msg, f);
     if(!upb_field_ismm(f) || !*p.data) continue;
     data_unref(p, f);
   }
@@ -300,8 +300,8 @@ void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
 
 /* upb_msgsrc  ****************************************************************/
 
-static void _upb_msgsrc_produceval(union upb_value v, upb_fielddef *f,
-                                   upb_sink *sink, bool reverse)
+static void _upb_msgsrc_produceval(upb_value v, upb_fielddef *f, upb_sink *sink,
+                                   bool reverse)
 {
   if(upb_issubmsg(f)) {
     upb_sink_onstart(sink, f);
@@ -320,12 +320,12 @@ void upb_msgsrc_produce(upb_msg *msg, upb_msgdef *md, upb_sink *sink,
   for(int i = 0; i < md->num_fields; i++) {
     upb_fielddef *f = &md->fields[reverse ? md->num_fields - i - 1 : i];
     if(!upb_msg_has(msg, f)) continue;
-    union upb_value v = upb_msg_get(msg, f);
+    upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
       upb_arrayptr arr = v.arr;
       upb_arraylen_t len = upb_array_len(arr);
       for(upb_arraylen_t j = 0; j < upb_array_len(arr); j++) {
-        union upb_value elem = upb_array_get(arr, f, reverse ? len - j - 1 : j);
+        upb_value elem = upb_array_get(arr, f, reverse ? len - j - 1 : j);
         _upb_msgsrc_produceval(elem, f, sink, reverse);
       }
     } else {
@@ -351,9 +351,9 @@ struct upb_msgsink {
 /* Helper function that returns a pointer to where the next value for field "f"
  * should be stored, taking into account whether f is an array that may need to
  * be allocated or resized. */
-static union upb_value_ptr get_value_ptr(upb_msg *msg, upb_fielddef *f)
+static upb_valueptr get_valueptr(upb_msg *msg, upb_fielddef *f)
 {
-  union upb_value_ptr p = _upb_msg_getptr(msg, f);
+  upb_valueptr p = _upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
     if(!upb_msg_has(msg, f)) {
       if(upb_array_isnull(*p.arr) || !upb_data_only(*p.data)) {
@@ -377,11 +377,11 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, upb_fielddef *f)
 // TODO: implement these in terms of public interfaces.
 
 static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, upb_fielddef *f,
-                                            union upb_value val)
+                                            upb_value val)
 {
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *msg = ms->top->msg;
-  union upb_value_ptr p = get_value_ptr(msg, f);
+  upb_valueptr p = get_valueptr(msg, f);
   upb_msg_sethas(msg, f);
   upb_value_write(p, val, f->type);
   return UPB_SINK_CONTINUE;
@@ -393,7 +393,7 @@ static upb_sink_status _upb_msgsink_strcb(upb_sink *s, upb_fielddef *f,
 {
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *msg = ms->top->msg;
-  union upb_value_ptr p = get_value_ptr(msg, f);
+  upb_valueptr p = get_valueptr(msg, f);
   upb_msg_sethas(msg, f);
   if(end > upb_strlen(str)) abort();  /* TODO: support streaming. */
   if(upb_string_isnull(*p.str) || !upb_data_only(*p.data)) {
@@ -409,7 +409,7 @@ static upb_sink_status _upb_msgsink_startcb(upb_sink *s, upb_fielddef *f)
 {
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *oldmsg = ms->top->msg;
-  union upb_value_ptr p = get_value_ptr(oldmsg, f);
+  upb_valueptr p = get_valueptr(oldmsg, f);
 
   if(upb_isarray(f) || !upb_msg_has(oldmsg, f)) {
     upb_msgdef *md = upb_downcast_msgdef(f->def);

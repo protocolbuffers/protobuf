@@ -181,12 +181,12 @@ T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (int64_t)s;      }
 T(BOOL,     v, uint32_t, bool,     _bool)   { return (bool)s;         }
 T(ENUM,     v, uint32_t, int32_t,  int32)   { return (int32_t)s;      }
 T(DOUBLE,   f, uint64_t, double,   _double) {
-  union upb_value v;
+  upb_value v;
   v.uint64 = s;
   return v._double;
 }
 T(FLOAT,    f, uint32_t, float,    _float)  {
-  union upb_value v;
+  upb_value v;
   v.uint32 = s;
   return v._float;
 }
@@ -236,8 +236,7 @@ const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
 }
 
 const uint8_t *upb_decode_wire_value(uint8_t *buf, uint8_t *end,
-                                     upb_wire_type_t wt,
-                                     union upb_wire_value *wv,
+                                     upb_wire_type_t wt, upb_wire_value *wv,
                                      upb_status *status)
 {
   switch(wt) {
@@ -253,10 +252,8 @@ const uint8_t *upb_decode_wire_value(uint8_t *buf, uint8_t *end,
   }
 }
 
-/**
- * Advances buf past the current wire value (of type wt), saving the result in
- * outbuf.
- */
+// Advances buf past the current wire value (of type wt), saving the result in
+// outbuf.
 static const uint8_t *skip_wire_value(const uint8_t *buf, const uint8_t *end,
                                       upb_wire_type_t wt, upb_status *status)
 {
@@ -278,8 +275,7 @@ static const uint8_t *skip_wire_value(const uint8_t *buf, const uint8_t *end,
 }
 
 static const uint8_t *upb_decode_value(const uint8_t *buf, const uint8_t *end,
-                                       upb_field_type_t ft,
-                                       union upb_value_ptr v,
+                                       upb_field_type_t ft, upb_valueptr v,
                                        upb_status *status)
 {
 #define CASE(t, member_name) \
@@ -474,7 +470,7 @@ size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
         submsg_end = push(d, start, 0, f, status);
         msgdef = d->top->msgdef;
       } else {
-        union upb_value val;
+        upb_value val;
         buf = upb_decode_value(buf, end, f->type, upb_value_addrof(&val),
                               status);
         CHECK_STATUS();  // Checking upb_decode_value().

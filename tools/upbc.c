@@ -236,7 +236,7 @@ typedef struct {
   upb_fielddef *field;
   upb_strptr cident;  /* Type name converted with to_cident(). */
   /* A list of all values of this type, in an established order. */
-  union upb_value *values;
+  upb_value *values;
   int values_size, values_len;
   struct array {
     int offset;
@@ -265,8 +265,7 @@ int compare_entries(const void *_e1, const void *_e2)
 
 static void add_strings_from_msg(upb_msg *msg, upb_msgdef *md, upb_strtable *t);
 
-static void add_strings_from_value(union upb_value p,
-                                   upb_fielddef *f,
+static void add_strings_from_value(upb_value p, upb_fielddef *f,
                                    upb_strtable *t)
 {
   if(upb_isstringtype(f->type)) {
@@ -283,7 +282,7 @@ static void add_strings_from_msg(upb_msg *msg, upb_msgdef *md, upb_strtable *t)
   for(upb_field_count_t i = 0; i < md->num_fields; i++) {
     upb_fielddef *f = &md->fields[i];
     if(!upb_msg_has(msg, f)) continue;
-    union upb_value p = upb_msg_get(msg, f);
+    upb_value p = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
       upb_arrayptr arr = p.arr;
       for(uint32_t j = 0; j < upb_array_len(arr); j++)
@@ -322,7 +321,7 @@ typetable_entry *get_or_insert_typeentry(upb_strtable *t, upb_fielddef *f)
   return type_e;
 }
 
-static void add_value(union upb_value v, upb_fielddef *f, upb_strtable *t)
+static void add_value(upb_value v, upb_fielddef *f, upb_strtable *t)
 {
   typetable_entry *type_e = get_or_insert_typeentry(t, f);
   if(type_e->values_len == type_e->values_size) {
@@ -337,7 +336,7 @@ static void add_submsgs(upb_msg *msg, upb_msgdef *md, upb_strtable *t)
   for(upb_field_count_t i = 0; i < md->num_fields; i++) {
     upb_fielddef *f = &md->fields[i];
     if(!upb_msg_has(msg, f)) continue;
-    union upb_value v = upb_msg_get(msg, f);
+    upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
       if(upb_isstring(f)) continue;  /* Handled by a different code-path. */
       upb_arrayptr arr = v.arr;
@@ -443,7 +442,7 @@ static void write_message_c(upb_msg *msg, upb_msgdef *md,
    * a unique number within its type. */
   upb_strtable types;
   upb_strtable_init(&types, 16, sizeof(typetable_entry));
-  union upb_value val = {.msg = msg};
+  upb_value val = {.msg = msg};
   /* A fake field to get the recursion going. */
   upb_fielddef fake_field = {
     .type = UPB_TYPE(MESSAGE),
@@ -486,7 +485,7 @@ static void write_message_c(upb_msg *msg, upb_msgdef *md,
     fprintf(stream, "static " UPB_STRFMT " " UPB_STRFMT "_values[%d] = {\n\n",
             UPB_STRARG(e->cident), UPB_STRARG(e->cident), e->values_len);
     for(int i = 0; i < e->values_len; i++) {
-      union upb_value val = e->values[i];
+      upb_value val = e->values[i];
       if(upb_issubmsg(e->field)) {
         upb_msgdef *m = upb_downcast_msgdef(e->field->def);
         void *msgdata = val.msg;
@@ -506,7 +505,7 @@ static void write_message_c(upb_msg *msg, upb_msgdef *md,
         /* Print msg data. */
         for(upb_field_count_t j = 0; j < m->num_fields; j++) {
           upb_fielddef *f = &m->fields[j];
-          union upb_value val = upb_msg_get(msgdata, f);
+          upb_value val = upb_msg_get(msgdata, f);
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(!upb_msg_has(msgdata, f)) {
             if(upb_isarray(f) && upb_issubmsg(f)) {

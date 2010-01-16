@@ -32,8 +32,8 @@ upb_type_info upb_types[] = {
   TYPE_INFO(SFIXED64, UPB_WIRE_TYPE_64BIT,       int64_t)
   TYPE_INFO(SINT32,   UPB_WIRE_TYPE_VARINT,      int32_t)
   TYPE_INFO(SINT64,   UPB_WIRE_TYPE_VARINT,      int64_t)
-  TYPE_INFO(STRING,   UPB_WIRE_TYPE_DELIMITED,   union upb_string*)
-  TYPE_INFO(BYTES,    UPB_WIRE_TYPE_DELIMITED,   union upb_string*)
+  TYPE_INFO(STRING,   UPB_WIRE_TYPE_DELIMITED,   upb_strptr)
+  TYPE_INFO(BYTES,    UPB_WIRE_TYPE_DELIMITED,   upb_strptr)
 };
 
 void upb_seterr(upb_status *status, enum upb_status_code code,

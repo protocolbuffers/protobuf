@@ -154,12 +154,12 @@ T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
 T(BOOL,     v, uint32_t, bool,     _bool)   { return (uint32_t)s;     }
 T(ENUM,     v, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
 T(DOUBLE,   f, uint64_t, double,   _double) {
-  union upb_value v;
+  upb_value v;
   v._double = s;
   return v.uint64;
 }
 T(FLOAT,    f, uint32_t, float,    _float)  {
-  union upb_value v;
+  upb_value v;
   v._float = s;
   return v.uint32;
 }
@@ -167,8 +167,7 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef PUT
 #undef T
 
-uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft,
-                          union upb_value v)
+uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft, upb_value v)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_put_ ## t(buf, v.member_name);
@@ -228,7 +227,7 @@ static upb_sink_status _upb_encoder_push_buf(upb_encoder *s, const uint8_t *buf,
 }
 
 static upb_sink_status _upb_encoder_valuecb(upb_sink *sink, upb_fielddef *f,
-                                            union upb_value val)
+                                            upb_value val)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
@@ -287,7 +286,7 @@ upb_sink_callbacks _upb_encoder_sink_vtbl = {
 
 /* Public Interface ***********************************************************/
 
-size_t upb_get_encoded_size(union upb_value v, upb_fielddef *f)
+size_t upb_get_encoded_size(upb_value v, upb_fielddef *f)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);

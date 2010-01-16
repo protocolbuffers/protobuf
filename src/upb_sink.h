@@ -66,7 +66,7 @@ typedef struct {
 // The value callback is called for a regular value (ie. not a string or
 // submessage).
 typedef upb_sink_status (*upb_value_cb)(upb_sink *s, upb_fielddef *f,
-                                        union upb_value val);
+                                        upb_value val);
 
 // The string callback is called for string data.  "str" is the string in which
 // the data lives, but it may contain more data than the effective string.

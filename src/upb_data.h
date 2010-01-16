@@ -350,13 +350,13 @@ typedef struct upb_norefcount_string upb_static_string;
 struct upb_norefcount_array {
   upb_data base;  // We co-opt the refcount for the size.
   upb_arraylen_t len;
-  union upb_value_ptr elements;
+  upb_valueptr elements;
 };
 
 struct upb_refcounted_array {
   upb_data base;
   upb_arraylen_t len;
-  union upb_value_ptr elements;
+  upb_valueptr elements;
   upb_arraylen_t size;
 };
 
@@ -399,10 +399,9 @@ void _upb_array_free(upb_arrayptr a, upb_fielddef *f);
 
 // INTERNAL-ONLY:
 // Returns a pointer to the given elem.
-INLINE union upb_value_ptr _upb_array_getptr_raw(upb_arrayptr a,
-                                                 upb_arraylen_t elem,
-                                                 size_t type_size) {
-  union upb_value_ptr p;
+INLINE upb_valueptr _upb_array_getptr_raw(upb_arrayptr a, upb_arraylen_t elem,
+                                          size_t type_size) {
+  upb_valueptr p;
   if(upb_data_hasflag(a.base, UPB_DATA_REFCOUNTED))
     p._void = &a.refcounted->elements.uint8[elem * type_size];
   else
@@ -410,14 +409,13 @@ INLINE union upb_value_ptr _upb_array_getptr_raw(upb_arrayptr a,
   return p;
 }
 
-INLINE union upb_value_ptr _upb_array_getptr(upb_arrayptr a,
-                                             upb_fielddef *f,
-                                             upb_arraylen_t elem) {
+INLINE upb_valueptr _upb_array_getptr(upb_arrayptr a, upb_fielddef *f,
+                                      upb_arraylen_t elem) {
   return _upb_array_getptr_raw(a, elem, upb_types[f->type].size);
 }
 
-INLINE union upb_value upb_array_get(upb_arrayptr a, upb_fielddef *f,
-                                     upb_arraylen_t elem) {
+INLINE upb_value upb_array_get(upb_arrayptr a, upb_fielddef *f,
+                               upb_arraylen_t elem) {
   assert(elem < upb_array_len(a));
   return upb_value_read(_upb_array_getptr(a, f, elem), f->type);
 }
@@ -438,15 +436,15 @@ INLINE upb_arrayptr upb_array_getref(upb_arrayptr src, int ref_flags);
 // must be greater than elem.  If the field type is dynamic, the array will
 // take a ref on val and release a ref on what was previously in the array.
 INLINE void upb_array_set(upb_arrayptr a, upb_fielddef *f, int elem,
-                          union upb_value val);
+                          upb_value val);
 
 
 // Note that array_append will attempt to take a reference on the given value,
 // so to avoid a copy use append_default and get.
 INLINE void upb_array_append(upb_arrayptr a, upb_fielddef *f,
-                             union upb_value val);
+                             upb_value val);
 INLINE void upb_array_append_default(upb_arrayptr a, upb_fielddef *f,
-                             union upb_value val);
+                             upb_value val);
 #endif
 
 INLINE void upb_array_truncate(upb_arrayptr a) {
@@ -476,8 +474,8 @@ void _upb_msg_free(upb_msg *msg, upb_msgdef *md);
 
 // INTERNAL-ONLY:
 // Returns a pointer to the given field.
-INLINE union upb_value_ptr _upb_msg_getptr(upb_msg *msg, upb_fielddef *f) {
-  union upb_value_ptr p;
+INLINE upb_valueptr _upb_msg_getptr(upb_msg *msg, upb_fielddef *f) {
+  upb_valueptr p;
   p._void = &msg->data[f->byte_offset];
   return p;
 }
@@ -495,7 +493,7 @@ INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
 
 // Returns the current value if set, or the default value if not set, of the
 // specified field.  The caller does *not* own a ref.
-INLINE union upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
+INLINE upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
   if(upb_msg_has(msg, f)) {
     return upb_value_read(_upb_msg_getptr(msg, f), f->type);
   } else {
@@ -505,7 +503,7 @@ INLINE union upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
 
 // Sets the given field to the given value.  The msg will take a ref on val,
 // and will drop a ref on whatever was there before.
-void upb_msg_set(upb_msg *msg, upb_fielddef *f, union upb_value val);
+void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val);
 
 INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
   memset(msg->data, 0, md->set_flags_bytes);

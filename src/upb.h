@@ -110,11 +110,11 @@ typedef int32_t upb_field_number_t;
 typedef uint8_t  upb_label_t;
 
 // A scalar (non-string) wire value.  Used only for parsing unknown fields.
-union upb_wire_value {
+typedef union {
   uint64_t varint;
   uint64_t _64bit;
   uint32_t _32bit;
-};
+} upb_wire_value;
 
 // A tag occurs before each value on-the-wire.
 typedef struct {
@@ -155,7 +155,7 @@ typedef union {
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
-union upb_value {
+typedef union {
   double _double;
   float _float;
   int32_t int32;
@@ -167,11 +167,11 @@ union upb_value {
   upb_arrayptr arr;
   upb_msg *msg;
   upb_data *data;
-};
+} upb_value;
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
 // knowing the type, so it knows which union member to use.
-union upb_value_ptr {
+typedef union {
   double *_double;
   float *_float;
   int32_t *int32;
@@ -185,10 +185,10 @@ union upb_value_ptr {
   upb_msg **msg;
   upb_data **data;
   void *_void;
-};
+} upb_valueptr;
 
-INLINE union upb_value_ptr upb_value_addrof(union upb_value *val) {
-  union upb_value_ptr ptr = {&val->_double};
+INLINE upb_valueptr upb_value_addrof(upb_value *val) {
+  upb_valueptr ptr = {&val->_double};
   return ptr;
 }
 
@@ -197,9 +197,8 @@ INLINE union upb_value_ptr upb_value_addrof(union upb_value *val) {
  * know the field type to perform this operation, because we need to know how
  * much memory to copy.
  */
-INLINE union upb_value upb_value_read(union upb_value_ptr ptr,
-                                      upb_field_type_t ft) {
-  union upb_value val;
+INLINE upb_value upb_value_read(upb_valueptr ptr, upb_field_type_t ft) {
+  upb_value val;
 
 #define CASE(t, member_name) \
   case UPB_TYPE(t): val.member_name = *ptr.member_name; break;
@@ -235,7 +234,7 @@ INLINE union upb_value upb_value_read(union upb_value_ptr ptr,
  * type to perform this operation, because we need to know how much memory to
  * copy.
  */
-INLINE void upb_value_write(union upb_value_ptr ptr, union upb_value val,
+INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
                             upb_field_type_t ft) {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): *ptr.member_name = val.member_name; break;

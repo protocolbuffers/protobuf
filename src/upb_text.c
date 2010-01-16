@@ -9,7 +9,7 @@
 #include "upb_text.h"
 #include "upb_data.h"
 
-void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
+void upb_text_printval(upb_field_type_t type, upb_value val, FILE *file)
 {
 #define CASE(fmtstr, member) fprintf(file, fmtstr, val.member); break;
   switch(type) {
@@ -49,7 +49,7 @@ static void print_indent(upb_text_printer *p, FILE *stream)
 }
 
 void upb_text_printfield(upb_text_printer *p, upb_strptr name,
-                         upb_field_type_t valtype, union upb_value val,
+                         upb_field_type_t valtype, upb_value val,
                          FILE *stream)
 {
   print_indent(p, stream);
@@ -76,8 +76,7 @@ void upb_text_pop(upb_text_printer *p, FILE *stream)
   fprintf(stream, "}\n");
 }
 
-static void printval(upb_text_printer *printer, union upb_value v,
-                     upb_fielddef *f,
+static void printval(upb_text_printer *printer, upb_value v, upb_fielddef *f,
                      FILE *stream);
 
 static void printmsg(upb_text_printer *printer, upb_msg *msg, upb_msgdef *md,
@@ -86,11 +85,11 @@ static void printmsg(upb_text_printer *printer, upb_msg *msg, upb_msgdef *md,
   for(upb_field_count_t i = 0; i < md->num_fields; i++) {
     upb_fielddef *f = &md->fields[i];
     if(!upb_msg_has(msg, f)) continue;
-    union upb_value v = upb_msg_get(msg, f);
+    upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
       upb_arrayptr arr = v.arr;
       for(uint32_t j = 0; j < upb_array_len(arr); j++) {
-        union upb_value elem = upb_array_get(arr, f, j);
+        upb_value elem = upb_array_get(arr, f, j);
         printval(printer, elem, f, stream);
       }
     } else {
@@ -99,8 +98,7 @@ static void printmsg(upb_text_printer *printer, upb_msg *msg, upb_msgdef *md,
   }
 }
 
-static void printval(upb_text_printer *printer, union upb_value v,
-                     upb_fielddef *f,
+static void printval(upb_text_printer *printer, upb_value v, upb_fielddef *f,
                      FILE *stream)
 {
   if(upb_issubmsg(f)) {

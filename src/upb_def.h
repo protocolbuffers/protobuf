@@ -91,7 +91,7 @@ typedef struct _upb_fielddef {
   upb_label_t label;
   upb_field_number_t number;
   upb_strptr name;
-  union upb_value default_value;
+  upb_value default_value;
 
   // These are set only when this fielddef is part of a msgdef.
   uint32_t byte_offset;           // Where in a upb_msg to find the data.
