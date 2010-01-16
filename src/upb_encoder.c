@@ -227,21 +227,19 @@ static upb_sink_status _upb_encoder_push_buf(upb_encoder *s, const uint8_t *buf,
   }
 }
 
-static upb_sink_status _upb_encoder_valuecb(upb_sink *sink,
-                                            struct upb_fielddef *f,
+static upb_sink_status _upb_encoder_valuecb(upb_sink *sink, upb_fielddef *f,
                                             union upb_value val)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
-  upb_wire_type_t wt = upb_type_info[f->type].expected_wire_type;
+  upb_wire_type_t wt = upb_types[f->type].expected_wire_type;
   // TODO: handle packed encoding.
   ptr = _upb_put_tag(ptr, f->number, wt);
   ptr = upb_encode_value(ptr, f->type, val);
   return _upb_encoder_push_buf(s, buf, ptr - buf);
 }
 
-static upb_sink_status _upb_encoder_strcb(upb_sink *sink,
-                                          struct upb_fielddef *f,
+static upb_sink_status _upb_encoder_strcb(upb_sink *sink, upb_fielddef *f,
                                           upb_strptr str,
                                           int32_t start, uint32_t end)
 {
@@ -257,8 +255,7 @@ static upb_sink_status _upb_encoder_strcb(upb_sink *sink,
   return _upb_encoder_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start);
 }
 
-static upb_sink_status _upb_encoder_startcb(upb_sink *sink,
-                                            struct upb_fielddef *f)
+static upb_sink_status _upb_encoder_startcb(upb_sink *sink, upb_fielddef *f)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
@@ -271,8 +268,7 @@ static upb_sink_status _upb_encoder_startcb(upb_sink *sink,
   return _upb_encoder_push_buf(s, buf, ptr - buf);
 }
 
-static upb_sink_status _upb_encoder_endcb(upb_sink *sink,
-                                          struct upb_fielddef *f)
+static upb_sink_status _upb_encoder_endcb(upb_sink *sink, upb_fielddef *f)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
@@ -291,7 +287,7 @@ upb_sink_callbacks _upb_encoder_sink_vtbl = {
 
 /* Public Interface ***********************************************************/
 
-size_t upb_get_encoded_size(union upb_value v, struct upb_fielddef *f)
+size_t upb_get_encoded_size(union upb_value v, upb_fielddef *f)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);

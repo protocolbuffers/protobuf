@@ -91,15 +91,15 @@ INLINE bool upb_isstringtype(upb_field_type_t type) {
 }
 
 // Info for a given field type.
-struct upb_type_info {
+typedef struct {
   uint8_t align;
   uint8_t size;
   upb_wire_type_t expected_wire_type;
   char *ctype;
-};
+} upb_type_info;
 
 // A static array of info about all of the field types, indexed by type number.
-extern struct upb_type_info upb_type_info[];
+extern upb_type_info upb_types[];
 
 // The number of a field, eg. "optional string foo = 3".
 typedef int32_t upb_field_number_t;
@@ -117,10 +117,10 @@ union upb_wire_value {
 };
 
 // A tag occurs before each value on-the-wire.
-struct upb_tag {
+typedef struct {
   upb_field_number_t field_number;
   upb_wire_type_t wire_type;
-};
+} upb_tag;
 
 
 /* Polymorphic values of .proto types *****************************************/
@@ -284,24 +284,24 @@ enum upb_status_code {
 };
 
 #define UPB_ERRORMSG_MAXLEN 256
-struct upb_status {
+typedef struct {
   enum upb_status_code code;
   char msg[UPB_ERRORMSG_MAXLEN];
-};
+} upb_status;
 
 #define UPB_STATUS_INIT {UPB_STATUS_OK, ""}
 
-INLINE bool upb_ok(struct upb_status *status) {
+INLINE bool upb_ok(upb_status *status) {
   return status->code == UPB_STATUS_OK;
 }
 
-INLINE void upb_reset(struct upb_status *status) {
+INLINE void upb_reset(upb_status *status) {
   status->code = UPB_STATUS_OK;
   status->msg[0] = '\0';
 }
 
-void upb_seterr(struct upb_status *status, enum upb_status_code code,
-                const char *msg, ...);
+void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,
+                ...);
 
 #ifdef __cplusplus
 }  /* extern "C" */

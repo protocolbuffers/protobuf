@@ -24,7 +24,7 @@ static uint32_t round_up_to_pow2(uint32_t v)
 
 /* upb_data *******************************************************************/
 
-static void data_elem_unref(union upb_value_ptr p, struct upb_fielddef *f) {
+static void data_elem_unref(union upb_value_ptr p, upb_fielddef *f) {
   if(upb_issubmsg(f)) {
     upb_msg_unref(*p.msg, upb_downcast_msgdef(f->def));
   } else if(upb_isstring(f)) {
@@ -34,7 +34,7 @@ static void data_elem_unref(union upb_value_ptr p, struct upb_fielddef *f) {
   }
 }
 
-static void data_unref(union upb_value_ptr p, struct upb_fielddef *f) {
+static void data_unref(union upb_value_ptr p, upb_fielddef *f) {
   if(upb_isarray(f)) {
     upb_array_unref(*p.arr, f);
   } else {
@@ -208,7 +208,7 @@ upb_arrayptr upb_array_new() {
 }
 
 // ONLY handles refcounted arrays for the moment.
-void _upb_array_free(upb_arrayptr a, struct upb_fielddef *f)
+void _upb_array_free(upb_arrayptr a, upb_fielddef *f)
 {
   if(upb_elem_ismm(f)) {
     for(upb_arraylen_t i = 0; i < a.refcounted->size; i++) {
@@ -238,9 +238,9 @@ static void array_set_size(upb_arrayptr a, upb_arraylen_t newsize) {
   }
 }
 
-void upb_array_resize(upb_arrayptr a, struct upb_fielddef *f, upb_strlen_t len) {
+void upb_array_resize(upb_arrayptr a, upb_fielddef *f, upb_strlen_t len) {
   check_not_frozen(a.base);
-  size_t type_size = upb_type_info[f->type].size;
+  size_t type_size = upb_types[f->type].size;
   upb_arraylen_t old_size = array_get_size(a);
   if(old_size < len) {
     // Need to resize.
@@ -257,11 +257,11 @@ void upb_array_resize(upb_arrayptr a, struct upb_fielddef *f, upb_strlen_t len) 
 
 /* upb_msg ********************************************************************/
 
-static void upb_msg_sethas(upb_msg *msg, struct upb_fielddef *f) {
+static void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
   msg->data[f->field_index/8] |= (1 << (f->field_index % 8));
 }
 
-upb_msg *upb_msg_new(struct upb_msgdef *md) {
+upb_msg *upb_msg_new(upb_msgdef *md) {
   upb_msg *msg = malloc(md->size);
   memset(msg, 0, md->size);
   data_init(&msg->base, UPB_DATA_HEAPALLOCATED | UPB_DATA_REFCOUNTED);
@@ -270,10 +270,10 @@ upb_msg *upb_msg_new(struct upb_msgdef *md) {
 }
 
 // ONLY handles refcounted messages for the moment.
-void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
+void _upb_msg_free(upb_msg *msg, upb_msgdef *md)
 {
   for(int i = 0; i < md->num_fields; i++) {
-    struct upb_fielddef *f = &md->fields[i];
+    upb_fielddef *f = &md->fields[i];
     union upb_value_ptr p = _upb_msg_getptr(msg, f);
     if(!upb_field_ismm(f) || !*p.data) continue;
     data_unref(p, f);
@@ -282,8 +282,8 @@ void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
   free(msg);
 }
 
-void upb_msg_decodestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
-                       struct upb_status *status)
+void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
+                       upb_status *status)
 {
   upb_decoder *d = upb_decoder_new(md);
   upb_msgsink *s = upb_msgsink_new(md);
@@ -300,7 +300,7 @@ void upb_msg_decodestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
 
 /* upb_msgsrc  ****************************************************************/
 
-static void _upb_msgsrc_produceval(union upb_value v, struct upb_fielddef *f,
+static void _upb_msgsrc_produceval(union upb_value v, upb_fielddef *f,
                                    upb_sink *sink, bool reverse)
 {
   if(upb_issubmsg(f)) {
@@ -314,11 +314,11 @@ static void _upb_msgsrc_produceval(union upb_value v, struct upb_fielddef *f,
   }
 }
 
-void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink,
+void upb_msgsrc_produce(upb_msg *msg, upb_msgdef *md, upb_sink *sink,
                         bool reverse)
 {
   for(int i = 0; i < md->num_fields; i++) {
-    struct upb_fielddef *f = &md->fields[reverse ? md->num_fields - i - 1 : i];
+    upb_fielddef *f = &md->fields[reverse ? md->num_fields - i - 1 : i];
     if(!upb_msg_has(msg, f)) continue;
     union upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
@@ -337,21 +337,21 @@ void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink,
 
 /* upb_msgsink  ***************************************************************/
 
-struct upb_msgsink_frame {
+typedef struct {
   upb_msg *msg;
-  struct upb_msgdef *md;
-};
+  upb_msgdef *md;
+} upb_msgsink_frame;
 
 struct upb_msgsink {
   upb_sink base;
-  struct upb_msgdef *toplevel_msgdef;
-  struct upb_msgsink_frame stack[UPB_MAX_NESTING], *top;
+  upb_msgdef *toplevel_msgdef;
+  upb_msgsink_frame stack[UPB_MAX_NESTING], *top;
 };
 
 /* Helper function that returns a pointer to where the next value for field "f"
  * should be stored, taking into account whether f is an array that may need to
  * be allocated or resized. */
-static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
+static union upb_value_ptr get_value_ptr(upb_msg *msg, upb_fielddef *f)
 {
   union upb_value_ptr p = _upb_msg_getptr(msg, f);
   if(upb_isarray(f)) {
@@ -376,7 +376,7 @@ static union upb_value_ptr get_value_ptr(upb_msg *msg, struct upb_fielddef *f)
 // Callbacks for upb_sink.
 // TODO: implement these in terms of public interfaces.
 
-static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, struct upb_fielddef *f,
+static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, upb_fielddef *f,
                                             union upb_value val)
 {
   upb_msgsink *ms = (upb_msgsink*)s;
@@ -387,7 +387,7 @@ static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, struct upb_fielddef *f,
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_msgsink_strcb(upb_sink *s, struct upb_fielddef *f,
+static upb_sink_status _upb_msgsink_strcb(upb_sink *s, upb_fielddef *f,
                                           upb_strptr str,
                                           int32_t start, uint32_t end)
 {
@@ -405,14 +405,14 @@ static upb_sink_status _upb_msgsink_strcb(upb_sink *s, struct upb_fielddef *f,
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_msgsink_startcb(upb_sink *s, struct upb_fielddef *f)
+static upb_sink_status _upb_msgsink_startcb(upb_sink *s, upb_fielddef *f)
 {
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *oldmsg = ms->top->msg;
   union upb_value_ptr p = get_value_ptr(oldmsg, f);
 
   if(upb_isarray(f) || !upb_msg_has(oldmsg, f)) {
-    struct upb_msgdef *md = upb_downcast_msgdef(f->def);
+    upb_msgdef *md = upb_downcast_msgdef(f->def);
     if(!*p.msg || !upb_data_only(*p.data)) {
       if(*p.msg)
         upb_msg_unref(*p.msg, md);
@@ -427,7 +427,7 @@ static upb_sink_status _upb_msgsink_startcb(upb_sink *s, struct upb_fielddef *f)
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_msgsink_endcb(upb_sink *s, struct upb_fielddef *f)
+static upb_sink_status _upb_msgsink_endcb(upb_sink *s, upb_fielddef *f)
 {
   (void)f;  // Unused.
   upb_msgsink *ms = (upb_msgsink*)s;
@@ -446,7 +446,7 @@ static upb_sink_callbacks _upb_msgsink_vtbl = {
 // External upb_msgsink interface.
 //
 
-upb_msgsink *upb_msgsink_new(struct upb_msgdef *md)
+upb_msgsink *upb_msgsink_new(upb_msgdef *md)
 {
   upb_msgsink *ms = malloc(sizeof(*ms));
   upb_sink_init(&ms->base, &_upb_msgsink_vtbl);

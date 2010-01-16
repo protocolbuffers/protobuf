@@ -20,9 +20,6 @@
 extern "C" {
 #endif
 
-size_t upb_get_encoded_tag_size(uint32_t fieldnum);
-size_t upb_get_encoded_value_size(union upb_value v, struct upb_fielddef *f);
-
 struct upb_encoder;
 typedef struct upb_encoder upb_encoder;
 

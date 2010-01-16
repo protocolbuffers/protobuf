@@ -5,9 +5,9 @@
 #include "upb_def.h"
 #include "upb_decoder.h"
 
-static struct upb_symtab *s;
+static upb_symtab *s;
 static upb_strptr str;
-static struct upb_msgdef *def;
+static upb_msgdef *def;
 static upb_msg *msgs[NUM_MESSAGES];
 static upb_decoder *decoder;
 static upb_msgsink *sink;
@@ -15,7 +15,7 @@ static upb_msgsink *sink;
 static bool initialize()
 {
   // Initialize upb state, decode descriptor.
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   s = upb_symtab_new();
   upb_strptr fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(upb_string_isnull(fds)) {
@@ -66,7 +66,7 @@ static void cleanup()
 
 static size_t run(int i)
 {
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   upb_msg *msg = msgs[i%NUM_MESSAGES];
   upb_msgsink_reset(sink, msg);
   upb_decoder_reset(decoder, upb_msgsink_sink(sink));

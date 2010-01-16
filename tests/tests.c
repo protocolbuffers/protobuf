@@ -15,7 +15,7 @@ int num_assertions = 0;
 static void test_get_v_uint64_t()
 {
 #define TEST(name, bytes, val) {\
-    struct upb_status status = UPB_STATUS_INIT; \
+    upb_status status = UPB_STATUS_INIT; \
     const uint8_t name[] = bytes; \
     const uint8_t *name ## _buf = name; \
     uint64_t name ## _val = 0; \
@@ -45,7 +45,7 @@ static void test_get_v_uint64_t()
 
   uint8_t twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
   uint64_t twelvebyte_val = 0;
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   /* A varint that terminates before hitting the end of the provided buffer,
    * but in too many bytes (11 instead of 10). */
   upb_get_v_uint64_t(twelvebyte, twelvebyte + 12, &twelvebyte_val, &status);
@@ -79,7 +79,7 @@ static void test_get_v_uint64_t()
 static void test_get_v_uint32_t()
 {
 #define TEST(name, bytes, val) {\
-    struct upb_status status = UPB_STATUS_INIT; \
+    upb_status status = UPB_STATUS_INIT; \
     const uint8_t name[] = bytes; \
     const uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
@@ -110,7 +110,7 @@ static void test_get_v_uint32_t()
 
   uint8_t twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
   uint32_t twelvebyte_val = 0;
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   /* A varint that terminates before hitting the end of the provided buffer,
    * but in too many bytes (11 instead of 10). */
   upb_get_v_uint32_t(twelvebyte, twelvebyte + 12, &twelvebyte_val, &status);
@@ -144,7 +144,7 @@ static void test_get_v_uint32_t()
 static void test_skip_v_uint64_t()
 {
 #define TEST(name, bytes) {\
-    struct upb_status status = UPB_STATUS_INIT; \
+    upb_status status = UPB_STATUS_INIT; \
     const uint8_t name[] = bytes; \
     const uint8_t *name ## _buf = name; \
     name ## _buf = upb_skip_v_uint64_t(name ## _buf, name + sizeof(name), &status); \
@@ -171,7 +171,7 @@ static void test_skip_v_uint64_t()
 #undef TEST
 
   uint8_t twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   /* A varint that terminates before hitting the end of the provided buffer,
    * but in too many bytes (11 instead of 10). */
   upb_skip_v_uint64_t(twelvebyte, twelvebyte + 12, &status);
@@ -205,7 +205,7 @@ static void test_skip_v_uint64_t()
 static void test_get_f_uint32_t()
 {
 #define TEST(name, bytes, val) {\
-    struct upb_status status = UPB_STATUS_INIT; \
+    upb_status status = UPB_STATUS_INIT; \
     const uint8_t name[] = bytes; \
     const uint8_t *name ## _buf = name; \
     uint32_t name ## _val = 0; \
@@ -220,7 +220,7 @@ static void test_get_f_uint32_t()
 
   uint8_t threeb[] = {0x00, 0x00, 0x00};
   uint32_t threeb_val;
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   upb_get_f_uint32_t(threeb, threeb + sizeof(threeb), &threeb_val, &status);
   ASSERT(status.code == UPB_STATUS_NEED_MORE_DATA);
 
@@ -228,14 +228,14 @@ static void test_get_f_uint32_t()
 }
 
 static void test_upb_symtab() {
-  struct upb_symtab *s = upb_symtab_new();
+  upb_symtab *s = upb_symtab_new();
   ASSERT(s);
   upb_strptr descriptor = upb_strreadfile("tests/test.proto.pb");
   if(upb_string_isnull(descriptor)) {
     fprintf(stderr, "Couldn't read input file tests/test.proto.pb\n");
     exit(1);
   }
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   upb_symtab_add_desc(s, descriptor, &status);
   ASSERT(upb_ok(&status));
   upb_string_unref(descriptor);
@@ -243,14 +243,14 @@ static void test_upb_symtab() {
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
   upb_strptr symname = upb_strdupc("A");
-  struct upb_def *def = upb_symtab_lookup(s, symname);
+  upb_def *def = upb_symtab_lookup(s, symname);
   upb_string_unref(symname);
   ASSERT(def);
   upb_symtab_unref(s);
-  struct upb_msgdef *m = upb_downcast_msgdef(def);
-  struct upb_fielddef *f = &m->fields[0];
+  upb_msgdef *m = upb_downcast_msgdef(def);
+  upb_fielddef *f = &m->fields[0];
   ASSERT(upb_hasdef(f));
-  struct upb_def *def2 = f->def;
+  upb_def *def2 = f->def;
   ASSERT(upb_downcast_msgdef(def2));
   upb_def_ref(def2);
   upb_def_unref(def);

@@ -47,11 +47,11 @@ static int my_memrchr(const char *data, char c, size_t len)
   return off;
 }
 
-void *strtable_to_array(struct upb_strtable *t, int *size)
+void *strtable_to_array(upb_strtable *t, int *size)
 {
   *size = t->t.count;
   void **array = malloc(*size * sizeof(void*));
-  struct upb_strtable_entry *e;
+  upb_strtable_entry *e;
   int i = 0;
   for(e = upb_strtable_begin(t); e && i < *size; e = upb_strtable_next(t, e))
     array[i++] = e;
@@ -61,8 +61,8 @@ void *strtable_to_array(struct upb_strtable *t, int *size)
 
 /* The _const.h file defines the constants (enums) defined in the .proto
  * file. */
-static void write_const_h(struct upb_def *defs[], int num_entries,
-                          char *outfile_name, FILE *stream)
+static void write_const_h(upb_def *defs[], int num_entries, char *outfile_name,
+                          FILE *stream)
 {
   /* Header file prologue. */
   upb_strptr include_guard_name = upb_strdupc(outfile_name);
@@ -84,7 +84,7 @@ static void write_const_h(struct upb_def *defs[], int num_entries,
   fprintf(stream, "/* Enums. */\n\n");
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     if(defs[i]->type != UPB_DEF_ENUM) continue;
-    struct upb_enumdef *enumdef = upb_downcast_enumdef(defs[i]);
+    upb_enumdef *enumdef = upb_downcast_enumdef(defs[i]);
     upb_strptr enum_name = upb_strdup(UPB_UPCAST(enumdef)->fqname);
     upb_strptr enum_val_prefix = upb_strdup(enum_name);
     to_cident(enum_name);
@@ -96,7 +96,7 @@ static void write_const_h(struct upb_def *defs[], int num_entries,
     to_preproc(enum_val_prefix);
 
     fprintf(stream, "typedef enum " UPB_STRFMT " {\n", UPB_STRARG(enum_name));
-    struct upb_enum_iter iter;
+    upb_enum_iter iter;
     bool first = true;
     /* Foreach enum value. */
     for(upb_enum_begin(&iter, enumdef); !upb_enum_done(&iter); upb_enum_next(&iter)) {
@@ -126,7 +126,7 @@ static void write_const_h(struct upb_def *defs[], int num_entries,
  * also defines constants for the enum values.
  *
  * Assumes that d has been validated. */
-static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
+static void write_h(upb_def *defs[], int num_defs, char *outfile_name,
                     char *descriptor_cident, FILE *stream)
 {
   /* Header file prologue. */
@@ -153,7 +153,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
   fputs("possibly-recursive ways. */\n\n", stream);
 
   for(int i = 0; i < num_defs; i++) {  /* Foreach message */
-    struct upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
+    upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
     if(!m) continue;
     upb_strptr msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
@@ -168,7 +168,7 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
   /* Message Declarations. */
   fputs("/* The message definitions themselves. */\n\n", stream);
   for(int i = 0; i < num_defs; i++) {  /* Foreach message */
-    struct upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
+    upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
     if(!m) continue;
     upb_strptr msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
     to_cident(msg_name);
@@ -179,14 +179,14 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
     fputs("    struct {\n", stream);
     for(upb_field_count_t j = 0; j < m->num_fields; j++) {
       static char* labels[] = {"", "optional", "required", "repeated"};
-      struct upb_fielddef *f = &m->fields[j];
+      upb_fielddef *f = &m->fields[j];
       fprintf(stream, "      bool " UPB_STRFMT ":1;  /* = %" PRIu32 ", %s. */\n",
               UPB_STRARG(f->name), f->number, labels[f->label]);
     }
     fputs("    } has;\n", stream);
     fputs("  } set_flags;\n", stream);
     for(upb_field_count_t j = 0; j < m->num_fields; j++) {
-      struct upb_fielddef *f = &m->fields[j];
+      upb_fielddef *f = &m->fields[j];
       if(upb_issubmsg(f)) {
         upb_strptr type_name = upb_strdup(f->def->fqname);
         to_cident(type_name);
@@ -225,15 +225,15 @@ static void write_h(struct upb_def *defs[], int num_defs, char *outfile_name,
 
 /* Format of table entries that we use when analyzing data structures for
  * write_messages_c. */
-struct strtable_entry {
-  struct upb_strtable_entry e;
+typedef struct {
+  upb_strtable_entry e;
   int offset;
   int num;
-};
+} strtable_entry;
 
-struct typetable_entry {
-  struct upb_strtable_entry e;
-  struct upb_fielddef *field;
+typedef struct {
+  upb_strtable_entry e;
+  upb_fielddef *field;
   upb_strptr cident;  /* Type name converted with to_cident(). */
   /* A list of all values of this type, in an established order. */
   union upb_value *values;
@@ -244,17 +244,17 @@ struct typetable_entry {
     upb_arrayptr ptr;  /* So we can find it later. */
   } *arrays;
   int arrays_size, arrays_len;
-};
+} typetable_entry;
 
-struct msgtable_entry {
-  struct upb_inttable_entry e;
+typedef struct {
+  upb_inttable_entry e;
   void *msg;
   int num;  /* Unique offset into the list of all msgs of this type. */
-};
+} msgtable_entry;
 
 int compare_entries(const void *_e1, const void *_e2)
 {
-  struct strtable_entry *const*e1 = _e1, *const*e2 = _e2;
+  strtable_entry *const*e1 = _e1, *const*e2 = _e2;
   return upb_strcmp((*e1)->e.key, (*e2)->e.key);
 }
 
@@ -263,15 +263,14 @@ int compare_entries(const void *_e1, const void *_e2)
  *
  * TODO: make these use a generic msg visitor. */
 
-static void add_strings_from_msg(upb_msg *msg, struct upb_msgdef *md,
-                                 struct upb_strtable *t);
+static void add_strings_from_msg(upb_msg *msg, upb_msgdef *md, upb_strtable *t);
 
 static void add_strings_from_value(union upb_value p,
-                                   struct upb_fielddef *f,
-                                   struct upb_strtable *t)
+                                   upb_fielddef *f,
+                                   upb_strtable *t)
 {
   if(upb_isstringtype(f->type)) {
-    struct strtable_entry e = {.e = {.key = p.str}};
+    strtable_entry e = {.e = {.key = p.str}};
     if(upb_strtable_lookup(t, e.e.key) == NULL)
       upb_strtable_insert(t, &e.e);
   } else if(upb_issubmsg(f)) {
@@ -279,11 +278,10 @@ static void add_strings_from_value(union upb_value p,
   }
 }
 
-static void add_strings_from_msg(upb_msg *msg, struct upb_msgdef *md,
-                                 struct upb_strtable *t)
+static void add_strings_from_msg(upb_msg *msg, upb_msgdef *md, upb_strtable *t)
 {
   for(upb_field_count_t i = 0; i < md->num_fields; i++) {
-    struct upb_fielddef *f = &md->fields[i];
+    upb_fielddef *f = &md->fields[i];
     if(!upb_msg_has(msg, f)) continue;
     union upb_value p = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
@@ -301,16 +299,15 @@ static void add_strings_from_msg(upb_msg *msg, struct upb_msgdef *md,
  *
  * TODO: make these use a generic msg visitor. */
 
-struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
-                                                struct upb_fielddef *f)
+typetable_entry *get_or_insert_typeentry(upb_strtable *t, upb_fielddef *f)
 {
-  upb_strptr type_name = upb_issubmsg(f) ? upb_strdup(f->def->fqname) :
-                                            upb_strdupc(upb_type_info[f->type].ctype);
-  struct typetable_entry *type_e = upb_strtable_lookup(t, type_name);
+  upb_strptr type_name = upb_issubmsg(f) ?
+      upb_strdup(f->def->fqname) : upb_strdupc(upb_types[f->type].ctype);
+  typetable_entry *type_e = upb_strtable_lookup(t, type_name);
   if(type_e == NULL) {
     upb_strptr cident = upb_strdup(type_name);
     to_cident(cident);
-    struct typetable_entry new_type_e = {
+    typetable_entry new_type_e = {
       .e = {.key = type_name}, .field = f, .cident = cident,
       .values = NULL, .values_size = 0, .values_len = 0,
       .arrays = NULL, .arrays_size = 0, .arrays_len = 0
@@ -325,10 +322,9 @@ struct typetable_entry *get_or_insert_typeentry(struct upb_strtable *t,
   return type_e;
 }
 
-static void add_value(union upb_value v, struct upb_fielddef *f,
-                      struct upb_strtable *t)
+static void add_value(union upb_value v, upb_fielddef *f, upb_strtable *t)
 {
-  struct typetable_entry *type_e = get_or_insert_typeentry(t, f);
+  typetable_entry *type_e = get_or_insert_typeentry(t, f);
   if(type_e->values_len == type_e->values_size) {
     type_e->values_size = UPB_MAX(type_e->values_size * 2, 4);
     type_e->values = realloc(type_e->values, sizeof(*type_e->values) * type_e->values_size);
@@ -336,11 +332,10 @@ static void add_value(union upb_value v, struct upb_fielddef *f,
   type_e->values[type_e->values_len++] = v;
 }
 
-static void add_submsgs(upb_msg *msg, struct upb_msgdef *md,
-                        struct upb_strtable *t)
+static void add_submsgs(upb_msg *msg, upb_msgdef *md, upb_strtable *t)
 {
   for(upb_field_count_t i = 0; i < md->num_fields; i++) {
-    struct upb_fielddef *f = &md->fields[i];
+    upb_fielddef *f = &md->fields[i];
     if(!upb_msg_has(msg, f)) continue;
     union upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
@@ -348,8 +343,7 @@ static void add_submsgs(upb_msg *msg, struct upb_msgdef *md,
       upb_arrayptr arr = v.arr;
 
       /* Add to our list of arrays for this type. */
-      struct typetable_entry *arr_type_e =
-          get_or_insert_typeentry(t, f);
+      typetable_entry *arr_type_e = get_or_insert_typeentry(t, f);
       if(arr_type_e->arrays_len == arr_type_e->arrays_size) {
         arr_type_e->arrays_size = UPB_MAX(arr_type_e->arrays_size * 2, 4);
         arr_type_e->arrays = realloc(arr_type_e->arrays,
@@ -379,7 +373,7 @@ static void add_submsgs(upb_msg *msg, struct upb_msgdef *md,
 
 /* write_messages_c emits a .c file that contains the data of a protobuf,
  * serialized as C structures. */
-static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
+static void write_message_c(upb_msg *msg, upb_msgdef *md,
                             char *cident, char *hfile_name,
                             int argc, char *argv[], char *infile_name,
                             FILE *stream)
@@ -408,12 +402,12 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
 
   /* Gather all strings into a giant string.  Use a hash to prevent adding the
    * same string more than once. */
-  struct upb_strtable strings;
-  upb_strtable_init(&strings, 16, sizeof(struct strtable_entry));
+  upb_strtable strings;
+  upb_strtable_init(&strings, 16, sizeof(strtable_entry));
   add_strings_from_msg(msg, md, &strings);
 
   int size;
-  struct strtable_entry **str_entries = strtable_to_array(&strings, &size);
+  strtable_entry **str_entries = strtable_to_array(&strings, &size);
   /* Sort for nice size and reproduceability. */
   qsort(str_entries, size, sizeof(void*), compare_entries);
 
@@ -439,7 +433,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
 
   fputs("static upb_static_string strings[] = {\n", stream);
   for(int i = 0; i < size; i++) {
-    struct strtable_entry *e = str_entries[i];
+    strtable_entry *e = str_entries[i];
     fprintf(stream, "  UPB_STATIC_STRING_INIT_LEN(&strdata[%d], %d),\n", e->offset, upb_strlen(e->e.key));
   }
   fputs("};\n\n", stream);
@@ -447,20 +441,20 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
 
   /* Gather a list of types for which we are emitting data, and give each msg
    * a unique number within its type. */
-  struct upb_strtable types;
-  upb_strtable_init(&types, 16, sizeof(struct typetable_entry));
+  upb_strtable types;
+  upb_strtable_init(&types, 16, sizeof(typetable_entry));
   union upb_value val = {.msg = msg};
   /* A fake field to get the recursion going. */
-  struct upb_fielddef fake_field = {
-      .type = UPB_TYPE(MESSAGE),
-      .def = UPB_UPCAST(md),
+  upb_fielddef fake_field = {
+    .type = UPB_TYPE(MESSAGE),
+    .def = UPB_UPCAST(md),
   };
   add_value(val, &fake_field, &types);
   add_submsgs(msg, md, &types);
 
   /* Emit foward declarations for all msgs of all types, and define arrays. */
   fprintf(stream, "/* Forward declarations of messages, and array decls. */\n");
-  struct typetable_entry *e = upb_strtable_begin(&types);
+  typetable_entry *e = upb_strtable_begin(&types);
   for(; e; e = upb_strtable_next(&types, &e->e)) {
     fprintf(stream, "static " UPB_STRFMT " " UPB_STRFMT "_values[%d];\n\n",
             UPB_STRARG(e->cident), UPB_STRARG(e->cident), e->values_len);
@@ -494,13 +488,13 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
     for(int i = 0; i < e->values_len; i++) {
       union upb_value val = e->values[i];
       if(upb_issubmsg(e->field)) {
-        struct upb_msgdef *m = upb_downcast_msgdef(e->field->def);
+        upb_msgdef *m = upb_downcast_msgdef(e->field->def);
         void *msgdata = val.msg;
         fputs("  {.base = {UPB_DATA_FROZEN},\n", stream);
         /* Print set flags. */
         fputs("   .set_flags = {.has = {\n", stream);
         for(upb_field_count_t j = 0; j < m->num_fields; j++) {
-          struct upb_fielddef *f = &m->fields[j];
+          upb_fielddef *f = &m->fields[j];
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(upb_msg_has(msgdata, f))
             fprintf(stream, "true");
@@ -511,7 +505,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
         fputs("  }},\n", stream);
         /* Print msg data. */
         for(upb_field_count_t j = 0; j < m->num_fields; j++) {
-          struct upb_fielddef *f = &m->fields[j];
+          upb_fielddef *f = &m->fields[j];
           union upb_value val = upb_msg_get(msgdata, f);
           fprintf(stream, "    ." UPB_STRFMT " = ", UPB_STRARG(f->name));
           if(!upb_msg_has(msgdata, f)) {
@@ -530,14 +524,14 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
               fputs("Ack, string arrays are not supported yet!\n", stderr);
               exit(1);
             } else {
-              struct strtable_entry *str_e = upb_strtable_lookup(&strings, val.str);
+              strtable_entry *str_e = upb_strtable_lookup(&strings, val.str);
               assert(str_e);
               fprintf(stream, "UPB_STATIC_STRING_PTR_INIT(strings[%d]),   /* \"" UPB_STRFMT "\" */",
                       str_e->num, UPB_STRARG(val.str));
             }
           } else if(upb_isarray(f)) {
             /* Find this submessage in the list of msgs for that type. */
-            struct typetable_entry  *type_e = get_or_insert_typeentry(&types, f);
+            typetable_entry  *type_e = get_or_insert_typeentry(&types, f);
             assert(type_e);
             int arr_num = -1;
             for(int k = 0; k < type_e->arrays_len; k++) {
@@ -550,7 +544,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
             fprintf(stream, "UPB_STATIC_ARRAY_PTR_TYPED_INIT(" UPB_STRFMT "_arrays[%d]),", UPB_STRARG(type_e->cident), arr_num);
           } else if(upb_issubmsg(f)) {
             /* Find this submessage in the list of msgs for that type. */
-            struct typetable_entry  *type_e = get_or_insert_typeentry(&types, f);
+            typetable_entry  *type_e = get_or_insert_typeentry(&types, f);
             assert(type_e);
             int msg_num = -1;
             for(int k = 0; k < type_e->values_len; k++) {
@@ -578,8 +572,7 @@ static void write_message_c(upb_msg *msg, struct upb_msgdef *md,
     fputs("};\n", stream);
   }
 
-  struct typetable_entry *toplevel_type =
-      get_or_insert_typeentry(&types, &fake_field);
+  typetable_entry *toplevel_type = get_or_insert_typeentry(&types, &fake_field);
   assert(toplevel_type);
   fputs("/* The externally-visible definition. */\n", stream);
   /* It is always at offset zero, because we add it first. */
@@ -670,9 +663,9 @@ int main(int argc, char *argv[])
   upb_strptr descriptor = upb_strreadfile(input_file);
   if(upb_string_isnull(descriptor))
     error("Couldn't read input file.");
-  struct upb_symtab *s = upb_symtab_new();
+  upb_symtab *s = upb_symtab_new();
   upb_msg *fds_msg = upb_msg_new(s->fds_msgdef);
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   upb_msg_decodestr(fds_msg, s->fds_msgdef, descriptor, &status);
   if(!upb_ok(&status))
     error("Failed to parse input file descriptor: %s", status.msg);
@@ -716,7 +709,7 @@ int main(int argc, char *argv[])
   if(!h_const_file) error("Failed to open _const.h output file");
 
   int symcount;
-  struct upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
+  upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
   write_h(defs, symcount, h_filename, cident, h_file);
   write_const_h(defs, symcount, h_filename, h_const_file);
   for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);

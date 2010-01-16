@@ -32,7 +32,7 @@ struct upb_decoder;
 typedef struct upb_decoder upb_decoder;
 
 // Allocates and frees a upb_decoder, respectively.
-upb_decoder *upb_decoder_new(struct upb_msgdef *md);
+upb_decoder *upb_decoder_new(upb_msgdef *md);
 void upb_decoder_free(upb_decoder *p);
 
 // Resets the internal state of an already-allocated decoder.  This puts it in a
@@ -47,8 +47,7 @@ void upb_decoder_reset(upb_decoder *p, upb_sink *sink);
 //
 // TODO: provide the following guarantee:
 //   retval will always be >= len.
-size_t upb_decoder_decode(upb_decoder *p, upb_strptr str,
-                          struct upb_status *status);
+size_t upb_decoder_decode(upb_decoder *p, upb_strptr str, upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */

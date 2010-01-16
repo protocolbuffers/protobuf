@@ -15,7 +15,7 @@
     [GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## proto_type] = \
     {alignof(ctype), sizeof(ctype), wire_type, #ctype},
 
-struct upb_type_info upb_type_info[] = {
+upb_type_info upb_types[] = {
   TYPE_INFO(DOUBLE,   UPB_WIRE_TYPE_64BIT,       double)
   TYPE_INFO(FLOAT,    UPB_WIRE_TYPE_32BIT,       float)
   TYPE_INFO(INT64,    UPB_WIRE_TYPE_VARINT,      int64_t)
@@ -36,7 +36,7 @@ struct upb_type_info upb_type_info[] = {
   TYPE_INFO(BYTES,    UPB_WIRE_TYPE_DELIMITED,   union upb_string*)
 };
 
-void upb_seterr(struct upb_status *status, enum upb_status_code code,
+void upb_seterr(upb_status *status, enum upb_status_code code,
                 const char *msg, ...)
 {
   if(upb_ok(status)) {  // The first error is the most interesting.

@@ -34,11 +34,11 @@
 #ifndef UPB_SINK_H
 #define UPB_SINK_H
 
+#include "upb_def.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct upb_fielddef;
 
 // Each of the upb_sink callbacks returns a status of this type.
 typedef enum {
@@ -65,7 +65,7 @@ typedef struct {
 
 // The value callback is called for a regular value (ie. not a string or
 // submessage).
-typedef upb_sink_status (*upb_value_cb)(upb_sink *s, struct upb_fielddef *f,
+typedef upb_sink_status (*upb_value_cb)(upb_sink *s, upb_fielddef *f,
                                         union upb_value val);
 
 // The string callback is called for string data.  "str" is the string in which
@@ -79,14 +79,14 @@ typedef upb_sink_status (*upb_value_cb)(upb_sink *s, struct upb_fielddef *f,
 // The data is supplied this way to give you the opportunity to reference this
 // data instead of copying it (perhaps using upb_strslice), or to minimize
 // copying if it is unavoidable.
-typedef upb_sink_status (*upb_str_cb)(upb_sink *s, struct upb_fielddef *f,
+typedef upb_sink_status (*upb_str_cb)(upb_sink *s, upb_fielddef *f,
                                       upb_strptr str,
                                       int32_t start, uint32_t end);
 
 // The start and end callbacks are called when a submessage begins and ends,
 // respectively.
-typedef upb_sink_status (*upb_start_cb)(upb_sink *s, struct upb_fielddef *f);
-typedef upb_sink_status (*upb_end_cb)(upb_sink *s, struct upb_fielddef *f);
+typedef upb_sink_status (*upb_start_cb)(upb_sink *s, upb_fielddef *f);
+typedef upb_sink_status (*upb_end_cb)(upb_sink *s, upb_fielddef *f);
 
 
 /* upb_sink implementation ****************************************************/

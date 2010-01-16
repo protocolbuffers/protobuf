@@ -17,14 +17,14 @@ static const double MAX_LOAD = 0.85;
 static uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
 
 /* We use 1-based indexes into the table so that 0 can be "NULL". */
-static struct upb_inttable_entry *intent(struct upb_inttable *t, int32_t i) {
+static upb_inttable_entry *intent(upb_inttable *t, int32_t i) {
   return UPB_INDEX(t->t.entries, i-1, t->t.entry_size);
 }
-static struct upb_strtable_entry *strent(struct upb_strtable *t, int32_t i) {
+static upb_strtable_entry *strent(upb_strtable *t, int32_t i) {
   return UPB_INDEX(t->t.entries, i-1, t->t.entry_size);
 }
 
-void upb_table_init(struct upb_table *t, uint32_t size, uint16_t entry_size)
+void upb_table_init(upb_table *t, uint32_t size, uint16_t entry_size)
 {
   t->count = 0;
   t->entry_size = entry_size;
@@ -36,37 +36,37 @@ void upb_table_init(struct upb_table *t, uint32_t size, uint16_t entry_size)
   memset(t->entries, 0, bytes);  /* Both tables consider 0's an empty entry. */
 }
 
-void upb_inttable_init(struct upb_inttable *t, uint32_t size, uint16_t entsize)
+void upb_inttable_init(upb_inttable *t, uint32_t size, uint16_t entsize)
 {
   upb_table_init(&t->t, size, entsize);
 }
 
-void upb_strtable_init(struct upb_strtable *t, uint32_t size, uint16_t entsize)
+void upb_strtable_init(upb_strtable *t, uint32_t size, uint16_t entsize)
 {
   upb_table_init(&t->t, size, entsize);
 }
 
-void upb_table_free(struct upb_table *t) { free(t->entries); }
-void upb_inttable_free(struct upb_inttable *t) { upb_table_free(&t->t); }
-void upb_strtable_free(struct upb_strtable *t) {
+void upb_table_free(upb_table *t) { free(t->entries); }
+void upb_inttable_free(upb_inttable *t) { upb_table_free(&t->t); }
+void upb_strtable_free(upb_strtable *t) {
   // Free refs from the strtable.
-  struct upb_strtable_entry *e = upb_strtable_begin(t);
+  upb_strtable_entry *e = upb_strtable_begin(t);
   for(; e; e = upb_strtable_next(t, e)) {
     upb_string_unref(e->key);
   }
   upb_table_free(&t->t);
 }
 
-static uint32_t strtable_bucket(struct upb_strtable *t, upb_strptr key)
+static uint32_t strtable_bucket(upb_strtable *t, upb_strptr key)
 {
   uint32_t hash = MurmurHash2(upb_string_getrobuf(key), upb_strlen(key), 0);
   return (hash & (upb_strtable_size(t)-1)) + 1;
 }
 
-void *upb_strtable_lookup(struct upb_strtable *t, upb_strptr key)
+void *upb_strtable_lookup(upb_strtable *t, upb_strptr key)
 {
   uint32_t bucket = strtable_bucket(t, key);
-  struct upb_strtable_entry *e;
+  upb_strtable_entry *e;
   do {
     e = strent(t, bucket);
     if(!upb_string_isnull(e->key) && upb_streql(e->key, key)) return e;
@@ -74,11 +74,11 @@ void *upb_strtable_lookup(struct upb_strtable *t, upb_strptr key)
   return NULL;
 }
 
-static uint32_t empty_intbucket(struct upb_inttable *table)
+static uint32_t empty_intbucket(upb_inttable *table)
 {
   /* TODO: does it matter that this is biased towards the front of the table? */
   for(uint32_t i = 1; i <= upb_inttable_size(table); i++) {
-    struct upb_inttable_entry *e = intent(table, i);
+    upb_inttable_entry *e = intent(table, i);
     if(e->key == EMPTYENT) return i;
   }
   assert(false);
@@ -88,12 +88,12 @@ static uint32_t empty_intbucket(struct upb_inttable *table)
 /* The insert routines have a lot more code duplication between int/string
  * variants than I would like, but there's just a bit too much that varies to
  * parameterize them. */
-static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
+static void intinsert(upb_inttable *t, upb_inttable_entry *e)
 {
   assert(upb_inttable_lookup(t, e->key) == NULL);
   t->t.count++;
   uint32_t bucket = upb_inttable_bucket(t, e->key);
-  struct upb_inttable_entry *table_e = intent(t, bucket);
+  upb_inttable_entry *table_e = intent(t, bucket);
   if(table_e->key != EMPTYENT) {  /* Collision. */
     if(bucket == upb_inttable_bucket(t, table_e->key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
@@ -109,7 +109,7 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
       uint32_t empty_bucket = empty_intbucket(t);
       uint32_t evictee_bucket = upb_inttable_bucket(t, table_e->key);
       memcpy(intent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
-      struct upb_inttable_entry *evictee_e = intent(t, evictee_bucket);
+      upb_inttable_entry *evictee_e = intent(t, evictee_bucket);
       while(1) {
         assert(evictee_e->key != UPB_EMPTY_ENTRY);
         assert(evictee_e->next != UPB_END_OF_CHAIN);
@@ -127,15 +127,15 @@ static void intinsert(struct upb_inttable *t, struct upb_inttable_entry *e)
   assert(upb_inttable_lookup(t, e->key) == table_e);
 }
 
-void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
+void upb_inttable_insert(upb_inttable *t, upb_inttable_entry *e)
 {
   assert(e->key != 0);
   if((double)(t->t.count + 1) / upb_inttable_size(t) > MAX_LOAD) {
     /* Need to resize.  New table of double the size, add old elements to it. */
-    struct upb_inttable new_table;
+    upb_inttable new_table;
     upb_inttable_init(&new_table, upb_inttable_size(t)*2, t->t.entry_size);
     new_table.t.count = t->t.count;
-    struct upb_inttable_entry *old_e;
+    upb_inttable_entry *old_e;
     for(old_e = upb_inttable_begin(t); old_e; old_e = upb_inttable_next(t, old_e))
       intinsert(&new_table, old_e);
     upb_inttable_free(t);
@@ -144,24 +144,24 @@ void upb_inttable_insert(struct upb_inttable *t, struct upb_inttable_entry *e)
   intinsert(t, e);
 }
 
-static uint32_t empty_strbucket(struct upb_strtable *table)
+static uint32_t empty_strbucket(upb_strtable *table)
 {
   /* TODO: does it matter that this is biased towards the front of the table? */
   for(uint32_t i = 1; i <= upb_strtable_size(table); i++) {
-    struct upb_strtable_entry *e = strent(table, i);
+    upb_strtable_entry *e = strent(table, i);
     if(upb_string_isnull(e->key)) return i;
   }
   assert(false);
   return 0;
 }
 
-static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
+static void strinsert(upb_strtable *t, upb_strtable_entry *e)
 {
   assert(upb_strtable_lookup(t, e->key) == NULL);
   e->key = upb_string_getref(e->key, UPB_REF_FROZEN);
   t->t.count++;
   uint32_t bucket = strtable_bucket(t, e->key);
-  struct upb_strtable_entry *table_e = strent(t, bucket);
+  upb_strtable_entry *table_e = strent(t, bucket);
   if(!upb_string_isnull(table_e->key)) {  /* Collision. */
     if(bucket == strtable_bucket(t, table_e->key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
@@ -177,7 +177,7 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
       uint32_t empty_bucket = empty_strbucket(t);
       uint32_t evictee_bucket = strtable_bucket(t, table_e->key);
       memcpy(strent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
-      struct upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
+      upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
       while(1) {
         assert(!upb_string_isnull(evictee_e->key));
         assert(evictee_e->next != UPB_END_OF_CHAIN);
@@ -195,13 +195,13 @@ static void strinsert(struct upb_strtable *t, struct upb_strtable_entry *e)
   assert(upb_strtable_lookup(t, e->key) == table_e);
 }
 
-void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
+void upb_strtable_insert(upb_strtable *t, upb_strtable_entry *e)
 {
   if((double)(t->t.count + 1) / upb_strtable_size(t) > MAX_LOAD) {
     /* Need to resize.  New table of double the size, add old elements to it. */
-    struct upb_strtable new_table;
+    upb_strtable new_table;
     upb_strtable_init(&new_table, upb_strtable_size(t)*2, t->t.entry_size);
-    struct upb_strtable_entry *old_e;
+    upb_strtable_entry *old_e;
     for(old_e = upb_strtable_begin(t); old_e; old_e = upb_strtable_next(t, old_e))
       strinsert(&new_table, old_e);
     upb_strtable_free(t);
@@ -210,12 +210,12 @@ void upb_strtable_insert(struct upb_strtable *t, struct upb_strtable_entry *e)
   strinsert(t, e);
 }
 
-void *upb_inttable_begin(struct upb_inttable *t) {
+void *upb_inttable_begin(upb_inttable *t) {
   return upb_inttable_next(t, intent(t, 0));
 }
 
-void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur) {
-  struct upb_inttable_entry *end = intent(t, upb_inttable_size(t)+1);
+void *upb_inttable_next(upb_inttable *t, upb_inttable_entry *cur) {
+  upb_inttable_entry *end = intent(t, upb_inttable_size(t)+1);
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;
@@ -223,12 +223,12 @@ void *upb_inttable_next(struct upb_inttable *t, struct upb_inttable_entry *cur) 
   return cur;
 }
 
-void *upb_strtable_begin(struct upb_strtable *t) {
+void *upb_strtable_begin(upb_strtable *t) {
   return upb_strtable_next(t, strent(t, 0));
 }
 
-void *upb_strtable_next(struct upb_strtable *t, struct upb_strtable_entry *cur) {
-  struct upb_strtable_entry *end = strent(t, upb_strtable_size(t)+1);
+void *upb_strtable_next(upb_strtable *t, upb_strtable_entry *cur) {
+  upb_strtable_entry *end = strent(t, upb_strtable_size(t)+1);
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;

@@ -32,9 +32,6 @@
 extern "C" {
 #endif
 
-struct upb_msgdef;
-struct upb_fielddef;
-
 /* upb_data *******************************************************************/
 
 // The "base class" of strings, arrays, and messages.  Contains a few flags and
@@ -398,7 +395,7 @@ INLINE size_t upb_array_len(upb_arrayptr a) {
 
 // INTERNAL-ONLY:
 // Frees the given message and releases references on members.
-void _upb_array_free(upb_arrayptr a, struct upb_fielddef *f);
+void _upb_array_free(upb_arrayptr a, upb_fielddef *f);
 
 // INTERNAL-ONLY:
 // Returns a pointer to the given elem.
@@ -414,12 +411,12 @@ INLINE union upb_value_ptr _upb_array_getptr_raw(upb_arrayptr a,
 }
 
 INLINE union upb_value_ptr _upb_array_getptr(upb_arrayptr a,
-                                             struct upb_fielddef *f,
+                                             upb_fielddef *f,
                                              upb_arraylen_t elem) {
-  return _upb_array_getptr_raw(a, elem, upb_type_info[f->type].size);
+  return _upb_array_getptr_raw(a, elem, upb_types[f->type].size);
 }
 
-INLINE union upb_value upb_array_get(upb_arrayptr a, struct upb_fielddef *f,
+INLINE union upb_value upb_array_get(upb_arrayptr a, upb_fielddef *f,
                                      upb_arraylen_t elem) {
   assert(elem < upb_array_len(a));
   return upb_value_read(_upb_array_getptr(a, f, elem), f->type);
@@ -427,7 +424,7 @@ INLINE union upb_value upb_array_get(upb_arrayptr a, struct upb_fielddef *f,
 
 // The caller releases a ref on the given array, which it must previously have
 // owned a ref on.
-INLINE void upb_array_unref(upb_arrayptr a, struct upb_fielddef *f) {
+INLINE void upb_array_unref(upb_arrayptr a, upb_fielddef *f) {
   if(_upb_data_unref(a.base)) _upb_array_free(a, f);
 }
 
@@ -440,15 +437,15 @@ INLINE upb_arrayptr upb_array_getref(upb_arrayptr src, int ref_flags);
 // Sets the given element in the array to val.  The current length of the array
 // must be greater than elem.  If the field type is dynamic, the array will
 // take a ref on val and release a ref on what was previously in the array.
-INLINE void upb_array_set(upb_arrayptr a, struct upb_fielddef *f, int elem,
+INLINE void upb_array_set(upb_arrayptr a, upb_fielddef *f, int elem,
                           union upb_value val);
 
 
 // Note that array_append will attempt to take a reference on the given value,
 // so to avoid a copy use append_default and get.
-INLINE void upb_array_append(upb_arrayptr a, struct upb_fielddef *f,
+INLINE void upb_array_append(upb_arrayptr a, upb_fielddef *f,
                              union upb_value val);
-INLINE void upb_array_append_default(upb_arrayptr a, struct upb_fielddef *f,
+INLINE void upb_array_append_default(upb_arrayptr a, upb_fielddef *f,
                              union upb_value val);
 #endif
 
@@ -471,34 +468,34 @@ struct _upb_msg {
 };
 
 // Creates a new msg of the given type.
-upb_msg *upb_msg_new(struct upb_msgdef *md);
+upb_msg *upb_msg_new(upb_msgdef *md);
 
 // INTERNAL-ONLY:
 // Frees the given message and releases references on members.
-void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md);
+void _upb_msg_free(upb_msg *msg, upb_msgdef *md);
 
 // INTERNAL-ONLY:
 // Returns a pointer to the given field.
-INLINE union upb_value_ptr _upb_msg_getptr(upb_msg *msg, struct upb_fielddef *f) {
+INLINE union upb_value_ptr _upb_msg_getptr(upb_msg *msg, upb_fielddef *f) {
   union upb_value_ptr p;
   p._void = &msg->data[f->byte_offset];
   return p;
 }
 
 // Releases a references on msg.
-INLINE void upb_msg_unref(upb_msg *msg, struct upb_msgdef *md) {
+INLINE void upb_msg_unref(upb_msg *msg, upb_msgdef *md) {
   if(_upb_data_unref(&msg->base)) _upb_msg_free(msg, md);
 }
 
 // Tests whether the given field is explicitly set, or whether it will return
 // a default.
-INLINE bool upb_msg_has(upb_msg *msg, struct upb_fielddef *f) {
+INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
   return (msg->data[f->field_index/8] & (1 << (f->field_index % 8))) != 0;
 }
 
 // Returns the current value if set, or the default value if not set, of the
 // specified field.  The caller does *not* own a ref.
-INLINE union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f) {
+INLINE union upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
   if(upb_msg_has(msg, f)) {
     return upb_value_read(_upb_msg_getptr(msg, f), f->type);
   } else {
@@ -508,23 +505,23 @@ INLINE union upb_value upb_msg_get(upb_msg *msg, struct upb_fielddef *f) {
 
 // Sets the given field to the given value.  The msg will take a ref on val,
 // and will drop a ref on whatever was there before.
-void upb_msg_set(upb_msg *msg, struct upb_fielddef *f, union upb_value val);
+void upb_msg_set(upb_msg *msg, upb_fielddef *f, union upb_value val);
 
-INLINE void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md) {
+INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
   memset(msg->data, 0, md->set_flags_bytes);
 }
 
 // A convenience function for parsing an entire protobuf all at once, without
 // having to worry about setting up the appropriate objects.
-void upb_msg_decodestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
-                       struct upb_status *status);
+void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
+                       upb_status *status);
 
 
 /* upb_msgsrc *****************************************************************/
 
 // A nonresumable, non-interruptable (but simple and fast) source for pushing
 // the data of a upb_msg to a upb_sink.
-void upb_msgsrc_produce(upb_msg *msg, struct upb_msgdef *md, upb_sink *sink,
+void upb_msgsrc_produce(upb_msg *msg, upb_msgdef *md, upb_sink *sink,
                         bool reverse);
 
 
@@ -535,7 +532,7 @@ struct upb_msgsink;
 typedef struct upb_msgsink upb_msgsink;
 
 // Allocate and free a msgsink, respectively.
-upb_msgsink *upb_msgsink_new(struct upb_msgdef *md);
+upb_msgsink *upb_msgsink_new(upb_msgdef *md);
 void upb_msgsink_free(upb_msgsink *sink);
 
 // Returns the upb_sink (like an upcast).

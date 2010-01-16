@@ -41,15 +41,14 @@ void upb_text_printval(upb_field_type_t type, union upb_value val, FILE *file)
   }
 }
 
-static void print_indent(struct upb_text_printer *p, FILE *stream)
+static void print_indent(upb_text_printer *p, FILE *stream)
 {
   if(!p->single_line)
     for(int i = 0; i < p->indent_depth; i++)
       fprintf(stream, "  ");
 }
 
-void upb_text_printfield(struct upb_text_printer *p,
-                         upb_strptr name,
+void upb_text_printfield(upb_text_printer *p, upb_strptr name,
                          upb_field_type_t valtype, union upb_value val,
                          FILE *stream)
 {
@@ -62,9 +61,7 @@ void upb_text_printfield(struct upb_text_printer *p,
     fputc('\n', stream);
 }
 
-void upb_text_push(struct upb_text_printer *p,
-                   upb_strptr submsg_type,
-                   FILE *stream)
+void upb_text_push(upb_text_printer *p, upb_strptr submsg_type, FILE *stream)
 {
   print_indent(p, stream);
   fprintf(stream, UPB_STRFMT " {", UPB_STRARG(submsg_type));
@@ -72,23 +69,22 @@ void upb_text_push(struct upb_text_printer *p,
   p->indent_depth++;
 }
 
-void upb_text_pop(struct upb_text_printer *p,
-                  FILE *stream)
+void upb_text_pop(upb_text_printer *p, FILE *stream)
 {
   p->indent_depth--;
   print_indent(p, stream);
   fprintf(stream, "}\n");
 }
 
-static void printval(struct upb_text_printer *printer, union upb_value v,
-                     struct upb_fielddef *f,
+static void printval(upb_text_printer *printer, union upb_value v,
+                     upb_fielddef *f,
                      FILE *stream);
 
-static void printmsg(struct upb_text_printer *printer,
-                     upb_msg *msg, struct upb_msgdef *md, FILE *stream)
+static void printmsg(upb_text_printer *printer, upb_msg *msg, upb_msgdef *md,
+                     FILE *stream)
 {
   for(upb_field_count_t i = 0; i < md->num_fields; i++) {
-    struct upb_fielddef *f = &md->fields[i];
+    upb_fielddef *f = &md->fields[i];
     if(!upb_msg_has(msg, f)) continue;
     union upb_value v = upb_msg_get(msg, f);
     if(upb_isarray(f)) {
@@ -103,8 +99,8 @@ static void printmsg(struct upb_text_printer *printer,
   }
 }
 
-static void printval(struct upb_text_printer *printer, union upb_value v,
-                     struct upb_fielddef *f,
+static void printval(upb_text_printer *printer, union upb_value v,
+                     upb_fielddef *f,
                      FILE *stream)
 {
   if(upb_issubmsg(f)) {
@@ -117,10 +113,10 @@ static void printval(struct upb_text_printer *printer, union upb_value v,
 }
 
 
-void upb_msg_print(upb_msg *msg, struct upb_msgdef *md, bool single_line,
+void upb_msg_print(upb_msg *msg, upb_msgdef *md, bool single_line,
                    FILE *stream)
 {
-  struct upb_text_printer printer;
+  upb_text_printer printer;
   upb_text_printer_init(&printer, single_line);
   printmsg(&printer, msg, md, stream);
 }

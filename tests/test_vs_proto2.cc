@@ -17,12 +17,12 @@ int num_assertions = 0;
 #include MESSAGE_HFILE
 
 void compare(const google::protobuf::Message& proto2_msg,
-             upb_msg *upb_msg, struct upb_msgdef *upb_md);
+             upb_msg *upb_msg, upb_msgdef *upb_md);
 
 void compare_arrays(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
                     const google::protobuf::FieldDescriptor *proto2_f,
-                    upb_msg *upb_msg, struct upb_fielddef *upb_f)
+                    upb_msg *upb_msg, upb_fielddef *upb_f)
 {
   ASSERT(upb_msg_has(upb_msg, upb_f));
   upb_arrayptr arr = upb_msg_get(upb_msg, upb_f).arr;
@@ -79,7 +79,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
 void compare_values(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
                     const google::protobuf::FieldDescriptor *proto2_f,
-                    upb_msg *upb_msg, struct upb_fielddef *upb_f)
+                    upb_msg *upb_msg, upb_fielddef *upb_f)
 {
   union upb_value v = upb_msg_get(upb_msg, upb_f);
   switch(upb_f->type) {
@@ -128,14 +128,14 @@ void compare_values(const google::protobuf::Reflection *r,
 }
 
 void compare(const google::protobuf::Message& proto2_msg,
-             upb_msg *upb_msg, struct upb_msgdef *upb_md)
+             upb_msg *upb_msg, upb_msgdef *upb_md)
 {
   const google::protobuf::Reflection *r = proto2_msg.GetReflection();
   const google::protobuf::Descriptor *d = proto2_msg.GetDescriptor();
 
   ASSERT((upb_field_count_t)d->field_count() == upb_md->num_fields);
   for(upb_field_count_t i = 0; i < upb_md->num_fields; i++) {
-    struct upb_fielddef *upb_f = &upb_md->fields[i];
+    upb_fielddef *upb_f = &upb_md->fields[i];
     const google::protobuf::FieldDescriptor *proto2_f =
         d->FindFieldByNumber(upb_f->number);
     // Make sure the definitions are equal.
@@ -165,12 +165,12 @@ void compare(const google::protobuf::Message& proto2_msg,
 }
 
 void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
-                       upb_msg *upb_msg, struct upb_msgdef *upb_md,
+                       upb_msg *upb_msg, upb_msgdef *upb_md,
                        upb_strptr str)
 {
   // Parse to both proto2 and upb.
   ASSERT(proto2_msg->ParseFromArray(upb_string_getrobuf(str), upb_strlen(str)));
-  struct upb_status status = UPB_STATUS_INIT;
+  upb_status status = UPB_STATUS_INIT;
   upb_msg_decodestr(upb_msg, upb_md, str, &status);
   ASSERT(upb_ok(&status));
   compare(*proto2_msg, upb_msg, upb_md);
@@ -193,8 +193,8 @@ int main(int argc, char *argv[])
   }
 
   // Initialize upb state, parse descriptor.
-  struct upb_status status = UPB_STATUS_INIT;
-  struct upb_symtab *c = upb_symtab_new();
+  upb_status status = UPB_STATUS_INIT;
+  upb_symtab *c = upb_symtab_new();
   upb_strptr fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(upb_string_isnull(fds)) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
   upb_string_unref(fds);
 
   upb_strptr proto_name = upb_strdupc(MESSAGE_NAME);
-  struct upb_msgdef *def = upb_downcast_msgdef(upb_symtab_lookup(c, proto_name));
+  upb_msgdef *def = upb_downcast_msgdef(upb_symtab_lookup(c, proto_name));
   if(!def) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));

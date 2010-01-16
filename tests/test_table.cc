@@ -15,15 +15,15 @@
 using std::string;
 using std::vector;
 
-struct inttable_entry {
-  struct upb_inttable_entry e;
+typedef struct {
+  upb_inttable_entry e;
   uint32_t value;  /* key*2 */
-};
+} inttable_entry;
 
-struct strtable_entry {
-  struct upb_strtable_entry e;
+typedef struct {
+  upb_strtable_entry e;
   int32_t value;  /* ASCII Value of first letter */
-};
+} strtable_entry;
 
 double get_usertime()
 {
@@ -36,14 +36,14 @@ double get_usertime()
 void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
 {
   /* Initialize structures. */
-  struct upb_strtable table;
+  upb_strtable table;
   std::map<string, int32_t> m;
-  upb_strtable_init(&table, 0, sizeof(struct strtable_entry));
+  upb_strtable_init(&table, 0, sizeof(strtable_entry));
   std::set<string> all;
   for(size_t i = 0; i < num_to_insert; i++) {
     const string& key = keys[i];
     all.insert(key);
-    struct strtable_entry e;
+    strtable_entry e;
     e.value = key[0];
     upb_strptr str = upb_strduplen(key.c_str(), key.size());
     e.e.key = str;
@@ -56,8 +56,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   for(uint32_t i = 0; i < keys.size(); i++) {
     const string& key = keys[i];
     upb_strptr str = upb_strduplen(key.c_str(), key.size());
-    struct strtable_entry *e =
-        (struct strtable_entry*)upb_strtable_lookup(&table, str);
+    strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, str);
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
       assert(upb_streql(e->e.key, str));
@@ -69,9 +68,9 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
     upb_string_unref(str);
   }
 
-  struct strtable_entry *e;
-  for(e = (struct strtable_entry*)upb_strtable_begin(&table); e;
-      e = (struct strtable_entry*)upb_strtable_next(&table, &e->e)) {
+  strtable_entry *e;
+  for(e = (strtable_entry*)upb_strtable_begin(&table); e;
+      e = (strtable_entry*)upb_strtable_next(&table, &e->e)) {
     string tmp(upb_string_getrobuf(e->e.key), upb_strlen(e->e.key));
     std::set<string>::iterator i = all.find(tmp);
     assert(i != all.end());
@@ -86,15 +85,15 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
 void test_inttable(int32_t *keys, size_t num_entries)
 {
   /* Initialize structures. */
-  struct upb_inttable table;
+  upb_inttable table;
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
   __gnu_cxx::hash_map<uint32_t, uint32_t> hm;
-  upb_inttable_init(&table, num_entries, sizeof(struct inttable_entry));
+  upb_inttable_init(&table, num_entries, sizeof(inttable_entry));
   for(size_t i = 0; i < num_entries; i++) {
     int32_t key = keys[i];
     largest_key = UPB_MAX((int32_t)largest_key, key);
-    struct inttable_entry e;
+    inttable_entry e;
     e.e.key = key;
     e.value = key*2;
     upb_inttable_insert(&table, &e.e);
@@ -104,7 +103,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
 
   /* Test correctness. */
   for(uint32_t i = 1; i <= largest_key; i++) {
-    struct inttable_entry *e = (struct inttable_entry*)upb_inttable_lookup(
+    inttable_entry *e = (inttable_entry*)upb_inttable_lookup(
         &table, i);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
@@ -147,8 +146,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
   before = get_usertime();
   for(unsigned int i = 0; i < iterations; i++) {
     int32_t key = keys[i & mask];
-    struct inttable_entry *e = (struct inttable_entry*)upb_inttable_lookup(
-        &table, key);
+    inttable_entry *e = (inttable_entry*)upb_inttable_lookup(&table, key);
     x += (uintptr_t)e;
   }
   double total = get_usertime() - before;
@@ -160,8 +158,7 @@ void test_inttable(int32_t *keys, size_t num_entries)
   before = get_usertime();
   for(unsigned int i = 0; i < iterations; i++) {
     int32_t key = keys[rand() & mask];
-    struct inttable_entry *e = (struct inttable_entry*)upb_inttable_lookup(
-        &table, key);
+    inttable_entry *e = (inttable_entry*)upb_inttable_lookup(&table, key);
     x += (uintptr_t)e;
   }
   total = get_usertime() - before;
