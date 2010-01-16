@@ -4,7 +4,7 @@
  * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
  */
 
-#include "upb_parse.h"
+#include "upb_decoder.h"
 
 #include <inttypes.h>
 #include <stddef.h>
@@ -13,7 +13,7 @@
 
 /* Functions to read wire values. *********************************************/
 
-// These functions are internal to the parser, but might be moved into an
+// These functions are internal to the decode, but might be moved into an
 // internal header file if we at some point in the future opt to do code
 // generation, because the generated code would want to inline these functions.
 // The same applies to the functions to read .proto values below.
@@ -200,8 +200,8 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef T
 
 // Parses a tag, places the result in *tag.
-INLINE const uint8_t *parse_tag(const uint8_t *buf, const uint8_t *end,
-                                struct upb_tag *tag, struct upb_status *status)
+INLINE const uint8_t *decode_tag(const uint8_t *buf, const uint8_t *end,
+                                 struct upb_tag *tag, struct upb_status *status)
 {
   uint32_t tag_int;
   const uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
@@ -239,10 +239,10 @@ const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
   return buf;
 }
 
-const uint8_t *upb_parse_wire_value(uint8_t *buf, uint8_t *end,
-                                    upb_wire_type_t wt,
-                                    union upb_wire_value *wv,
-                                    struct upb_status *status)
+const uint8_t *upb_decode_wire_value(uint8_t *buf, uint8_t *end,
+                                     upb_wire_type_t wt,
+                                     union upb_wire_value *wv,
+                                     struct upb_status *status)
 {
   switch(wt) {
     case UPB_WIRE_TYPE_VARINT:
@@ -282,10 +282,10 @@ static const uint8_t *skip_wire_value(const uint8_t *buf, const uint8_t *end,
   }
 }
 
-static const uint8_t *upb_parse_value(const uint8_t *buf, const uint8_t *end,
-                                      upb_field_type_t ft,
-                                      union upb_value_ptr v,
-                                      struct upb_status *status)
+static const uint8_t *upb_decode_value(const uint8_t *buf, const uint8_t *end,
+                                       upb_field_type_t ft,
+                                       union upb_value_ptr v,
+                                       struct upb_status *status)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_get_ ## t(buf, end, v.member_name, status);
@@ -311,52 +311,52 @@ static const uint8_t *upb_parse_value(const uint8_t *buf, const uint8_t *end,
 #undef CASE
 }
 
-struct upb_parser_frame {
+struct upb_decoder_frame {
   struct upb_msgdef *msgdef;
   struct upb_fielddef *field;
   size_t end_offset;  // For groups, 0.
 };
 
-struct upb_parser {
-  // Immutable state of the parser.
+struct upb_decoder {
+  // Immutable state of the decoder.
   struct upb_msgdef *toplevel_msgdef;
   upb_sink *sink;
 
-  // State pertaining to a particular parse (resettable).
+  // State pertaining to a particular decode (resettable).
   // Stack entries store the offset where the submsg ends (for groups, 0).
-  struct upb_parser_frame stack[UPB_MAX_NESTING], *top, *limit;
+  struct upb_decoder_frame stack[UPB_MAX_NESTING], *top, *limit;
   size_t completed_offset;
   void *udata;
 };
 
-upb_parser *upb_parser_new(struct upb_msgdef *msgdef)
+upb_decoder *upb_decoder_new(struct upb_msgdef *msgdef)
 {
-  upb_parser *p = malloc(sizeof(*p));
-  p->toplevel_msgdef = msgdef;
-  p->limit = &p->stack[UPB_MAX_NESTING];
-  return p;
+  upb_decoder *d = malloc(sizeof(*d));
+  d->toplevel_msgdef = msgdef;
+  d->limit = &d->stack[UPB_MAX_NESTING];
+  return d;
 }
 
-void upb_parser_free(upb_parser *p)
+void upb_decoder_free(upb_decoder *d)
 {
-  free(p);
+  free(d);
 }
 
-void upb_parser_reset(upb_parser *p, upb_sink *sink)
+void upb_decoder_reset(upb_decoder *d, upb_sink *sink)
 {
-  p->top = p->stack;
-  p->completed_offset = 0;
-  p->sink = sink;
-  p->top->msgdef = p->toplevel_msgdef;
+  d->top = d->stack;
+  d->completed_offset = 0;
+  d->sink = sink;
+  d->top->msgdef = d->toplevel_msgdef;
   // The top-level message is not delimited (we can keep receiving data for it
   // indefinitely), so we treat it like a group.
-  p->top->end_offset = 0;
+  d->top->end_offset = 0;
 }
 
-static const void *get_msgend(upb_parser *p, const uint8_t *start)
+static const void *get_msgend(upb_decoder *d, const uint8_t *start)
 {
-  if(p->top->end_offset > 0)
-    return start + (p->top->end_offset - p->completed_offset);
+  if(d->top->end_offset > 0)
+    return start + (d->top->end_offset - d->completed_offset);
   else
     return (void*)UINTPTR_MAX;  // group.
 }
@@ -378,50 +378,50 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
  * Pushes a new stack frame for a submessage with the given len (which will
  * be zero if the submessage is a group).
  */
-static const uint8_t *push(upb_parser *p, const uint8_t *start,
+static const uint8_t *push(upb_decoder *d, const uint8_t *start,
                            uint32_t submsg_len, struct upb_fielddef *f,
                            struct upb_status *status)
 {
-  p->top->field = f;
-  p->top++;
-  if(p->top >= p->limit) {
+  d->top->field = f;
+  d->top++;
+  if(d->top >= d->limit) {
     upb_seterr(status, UPB_STATUS_ERROR,
                "Nesting exceeded maximum (%d levels)\n",
                UPB_MAX_NESTING);
     return NULL;
   }
-  struct upb_parser_frame *frame = p->top;
-  frame->end_offset = p->completed_offset + submsg_len;
+  struct upb_decoder_frame *frame = d->top;
+  frame->end_offset = d->completed_offset + submsg_len;
   frame->msgdef = upb_downcast_msgdef(f->def);
 
-  upb_sink_onstart(p->sink, f);
-  return get_msgend(p, start);
+  upb_sink_onstart(d->sink, f);
+  return get_msgend(d, start);
 }
 
 /**
  * Pops a stack frame, returning a pointer for where the next submsg should
  * end (or a pointer that is out of range for a group).
  */
-static const void *pop(upb_parser *p, const uint8_t *start)
+static const void *pop(upb_decoder *d, const uint8_t *start)
 {
-  p->top--;
-  upb_sink_onend(p->sink, p->top->field);
-  return get_msgend(p, start);
+  d->top--;
+  upb_sink_onend(d->sink, d->top->field);
+  return get_msgend(d, start);
 }
 
 
-size_t upb_parser_parse(upb_parser *p, upb_strptr str, struct upb_status *status)
+size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, struct upb_status *status)
 {
   // buf is our current offset, moves from start to end.
   const uint8_t *buf = (uint8_t*)upb_string_getrobuf(str);
-  const uint8_t *const start = buf;  // ptr equivalent of p->completed_offset
+  const uint8_t *const start = buf;  // ptr equivalent of d->completed_offset
   const uint8_t *const end = buf + upb_strlen(str);
 
-  // When we have fully parsed a tag/value pair, we advance this.
+  // When we have fully decoded a tag/value pair, we advance this.
   const uint8_t *completed = buf;
 
-  const uint8_t *submsg_end = get_msgend(p, start);
-  struct upb_msgdef *msgdef = p->top->msgdef;
+  const uint8_t *submsg_end = get_msgend(d, start);
+  struct upb_msgdef *msgdef = d->top->msgdef;
   upb_sink_status sink_status = UPB_SINK_CONTINUE;
 
   // We need to check the status of operations that can fail, but we do so as
@@ -434,17 +434,17 @@ size_t upb_parser_parse(upb_parser *p, upb_strptr str, struct upb_status *status
   while(sink_status == UPB_SINK_CONTINUE && buf < end) {
     // Parse/handle tag.
     struct upb_tag tag;
-    buf = parse_tag(buf, end, &tag, status);
+    buf = decode_tag(buf, end, &tag, status);
     if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
       CHECK_STATUS();
       if(!isgroup(submsg_end)) {
         upb_seterr(status, UPB_STATUS_ERROR, "End group seen but current "
                    "message is not a group, byte offset: %zd",
-                   p->completed_offset + (completed - start));
+                   d->completed_offset + (completed - start));
         goto err;
       }
-      submsg_end = pop(p, start);
-      msgdef = p->top->msgdef;
+      submsg_end = pop(d, start);
+      msgdef = d->top->msgdef;
       completed = buf;
       continue;
     }
@@ -456,16 +456,16 @@ size_t upb_parser_parse(upb_parser *p, upb_strptr str, struct upb_status *status
     if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
       int32_t delim_len;
       buf = upb_get_INT32(buf, end, &delim_len, status);
-      CHECK_STATUS();  // Checking parse_tag() and upb_get_INT32().
+      CHECK_STATUS();  // Checking decode_tag() and upb_get_INT32().
       const uint8_t *delim_end = buf + delim_len;
       if(f && f->type == UPB_TYPE(MESSAGE)) {
-        submsg_end = push(p, start, delim_end - start, f, status);
-        msgdef = p->top->msgdef;
+        submsg_end = push(d, start, delim_end - start, f, status);
+        msgdef = d->top->msgdef;
       } else {
         if(f && upb_isstringtype(f->type)) {
           int32_t str_start = buf - start;
           sink_status =
-              upb_sink_onstr(p->sink, f, str, str_start, str_start + delim_len);
+              upb_sink_onstr(d->sink, f, str, str_start, str_start + delim_len);
         } // else { TODO: packed arrays }
         // If field was not found, it is skipped silently.
         buf = delim_end;  // Could be >end.
@@ -474,14 +474,14 @@ size_t upb_parser_parse(upb_parser *p, upb_strptr str, struct upb_status *status
       if(!f || !upb_check_type(tag.wire_type, f->type)) {
         buf = skip_wire_value(buf, end, tag.wire_type, status);
       } else if (f->type == UPB_TYPE(GROUP)) {
-        submsg_end = push(p, start, 0, f, status);
-        msgdef = p->top->msgdef;
+        submsg_end = push(d, start, 0, f, status);
+        msgdef = d->top->msgdef;
       } else {
         union upb_value val;
-        buf = upb_parse_value(buf, end, f->type, upb_value_addrof(&val),
+        buf = upb_decode_value(buf, end, f->type, upb_value_addrof(&val),
                               status);
-        CHECK_STATUS();  // Checking upb_parse_value().
-        sink_status = upb_sink_onvalue(p->sink, f, val);
+        CHECK_STATUS();  // Checking upb_decode_value().
+        sink_status = upb_sink_onvalue(d->sink, f, val);
       }
     }
     CHECK_STATUS();
@@ -492,16 +492,16 @@ size_t upb_parser_parse(upb_parser *p, upb_strptr str, struct upb_status *status
                    "did not lie on a tag/value boundary.");
         goto err;
       }
-      submsg_end = pop(p, start);
-      msgdef = p->top->msgdef;
+      submsg_end = pop(d, start);
+      msgdef = d->top->msgdef;
     }
-    // while(buf < p->packed_end) { TODO: packed arrays }
+    // while(buf < d->packed_end) { TODO: packed arrays }
     completed = buf;
   }
 
   size_t read;
 err:
   read = (char*)completed - (char*)start;
-  p->completed_offset += read;
+  d->completed_offset += read;
   return read;
 }

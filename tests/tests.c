@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "upb_parse.c"
+#include "upb_decoder.c"
 #include "upb_def.h"
 
 int num_assertions = 0;

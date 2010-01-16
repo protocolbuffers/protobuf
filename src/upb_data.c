@@ -6,8 +6,8 @@
 
 #include <stdlib.h>
 #include "upb_data.h"
+#include "upb_decoder.h"
 #include "upb_def.h"
-#include "upb_parse.h"
 
 static uint32_t round_up_to_pow2(uint32_t v)
 {
@@ -282,18 +282,18 @@ void _upb_msg_free(upb_msg *msg, struct upb_msgdef *md)
   free(msg);
 }
 
-void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
-                      struct upb_status *status)
+void upb_msg_decodestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
+                       struct upb_status *status)
 {
-  upb_parser *p = upb_parser_new(md);
+  upb_decoder *d = upb_decoder_new(md);
   upb_msgsink *s = upb_msgsink_new(md);
 
   upb_msgsink_reset(s, msg);
-  upb_parser_reset(p, upb_msgsink_sink(s));
+  upb_decoder_reset(d, upb_msgsink_sink(s));
   upb_msg_clear(msg, md);
-  upb_parser_parse(p, str, status);
+  upb_decoder_decode(d, str, status);
 
-  upb_parser_free(p);
+  upb_decoder_free(d);
   upb_msgsink_free(s);
 }
 

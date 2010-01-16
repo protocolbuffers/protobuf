@@ -6,7 +6,7 @@
 #include <google/protobuf/descriptor.h>
 #include "upb_data.h"
 #include "upb_def.h"
-#include "upb_parse.h"
+#include "upb_decoder.h"
 
 int num_assertions = 0;
 #define ASSERT(expr) do { \
@@ -171,7 +171,7 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
   // Parse to both proto2 and upb.
   ASSERT(proto2_msg->ParseFromArray(upb_string_getrobuf(str), upb_strlen(str)));
   struct upb_status status = UPB_STATUS_INIT;
-  upb_msg_parsestr(upb_msg, upb_md, str, &status);
+  upb_msg_decodestr(upb_msg, upb_md, str, &status);
   ASSERT(upb_ok(&status));
   compare(*proto2_msg, upb_msg, upb_md);
 }

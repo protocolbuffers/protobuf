@@ -673,7 +673,7 @@ int main(int argc, char *argv[])
   struct upb_symtab *s = upb_symtab_new();
   upb_msg *fds_msg = upb_msg_new(s->fds_msgdef);
   struct upb_status status = UPB_STATUS_INIT;
-  upb_msg_parsestr(fds_msg, s->fds_msgdef, descriptor, &status);
+  upb_msg_decodestr(fds_msg, s->fds_msgdef, descriptor, &status);
   if(!upb_ok(&status))
     error("Failed to parse input file descriptor: %s", status.msg);
   google_protobuf_FileDescriptorSet *fds = (void*)fds_msg;

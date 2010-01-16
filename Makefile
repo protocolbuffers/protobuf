@@ -46,7 +46,7 @@ clean:
 	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
-SRC=src/upb.c src/upb_parse.c src/upb_table.c src/upb_def.c src/upb_data.c \
+SRC=src/upb.c src/upb_decoder.c src/upb_table.c src/upb_def.c src/upb_data.c \
     src/upb_encoder.c descriptor/descriptor.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.

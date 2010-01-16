@@ -516,8 +516,8 @@ INLINE void upb_msg_clear(upb_msg *msg, struct upb_msgdef *md) {
 
 // A convenience function for parsing an entire protobuf all at once, without
 // having to worry about setting up the appropriate objects.
-void upb_msg_parsestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
-                      struct upb_status *status);
+void upb_msg_decodestr(upb_msg *msg, struct upb_msgdef *md, upb_strptr str,
+                       struct upb_status *status);
 
 
 /* upb_msgsrc *****************************************************************/

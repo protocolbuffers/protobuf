@@ -829,7 +829,7 @@ void upb_symtab_add_desc(struct upb_symtab *s, upb_strptr desc,
                          struct upb_status *status)
 {
   upb_msg *fds = upb_msg_new(s->fds_msgdef);
-  upb_msg_parsestr(fds, s->fds_msgdef, desc, status);
+  upb_msg_decodestr(fds, s->fds_msgdef, desc, status);
   if(!upb_ok(status)) return;
   upb_symtab_addfds(s, (google_protobuf_FileDescriptorSet*)fds, status);
   upb_msg_unref(fds, s->fds_msgdef);
