@@ -5,9 +5,11 @@
  */
 
 #include "upb_encoder.h"
+
+#include <stdlib.h>
 #include "descriptor.h"
 
-/* Functions for calculating sizes. *******************************************/
+/* Functions for calculating sizes of wire values. ****************************/
 
 static size_t upb_v_uint64_t_size(uint64_t val) {
 #ifdef __GNUC__
@@ -103,9 +105,9 @@ static uint8_t *upb_put_f_uint64_t(uint8_t *buf, uint64_t val)
   return uint64_end;
 }
 
-/* Functions to write .proto values. ******************************************/
+/* Functions to write and calculate sizes for .proto values. ******************/
 
-/* Performs zig-zag encoding, which is used by sint32 and sint64. */
+// Performs zig-zag encoding, which is used by sint32 and sint64.
 static uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
 static uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
 
@@ -167,7 +169,7 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef PUT
 #undef T
 
-uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft, upb_value v)
+static uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft, upb_value v)
 {
 #define CASE(t, member_name) \
   case UPB_TYPE(t): return upb_put_ ## t(buf, v.member_name);
@@ -191,10 +193,126 @@ uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft, upb_value v)
 #undef CASE
 }
 
-uint8_t *_upb_put_tag(uint8_t *buf, upb_field_number_t fn, upb_wire_type_t wt)
+static uint32_t _upb_get_value_size(upb_field_type_t ft, upb_value v)
 {
-  return upb_put_UINT32(buf, wt | (fn << 3));
+#define CASE(t, member_name) \
+  case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);
+  switch(ft) {
+    CASE(DOUBLE,   _double)
+    CASE(FLOAT,    _float)
+    CASE(INT32,    int32)
+    CASE(INT64,    int64)
+    CASE(UINT32,   uint32)
+    CASE(UINT64,   uint64)
+    CASE(SINT32,   int32)
+    CASE(SINT64,   int64)
+    CASE(FIXED32,  uint32)
+    CASE(FIXED64,  uint64)
+    CASE(SFIXED32, int32)
+    CASE(SFIXED64, int64)
+    CASE(BOOL,     _bool)
+    CASE(ENUM,     int32)
+    default: assert(false); return 0;
+  }
+#undef CASE
 }
+
+static uint8_t *_upb_put_tag(uint8_t *buf, upb_field_number_t num,
+                             upb_wire_type_t wt)
+{
+  return upb_put_UINT32(buf, wt | (num << 3));
+}
+
+static uint32_t _upb_get_tag_size(upb_field_number_t num)
+{
+  return upb_get_UINT32_size(num << 3);
+}
+
+
+/* upb_sizebuilder ************************************************************/
+
+struct upb_sizebuilder {
+  // Accumulating size for the current level.
+  uint32_t size;
+
+  // Stack of sizes for our current nesting.
+  uint32_t stack[UPB_MAX_NESTING], *top, *limit;
+
+  // Vector of sizes.
+  uint32_t *sizes;
+  int sizes_len;
+  int sizes_size;
+
+  upb_status status;
+};
+
+// upb_sink callbacks.
+static upb_sink_status _upb_sizebuilder_valuecb(upb_sink *sink, upb_fielddef *f,
+                                                upb_value val)
+{
+  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
+  uint32_t size = 0;
+  size += _upb_get_tag_size(f->number);
+  size += _upb_get_value_size(f->type, val);
+  sb->size += size;
+  return UPB_SINK_CONTINUE;
+}
+
+static upb_sink_status _upb_sizebuilder_strcb(upb_sink *sink, upb_fielddef *f,
+                                              upb_strptr str,
+                                              int32_t start, uint32_t end)
+{
+  (void)str;   // String data itself is not used.
+  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
+  if(start >= 0) {
+    uint32_t size = 0;
+    size += _upb_get_tag_size(f->number);
+    size += upb_get_UINT32_size(end - start);
+    sb->size += size;
+  }
+  return UPB_SINK_CONTINUE;
+}
+
+static upb_sink_status _upb_sizebuilder_startcb(upb_sink *sink, upb_fielddef *f)
+{
+  (void)f;  // Unused (we calculate tag size and delimiter in endcb).
+  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
+  *sb->top = sb->size;
+  sb->top++;
+  sb->size = 0;
+  if(sb->top == sb->limit) {
+    upb_seterr(&sb->status, UPB_ERROR_MAX_NESTING_EXCEEDED,
+               "Nesting exceeded maximum (%d levels)\n",
+               UPB_MAX_NESTING);
+    return UPB_SINK_STOP;
+  }
+  return UPB_SINK_CONTINUE;
+}
+
+static upb_sink_status _upb_sizebuilder_endcb(upb_sink *sink, upb_fielddef *f)
+{
+  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
+  if(sb->sizes_len == sb->sizes_size) {
+    sb->sizes_size *= 2;
+    sb->sizes = realloc(sb->sizes, sb->sizes_size * sizeof(*sb->sizes));
+  }
+  sb->sizes[sb->sizes_len++] = sb->size;
+  sb->top--;
+  // The size according to the parent includes the tag size and delimiter of
+  // the submessage.
+  sb->size += upb_get_UINT32_size(sb->size);
+  sb->size += _upb_get_tag_size(f->number);
+  // Include size accumulated in parent before child began.
+  sb->size += *sb->top;
+  return UPB_SINK_CONTINUE;
+}
+
+upb_sink_callbacks _upb_sizebuilder_sink_vtbl = {
+  _upb_sizebuilder_valuecb,
+  _upb_sizebuilder_strcb,
+  _upb_sizebuilder_startcb,
+  _upb_sizebuilder_endcb
+};
 
 
 /* upb_sink callbacks *********************************************************/
@@ -282,35 +400,4 @@ upb_sink_callbacks _upb_encoder_sink_vtbl = {
   _upb_encoder_startcb,
   _upb_encoder_endcb
 };
-
-
-/* Public Interface ***********************************************************/
-
-size_t upb_get_encoded_size(upb_value v, upb_fielddef *f)
-{
-#define CASE(t, member_name) \
-  case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);
-  switch(f->type) {
-    CASE(DOUBLE,   _double)
-    CASE(FLOAT,    _float)
-    CASE(INT32,    int32)
-    CASE(INT64,    int64)
-    CASE(UINT32,   uint32)
-    CASE(UINT64,   uint64)
-    CASE(SINT32,   int32)
-    CASE(SINT64,   int64)
-    CASE(FIXED32,  uint32)
-    CASE(FIXED64,  uint64)
-    CASE(SFIXED32, int32)
-    CASE(SFIXED64, int64)
-    CASE(BOOL,     _bool)
-    CASE(ENUM,     int32)
-    default: assert(false); return 0;
-  }
-#undef CASE
-}
-
-size_t upb_get_encoded_tag_size(uint32_t fieldnum) {
-  return upb_v_uint64_t_size((uint64_t)fieldnum << 3);
-}
 

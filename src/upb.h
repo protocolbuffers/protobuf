@@ -272,14 +272,14 @@ enum upb_status_code {
   // The input byte stream ended in the middle of a record.
   UPB_STATUS_NEED_MORE_DATA = 1,
 
-  // The user value callback opted to stop parsing.
-  UPB_STATUS_USER_CANCELLED = 2,
-
   // An unrecoverable error occurred.
   UPB_STATUS_ERROR = -1,
 
   // A varint went for 10 bytes without terminating.
-  UPB_ERROR_UNTERMINATED_VARINT = -2
+  UPB_ERROR_UNTERMINATED_VARINT = -2,
+
+  // The max nesting level (UPB_MAX_NESTING) was exceeded.
+  UPB_ERROR_MAX_NESTING_EXCEEDED = -3
 };
 
 #define UPB_ERRORMSG_MAXLEN 256

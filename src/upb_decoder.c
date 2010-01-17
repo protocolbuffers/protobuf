@@ -207,10 +207,8 @@ INLINE const uint8_t *decode_tag(const uint8_t *buf, const uint8_t *end,
 }
 
 
-/**
- * Parses a 64-bit varint that is known to be >= 2 bytes (the inline version
- * handles 1 and 2 byte varints).
- */
+// Parses a 64-bit varint that is known to be >= 2 bytes (the inline version
+// handles 1 and 2 byte varints).
 const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
                                        uint64_t *val, upb_status *status)
 {
@@ -367,10 +365,8 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
 }
 
 
-/**
- * Pushes a new stack frame for a submessage with the given len (which will
- * be zero if the submessage is a group).
- */
+// Pushes a new stack frame for a submessage with the given len (which will
+// be zero if the submessage is a group).
 static const uint8_t *push(upb_decoder *d, const uint8_t *start,
                            uint32_t submsg_len, upb_fielddef *f,
                            upb_status *status)
@@ -378,7 +374,7 @@ static const uint8_t *push(upb_decoder *d, const uint8_t *start,
   d->top->field = f;
   d->top++;
   if(d->top >= d->limit) {
-    upb_seterr(status, UPB_STATUS_ERROR,
+    upb_seterr(status, UPB_ERROR_MAX_NESTING_EXCEEDED,
                "Nesting exceeded maximum (%d levels)\n",
                UPB_MAX_NESTING);
     return NULL;
@@ -391,10 +387,8 @@ static const uint8_t *push(upb_decoder *d, const uint8_t *start,
   return get_msgend(d, start);
 }
 
-/**
- * Pops a stack frame, returning a pointer for where the next submsg should
- * end (or a pointer that is out of range for a group).
- */
+// Pops a stack frame, returning a pointer for where the next submsg should
+// end (or a pointer that is out of range for a group).
 static const void *pop(upb_decoder *d, const uint8_t *start)
 {
   d->top--;

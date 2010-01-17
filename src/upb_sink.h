@@ -98,9 +98,15 @@ typedef struct upb_sink_callbacks {
   upb_end_cb end_cb;
 } upb_sink_callbacks;
 
-// We could potentially define these later to also be capable of calling a C++
-// virtual method instead of doing the virtual dispatch manually.  This would
-// make it possible to write C++ sinks in a more natural style without loss of
+// These macros implement a mini virtual function dispatch for upb_sink instances.
+// This allows functions that call upb_sinks to just write:
+//
+//   upb_sink_onvalue(sink, field, val);
+//
+// The macro will handle the virtual function lookup and dispatch.  We could
+// potentially define these later to also be capable of calling a C++ virtual
+// method instead of doing the virtual dispatch manually.  This would make it
+// possible to write C++ sinks in a more natural style without loss of
 // efficiency.  We could have a flag in upb_sink defining whether it is a C
 // sink or a C++ one.
 #define upb_sink_onvalue(s, f, val) s->vtbl->value_cb(s, f, val)
@@ -123,10 +129,18 @@ INLINE void upb_sink_init(upb_sink *s, upb_sink_callbacks *vtbl) {
 //
 // The two simplest kinds of sinks are "write to string" and "write to FILE*".
 
+// A forward declaration solely for the benefit of declaring upb_byte_cb below.
+// Always prefer upb_bytesink (without the "struct" keyword) instead.
+struct _upb_bytesink;
+
 // The single bytesink callback; it takes the bytes to be written and returns
 // how many were successfully written.  If zero is returned, it indicates that
 // no more bytes can be accepted right now.
-//typedef size_t (*upb_byte_cb)(upb_bytesink *s, upb_strptr str);
+typedef size_t (*upb_byte_cb)(struct _upb_bytesink *s, upb_strptr str);
+
+typedef struct _upb_bytesink {
+  upb_byte_cb *cb;
+} upb_bytesink;
 
 #ifdef __cplusplus
 }  /* extern "C" */
