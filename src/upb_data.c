@@ -366,7 +366,7 @@ typedef struct {
 struct upb_msgsink {
   upb_sink base;
   upb_msgdef *toplevel_msgdef;
-  upb_msgsink_frame stack[UPB_MAX_NESTING], *top, *limit;
+  upb_msgsink_frame stack[UPB_MAX_NESTING], *top;
 };
 
 /* Helper function that returns a pointer to where the next value for field "f"
@@ -432,16 +432,11 @@ static upb_sink_status _upb_msgsink_strcb(upb_sink *s, upb_fielddef *f,
 static upb_sink_status _upb_msgsink_startcb(upb_sink *s, upb_fielddef *f,
                                             upb_status *status)
 {
+  (void)status;  // No detectable errors can occur.
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *oldmsg = ms->top->msg;
   upb_valueptr p = get_valueptr(oldmsg, f);
   ms->top++;
-  if(ms->top == ms->limit) {
-    upb_seterr(status, UPB_ERROR_MAX_NESTING_EXCEEDED,
-               "Nesting exceeded maximum (%d levels)\n",
-               UPB_MAX_NESTING);
-    return UPB_SINK_STOP;
-  }
 
   if(upb_isarray(f) || !upb_msg_has(oldmsg, f)) {
     upb_msgdef *md = upb_downcast_msgdef(f->def);
@@ -500,7 +495,6 @@ upb_sink *upb_msgsink_sink(upb_msgsink *sink)
 void upb_msgsink_reset(upb_msgsink *ms, upb_msg *msg)
 {
   ms->top = ms->stack;
-  ms->limit = ms->stack + UPB_MAX_NESTING;
   ms->top->msg = msg;
   ms->top->md = ms->toplevel_msgdef;
 }

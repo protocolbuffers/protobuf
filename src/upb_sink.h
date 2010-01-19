@@ -85,7 +85,8 @@ typedef upb_sink_status (*upb_str_cb)(upb_sink *s, upb_fielddef *f,
                                       upb_status *status);
 
 // The start and end callbacks are called when a submessage begins and ends,
-// respectively.
+// respectively.  The caller is responsible for ensuring that the nesting
+// level never exceeds UPB_MAX_NESTING.
 typedef upb_sink_status (*upb_start_cb)(upb_sink *s, upb_fielddef *f,
                                         upb_status *status);
 typedef upb_sink_status (*upb_end_cb)(upb_sink *s, upb_fielddef *f,

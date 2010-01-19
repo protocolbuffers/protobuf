@@ -236,7 +236,7 @@ struct upb_sizebuilder {
   uint32_t size;
 
   // Stack of sizes for our current nesting.
-  uint32_t stack[UPB_MAX_NESTING], *top, *limit;
+  uint32_t stack[UPB_MAX_NESTING], *top;
 
   // Vector of sizes.
   uint32_t *sizes;
@@ -280,18 +280,13 @@ static upb_sink_status _upb_sizebuilder_strcb(upb_sink *sink, upb_fielddef *f,
 static upb_sink_status _upb_sizebuilder_startcb(upb_sink *sink, upb_fielddef *f,
                                                 upb_status *status)
 {
+  (void)status;
   (void)f;  // Unused (we calculate tag size and delimiter in endcb).
   upb_sizebuilder *sb = (upb_sizebuilder*)sink;
   if(f->type == UPB_TYPE(MESSAGE)) {
     *sb->top = sb->size;
     sb->top++;
     sb->size = 0;
-    if(sb->top == sb->limit) {
-      upb_seterr(status, UPB_ERROR_MAX_NESTING_EXCEEDED,
-                 "Nesting exceeded maximum (%d levels)\n",
-                 UPB_MAX_NESTING);
-      return UPB_SINK_STOP;
-    }
   } else {
     assert(f->type == UPB_TYPE(GROUP));
     sb->size += _upb_get_tag_size(f->number);
