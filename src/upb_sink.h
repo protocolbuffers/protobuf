@@ -66,7 +66,7 @@ typedef struct {
 // The value callback is called for a regular value (ie. not a string or
 // submessage).
 typedef upb_sink_status (*upb_value_cb)(upb_sink *s, upb_fielddef *f,
-                                        upb_value val);
+                                        upb_value val, upb_status *status);
 
 // The string callback is called for string data.  "str" is the string in which
 // the data lives, but it may contain more data than the effective string.
@@ -81,12 +81,15 @@ typedef upb_sink_status (*upb_value_cb)(upb_sink *s, upb_fielddef *f,
 // copying if it is unavoidable.
 typedef upb_sink_status (*upb_str_cb)(upb_sink *s, upb_fielddef *f,
                                       upb_strptr str,
-                                      int32_t start, uint32_t end);
+                                      int32_t start, uint32_t end,
+                                      upb_status *status);
 
 // The start and end callbacks are called when a submessage begins and ends,
 // respectively.
-typedef upb_sink_status (*upb_start_cb)(upb_sink *s, upb_fielddef *f);
-typedef upb_sink_status (*upb_end_cb)(upb_sink *s, upb_fielddef *f);
+typedef upb_sink_status (*upb_start_cb)(upb_sink *s, upb_fielddef *f,
+                                        upb_status *status);
+typedef upb_sink_status (*upb_end_cb)(upb_sink *s, upb_fielddef *f,
+                                      upb_status *status);
 
 
 /* upb_sink implementation ****************************************************/
@@ -109,10 +112,10 @@ typedef struct upb_sink_callbacks {
 // possible to write C++ sinks in a more natural style without loss of
 // efficiency.  We could have a flag in upb_sink defining whether it is a C
 // sink or a C++ one.
-#define upb_sink_onvalue(s, f, val) s->vtbl->value_cb(s, f, val)
-#define upb_sink_onstr(s, f, str, start, end) s->vtbl->str_cb(s, f, str, start, end)
-#define upb_sink_onstart(s, f) s->vtbl->start_cb(s, f)
-#define upb_sink_onend(s, f) s->vtbl->end_cb(s, f)
+#define upb_sink_onvalue(s, f, val, status) s->vtbl->value_cb(s, f, val, status)
+#define upb_sink_onstr(s, f, str, start, end, status) s->vtbl->str_cb(s, f, str, start, end, status)
+#define upb_sink_onstart(s, f, status) s->vtbl->start_cb(s, f, status)
+#define upb_sink_onend(s, f, status) s->vtbl->end_cb(s, f, status)
 
 // Initializes a plain C visitor with the given vtbl.  The sink must have been
 // allocated separately.
@@ -134,9 +137,11 @@ INLINE void upb_sink_init(upb_sink *s, upb_sink_callbacks *vtbl) {
 struct _upb_bytesink;
 
 // The single bytesink callback; it takes the bytes to be written and returns
-// how many were successfully written.  If zero is returned, it indicates that
-// no more bytes can be accepted right now.
-typedef size_t (*upb_byte_cb)(struct _upb_bytesink *s, upb_strptr str);
+// how many were successfully written.  If the return value is <0, the caller
+// should stop processing.
+typedef int32_t (*upb_byte_cb)(struct _upb_bytesink *s, upb_strptr str,
+                               uint32_t start, uint32_t end,
+                               upb_status *status);
 
 typedef struct _upb_bytesink {
   upb_byte_cb *cb;

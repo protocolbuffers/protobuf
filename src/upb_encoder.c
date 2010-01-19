@@ -248,8 +248,10 @@ struct upb_sizebuilder {
 
 // upb_sink callbacks.
 static upb_sink_status _upb_sizebuilder_valuecb(upb_sink *sink, upb_fielddef *f,
-                                                upb_value val)
+                                                upb_value val,
+                                                upb_status *status)
 {
+  (void)status;
   upb_sizebuilder *sb = (upb_sizebuilder*)sink;
   uint32_t size = 0;
   size += _upb_get_tag_size(f->number);
@@ -260,8 +262,10 @@ static upb_sink_status _upb_sizebuilder_valuecb(upb_sink *sink, upb_fielddef *f,
 
 static upb_sink_status _upb_sizebuilder_strcb(upb_sink *sink, upb_fielddef *f,
                                               upb_strptr str,
-                                              int32_t start, uint32_t end)
+                                              int32_t start, uint32_t end,
+                                              upb_status *status)
 {
+  (void)status;
   (void)str;   // String data itself is not used.
   upb_sizebuilder *sb = (upb_sizebuilder*)sink;
   if(start >= 0) {
@@ -273,37 +277,54 @@ static upb_sink_status _upb_sizebuilder_strcb(upb_sink *sink, upb_fielddef *f,
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_sizebuilder_startcb(upb_sink *sink, upb_fielddef *f)
+static upb_sink_status _upb_sizebuilder_startcb(upb_sink *sink, upb_fielddef *f,
+                                                upb_status *status)
 {
   (void)f;  // Unused (we calculate tag size and delimiter in endcb).
   upb_sizebuilder *sb = (upb_sizebuilder*)sink;
-  *sb->top = sb->size;
-  sb->top++;
-  sb->size = 0;
-  if(sb->top == sb->limit) {
-    upb_seterr(&sb->status, UPB_ERROR_MAX_NESTING_EXCEEDED,
-               "Nesting exceeded maximum (%d levels)\n",
-               UPB_MAX_NESTING);
-    return UPB_SINK_STOP;
+  if(f->type == UPB_TYPE(MESSAGE)) {
+    *sb->top = sb->size;
+    sb->top++;
+    sb->size = 0;
+    if(sb->top == sb->limit) {
+      upb_seterr(status, UPB_ERROR_MAX_NESTING_EXCEEDED,
+                 "Nesting exceeded maximum (%d levels)\n",
+                 UPB_MAX_NESTING);
+      return UPB_SINK_STOP;
+    }
+  } else {
+    assert(f->type == UPB_TYPE(GROUP));
+    sb->size += _upb_get_tag_size(f->number);
   }
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_sizebuilder_endcb(upb_sink *sink, upb_fielddef *f)
+static upb_sink_status _upb_sizebuilder_endcb(upb_sink *sink, upb_fielddef *f,
+                                              upb_status *status)
 {
+  (void)status;
   upb_sizebuilder *sb = (upb_sizebuilder*)sink;
-  if(sb->sizes_len == sb->sizes_size) {
-    sb->sizes_size *= 2;
-    sb->sizes = realloc(sb->sizes, sb->sizes_size * sizeof(*sb->sizes));
+  if(f->type == UPB_TYPE(MESSAGE)) {
+    sb->top--;
+    if(sb->sizes_len == sb->sizes_size) {
+      sb->sizes_size *= 2;
+      sb->sizes = realloc(sb->sizes, sb->sizes_size * sizeof(*sb->sizes));
+    }
+    uint32_t child_size = sb->size;
+    uint32_t parent_size = *sb->top;
+    sb->sizes[sb->sizes_len++] = child_size;
+    // The size according to the parent includes the tag size and delimiter of
+    // the submessage.
+    parent_size += upb_get_UINT32_size(child_size);
+    parent_size += _upb_get_tag_size(f->number);
+    // Include size accumulated in parent before child began.
+    sb->size = child_size + parent_size;
+  } else {
+    assert(f->type == UPB_TYPE(GROUP));
+    // As an optimization, we could just add this number twice in startcb, to
+    // avoid having to recalculate it.
+    sb->size += _upb_get_tag_size(f->number);
   }
-  sb->sizes[sb->sizes_len++] = sb->size;
-  sb->top--;
-  // The size according to the parent includes the tag size and delimiter of
-  // the submessage.
-  sb->size += upb_get_UINT32_size(sb->size);
-  sb->size += _upb_get_tag_size(f->number);
-  // Include size accumulated in parent before child began.
-  sb->size += *sb->top;
   return UPB_SINK_CONTINUE;
 }
 
@@ -329,12 +350,13 @@ struct upb_encoder {
 #define UPB_ENCODER_BUFSIZE (UPB_MAX_ENCODED_SIZE * 2)
 
 static upb_sink_status _upb_encoder_push_buf(upb_encoder *s, const uint8_t *buf,
-                                             size_t len)
+                                             size_t len, upb_status *status)
 {
   // TODO: conjure a upb_strptr that points to buf.
   //upb_strptr ptr;
   (void)s;
   (void)buf;
+  (void)status;
   size_t written = 5;// = upb_bytesink_onbytes(s->bytesink, ptr);
   if(written < len) {
     // TODO: mark to skip "written" bytes next time.
@@ -345,7 +367,7 @@ static upb_sink_status _upb_encoder_push_buf(upb_encoder *s, const uint8_t *buf,
 }
 
 static upb_sink_status _upb_encoder_valuecb(upb_sink *sink, upb_fielddef *f,
-                                            upb_value val)
+                                            upb_value val, upb_status *status)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
@@ -353,12 +375,13 @@ static upb_sink_status _upb_encoder_valuecb(upb_sink *sink, upb_fielddef *f,
   // TODO: handle packed encoding.
   ptr = _upb_put_tag(ptr, f->number, wt);
   ptr = upb_encode_value(ptr, f->type, val);
-  return _upb_encoder_push_buf(s, buf, ptr - buf);
+  return _upb_encoder_push_buf(s, buf, ptr - buf, status);
 }
 
 static upb_sink_status _upb_encoder_strcb(upb_sink *sink, upb_fielddef *f,
                                           upb_strptr str,
-                                          int32_t start, uint32_t end)
+                                          int32_t start, uint32_t end,
+                                          upb_status *status)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
@@ -368,11 +391,12 @@ static upb_sink_status _upb_encoder_strcb(upb_sink *sink, upb_fielddef *f,
   }
   // TODO: properly handle partially consumed strings and partially supplied
   // strings.
-  _upb_encoder_push_buf(s, buf, ptr - buf);
-  return _upb_encoder_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start);
+  _upb_encoder_push_buf(s, buf, ptr - buf, status);
+  return _upb_encoder_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start, status);
 }
 
-static upb_sink_status _upb_encoder_startcb(upb_sink *sink, upb_fielddef *f)
+static upb_sink_status _upb_encoder_startcb(upb_sink *sink, upb_fielddef *f,
+                                            upb_status *status)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
@@ -382,16 +406,17 @@ static upb_sink_status _upb_encoder_startcb(upb_sink *sink, upb_fielddef *f)
     ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
     ptr = upb_put_UINT32(ptr, s->sizes[--s->size_offset]);
   }
-  return _upb_encoder_push_buf(s, buf, ptr - buf);
+  return _upb_encoder_push_buf(s, buf, ptr - buf, status);
 }
 
-static upb_sink_status _upb_encoder_endcb(upb_sink *sink, upb_fielddef *f)
+static upb_sink_status _upb_encoder_endcb(upb_sink *sink, upb_fielddef *f,
+                                          upb_status *status)
 {
   upb_encoder *s = (upb_encoder*)sink;
   uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
   if(f->type != UPB_TYPE(GROUP)) return UPB_SINK_CONTINUE;
   ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_END_GROUP);
-  return _upb_encoder_push_buf(s, buf, ptr - buf);
+  return _upb_encoder_push_buf(s, buf, ptr - buf, status);
 }
 
 upb_sink_callbacks _upb_encoder_sink_vtbl = {

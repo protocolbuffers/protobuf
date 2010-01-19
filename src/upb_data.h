@@ -509,9 +509,15 @@ INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
   memset(msg->data, 0, md->set_flags_bytes);
 }
 
-// A convenience function for parsing an entire protobuf all at once, without
+// A convenience function for decoding an entire protobuf all at once, without
 // having to worry about setting up the appropriate objects.
 void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
+                       upb_status *status);
+
+// A convenience function for encoding an entire protobuf all at once.  If an
+// error occurs, the null string is returned and the status object contains
+// the error.
+void upb_msg_encodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
                        upb_status *status);
 
 
@@ -520,7 +526,7 @@ void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
 // A nonresumable, non-interruptable (but simple and fast) source for pushing
 // the data of a upb_msg to a upb_sink.
 void upb_msgsrc_produce(upb_msg *msg, upb_msgdef *md, upb_sink *sink,
-                        bool reverse);
+                        bool reverse, upb_status *status);
 
 
 /* upb_msgsink ****************************************************************/

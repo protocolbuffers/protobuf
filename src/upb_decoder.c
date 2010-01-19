@@ -383,16 +383,16 @@ static const uint8_t *push(upb_decoder *d, const uint8_t *start,
   frame->end_offset = d->completed_offset + submsg_len;
   frame->msgdef = upb_downcast_msgdef(f->def);
 
-  upb_sink_onstart(d->sink, f);
+  upb_sink_onstart(d->sink, f, status);
   return get_msgend(d, start);
 }
 
 // Pops a stack frame, returning a pointer for where the next submsg should
 // end (or a pointer that is out of range for a group).
-static const void *pop(upb_decoder *d, const uint8_t *start)
+static const void *pop(upb_decoder *d, const uint8_t *start, upb_status *status)
 {
   d->top--;
-  upb_sink_onend(d->sink, d->top->field);
+  upb_sink_onend(d->sink, d->top->field, status);
   return get_msgend(d, start);
 }
 
@@ -430,7 +430,7 @@ size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
                    d->completed_offset + (completed - start));
         goto err;
       }
-      submsg_end = pop(d, start);
+      submsg_end = pop(d, start, status);
       msgdef = d->top->msgdef;
       completed = buf;
       continue;
@@ -451,8 +451,8 @@ size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
       } else {
         if(f && upb_isstringtype(f->type)) {
           int32_t str_start = buf - start;
-          sink_status =
-              upb_sink_onstr(d->sink, f, str, str_start, str_start + delim_len);
+          uint32_t len = str_start + delim_len;
+          sink_status = upb_sink_onstr(d->sink, f, str, str_start, len, status);
         } // else { TODO: packed arrays }
         // If field was not found, it is skipped silently.
         buf = delim_end;  // Could be >end.
@@ -468,7 +468,7 @@ size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
         buf = upb_decode_value(buf, end, f->type, upb_value_addrof(&val),
                               status);
         CHECK_STATUS();  // Checking upb_decode_value().
-        sink_status = upb_sink_onvalue(d->sink, f, val);
+        sink_status = upb_sink_onvalue(d->sink, f, val, status);
       }
     }
     CHECK_STATUS();
@@ -479,7 +479,7 @@ size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
                    "did not lie on a tag/value boundary.");
         goto err;
       }
-      submsg_end = pop(d, start);
+      submsg_end = pop(d, start, status);
       msgdef = d->top->msgdef;
     }
     // while(buf < d->packed_end) { TODO: packed arrays }

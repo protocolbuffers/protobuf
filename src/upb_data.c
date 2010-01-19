@@ -297,25 +297,46 @@ void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
   upb_msgsink_free(s);
 }
 
+#if 0
+void upb_msg_encodestr(upb_msg *msg, upb_msgdef *md, upb_strptr str,
+                       upb_status *status)
+{
+  upb_sizebuilder *sb = upb_sizebuilder_new(md);
+  upb_encoder *e = upb_encoder_new(md);
+  upb_strsink *sink = upb_strsink_new();
+
+  // Get sizes.  We could avoid performing this step in some cases by having a
+  // bool in the msgdef indicating whether it or any of its children have
+  // submessages in the def (groups don't count).
+  upb_sizebuilder_reset(sb);
+  upb_msgsrc_produce(msg, md, upb_sizebuilder_sink(sb), true);
+
+  upb_strsink_reset();
+  upb_encoder_reset(e, sb, sink);
+  upb_msgsrc_produce(msg, md, sink, false);
+}
+#endif
 
 /* upb_msgsrc  ****************************************************************/
 
 static void _upb_msgsrc_produceval(upb_value v, upb_fielddef *f, upb_sink *sink,
-                                   bool reverse)
+                                   bool reverse, upb_status *status)
 {
+  // TODO: We need to check status for failure, but how often?
   if(upb_issubmsg(f)) {
-    upb_sink_onstart(sink, f);
-    upb_msgsrc_produce(v.msg, upb_downcast_msgdef(f->def), sink, reverse);
-    upb_sink_onend(sink, f);
+    upb_msgdef *md = upb_downcast_msgdef(f->def);
+    upb_sink_onstart(sink, f, status);
+    upb_msgsrc_produce(v.msg, md, sink, reverse, status);
+    upb_sink_onend(sink, f, status);
   } else if(upb_isstring(f)) {
-    upb_sink_onstr(sink, f, v.str, 0, upb_strlen(v.str));
+    upb_sink_onstr(sink, f, v.str, 0, upb_strlen(v.str), status);
   } else {
-    upb_sink_onvalue(sink, f, v);
+    upb_sink_onvalue(sink, f, v, status);
   }
 }
 
 void upb_msgsrc_produce(upb_msg *msg, upb_msgdef *md, upb_sink *sink,
-                        bool reverse)
+                        bool reverse, upb_status *status)
 {
   for(int i = 0; i < md->num_fields; i++) {
     upb_fielddef *f = &md->fields[reverse ? md->num_fields - i - 1 : i];
@@ -326,10 +347,10 @@ void upb_msgsrc_produce(upb_msg *msg, upb_msgdef *md, upb_sink *sink,
       upb_arraylen_t len = upb_array_len(arr);
       for(upb_arraylen_t j = 0; j < upb_array_len(arr); j++) {
         upb_value elem = upb_array_get(arr, f, reverse ? len - j - 1 : j);
-        _upb_msgsrc_produceval(elem, f, sink, reverse);
+        _upb_msgsrc_produceval(elem, f, sink, reverse, status);
       }
     } else {
-      _upb_msgsrc_produceval(v, f, sink, reverse);
+      _upb_msgsrc_produceval(v, f, sink, reverse, status);
     }
   }
 }
@@ -345,7 +366,7 @@ typedef struct {
 struct upb_msgsink {
   upb_sink base;
   upb_msgdef *toplevel_msgdef;
-  upb_msgsink_frame stack[UPB_MAX_NESTING], *top;
+  upb_msgsink_frame stack[UPB_MAX_NESTING], *top, *limit;
 };
 
 /* Helper function that returns a pointer to where the next value for field "f"
@@ -377,8 +398,9 @@ static upb_valueptr get_valueptr(upb_msg *msg, upb_fielddef *f)
 // TODO: implement these in terms of public interfaces.
 
 static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, upb_fielddef *f,
-                                            upb_value val)
+                                            upb_value val, upb_status *status)
 {
+  (void)status;  // No detectable errors can occur.
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *msg = ms->top->msg;
   upb_valueptr p = get_valueptr(msg, f);
@@ -389,8 +411,10 @@ static upb_sink_status _upb_msgsink_valuecb(upb_sink *s, upb_fielddef *f,
 
 static upb_sink_status _upb_msgsink_strcb(upb_sink *s, upb_fielddef *f,
                                           upb_strptr str,
-                                          int32_t start, uint32_t end)
+                                          int32_t start, uint32_t end,
+                                          upb_status *status)
 {
+  (void)status;  // No detectable errors can occur.
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *msg = ms->top->msg;
   upb_valueptr p = get_valueptr(msg, f);
@@ -405,11 +429,19 @@ static upb_sink_status _upb_msgsink_strcb(upb_sink *s, upb_fielddef *f,
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_msgsink_startcb(upb_sink *s, upb_fielddef *f)
+static upb_sink_status _upb_msgsink_startcb(upb_sink *s, upb_fielddef *f,
+                                            upb_status *status)
 {
   upb_msgsink *ms = (upb_msgsink*)s;
   upb_msg *oldmsg = ms->top->msg;
   upb_valueptr p = get_valueptr(oldmsg, f);
+  ms->top++;
+  if(ms->top == ms->limit) {
+    upb_seterr(status, UPB_ERROR_MAX_NESTING_EXCEEDED,
+               "Nesting exceeded maximum (%d levels)\n",
+               UPB_MAX_NESTING);
+    return UPB_SINK_STOP;
+  }
 
   if(upb_isarray(f) || !upb_msg_has(oldmsg, f)) {
     upb_msgdef *md = upb_downcast_msgdef(f->def);
@@ -422,13 +454,14 @@ static upb_sink_status _upb_msgsink_startcb(upb_sink *s, upb_fielddef *f)
     upb_msg_sethas(oldmsg, f);
   }
 
-  ms->top++;
   ms->top->msg = *p.msg;
   return UPB_SINK_CONTINUE;
 }
 
-static upb_sink_status _upb_msgsink_endcb(upb_sink *s, upb_fielddef *f)
+static upb_sink_status _upb_msgsink_endcb(upb_sink *s, upb_fielddef *f,
+                                          upb_status *status)
 {
+  (void)status;  // No detectable errors can occur.
   (void)f;  // Unused.
   upb_msgsink *ms = (upb_msgsink*)s;
   ms->top--;
@@ -467,6 +500,7 @@ upb_sink *upb_msgsink_sink(upb_msgsink *sink)
 void upb_msgsink_reset(upb_msgsink *ms, upb_msg *msg)
 {
   ms->top = ms->stack;
+  ms->limit = ms->stack + UPB_MAX_NESTING;
   ms->top->msg = msg;
   ms->top->md = ms->toplevel_msgdef;
 }

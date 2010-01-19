@@ -29,8 +29,10 @@ extern "C" {
 struct upb_sizebuilder;
 typedef struct upb_sizebuilder upb_sizebuilder;
 
-upb_sizebuilder *upb_sizebuilder_new();
+upb_sizebuilder *upb_sizebuilder_new(upb_msgdef *md);
 void upb_sizebuilder_free(upb_sizebuilder *sb);
+
+void upb_sizebuilder_reset(upb_sizebuilder *sb);
 
 // Returns a sink that must be used to perform the pre-pass.  Note that the
 // pre-pass *must* occur in the opposite order from the actual encode that
@@ -46,8 +48,8 @@ upb_sink *upb_sizebuilder_sink(upb_sizebuilder *sb);
 struct upb_encoder;
 typedef struct upb_encoder upb_encoder;
 
-upb_encoder *upb_encoder_new();
-void upb_encoder_free(upb_encoder *s);
+upb_encoder *upb_encoder_new(upb_msgdef *md);
+void upb_encoder_free(upb_encoder *e);
 
 // Resets the given upb_encoder such that is is ready to begin encoding.  The
 // upb_sizebuilder "sb" is used to determine submessage sizes; it must have
@@ -57,12 +59,12 @@ void upb_encoder_free(upb_encoder *s);
 // "out" is where the encoded output data will be sent.
 //
 // Both "sb" and "out" must live until the encoder is either reset or freed.
-void upb_encoder_reset(upb_encoder *s, upb_sizebuilder *sb, upb_bytesink *out);
+void upb_encoder_reset(upb_encoder *e, upb_sizebuilder *sb, upb_bytesink *out);
 
 // The upb_sink to which data can be sent to be encoded.  Note that this data
 // must be identical to the data that was previously given to the sizebuilder
 // (if any).
-upb_sink *upb_encoder_sink(upb_encoder *s);
+upb_sink *upb_encoder_sink(upb_encoder *e);
 
 #ifdef __cplusplus
 }  /* extern "C" */
