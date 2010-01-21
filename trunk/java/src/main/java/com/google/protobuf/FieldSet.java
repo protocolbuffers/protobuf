@@ -210,7 +210,7 @@ final class FieldSet<FieldDescriptorType extends
     if (value == null) {
       return 0;
     } else {
-      return ((List) value).size();
+      return ((List<?>) value).size();
     }
   }
 
@@ -230,7 +230,7 @@ final class FieldSet<FieldDescriptorType extends
     if (value == null) {
       throw new IndexOutOfBoundsException();
     } else {
-      return ((List) value).get(index);
+      return ((List<?>) value).get(index);
     }
   }
 
@@ -564,7 +564,7 @@ final class FieldSet<FieldDescriptorType extends
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
-      final List valueList = (List)value;
+      final List<?> valueList = (List<?>)value;
       if (descriptor.isPacked()) {
         output.writeTag(number, WireFormat.WIRETYPE_LENGTH_DELIMITED);
         // Compute the total data size so the length can be written.
@@ -692,7 +692,7 @@ final class FieldSet<FieldDescriptorType extends
     if (descriptor.isRepeated()) {
       if (descriptor.isPacked()) {
         int dataSize = 0;
-        for (final Object element : (List)value) {
+        for (final Object element : (List<?>)value) {
           dataSize += computeElementSizeNoTag(type, element);
         }
         return dataSize +
@@ -700,7 +700,7 @@ final class FieldSet<FieldDescriptorType extends
             CodedOutputStream.computeRawVarint32Size(dataSize);
       } else {
         int size = 0;
-        for (final Object element : (List)value) {
+        for (final Object element : (List<?>)value) {
           size += computeElementSize(type, number, element);
         }
         return size;

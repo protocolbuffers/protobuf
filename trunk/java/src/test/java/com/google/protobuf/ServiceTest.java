@@ -205,12 +205,6 @@ public class ServiceTest extends TestCase {
     MethodDescriptor fooMethod =
         ServiceWithNoOuter.getDescriptor().findMethodByName("Foo");
     MessageWithNoOuter request = MessageWithNoOuter.getDefaultInstance();
-    RpcCallback<Message> callback = new RpcCallback<Message>() {
-      public void run(Message parameter) {
-        // No reason this should be run.
-        fail();
-      }
-    };
 
     TestAllTypes expectedResponse = TestAllTypes.getDefaultInstance();
     EasyMock.expect(impl.foo(EasyMock.same(controller), EasyMock.same(request)))

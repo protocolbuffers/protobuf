@@ -37,7 +37,6 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
