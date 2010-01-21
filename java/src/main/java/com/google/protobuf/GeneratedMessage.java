@@ -75,7 +75,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
     final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
     for (final FieldDescriptor field : descriptor.getFields()) {
       if (field.isRepeated()) {
-        final List value = (List) getField(field);
+        final List<?> value = (List<?>) getField(field);
         if (!value.isEmpty()) {
           result.put(field, value);
         }
@@ -652,7 +652,6 @@ public abstract class GeneratedMessage extends AbstractMessage {
         final UnknownFieldSet.Builder unknownFields,
         final ExtensionRegistryLite extensionRegistry,
         final int tag) throws IOException {
-      final ExtendableMessage<MessageType> message = internalGetResult();
       return AbstractMessage.Builder.mergeFieldFrom(
         input, unknownFields, extensionRegistry, this, tag);
     }
@@ -821,7 +820,6 @@ public abstract class GeneratedMessage extends AbstractMessage {
      * If the extension is an embedded message or group, returns the default
      * instance of the message.
      */
-    @SuppressWarnings("unchecked")
     public Message getMessageDefaultInstance() {
       return messageDefaultInstance;
     }
@@ -1137,7 +1135,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
         // 2) Insures that the caller cannot modify the list later on and
         //    have the modifications be reflected in the message.
         clear(builder);
-        for (final Object element : (List) value) {
+        for (final Object element : (List<?>) value) {
           addRepeated(builder, element);
         }
       }

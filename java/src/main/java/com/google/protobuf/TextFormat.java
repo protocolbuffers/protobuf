@@ -144,7 +144,7 @@ public final class TextFormat {
                                 throws IOException {
     if (field.isRepeated()) {
       // Repeated field.  Print each element.
-      for (final Object element : (List) value) {
+      for (final Object element : (List<?>) value) {
         printSingleField(field, element, generator);
       }
     } else {
@@ -250,7 +250,6 @@ public final class TextFormat {
                                          throws IOException {
     for (final Map.Entry<Integer, UnknownFieldSet.Field> entry :
          unknownFields.asMap().entrySet()) {
-      final String prefix = entry.getKey().toString() + ": ";
       final UnknownFieldSet.Field field = entry.getValue();
 
       for (final long value : field.getVarintList()) {

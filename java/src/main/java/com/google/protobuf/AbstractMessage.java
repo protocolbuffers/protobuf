@@ -274,7 +274,6 @@ public abstract class AbstractMessage extends AbstractMessageLite
      * @param tag The tag, which should have already been read.
      * @return {@code true} unless the tag is an end-group tag.
      */
-    @SuppressWarnings("unchecked")
     static boolean mergeFieldFrom(
         final CodedInputStream input,
         final UnknownFieldSet.Builder unknownFields,

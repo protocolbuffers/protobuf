@@ -60,8 +60,8 @@ public class TextFormatTest extends TestCase {
 
   // A representation of the above string with all the characters escaped.
   private final static String kEscapeTestStringEscaped =
-      "\"\\\"A string with \\' characters \\n and \\r newlines "
-          + "and \\t tabs and \\001 slashes \\\\\"";
+      "\\\"A string with \\' characters \\n and \\r newlines "
+          + "and \\t tabs and \\001 slashes \\\\";
 
   private static String allFieldsSetText = TestUtil.readTextFromFile(
     "text_format_unittest_data.txt");
@@ -469,6 +469,10 @@ public class TextFormatTest extends TestCase {
       TextFormat.unescapeBytes("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\""));
     assertEquals("\0\001\007\b\f\n\r\t\013\\\'\"",
       TextFormat.unescapeText("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\""));
+    assertEquals(kEscapeTestStringEscaped,
+      TextFormat.escapeText(kEscapeTestString));
+    assertEquals(kEscapeTestString,
+      TextFormat.unescapeText(kEscapeTestStringEscaped));
 
     // Unicode handling.
     assertEquals("\\341\\210\\264", TextFormat.escapeText("\u1234"));

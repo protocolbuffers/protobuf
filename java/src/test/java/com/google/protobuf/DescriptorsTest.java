@@ -44,7 +44,6 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
-import com.google.protobuf.test.UnittestImport.ImportMessage;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import protobuf_unittest.UnittestProto.ForeignMessage;

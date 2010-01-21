@@ -313,8 +313,7 @@ public abstract class AbstractMessageLite implements MessageLite {
         }
       }
       if (values instanceof Collection) {
-        @SuppressWarnings("unsafe") final
-        Collection<T> collection = (Collection<T>) values;
+        final Collection<T> collection = (Collection<T>) values;
         list.addAll(collection);
       } else {
         for (final T value : values) {
