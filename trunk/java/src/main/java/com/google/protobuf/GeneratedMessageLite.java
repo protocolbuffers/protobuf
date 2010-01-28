@@ -524,6 +524,7 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite {
     }
 
     /** For use by generated code only. */
+    @SuppressWarnings("unchecked")
     public void internalInitRepeated(
         final ContainingType containingTypeDefaultInstance,
         final MessageLite messageDefaultInstance,
