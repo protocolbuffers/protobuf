@@ -70,6 +70,7 @@ public class DescriptorsTest extends TestCase {
   // Regression test for bug where referencing a FieldDescriptor.Type value
   // before a FieldDescriptorProto.Type value would yield a
   // ExceptionInInitializerError.
+  @SuppressWarnings("unused")
   private static final Object STATIC_INIT_TEST = FieldDescriptor.Type.BOOL;
 
   public void testFieldTypeEnumMapping() throws Exception {

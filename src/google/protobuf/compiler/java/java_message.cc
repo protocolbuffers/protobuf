@@ -420,15 +420,18 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   if (descriptor_->extension_range_count() > 0) {
     if (descriptor_->options().message_set_wire_format()) {
       printer->Print(
-        "com.google.protobuf.GeneratedMessage$lite$.ExtendableMessage\n"
-        "  .ExtensionWriter extensionWriter =\n"
+        "com.google.protobuf.GeneratedMessage$lite$\n"
+        "  .ExtendableMessage<$classname$>.ExtensionWriter extensionWriter =\n"
         "    newMessageSetExtensionWriter();\n",
-        "lite", HasDescriptorMethods(descriptor_) ? "" : "Lite");
+        "lite", HasDescriptorMethods(descriptor_) ? "" : "Lite",
+        "classname", ClassName(descriptor_));
     } else {
       printer->Print(
-        "com.google.protobuf.GeneratedMessage$lite$.ExtendableMessage\n"
-        "  .ExtensionWriter extensionWriter = newExtensionWriter();\n",
-        "lite", HasDescriptorMethods(descriptor_) ? "" : "Lite");
+        "com.google.protobuf.GeneratedMessage$lite$\n"
+        "  .ExtendableMessage<$classname$>.ExtensionWriter extensionWriter =\n"
+        "    newExtensionWriter();\n",
+        "lite", HasDescriptorMethods(descriptor_) ? "" : "Lite",
+        "classname", ClassName(descriptor_));
     }
   }
 

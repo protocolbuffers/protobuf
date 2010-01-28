@@ -138,7 +138,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     "    internalValueMap =\n"
     "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
     "        public $classname$ findValueByNumber(int number) {\n"
-    "          return $classname$.valueOf(number)\n;"
+    "          return $classname$.valueOf(number);\n"
     "        }\n"
     "      };\n"
     "\n",
@@ -190,6 +190,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     printer->Print(
       "\n"
       "};\n"
+      "\n"
       "public static $classname$ valueOf(\n"
       "    com.google.protobuf.Descriptors.EnumValueDescriptor desc) {\n"
       "  if (desc.getType() != getDescriptor()) {\n"
@@ -197,20 +198,26 @@ void EnumGenerator::Generate(io::Printer* printer) {
       "      \"EnumValueDescriptor is not for this type.\");\n"
       "  }\n"
       "  return VALUES[desc.getIndex()];\n"
-      "}\n",
+      "}\n"
+      "\n",
       "classname", descriptor_->name());
+
+    // index is only used for reflection; lite implementation does not need it
+    printer->Print("private final int index;\n");
   }
 
   // -----------------------------------------------------------------
 
   printer->Print(
-    "private final int index;\n"
-    "private final int value;\n"
-    "private $classname$(int index, int value) {\n"
-    "  this.index = index;\n"
-    "  this.value = value;\n"
-    "}\n",
+    "private final int value;\n\n"
+    "private $classname$(int index, int value) {\n",
     "classname", descriptor_->name());
+  if (HasDescriptorMethods(descriptor_)) {
+    printer->Print("  this.index = index;\n");
+  }
+  printer->Print(
+    "  this.value = value;\n"
+    "}\n");
 
   if (HasDescriptorMethods(descriptor_)) {
     // Force the static initialization code for the file to run, since it may

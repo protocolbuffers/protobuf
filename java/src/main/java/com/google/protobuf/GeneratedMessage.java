@@ -769,7 +769,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
 
     /** For use by generated code only. */
     public void internalInit(final FieldDescriptor descriptor,
-                             final Class type) {
+                             final Class<?> type) {
       if (this.descriptor != null) {
         throw new IllegalStateException("Already initialized.");
       }
@@ -809,7 +809,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
     }
 
     private FieldDescriptor descriptor;
-    private Class type;
+    private Class<?> type;
     private Method enumValueOf;
     private Method enumGetValueDescriptor;
     private Message messageDefaultInstance;
@@ -1054,7 +1054,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
       // Note:  We use Java reflection to call public methods rather than
       //   access private fields directly as this avoids runtime security
       //   checks.
-      protected final Class type;
+      protected final Class<?> type;
       protected final Method getMethod;
       protected final Method setMethod;
       protected final Method hasMethod;
@@ -1118,7 +1118,7 @@ public abstract class GeneratedMessage extends AbstractMessage {
         clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
       }
 
-      protected final Class type;
+      protected final Class<?> type;
       protected final Method getMethod;
       protected final Method getRepeatedMethod;
       protected final Method setRepeatedMethod;
