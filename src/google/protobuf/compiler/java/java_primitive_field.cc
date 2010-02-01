@@ -199,6 +199,14 @@ GenerateMembers(io::Printer* printer) const {
     "private $type$ $name$_ = $default$;\n"
     "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n"
     "public $type$ get$capitalized_name$() { return $name$_; }\n");
+  // Avoid double encoding for Java strings
+  // This field does not need to be volatile because ByteString is immutable.
+  // http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#finalRight
+  // However, it seems better to be safe than sorry.
+  if (ShouldUseStringEncodingCache()) {
+    printer->Print(variables_,
+      "private volatile com.google.protobuf.ByteString $name$EncodedCache_;\n");
+  }
 }
 
 void PrimitiveFieldGenerator::
@@ -259,23 +267,55 @@ GenerateParsingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
-    "  output.write$capitalized_type$($number$, get$capitalized_name$());\n"
-    "}\n");
+  if (ShouldUseStringEncodingCache()) {
+    // Pass the cached serialized version, then forget it.
+    // The cached version could be null if we didn't compute the size first,
+    // or if there are two threads attempting to serialize simultaneously.
+    // CodedOutputStream.writeStringCached handles this for us.
+    printer->Print(variables_,
+      "if (has$capitalized_name$()) {\n"
+      "  output.write$capitalized_type$Cached($number$,\n"
+      "                                       get$capitalized_name$(),\n"
+      "                                       $name$EncodedCache_);\n"
+      "  $name$EncodedCache_ = null;\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "if (has$capitalized_name$()) {\n"
+      "  output.write$capitalized_type$($number$, get$capitalized_name$());\n"
+      "}\n");
+  }
 }
 
 void PrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .compute$capitalized_type$Size($number$, get$capitalized_name$());\n"
-    "}\n");
+  // Avoid double encoding for strings: serialize the string here
+  if (ShouldUseStringEncodingCache()) {
+    printer->Print(variables_,
+      "if (has$capitalized_name$()) {\n"
+      "  com.google.protobuf.ByteString serialized = \n"
+      "    com.google.protobuf.ByteString.copyFromUtf8(\n"
+      "      get$capitalized_name$());\n"
+      "  $name$EncodedCache_ = serialized;\n"
+      "  size += com.google.protobuf.CodedOutputStream\n"
+      "    .computeBytesSize($number$, serialized);\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "if (has$capitalized_name$()) {\n"
+      "  size += com.google.protobuf.CodedOutputStream\n"
+      "    .compute$capitalized_type$Size($number$, get$capitalized_name$());\n"
+      "}\n");
+  }
 }
 
 string PrimitiveFieldGenerator::GetBoxedType() const {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+}
+
+bool PrimitiveFieldGenerator::ShouldUseStringEncodingCache() const {
+  return GetType(descriptor_) == FieldDescriptor::TYPE_STRING &&
+      descriptor_->file()->options().optimize_for() == FileOptions::SPEED;
 }
 
 // ===================================================================

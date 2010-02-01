@@ -80,6 +80,8 @@ Patch contributors:
     * Fixes for Solaris 10 32/64-bit confusion.
   Evan Jones <evanj@mit.edu>
     * Optimize Java serialization code when writing a small message to a stream.
+    * Optimize Java serialization of strings so that UTF-8 encoding happens only
+      once per string per serialization call.
     * Clean up some Java warnings.
   Michael Kucharski <m.kucharski@gmail.com>
     * Added CodedInputStream.getTotalBytesRead().
