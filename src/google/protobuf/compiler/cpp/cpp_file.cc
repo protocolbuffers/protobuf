@@ -287,7 +287,9 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     // want the compiler to warn in generated code.
     "#define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION\n"
     "#include \"$basename$.pb.h\"\n"
-
+    "\n"
+    "#include <algorithm>\n"    // for swap()
+    "\n"
     "#include <google/protobuf/stubs/once.h>\n"
     "#include <google/protobuf/io/coded_stream.h>\n"
     "#include <google/protobuf/wire_format_lite_inl.h>\n",
