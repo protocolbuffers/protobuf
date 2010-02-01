@@ -36,6 +36,7 @@ import protobuf_unittest.UnittestProto.TestPackedTypes;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -209,6 +210,29 @@ public class CodedOutputStreamTest extends TestCase {
     assertWriteLittleEndian64(
       bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a),
       0x9abcdef012345678L);
+  }
+
+  /** Test writing cached strings. */
+  public void testWriteStringCached() throws IOException {
+    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    final CodedOutputStream stream = CodedOutputStream.newInstance(output);
+
+    // Test writing a string that is not cached
+    stream.writeStringCached(5, "hello", null);
+    stream.flush();
+    CodedInputStream in = CodedInputStream.newInstance(output.toByteArray());
+    assertEquals(WireFormat.makeTag(5, WireFormat.WIRETYPE_LENGTH_DELIMITED),
+                 in.readTag());
+    assertEquals("hello", in.readString());
+
+    // Write a cached string: the real string is ignored
+    output.reset();
+    stream.writeStringCached(5, "ignored", ByteString.copyFromUtf8("hello"));
+    stream.flush();
+    in = CodedInputStream.newInstance(output.toByteArray());
+    assertEquals(WireFormat.makeTag(5, WireFormat.WIRETYPE_LENGTH_DELIMITED),
+                 in.readTag());
+    assertEquals("hello", in.readString());
   }
 
   /** Test encodeZigZag32() and encodeZigZag64(). */
