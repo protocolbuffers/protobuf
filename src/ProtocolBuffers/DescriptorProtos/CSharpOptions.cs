@@ -37,22 +37,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "pgEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "zAEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
           "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
           "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
-          "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIIisKEkNTaGFycEZp" + 
-          "ZWxkT3B0aW9ucxIVCg1wcm9wZXJ0eV9uYW1lGAEgASgJOl4KE2NzaGFycF9m" + 
-          "aWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYuRmlsZU9wdGlvbnMY6Acg" + 
-          "ASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZpbGVPcHRpb25zOmEKFGNz" + 
-          "aGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0" + 
-          "aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYuQ1NoYXJwRmllbGRPcHRp" + 
-          "b25z");
+          "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIEiQKHGV4cGFuZF9u" + 
+          "YW1lc3BhY2VfZGlyZWN0b3JpZXMYByABKAgiKwoSQ1NoYXJwRmllbGRPcHRp" + 
+          "b25zEhUKDXByb3BlcnR5X25hbWUYASABKAk6XgoTY3NoYXJwX2ZpbGVfb3B0" + 
+          "aW9ucxIcLmdvb2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucxjoByABKAsyIi5n" + 
+          "b29nbGUucHJvdG9idWYuQ1NoYXJwRmlsZU9wdGlvbnM6YQoUY3NoYXJwX2Zp" + 
+          "ZWxkX29wdGlvbnMSHS5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zGOgH" + 
+          "IAEoCzIjLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBGaWVsZE9wdGlvbnM=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
         internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", });
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", });
         internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
@@ -152,6 +152,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return codeContracts_; }
     }
     
+    public const int ExpandNamespaceDirectoriesFieldNumber = 7;
+    private bool hasExpandNamespaceDirectories;
+    private bool expandNamespaceDirectories_ = false;
+    public bool HasExpandNamespaceDirectories {
+      get { return hasExpandNamespaceDirectories; }
+    }
+    public bool ExpandNamespaceDirectories {
+      get { return expandNamespaceDirectories_; }
+    }
+    
     public override bool IsInitialized {
       get {
         return true;
@@ -176,6 +186,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       if (HasCodeContracts) {
         output.WriteBool(6, CodeContracts);
+      }
+      if (HasExpandNamespaceDirectories) {
+        output.WriteBool(7, ExpandNamespaceDirectories);
       }
       UnknownFields.WriteTo(output);
     }
@@ -204,6 +217,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (HasCodeContracts) {
           size += pb::CodedOutputStream.ComputeBoolSize(6, CodeContracts);
+        }
+        if (HasExpandNamespaceDirectories) {
+          size += pb::CodedOutputStream.ComputeBoolSize(7, ExpandNamespaceDirectories);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -315,6 +331,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasCodeContracts) {
           CodeContracts = other.CodeContracts;
         }
+        if (other.HasExpandNamespaceDirectories) {
+          ExpandNamespaceDirectories = other.ExpandNamespaceDirectories;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -369,6 +388,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             }
             case 48: {
               CodeContracts = input.ReadBool();
+              break;
+            }
+            case 56: {
+              ExpandNamespaceDirectories = input.ReadBool();
               break;
             }
           }
@@ -483,6 +506,24 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearCodeContracts() {
         result.hasCodeContracts = false;
         result.codeContracts_ = false;
+        return this;
+      }
+      
+      public bool HasExpandNamespaceDirectories {
+        get { return result.HasExpandNamespaceDirectories; }
+      }
+      public bool ExpandNamespaceDirectories {
+        get { return result.ExpandNamespaceDirectories; }
+        set { SetExpandNamespaceDirectories(value); }
+      }
+      public Builder SetExpandNamespaceDirectories(bool value) {
+        result.hasExpandNamespaceDirectories = true;
+        result.expandNamespaceDirectories_ = value;
+        return this;
+      }
+      public Builder ClearExpandNamespaceDirectories() {
+        result.hasExpandNamespaceDirectories = false;
+        result.expandNamespaceDirectories_ = false;
         return this;
       }
     }

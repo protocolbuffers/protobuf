@@ -82,10 +82,27 @@ namespace Google.ProtocolBuffers.ProtoGen {
     /// </summary>
     private void Generate(FileDescriptor descriptor) {
       UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
-      using (TextWriter textWriter = File.CreateText(Path.Combine(options.OutputDirectory, descriptor.CSharpOptions.UmbrellaClassname + ".cs"))) {
-        TextGenerator writer = new TextGenerator(textWriter);        
+      using (TextWriter textWriter = File.CreateText(GetOutputFile(descriptor))) {
+        TextGenerator writer = new TextGenerator(textWriter);
         ucg.Generate(writer);
       }
+    }
+
+    private string GetOutputFile(FileDescriptor descriptor) {
+      CSharpFileOptions fileOptions = descriptor.CSharpOptions;
+      string filename = descriptor.CSharpOptions.UmbrellaClassname + ".cs";
+      string outputDirectory = options.OutputDirectory;
+      if (fileOptions.ExpandNamespaceDirectories) {
+        string package = fileOptions.Namespace;
+        if (!string.IsNullOrEmpty(package)) {
+          string[] bits = package.Split('.');
+          foreach (string bit in bits) {
+            outputDirectory = Path.Combine(outputDirectory, bit);
+          }
+          Directory.CreateDirectory(outputDirectory);
+        }
+      }
+      return Path.Combine(outputDirectory, filename);
     }
 
     /// <summary>

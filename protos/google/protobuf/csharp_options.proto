@@ -5,12 +5,36 @@ import "google/protobuf/descriptor.proto";
 package google.protobuf;
 
 message CSharpFileOptions {
+
+  // Namespace for generated classes; defaults to the package.
   optional string namespace = 1;
+  
+  // Name of the "umbrella" class used for metadata about all
+  // the messages within this file. Default is based on the name
+  // of the file.
   optional string umbrella_classname = 2;
+  
+  // Whether classes should be public (true) or internal (false)
   optional bool public_classes = 3 [default = true];
+
+  // Whether to generate a single file for everything within the
+  // .proto file (false), or one file per message (true).
+  // This option is not currently honored; please log a feature
+  // request if you really want it.
   optional bool multiple_files = 4;
+
+  // Whether to nest messages within a single umbrella class (true)
+  // or create the umbrella class as a peer, with messages as
+  // top-level classes in the namespace (false)
   optional bool nest_classes = 5;
+  
+  // Generate appropriate support for Code Contracts
+  // (Ongoing; support should improve over time)
   optional bool code_contracts = 6;
+  
+  // Create subdirectories for namespaces, e.g. namespace "Foo.Bar"
+  // would generate files within [output directory]/Foo/Bar
+  optional bool expand_namespace_directories = 7;
 }
 
 extend FileOptions {
