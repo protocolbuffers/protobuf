@@ -232,18 +232,61 @@
     </nunit2>
   </target>
   
+  <target name="build-all-configs"
+          description="Builds all versions of the main library">
+    <msbuild project="${src}/ProtocolBuffers.sln">
+      <property name="Configuration" value="Debug" />
+    </msbuild>
+    <msbuild project="${src}/ProtocolBuffers.sln">
+      <property name="Configuration" value="Release" />
+    </msbuild>
+    <msbuild project="${src}/ProtocolBuffers.sln">
+      <property name="Configuration" value="Silverlight2" />
+    </msbuild>
+    <msbuild project="${src}/ProtocolBuffers/ProtocolBuffersCF.csproj">
+      <property name="Configuration" value="Release" />
+    </msbuild>
+  </target>
+    
+  
   <target name="dist" 
-          description="Copies compiled binaries into the output directory">
+          description="Copies all binaries into the output directory">
     <delete dir="${output-dir}" />
     <mkdir dir="${output-dir}" />
-    <copy todir="${output-dir}"
+    <mkdir dir="${output-dir}/Debug" />
+    <mkdir dir="${output-dir}/Release" />
+    <mkdir dir="${output-dir}/Silverlight2" />
+    <mkdir dir="${output-dir}/CompactFramework35" />
+    <copy todir="${output-dir}/Debug"
           flatten="true">
       <fileset basedir="${src}">
-        <include name="ProtocolBuffers/bin/${build-configuration}/Google.ProtocolBuffers.dll" />
-        <include name="ProtoGen/bin/${build-configuration}/ProtoGen.exe" />
-        <include name="ProtoMunge/bin/${build-configuration}/ProtoMunge.exe" />
-        <include name="ProtoDump/bin/${build-configuration}/ProtoDump.exe" />
-        <include name="ProtoBench/bin/${build-configuration}/ProtoBench.exe" />
+        <include name="ProtocolBuffers/bin/Debug/Google.ProtocolBuffers.*" />
+        <include name="ProtoGen/bin/Debug/ProtoGen.*" />
+        <include name="ProtoMunge/bin/Debug/ProtoMunge.*" />
+        <include name="ProtoDump/bin/Debug/ProtoDump.*" />
+        <include name="ProtoBench/bin/Debug/ProtoBench.*" />
+      </fileset>
+    </copy>    
+    <copy todir="${output-dir}/Release"
+          flatten="true">
+      <fileset basedir="${src}">
+        <include name="ProtocolBuffers/bin/Release/Google.ProtocolBuffers.*" />
+        <include name="ProtoGen/bin/Release/ProtoGen.*" />
+        <include name="ProtoMunge/bin/Release/ProtoMunge.*" />
+        <include name="ProtoDump/bin/Release/ProtoDump.*" />
+        <include name="ProtoBench/bin/Release/ProtoBench.*" />
+      </fileset>
+    </copy>    
+    <copy todir="${output-dir}/Silverlight2"
+          flatten="true">
+      <fileset basedir="${src}">
+        <include name="ProtocolBuffers/bin/Silverlight2/Google.ProtocolBuffers.dll" />
+      </fileset>
+    </copy>    
+    <copy todir="${output-dir}/CompactFramework35"
+          flatten="true">
+      <fileset basedir="${src}">
+        <include name="ProtocolBuffers/bin/ReleaseCF/Google.ProtocolBuffers.dll" />
       </fileset>
     </copy>    
   </target>

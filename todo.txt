@@ -8,7 +8,7 @@ Current task list (not in order)
 - Avoid using reflection for messages which don't need it (is this
   possible?)
 - Bring service generation into line with Java
-- Build protoc as a dll and use directly from protoge
+- Build protoc as a dll and use directly from protogen
 - Check copyright is everywhere
 - Work out how to unit test Silverlight code
 - Reformat code
@@ -16,3 +16,5 @@ Current task list (not in order)
 - Add regions to copyright
 - Investigate command line parsing library
 - Investigate calling protoc directly
+- Build and publish binaries
+- Work out why the Compact Framework 3.5 build fails under VS2010
