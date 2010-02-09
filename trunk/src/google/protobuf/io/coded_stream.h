@@ -1044,7 +1044,7 @@ inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
     last_tag_(0),
     legitimate_message_end_(false),
     aliasing_enabled_(false),
-    current_limit_(INT_MAX),
+    current_limit_(kint32max),
     buffer_size_after_limit_(0),
     total_bytes_limit_(kDefaultTotalBytesLimit),
     total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
