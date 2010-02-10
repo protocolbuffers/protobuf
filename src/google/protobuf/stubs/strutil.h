@@ -207,9 +207,7 @@ inline string JoinStrings(const vector<string>& components,
 //    hex digits, upper or lower case) to specify a Unicode code
 //    point. The dest array will contain the UTF8-encoded version of
 //    that code-point (e.g., if source contains \u2019, then dest will
-//    contain the three bytes 0xE2, 0x80, and 0x99). For the inverse
-//    transformation, use UniLib::UTF8EscapeString
-//    (util/utf8/unilib.h), not CEscapeString.
+//    contain the three bytes 0xE2, 0x80, and 0x99).
 //
 //    Errors: In the first form of the call, errors are reported with
 //    LOG(ERROR). The same is true for the second form of the call if
