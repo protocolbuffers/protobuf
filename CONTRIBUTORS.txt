@@ -83,5 +83,6 @@ Patch contributors:
     * Optimize Java serialization of strings so that UTF-8 encoding happens only
       once per string per serialization call.
     * Clean up some Java warnings.
+    * Fix bug with permanent callbacks that delete themselves when run.
   Michael Kucharski <m.kucharski@gmail.com>
     * Added CodedInputStream.getTotalBytesRead().
