@@ -843,8 +843,9 @@ class LIBPROTOBUF_EXPORT FunctionClosure0 : public Closure {
   ~FunctionClosure0();
 
   void Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
     function_();
-    if (self_deleting_) delete this;
+    if (needs_delete) delete this;
   }
 
  private:
@@ -862,8 +863,9 @@ class MethodClosure0 : public Closure {
   ~MethodClosure0() {}
 
   void Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
     (object_->*method_)();
-    if (self_deleting_) delete this;
+    if (needs_delete) delete this;
   }
 
  private:
@@ -884,8 +886,9 @@ class FunctionClosure1 : public Closure {
   ~FunctionClosure1() {}
 
   void Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
     function_(arg1_);
-    if (self_deleting_) delete this;
+    if (needs_delete) delete this;
   }
 
  private:
@@ -906,8 +909,9 @@ class MethodClosure1 : public Closure {
   ~MethodClosure1() {}
 
   void Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
     (object_->*method_)(arg1_);
-    if (self_deleting_) delete this;
+    if (needs_delete) delete this;
   }
 
  private:
@@ -929,8 +933,9 @@ class FunctionClosure2 : public Closure {
   ~FunctionClosure2() {}
 
   void Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
     function_(arg1_, arg2_);
-    if (self_deleting_) delete this;
+    if (needs_delete) delete this;
   }
 
  private:
@@ -952,8 +957,9 @@ class MethodClosure2 : public Closure {
   ~MethodClosure2() {}
 
   void Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
     (object_->*method_)(arg1_, arg2_);
-    if (self_deleting_) delete this;
+    if (needs_delete) delete this;
   }
 
  private:
