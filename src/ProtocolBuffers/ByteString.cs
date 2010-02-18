@@ -46,7 +46,7 @@ namespace Google.ProtocolBuffers {
 
     private static readonly ByteString empty = new ByteString(new byte[0]);
 
-    private readonly byte[] bytes;
+    internal readonly byte[] bytes;
 
     /// <summary>
     /// Constructs a new ByteString from the given byte array. The array is
@@ -155,9 +155,10 @@ namespace Google.ProtocolBuffers {
 
     public override int GetHashCode() {
       int ret = 23;
-      foreach (byte b in bytes) {
-        ret = (ret << 8) | b;
-      }
+	  for (int i = 0; i < bytes.Length; i++)
+	  {
+		  ret = (ret * 23) ^ bytes[i];
+	  }
       return ret;
     }
 
