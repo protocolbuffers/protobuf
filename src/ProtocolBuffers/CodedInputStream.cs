@@ -63,6 +63,9 @@ namespace Google.ProtocolBuffers {
     private int bufferPos = 0;
     private readonly Stream input;
     private uint lastTag = 0;
+	private readonly ByteBuffer rawBytesBuffer = new ByteBuffer(new byte[BufferSize], 0, 0);
+	private readonly ByteStringStringInterning byteStringStringInterning = ByteStringStringInterning.CreateInstance();
+   
 
     internal const int DefaultRecursionLimit = 64;
     internal const int DefaultSizeLimit = 64 << 20; // 64MB
@@ -238,12 +241,12 @@ namespace Google.ProtocolBuffers {
       if (size <= bufferSize - bufferPos) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
-        String result = Encoding.UTF8.GetString(buffer, bufferPos, size);
+		  String result = byteStringStringInterning.Intern(new ByteBuffer(buffer, bufferPos, size));
         bufferPos += size;
         return result;
       }
       // Slow path: Build a byte array first then copy it.
-      return Encoding.UTF8.GetString(ReadRawBytes(size), 0, size);
+	  return byteStringStringInterning.Intern(ReadRawBytes(size));
     }
 
     /// <summary>
@@ -303,7 +306,8 @@ namespace Google.ProtocolBuffers {
         return result;
       } else {
         // Slow path:  Build a byte array first then copy it.
-        return ByteString.CopyFrom(ReadRawBytes(size));
+		ByteBuffer rawBytes = ReadRawBytes(size);
+        return ByteString.CopyFrom(rawBytes.Buffer, rawBytes.Offset, rawBytes.Length);
       }
     }
 
@@ -763,7 +767,7 @@ namespace Google.ProtocolBuffers {
     /// <exception cref="InvalidProtocolBufferException">
     /// the end of the stream or the current limit was reached
     /// </exception>
-    public byte[] ReadRawBytes(int size) {
+    public ByteBuffer ReadRawBytes(int size) {
       if (size < 0) {
         throw InvalidProtocolBufferException.NegativeSize();
       }
@@ -777,18 +781,18 @@ namespace Google.ProtocolBuffers {
 
       if (size <= bufferSize - bufferPos) {
         // We have all the bytes we need already.
-        byte[] bytes = new byte[size];
-        Array.Copy(buffer, bufferPos, bytes, 0, size);
-        bufferPos += size;
-        return bytes;
+		  var result = new ByteBuffer(buffer, bufferPos, size);
+		  bufferPos += size;
+		  return result;
       } else if (size < BufferSize) {
         // Reading more bytes than are in the buffer, but not an excessive number
         // of bytes.  We can safely allocate the resulting array ahead of time.
 
         // First copy what we have.
-        byte[] bytes = new byte[size];
+		rawBytesBuffer.Length = size;
+		rawBytesBuffer.Offset = 0;
         int pos = bufferSize - bufferPos;
-        Array.Copy(buffer, bufferPos, bytes, 0, pos);
+        Array.Copy(buffer, bufferPos, rawBytesBuffer.Buffer, 0, pos);
         bufferPos = bufferSize;
 
         // We want to use RefillBuffer() and then copy from the buffer into our
@@ -797,16 +801,16 @@ namespace Google.ProtocolBuffers {
         RefillBuffer(true);
 
         while (size - pos > bufferSize) {
-          Array.Copy(buffer, 0, bytes, pos, bufferSize);
+          Array.Copy(buffer, 0, rawBytesBuffer.Buffer, pos, bufferSize);
           pos += bufferSize;
           bufferPos = bufferSize;
           RefillBuffer(true);
         }
 
-        Array.Copy(buffer, 0, bytes, pos, size - pos);
+        Array.Copy(buffer, 0, rawBytesBuffer.Buffer, pos, size - pos);
         bufferPos = size - pos;
-
-        return bytes;
+      	rawBytesBuffer.ResetHash();
+        return rawBytesBuffer;
       } else {
         // The size is very large.  For security reasons, we can't allocate the
         // entire byte array yet.  The size comes directly from the input, so a
@@ -859,7 +863,7 @@ namespace Google.ProtocolBuffers {
         }
 
         // Done.
-        return bytes;
+        return new ByteBuffer(buffer, 0, size);
       }
     }
 
