@@ -863,7 +863,7 @@ namespace Google.ProtocolBuffers {
         }
 
         // Done.
-        return new ByteBuffer(buffer, 0, size);
+        return new ByteBuffer(bytes, 0, size);
       }
     }
 
