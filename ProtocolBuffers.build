@@ -83,6 +83,29 @@
     <call target="dist" />
   </target>
   
+  <target name="clean-build-all"
+          description="Rebuilds all source and binaries in all configurations, including distribution">
+
+  <!-- 
+    - Use call instead of dependencies to make it clear what's going on: we
+    - need to call some targets multiple times.
+    -->
+    <call target="clean" />
+    <call target="build" />
+    <call target="generate-source" />
+    <call target="copy-generated-source" />
+    <!-- Now we've got fresh source, build again -->
+    <call target="clean" />
+    <call target="build-all-configs" />
+    <!-- 
+      - In particularly insane situations we should possibly do another
+      - round of generating source and building, but it gets silly.
+      -->
+    
+    <call target="test" />
+    <call target="dist" />
+  </target>
+
   <target name="clean" 
           description="Removes built binaries (of all configurations) and the source generation directory">
     <delete>
@@ -265,6 +288,7 @@
         <include name="ProtoMunge/bin/Debug/ProtoMunge.*" />
         <include name="ProtoDump/bin/Debug/ProtoDump.*" />
         <include name="ProtoBench/bin/Debug/ProtoBench.*" />
+        <exclude name="**/*vshost*" />
       </fileset>
     </copy>    
     <copy todir="${output-dir}/Release"
@@ -275,6 +299,7 @@
         <include name="ProtoMunge/bin/Release/ProtoMunge.*" />
         <include name="ProtoDump/bin/Release/ProtoDump.*" />
         <include name="ProtoBench/bin/Release/ProtoBench.*" />
+        <exclude name="**/*vshost*" />
       </fileset>
     </copy>    
     <copy todir="${output-dir}/Silverlight2"
