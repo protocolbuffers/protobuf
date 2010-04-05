@@ -110,11 +110,24 @@
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
 #include <string>
-#ifndef _MSC_VER
-#include <sys/param.h>
-#endif  // !_MSC_VER
+#ifdef _MSC_VER
+  #if defined(_M_IX86) && \
+      !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+    #define PROTOBUF_LITTLE_ENDIAN 1
+  #endif
+  #if _MSC_VER >= 1300
+    // If MSVC has "/RTCc" set, it will complain about truncating casts at
+    // runtime.  This file contains some intentional truncating casts.
+    #pragma runtime_checks("c", off)
+  #endif
+#else
+  #include <sys/param.h>   // __BYTE_ORDER
+  #if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN && \
+      !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+    #define PROTOBUF_LITTLE_ENDIAN 1
+  #endif
+#endif
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/common.h>          // for GOOGLE_PREDICT_TRUE macro
 
 namespace google {
 
@@ -735,8 +748,7 @@ inline bool CodedInputStream::ReadVarint64(uint64* value) {
 inline const uint8* CodedInputStream::ReadLittleEndian32FromArray(
     const uint8* buffer,
     uint32* value) {
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
-    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN)
   memcpy(value, buffer, sizeof(*value));
   return buffer + sizeof(*value);
 #else
@@ -751,8 +763,7 @@ inline const uint8* CodedInputStream::ReadLittleEndian32FromArray(
 inline const uint8* CodedInputStream::ReadLittleEndian64FromArray(
     const uint8* buffer,
     uint64* value) {
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
-    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN)
   memcpy(value, buffer, sizeof(*value));
   return buffer + sizeof(*value);
 #else
@@ -771,8 +782,7 @@ inline const uint8* CodedInputStream::ReadLittleEndian64FromArray(
 }
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
-    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN)
   if (GOOGLE_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     memcpy(value, buffer_, sizeof(*value));
     Advance(sizeof(*value));
@@ -786,8 +796,7 @@ inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
 }
 
 inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
-    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN)
   if (GOOGLE_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     memcpy(value, buffer_, sizeof(*value));
     Advance(sizeof(*value));
@@ -915,8 +924,7 @@ inline uint8* CodedOutputStream::WriteVarint32SignExtendedToArray(
 
 inline uint8* CodedOutputStream::WriteLittleEndian32ToArray(uint32 value,
                                                             uint8* target) {
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
-    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN)
   memcpy(target, &value, sizeof(value));
 #else
   target[0] = static_cast<uint8>(value);
@@ -929,8 +937,7 @@ inline uint8* CodedOutputStream::WriteLittleEndian32ToArray(uint32 value,
 
 inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
                                                             uint8* target) {
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
-    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN)
   memcpy(target, &value, sizeof(value));
 #else
   uint32 part0 = static_cast<uint32>(value);
@@ -1087,4 +1094,9 @@ inline CodedInputStream::~CodedInputStream() {
 }  // namespace protobuf
 
 }  // namespace google
+
+#if defined(_MSC_VER) && _MSC_VER >= 1300
+  #pragma runtime_checks("c", restore)
+#endif  // _MSC_VER
+
 #endif  // GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
