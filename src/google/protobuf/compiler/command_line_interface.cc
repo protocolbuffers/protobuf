@@ -182,14 +182,23 @@ bool TryCreateParentDirectory(const string& prefix, const string& filename) {
 class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
                                            public io::ErrorCollector {
  public:
-  ErrorPrinter(ErrorFormat format) : format_(format) {}
+  ErrorPrinter(ErrorFormat format, DiskSourceTree *tree = NULL) 
+    : format_(format), tree_(tree) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const string& filename, int line, int column,
                 const string& message) {
 
-    cerr << filename;
+    // Print full path when running under MSVS
+    std::string dfile;
+    if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS && 
+        tree_ != NULL &&
+        tree_->VirtualFileToDiskFile(filename, &dfile)) {
+      cerr << dfile;
+    } else {
+      cerr << filename;
+    }
 
     // Users typically expect 1-based line/column numbers, so we add 1
     // to each here.
@@ -215,6 +224,7 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
 
  private:
   const ErrorFormat format_;
+  DiskSourceTree *tree_;
 };
 
 // -------------------------------------------------------------------
@@ -583,7 +593,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   // Allocate the Importer.
-  ErrorPrinter error_collector(error_format_);
+  ErrorPrinter error_collector(error_format_, &source_tree);
   Importer importer(&source_tree, &error_collector);
 
   vector<const FileDescriptor*> parsed_files;
