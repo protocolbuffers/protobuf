@@ -1153,7 +1153,7 @@ TEST_F(CommandLineInterfaceTest, MsvsFormatErrors) {
       "--proto_path=$tmpdir --error_format=msvs foo.proto");
 
   ExpectErrorText(
-    "foo.proto(2) : error in column=1: Expected top-level statement "
+    "$tmpdir/foo.proto(2) : error in column=1: Expected top-level statement "
       "(e.g. \"message\").\n");
 }
 
