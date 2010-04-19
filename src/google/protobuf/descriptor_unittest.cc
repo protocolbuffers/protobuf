@@ -3487,7 +3487,17 @@ TEST_F(ValidationErrorTest, NoLiteServices) {
     "service { name: \"Foo\" }",
 
     "foo.proto: Foo: NAME: Files with optimize_for = LITE_RUNTIME cannot "
-    "define services.\n");
+    "define services unless you set both options cc_generic_services and "
+    "java_generic_sevices to false.\n");
+
+  BuildFile(
+    "name: \"bar.proto\" "
+    "options {"
+    "  optimize_for: LITE_RUNTIME"
+    "  cc_generic_services: false"
+    "  java_generic_services: false"
+    "} "
+    "service { name: \"Foo\" }");
 }
 
 TEST_F(ValidationErrorTest, RollbackAfterError) {

@@ -3720,10 +3720,14 @@ void DescriptorBuilder::ValidateEnumValueOptions(
 }
 void DescriptorBuilder::ValidateServiceOptions(ServiceDescriptor* service,
     const ServiceDescriptorProto& proto) {
-  if (IsLite(service->file())) {
+  if (IsLite(service->file()) &&
+      (service->file()->options().cc_generic_services() ||
+       service->file()->options().java_generic_services())) {
     AddError(service->full_name(), proto,
              DescriptorPool::ErrorCollector::NAME,
-             "Files with optimize_for = LITE_RUNTIME cannot define services.");
+             "Files with optimize_for = LITE_RUNTIME cannot define services "
+             "unless you set both options cc_generic_services and "
+             "java_generic_sevices to false.");
   }
 
   VALIDATE_OPTIONS_FROM_ARRAY(service, method, Method);
