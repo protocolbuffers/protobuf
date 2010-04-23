@@ -720,7 +720,8 @@ bool Parser::ParseOptionAssignment(Message* options) {
           is_negative ? static_cast<uint64>(kint64max) + 1 : kuint64max;
       DO(ConsumeInteger64(max_value, &value, "Expected integer."));
       if (is_negative) {
-        uninterpreted_option->set_negative_int_value(-value);
+        uninterpreted_option->set_negative_int_value(
+            -static_cast<int64>(value));
       } else {
         uninterpreted_option->set_positive_int_value(value);
       }
