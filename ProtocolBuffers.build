@@ -185,6 +185,7 @@
     <msbuild project="${src}/ProtocolBuffers.sln">
       <property name="Configuration"
                 value="${build-configuration}" />
+      <property name="Platform" value="Any CPU" />
     </msbuild>
   </target>
   
@@ -259,15 +260,20 @@
           description="Builds all versions of the main library">
     <msbuild project="${src}/ProtocolBuffers.sln">
       <property name="Configuration" value="Debug" />
+      <property name="Platform" value="Any CPU" />
     </msbuild>
     <msbuild project="${src}/ProtocolBuffers.sln">
       <property name="Configuration" value="Release" />
+      <property name="Platform" value="Any CPU" />
     </msbuild>
     <msbuild project="${src}/ProtocolBuffers.sln">
       <property name="Configuration" value="Silverlight2" />
+      <property name="Platform" value="Any CPU" />
     </msbuild>
+    <!-- Note the deliberate lack of space in the platform name -->
     <msbuild project="${src}/ProtocolBuffers/ProtocolBuffersCF.csproj">
       <property name="Configuration" value="Release" />
+      <property name="Platform" value="AnyCPU" />
     </msbuild>
   </target>
     
