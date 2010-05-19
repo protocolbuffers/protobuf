@@ -9,6 +9,16 @@ project page for the C++, Java and Python project:
 http://protobuf.googlecode.com
 
 
+Release 0.9.1
+-------------
+
+Fix to release 0.9:
+
+- Include protos in binary download
+- Fix issue 10: incorrect encoding of packed fields when serialized
+  size wasn't fetched first
+
+
 Release 0.9
 -----------
 
