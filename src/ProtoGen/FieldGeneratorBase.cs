@@ -132,7 +132,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     protected void AddClsComplianceCheck(TextGenerator writer) {
-      if (!Descriptor.IsCLSCompliant) {
+      if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance) {
         writer.WriteLine("[global::System.CLSCompliant(false)]");
       }
     }

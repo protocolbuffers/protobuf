@@ -35,6 +35,9 @@ message CSharpFileOptions {
   // Create subdirectories for namespaces, e.g. namespace "Foo.Bar"
   // would generate files within [output directory]/Foo/Bar
   optional bool expand_namespace_directories = 7;
+
+  // Generate attributes indicating non-CLS-compliance
+  optional bool cls_compliance = 8 [default = true];
 }
 
 extend FileOptions {
