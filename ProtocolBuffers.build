@@ -332,7 +332,12 @@
       <fileset basedir="${src}">
         <include name="ProtocolBuffers/bin/ReleaseCF/Google.ProtocolBuffers.dll" />
       </fileset>
-    </copy>    
+    </copy>
+    <copy todir="${output-dir}">
+      <fileset basedir="${project::get-base-directory()}">
+        <include name="protos/**" />
+      </fileset>
+    </copy>
   </target>
   
   
