@@ -32,6 +32,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System.IO;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
@@ -312,6 +313,16 @@ namespace Google.ProtocolBuffers {
       } catch (InvalidProtocolBufferException e) {
         Assert.AreEqual("Message missing required fields: a, b, c", e.Message);
       }
+    }
+
+    [Test]
+    public void PackedTypesWrittenDirectlyToStream() {
+      TestPackedTypes message = new TestPackedTypes.Builder {PackedInt32List = {0, 1, 2}}.Build();
+      MemoryStream stream = new MemoryStream();
+      message.WriteTo(stream);
+      stream.Position = 0;
+      TestPackedTypes readMessage = TestPackedTypes.ParseFrom(stream);
+      Assert.AreEqual(message, readMessage);
     }
   }
 

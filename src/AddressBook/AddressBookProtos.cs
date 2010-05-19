@@ -146,6 +146,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
         
         public override void WriteTo(pb::CodedOutputStream output) {
+          int size = SerializedSize;
           if (HasNumber) {
             output.WriteString(1, Number);
           }
@@ -418,6 +419,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -755,6 +757,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in PersonList) {
         output.WriteMessage(1, element);
       }

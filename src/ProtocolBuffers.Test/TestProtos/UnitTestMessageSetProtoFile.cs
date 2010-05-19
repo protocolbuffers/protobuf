@@ -124,6 +124,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<TestMessageSet, TestMessageSet.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteAsMessageSetTo(output);
@@ -311,6 +312,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasMessageSet) {
         output.WriteMessage(1, MessageSet);
       }
@@ -550,6 +552,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasI) {
         output.WriteInt32(15, I);
       }
@@ -766,6 +769,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasStr) {
         output.WriteString(25, Str);
       }
@@ -1017,6 +1021,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::CodedOutputStream output) {
+          int size = SerializedSize;
           if (HasTypeId) {
             output.WriteInt32(2, TypeId);
           }
@@ -1246,6 +1251,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
         output.WriteGroup(1, element);
       }

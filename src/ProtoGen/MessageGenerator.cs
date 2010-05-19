@@ -193,6 +193,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       writer.WriteLine("public override void WriteTo(pb::CodedOutputStream output) {");
       writer.Indent();
+      // Make sure we've computed the serialized length, so that packed fields are generated correctly.
+      writer.WriteLine("int size = SerializedSize;");
       if (Descriptor.Proto.ExtensionRangeList.Count > 0) {
         writer.WriteLine("pb::ExtendableMessage<{0}, {0}.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);",
           ClassName);

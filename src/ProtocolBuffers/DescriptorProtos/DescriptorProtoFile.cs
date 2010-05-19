@@ -264,6 +264,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto element in FileList) {
         output.WriteMessage(1, element);
       }
@@ -596,6 +597,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -1196,6 +1198,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override void WriteTo(pb::CodedOutputStream output) {
+          int size = SerializedSize;
           if (HasStart) {
             output.WriteInt32(1, Start);
           }
@@ -1507,6 +1510,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -2151,6 +2155,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -2653,6 +2658,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -2999,6 +3005,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -3327,6 +3334,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -3683,6 +3691,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, Name);
       }
@@ -4072,6 +4081,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<FileOptions, FileOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasJavaPackage) {
         output.WriteString(1, JavaPackage);
@@ -4463,6 +4473,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<MessageOptions, MessageOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasMessageSetWireFormat) {
         output.WriteBool(1, MessageSetWireFormat);
@@ -4791,6 +4802,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<FieldOptions, FieldOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasCtype) {
         output.WriteEnum(1, (int) Ctype);
@@ -5171,6 +5183,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<EnumOptions, EnumOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
         output.WriteMessage(999, element);
@@ -5418,6 +5431,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
         output.WriteMessage(999, element);
@@ -5665,6 +5679,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
         output.WriteMessage(999, element);
@@ -5912,6 +5927,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       pb::ExtendableMessage<MethodOptions, MethodOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
         output.WriteMessage(999, element);
@@ -6189,6 +6205,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override void WriteTo(pb::CodedOutputStream output) {
+          int size = SerializedSize;
           if (HasNamePart_) {
             output.WriteString(1, NamePart_);
           }
@@ -6472,6 +6489,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart element in NameList) {
         output.WriteMessage(2, element);
       }

@@ -112,6 +112,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasOptionalMessage) {
         output.WriteMessage(1, OptionalMessage);
       }

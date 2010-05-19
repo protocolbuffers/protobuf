@@ -169,6 +169,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasNamespace) {
         output.WriteString(1, Namespace);
       }
@@ -571,6 +572,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
       if (HasPropertyName) {
         output.WriteString(1, PropertyName);
       }
