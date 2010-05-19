@@ -281,11 +281,24 @@
   <target name="dist" 
           description="Copies all binaries into the output directory">
     <delete dir="${output-dir}" />
+    <copy todir="${output-dir}">
+      <fileset basedir="${project::get-base-directory()}">
+        <include name="readme.txt" />
+        <include name="license.txt" />
+      </fileset>
+    </copy>
     <mkdir dir="${output-dir}" />
+    <mkdir dir="${output-dir}/Protoc" />
     <mkdir dir="${output-dir}/Debug" />
     <mkdir dir="${output-dir}/Release" />
     <mkdir dir="${output-dir}/Silverlight2" />
     <mkdir dir="${output-dir}/CompactFramework35" />
+    <copy todir="${output-dir}/Protoc">
+      <fileset basedir="${project::get-base-directory()}/lib">
+        <include name="protoc.exe" />
+        <include name="protoc-license.txt" />
+      </fileset>
+    </copy>
     <copy todir="${output-dir}/Debug"
           flatten="true">
       <fileset basedir="${src}">
