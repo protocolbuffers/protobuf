@@ -116,12 +116,13 @@ typedef union {
   uint32_t _32bit;
 } upb_wire_value;
 
-// A tag occurs before each value on-the-wire.
-typedef struct {
-  upb_field_number_t field_number;
-  upb_wire_type_t wire_type;
-} upb_tag;
-
+// A key occurs before each value on-the-wire.
+typedef uint32_t upb_key;
+INLINE upb_key upb_make_key(upb_fieldnum_t fieldnum, upb_wiretype_t wiretype) {
+  return (fieldnum << 3) | wiretype;
+}
+INLINE upb_fieldnum_t upb_key_fieldnum(upb_key key) { return key >> 3; }
+INLINE upb_wiretype_t upb_key_wiretype(upb_key key) { return key & 0x07; }
 
 /* Polymorphic values of .proto types *****************************************/
 

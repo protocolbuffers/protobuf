@@ -3,36 +3,20 @@
  *
  * Copyright (c) 2010 Joshua Haberman.  See LICENSE for details.
  *
- * upb_sink is a general purpose interface for pushing the contents of a
- * protobuf from one component to another in a streaming fashion.  We call the
- * component that calls a upb_sink a "source".  By "pushing" we mean that the
- * source calls into the sink; the opposite (where a sink calls into the
- * source) is known as "pull".  In the push model the source gets the main
- * loop; in a pull model the sink does.
+ * This file defines four general-purpose interfaces for pulling/pushing either
+ * protobuf data or bytes:
  *
- * This interface is used as general-purpose glue in upb.  For example, the
- * parser interface works by implementing a source.  Likewise the serialization
- * simply implements a sink.  Copying one protobuf to another is just a matter
- * of using one message as a source and another as a sink.
+ * - upb_src: pull interface for protobuf key/value pairs.
+ * - upb_sink: push interface for protobuf key/value pairs.
+ * - upb_bytesrc: pull interface for bytes.
+ * - upb_bytesink: push interface for bytes.
  *
- * In terms of efficiency, we would generally expect "push" to be faster if the
- * source had more state to track, and "pull" to be faster if the sink had more
- * state.  The reason is that whoever has the main loop can keep state on the
- * stack (and possibly even in callee-save registers), whereas the the
- * component that is "called into" always needs to reload its state from
- * memory.
- *
- * In terms of programming complexity, it is easier and simpler to have the
- * main loop, because you can store state in local variables.
- *
- * So the assumption inherent in using the push model is that sources are
- * generally more complicated and stateful than consumers.  For example, in the
- * parser case, it has to deal with malformed input and associated errors; in
- * comparison, the serializer deals with known-good input.
+ * These interfaces are used as general-purpose glue in upb.  For example, the
+ * decoder interface works by implementing a upb_src and calling a upb_bytesrc.
  */
 
-#ifndef UPB_SINK_H
-#define UPB_SINK_H
+#ifndef UPB_SRCSINK_H
+#define UPB_SRCSINK_H
 
 #include "upb_def.h"
 
@@ -40,26 +24,43 @@
 extern "C" {
 #endif
 
-// Each of the upb_sink callbacks returns a status of this type.
-typedef enum {
-  // The normal case, where the consumer wants to continue consuming.
-  UPB_SINK_CONTINUE,
+/* upb_src ********************************************************************/
 
-  // The sink did not consume this value, and wants to halt further processing.
-  // If the source is resumable, it should save the current state so that when
-  // resumed, the value that was just provided will be replayed.
-  UPB_SINK_STOP,
+// Retrieves the fielddef for the next field in the stream.  Returns NULL on
+// error or end-of-stream.
+upb_fielddef *upb_src_getdef(upb_src *src);
 
-  // The consumer wants to skip to the end of the current submessage and
-  // continue consuming.  If we are at the top-level, the rest of the
-  // data is discarded.
-  UPB_SINK_SKIP
-} upb_sink_status;
+// Retrieves and stores the next value in "val".  For string types the caller
+// does not own a ref to the returned type; you must ref it yourself if you
+// want one.  Returns false on error.
+bool upb_src_getval(upb_src *src, upb_valueptr val);
 
+// Like upb_src_getval() but skips the value.
+bool upb_src_skipval(upb_src *src);
 
-typedef struct {
-  struct upb_sink_callbacks *vtbl;
-} upb_sink;
+// Descends into a submessage.
+bool upb_src_startmsg(upb_src *src);
+
+// Stops reading a submessage.  May be called before the stream is EOF, in
+// which case the rest of the submessage is skipped.
+bool upb_src_endmsg(upb_src *src);
+
+// Returns the current error status for the stream.
+upb_status *upb_src_status(upb_src *src);
+
+/* upb_bytesrc ****************************************************************/
+
+// Returns the next string in the stream.  The caller does not own a ref on the
+// returned string; you must ref it yourself if you want one.
+upb_string *upb_bytesrc_get(upb_bytesrc *src);
+
+// Appends the next "len" bytes in the stream in-place to "str".  This should
+// be used when the caller needs to build a contiguous string of the existing
+// data in "str" with more data.
+bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
+
+// Returns the current error status for the stream.
+upb_status *upb_bytesrc_status(upb_src *src);
 
 /* upb_sink callbacks *********************************************************/
 

@@ -195,18 +195,6 @@ T(FLOAT,    f, uint32_t, float,    _float)  {
 #undef GET
 #undef T
 
-// Parses a tag, places the result in *tag.
-INLINE const uint8_t *decode_tag(const uint8_t *buf, const uint8_t *end,
-                                 upb_tag *tag, upb_status *status)
-{
-  uint32_t tag_int;
-  const uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
-  tag->wire_type    = (upb_wire_type_t)(tag_int & 0x07);
-  tag->field_number = tag_int >> 3;
-  return ret;
-}
-
-
 // Parses a 64-bit varint that is known to be >= 2 bytes (the inline version
 // handles 1 and 2 byte varints).
 const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
@@ -311,13 +299,12 @@ typedef struct {
 struct upb_decoder {
   // Immutable state of the decoder.
   upb_msgdef *toplevel_msgdef;
-  upb_sink *sink;
+  upb_bytesrc *bytesrc;
 
   // State pertaining to a particular decode (resettable).
   // Stack entries store the offset where the submsg ends (for groups, 0).
   upb_decoder_frame stack[UPB_MAX_NESTING], *top, *limit;
   size_t completed_offset;
-  void *udata;
 };
 
 upb_decoder *upb_decoder_new(upb_msgdef *msgdef)
@@ -343,6 +330,18 @@ void upb_decoder_reset(upb_decoder *d, upb_sink *sink)
   // indefinitely), so we treat it like a group.
   d->top->end_offset = 0;
 }
+
+// Parses a tag, places the result in *tag.
+upb_key upb_decoder_src_getkey(upb_decoder *d)
+{
+  upb_key key;
+  upb_fill_buffer(d);
+  d->
+  const uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
+  return ret;
+}
+
+
 
 static const void *get_msgend(upb_decoder *d, const uint8_t *start)
 {
