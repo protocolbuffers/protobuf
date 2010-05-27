@@ -6,8 +6,8 @@
  * This file defines four general-purpose interfaces for pulling/pushing either
  * protobuf data or bytes:
  *
- * - upb_src: pull interface for protobuf key/value pairs.
- * - upb_sink: push interface for protobuf key/value pairs.
+ * - upb_src: pull interface for protobuf data.
+ * - upb_sink: push interface for protobuf data.
  * - upb_bytesrc: pull interface for bytes.
  * - upb_bytesink: push interface for bytes.
  *
@@ -48,6 +48,23 @@ bool upb_src_endmsg(upb_src *src);
 // Returns the current error status for the stream.
 upb_status *upb_src_status(upb_src *src);
 
+/* upb_sink *******************************************************************/
+
+// Puts the given fielddef into the stream.
+bool upb_sink_putdef(upb_sink *sink, upb_fielddef *def);
+
+// Puts the given value into the stream.
+bool upb_sink_putval(upb_sink *sink, upb_value val);
+
+// Starts a submessage.  (needed?  the def tells us we're starting a submsg.)
+bool upb_sink_startmsg(upb_sink *sink);
+
+// Ends a submessage.
+bool upb_sink_endmsg(upb_sink *sink);
+
+// Returns the current error status for the stream.
+upb_status *upb_sink_status(upb_sink *sink);
+
 /* upb_bytesrc ****************************************************************/
 
 // Returns the next string in the stream.  The caller does not own a ref on the
@@ -62,37 +79,14 @@ bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
 // Returns the current error status for the stream.
 upb_status *upb_bytesrc_status(upb_src *src);
 
-/* upb_sink callbacks *********************************************************/
+/* upb_bytesink ***************************************************************/
 
-// The value callback is called for a regular value (ie. not a string or
-// submessage).
-typedef upb_sink_status (*upb_value_cb)(upb_sink *s, upb_fielddef *f,
-                                        upb_value val, upb_status *status);
+// Puts the given string.  Returns the number of bytes that were actually,
+// consumed, which may be fewer than were in the string, or <0 on error.
+int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str);
 
-// The string callback is called for string data.  "str" is the string in which
-// the data lives, but it may contain more data than the effective string.
-// "start" and "end" indicate the substring of "str" that is the effective
-// string.  If "start" is <0, this string is a continuation of the previous
-// string for this field.  If end > upb_strlen(str) then there is more data to
-// follow for this string.  "end" can also be used as a hint for how much data
-// follows, but this is only a hint and is not guaranteed.
-//
-// The data is supplied this way to give you the opportunity to reference this
-// data instead of copying it (perhaps using upb_strslice), or to minimize
-// copying if it is unavoidable.
-typedef upb_sink_status (*upb_str_cb)(upb_sink *s, upb_fielddef *f,
-                                      upb_strptr str,
-                                      int32_t start, uint32_t end,
-                                      upb_status *status);
-
-// The start and end callbacks are called when a submessage begins and ends,
-// respectively.  The caller is responsible for ensuring that the nesting
-// level never exceeds UPB_MAX_NESTING.
-typedef upb_sink_status (*upb_start_cb)(upb_sink *s, upb_fielddef *f,
-                                        upb_status *status);
-typedef upb_sink_status (*upb_end_cb)(upb_sink *s, upb_fielddef *f,
-                                      upb_status *status);
-
+// Returns the current error status for the stream.
+upb_status *upb_bytesink_status(upb_bytesink *sink);
 
 /* upb_sink implementation ****************************************************/
 
