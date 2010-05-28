@@ -1,4 +1,4 @@
-# Copyright (C) 2010 The Android Open Source Project
+# Copyright (C) 2009 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+#
 
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-# TODO: Add code to build the javamicro library
+LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/micro)
+
+LOCAL_MODULE := com.google.protobuf.micro
+
+include $(BUILD_STATIC_JAVA_LIBRARY)
