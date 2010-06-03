@@ -221,23 +221,6 @@ const uint8_t *upb_get_v_uint64_t_full(const uint8_t *buf, const uint8_t *end,
   return buf;
 }
 
-const uint8_t *upb_decode_wire_value(uint8_t *buf, uint8_t *end,
-                                     upb_wire_type_t wt, upb_wire_value *wv,
-                                     upb_status *status)
-{
-  switch(wt) {
-    case UPB_WIRE_TYPE_VARINT:
-      return upb_get_v_uint64_t(buf, end, &wv->varint, status);
-    case UPB_WIRE_TYPE_64BIT:
-      return upb_get_f_uint64_t(buf, end, &wv->_64bit, status);
-    case UPB_WIRE_TYPE_32BIT:
-      return upb_get_f_uint32_t(buf, end, &wv->_32bit, status);
-    default:
-      status->code = UPB_STATUS_ERROR;  // Doesn't handle delimited, groups.
-      return end;
-  }
-}
-
 // Advances buf past the current wire value (of type wt), saving the result in
 // outbuf.
 static const uint8_t *skip_wire_value(const uint8_t *buf, const uint8_t *end,
@@ -293,7 +276,7 @@ static const uint8_t *upb_decode_value(const uint8_t *buf, const uint8_t *end,
 typedef struct {
   upb_msgdef *msgdef;
   upb_fielddef *field;
-  size_t end_offset;  // For groups, 0.
+  int32_t end_offset;  // For groups, 0.
 } upb_decoder_frame;
 
 struct upb_decoder {
@@ -304,7 +287,15 @@ struct upb_decoder {
   // State pertaining to a particular decode (resettable).
   // Stack entries store the offset where the submsg ends (for groups, 0).
   upb_decoder_frame stack[UPB_MAX_NESTING], *top, *limit;
-  size_t completed_offset;
+
+  // The current buffer.
+  upb_string *buf;
+
+  // The overall stream offset of the beginning of this buffer.
+  uint32_t stream_offset;
+
+  // The current offset in this buffer.
+  uint32_t buffer_offset;
 };
 
 upb_decoder *upb_decoder_new(upb_msgdef *msgdef)
@@ -329,16 +320,6 @@ void upb_decoder_reset(upb_decoder *d, upb_sink *sink)
   // The top-level message is not delimited (we can keep receiving data for it
   // indefinitely), so we treat it like a group.
   d->top->end_offset = 0;
-}
-
-// Parses a tag, places the result in *tag.
-upb_key upb_decoder_src_getkey(upb_decoder *d)
-{
-  upb_key key;
-  upb_fill_buffer(d);
-  d->
-  const uint8_t *ret = upb_get_v_uint32_t(buf, end, &tag_int, status);
-  return ret;
 }
 
 
@@ -395,9 +376,78 @@ static const void *pop(upb_decoder *d, const uint8_t *start, upb_status *status)
   return get_msgend(d, start);
 }
 
-
-size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
+// Parses a tag, places the result in *tag.
+upb_fielddef *upb_decoder_src_getdef(upb_decoder *d)
 {
+  uint32_t key;
+  upb_fill_buffer(d);
+  d->buf = upb_get_v_uint32_t(d->buf, d->end, &key, &d->status);
+  if (!upb_ok(status)) return NULL;
+  if(upb_wiretype_from_key(key) == UPB_WIRE_TYPE_END_GROUP) {
+    if(!isgroup(d->submsg_end)) {
+      upb_seterr(d->status, UPB_STATUS_ERROR, "End group seen but current "
+                 "message is not a group, byte offset: %zd",
+                 d->completed_offset + (completed - start));
+      return NULL;
+    }
+    submsg_end = pop(d, start, status);
+    msgdef = d->top->msgdef;
+    completed = buf;
+    return NULL;
+  }
+  // Look up field by tag number.
+  return upb_msg_itof(d->top->msgdef, upb_fieldnum_from_key(key));
+}
+
+bool upb_decoder_src_getval(upb_src *src, upb_valueptr val)
+{
+  if(upb_wiretype_from_key(d->key) == UPB_WIRE_TYPE_DELIMITED) {
+    int32_t delim_len;
+    d->buf = upb_get_INT32(d->buf, d->end, &delim_len, &d->status);
+    CHECK_STATUS();  // Checking decode_tag() and upb_get_INT32().
+    int32_t needed = 
+    const uint8_t *delim_end = buf + delim_len;
+    if(f->type == UPB_TYPE(MESSAGE)) {
+      submsg_end = push(d, start, delim_end - start, f, status);
+      msgdef = d->top->msgdef;
+    } else {
+      if(f && upb_isstringtype(f->type)) {
+        int32_t str_start = buf - start;
+        uint32_t len = str_start + delim_len;
+        sink_status = upb_sink_onstr(d->sink, f, str, str_start, len, status);
+      } // else { TODO: packed arrays }
+      // If field was not found, it is skipped silently.
+      buf = delim_end;  // Could be >end.
+    }
+  } else {
+    if(!upb_check_type(tag.wire_type, f->type)) {
+      buf = skip_wire_value(buf, end, tag.wire_type, status);
+    } else if (f->type == UPB_TYPE(GROUP)) {
+      submsg_end = push(d, start, 0, f, status);
+      msgdef = d->top->msgdef;
+    } else {
+      upb_value val;
+      buf = upb_decode_value(buf, end, f->type, upb_value_addrof(&val),
+                            status);
+      CHECK_STATUS();  // Checking upb_decode_value().
+      sink_status = upb_sink_onvalue(d->sink, f, val, status);
+    }
+  }
+  CHECK_STATUS();
+
+  while(buf >= submsg_end) {
+    if(buf > submsg_end) {
+      upb_seterr(status, UPB_STATUS_ERROR, "Expected submsg end offset "
+                 "did not lie on a tag/value boundary.");
+      goto err;
+    }
+    submsg_end = pop(d, start, status);
+    msgdef = d->top->msgdef;
+  }
+  // while(buf < d->packed_end) { TODO: packed arrays }
+  completed = buf;
+}
+
   // buf is our current offset, moves from start to end.
   const uint8_t *buf = (uint8_t*)upb_string_getrobuf(str);
   const uint8_t *const start = buf;  // ptr equivalent of d->completed_offset
@@ -421,68 +471,7 @@ size_t upb_decoder_decode(upb_decoder *d, upb_strptr str, upb_status *status)
     // Parse/handle tag.
     upb_tag tag;
     buf = decode_tag(buf, end, &tag, status);
-    if(tag.wire_type == UPB_WIRE_TYPE_END_GROUP) {
-      CHECK_STATUS();
-      if(!isgroup(submsg_end)) {
-        upb_seterr(status, UPB_STATUS_ERROR, "End group seen but current "
-                   "message is not a group, byte offset: %zd",
-                   d->completed_offset + (completed - start));
-        goto err;
-      }
-      submsg_end = pop(d, start, status);
-      msgdef = d->top->msgdef;
-      completed = buf;
-      continue;
-    }
-
-    // Look up field by tag number.
-    upb_fielddef *f = upb_msg_itof(msgdef, tag.field_number);
-
     // Parse/handle field.
-    if(tag.wire_type == UPB_WIRE_TYPE_DELIMITED) {
-      int32_t delim_len;
-      buf = upb_get_INT32(buf, end, &delim_len, status);
-      CHECK_STATUS();  // Checking decode_tag() and upb_get_INT32().
-      const uint8_t *delim_end = buf + delim_len;
-      if(f && f->type == UPB_TYPE(MESSAGE)) {
-        submsg_end = push(d, start, delim_end - start, f, status);
-        msgdef = d->top->msgdef;
-      } else {
-        if(f && upb_isstringtype(f->type)) {
-          int32_t str_start = buf - start;
-          uint32_t len = str_start + delim_len;
-          sink_status = upb_sink_onstr(d->sink, f, str, str_start, len, status);
-        } // else { TODO: packed arrays }
-        // If field was not found, it is skipped silently.
-        buf = delim_end;  // Could be >end.
-      }
-    } else {
-      if(!f || !upb_check_type(tag.wire_type, f->type)) {
-        buf = skip_wire_value(buf, end, tag.wire_type, status);
-      } else if (f->type == UPB_TYPE(GROUP)) {
-        submsg_end = push(d, start, 0, f, status);
-        msgdef = d->top->msgdef;
-      } else {
-        upb_value val;
-        buf = upb_decode_value(buf, end, f->type, upb_value_addrof(&val),
-                              status);
-        CHECK_STATUS();  // Checking upb_decode_value().
-        sink_status = upb_sink_onvalue(d->sink, f, val, status);
-      }
-    }
-    CHECK_STATUS();
-
-    while(buf >= submsg_end) {
-      if(buf > submsg_end) {
-        upb_seterr(status, UPB_STATUS_ERROR, "Expected submsg end offset "
-                   "did not lie on a tag/value boundary.");
-        goto err;
-      }
-      submsg_end = pop(d, start, status);
-      msgdef = d->top->msgdef;
-    }
-    // while(buf < d->packed_end) { TODO: packed arrays }
-    completed = buf;
   }
 
   size_t read;

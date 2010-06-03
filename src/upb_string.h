@@ -64,9 +64,10 @@ INLINE upb_strlen_t upb_string_len(upb_string *str) { return str->len; }
 
 // Use to read the bytes of the string.  The caller *must* call
 // upb_string_endread() after the data has been read.  The window between
-// upb_string_getrobuf() and upb_string_endread() should be kept as short
-// as possible.  No other functions may be called on the string during this
-// window except upb_string_len().
+// upb_string_getrobuf() and upb_string_endread() should be kept as short as
+// possible, because any pending upb_string_detach() may be blocked until
+// upb_string_endread is called().  No other functions may be called on the
+// string during this window except upb_string_len().
 INLINE const char *upb_string_getrobuf(upb_string *str) { return str->ptr; }
 INLINE void upb_string_endread(upb_string *str);
 

@@ -270,8 +270,8 @@ INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
 enum upb_status_code {
   UPB_STATUS_OK = 0,
 
-  // The input byte stream ended in the middle of a record.
-  UPB_STATUS_NEED_MORE_DATA = 1,
+  // A read or write from a streaming src/sink could not be completed right now.
+  UPB_STATUS_TRYAGAIN = 1,
 
   // An unrecoverable error occurred.
   UPB_STATUS_ERROR = -1,

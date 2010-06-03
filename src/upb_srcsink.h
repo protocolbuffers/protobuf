@@ -26,6 +26,8 @@ extern "C" {
 
 /* upb_src ********************************************************************/
 
+// TODO: decide how to handle unknown fields.
+
 // Retrieves the fielddef for the next field in the stream.  Returns NULL on
 // error or end-of-stream.
 upb_fielddef *upb_src_getdef(upb_src *src);
@@ -38,7 +40,8 @@ bool upb_src_getval(upb_src *src, upb_valueptr val);
 // Like upb_src_getval() but skips the value.
 bool upb_src_skipval(upb_src *src);
 
-// Descends into a submessage.
+// Descends into a submessage.  May only be called after a def has been
+// returned that indicates a submessage.
 bool upb_src_startmsg(upb_src *src);
 
 // Stops reading a submessage.  May be called before the stream is EOF, in
@@ -88,60 +91,60 @@ int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str);
 // Returns the current error status for the stream.
 upb_status *upb_bytesink_status(upb_bytesink *sink);
 
-/* upb_sink implementation ****************************************************/
+/* Dynamic Dispatch implementation for src/sink interfaces ********************/
 
-typedef struct upb_sink_callbacks {
-  upb_value_cb value_cb;
-  upb_str_cb str_cb;
-  upb_start_cb start_cb;
-  upb_end_cb end_cb;
-} upb_sink_callbacks;
+// The rest of this file only concerns components that are implementing any of
+// the above interfaces.  To simple clients the code below should be considered
+// private.
 
-// These macros implement a mini virtual function dispatch for upb_sink instances.
-// This allows functions that call upb_sinks to just write:
-//
-//   upb_sink_onvalue(sink, field, val);
-//
-// The macro will handle the virtual function lookup and dispatch.  We could
-// potentially define these later to also be capable of calling a C++ virtual
-// method instead of doing the virtual dispatch manually.  This would make it
-// possible to write C++ sinks in a more natural style without loss of
-// efficiency.  We could have a flag in upb_sink defining whether it is a C
-// sink or a C++ one.
-#define upb_sink_onvalue(s, f, val, status) s->vtbl->value_cb(s, f, val, status)
-#define upb_sink_onstr(s, f, str, start, end, status) s->vtbl->str_cb(s, f, str, start, end, status)
-#define upb_sink_onstart(s, f, status) s->vtbl->start_cb(s, f, status)
-#define upb_sink_onend(s, f, status) s->vtbl->end_cb(s, f, status)
+// Typedefs for function pointers to all of the above functions.
+typedef upb_fielddef (*upb_src_getdef_fptr)(upb_src *src);
+typedef bool (*upb_src_getval_fptr)(upb_src *src, upb_valueptr val);
+typedef bool (*upb_src_skipval_fptr)(upb_src *src);
+typedef bool (*upb_src_startmsg_fptr)(upb_src *src);
+typedef bool (*upb_src_endmsg_fptr)(upb_src *src);
+typedef upb_status *(*upb_src_status_fptr)(upb_src *src);
 
-// Initializes a plain C visitor with the given vtbl.  The sink must have been
-// allocated separately.
-INLINE void upb_sink_init(upb_sink *s, upb_sink_callbacks *vtbl) {
+typedef bool (*upb_sink_putdef_fptr)(upb_sink *sink, upb_fielddef *def);
+typedef bool (*upb_sink_putval_fptr)(upb_sink *sink, upb_value val);
+typedef bool (*upb_sink_startmsg_fptr)(upb_sink *sink);
+typedef bool (*upb_sink_endmsg_fptr)(upb_sink *sink);
+typedef upb_status *(*upb_sink_status_fptr)(upb_sink *sink);
+
+typedef upb_string *(*upb_bytesrc_get_fptr)(upb_bytesrc *src);
+typedef bool (*upb_bytesrc_append_fptr)(
+    upb_bytesrc *src, upb_string *str, upb_strlen_t len);
+typedef upb_status *(*upb_bytesrc_status_fptr)(upb_src *src);
+
+typedef int32_t (*upb_bytesink_put_fptr)(upb_bytesink *sink, upb_string *str);
+typedef upb_status *(*upb_bytesink_status_fptr)(upb_bytesink *sink);
+
+// Vtables for the above interfaces.
+typedef struct {
+  upb_src_getdef_fptr   getdef;
+  upb_src_getval_fptr   getval;
+  upb_src_skipval_fptr  skipval;
+  upb_src_startmsg_fptr startmsg;
+  upb_src_endmsg_fptr   endmsg;
+  upb_src_status_fptr   status;
+} upb_src_vtable;
+
+// "Base Class" definitions; components that implement these interfaces should
+// contain one of these structures.
+
+typedef struct {
+  upb_src_vtable *vtbl;
+#ifndef NDEBUG
+  int state;  // For debug-mode checking of API usage.
+#endif
+} upb_src;
+
+INLINE void upb_sink_init(upb_src *s, upb_src_vtable *vtbl) {
   s->vtbl = vtbl;
+#ifndef DEBUG
+  // TODO: initialize debug-mode checking.
+#endif
 }
-
-
-/* upb_bytesink ***************************************************************/
-
-// A upb_bytesink is like a upb_sync, but for bytes instead of structured
-// protobuf data.  Parsers implement upb_bytesink and push to a upb_sink,
-// serializers do the opposite (implement upb_sink and push to upb_bytesink).
-//
-// The two simplest kinds of sinks are "write to string" and "write to FILE*".
-
-// A forward declaration solely for the benefit of declaring upb_byte_cb below.
-// Always prefer upb_bytesink (without the "struct" keyword) instead.
-struct _upb_bytesink;
-
-// The single bytesink callback; it takes the bytes to be written and returns
-// how many were successfully written.  If the return value is <0, the caller
-// should stop processing.
-typedef int32_t (*upb_byte_cb)(struct _upb_bytesink *s, upb_strptr str,
-                               uint32_t start, uint32_t end,
-                               upb_status *status);
-
-typedef struct _upb_bytesink {
-  upb_byte_cb *cb;
-} upb_bytesink;
 
 #ifdef __cplusplus
 }  /* extern "C" */

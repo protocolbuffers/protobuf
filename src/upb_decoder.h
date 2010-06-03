@@ -39,15 +39,11 @@ void upb_decoder_free(upb_decoder *p);
 // state where it has not seen any data, and expects the next data to be from
 // the beginning of a new protobuf.  Parsers must be reset before they can be
 // used.  A decoder can be reset multiple times.
-void upb_decoder_reset(upb_decoder *p, upb_sink *sink);
+void upb_decoder_reset(upb_decoder *p, upb_bytesrc *bytesrc);
 
-// Decodes protobuf data out of str, returning how much data was decoded.  The
-// next call to upb_decoder_decode should begin with the first byte that was
-// not decoded.  "status" indicates whether an error occurred.
-//
-// TODO: provide the following guarantee:
-//   retval will always be >= len.
-size_t upb_decoder_decode(upb_decoder *p, upb_strptr str, upb_status *status);
+// Returns a upb_src pointer by which the decoder can be used.  The returned
+// upb_src is invalidated by upb_decoder_reset().
+upb_src *upb_decoder_getsrc(upb_decoder *p);
 
 #ifdef __cplusplus
 }  /* extern "C" */
