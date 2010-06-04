@@ -54,11 +54,16 @@ LOCAL_SRC_FILES := \
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/android \
     bionic \
-    external/stlport/stlport \
     $(LOCAL_PATH)/src
 
 LOCAL_SHARED_LIBRARIES := \
-    libcutils libutils libstlport
+    libcutils libutils
+
+# stlport conflicts with the host stl library
+ifneq ($(TARGET_SIMULATOR),true)
+LOCAL_C_INCLUDES += external/stlport/stlport
+LOCAL_SHARED_LIBRARIES += libstlport
+endif
 
 # Define the header files to be copied
 #LOCAL_COPY_HEADERS := \
