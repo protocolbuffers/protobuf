@@ -38,9 +38,6 @@ static size_t upb_f_uint32_t_size(uint32_t val) {
   return sizeof(uint32_t);
 }
 
-// The biggest possible single value is a 10-byte varint.
-#define UPB_MAX_ENCODED_SIZE 10
-
 
 /* Functions to write wire values. ********************************************/
 

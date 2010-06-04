@@ -58,6 +58,10 @@ typedef int16_t upb_field_count_t;
 // unlimited nesting if we do not limit it.
 #define UPB_MAX_TYPE_DEPTH 64
 
+// The biggest possible single value is a 10-byte varint.
+#define UPB_MAX_ENCODED_SIZE 10
+
+
 /* Fundamental types and type constants. **************************************/
 
 // A list of types as they are encoded on-the-wire.
@@ -94,12 +98,19 @@ INLINE bool upb_isstringtype(upb_field_type_t type) {
 typedef struct {
   uint8_t align;
   uint8_t size;
-  upb_wire_type_t expected_wire_type;
+  // A bit-field indicating whether each wire type is allowed.
+  uint8_t allowed_wire_types;
   char *ctype;
 } upb_type_info;
 
 // A static array of info about all of the field types, indexed by type number.
 extern upb_type_info upb_types[];
+
+// Returns true if wt is the correct on-the-wire type for ft.
+INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
+  // This doesn't currently support packed arrays.
+  return upb_types[ft] & (1 << wt);
+}
 
 // The number of a field, eg. "optional string foo = 3".
 typedef int32_t upb_field_number_t;
