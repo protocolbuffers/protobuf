@@ -20,9 +20,31 @@ LOCAL_PATH := $(call my-dir)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := com.google.protobuf.micro
+LOCAL_MODULE := libprotobuf-java-2.3.0-micro
 
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/micro)
+
+include $(BUILD_STATIC_JAVA_LIBRARY)
+
+# Java lite library
+# =======================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libprotobuf-java-2.3.0-lite
+
+LOCAL_SRC_FILES := \
+    java/src/main/java/com/google/protobuf/UninitializedMessageException.java \
+    java/src/main/java/com/google/protobuf/MessageLite.java \
+    java/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java \
+    java/src/main/java/com/google/protobuf/CodedOutputStream.java \
+    java/src/main/java/com/google/protobuf/ByteString.java \
+    java/src/main/java/com/google/protobuf/CodedInputStream.java \
+    java/src/main/java/com/google/protobuf/ExtensionRegistryLite.java \
+    java/src/main/java/com/google/protobuf/AbstractMessageLite.java \
+    java/src/main/java/com/google/protobuf/FieldSet.java \
+    java/src/main/java/com/google/protobuf/Internal.java \
+    java/src/main/java/com/google/protobuf/WireFormat.java \
+    java/src/main/java/com/google/protobuf/GeneratedMessageLite.java
 
 include $(BUILD_STATIC_JAVA_LIBRARY)
 
