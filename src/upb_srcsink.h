@@ -70,9 +70,14 @@ upb_status *upb_sink_status(upb_sink *sink);
 
 /* upb_bytesrc ****************************************************************/
 
-// Returns the next string in the stream.  The caller does not own a ref on the
-// returned string; you must ref it yourself if you want one.
-upb_string *upb_bytesrc_get(upb_bytesrc *src);
+// Returns the next string in the stream.  NULL is returned on error or eof.
+// The string must be at least "minlen" bytes long.
+//
+// A ref is passed to the caller, though the caller is encouraged to pass the
+// ref back to the bytesrc with upb_bytesrc_recycle().  This can help reduce
+// memory allocation/deallocation.
+upb_string *upb_bytesrc_get(upb_bytesrc *src, upb_strlen_t minlen);
+void upb_bytesrc_recycle(upb_bytesrc *src, upb_string *str);
 
 // Appends the next "len" bytes in the stream in-place to "str".  This should
 // be used when the caller needs to build a contiguous string of the existing
@@ -134,6 +139,7 @@ typedef struct {
 
 typedef struct {
   upb_src_vtable *vtbl;
+  upb_status status;
 #ifndef NDEBUG
   int state;  // For debug-mode checking of API usage.
 #endif

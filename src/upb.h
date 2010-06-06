@@ -284,6 +284,9 @@ enum upb_status_code {
   // A read or write from a streaming src/sink could not be completed right now.
   UPB_STATUS_TRYAGAIN = 1,
 
+  // A value had an incorrect wire type and will be skipped.
+  UPB_STATUS_BADWIRETYPE = 2,
+
   // An unrecoverable error occurred.
   UPB_STATUS_ERROR = -1,
 
