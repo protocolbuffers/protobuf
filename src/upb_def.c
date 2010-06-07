@@ -184,39 +184,39 @@ static void unresolveddef_free(struct _upb_unresolveddef *def) {
 
 /* upb_fielddef ***************************************************************/
 
-static void fielddef_init(upb_fielddef *f,
-                          google_protobuf_FieldDescriptorProto *fd)
-{
-  f->type = fd->type;
-  f->label = fd->label;
-  f->number = fd->number;
-  f->name = upb_string_getref(fd->name, UPB_REF_FROZEN);
-  f->def = NULL;
-  f->owned = false;
-  assert(fd->set_flags.has.type_name == upb_hasdef(f));
-  if(fd->set_flags.has.type_name) {
-    f->def = UPB_UPCAST(upb_unresolveddef_new(fd->type_name));
-    f->owned = true;
-  }
-}
-
-static upb_fielddef *fielddef_new(google_protobuf_FieldDescriptorProto *fd)
+static upb_fielddef *fielddef_new(upb_src *src)
 {
   upb_fielddef *f = malloc(sizeof(*f));
-  fielddef_init(f, fd);
+  f->def = NULL;
+  f->owned = false;
+  upb_src_startmsg(src);
+  upb_fielddef *parsed_f;
+  while((parsed_f = upb_src_getdef(src))) {
+    switch(parsed_f->field_number) {
+      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIELDNUM:
+        CHECK(upb_src_getval(src, &f->type));
+      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_FIELDNUM:
+        CHECK(upb_src_getval(src, &f->label));
+      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER_FIELDNUM:
+        CHECK(upb_src_getval(src, &f->number));
+      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME_FIELDNUM:
+        CHECK(upb_src_getval(src, &f->name));
+      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPENAME_FIELDNUM:
+        CHECK(upb_src_getval(src, &f->type_name));
+        f->def = UPB_UPCAST(upb_unresolveddef_new(fd->type_name));
+        f->owned = true;
+    }
+  }
+  upb_src_endmsg(src);
+  assert((f->def != NULL) == upb_hasdef(f));
   return f;
 }
 
-static void fielddef_uninit(upb_fielddef *f)
-{
+static void fielddef_free(upb_fielddef *f) {
   upb_string_unref(f->name);
   if(upb_hasdef(f) && f->owned) {
     upb_def_unref(f->def);
   }
-}
-
-static void fielddef_free(upb_fielddef *f) {
-  fielddef_uninit(f);
   free(f);
 }
 
@@ -246,21 +246,6 @@ static int compare_fields(upb_fielddef *f1, upb_fielddef *f2) {
 
 static int compare_fielddefs(const void *e1, const void *e2) {
   return compare_fields(*(void**)e1, *(void**)e2);
-}
-
-static int compare_fds(const void *e1, const void *e2) {
-  upb_fielddef f1, f2;
-  fielddef_init(&f1, *(void**)e1);
-  fielddef_init(&f2, *(void**)e2);
-  int ret = compare_fields(&f1, &f2);
-  fielddef_uninit(&f1);
-  fielddef_uninit(&f2);
-  return ret;
-}
-
-void upb_fielddef_sortfds(google_protobuf_FieldDescriptorProto **fds, size_t num)
-{
-  qsort(fds, num, sizeof(*fds), compare_fds);
 }
 
 static void fielddef_sort(upb_fielddef **defs, size_t num)
@@ -355,23 +340,45 @@ typedef struct {
   upb_strptr string;
 } iton_ent;
 
-static upb_enumdef *enumdef_new(google_protobuf_EnumDescriptorProto *ed,
-                                upb_strptr fqname)
+static void insert_enum_value(upb_src *src, upb_enumdef *e)
+{
+  upb_src_startmsg(src);
+  int32_t number = -1;
+  upb_string *name = NULL;
+  while((f = upb_src_getdef(src)) != NULL) {
+    switch(f->field_number) {
+      case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
+        upb_src_getval(src, &number);
+        break;
+      case GOOGLE_PROTOBUF_ENUMVALUDESCRIPTORPROTO_NAME_FIELDNUM:
+        upb_src_getval(src, &name);
+        break;
+      default:
+        upb_src_skipval(src);
+    }
+  }
+  upb_src_endmsg(src);
+  ntoi_ent ntoi_ent = {{value->name, 0}, value->number};
+  iton_ent iton_ent = {{value->number, 0}, value->name};
+  upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
+  upb_inttable_insert(&e->iton, &iton_ent.e);
+}
+
+static upb_enumdef *enumdef_new(upb_src *src, upb_strptr fqname)
 {
   upb_enumdef *e = malloc(sizeof(*e));
   upb_def_init(&e->base, UPB_DEF_ENUM, fqname);
-  int num_values = ed->set_flags.has.value ?
-      google_protobuf_EnumValueDescriptorProto_array_len(ed->value) : 0;
-  upb_strtable_init(&e->ntoi, num_values, sizeof(ntoi_ent));
-  upb_inttable_init(&e->iton, num_values, sizeof(iton_ent));
+  upb_strtable_init(&e->ntoi, 0, sizeof(ntoi_ent));
+  upb_inttable_init(&e->iton, 0, sizeof(iton_ent));
+  upb_src_startmsg(src);
 
-  for(int i = 0; i < num_values; i++) {
-    google_protobuf_EnumValueDescriptorProto *value =
-        google_protobuf_EnumValueDescriptorProto_array_get(ed->value, i);
-    ntoi_ent ntoi_ent = {{value->name, 0}, value->number};
-    iton_ent iton_ent = {{value->number, 0}, value->name};
-    upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
-    upb_inttable_insert(&e->iton, &iton_ent.e);
+  upb_fielddef *f;
+  while((f = upb_src_getdef(src)) != NULL) {
+    if(f->number == GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_VALUE_FIELDNUM) {
+      insert_enum_value(src, e);
+    } else {
+      upb_src_skipval(src);
+    }
   }
   return e;
 }

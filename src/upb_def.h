@@ -126,13 +126,6 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
   return upb_isstring(f) || upb_issubmsg(f);
 }
 
-// Internal-only interface for the upb compiler.
-// Sorts the given fielddefs in-place, according to what we think is an optimal
-// ordering of fields.  This can change from upb release to upb release.
-struct google_protobuf_FieldDescriptorProto;
-void upb_fielddef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
-                          size_t num);
-
 /* upb_msgdef *****************************************************************/
 
 struct google_protobuf_EnumDescriptorProto;
