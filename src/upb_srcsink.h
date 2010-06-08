@@ -71,7 +71,7 @@ upb_status *upb_sink_status(upb_sink *sink);
 /* upb_bytesrc ****************************************************************/
 
 // Returns the next string in the stream.  NULL is returned on error or eof.
-// The string must be at least "minlen" bytes long.
+// The string must be at least "minlen" bytes long unless the stream is eof.
 //
 // A ref is passed to the caller, though the caller is encouraged to pass the
 // ref back to the bytesrc with upb_bytesrc_recycle().  This can help reduce
@@ -140,6 +140,7 @@ typedef struct {
 typedef struct {
   upb_src_vtable *vtbl;
   upb_status status;
+  bool eof;
 #ifndef NDEBUG
   int state;  // For debug-mode checking of API usage.
 #endif
