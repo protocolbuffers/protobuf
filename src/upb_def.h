@@ -128,9 +128,6 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
 
 /* upb_msgdef *****************************************************************/
 
-struct google_protobuf_EnumDescriptorProto;
-struct google_protobuf_DescriptorProto;
-
 // Structure that describes a single .proto message type.
 typedef struct _upb_msgdef {
   upb_def base;
