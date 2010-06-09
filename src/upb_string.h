@@ -44,7 +44,7 @@ typedef struct _upb_string {
     // Used if this is a slice of another string.
     struct _upb_string *src;
     // Used if this string is referencing external unowned memory.
-    upb_stomic_refcount_t reader_count;
+    upb_atomic_refcount_t reader_count;
   } extra;
 } upb_string;
 
@@ -126,7 +126,7 @@ INLINE void upb_strcpylen(upb_string *dest, const void *src, upb_strlen_t len) {
 
 // Replaces the contents of "dest" with the contents of "src".
 INLINE void upb_strcpy(upb_string *dest, upb_string *src) {
-  upb_strcpylen(dest, upb_string_getrobuf(src), upb_strlen(src));
+  upb_strcpylen(dest, upb_string_getrobuf(src), upb_string_len(src));
   upb_string_endread(src);
 }
 

@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include "upb.h"
+#include "upb_string.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +39,7 @@ typedef struct {
 // performance by letting us compare hashes before comparing lengths or the
 // strings themselves.
 typedef struct {
-  upb_strptr key;          // We own a frozen ref.
+  upb_string *key;         // We own a ref.
   uint32_t next;           // Internal chaining.
 } upb_strtable_entry;
 
@@ -114,7 +115,7 @@ INLINE void *upb_inttable_lookup(upb_inttable *t, uint32_t key) {
   return upb_inttable_fastlookup(t, key, t->t.entry_size);
 }
 
-void *upb_strtable_lookup(upb_strtable *t, upb_strptr key);
+void *upb_strtable_lookup(upb_strtable *t, upb_string *key);
 
 /* Provides iteration over the table.  The order in which the entries are
  * returned is undefined.  Insertions invalidate iterators.  The _next

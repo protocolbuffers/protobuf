@@ -94,24 +94,6 @@ INLINE bool upb_isstringtype(upb_field_type_t type) {
   return type == UPB_TYPE(STRING) || type == UPB_TYPE(BYTES);
 }
 
-// Info for a given field type.
-typedef struct {
-  uint8_t align;
-  uint8_t size;
-  // A bit-field indicating whether each wire type is allowed.
-  uint8_t allowed_wire_types;
-  char *ctype;
-} upb_type_info;
-
-// A static array of info about all of the field types, indexed by type number.
-extern upb_type_info upb_types[];
-
-// Returns true if wt is the correct on-the-wire type for ft.
-INLINE bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-  // This doesn't currently support packed arrays.
-  return upb_types[ft] & (1 << wt);
-}
-
 // The number of a field, eg. "optional string foo = 3".
 typedef int32_t upb_field_number_t;
 
@@ -126,14 +108,6 @@ typedef union {
   uint64_t _64bit;
   uint32_t _32bit;
 } upb_wire_value;
-
-// A key occurs before each value on-the-wire.
-typedef uint32_t upb_key;
-INLINE upb_key upb_make_key(upb_fieldnum_t fieldnum, upb_wiretype_t wiretype) {
-  return (fieldnum << 3) | wiretype;
-}
-INLINE upb_fieldnum_t upb_key_fieldnum(upb_key key) { return key >> 3; }
-INLINE upb_wiretype_t upb_key_wiretype(upb_key key) { return key & 0x07; }
 
 /* Polymorphic values of .proto types *****************************************/
 

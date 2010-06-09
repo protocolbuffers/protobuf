@@ -53,7 +53,7 @@ enum upb_def_type {
 typedef int8_t upb_def_type_t;
 
 typedef struct {
-  upb_strptr fqname;  // Fully qualified.
+  upb_string *fqname;  // Fully qualified.
   upb_atomic_refcount_t refcount;
   upb_def_type_t type;
 
@@ -90,7 +90,7 @@ typedef struct _upb_fielddef {
   upb_field_type_t type;
   upb_label_t label;
   upb_field_number_t number;
-  upb_strptr name;
+  upb_string *name;
   upb_value default_value;
 
   // These are set only when this fielddef is part of a msgdef.
@@ -163,7 +163,7 @@ INLINE upb_fielddef *upb_msg_itof(upb_msgdef *m, uint32_t num) {
   return e ? e->f : NULL;
 }
 
-INLINE upb_fielddef *upb_msg_ntof(upb_msgdef *m, upb_strptr name) {
+INLINE upb_fielddef *upb_msg_ntof(upb_msgdef *m, upb_string *name) {
   upb_ntof_ent *e = (upb_ntof_ent*)upb_strtable_lookup(&m->ntof, name);
   return e ? e->f : NULL;
 }
@@ -179,8 +179,8 @@ typedef struct _upb_enumdef {
 typedef int32_t upb_enumval_t;
 
 // Lookups from name to integer and vice-versa.
-bool upb_enumdef_ntoi(upb_enumdef *e, upb_strptr name, upb_enumval_t *num);
-upb_strptr upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
+bool upb_enumdef_ntoi(upb_enumdef *e, upb_string *name, upb_enumval_t *num);
+upb_string *upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
 
 // Iteration over name/value pairs.  The order is undefined.
 //   upb_enum_iter i;
@@ -190,7 +190,7 @@ upb_strptr upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
 typedef struct {
   upb_enumdef *e;
   void *state;   // Internal iteration state.
-  upb_strptr name;
+  upb_string *name;
   upb_enumval_t val;
 } upb_enum_iter;
 void upb_enum_begin(upb_enum_iter *iter, upb_enumdef *e);
@@ -232,11 +232,11 @@ INLINE void upb_symtab_unref(upb_symtab *s) {
 //
 // If a def is found, the caller owns one ref on the returned def.  Otherwise
 // returns NULL.
-upb_def *upb_symtab_resolve(upb_symtab *s, upb_strptr base, upb_strptr symbol);
+upb_def *upb_symtab_resolve(upb_symtab *s, upb_string *base, upb_string *sym);
 
 // Find an entry in the symbol table with this exact name.  If a def is found,
 // the caller owns one ref on the returned def.  Otherwise returns NULL.
-upb_def *upb_symtab_lookup(upb_symtab *s, upb_strptr sym);
+upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 
 // Gets an array of pointers to all currently active defs in this symtab.  The
 // caller owns the returned array (which is of length *count) as well as a ref
@@ -249,7 +249,7 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
 // defined in desc).  desc may not attempt to define any names that are already
 // defined in this symtab.  Caller retains ownership of desc.  status indicates
 // whether the operation was successful or not, and the error message (if any).
-void upb_symtab_add_desc(upb_symtab *s, upb_strptr desc, upb_status *status);
+void upb_symtab_add_desc(upb_symtab *s, upb_string *desc, upb_status *status);
 
 
 /* upb_def casts **************************************************************/

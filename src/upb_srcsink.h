@@ -28,6 +28,9 @@ extern "C" {
 
 // TODO: decide how to handle unknown fields.
 
+struct upb_src;
+typedef struct upb_src upb_src;
+
 // Retrieves the fielddef for the next field in the stream.  Returns NULL on
 // error or end-of-stream.
 upb_fielddef *upb_src_getdef(upb_src *src);
@@ -53,6 +56,9 @@ upb_status *upb_src_status(upb_src *src);
 
 /* upb_sink *******************************************************************/
 
+struct upb_sink;
+typedef struct upb_sink upb_sink;
+
 // Puts the given fielddef into the stream.
 bool upb_sink_putdef(upb_sink *sink, upb_fielddef *def);
 
@@ -69,6 +75,9 @@ bool upb_sink_endmsg(upb_sink *sink);
 upb_status *upb_sink_status(upb_sink *sink);
 
 /* upb_bytesrc ****************************************************************/
+
+struct upb_bytesrc;
+typedef struct upb_bytesrc upb_bytesrc;
 
 // Returns the next string in the stream.  NULL is returned on error or eof.
 // The string must be at least "minlen" bytes long unless the stream is eof.
@@ -88,6 +97,9 @@ bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
 upb_status *upb_bytesrc_status(upb_src *src);
 
 /* upb_bytesink ***************************************************************/
+
+struct upb_bytesink;
+typedef struct upb_bytesink upb_bytesink;
 
 // Puts the given string.  Returns the number of bytes that were actually,
 // consumed, which may be fewer than were in the string, or <0 on error.
@@ -137,14 +149,14 @@ typedef struct {
 // "Base Class" definitions; components that implement these interfaces should
 // contain one of these structures.
 
-typedef struct {
+struct upb_src {
   upb_src_vtable *vtbl;
   upb_status status;
   bool eof;
 #ifndef NDEBUG
   int state;  // For debug-mode checking of API usage.
 #endif
-} upb_src;
+};
 
 INLINE void upb_sink_init(upb_src *s, upb_src_vtable *vtbl) {
   s->vtbl = vtbl;
