@@ -71,7 +71,11 @@ enum upb_wire_type {
   UPB_WIRE_TYPE_DELIMITED   = 2,
   UPB_WIRE_TYPE_START_GROUP = 3,
   UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5
+  UPB_WIRE_TYPE_32BIT       = 5,
+
+  // This isn't a real wire type, but we use this constant to describe varints
+  // that are expected to be a maximum of 32 bits.
+  UPB_WIRE_TYPE_32BIT_VARINT = 8
 };
 
 typedef uint8_t upb_wire_type_t;
@@ -121,14 +125,8 @@ typedef upb_atomic_refcount_t upb_data;
 
 typedef uint32_t upb_strlen_t;
 
-struct upb_norefcount_string;
-struct upb_refcounted_string;
-typedef union {
-  // Must be first, for the UPB_STATIC_STRING_PTR_INIT() macro.
-  struct upb_norefcount_string *norefcount;
-  struct upb_refcounted_string *refcounted;
-  upb_data *base;
-} upb_strptr;
+struct _upb_string;
+typedef struct _upb_string upb_string;
 
 typedef uint32_t upb_arraylen_t;
 
@@ -149,7 +147,7 @@ typedef union {
   uint32_t uint32;
   uint64_t uint64;
   bool _bool;
-  upb_strptr str;
+  upb_string *str;
   upb_arrayptr arr;
   upb_msg *msg;
   upb_data *data;
@@ -166,7 +164,7 @@ typedef union {
   uint32_t *uint32;
   uint64_t *uint64;
   bool *_bool;
-  upb_strptr *str;
+  upb_string **str;
   upb_arrayptr *arr;
   upb_msg **msg;
   upb_data **data;
@@ -290,6 +288,7 @@ INLINE void upb_reset(upb_status *status) {
 
 void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,
                 ...);
+void upb_copyerr(upb_status *to, upb_status *from);
 
 #ifdef __cplusplus
 }  /* extern "C" */

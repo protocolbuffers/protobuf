@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <string.h>
 #include "upb_atomic.h"
+#include "upb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +36,7 @@ extern "C" {
 
 // All members of this struct are private, and may only be read/written through
 // the associated functions.  Also, strings may *only* be allocated on the heap.
-typedef struct _upb_string {
+struct _upb_string {
   char *ptr;
   uint32_t len;
   uint32_t size;
@@ -46,7 +47,7 @@ typedef struct _upb_string {
     // Used if this string is referencing external unowned memory.
     upb_atomic_refcount_t reader_count;
   } extra;
-} upb_string;
+};
 
 // Returns a newly-created, empty, non-finalized string.  When the string is no
 // longer needed, it should be unref'd, never freed directly.

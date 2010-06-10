@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "upb.h"
 
@@ -21,3 +22,10 @@ void upb_seterr(upb_status *status, enum upb_status_code code,
     va_end(args);
   }
 }
+
+void upb_copyerr(upb_status *to, upb_status *from)
+{
+  to->code = from->code;
+  strcpy(to->msg, from->msg);
+}
+
