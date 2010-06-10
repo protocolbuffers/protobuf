@@ -78,7 +78,7 @@ struct upb_bytesrc {
   bool eof;
 };
 
-INLINE void upb_sink_init(upb_src *s, upb_src_vtable *vtbl) {
+INLINE void upb_src_init(upb_src *s, upb_src_vtable *vtbl) {
   s->vtbl = vtbl;
   s->eof = false;
 #ifndef DEBUG

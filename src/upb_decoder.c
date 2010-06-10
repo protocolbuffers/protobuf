@@ -151,42 +151,6 @@ struct upb_decoder {
 };
 
 
-/* upb_decoder construction/destruction. **************************************/
-
-upb_decoder *upb_decoder_new(upb_msgdef *msgdef)
-{
-  upb_decoder *d = malloc(sizeof(*d));
-  d->toplevel_msgdef = msgdef;
-  d->limit = &d->stack[UPB_MAX_NESTING];
-  d->buf = NULL;
-  d->nextbuf = NULL;
-  d->str = upb_string_new();
-  return d;
-}
-
-void upb_decoder_free(upb_decoder *d)
-{
-  free(d);
-}
-
-void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc)
-{
-  if(d->buf) upb_bytesrc_recycle(d->bytesrc, d->buf);
-  if(d->nextbuf) upb_bytesrc_recycle(d->bytesrc, d->nextbuf);
-  d->top = d->stack;
-  d->top->msgdef = d->toplevel_msgdef;
-  // The top-level message is not delimited (we can keep receiving data for it
-  // indefinitely), so we set the end offset as high as possible, but not equal
-  // to UINT32_MAX so it doesn't equal UPB_GROUP_END_OFFSET.
-  d->top->end_offset = UINT32_MAX - 1;
-  d->bytesrc = bytesrc;
-  d->buf = NULL;
-  d->nextbuf = NULL;
-  d->buf_bytesleft = 0;
-  d->buf_endoffset = 0;
-}
-
-
 /* upb_decoder buffering. *****************************************************/
 
 static upb_strlen_t upb_decoder_offset(upb_decoder *d)
@@ -227,23 +191,6 @@ static bool upb_decoder_skipbytes(upb_decoder *d, int32_t bytes)
     upb_decoder_advancebuf(d);
   }
   return true;
-}
-
-bool upb_decoder_skipval(upb_decoder *d);
-upb_fielddef *upb_decoder_getdef(upb_decoder *d);
-
-static bool upb_decoder_skipgroup(upb_decoder *d)
-{
-  // This will be mututally recursive with upb_decoder_skipval() if the group
-  // has sub-groups.  If we wanted to handle EAGAIN in the future, this
-  // approach would not work; we would need to track the group depth
-  // explicitly.
-  while(upb_decoder_getdef(d)) {
-    if(!upb_decoder_skipval(d)) return false;
-  }
-  // If we are at the end of the group like we want to be, then
-  // upb_decoder_getdef() returned NULL because of eof, not error.
-  return upb_ok(&d->src.status);
 }
 
 upb_strlen_t upb_decoder_append(uint8_t *buf, upb_string *frombuf,
@@ -290,6 +237,7 @@ INLINE const uint8_t *upb_decoder_getbuf(upb_decoder *d, uint32_t *bytes)
 /* upb_src implementation for upb_decoder. ************************************/
 
 bool upb_decoder_get_v_uint32(upb_decoder *d, uint32_t *key);
+bool upb_decoder_skipval(upb_decoder *d);
 
 upb_fielddef *upb_decoder_getdef(upb_decoder *d)
 {
@@ -305,7 +253,7 @@ upb_fielddef *upb_decoder_getdef(upb_decoder *d)
   // Handles the packed field case.
   if(d->field) return d->field;
 
- again:
+again:
   if(!upb_decoder_get_v_uint32(d, &key)) {
     return NULL;
   }
@@ -420,32 +368,7 @@ err:
   return false;
 }
 
-bool upb_decoder_skipval(upb_decoder *d) {
-  switch(d->wire_type) {
-    case UPB_WIRE_TYPE_VARINT: {
-      uint32_t bytes_available;
-      const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
-      uint8_t bytes = upb_skip_v_uint64(buf);
-      if(bytes > 10) return false;
-      upb_decoder_skipbytes(d,  bytes);
-      return true;
-    }
-    case UPB_WIRE_TYPE_64BIT:
-      return upb_decoder_skipbytes(d, 8);
-    case UPB_WIRE_TYPE_32BIT:
-      return upb_decoder_skipbytes(d, 4);
-    case UPB_WIRE_TYPE_START_GROUP:
-      return upb_decoder_skipgroup(d);
-    case UPB_WIRE_TYPE_DELIMITED:
-      // Works for both string/bytes *and* submessages.
-      return upb_decoder_skipbytes(d, d->delimited_len);
-    default:
-      // Including UPB_WIRE_TYPE_END_GROUP.
-      assert(false);
-      upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Tried to skip an end group");
-      return false;
-  }
-}
+static bool upb_decoder_skipgroup(upb_decoder *d);
 
 bool upb_decoder_startmsg(upb_decoder *d) {
   d->top->field = d->field;
@@ -480,3 +403,99 @@ bool upb_decoder_endmsg(upb_decoder *d) {
     return false;
   }
 }
+
+bool upb_decoder_skipval(upb_decoder *d) {
+  upb_strlen_t bytes_to_skip;
+  switch(d->wire_type) {
+    case UPB_WIRE_TYPE_64BIT:
+      bytes_to_skip = 8;
+      break;
+    case UPB_WIRE_TYPE_32BIT:
+      bytes_to_skip = 4;
+      break;
+    case UPB_WIRE_TYPE_DELIMITED:
+      // Works for both string/bytes *and* submessages.
+      bytes_to_skip = d->delimited_len;
+      break;
+    case UPB_WIRE_TYPE_VARINT: {
+      uint32_t bytes_available;
+      const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+      bytes_to_skip = upb_skip_v_uint64(buf);
+      if(bytes_to_skip > 10) return false;
+      break;
+    }
+    case UPB_WIRE_TYPE_START_GROUP:
+      if(!upb_decoder_startmsg(d)) return false;
+      if(!upb_decoder_skipgroup(d)) return false;
+      if(!upb_decoder_endmsg(d)) return false;
+      return true;
+    default:
+      // Including UPB_WIRE_TYPE_END_GROUP.
+      assert(false);
+      upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Tried to skip an end group");
+      return false;
+  }
+  upb_decoder_skipbytes(d, bytes_to_skip);
+  return true;
+}
+
+static bool upb_decoder_skipgroup(upb_decoder *d)
+{
+  // This will be mututally recursive with upb_decoder_skipval() if the group
+  // has sub-groups.  If we wanted to handle EAGAIN in the future, this
+  // approach would not work; we would need to track the group depth
+  // explicitly.
+  while(upb_decoder_getdef(d)) {
+    if(!upb_decoder_skipval(d)) return false;
+  }
+  // If we are at the end of the group like we want to be, then
+  // upb_decoder_getdef() returned NULL because of eof, not error.
+  if(!&d->src.eof) return false;
+  return true;
+}
+
+upb_src_vtable upb_decoder_src_vtbl = {
+  (upb_src_getdef_fptr)&upb_decoder_getdef,
+  (upb_src_getval_fptr)&upb_decoder_getval,
+  (upb_src_skipval_fptr)&upb_decoder_skipval,
+  (upb_src_startmsg_fptr)&upb_decoder_startmsg,
+  (upb_src_endmsg_fptr)&upb_decoder_endmsg,
+};
+
+
+/* upb_decoder construction/destruction. **************************************/
+
+upb_decoder *upb_decoder_new(upb_msgdef *msgdef)
+{
+  upb_decoder *d = malloc(sizeof(*d));
+  d->toplevel_msgdef = msgdef;
+  d->limit = &d->stack[UPB_MAX_NESTING];
+  d->buf = NULL;
+  d->nextbuf = NULL;
+  d->str = upb_string_new();
+  upb_src_init(&d->src, &upb_decoder_src_vtbl);
+  return d;
+}
+
+void upb_decoder_free(upb_decoder *d)
+{
+  free(d);
+}
+
+void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc)
+{
+  if(d->buf) upb_bytesrc_recycle(d->bytesrc, d->buf);
+  if(d->nextbuf) upb_bytesrc_recycle(d->bytesrc, d->nextbuf);
+  d->top = d->stack;
+  d->top->msgdef = d->toplevel_msgdef;
+  // The top-level message is not delimited (we can keep receiving data for it
+  // indefinitely), so we set the end offset as high as possible, but not equal
+  // to UINT32_MAX so it doesn't equal UPB_GROUP_END_OFFSET.
+  d->top->end_offset = UINT32_MAX - 1;
+  d->bytesrc = bytesrc;
+  d->buf = NULL;
+  d->nextbuf = NULL;
+  d->buf_bytesleft = 0;
+  d->buf_endoffset = 0;
+}
+
