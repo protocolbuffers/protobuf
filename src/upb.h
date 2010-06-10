@@ -98,6 +98,18 @@ INLINE bool upb_isstringtype(upb_field_type_t type) {
   return type == UPB_TYPE(STRING) || type == UPB_TYPE(BYTES);
 }
 
+// Info for a given field type.
+typedef struct {
+  uint8_t align;
+  uint8_t size;
+  upb_wire_type_t native_wire_type;
+  uint8_t allowed_wire_types;  // For packable fields, also allows delimited.
+  char *ctype;
+} upb_type_info;
+
+// A static array of info about all of the field types, indexed by type number.
+extern upb_type_info upb_types[];
+
 // The number of a field, eg. "optional string foo = 3".
 typedef int32_t upb_field_number_t;
 

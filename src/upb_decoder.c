@@ -12,9 +12,10 @@
 
 #define UPB_GROUP_END_OFFSET UINT32_MAX
 
+// Returns true if the give wire type and field type combination is valid,
+// taking into account both packed and non-packed encodings.
 static bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-  // Fake implementation.
-  return ft + wt > 3;
+  return (1 << wt) & upb_types[ft].allowed_wire_types;
 }
 
 /* Functions to read wire values. *********************************************/
@@ -348,8 +349,8 @@ upb_fielddef *upb_decoder_getdef(upb_decoder *d)
 
 bool upb_decoder_getval(upb_decoder *d, upb_valueptr val)
 {
-  int expected_type_for_field = 0;
-  if(expected_type_for_field == UPB_WIRE_TYPE_DELIMITED) {
+  upb_wire_type_t native_wire_type = upb_types[d->field->type].native_wire_type;
+  if(native_wire_type == UPB_WIRE_TYPE_DELIMITED) {
     // A string, bytes, or a length-delimited submessage.  The latter isn't
     // technically a string, but can be gotten as one to perform lazy parsing.
     d->str = upb_string_tryrecycle(d->str);
@@ -385,7 +386,7 @@ bool upb_decoder_getval(upb_decoder *d, upb_valueptr val)
     uint32_t bytes_available;
     uint32_t bytes_consumed;
     const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
-    switch(expected_type_for_field) {
+    switch(native_wire_type) {
       case UPB_WIRE_TYPE_VARINT:
         if((bytes_consumed = upb_get_v_uint32(buf, val.uint32)) > 10) goto err;
         if(d->field->type == UPB_TYPE(SINT64)) *val.int64 = upb_zzdec_64(*val.int64);
