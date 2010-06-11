@@ -18,88 +18,9 @@ static bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
   return (1 << wt) & upb_types[ft].allowed_wire_types;
 }
 
-/* Functions to read wire values. *********************************************/
-
-static uint8_t upb_get_v_uint64_full(const uint8_t *buf, uint64_t *val);
-
-// Gets a varint (wire type: UPB_WIRE_TYPE_VARINT).  Caller promises that >=10
-// bytes are available at buf.  Returns the number of bytes consumed, or 11 if
-// the varint was unterminated after 10 bytes.
-INLINE uint8_t upb_get_v_uint64(const uint8_t *buf, uint64_t *val)
-{
-  // We inline this common case (1-byte varints), if that fails we dispatch to
-  // the full (non-inlined) version.
-  *val = *buf & 0x7f;
-  if((*buf & 0x80) == 0) return 1;
-  return upb_get_v_uint64_full(buf + 1, val);
-}
-
-// Gets a varint -- called when we only need 32 bits of it.  Note that a 32-bit
-// varint is not a true wire type.
-INLINE uint8_t upb_get_v_uint32(const uint8_t *buf, uint32_t *val)
-{
-  uint64_t val64;
-  int8_t ret = upb_get_v_uint64(buf, &val64);
-  *val = (uint32_t)val64;  // Discard the high bits.
-  return ret;
-}
-
-// Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).  Caller
-// promises that 4 bytes are available at buf.
-INLINE void upb_get_f_uint32(const uint8_t *buf, uint32_t *val)
-{
-#if UPB_UNALIGNED_READS_OK
-  *val = *(uint32_t*)buf;
-#else
-#define SHL(val, bits) ((uint32_t)val << bits)
-  *val = SHL(buf[0], 0) | SHL(buf[1], 8) | SHL(buf[2], 16) | SHL(buf[3], 24);
-#undef SHL
-#endif
-}
-
-// Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).  Caller
-// promises that 8 bytes are available at buf.
-INLINE void upb_get_f_uint64(const uint8_t *buf, uint64_t *val)
-{
-#if UPB_UNALIGNED_READS_OK
-  *val = *(uint64_t*)buf;
-#else
-#define SHL(val, bits) ((uint64_t)val << bits)
-  *val = SHL(buf[0],  0) | SHL(buf[1],  8) | SHL(buf[2], 16) | SHL(buf[3], 24) |
-         SHL(buf[4], 32) | SHL(buf[5], 40) | SHL(buf[6], 48) | SHL(buf[7], 56);
-#undef SHL
-#endif
-}
-
-// Skips a varint (wire type: UPB_WIRE_TYPE_VARINT).  Caller promises that 10
-// bytes are available at "buf".  Returns the number of bytes that were
-// skipped.
-INLINE uint8_t upb_skip_v_uint64(const uint8_t *buf)
-{
-  const uint8_t *const maxend = buf + 10;
-  uint8_t last = 0x80;
-  for(; buf < maxend && (last & 0x80); buf++)
-    last = *buf;
-
-  return 0;  // TODO
-}
-
-// Parses remining bytes of a 64-bit varint that has already had its first byte
-// parsed.
-static uint8_t upb_get_v_uint64_full(const uint8_t *buf, uint64_t *val)
-{
-  uint8_t bytes = 0;
-
-  // bitpos starts at 7 because our caller already read one byte.
-  for(int bitpos = 7; bytes < 10 && (*buf & 0x80); buf++, bitpos += 7)
-    *val |= (uint64_t)(*buf & 0x7F) << bitpos;
-
-  return bytes;
-}
-
 // Performs zig-zag decoding, which is used by sint32 and sint64.
-INLINE int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
-INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
+static int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
+static int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
 
 /* upb_decoder ****************************************************************/
@@ -172,7 +93,7 @@ static void upb_decoder_advancebuf(upb_decoder *d)
 
 static bool upb_decoder_pullnextbuf(upb_decoder *d)
 {
-  if(!d->nextbuf) {
+  if(!d->nextbuf && !upb_bytesrc_eof(d->bytesrc)) {
     d->nextbuf = upb_bytesrc_get(d->bytesrc, UPB_MAX_ENCODED_SIZE);
     if(!d->nextbuf && !upb_bytesrc_eof(d->bytesrc)) {
       // There was an error in the byte stream, halt the decoder.
@@ -193,13 +114,20 @@ static bool upb_decoder_skipbytes(upb_decoder *d, int32_t bytes)
   return true;
 }
 
-upb_strlen_t upb_decoder_append(uint8_t *buf, upb_string *frombuf,
-                                upb_strlen_t len, upb_strlen_t total_len);
+static upb_strlen_t upb_decoder_append(uint8_t *buf, upb_string *frombuf,
+                                       upb_strlen_t len, upb_strlen_t total_len)
+{
+  upb_strlen_t copy = UPB_MIN(total_len - len, upb_string_len(frombuf));
+  //memcpy(buf, upb_string_getrobuf(frombuf) )
+  return 0;
+}
 
 static const uint8_t *upb_decoder_getbuf_full(upb_decoder *d, uint32_t *bytes)
 {
-  upb_decoder_pullnextbuf(d);
-  upb_decoder_advancebuf(d);
+  if(d->buf_bytesleft < UPB_MAX_ENCODED_SIZE) {
+    upb_decoder_pullnextbuf(d);
+    upb_decoder_advancebuf(d);
+  }
   if(d->buf_bytesleft >= UPB_MAX_ENCODED_SIZE) {
     *bytes = d->buf_bytesleft;
     return (uint8_t*)upb_string_getrobuf(d->buf) + upb_string_len(d->buf) -
@@ -221,7 +149,10 @@ static const uint8_t *upb_decoder_getbuf_full(upb_decoder *d, uint32_t *bytes)
 // those bytes span multiple buffers).  *bytes is set to the number of actual
 // stream bytes that are available in the returned buffer.  If
 // *bytes < UPB_MAX_ENCODED_SIZE, the buffer is padded with 0x80 bytes.
-INLINE const uint8_t *upb_decoder_getbuf(upb_decoder *d, uint32_t *bytes)
+//
+// After the data has been read, upb_decoder_consume() should be called to
+// indicate how many bytes were consumed.
+static const uint8_t *upb_decoder_getbuf(upb_decoder *d, uint32_t *bytes)
 {
   if(d->buf_bytesleft >= UPB_MAX_ENCODED_SIZE) {
     // The common case; only when we get to the last ten bytes of the buffer
@@ -233,6 +164,116 @@ INLINE const uint8_t *upb_decoder_getbuf(upb_decoder *d, uint32_t *bytes)
     return upb_decoder_getbuf_full(d, bytes);
   }
 }
+
+static void upb_decoder_consume(upb_decoder *d, uint32_t bytes)
+{
+  assert(bytes <= UPB_MAX_ENCODED_SIZE);
+  //if()
+  d->buf_bytesleft -= bytes;
+  //if(d->buf_bytesleft > upb_string_length())
+}
+
+
+/* Functions to read wire values. *********************************************/
+
+// Parses remining bytes of a 64-bit varint that has already had its first byte
+// parsed.
+INLINE bool upb_decoder_readv64(upb_decoder *d, uint32_t *low, uint32_t *high)
+{
+  upb_strlen_t bytes_available;
+  const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+  const uint8_t *start = buf;
+  if(!buf) return false;
+
+  *high = 0;
+  uint32_t b;
+  b = *(buf++); *low   = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
+  b = *(buf++); *low  |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
+  b = *(buf++); *low  |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
+  b = *(buf++); *low  |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
+  b = *(buf++); *low  |= (b & 0x7f) << 28;
+                *high  = (b & 0x7f) >>  3; if(!(b & 0x80)) goto done;
+  b = *(buf++); *high |= (b & 0x7f) <<  4; if(!(b & 0x80)) goto done;
+  b = *(buf++); *high |= (b & 0x7f) << 11; if(!(b & 0x80)) goto done;
+  b = *(buf++); *high |= (b & 0x7f) << 18; if(!(b & 0x80)) goto done;
+  b = *(buf++); *high |= (b & 0x7f) << 25; if(!(b & 0x80)) goto done;
+
+  if(bytes_available >= 10) {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Varint was unterminated "
+               "after 10 bytes, stream offset: %u", upb_decoder_offset(d));
+  } else {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Stream ended in the middle "
+               "of a varint, stream offset: %u", upb_decoder_offset(d));
+  }
+  return false;
+
+done:
+  upb_decoder_consume(d, buf - start);
+  return true;
+}
+
+// Gets a varint -- called when we only need 32 bits of it.  Note that a 32-bit
+// varint is not a true wire type.
+static bool upb_decoder_readv32(upb_decoder *d, uint32_t *val)
+{
+  uint32_t high;
+  if(!upb_decoder_readv64(d, val, &high)) return false;
+
+  // We expect the high bits to be zero, except that signed 32-bit values are
+  // first sign-extended to be wire-compatible with 64 bits, in which case we
+  // expect the high bits to be all one.
+  if(high != 0 && ~high != 0) {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Read a 32-bit varint, but "
+               "the high bits contained data we should not truncate: "
+               "%ux, stream offset: %u", high, upb_decoder_offset(d));
+    return false;
+  }
+  return true;
+}
+
+// Gets a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).  Caller
+// promises that 4 bytes are available at buf.
+static bool upb_decoder_readf32(upb_decoder *d, uint32_t *val)
+{
+  upb_strlen_t bytes_available;
+  const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+  if(bytes_available < 4) {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR,
+               "Stream ended in the middle of a 32-bit value");
+    return false;
+  }
+  memcpy(val, buf, 4);
+  // TODO: byte swap if big-endian.
+  return true;
+}
+
+// Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).  Caller
+// promises that 8 bytes are available at buf.
+static bool upb_decoder_readf64(upb_decoder *d, uint64_t *val)
+{
+  upb_strlen_t bytes_available;
+  const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+  if(bytes_available < 8) {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR,
+               "Stream ended in the middle of a 64-bit value");
+    return false;
+  }
+  memcpy(val, buf, 8);
+  // TODO: byte swap if big-endian.
+  return true;
+}
+
+// Returns the length of a varint (wire type: UPB_WIRE_TYPE_VARINT), allowing
+// it to be easily skipped.  Caller promises that 10 bytes are available at
+// "buf".  The function will return a maximum of 11 bytes before quitting.
+static uint8_t upb_varint_length(const uint8_t *buf)
+{
+  uint8_t i;
+  for(i = 0; i < 10 && buf[i] & 0x80; i++)
+    ;  // empty loop body.
+  return i + 1;
+}
+
 
 /* upb_src implementation for upb_decoder. ************************************/
 
@@ -254,15 +295,13 @@ upb_fielddef *upb_decoder_getdef(upb_decoder *d)
   if(d->field) return d->field;
 
 again:
-  if(!upb_decoder_get_v_uint32(d, &key)) {
-    return NULL;
-  }
+  if(!upb_decoder_readv32(d, &key)) return NULL;
   wire_type = key & 0x7;
 
   if(wire_type == UPB_WIRE_TYPE_DELIMITED) {
     // For delimited wire values we parse the length now, since we need it in
     // all cases.
-    if(!upb_decoder_get_v_uint32(d, &d->delimited_len)) return NULL;
+    if(!upb_decoder_readv32(d, &d->delimited_len)) return NULL;
   } else if(wire_type == UPB_WIRE_TYPE_END_GROUP) {
     if(d->top->end_offset == UPB_GROUP_END_OFFSET) {
       d->src.eof = true;
@@ -329,43 +368,45 @@ bool upb_decoder_getval(upb_decoder *d, upb_valueptr val)
     }
     d->field = NULL;
   } else {
-    // For all of the integer types we need the bytes to be in a single
-    // contiguous buffer.
-    uint32_t bytes_available;
-    uint32_t bytes_consumed;
-    const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
     switch(native_wire_type) {
-      case UPB_WIRE_TYPE_VARINT:
-        if((bytes_consumed = upb_get_v_uint32(buf, val.uint32)) > 10) goto err;
-        if(d->field->type == UPB_TYPE(SINT64)) *val.int64 = upb_zzdec_64(*val.int64);
+      case UPB_WIRE_TYPE_VARINT: {
+        uint32_t low, high;
+        if(!upb_decoder_readv64(d, &low, &high)) return false;
+        uint64_t u64 = ((uint64_t)high << 32) | low;
+        if(d->field->type == UPB_TYPE(SINT64))
+          *val.int64 = upb_zzdec_64(u64);
+        else
+          *val.uint64 = u64;
         break;
-      case UPB_WIRE_TYPE_32BIT_VARINT:
-        if((bytes_consumed = upb_get_v_uint64(buf, val.uint64)) > 5) goto err;
-        if(d->field->type == UPB_TYPE(SINT32)) *val.int32 = upb_zzdec_32(*val.int32);
+      }
+      case UPB_WIRE_TYPE_32BIT_VARINT: {
+        uint32_t u32;
+        if(!upb_decoder_readv32(d, &u32)) return false;
+        if(d->field->type == UPB_TYPE(SINT32))
+          *val.int32 = upb_zzdec_32(u32);
+        else
+          *val.uint32 = u32;
         break;
+      }
       case UPB_WIRE_TYPE_64BIT:
-        bytes_consumed = 8;
-        if(bytes_available < bytes_consumed) goto err;
-        upb_get_f_uint64(buf, val.uint64);
+        if(!upb_decoder_readf64(d, val.uint64)) return false;
         break;
       case UPB_WIRE_TYPE_32BIT:
-        bytes_consumed = 4;
-        if(bytes_available < bytes_consumed) goto err;
-        upb_get_f_uint32(buf, val.uint32);
+        if(!upb_decoder_readf32(d, val.uint32)) return false;
         break;
       default:
-        // Including start/end group.
-        goto err;
+        upb_seterr(&d->src.status, UPB_STATUS_ERROR,
+                   "Attempted to call getval on a group.");
+        return false;
     }
-    d->buf_bytesleft -= bytes_consumed;
+    // For a packed field where we have not reached the end, we leave the field
+    // in the decoder so we will return it again without parsing a key.
     if(d->wire_type != UPB_WIRE_TYPE_DELIMITED ||
        upb_decoder_offset(d) >= d->packed_end_offset) {
       d->field = NULL;
     }
   }
   return true;
-err:
-  return false;
 }
 
 static bool upb_decoder_skipgroup(upb_decoder *d);
@@ -420,8 +461,11 @@ bool upb_decoder_skipval(upb_decoder *d) {
     case UPB_WIRE_TYPE_VARINT: {
       uint32_t bytes_available;
       const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
-      bytes_to_skip = upb_skip_v_uint64(buf);
-      if(bytes_to_skip > 10) return false;
+      bytes_to_skip = upb_varint_length(buf);
+      if(bytes_to_skip > 10) {
+        upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Unterminated varint.");
+        return false;
+      }
       break;
     }
     case UPB_WIRE_TYPE_START_GROUP:
