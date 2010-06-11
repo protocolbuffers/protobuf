@@ -26,6 +26,11 @@
 extern "C" {
 #endif
 
+// Note!  The "eof" flags work like feof() in C; they cannot report end-of-file
+// until a read has failed due to eof.  They cannot preemptively tell you that
+// the next call will fail due to eof.  Since these are the semantics that C
+// and UNIX provide, we're stuck with them if we want to support eg. stdio.
+
 /* upb_src ********************************************************************/
 
 // TODO: decide how to handle unknown fields.
