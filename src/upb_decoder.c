@@ -165,7 +165,7 @@ static const uint8_t *upb_decoder_getbuf(upb_decoder *d, uint32_t *bytes)
   }
 }
 
-static void upb_decoder_consume(upb_decoder *d, uint32_t bytes)
+static bool upb_decoder_consume(upb_decoder *d, uint32_t bytes)
 {
   assert(bytes <= UPB_MAX_ENCODED_SIZE);
   //if()
@@ -222,6 +222,11 @@ static bool upb_decoder_readv32(upb_decoder *d, uint32_t *val)
   // We expect the high bits to be zero, except that signed 32-bit values are
   // first sign-extended to be wire-compatible with 64 bits, in which case we
   // expect the high bits to be all one.
+  //
+  // We could perform a slightly more sophisticated check by having the caller
+  // indicate whether a signed or unsigned value is being read.  We could check
+  // that the high bits are all zeros for unsigned, and properly sign-extended
+  // for signed.
   if(high != 0 && ~high != 0) {
     upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Read a 32-bit varint, but "
                "the high bits contained data we should not truncate: "
@@ -237,6 +242,7 @@ static bool upb_decoder_readf32(upb_decoder *d, uint32_t *val)
 {
   upb_strlen_t bytes_available;
   const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+  if(!buf) return false;
   if(bytes_available < 4) {
     upb_seterr(&d->src.status, UPB_STATUS_ERROR,
                "Stream ended in the middle of a 32-bit value");
@@ -244,7 +250,7 @@ static bool upb_decoder_readf32(upb_decoder *d, uint32_t *val)
   }
   memcpy(val, buf, 4);
   // TODO: byte swap if big-endian.
-  return true;
+  return upb_decoder_consume(d, 4);
 }
 
 // Gets a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).  Caller
@@ -253,6 +259,7 @@ static bool upb_decoder_readf64(upb_decoder *d, uint64_t *val)
 {
   upb_strlen_t bytes_available;
   const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+  if(!buf) return false;
   if(bytes_available < 8) {
     upb_seterr(&d->src.status, UPB_STATUS_ERROR,
                "Stream ended in the middle of a 64-bit value");
@@ -260,18 +267,25 @@ static bool upb_decoder_readf64(upb_decoder *d, uint64_t *val)
   }
   memcpy(val, buf, 8);
   // TODO: byte swap if big-endian.
-  return true;
+  return upb_decoder_consume(d, 8);
 }
 
 // Returns the length of a varint (wire type: UPB_WIRE_TYPE_VARINT), allowing
 // it to be easily skipped.  Caller promises that 10 bytes are available at
 // "buf".  The function will return a maximum of 11 bytes before quitting.
-static uint8_t upb_varint_length(const uint8_t *buf)
+static uint8_t upb_decoder_skipv64(upb_decoder *d)
 {
+  uint32_t bytes_available;
+  const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
+  if(!buf) return false;
   uint8_t i;
   for(i = 0; i < 10 && buf[i] & 0x80; i++)
     ;  // empty loop body.
-  return i + 1;
+  if(i > 10) {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Unterminated varint.");
+    return false;
+  }
+  return upb_decoder_consume(d, i);
 }
 
 
@@ -448,25 +462,8 @@ bool upb_decoder_endmsg(upb_decoder *d) {
 bool upb_decoder_skipval(upb_decoder *d) {
   upb_strlen_t bytes_to_skip;
   switch(d->wire_type) {
-    case UPB_WIRE_TYPE_64BIT:
-      bytes_to_skip = 8;
-      break;
-    case UPB_WIRE_TYPE_32BIT:
-      bytes_to_skip = 4;
-      break;
-    case UPB_WIRE_TYPE_DELIMITED:
-      // Works for both string/bytes *and* submessages.
-      bytes_to_skip = d->delimited_len;
-      break;
     case UPB_WIRE_TYPE_VARINT: {
-      uint32_t bytes_available;
-      const uint8_t *buf = upb_decoder_getbuf(d, &bytes_available);
-      bytes_to_skip = upb_varint_length(buf);
-      if(bytes_to_skip > 10) {
-        upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Unterminated varint.");
-        return false;
-      }
-      break;
+      return upb_decoder_skipv64(d);
     }
     case UPB_WIRE_TYPE_START_GROUP:
       if(!upb_decoder_startmsg(d)) return false;
@@ -478,9 +475,18 @@ bool upb_decoder_skipval(upb_decoder *d) {
       assert(false);
       upb_seterr(&d->src.status, UPB_STATUS_ERROR, "Tried to skip an end group");
       return false;
+    case UPB_WIRE_TYPE_64BIT:
+      bytes_to_skip = 8;
+      break;
+    case UPB_WIRE_TYPE_32BIT:
+      bytes_to_skip = 4;
+      break;
+    case UPB_WIRE_TYPE_DELIMITED:
+      // Works for both string/bytes *and* submessages.
+      bytes_to_skip = d->delimited_len;
+      break;
   }
-  upb_decoder_skipbytes(d, bytes_to_skip);
-  return true;
+  return upb_decoder_skipbytes(d, bytes_to_skip);
 }
 
 static bool upb_decoder_skipgroup(upb_decoder *d)
