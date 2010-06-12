@@ -136,17 +136,18 @@ static const uint8_t *upb_decoder_getbuf_full(upb_decoder *d, uint32_t *bytes)
     *bytes = d->buf_bytesleft;
     return (uint8_t*)upb_string_getrobuf(d->buf) + d->buf_offset;
   } else {
-    upb_strlen_t residual_bytes = -d->buf_offset;
+    // We need to accumulate UPB_MAX_ENCODED_SIZE bytes; len is how many we
+    // have so far.
+    upb_strlen_t len = -d->buf_offset;
     if(d->buf) {
-      memcpy(d->tmpbuf + residual_bytes, upb_string_getrobuf(d->buf),
-             UPB_MAX_ENCODED_SIZE - residual_bytes);
-      *bytes = 10;
-    } else {
-      // All we have are residual bytes; pad them with 0x80.
-      memset(d->tmpbuf + residual_bytes, 0x80,
-             UPB_MAX_ENCODED_SIZE - residual_bytes);
-      *bytes = residual_bytes;
+      upb_strlen_t to_copy =
+          UPB_MIN(UPB_MAX_ENCODED_SIZE - len, upb_string_len(d->buf));
+      memcpy(d->tmpbuf + len, upb_string_getrobuf(d->buf), to_copy);
+      len += to_copy;
     }
+    // Pad the buffer out to UPB_MAX_ENCODED_SIZE.
+    memset(d->tmpbuf + len, 0x80, UPB_MAX_ENCODED_SIZE - len);
+    *bytes = len;
     return d->tmpbuf;
   }
 }
@@ -192,14 +193,6 @@ static bool upb_decoder_skipbytes(upb_decoder *d, int32_t bytes)
     if(!upb_decoder_nextbuf(d)) return false;
   }
   return true;
-}
-
-static upb_strlen_t upb_decoder_append(uint8_t *buf, upb_string *frombuf,
-                                       upb_strlen_t len, upb_strlen_t total_len)
-{
-  upb_strlen_t copy = UPB_MIN(total_len - len, upb_string_len(frombuf));
-  //memcpy(buf, upb_string_getrobuf(frombuf) )
-  return 0;
 }
 
 
@@ -383,29 +376,38 @@ bool upb_decoder_getval(upb_decoder *d, upb_valueptr val)
     // technically a string, but can be gotten as one to perform lazy parsing.
     d->str = upb_string_tryrecycle(d->str);
     const upb_strlen_t total_len = d->delimited_len;
-    if ((int32_t)total_len <= d->buf_bytesleft) {
+    if (d->buf_offset >= 0 && (int32_t)total_len <= d->buf_bytesleft) {
       // The entire string is inside our current buffer, so we can just
       // return a substring of the buffer without copying.
       upb_string_substr(d->str, d->buf,
                         upb_string_len(d->buf) - d->buf_bytesleft,
                         total_len);
-      d->buf_bytesleft -= total_len;
+      upb_decoder_skipbytes(d, total_len);
       *val.str = d->str;
     } else {
-      //// The string spans buffers, so we must copy from the current buffer,
-      //// the next buffer (if we have one), and finally from the bytesrc.
-      //uint8_t *str = (uint8_t*)upb_string_getrwbuf(d->str, total_len);
-      //upb_strlen_t len = 0;
-      //len += upb_decoder_append(str, d->buf, len, total_len);
-      //upb_decoder_advancebuf(d);
-      //if(d->buf) len += upb_decoder_append(str, d->buf, len, total_len);
-      //upb_string_getrwbuf(d->str, len);  // Cheap resize.
-      //if(len < total_len) {
-      //  if(!upb_bytesrc_append(d->bytesrc, d->str, total_len - len)) {
-      //    upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
-      //    return false;
-      //  }
-      //}
+      // The string spans buffers, so we must copy from the current buffer,
+      // the next buffer (if we have one), and finally from the bytesrc.
+      uint8_t *str = (uint8_t*)upb_string_getrwbuf(d->str, total_len);
+      upb_strlen_t len = 0;
+      if(d->buf_offset < 0) {
+        // Residual bytes we need to copy from tmpbuf.
+        memcpy(str, d->tmpbuf, -d->buf_offset);
+        len += -d->buf_offset;
+      }
+      if(d->buf) {
+        upb_strlen_t to_copy =
+            UPB_MIN(total_len - len, upb_string_len(d->buf) - d->buf_offset);
+        memcpy(str + len, upb_string_getrobuf(d->buf) + d->buf_offset, to_copy);
+      }
+      upb_decoder_skipbytes(d, len);
+      upb_string_getrwbuf(d->str, len);  // Cheap resize.
+      if(len < total_len) {
+        if(!upb_bytesrc_append(d->bytesrc, d->str, total_len - len)) {
+          upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
+          return false;
+        }
+        d->buf_stream_offset += total_len - len;
+      }
     }
     d->field = NULL;
   } else {
