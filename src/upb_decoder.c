@@ -39,23 +39,22 @@ struct upb_decoder {
   upb_msgdef *toplevel_msgdef;
   upb_bytesrc *bytesrc;
 
-  // We keep a stack of messages we have recursed into.
-  upb_decoder_frame stack[UPB_MAX_NESTING], *top, *limit;
-
   // The buffer of input data.  NULL is equivalent to the empty string.
   upb_string *buf;
 
   // Holds residual bytes when fewer than UPB_MAX_ENCODED_SIZE bytes remain.
   uint8_t tmpbuf[UPB_MAX_ENCODED_SIZE];
 
-  // The number of bytes we have yet to consume from "buf".  This can be
-  // negative if we have skipped more bytes than are in the buffer, or if we
-  // have started to consume bytes from "nextbuf".
+  // The number of bytes we have yet to consume from "buf" or tmpbuf.  This is
+  // always >= 0 unless we were just reset or are eof.
   int32_t buf_bytesleft;
+
+  // The offset within "buf" from where we are currently reading.  This can be
+  // <0 if we are reading some residual bytes from the previous buffer, which
+  // are stored in tmpbuf and combined with bytes from "buf".
   int32_t buf_offset;
 
-  // The overall stream offset of the end of "buf".  If "buf" is NULL, it is as
-  // if "buf" was the empty string.
+  // The overall stream offset of the beginning of "buf".
   uint32_t buf_stream_offset;
 
   // Fielddef for the key we just read.
@@ -71,6 +70,9 @@ struct upb_decoder {
 
   // String we return for string values.  We try to recycle it if possible.
   upb_string *str;
+
+  // We keep a stack of messages we have recursed into.
+  upb_decoder_frame *top, *limit, stack[UPB_MAX_NESTING];
 };
 
 
@@ -116,24 +118,15 @@ static bool upb_decoder_nextbuf(upb_decoder *d)
   return true;
 }
 
-static bool upb_decoder_skipbytes(upb_decoder *d, int32_t bytes)
-{
-  // TODO.
-  return true;
-}
-
-static upb_strlen_t upb_decoder_append(uint8_t *buf, upb_string *frombuf,
-                                       upb_strlen_t len, upb_strlen_t total_len)
-{
-  upb_strlen_t copy = UPB_MIN(total_len - len, upb_string_len(frombuf));
-  //memcpy(buf, upb_string_getrobuf(frombuf) )
-  return 0;
-}
-
 static const uint8_t *upb_decoder_getbuf_full(upb_decoder *d, uint32_t *bytes)
 {
-  if(d->buf_bytesleft < UPB_MAX_ENCODED_SIZE)
+  if(d->buf_bytesleft < UPB_MAX_ENCODED_SIZE) {
+    // GCC is currently complaining about use of an uninitialized value if we
+    // don't set this now.  I think this is incorrect, but leaving this in
+    // to suppress the warning for now.
+    *bytes = 0;
     if(!upb_decoder_nextbuf(d)) return NULL;
+  }
 
   assert(d->buf_bytesleft >= UPB_MAX_ENCODED_SIZE);
 
@@ -187,7 +180,26 @@ static bool upb_decoder_consume(upb_decoder *d, uint32_t bytes)
     // We still have residual bytes we have not consumed.
     memmove(d->tmpbuf, d->tmpbuf + bytes, -d->buf_offset);
   }
+  assert(d->buf_bytesleft >= 0);
   return true;
+}
+
+static bool upb_decoder_skipbytes(upb_decoder *d, int32_t bytes)
+{
+  d->buf_offset += bytes;
+  d->buf_bytesleft -= bytes;
+  while(d->buf_bytesleft < 0) {
+    if(!upb_decoder_nextbuf(d)) return false;
+  }
+  return true;
+}
+
+static upb_strlen_t upb_decoder_append(uint8_t *buf, upb_string *frombuf,
+                                       upb_strlen_t len, upb_strlen_t total_len)
+{
+  upb_strlen_t copy = UPB_MIN(total_len - len, upb_string_len(frombuf));
+  //memcpy(buf, upb_string_getrobuf(frombuf) )
+  return 0;
 }
 
 
