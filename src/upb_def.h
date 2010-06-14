@@ -244,12 +244,15 @@ upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 // returned, otherwise only defs of the required type are returned.
 upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
 
-// Adds the definitions in the given serialized descriptor to this symtab.  All
-// types that are referenced from desc must have previously been defined (or be
-// defined in desc).  desc may not attempt to define any names that are already
-// defined in this symtab.  Caller retains ownership of desc.  status indicates
-// whether the operation was successful or not, and the error message (if any).
-void upb_symtab_add_desc(upb_symtab *s, upb_string *desc, upb_status *status);
+// "fds" is a upb_src that will yield data from the
+// google.protobuf.FileDescriptorSet message type.  upb_symtab_add_fds() adds
+// all the definitions from the given FileDescriptorSet and adds them to the
+// symtab.  status indicates whether the operation was successful or not, and
+// the error message (if any).
+//
+// TODO: should this allow redefinition?  Either is possible, but which is
+// more useful?  Maybe it should be an option.
+void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
 
 
 /* upb_def casts **************************************************************/
