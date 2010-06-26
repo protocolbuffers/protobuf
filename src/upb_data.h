@@ -26,7 +26,7 @@
 #include "upb.h"
 #include "upb_atomic.h"
 #include "upb_def.h"
-#include "upb_sink.h"
+#include "upb_srcsink.h"
 
 #ifdef __cplusplus
 extern "C" {

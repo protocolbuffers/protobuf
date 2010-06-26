@@ -19,12 +19,14 @@
 #ifndef UPB_SRCSINK_H
 #define UPB_SRCSINK_H
 
-#include "upb_def.h"
 #include "upb_srcsink_vtbl.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Forward-declare.  We can't include upb_def.h; it would be circular.
+struct _upb_fielddef;
 
 // Note!  The "eof" flags work like feof() in C; they cannot report end-of-file
 // until a read has failed due to eof.  They cannot preemptively tell you that
@@ -37,7 +39,7 @@ extern "C" {
 
 // Retrieves the fielddef for the next field in the stream.  Returns NULL on
 // error or end-of-stream.
-upb_fielddef *upb_src_getdef(upb_src *src);
+struct _upb_fielddef *upb_src_getdef(upb_src *src);
 
 // Retrieves and stores the next value in "val".  For string types the caller
 // does not own a ref to the returned type; you must ref it yourself if you
@@ -62,7 +64,7 @@ INLINE bool upb_src_eof(upb_src *src) { return src->eof; }
 /* upb_sink *******************************************************************/
 
 // Puts the given fielddef into the stream.
-bool upb_sink_putdef(upb_sink *sink, upb_fielddef *def);
+bool upb_sink_putdef(upb_sink *sink, struct _upb_fielddef *def);
 
 // Puts the given value into the stream.
 bool upb_sink_putval(upb_sink *sink, upb_value val);

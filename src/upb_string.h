@@ -70,7 +70,7 @@ INLINE upb_strlen_t upb_string_len(upb_string *str) { return str->len; }
 // upb_string_endread is called().  No other functions may be called on the
 // string during this window except upb_string_len().
 INLINE const char *upb_string_getrobuf(upb_string *str) { return str->ptr; }
-INLINE void upb_string_endread(upb_string *str) {}
+INLINE void upb_string_endread(upb_string *str) { (void)str; }
 
 // Attempts to recycle the string "str" so it may be reused and have different
 // data written to it.  The returned string is either "str" if it could be

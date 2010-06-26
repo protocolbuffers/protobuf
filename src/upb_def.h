@@ -27,6 +27,7 @@
 #define UPB_DEF_H_
 
 #include "upb_atomic.h"
+#include "upb_srcsink.h"
 #include "upb_table.h"
 
 #ifdef __cplusplus
@@ -37,7 +38,7 @@ extern "C" {
 
 // All the different kind of defs we support.  These correspond 1:1 with
 // declarations in a .proto file.
-enum upb_def_type {
+typedef enum {
   UPB_DEF_MSG = 0,
   UPB_DEF_ENUM,
   UPB_DEF_SVC,
@@ -47,7 +48,7 @@ enum upb_def_type {
 
   // For specifying that defs of any type are requsted from getdefs.
   UPB_DEF_ANY = -1
-};
+} upb_def_type;
 
 // This typedef is more space-efficient than declaring an enum var directly.
 typedef int8_t upb_def_type_t;
@@ -87,20 +88,22 @@ INLINE void upb_def_unref(upb_def *def) {
 // It is also reference-counted.
 typedef struct _upb_fielddef {
   upb_atomic_refcount_t refcount;
+  upb_string *name;
+  upb_field_number_t number;
   upb_field_type_t type;
   upb_label_t label;
-  upb_field_number_t number;
-  upb_string *name;
   upb_value default_value;
+
+  // For the case of an enum or a submessage, points to the def for that type.
+  upb_def *def;
+
+  // True if we own a ref on "def" (above).  This is true unless this edge is
+  // part of a cycle.
+  bool owned;
 
   // These are set only when this fielddef is part of a msgdef.
   uint32_t byte_offset;           // Where in a upb_msg to find the data.
   upb_field_count_t field_index;  // Indicates set bit.
-
-  // For the case of an enum or a submessage, points to the def for that type.
-  // We own a ref on this def.
-  bool owned;
-  upb_def *def;
 } upb_fielddef;
 
 // A variety of tests about the type of a field.

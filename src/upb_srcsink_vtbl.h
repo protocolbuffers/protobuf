@@ -11,7 +11,7 @@
 #ifndef UPB_SRCSINK_VTBL_H_
 #define UPB_SRCSINK_VTBL_H_
 
-#include "upb_def.h"
+#include "upb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,13 +27,13 @@ struct upb_bytesink;
 typedef struct upb_bytesink upb_bytesink;
 
 // Typedefs for function pointers to all of the virtual functions.
-typedef upb_fielddef (*upb_src_getdef_fptr)(upb_src *src);
+typedef struct _upb_fielddef (*upb_src_getdef_fptr)(upb_src *src);
 typedef bool (*upb_src_getval_fptr)(upb_src *src, upb_valueptr val);
 typedef bool (*upb_src_skipval_fptr)(upb_src *src);
 typedef bool (*upb_src_startmsg_fptr)(upb_src *src);
 typedef bool (*upb_src_endmsg_fptr)(upb_src *src);
 
-typedef bool (*upb_sink_putdef_fptr)(upb_sink *sink, upb_fielddef *def);
+typedef bool (*upb_sink_putdef_fptr)(upb_sink *sink, struct _upb_fielddef *def);
 typedef bool (*upb_sink_putval_fptr)(upb_sink *sink, upb_value val);
 typedef bool (*upb_sink_startmsg_fptr)(upb_sink *sink);
 typedef bool (*upb_sink_endmsg_fptr)(upb_sink *sink);
