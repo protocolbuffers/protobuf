@@ -114,6 +114,27 @@ static void write_const_h(upb_def *defs[], int num_entries, char *outfile_name,
     upb_string_unref(enum_val_prefix);
   }
 
+  /* Constants for field names and numbers. */
+  fprintf(stream, "/* Constants for field names and numbers. */\n\n");
+  for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
+    upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
+    if(!m) continue;
+    upb_strptr msg_name = upb_strdup(UPB_UPCAST(m)->fqname);
+    upb_strptr msg_val_prefix = upb_strdup(msg_name);
+    to_preproc(msg_val_prefix);
+    for(upb_field_count_t j = 0; j < m->num_fields; j++) {
+      upb_fielddef *f = &m->fields[j];
+      upb_strptr preproc_field_name = upb_strdup(f->name);
+      to_preproc(preproc_field_name);
+      fprintf(stream, "#define " UPB_STRFMT "_" UPB_STRFMT "_FIELDNUM %d\n",
+              UPB_STRARG(msg_val_prefix), UPB_STRARG(preproc_field_name), f->number);
+      fprintf(stream, "#define " UPB_STRFMT "_" UPB_STRFMT "_FIELDNAME \""
+              UPB_STRFMT "\"\n", UPB_STRARG(msg_val_prefix), UPB_STRARG(preproc_field_name), UPB_STRARG(f->name));
+      upb_string_unref(preproc_field_name);
+    }
+    upb_string_unref(msg_val_prefix);
+  }
+
   /* Epilogue. */
   fputs("#ifdef __cplusplus\n", stream);
   fputs("}  /* extern \"C\" */\n", stream);
