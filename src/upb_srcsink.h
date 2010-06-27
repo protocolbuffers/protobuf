@@ -61,6 +61,19 @@ bool upb_src_endmsg(upb_src *src);
 INLINE upb_status *upb_src_status(upb_src *src) { return &src->status; }
 INLINE bool upb_src_eof(upb_src *src) { return src->eof; }
 
+// The following functions are equivalent to upb_src_getval(), but take
+// pointers to specific types.  In debug mode this may check that the type
+// is compatible with the type being read.  This check will *not* be performed
+// in non-debug mode, and if you get the type wrong the behavior is undefined.
+bool upb_src_getbool(upb_src *src, bool *val);
+bool upb_src_getint32(upb_src *src, int32_t *val);
+bool upb_src_getint64(upb_src *src, int64_t *val);
+bool upb_src_getuint32(upb_src *src, uint32_t *val);
+bool upb_src_getuint64(upb_src *src, uint64_t *val);
+bool upb_src_getfloat(upb_src *src, float *val);
+bool upb_src_getdouble(upb_src *src, double *val);
+bool upb_src_getstr(upb_src *src, upb_string **val);
+
 /* upb_sink *******************************************************************/
 
 // Puts the given fielddef into the stream.

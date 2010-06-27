@@ -98,6 +98,12 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
 void upb_string_attach(upb_string *str, char *ptr, upb_strlen_t len);
 void upb_string_detach(upb_string *str);
 
+// Allows using upb_strings in printf, ie:
+//   upb_strptr str = UPB_STRLIT("Hello, World!\n");
+//   printf("String is: " UPB_STRFMT, UPB_STRARG(str)); */
+#define UPB_STRARG(str) upb_strlen(str), upb_string_getrobuf(str)
+#define UPB_STRFMT "%.*s"
+
 /* upb_string library functions ***********************************************/
 
 // Named like their <string.h> counterparts, these are all safe against buffer
