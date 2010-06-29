@@ -154,13 +154,11 @@
 
 	<!--target groups-->
 	<Target Name="Build" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource">
-		<Message Text="BEFORE" Importance="high" />
 		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_Clean;_Compile" Properties="ForceTargets=true" />
 		<CallTarget Targets="_Test" />
 	</Target>
 
 	<Target Name="BuildAll" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource">
-		<Message Text="BEFORE" Importance="high" />
 		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_Clean;_Compile" Properties="ForceTargets=true" />
 		<CallTarget Targets="_Test;_Package" />
 	</Target>
