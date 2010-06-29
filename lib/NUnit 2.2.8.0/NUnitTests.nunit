@@ -1,0 +1,11 @@
+<NUnitProject>
+  <Config name="Default" binpathtype="Auto">
+    <assembly path="nunit.framework.tests.dll" />
+    <assembly path="nunit.util.tests.dll" />
+    <assembly path="nunit.mocks.tests.dll" />
+    <assembly path="nunit.uikit.tests.dll" />
+    <assembly path="nunit-console.tests.dll" />
+    <assembly path="nunit-gui.tests.dll" />
+    <assembly path="nunit.extensions.tests.dll" />
+  </Config>
+</NUnitProject>
