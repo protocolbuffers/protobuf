@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<ProjectName>Protocol Buffers</ProjectName>
+		<BuildConfiguration>Debug</BuildConfiguration>
+		<CompileGroup>Build</CompileGroup>
+		<VSHostExcludeWildcard>$(SourceDirectory)\**\*.vshost.exe*</VSHostExcludeWildcard>
+
+		<!--Directory Paths-->
+		<ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+		<BuildTempDirectory>$(ProjectDirectory)\_tmp</BuildTempDirectory>
+		<BenchmarkTempDirectory>$(ProjectDirectory)\_benchmark</BenchmarkTempDirectory>
+		<PackageOutputDirectory>$(ProjectDirectory)\_dist</PackageOutputDirectory>
+		<SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
+		<BenchmarkProtosDirectory>$(ProjectDirectory)\benchmarks</BenchmarkProtosDirectory>
+		<ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
+		<LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
+
+		<!--File Paths-->
+		<SolutionFile>$(ProjectDirectory)\src\ProtocolBuffers.sln</SolutionFile>
+
+		<!--Tools-->
+		<ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
+		<ProtogenExePath>$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
+		<NUnitExePath>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
+	</PropertyGroup>
+
+	<Import Project="Targets\Common.targets"/>
+
+	<ItemGroup>
+		<WorkingDirectories Include="$(BuildTempDirectory)" />
+		<WorkingDirectories Include="$(BenchmarkTempDirectory)" />
+		<WorkingDirectories Include="$(PackageOutputDirectory)" />
+
+		<Solution Include="$(SolutionFile)">
+			<Configuration>$(BuildConfiguration)</Configuration>
+			<Platform>Any CPU</Platform>
+			<BuildTarget>Rebuild</BuildTarget>
+			<CompileGroup>Build</CompileGroup>
+		</Solution>
+		<Solution Include="$(SolutionFile)">
+			<Configuration>Debug</Configuration>
+			<Platform>Any CPU</Platform>
+			<BuildTarget>Rebuild</BuildTarget>
+			<CompileGroup>BuildAll</CompileGroup>
+		</Solution>
+		<Solution Include="$(SolutionFile)">
+			<Configuration>Release</Configuration>
+			<Platform>Any CPU</Platform>
+			<BuildTarget>Rebuild</BuildTarget>
+			<CompileGroup>BuildAll</CompileGroup>
+	</Solution>
+		<Solution Include="$(SolutionFile)">
+			<Configuration>Silverlight2</Configuration>
+			<Platform>Any CPU</Platform>
+			<BuildTarget>Rebuild</BuildTarget>
+			<CompileGroup>BuildAll</CompileGroup>
+		</Solution>
+		<!--<Solution Include="$(ProjectDirectory)\src\ProtocolBuffers/ProtocolBuffersCF.csproj">
+			<Configuration>$(BuildConfiguration)</Configuration>
+			<Platform>AnyCPU</Platform>
+			<BuildTarget>Rebuild</BuildTarget>
+			<CompileGroup>BuildAll</CompileGroup>
+		</Solution>-->
+
+		<Protos Include="$(ProtosDirectory)\google\protobuf\descriptor.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\csharp_options.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_csharp_options.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_custom_options.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_embed_optimize_for.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_mset.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
+		<Protos Include="$(ProtosDirectory)\tutorial\addressbook.proto" />
+
+		<GeneratedSource Include="$(BuildTempDirectory)\CSharpOptions.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\DescriptorProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestMessageSetProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestOptimizeForProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\AddressBookProtos.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestCSharpOptionsProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestCustomOptionsProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestEmbedOptimizeForProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestImportProtoFile.cs">
+			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+		</GeneratedSource>
+
+		<NUnitTests Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
+		<NUnitTests Include="$(SourceDirectory)\Protogen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
+
+		<PackageContents Include="$(ProjectDirectory)\readme.txt" />
+		<PackageContents Include="$(ProjectDirectory)\license.txt" />
+		<PackageContents Include="$(ProjectDirectory)\protos\**\*.*">
+			<TargetDirectory>\protos</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtocolBuffers\bin\Debug\Google.ProtocolBuffers.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Debug</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoGen\bin\Debug\ProtoGen.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Debug</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoMunge\bin\Debug\ProtoMunge.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Debug</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoDump\bin\Debug\ProtoDump.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Debug</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoBench\bin\Debug\ProtoBench.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Debug</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtocolBuffers\bin\Release\Google.ProtocolBuffers.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Release</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoGen\bin\Release\ProtoGen.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Release</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoMunge\bin\Release\ProtoMunge.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Release</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoDump\bin\Release\ProtoDump.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Release</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtoBench\bin\Release\ProtoBench.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Release</TargetDirectory>
+		</PackageContents>
+		<PackageContents Include="$(SourceDirectory)\ProtocolBuffers\bin\Silverlight2\Google.ProtocolBuffers.*" Exclude="$(VSHostExcludeWildcard)">
+			<TargetDirectory>\Silverlight2</TargetDirectory>
+		</PackageContents>
+		<!--<PackageContents Include="$(SourceDirectory)\ProtocolBuffers\bin\ReleaseCF\Google.ProtocolBuffers.*" Exclude="$(VSHostExcludeWildcard)">
+				<TargetDirectory>\CompactFramework35</TargetDirectory>
+			</PackageContents>-->
+	</ItemGroup>
+
+	<!--target groups-->
+	<Target Name="Build" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource">
+		<Message Text="BEFORE" Importance="high" />
+		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_Clean;_Compile" Properties="ForceTargets=true" />
+		<CallTarget Targets="_Test" />
+	</Target>
+
+	<Target Name="BuildAll" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource">
+		<Message Text="BEFORE" Importance="high" />
+		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_Clean;_Compile" Properties="ForceTargets=true" />
+		<CallTarget Targets="_Test;_Package" />
+	</Target>
+
+	<Target Name="Benchmark" DependsOnTargets="_Clean;_GenerateBenchmarkSource;_CompileBenchmarkAssembly;_PrepareBenchmarkEnvironment;_RunBenchmark" />
+
+</Project>
