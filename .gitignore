@@ -29,3 +29,7 @@ mono/TestResult.xml
 mono/.libs
 mono/*.exe
 mono/*.dll
+
+_tmp/
+_dist/
+_benchmark
