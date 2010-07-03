@@ -24,7 +24,11 @@ static void upb_deflist_init(upb_deflist *l) {
   l->len = 0;
 }
 
-static void upb_deflist_uninit(upb_deflist *l) { free(l->defs); }
+static void upb_deflist_uninit(upb_deflist *l) {
+  for(uint32_t i = 0; i < l->len; i++)
+    if(l->defs[i]) upb_def_unref(l->defs[i]);
+  free(l->defs);
+}
 
 static void upb_deflist_push(upb_deflist *l, upb_def *d) {
   if(l->len == l->size) {
@@ -97,7 +101,7 @@ static void upb_msgdef_free(upb_msgdef *m);
 static void upb_enumdef_free(upb_enumdef *e);
 static void upb_unresolveddef_free(struct _upb_unresolveddef *u);
 
-static void def_free(upb_def *def)
+static void upb_def_free(upb_def *def)
 {
   switch(def->type) {
     case UPB_DEF_MSG:
@@ -125,9 +129,9 @@ static void def_free(upb_def *def)
 // search so we can stop the search if we detect a cycles that do not involve
 // cycle_base.  We can't color the nodes as we go by writing to a member of the
 // def, because another thread could be performing the search concurrently.
-static int cycle_ref_or_unref(upb_msgdef *m, upb_msgdef *cycle_base,
-                              upb_msgdef **open_defs, int num_open_defs,
-                              bool ref) {
+static int upb_cycle_ref_or_unref(upb_msgdef *m, upb_msgdef *cycle_base,
+                                  upb_msgdef **open_defs, int num_open_defs,
+                                  bool ref) {
   bool found = false;
   for(int i = 0; i < num_open_defs; i++) {
     if(open_defs[i] == m) {
@@ -153,7 +157,7 @@ static int cycle_ref_or_unref(upb_msgdef *m, upb_msgdef *cycle_base,
       upb_def *def = f->def;
       if(upb_issubmsg(f) && def->is_cyclic) {
         upb_msgdef *sub_m = upb_downcast_msgdef(def);
-        path_count += cycle_ref_or_unref(sub_m, cycle_base, open_defs,
+        path_count += upb_cycle_ref_or_unref(sub_m, cycle_base, open_defs,
                                          num_open_defs, ref);
       }
     }
@@ -161,7 +165,7 @@ static int cycle_ref_or_unref(upb_msgdef *m, upb_msgdef *cycle_base,
       upb_atomic_add(&m->cycle_refcount, path_count);
     } else {
       if(upb_atomic_add(&m->cycle_refcount, -path_count))
-        def_free(UPB_UPCAST(m));
+        upb_def_free(UPB_UPCAST(m));
     }
     return path_count;
   }
@@ -171,15 +175,15 @@ void _upb_def_reftozero(upb_def *def) {
   if(def->is_cyclic) {
     upb_msgdef *m = upb_downcast_msgdef(def);
     upb_msgdef *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
-    cycle_ref_or_unref(m, NULL, open_defs, 0, false);
+    upb_cycle_ref_or_unref(m, NULL, open_defs, 0, false);
   } else {
-    def_free(def);
+    upb_def_free(def);
   }
 }
 
 void _upb_def_cyclic_ref(upb_def *def) {
   upb_msgdef *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
-  cycle_ref_or_unref(upb_downcast_msgdef(def), NULL, open_defs, 0, true);
+  upb_cycle_ref_or_unref(upb_downcast_msgdef(def), NULL, open_defs, 0, true);
 }
 
 static void upb_def_init(upb_def *def, upb_def_type type) {
@@ -663,7 +667,7 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
     // The findcycles() call will decrement the external refcount of the
     if(!upb_symtab_findcycles(m, 0, status)) return false;
     upb_msgdef *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
-    cycle_ref_or_unref(m, NULL, open_defs, 0, true);
+    upb_cycle_ref_or_unref(m, NULL, open_defs, 0, true);
   }
 
   return true;
@@ -728,10 +732,8 @@ bool upb_symtab_add_defs(upb_symtab *s, upb_deflist *defs, bool allow_redef,
   return true;
 
 err:
-  // We need to free all defs that are in either "defs" or "tmptab."
+  // We need to free all defs from "tmptab."
   upb_rwlock_unlock(&s->lock);
-  for (uint32_t i = 0; i < defs->len; i++)
-    if(defs->defs[i] != NULL) free(defs->defs[i]);
   for(upb_symtab_ent *e = upb_strtable_begin(&tmptab); e;
       e = upb_strtable_next(&tmptab, &e->e))
     upb_def_unref(e->def);
@@ -751,7 +753,7 @@ upb_symtab *upb_symtab_new()
   return s;
 }
 
-static void free_symtab(upb_strtable *t)
+static void upb_free_symtab(upb_strtable *t)
 {
   upb_symtab_ent *e;
   for(e = upb_strtable_begin(t); e; e = upb_strtable_next(t, &e->e))
@@ -761,8 +763,8 @@ static void free_symtab(upb_strtable *t)
 
 void _upb_symtab_free(upb_symtab *s)
 {
-  free_symtab(&s->symtab);
-  free_symtab(&s->psymtab);
+  upb_free_symtab(&s->symtab);
+  upb_free_symtab(&s->psymtab);
   upb_rwlock_destroy(&s->lock);
   free(s);
 }
@@ -815,18 +817,29 @@ upb_def *upb_symtab_resolve(upb_symtab *s, upb_string *base, upb_string *symbol)
   return ret;
 }
 
-#if 0
 void upb_symtab_addfds(upb_symtab *s, upb_src *src, upb_status *status)
 {
-}
-
-void upb_symtab_add_desc(upb_symtab *s, upb_string *desc, upb_status *status)
-{
-  upb_msg *fds = upb_msg_new(s->fds_msgdef);
-  upb_msg_decodestr(fds, s->fds_msgdef, desc, status);
-  if(!upb_ok(status)) return;
-  upb_symtab_addfds(s, (google_protobuf_FileDescriptorSet*)fds, status);
-  upb_msg_unref(fds, s->fds_msgdef);
+  upb_deflist defs;
+  upb_deflist_init(&defs);
+  upb_fielddef *f;
+  while((f = upb_src_getdef(src)) != NULL) {
+    switch(f->number) {
+      case GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE_FIELDNUM:
+        CHECKSRC(upb_src_startmsg(src));
+        CHECK(upb_addfd(src, &defs, status));
+        CHECKSRC(upb_src_endmsg(src));
+        break;
+      default:
+        CHECKSRC(upb_src_skipval(src));
+    }
+  }
+  CHECKSRC(upb_src_eof(src));
+  CHECK(upb_symtab_add_defs(s, &defs, false, status));
+  upb_deflist_uninit(&defs);
   return;
+
+src_err:
+  upb_copyerr(status, upb_src_status(src));
+err:
+  upb_deflist_uninit(&defs);
 }
-#endif
