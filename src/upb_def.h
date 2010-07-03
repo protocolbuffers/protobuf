@@ -248,7 +248,7 @@ upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
 
 // "fds" is a upb_src that will yield data from the
-// google.protobuf.FileDescriptorSet message type.  upb_symtab_add_fds() adds
+// google.protobuf.FileDescriptorSet message type.  upb_symtab_addfds() adds
 // all the definitions from the given FileDescriptorSet and adds them to the
 // symtab.  status indicates whether the operation was successful or not, and
 // the error message (if any).

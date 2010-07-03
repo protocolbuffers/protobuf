@@ -8,8 +8,6 @@
 #include "descriptor_const.h"
 #include "upb_def.h"
 
-/* Rounds p up to the next multiple of t. */
-#define ALIGN_UP(p, t) ((p) % (t) == 0 ? (p) : (p) + ((t) - ((p) % (t))))
 #define CHECKSRC(x) if(!(x)) goto src_err
 #define CHECK(x) if(!(x)) goto err
 
@@ -111,9 +109,6 @@ static void def_free(upb_def *def)
     case UPB_DEF_SVC:
       assert(false);  /* Unimplemented. */
       break;
-    case UPB_DEF_EXT:
-      assert(false);  /* Unimplemented. */
-      break;
     case UPB_DEF_UNRESOLVED:
       upb_unresolveddef_free(upb_downcast_unresolveddef(def));
       break;
@@ -202,14 +197,20 @@ static void upb_def_uninit(upb_def *def) {
 
 /* upb_unresolveddef **********************************************************/
 
+// Unresolved defs are used as temporary placeholders for a def whose name has
+// not been resolved yet.  During the name resolution step, all unresolved defs
+// are replaced with pointers to the actual def being referenced.
 typedef struct _upb_unresolveddef {
   upb_def base;
+
+  // The target type name.  This may or may not be fully qualified.
+  upb_string *name;
 } upb_unresolveddef;
 
 static upb_unresolveddef *upb_unresolveddef_new(upb_string *str) {
   upb_unresolveddef *def = malloc(sizeof(*def));
   upb_def_init(&def->base, UPB_DEF_UNRESOLVED);
-  def->base.fqname = upb_string_getref(str);
+  def->name = upb_string_getref(str);
   return def;
 }
 
@@ -615,6 +616,59 @@ static bool upb_symtab_findcycles(upb_msgdef *m, int depth, upb_status *status)
   }
 }
 
+// Given a table of pending defs "tmptab" and a table of existing defs "symtab",
+// resolves all of the unresolved refs for the defs in tmptab.
+bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
+                     upb_status *status)
+{
+  upb_symtab_ent *e;
+  for(e = upb_strtable_begin(tmptab); e; e = upb_strtable_next(tmptab, &e->e)) {
+    upb_msgdef *m = upb_dyncast_msgdef(e->def);
+    if(!m) continue;
+    // Type names are resolved relative to the message in which they appear.
+    upb_string *base = e->e.key;
+
+    for(upb_field_count_t i = 0; i < m->num_fields; i++) {
+      upb_fielddef *f = &m->fields[i];
+      if(!upb_hasdef(f)) continue;  // No resolving necessary.
+      upb_string *name = upb_downcast_unresolveddef(f->def)->name;
+
+      // Resolve from either the tmptab (pending adds) or symtab (existing
+      // defs).  If both exist, prefer the pending add, because it will be
+      // overwriting the existing def.
+      upb_symtab_ent *found;
+      if(!(found = upb_resolve(tmptab, base, name)) &&
+         !(found = upb_resolve(symtab, base, name))) {
+        upb_seterr(status, UPB_STATUS_ERROR,
+                   "could not resolve symbol '" UPB_STRFMT "'"
+                   " in context '" UPB_STRFMT "'",
+                   UPB_STRARG(name), UPB_STRARG(base));
+        return false;
+      }
+
+      // Check the type of the found def.
+      upb_field_type_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
+      if(found->def->type != expected) {
+        upb_seterr(status, UPB_STATUS_ERROR, "Unexpected type");
+        return false;
+      }
+      upb_msgdef_resolve(m, f, found->def);
+    }
+  }
+
+  // Deal with type cycles.
+  for(e = upb_strtable_begin(tmptab); e; e = upb_strtable_next(tmptab, &e->e)) {
+    upb_msgdef *m = upb_dyncast_msgdef(e->def);
+    if(!m) continue;
+    // The findcycles() call will decrement the external refcount of the
+    if(!upb_symtab_findcycles(m, 0, status)) return false;
+    upb_msgdef *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
+    cycle_ref_or_unref(m, NULL, open_defs, 0, true);
+  }
+
+  return true;
+}
+
 // Given a list of defs, a list of extensions (in the future), and a flag
 // indicating whether the new defs can overwrite existing defs in the symtab,
 // attempts to add the given defs to the symtab.  The whole operation either
@@ -622,55 +676,67 @@ static bool upb_symtab_findcycles(upb_msgdef *m, int depth, upb_status *status)
 bool upb_symtab_add_defs(upb_symtab *s, upb_deflist *defs, bool allow_redef,
                          upb_status *status)
 {
-  (void)s;
-  (void)defs;
-  (void)allow_redef;
-  (void)status;
-  return true;
-#if 0
-  // Build a table, for duplicate detection and name resolution.
+  upb_rwlock_wrlock(&s->lock);
 
-  {  // Write lock scope.
-    // Attempt to resolve all references.
-    upb_symtab_ent *e;
-    for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-      upb_msgdef *m = upb_dyncast_msgdef(e->def);
-      if(!m) continue;
-      upb_string *base = e->e.key;
-      for(upb_field_count_t i = 0; i < m->num_fields; i++) {
-        upb_fielddef *f = &m->fields[i];
-        if(!upb_hasdef(f)) continue;  // No resolving necessary.
-        upb_string *name = upb_downcast_unresolveddef(f->def)->name;
-        upb_symtab_ent *found = resolve(existingdefs, base, name);
-        if(!found) found = resolve(addto, base, name);
-        upb_field_type_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
-        if(!found) {
-          upb_seterr(status, UPB_STATUS_ERROR,
-                     "could not resolve symbol '" UPB_STRFMT "'"
-                     " in context '" UPB_STRFMT "'",
-                     UPB_STRARG(name), UPB_STRARG(base));
-          return;
-        } else if(found->def->type != expected) {
-          upb_seterr(status, UPB_STATUS_ERROR, "Unexpected type");
-          return;
-        }
-        upb_msgdef_resolve(m, f, found->def);
-      }
+  // Build a table of the defs we mean to add, for duplicate detection and name
+  // resolution.
+  upb_strtable tmptab;
+  upb_strtable_init(&tmptab, defs->len, sizeof(upb_symtab_ent));
+  for (uint32_t i = 0; i < defs->len; i++) {
+    upb_def *def = defs->defs[i];
+    upb_symtab_ent e = {{def->fqname, 0}, def};
+
+    // Redefinition is never allowed within a single FileDescriptorSet.
+    // Additionally, we only allow overwriting of an existing definition if
+    // allow_redef is set.
+    if (upb_strtable_lookup(&tmptab, def->fqname) ||
+        (!allow_redef && upb_strtable_lookup(&s->symtab, def->fqname))) {
+      upb_seterr(status, UPB_STATUS_ERROR, "Redefinition of symbol " UPB_STRFMT,
+                 UPB_STRARG(def->fqname));
+      goto err;
     }
 
-    // Deal with type cycles.
-    for(e = upb_strtable_begin(addto); e; e = upb_strtable_next(addto, &e->e)) {
-      upb_msgdef *m = upb_dyncast_msgdef(e->def);
-      if(!m) continue;
-      // The findcycles() call will decrement the external refcount of the
-      upb_symtab_findcycles(m, 0, status);
-      upb_msgdef *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
-      cycle_ref_or_unref(m, NULL, open_defs, 0, true);
-    }
-
-    // Add all defs to the symtab.
+    // Pass ownership from the deflist to the strtable.
+    upb_strtable_insert(&tmptab, &e.e);
+    defs->defs[i] = NULL;
   }
-#endif
+
+  // TODO: process the list of extensions by modifying entries from
+  // tmptab in-place (copying them from the symtab first if necessary).
+
+  CHECK(upb_resolverefs(&tmptab, &s->symtab, status));
+
+  // The defs in tmptab have been vetted, and can be added to the symtab
+  // without causing errors.  Now add all tmptab defs to the symtab,
+  // overwriting (and releasing a ref on) any existing defs with the same
+  // names.  Ownership for tmptab defs passes from the tmptab to the symtab.
+  upb_symtab_ent *tmptab_e;
+  for(tmptab_e = upb_strtable_begin(&tmptab); tmptab_e;
+      tmptab_e = upb_strtable_next(&tmptab, &tmptab_e->e)) {
+    upb_symtab_ent *symtab_e =
+        upb_strtable_lookup(&s->symtab, tmptab_e->def->fqname);
+    if(symtab_e) {
+      upb_def_unref(symtab_e->def);
+      symtab_e->def = tmptab_e->def;
+    } else {
+      upb_strtable_insert(&s->symtab, &tmptab_e->e);
+    }
+  }
+
+  upb_rwlock_unlock(&s->lock);
+  upb_strtable_free(&tmptab);
+  return true;
+
+err:
+  // We need to free all defs that are in either "defs" or "tmptab."
+  upb_rwlock_unlock(&s->lock);
+  for (uint32_t i = 0; i < defs->len; i++)
+    if(defs->defs[i] != NULL) free(defs->defs[i]);
+  for(upb_symtab_ent *e = upb_strtable_begin(&tmptab); e;
+      e = upb_strtable_next(&tmptab, &e->e))
+    upb_def_unref(e->def);
+  upb_strtable_free(&tmptab);
+  return false;
 }
 
 

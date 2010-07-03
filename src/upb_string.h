@@ -101,7 +101,7 @@ void upb_string_detach(upb_string *str);
 // Allows using upb_strings in printf, ie:
 //   upb_strptr str = UPB_STRLIT("Hello, World!\n");
 //   printf("String is: " UPB_STRFMT, UPB_STRARG(str)); */
-#define UPB_STRARG(str) upb_strlen(str), upb_string_getrobuf(str)
+#define UPB_STRARG(str) upb_string_len(str), upb_string_getrobuf(str)
 #define UPB_STRFMT "%.*s"
 
 /* upb_string library functions ***********************************************/
