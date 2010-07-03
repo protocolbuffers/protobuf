@@ -533,44 +533,37 @@ typedef struct {
 // Given a symbol and the base symbol inside which it is defined, find the
 // symbol's definition in t.
 static upb_symtab_ent *upb_resolve(upb_strtable *t,
-                                   upb_string *base,
-                                   upb_string *sym)
+                                   upb_string *base, upb_string *sym)
 {
-#if 0
-  if(upb_strlen(base) + upb_string_len(sym) + 1 >= UPB_SYMBOL_MAXLEN ||
-     upb_strlen(symbol) == 0) return NULL;
+  if(upb_string_len(base) + upb_string_len(sym) + 1 >= UPB_SYMBOL_MAXLEN ||
+     upb_string_len(sym) == 0) return NULL;
 
-  if(upb_string_getrobuf(symbol)[0] == UPB_SYMBOL_SEPARATOR) {
+  if(upb_string_getrobuf(sym)[0] == UPB_SYMBOL_SEPARATOR) {
     // Symbols starting with '.' are absolute, so we do a single lookup.
     // Slice to omit the leading '.'
-    upb_string *sym_str = upb_strslice(symbol, 1, INT_MAX);
-    symtab_ent *e = upb_strtable_lookup(t, sym_str);
+    upb_string *sym_str = upb_strslice(sym, 1, upb_string_len(sym) - 1);
+    upb_symtab_ent *e = upb_strtable_lookup(t, sym_str);
     upb_string_unref(sym_str);
     return e;
   } else {
     // Remove components from base until we find an entry or run out.
     upb_string *sym_str = upb_string_new();
-    int baselen = upb_strlen(base);
+    int baselen = upb_string_len(base);
     while(1) {
-      // sym_str = base[0...base_len] + UPB_SYMBOL_SEPARATOR + symbol
-      upb_strlen_t len = baselen + upb_strlen(symbol) + 1;
+      // sym_str = base[0...base_len] + UPB_SYMBOL_SEPARATOR + sym
+      upb_strlen_t len = baselen + upb_string_len(sym) + 1;
       char *buf = upb_string_getrwbuf(sym_str, len);
       memcpy(buf, upb_string_getrobuf(base), baselen);
       buf[baselen] = UPB_SYMBOL_SEPARATOR;
-      memcpy(buf + baselen + 1, upb_string_getrobuf(symbol), upb_strlen(symbol));
+      memcpy(buf + baselen + 1, upb_string_getrobuf(sym), upb_string_len(sym));
 
-      symtab_ent *e = upb_strtable_lookup(t, sym_str);
+      upb_symtab_ent *e = upb_strtable_lookup(t, sym_str);
       if (e) return e;
       else if(baselen == 0) return NULL;  // No more scopes to try.
 
       baselen = my_memrchr(buf, UPB_SYMBOL_SEPARATOR, baselen);
     }
   }
-#endif
-  (void)t;
-  (void)base;
-  (void)sym;
-  return NULL;
 }
 
 // Performs a pass over the type graph to find all cycles that include m.
