@@ -52,11 +52,14 @@ static upb_string *upb_join(upb_string *base, upb_string *name) {
   return joined;
 }
 
-
+// Qualify the defname for all defs starting with offset "start" with "str".
 static void upb_deflist_qualify(upb_deflist *l, upb_string *str, int32_t start) {
-  (void)l;
-  (void)str;
-  (void)start;
+  for(uint32_t i = start; i < l->len; i++) {
+    upb_def *def = l->defs[i];
+    upb_string *name = def->fqname;
+    def->fqname = upb_join(str, name);
+    upb_string_unref(name);
+  }
 }
 
 /* upb_def ********************************************************************/
