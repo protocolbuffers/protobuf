@@ -57,19 +57,19 @@ void upb_strtable_free(upb_strtable *t) {
   upb_table_free(&t->t);
 }
 
-static uint32_t strtable_bucket(upb_strtable *t, upb_strptr key)
+static uint32_t strtable_bucket(upb_strtable *t, upb_string *key)
 {
-  uint32_t hash = MurmurHash2(upb_string_getrobuf(key), upb_strlen(key), 0);
+  uint32_t hash = MurmurHash2(upb_string_getrobuf(key), upb_string_len(key), 0);
   return (hash & (upb_strtable_size(t)-1)) + 1;
 }
 
-void *upb_strtable_lookup(upb_strtable *t, upb_strptr key)
+void *upb_strtable_lookup(upb_strtable *t, upb_string *key)
 {
   uint32_t bucket = strtable_bucket(t, key);
   upb_strtable_entry *e;
   do {
     e = strent(t, bucket);
-    if(!upb_string_isnull(e->key) && upb_streql(e->key, key)) return e;
+    if(e->key && upb_streql(e->key, key)) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;
 }
@@ -149,7 +149,7 @@ static uint32_t empty_strbucket(upb_strtable *table)
   /* TODO: does it matter that this is biased towards the front of the table? */
   for(uint32_t i = 1; i <= upb_strtable_size(table); i++) {
     upb_strtable_entry *e = strent(table, i);
-    if(upb_string_isnull(e->key)) return i;
+    if(!e->key) return i;
   }
   assert(false);
   return 0;
@@ -158,11 +158,11 @@ static uint32_t empty_strbucket(upb_strtable *table)
 static void strinsert(upb_strtable *t, upb_strtable_entry *e)
 {
   assert(upb_strtable_lookup(t, e->key) == NULL);
-  e->key = upb_string_getref(e->key, UPB_REF_FROZEN);
+  e->key = upb_string_getref(e->key);
   t->t.count++;
   uint32_t bucket = strtable_bucket(t, e->key);
   upb_strtable_entry *table_e = strent(t, bucket);
-  if(!upb_string_isnull(table_e->key)) {  /* Collision. */
+  if(table_e->key) {  /* Collision. */
     if(bucket == strtable_bucket(t, table_e->key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
        * place our new element and append it to this key's chain. */

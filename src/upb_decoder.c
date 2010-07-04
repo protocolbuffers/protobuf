@@ -316,9 +316,6 @@ bool upb_decoder_skipval(upb_decoder *d);
 
 upb_fielddef *upb_decoder_getdef(upb_decoder *d)
 {
-  uint32_t key;
-  upb_wire_type_t wire_type;
-
   // Detect end-of-submessage.
   if(upb_decoder_offset(d) >= d->top->end_offset) {
     d->src.eof = true;
@@ -328,9 +325,11 @@ upb_fielddef *upb_decoder_getdef(upb_decoder *d)
   // Handles the packed field case.
   if(d->field) return d->field;
 
+  uint32_t key = 0;
 again:
   if(!upb_decoder_readv32(d, &key)) return NULL;
-  wire_type = key & 0x7;
+  upb_wire_type_t wire_type = key & 0x7;
+  int32_t field_number = key >> 3;
 
   if(wire_type == UPB_WIRE_TYPE_DELIMITED) {
     // For delimited wire values we parse the length now, since we need it in
@@ -348,7 +347,7 @@ again:
   }
 
   // Look up field by tag number.
-  upb_fielddef *f = upb_msg_itof(d->top->msgdef, key >> 3);
+  upb_fielddef *f = upb_msg_itof(d->top->msgdef, field_number);
 
   if (!f) {
     // Unknown field.  If/when the upb_src interface supports reporting
@@ -557,6 +556,8 @@ upb_decoder *upb_decoder_new(upb_msgdef *msgdef)
 
 void upb_decoder_free(upb_decoder *d)
 {
+  upb_string_unref(d->str);
+  if(d->buf) upb_string_unref(d->buf);
   free(d);
 }
 

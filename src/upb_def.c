@@ -839,3 +839,157 @@ src_err:
 err:
   upb_deflist_uninit(&defs);
 }
+
+/* upb_baredecoder ************************************************************/
+
+// upb_baredecoder is a upb_src that can parse a subset of the protocol buffer
+// binary format.  It is only used for bootstrapping.  It can parse without
+// having a upb_msgdef, which is why it is useful for bootstrapping the first
+// msgdef.  On the downside, it does not support:
+//
+// * having its input span multiple upb_strings.
+// * reading any field of the returned upb_fielddef's except f->number.
+// * keeping a pointer to the upb_fielddef* and reading it later (the same
+//   upb_fielddef is reused over and over).
+// * detecting errors in the input (we trust that our input is known-good).
+//
+// It also does not support any of the follow protobuf features:
+// * packed fields.
+// * groups.
+// * zig-zag-encoded types like sint32 and sint64.
+//
+// If descriptor.proto ever changed to use any of these features, this decoder
+// would need to be extended to support them.
+
+typedef struct {
+  upb_src src;
+  upb_string *input;
+  upb_strlen_t offset;
+  upb_fielddef field;
+  upb_wire_type_t wire_type;
+  upb_strlen_t delimited_len;
+  upb_strlen_t stack[UPB_MAX_NESTING], *top;
+  upb_string *str;
+} upb_baredecoder;
+
+static uint64_t upb_baredecoder_readv64(upb_baredecoder *d)
+{
+  const uint8_t *start = (uint8_t*)upb_string_getrobuf(d->input) + d->offset;
+  const uint8_t *buf = start;
+  uint8_t last = 0x80;
+  uint64_t val = 0;
+  for(int bitpos = 0; (last & 0x80); buf++, bitpos += 7)
+    val |= ((uint64_t)((last = *buf) & 0x7F)) << bitpos;
+  d->offset += buf - start;
+  return val;
+}
+
+static uint32_t upb_baredecoder_readv32(upb_baredecoder *d)
+{
+  return (uint32_t)upb_baredecoder_readv64(d); // Truncate.
+}
+
+static uint64_t upb_baredecoder_readf64(upb_baredecoder *d)
+{
+  uint64_t val;
+  memcpy(&val, upb_string_getrobuf(d->input) + d->offset, 8);
+  d->offset += 8;
+  return val;
+}
+
+static uint32_t upb_baredecoder_readf32(upb_baredecoder *d)
+{
+  uint32_t val;
+  memcpy(&val, upb_string_getrobuf(d->input) + d->offset, 4);
+  d->offset += 4;
+  return val;
+}
+
+static upb_fielddef *upb_baredecoder_getdef(upb_baredecoder *d)
+{
+  // Detect end-of-submessage.
+  if(d->offset >= *d->top) {
+    d->src.eof = true;
+    return NULL;
+  }
+
+  uint32_t key;
+  key = upb_baredecoder_readv32(d);
+  d->wire_type = key & 0x7;
+  d->field.number = key >> 3;
+  if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
+    // For delimited wire values we parse the length now, since we need it in
+    // all cases.
+    d->delimited_len = upb_baredecoder_readv32(d);
+  }
+  return &d->field;
+}
+
+static bool upb_baredecoder_getval(upb_baredecoder *d, upb_valueptr val)
+{
+  if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
+    d->str = upb_string_tryrecycle(d->str);
+    upb_string_substr(d->str, d->input, d->offset, d->delimited_len);
+  } else {
+    switch(d->wire_type) {
+      case UPB_WIRE_TYPE_VARINT:
+        *val.uint64 = upb_baredecoder_readv64(d);
+        break;
+      case UPB_WIRE_TYPE_32BIT_VARINT:
+        *val.uint32 = upb_baredecoder_readv32(d);
+        break;
+      case UPB_WIRE_TYPE_64BIT:
+        *val.uint64 = upb_baredecoder_readf64(d);
+        break;
+      case UPB_WIRE_TYPE_32BIT:
+        *val.uint32 = upb_baredecoder_readf32(d);
+        break;
+      default:
+        assert(false);
+    }
+  }
+  return true;
+}
+
+static bool upb_baredecoder_skipval(upb_baredecoder *d)
+{
+  upb_value val;
+  return upb_baredecoder_getval(d, upb_value_addrof(&val));
+}
+
+static bool upb_baredecoder_startmsg(upb_baredecoder *d)
+{
+  *(d->top++) = d->offset + d->delimited_len;
+  return true;
+}
+
+static bool upb_baredecoder_endmsg(upb_baredecoder *d)
+{
+  d->offset = *(--d->top);
+  return true;
+}
+
+static upb_src_vtable upb_baredecoder_src_vtbl = {
+  (upb_src_getdef_fptr)&upb_baredecoder_getdef,
+  (upb_src_getval_fptr)&upb_baredecoder_getval,
+  (upb_src_skipval_fptr)&upb_baredecoder_skipval,
+  (upb_src_startmsg_fptr)&upb_baredecoder_startmsg,
+  (upb_src_endmsg_fptr)&upb_baredecoder_endmsg,
+};
+
+upb_baredecoder *upb_baredecoder_new(upb_string *str)
+{
+  upb_baredecoder *d = malloc(sizeof(*d));
+  d->input = upb_string_getref(str);
+  d->str = upb_string_new();
+  d->top = &d->stack[0];
+  upb_src_init(&d->src, &upb_baredecoder_src_vtbl);
+  return d;
+}
+
+void upb_baredecoder_free(upb_baredecoder *d)
+{
+  upb_string_unref(d->input);
+  upb_string_unref(d->str);
+  free(d);
+}
