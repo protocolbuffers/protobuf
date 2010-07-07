@@ -15,8 +15,8 @@
 extern "C" {
 #endif
 
-unsigned char descriptor_pb[]
-unsigned int descriptor_pb_len;
+extern unsigned char descriptor_pb[];
+extern unsigned int descriptor_pb_len;
 
 #ifdef __cplusplus
 }  /* extern "C" */

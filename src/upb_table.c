@@ -232,7 +232,7 @@ void *upb_strtable_next(upb_strtable *t, upb_strtable_entry *cur) {
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;
-  } while(upb_string_isnull(cur->key));
+  } while(cur->key == NULL);
   return cur;
 }
 

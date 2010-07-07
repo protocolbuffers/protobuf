@@ -257,6 +257,11 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
 // more useful?  Maybe it should be an option.
 void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
 
+// Returns a symtab that defines google.protobuf.DescriptorProto and all other
+// types that are defined in descriptor.proto.  This allows you to load other
+// proto types.  The caller owns a ref on the returned symtab.
+upb_symtab *upb_get_descriptor_symtab();
+
 
 /* upb_def casts **************************************************************/
 

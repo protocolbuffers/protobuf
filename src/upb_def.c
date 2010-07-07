@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include "descriptor_const.h"
+#include "descriptor.h"
 #include "upb_def.h"
 
 #define CHECKSRC(x) if(!(x)) goto src_err
@@ -840,6 +841,7 @@ err:
   upb_deflist_uninit(&defs);
 }
 
+
 /* upb_baredecoder ************************************************************/
 
 // upb_baredecoder is a upb_src that can parse a subset of the protocol buffer
@@ -977,7 +979,7 @@ static upb_src_vtable upb_baredecoder_src_vtbl = {
   (upb_src_endmsg_fptr)&upb_baredecoder_endmsg,
 };
 
-upb_baredecoder *upb_baredecoder_new(upb_string *str)
+static upb_baredecoder *upb_baredecoder_new(upb_string *str)
 {
   upb_baredecoder *d = malloc(sizeof(*d));
   d->input = upb_string_getref(str);
@@ -987,9 +989,30 @@ upb_baredecoder *upb_baredecoder_new(upb_string *str)
   return d;
 }
 
-void upb_baredecoder_free(upb_baredecoder *d)
+static void upb_baredecoder_free(upb_baredecoder *d)
 {
   upb_string_unref(d->input);
   upb_string_unref(d->str);
   free(d);
+}
+
+static upb_src *upb_baredecoder_src(upb_baredecoder *d)
+{
+  return &d->src;
+}
+
+upb_symtab *upb_get_descriptor_symtab()
+{
+  // TODO: implement sharing of symtabs, so that successive calls to this
+  // function will return the same symtab.
+  upb_symtab *symtab = upb_symtab_new();
+  // TODO: allow upb_strings to be static or on the stack.
+  upb_string *descriptor = upb_strduplen(descriptor_pb, descriptor_pb_len);
+  upb_baredecoder *decoder = upb_baredecoder_new(descriptor);
+  upb_status status;
+  upb_symtab_addfds(symtab, upb_baredecoder_src(decoder), &status);
+  assert(upb_ok(&status));
+  upb_baredecoder_free(decoder);
+  upb_string_unref(descriptor);
+  return symtab;
 }

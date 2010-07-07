@@ -18,25 +18,25 @@
      #ctype},
 
 upb_type_info upb_types[] = {
-  {0, 0, 0, ""} // There is no type 0.
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       double,    1),    // DOUBLE
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       float,     1),    // FLOAT
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   1),    // INT64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint64_t,  1),    // UINT64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   1),    // INT32
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       uint64_t,  1),    // FIXED64
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       uint32_t,  1),    // FIXED32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      bool,      1),    // BOOL
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1),    // STRING
-  TYPE_INFO(UPB_WIRE_TYPE_START_GROUP, void*,     0),    // GROUP
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1),    // MESSAGE
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1),    // BYTES
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1),    // UINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1),    // ENUM
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       int32_t,   1),    // SFIXED32
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   1),    // SFIXED64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   1),    // SINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   1),    // SINT64
+  {0, 0, 0, 0, ""}, // There is no type 0.
+  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       double,    1)    // DOUBLE
+  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       float,     1)    // FLOAT
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   1)    // INT64
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint64_t,  1)    // UINT64
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   1)    // INT32
+  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       uint64_t,  1)    // FIXED64
+  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       uint32_t,  1)    // FIXED32
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      bool,      1)    // BOOL
+  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1)    // STRING
+  TYPE_INFO(UPB_WIRE_TYPE_START_GROUP, void*,     0)    // GROUP
+  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1)    // MESSAGE
+  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1)    // BYTES
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1)    // UINT32
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1)    // ENUM
+  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       int32_t,   1)    // SFIXED32
+  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   1)    // SFIXED64
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   1)    // SINT32
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   1)    // SINT64
 };
 
 void upb_seterr(upb_status *status, enum upb_status_code code,

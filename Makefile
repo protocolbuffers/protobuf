@@ -34,26 +34,29 @@ LDLIBS=-lpthread
 LIBUPB=src/libupb.a
 LIBUPB_PIC=src/libupb_pic.a
 LIBUPB_SHARED=src/libupb.so
-ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC) tools/upbc
+ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC)
 all: $(ALL)
 clean:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
 	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo)
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf tests/tests tests/t.* tests/test_table
-	rm -rf descriptor/descriptor.proto.pb
+	rm -rf descriptor/descriptor.pb
 	rm -rf tools/upbc deps
 	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
-SRC=src/upb.c src/upb_decoder.c src/upb_table.c src/upb_def.c src/upb_data.c \
-    src/upb_encoder.c descriptor/descriptor.c src/upb_text.c
+SRC=src/upb.c src/upb_decoder.c src/upb_table.c src/upb_def.c \
+    descriptor/descriptor.c
+# Parts of core that are yet to be converted.
+OTHERSRC=src/upb_encoder.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
 src/upb_def.lo: src/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+
 
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))
 SHAREDOBJ=$(patsubst %.c,%.lo,$(SRC))
@@ -67,12 +70,12 @@ $(LIBUPB_SHARED): $(SHAREDOBJ)
 	$(CC) -shared -o $(LIBUPB_SHARED) $(SHAREDOBJ)
 
 # Regenerating the auto-generated files in descriptor/.
-descriptor/descriptor.proto.pb: descriptor/descriptor.proto
+descriptor/descriptor.pb: descriptor/descriptor.proto
 	# TODO: replace with upbc
-	protoc descriptor/descriptor.proto -odescriptor/descriptor.proto.pb
+	protoc descriptor/descriptor.proto -odescriptor/descriptor.pb
 
-descriptorgen: descriptor/descriptor.proto.pb tools/upbc
-	./tools/upbc -i upb_file_descriptor_set -o descriptor/descriptor descriptor/descriptor.proto.pb
+descriptorgen: descriptor/descriptor.pb
+	cd descriptor && xxd -i descriptor.pb > descriptor.c
 
 # Language extensions.
 python: $(LIBUPB_PIC)
