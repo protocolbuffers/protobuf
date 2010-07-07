@@ -8,7 +8,7 @@
 
 	<Target Name="_Compile">
 		<MSBuild Projects="%(Solution.Identity)" Properties="Configuration=%(Solution.Configuration);Platform=%(Solution.Platform)"
-				 Targets="%(Solution.BuildTarget)" BuildInParallel="true" Condition="%(Solution.CompileGroup) == $(CompileGroup)" />
+				 Targets="%(Solution.BuildTarget)" BuildInParallel="true" Condition="%(Solution.CompileGroup) == $(CompileGroup)" ToolsVersion="4.0" />
 	</Target>
 
 	<Target Name="_EnsureEnvironment">
@@ -16,7 +16,7 @@
 		<Error Text="Tool &quot;Protogen&quot; could not be found at path $(ProtogenExePath)" Condition="!Exists($(ProtogenExePath))" />
 	</Target>
 
-	<Target Name="_GenerateSource">
+	<Target Name="_GenerateSource" DependsOnTargets="_Clean;_Compile;_Compile">
 		<PropertyGroup>
 			<ProtosList>@(Protos)</ProtosList>
 			<Args>$(ProtosList.Replace(`;`,` `))</Args>
@@ -26,20 +26,25 @@
 		<Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
-	<Target Name="_CopyGeneratedSource">
+	<Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">
 		<Copy SourceFiles="%(GeneratedSource.Identity)" DestinationFiles="%(GeneratedSource.TargetDirectory)\%(GeneratedSource.Filename)%(GeneratedSource.Extension)" />
 	</Target>
 
-	<Target Name="_Test">
+	<Target Name="_CompileGeneratedSource" DependsOnTargets="_CopyGeneratedSource">
+		<MSBuild Projects="%(Solution.Identity)" Properties="Configuration=%(Solution.Configuration);Platform=%(Solution.Platform)"
+				 Targets="%(Solution.BuildTarget)" BuildInParallel="true" Condition="%(Solution.CompileGroup) == $(CompileGroup)" />
+	</Target>
+
+	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">		
 		<Exec Command="&quot;$(NUnitExePath)&quot; %(NUnitTests.Identity) /xml=%(NUnitTests.Filename)%(NUnitTests.Extension).xml" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
-	<Target Name="_Package">
+	<Target Name="_Package" DependsOnTargets="_CopyGeneratedSource">
 		<Copy SourceFiles="@(PackageContents)" DestinationFolder="$(PackageOutputDirectory)\%(PackageContents.TargetDirectory)\%(PackageContents.RecursiveDir)" />
 	</Target>
 
 	<!--
-		BENCHMARK - this needs optimising but it is 1 AM and I need to be up in 5 hours
+		BENCHMARK - this needs optimising
 	-->
 	<Target Name="_GenerateBenchmarkSource">
 		<PropertyGroup>

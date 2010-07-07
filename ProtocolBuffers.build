@@ -271,10 +271,10 @@
       <property name="Platform" value="Any CPU" />
     </msbuild>
     <!-- Note the deliberate lack of space in the platform name -->
-    <msbuild project="${src}/ProtocolBuffers/ProtocolBuffersCF.csproj">
+    <!--<msbuild project="${src}/ProtocolBuffers/ProtocolBuffersCF.csproj">
       <property name="Configuration" value="Release" />
       <property name="Platform" value="AnyCPU" />
-    </msbuild>
+    </msbuild>-->
   </target>
     
   
@@ -327,12 +327,12 @@
         <include name="ProtocolBuffers/bin/Silverlight2/Google.ProtocolBuffers.dll" />
       </fileset>
     </copy>    
-    <copy todir="${output-dir}/CompactFramework35"
+    <!--<copy todir="${output-dir}/CompactFramework35"
           flatten="true">
       <fileset basedir="${src}">
         <include name="ProtocolBuffers/bin/ReleaseCF/Google.ProtocolBuffers.dll" />
       </fileset>
-    </copy>
+    </copy>-->
     <copy todir="${output-dir}">
       <fileset basedir="${project::get-base-directory()}">
         <include name="protos/**" />

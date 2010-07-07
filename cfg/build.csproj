@@ -26,7 +26,7 @@
 		<NUnitExePath>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
 	</PropertyGroup>
 
-	<Import Project="Targets\Common.targets"/>
+	<Import Project="Common.targets"/>
 
 	<ItemGroup>
 		<WorkingDirectories Include="$(BuildTempDirectory)" />
@@ -36,31 +36,31 @@
 		<Solution Include="$(SolutionFile)">
 			<Configuration>$(BuildConfiguration)</Configuration>
 			<Platform>Any CPU</Platform>
-			<BuildTarget>Rebuild</BuildTarget>
+			<BuildTarget>Build</BuildTarget>
 			<CompileGroup>Build</CompileGroup>
 		</Solution>
 		<Solution Include="$(SolutionFile)">
 			<Configuration>Debug</Configuration>
 			<Platform>Any CPU</Platform>
-			<BuildTarget>Rebuild</BuildTarget>
+			<BuildTarget>Build</BuildTarget>
 			<CompileGroup>BuildAll</CompileGroup>
 		</Solution>
 		<Solution Include="$(SolutionFile)">
 			<Configuration>Release</Configuration>
 			<Platform>Any CPU</Platform>
-			<BuildTarget>Rebuild</BuildTarget>
+			<BuildTarget>Build</BuildTarget>
 			<CompileGroup>BuildAll</CompileGroup>
 	</Solution>
 		<Solution Include="$(SolutionFile)">
 			<Configuration>Silverlight2</Configuration>
 			<Platform>Any CPU</Platform>
-			<BuildTarget>Rebuild</BuildTarget>
+			<BuildTarget>Build</BuildTarget>
 			<CompileGroup>BuildAll</CompileGroup>
 		</Solution>
 		<!--<Solution Include="$(ProjectDirectory)\src\ProtocolBuffers/ProtocolBuffersCF.csproj">
 			<Configuration>$(BuildConfiguration)</Configuration>
 			<Platform>AnyCPU</Platform>
-			<BuildTarget>Rebuild</BuildTarget>
+			<BuildTarget>Build</BuildTarget>
 			<CompileGroup>BuildAll</CompileGroup>
 		</Solution>-->
 
@@ -153,16 +153,8 @@
 	</ItemGroup>
 
 	<!--target groups-->
-	<Target Name="Build" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource">
-		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_Clean;_Compile" Properties="ForceTargets=true" />
-		<CallTarget Targets="_Test" />
-	</Target>
-
-	<Target Name="BuildAll" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource">
-		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_Clean;_Compile" Properties="ForceTargets=true" />
-		<CallTarget Targets="_Test;_Package" />
-	</Target>
-
+	<Target Name="Build" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource;_CompileGeneratedSource;_Test" />
+	<Target Name="BuildAll" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment;_GenerateSource;_CopyGeneratedSource;_CompileGeneratedSource;_Test;_Package" />
 	<Target Name="Benchmark" DependsOnTargets="_Clean;_GenerateBenchmarkSource;_CompileBenchmarkAssembly;_PrepareBenchmarkEnvironment;_RunBenchmark" />
 
 </Project>
