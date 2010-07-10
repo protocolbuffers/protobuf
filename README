@@ -10,6 +10,11 @@ ROADMAP OF THE SOURCE
 
 benchmark/
   Benchmarks of upb and other protocol buffer implementations.
+core/
+  The core source directory.  builds into core/libupb.a.  Contains only the
+  very core library, which is capable of loading descriptors given the
+  appropriate decoder.  Does not even contain decoders for the standard
+  formats like the protobuf text and binary formats.
 descriptor/
   Files that describe the format of Protocol Buffer "descriptors", which are
   protocol buffers that describe the format of other protocol buffers.  These
@@ -19,8 +24,8 @@ labs/
   about alternate ways of implementing things.  When possible, these are
   benchmarked by the tests in benchmark/.  We also test these with the tests
   in tests/, to ensure that the alternate implementations are actually correct.
-src/
-  The core source directory.  builds into src/libupb.a.
+stream/
+  Implementations of streaming protobuf encoders and decoders.
 tests/
   Unit tests.
 tools/

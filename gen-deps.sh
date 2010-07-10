@@ -14,5 +14,5 @@
 set -e
 rm -f deps
 for file in $@; do
-  gcc -MM $file -MT ${file%.*}.o -DUPB_THREAD_UNSAFE -Idescriptor -Isrc -I. >> deps
+  gcc -MM $file -MT ${file%.*}.o -DUPB_THREAD_UNSAFE -Idescriptor -Icore -Istream -I. >> deps
 done

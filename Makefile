@@ -27,13 +27,13 @@ rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
-INCLUDE=-Idescriptor -Isrc -Itests -I.
+INCLUDE=-Idescriptor -Icore -Itests -I.
 CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 LDLIBS=-lpthread
 
-LIBUPB=src/libupb.a
-LIBUPB_PIC=src/libupb_pic.a
-LIBUPB_SHARED=src/libupb.so
+LIBUPB=core/libupb.a
+LIBUPB_PIC=core/libupb_pic.a
+LIBUPB_SHARED=core/libupb.so
 ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC)
 all: $(ALL)
 clean:
@@ -45,16 +45,16 @@ clean:
 	rm -rf tools/upbc deps
 	cd lang_ext/python && python setup.py clean --all
 
-# The core library (src/libupb.a)
-SRC=src/upb.c src/upb_decoder.c src/upb_table.c src/upb_def.c src/upb_string.c \
+# The core library (core/libupb.a)
+SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
     descriptor/descriptor.c
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
-src/upb_def.o: src/upb_def.c
+core/upb_def.o: core/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
-src/upb_def.lo: src/upb_def.c
+core/upb_def.lo: core/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
 
 
@@ -91,7 +91,7 @@ TESTS=tests/tests \
     tests/t.test_vs_proto2.googlemessage1 \
     tests/t.test_vs_proto2.googlemessage2 \
     tests/test.proto.pb
-$(TESTS): src/libupb.a
+$(TESTS): core/libupb.a
 
 #VALGRIND=valgrind --leak-check=full --error-exitcode=1 
 VALGRIND=
@@ -129,10 +129,10 @@ tests/test_table: tests/test_table.cc
 	# Includes <hash_set> which is a deprecated header.
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
 
-tests/tests: src/libupb.a
+tests/tests: core/libupb.a
 
 # Tools
-tools/upbc: src/libupb.a
+tools/upbc: core/libupb.a
 
 # Benchmarks
 UPB_BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
