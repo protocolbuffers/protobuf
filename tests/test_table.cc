@@ -12,6 +12,8 @@
 #include <sys/resource.h>
 #include <iostream>
 
+bool benchmark = false;
+
 using std::string;
 using std::vector;
 
@@ -114,6 +116,11 @@ void test_inttable(int32_t *keys, size_t num_entries)
     } else {
       assert(e == NULL);
     }
+  }
+
+  if(!benchmark) {
+    upb_inttable_free(&table);
+    return;
   }
 
   /* Test performance. We only test lookups for keys that are known to exist. */
@@ -219,8 +226,12 @@ int32_t *get_contiguous_keys(int32_t num)
   return buf;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--benchmark") == 0) benchmark = true;
+  }
+
   vector<string> keys;
   keys.push_back("google.protobuf.FileDescriptorSet");
   keys.push_back("google.protobuf.FileDescriptorProto");

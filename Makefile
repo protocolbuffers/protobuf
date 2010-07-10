@@ -86,22 +86,25 @@ tests/test.proto.pb: tests/test.proto
 	# TODO: replace with upbc
 	protoc tests/test.proto -otests/test.proto.pb
 
-TESTS=tests/tests \
+TESTS=tests/test_string \
+    tests/test_table
+tests: $(TESTS)
+
+OTHER_TESTS=tests/tests \
     tests/test_table \
     tests/t.test_vs_proto2.googlemessage1 \
     tests/t.test_vs_proto2.googlemessage2 \
     tests/test.proto.pb
 $(TESTS): core/libupb.a
 
-#VALGRIND=valgrind --leak-check=full --error-exitcode=1 
-VALGRIND=
+VALGRIND=valgrind --leak-check=full --error-exitcode=1 
+#VALGRIND=
 test: tests
 	@echo Running all tests under valgrind.
-	$(VALGRIND) ./tests/tests
 #	Needs to be rewritten to separate the benchmark.
 #	valgrind --error-exitcode=1 ./tests/test_table
-	@for test in tests/t.* ; do \
-	  if [ -f ./$$test ] ; then \
+	@for test in tests/*; do \
+	  if [ -x ./$$test ] ; then \
 	    echo $(VALGRIND) ./$$test: \\c; \
 	    $(VALGRIND) ./$$test; \
 	  fi \

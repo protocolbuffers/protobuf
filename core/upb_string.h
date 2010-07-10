@@ -16,8 +16,6 @@
  *   without having to reallocate the upb_string.
  * - strings can be substrings of other strings (owning a ref on the source
  *   string).
- * - strings can refer to memory that they do not own, in which case we avoid
- *   copies if possible (the exact strategy for doing this can vary).
  * - strings are not thread-safe by default, but can be made so by calling a
  *   function.  This is not the default because it causes extra CPU overhead.
  */
@@ -37,16 +35,31 @@ extern "C" {
 // All members of this struct are private, and may only be read/written through
 // the associated functions.  Also, strings may *only* be allocated on the heap.
 struct _upb_string {
+  // The pointer to our currently active data.  This may be memory we own
+  // or a pointer into memory we don't own.
   char *ptr;
+
+  // If non-NULL, this is a block of memory we own.  We keep this cached even
+  // if "ptr" is currently aliasing memory we don't own.
+  char *cached_mem;
+
+  // The effective length of the string (the bytes at ptr).
   int32_t len;
+#ifndef UPB_HAVE_MSIZE
+  // How many bytes are allocated in cached_mem.
+  //
+  // Many platforms have a function that can tell you the size of a block
+  // that was previously malloc'd.  In this case we can avoid storing the
+  // size explicitly.
   uint32_t size;
+#endif
+
+  // The string's refcount.
   upb_atomic_refcount_t refcount;
-  union {
-    // Used if this is a slice of another string.
-    struct _upb_string *src;
-    // Used if this string is referencing external unowned memory.
-    upb_atomic_refcount_t reader_count;
-  } extra;
+
+  // Used if this is a slice of another string, NULL otherwise.  We own a ref
+  // on src.
+  struct _upb_string *src;
 };
 
 // Returns a newly-created, empty, non-finalized string.  When the string is no
@@ -113,11 +126,14 @@ char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len);
 void upb_string_substr(upb_string *str, upb_string *target_str,
                        upb_strlen_t start, upb_strlen_t len);
 
+// Sketch of an API for allowing upb_strings to reference external, unowned
+// data.  Waiting for a clear use case before actually implementing it.
+//
 // Makes the string "str" a reference to the given string data.  The caller
 // guarantees that the given string data will not change or be deleted until
 // a matching call to upb_string_detach().
-void upb_string_attach(upb_string *str, char *ptr, upb_strlen_t len);
-void upb_string_detach(upb_string *str);
+// void upb_string_attach(upb_string *str, char *ptr, upb_strlen_t len);
+// void upb_string_detach(upb_string *str);
 
 // Allows using upb_strings in printf, ie:
 //   upb_strptr str = UPB_STRLIT("Hello, World!\n");
@@ -176,7 +192,9 @@ INLINE upb_string *upb_strduplen(const void *src, upb_strlen_t len) {
 }
 
 // Like upb_strdup(), but duplicates a C NULL-terminated string.
-upb_string *upb_strdupc(const char *src);
+INLINE upb_string *upb_strdupc(const char *src) {
+  return upb_strduplen(src, strlen(src));
+}
 
 // Appends 'append' to 's' in-place, resizing s if necessary.
 void upb_strcat(upb_string *s, upb_string *append);
