@@ -127,27 +127,10 @@ typedef union {
 
 /* Polymorphic values of .proto types *****************************************/
 
-// INTERNAL-ONLY: never refer to these types with a tag ("union", "struct").
-// Always use the typedefs.
-struct _upb_msg;
-
-typedef struct _upb_msg upb_msg;
-
-typedef upb_atomic_refcount_t upb_data;
-
-typedef uint32_t upb_strlen_t;
-
 struct _upb_string;
 typedef struct _upb_string upb_string;
 
-typedef uint32_t upb_arraylen_t;
-
-typedef union {
-  // Must be first, for the UPB_STATIC_ARRAY_PTR_INIT() macro.
-  struct upb_norefcount_array *norefcount;
-  struct upb_refcounted_array *refcounted;
-  upb_data *base;
-} upb_arrayptr;
+typedef uint32_t upb_strlen_t;
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -159,10 +142,6 @@ typedef union {
   uint32_t uint32;
   uint64_t uint64;
   bool _bool;
-  upb_string *str;
-  upb_arrayptr arr;
-  upb_msg *msg;
-  upb_data *data;
 } upb_value;
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
@@ -176,88 +155,11 @@ typedef union {
   uint32_t *uint32;
   uint64_t *uint64;
   bool *_bool;
-  upb_string **str;
-  upb_arrayptr *arr;
-  upb_msg **msg;
-  upb_data **data;
-  void *_void;
 } upb_valueptr;
 
 INLINE upb_valueptr upb_value_addrof(upb_value *val) {
   upb_valueptr ptr = {&val->_double};
   return ptr;
-}
-
-/**
- * Converts upb_value_ptr -> upb_value by reading from the pointer.  We need to
- * know the field type to perform this operation, because we need to know how
- * much memory to copy.
- */
-INLINE upb_value upb_value_read(upb_valueptr ptr, upb_field_type_t ft) {
-  upb_value val;
-
-#define CASE(t, member_name) \
-  case UPB_TYPE(t): val.member_name = *ptr.member_name; break;
-
-  switch(ft) {
-    CASE(DOUBLE,   _double)
-    CASE(FLOAT,    _float)
-    CASE(INT32,    int32)
-    CASE(INT64,    int64)
-    CASE(UINT32,   uint32)
-    CASE(UINT64,   uint64)
-    CASE(SINT32,   int32)
-    CASE(SINT64,   int64)
-    CASE(FIXED32,  uint32)
-    CASE(FIXED64,  uint64)
-    CASE(SFIXED32, int32)
-    CASE(SFIXED64, int64)
-    CASE(BOOL,     _bool)
-    CASE(ENUM,     int32)
-    CASE(STRING,   str)
-    CASE(BYTES,    str)
-    CASE(MESSAGE,  msg)
-    CASE(GROUP,    msg)
-    default: break;
-  }
-  return val;
-
-#undef CASE
-}
-
-/**
- * Writes a upb_value to a upb_value_ptr location. We need to know the field
- * type to perform this operation, because we need to know how much memory to
- * copy.
- */
-INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
-                            upb_field_type_t ft) {
-#define CASE(t, member_name) \
-  case UPB_TYPE(t): *ptr.member_name = val.member_name; break;
-
-  switch(ft) {
-    CASE(DOUBLE,   _double)
-    CASE(FLOAT,    _float)
-    CASE(INT32,    int32)
-    CASE(INT64,    int64)
-    CASE(UINT32,   uint32)
-    CASE(UINT64,   uint64)
-    CASE(SINT32,   int32)
-    CASE(SINT64,   int64)
-    CASE(FIXED32,  uint32)
-    CASE(FIXED64,  uint64)
-    CASE(SFIXED32, int32)
-    CASE(SFIXED64, int64)
-    CASE(BOOL,     _bool)
-    CASE(ENUM,     int32)
-    CASE(STRING,   str)
-    CASE(BYTES,    str)
-    CASE(MESSAGE,  msg)
-    CASE(GROUP,    msg)
-    default: break;
-  }
-
-#undef CASE
 }
 
 // Status codes used as a return value.  Codes >0 are not fatal and can be

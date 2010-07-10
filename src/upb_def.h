@@ -135,7 +135,6 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
 typedef struct _upb_msgdef {
   upb_def base;
   upb_atomic_refcount_t cycle_refcount;
-  upb_msg *default_msg;   // Message with all default values set.
   size_t size;
   upb_field_count_t num_fields;
   uint32_t set_flags_bytes;
