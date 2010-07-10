@@ -281,23 +281,19 @@ enum upb_status_code {
   UPB_ERROR_MAX_NESTING_EXCEEDED = -3
 };
 
-#define UPB_ERRORMSG_MAXLEN 256
 typedef struct {
   enum upb_status_code code;
-  char msg[UPB_ERRORMSG_MAXLEN];
+  upb_string *str;
 } upb_status;
 
-#define UPB_STATUS_INIT {UPB_STATUS_OK, ""}
+#define UPB_STATUS_INIT {UPB_STATUS_OK, NULL}
+#define UPB_ERRORMSG_MAXLEN 256
 
 INLINE bool upb_ok(upb_status *status) {
   return status->code == UPB_STATUS_OK;
 }
 
-INLINE void upb_reset(upb_status *status) {
-  status->code = UPB_STATUS_OK;
-  status->msg[0] = '\0';
-}
-
+void upb_reset(upb_status *status);
 void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,
                 ...);
 void upb_copyerr(upb_status *to, upb_status *from);

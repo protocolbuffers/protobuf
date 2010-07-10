@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "upb.h"
+#include "upb_string.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
 #define TYPE_INFO(wire_type, ctype, allows_delimited) \
@@ -43,10 +44,12 @@ void upb_seterr(upb_status *status, enum upb_status_code code,
                 const char *msg, ...)
 {
   if(upb_ok(status)) {  // The first error is the most interesting.
+    status->str = upb_string_new();
+    char *str = upb_string_getrwbuf(status->str, UPB_ERRORMSG_MAXLEN);
     status->code = code;
     va_list args;
     va_start(args, msg);
-    vsnprintf(status->msg, UPB_ERRORMSG_MAXLEN, msg, args);
+    vsnprintf(str, UPB_ERRORMSG_MAXLEN, msg, args);
     va_end(args);
   }
 }
@@ -54,6 +57,11 @@ void upb_seterr(upb_status *status, enum upb_status_code code,
 void upb_copyerr(upb_status *to, upb_status *from)
 {
   to->code = from->code;
-  strcpy(to->msg, from->msg);
+  to->str = upb_string_getref(from->str);
 }
 
+void upb_reset(upb_status *status) {
+  status->code = UPB_STATUS_OK;
+  upb_string_unref(status->str);
+  status->str = NULL;
+}
