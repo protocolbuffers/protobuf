@@ -82,7 +82,7 @@ char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len) {
   }
   str->len = len;
   str->ptr = str->cached_mem;
-  return str->ptr;
+  return str->cached_mem;
 }
 
 void upb_string_substr(upb_string *str, upb_string *target_str,
@@ -91,4 +91,32 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
   str->src = upb_string_getref(target_str);
   str->ptr = upb_string_getrobuf(target_str) + start;
   str->len = len;
+}
+
+void upb_string_vprintf(upb_string *str, const char *format, va_list args) {
+  // Try once without reallocating.  We have to va_copy because we might have
+  // to call vsnprintf again.
+  uint32_t size = UPB_MAX(upb_string_size(str), 16);
+  char *buf = upb_string_getrwbuf(str, size);
+  va_list args_copy;
+  va_copy(args_copy, args);
+  uint32_t true_size = vsnprintf(buf, size, format, args_copy);
+  va_end(args_copy);
+
+  if (true_size > size) {
+    // Need to reallocate.
+    str = upb_string_tryrecycle(str);
+    buf = upb_string_getrwbuf(str, true_size);
+    vsnprintf(buf, true_size, format, args);
+  }
+  str->len = true_size;
+}
+
+upb_string *upb_string_asprintf(const char *format, ...) {
+  upb_string *str = upb_string_new();
+  va_list args;
+  va_start(args, format);
+  upb_string_vprintf(str, format, args);
+  va_end(args);
+  return str;
 }

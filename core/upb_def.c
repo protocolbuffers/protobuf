@@ -44,13 +44,12 @@ static void upb_deflist_push(upb_deflist *l, upb_def *d) {
  *   join("", "Baz") -> "Baz"
  * Caller owns a ref on the returned string. */
 static upb_string *upb_join(upb_string *base, upb_string *name) {
-  upb_string *joined = upb_strdup(base);
-  upb_strlen_t len = upb_string_len(joined);
-  if(len > 0) {
-    upb_string_getrwbuf(joined, len + 1)[len] = UPB_SYMBOL_SEPARATOR;
+  if (upb_string_len(base) == 0) {
+    return upb_string_getref(name);
+  } else {
+    return upb_string_asprintf(UPB_STRFMT "." UPB_STRFMT,
+                               UPB_STRARG(base), UPB_STRARG(name));
   }
-  upb_strcat(joined, name);
-  return joined;
 }
 
 // Qualify the defname for all defs starting with offset "start" with "str".

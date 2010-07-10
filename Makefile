@@ -87,7 +87,8 @@ tests/test.proto.pb: tests/test.proto
 	protoc tests/test.proto -otests/test.proto.pb
 
 TESTS=tests/test_string \
-    tests/test_table
+    tests/test_table \
+    tests/test_def
 tests: $(TESTS)
 
 OTHER_TESTS=tests/tests \

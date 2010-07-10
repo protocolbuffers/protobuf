@@ -17,7 +17,7 @@ int main() {
   assert(upb_string_len(str) == (sizeof(static_str) - 1));
   const char *robuf = upb_string_getrobuf(str);
   assert(robuf != NULL);
-  assert(memcmp(robuf, static_str, upb_string_len(str)) == 0);
+  assert(upb_streqlc(str, static_str));
   upb_string_endread(str);
 
   upb_string *str2 = upb_string_tryrecycle(str);
@@ -28,7 +28,7 @@ int main() {
   upb_strcpyc(str, "XX");
   const char *robuf2 = upb_string_getrobuf(str);
   assert(robuf2 == robuf);
-  assert(memcmp(robuf2, "XX", 2) == 0);
+  assert(upb_streqlc(str, "XX"));
 
   // Make string alias part of another string.
   str2 = upb_strdupc("WXYZ");
@@ -50,6 +50,19 @@ int main() {
   upb_strcpyc(str, "XX");
   const char *robuf5 = upb_string_getrobuf(str);
   assert(robuf5 == robuf);
+
+  // Resetting str to something very long should require new data to be
+  // allocated.
+  str = upb_string_tryrecycle(str);
+  const char longstring[] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+  upb_strcpyc(str, longstring);
+  const char *robuf6 = upb_string_getrobuf(str);
+  assert(robuf6 != robuf);
+  assert(upb_streqlc(str, longstring));
+
+  // Test printf.
+  str = upb_string_tryrecycle(str);
+  upb_string_printf(str, "Number: %d, String: %s", 5, "YO!");
 
   upb_string_unref(str);
   upb_string_unref(str2);

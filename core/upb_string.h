@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdarg.h>
 #include "upb_atomic.h"
 #include "upb.h"
 
@@ -37,7 +38,7 @@ extern "C" {
 struct _upb_string {
   // The pointer to our currently active data.  This may be memory we own
   // or a pointer into memory we don't own.
-  char *ptr;
+  const char *ptr;
 
   // If non-NULL, this is a block of memory we own.  We keep this cached even
   // if "ptr" is currently aliasing memory we don't own.
@@ -111,15 +112,24 @@ INLINE void upb_string_endread(upb_string *str) { (void)str; }
 //   }
 upb_string *upb_string_tryrecycle(upb_string *str);
 
-// The three options for setting the contents of a string.  These may only be
-// called when a string is first created or recycled; once other functions have
-// been called on the string, these functions are not allowed until the string
-// is recycled.
+// The options for setting the contents of a string.  These may only be called
+// when a string is first created or recycled; once other functions have been
+// called on the string, these functions are not allowed until the string is
+// recycled.
 
 // Gets a pointer suitable for writing to the string, which is guaranteed to
 // have at least "len" bytes of data available.  The size of the string will
 // become "len".
 char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len);
+
+// Replaces the contents of str with the contents of the given printf.
+void upb_string_vprintf(upb_string *str, const char *format, va_list args);
+INLINE void upb_string_printf(upb_string *str, const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  upb_string_vprintf(str, format, args);
+  va_end(args);
+}
 
 // Sets the contents of "str" to be the given substring of "target_str", to
 // which the caller must own a ref.
@@ -144,7 +154,7 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
 /* upb_string library functions ***********************************************/
 
 // Named like their <string.h> counterparts, these are all safe against buffer
-// overflow.  These only use the public upb_string interface.
+// overflow.  For the most part these only use the public upb_string interface.
 
 // More efficient than upb_strcmp if all you need is to test equality.
 INLINE bool upb_streql(upb_string *s1, upb_string *s2) {
@@ -163,6 +173,17 @@ INLINE bool upb_streql(upb_string *s1, upb_string *s2) {
 // Like strcmp().
 int upb_strcmp(upb_string *s1, upb_string *s2);
 
+// Compare a upb_string with memory or a NULL-terminated C string.
+INLINE bool upb_streqllen(upb_string *str, const void *buf, upb_strlen_t len) {
+  return len == upb_string_len(str) &&
+      memcmp(upb_string_getrobuf(str), buf, len) == 0;
+}
+
+INLINE bool upb_streqlc(upb_string *str, const void *buf) {
+  // Could be made one-pass.
+  return upb_streqllen(str, buf, strlen((const char*)buf));
+}
+
 // Like upb_strcpy, but copies from a buffer and length.
 INLINE void upb_strcpylen(upb_string *dest, const void *src, upb_strlen_t len) {
   memcpy(upb_string_getrwbuf(dest, len), src, len);
@@ -175,10 +196,10 @@ INLINE void upb_strcpy(upb_string *dest, upb_string *src) {
 }
 
 // Like upb_strcpy, but copies from a NULL-terminated string.
-INLINE void upb_strcpyc(upb_string *dest, const char *src) {
+INLINE void upb_strcpyc(upb_string *dest, const void *src) {
   // This does two passes over src, but that is necessary unless we want to
   // repeatedly re-allocate dst, which seems worse.
-  upb_strcpylen(dest, src, strlen(src));
+  upb_strcpylen(dest, src, strlen((const char*)src));
 }
 
 // Returns a new string whose contents are a copy of s.
@@ -200,10 +221,17 @@ INLINE upb_string *upb_strdupc(const char *src) {
 void upb_strcat(upb_string *s, upb_string *append);
 
 // Returns a new string that is a substring of the given string.
-upb_string *upb_strslice(upb_string *s, int offset, int len);
+INLINE upb_string *upb_strslice(upb_string *s, int offset, int len) {
+  upb_string *str = upb_string_new();
+  upb_string_substr(str, s, offset, len);
+  return str;
+}
 
 // Reads an entire file into a newly-allocated string.
 upb_string *upb_strreadfile(const char *filename);
+
+// Returns a new string with the contents of the given printf.
+upb_string *upb_string_asprintf(const char *format, ...);
 
 #ifdef __cplusplus
 }  /* extern "C" */
