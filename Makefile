@@ -102,14 +102,16 @@ VALGRIND=valgrind --leak-check=full --error-exitcode=1
 #VALGRIND=
 test: tests
 	@echo Running all tests under valgrind.
+	@set -e  # Abort on error.
 #	Needs to be rewritten to separate the benchmark.
 #	valgrind --error-exitcode=1 ./tests/test_table
 	@for test in tests/*; do \
 	  if [ -x ./$$test ] ; then \
-	    echo $(VALGRIND) ./$$test: \\c; \
-	    $(VALGRIND) ./$$test; \
+	    echo !!! $(VALGRIND) ./$$test; \
+	    $(VALGRIND) ./$$test || exit 1; \
 	  fi \
-	done;
+	done; \
+	echo "All tests passed!"
 
 tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \

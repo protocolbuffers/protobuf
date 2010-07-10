@@ -27,28 +27,35 @@ struct upb_bytesink;
 typedef struct upb_bytesink upb_bytesink;
 
 // Typedefs for function pointers to all of the virtual functions.
-typedef struct _upb_fielddef (*upb_src_getdef_fptr)(upb_src *src);
+
+// upb_src.
+typedef struct _upb_fielddef *(*upb_src_getdef_fptr)(upb_src *src);
 typedef bool (*upb_src_getval_fptr)(upb_src *src, upb_valueptr val);
+typedef bool (*upb_src_getstr_fptr)(upb_src *src, upb_string *str);
 typedef bool (*upb_src_skipval_fptr)(upb_src *src);
 typedef bool (*upb_src_startmsg_fptr)(upb_src *src);
 typedef bool (*upb_src_endmsg_fptr)(upb_src *src);
 
+// upb_sink.
 typedef bool (*upb_sink_putdef_fptr)(upb_sink *sink, struct _upb_fielddef *def);
 typedef bool (*upb_sink_putval_fptr)(upb_sink *sink, upb_value val);
 typedef bool (*upb_sink_startmsg_fptr)(upb_sink *sink);
 typedef bool (*upb_sink_endmsg_fptr)(upb_sink *sink);
 
+// upb_bytesrc.
 typedef upb_string *(*upb_bytesrc_get_fptr)(upb_bytesrc *src);
 typedef void (*upb_bytesrc_recycle_fptr)(upb_bytesrc *src, upb_string *str);
 typedef bool (*upb_bytesrc_append_fptr)(
     upb_bytesrc *src, upb_string *str, upb_strlen_t len);
 
+// upb_bytesink.
 typedef int32_t (*upb_bytesink_put_fptr)(upb_bytesink *sink, upb_string *str);
 
 // Vtables for the above interfaces.
 typedef struct {
   upb_src_getdef_fptr   getdef;
   upb_src_getval_fptr   getval;
+  upb_src_getstr_fptr   getstr;
   upb_src_skipval_fptr  skipval;
   upb_src_startmsg_fptr startmsg;
   upb_src_endmsg_fptr   endmsg;
@@ -85,6 +92,48 @@ INLINE void upb_src_init(upb_src *s, upb_src_vtable *vtbl) {
   // TODO: initialize debug-mode checking.
 #endif
 }
+
+// Implementation of virtual function dispatch.
+INLINE struct _upb_fielddef *upb_src_getdef(upb_src *src) {
+  return src->vtbl->getdef(src);
+}
+INLINE bool upb_src_getval(upb_src *src, upb_valueptr val) {
+  return src->vtbl->getval(src, val);
+}
+INLINE bool upb_src_getstr(upb_src *src, upb_string *str) {
+  return src->vtbl->getstr(src, str);
+}
+INLINE bool upb_src_skipval(upb_src *src) { return src->vtbl->skipval(src); }
+INLINE bool upb_src_startmsg(upb_src *src) { return src->vtbl->startmsg(src); }
+INLINE bool upb_src_endmsg(upb_src *src) { return src->vtbl->endmsg(src); }
+
+// Implementation of type-specific upb_src accessors.  If we encounter a upb_src
+// where these can be implemented directly in a measurably more efficient way,
+// we can make these part of the vtable also.
+//
+// For <64-bit types we have to use a temporary to accommodate baredecoder,
+// which does not know the actual width of the type.
+INLINE bool upb_src_getbool(upb_src *src, bool *_bool) {
+  upb_value val;
+  bool ret = upb_src_getval(src, upb_value_addrof(&val));
+  *_bool = val._bool;
+  return ret;
+}
+
+INLINE bool upb_src_getint32(upb_src *src, int32_t *i32) {
+  upb_value val;
+  bool ret = upb_src_getval(src, upb_value_addrof(&val));
+  *i32 = val.int32;
+  return ret;
+}
+
+// TODO.
+bool upb_src_getint32(upb_src *src, int32_t *val);
+bool upb_src_getint64(upb_src *src, int64_t *val);
+bool upb_src_getuint32(upb_src *src, uint32_t *val);
+bool upb_src_getuint64(upb_src *src, uint64_t *val);
+bool upb_src_getfloat(upb_src *src, float *val);
+bool upb_src_getdouble(upb_src *src, double *val);
 
 #ifdef __cplusplus
 }  /* extern "C" */

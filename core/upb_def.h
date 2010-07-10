@@ -207,11 +207,7 @@ bool upb_enum_done(upb_enum_iter *iter);
 typedef struct {
   upb_atomic_refcount_t refcount;
   upb_rwlock_t lock;       // Protects all members except the refcount.
-  upb_msgdef *fds_msgdef;  // In psymtab, ptr here for convenience.
-
-  // Our symbol tables; we own refs to the defs therein.
-  upb_strtable symtab;     // The main symbol table.
-  upb_strtable psymtab;    // Private symbols, for internal use.
+  upb_strtable symtab;     // The symbol table.
 } upb_symtab;
 
 // Initializes a upb_symtab.  Contexts are not freed explicitly, but unref'd

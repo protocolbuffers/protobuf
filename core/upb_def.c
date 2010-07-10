@@ -764,7 +764,6 @@ static void upb_free_symtab(upb_strtable *t)
 void _upb_symtab_free(upb_symtab *s)
 {
   upb_free_symtab(&s->symtab);
-  upb_free_symtab(&s->psymtab);
   upb_rwlock_destroy(&s->lock);
   free(s);
 }
@@ -932,27 +931,27 @@ static upb_fielddef *upb_baredecoder_getdef(upb_baredecoder *d)
 
 static bool upb_baredecoder_getval(upb_baredecoder *d, upb_valueptr val)
 {
-  if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
-    d->str = upb_string_tryrecycle(d->str);
-    upb_string_substr(d->str, d->input, d->offset, d->delimited_len);
-  } else {
-    switch(d->wire_type) {
-      case UPB_WIRE_TYPE_VARINT:
-        *val.uint64 = upb_baredecoder_readv64(d);
-        break;
-      case UPB_WIRE_TYPE_32BIT_VARINT:
-        *val.uint32 = upb_baredecoder_readv32(d);
-        break;
-      case UPB_WIRE_TYPE_64BIT:
-        *val.uint64 = upb_baredecoder_readf64(d);
-        break;
-      case UPB_WIRE_TYPE_32BIT:
-        *val.uint32 = upb_baredecoder_readf32(d);
-        break;
-      default:
-        assert(false);
-    }
+  switch(d->wire_type) {
+    case UPB_WIRE_TYPE_VARINT:
+      *val.uint64 = upb_baredecoder_readv64(d);
+      break;
+    case UPB_WIRE_TYPE_32BIT_VARINT:
+      *val.uint32 = upb_baredecoder_readv32(d);
+      break;
+    case UPB_WIRE_TYPE_64BIT:
+      *val.uint64 = upb_baredecoder_readf64(d);
+      break;
+    case UPB_WIRE_TYPE_32BIT:
+      *val.uint32 = upb_baredecoder_readf32(d);
+      break;
+    default:
+      assert(false);
   }
+  return true;
+}
+
+static bool upb_baredecoder_getstr(upb_baredecoder *d, upb_string *str) {
+  upb_string_substr(str, d->input, d->offset, d->delimited_len);
   return true;
 }
 
@@ -977,6 +976,7 @@ static bool upb_baredecoder_endmsg(upb_baredecoder *d)
 static upb_src_vtable upb_baredecoder_src_vtbl = {
   (upb_src_getdef_fptr)&upb_baredecoder_getdef,
   (upb_src_getval_fptr)&upb_baredecoder_getval,
+  (upb_src_getstr_fptr)&upb_baredecoder_getstr,
   (upb_src_skipval_fptr)&upb_baredecoder_skipval,
   (upb_src_startmsg_fptr)&upb_baredecoder_startmsg,
   (upb_src_endmsg_fptr)&upb_baredecoder_endmsg,

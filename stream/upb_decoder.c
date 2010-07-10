@@ -536,6 +536,7 @@ static bool upb_decoder_skipgroup(upb_decoder *d)
 upb_src_vtable upb_decoder_src_vtbl = {
   (upb_src_getdef_fptr)&upb_decoder_getdef,
   (upb_src_getval_fptr)&upb_decoder_getval,
+  (upb_src_getstr_fptr)&upb_decoder_getstr,
   (upb_src_skipval_fptr)&upb_decoder_skipval,
   (upb_src_startmsg_fptr)&upb_decoder_startmsg,
   (upb_src_endmsg_fptr)&upb_decoder_endmsg,
