@@ -27,7 +27,7 @@
 #define UPB_DEF_H_
 
 #include "upb_atomic.h"
-#include "upb_srcsink.h"
+#include "upb_stream.h"
 #include "upb_table.h"
 
 #ifdef __cplusplus

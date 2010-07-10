@@ -38,7 +38,7 @@ ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC)
 all: $(ALL)
 clean:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
-	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo)
+	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.gc*)
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf tests/tests tests/t.* tests/test_table
 	rm -rf descriptor/descriptor.pb
@@ -46,7 +46,7 @@ clean:
 	cd lang_ext/python && python setup.py clean --all
 
 # The core library (src/libupb.a)
-SRC=src/upb.c src/upb_decoder.c src/upb_table.c src/upb_def.c \
+SRC=src/upb.c src/upb_decoder.c src/upb_table.c src/upb_def.c src/upb_string.c \
     descriptor/descriptor.c
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
@@ -86,11 +86,12 @@ tests/test.proto.pb: tests/test.proto
 	# TODO: replace with upbc
 	protoc tests/test.proto -otests/test.proto.pb
 
-tests: tests/tests \
+TESTS=tests/tests \
     tests/test_table \
     tests/t.test_vs_proto2.googlemessage1 \
     tests/t.test_vs_proto2.googlemessage2 \
     tests/test.proto.pb
+$(TESTS): src/libupb.a
 
 #VALGRIND=valgrind --leak-check=full --error-exitcode=1 
 VALGRIND=

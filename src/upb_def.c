@@ -215,10 +215,11 @@ typedef struct _upb_unresolveddef {
   upb_string *name;
 } upb_unresolveddef;
 
+// Is passed a ref on the string.
 static upb_unresolveddef *upb_unresolveddef_new(upb_string *str) {
   upb_unresolveddef *def = malloc(sizeof(*def));
   upb_def_init(&def->base, UPB_DEF_UNRESOLVED);
-  def->name = upb_string_getref(str);
+  def->name = str;
   return def;
 }
 
@@ -258,7 +259,8 @@ static bool upb_addenum_val(upb_src *src, upb_enumdef *e, upb_status *status)
         CHECKSRC(upb_src_getint32(src, &number));
         break;
       case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME_FIELDNUM:
-        CHECKSRC(upb_src_getstr(src, &name));
+        name = upb_string_tryrecycle(name);
+        CHECKSRC(upb_src_getstr(src, name));
         break;
       default:
         CHECKSRC(upb_src_skipval(src));
@@ -274,11 +276,15 @@ static bool upb_addenum_val(upb_src *src, upb_enumdef *e, upb_status *status)
   iton_ent iton_ent = {{number, 0}, name};
   upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
   upb_inttable_insert(&e->iton, &iton_ent.e);
+  // We don't unref "name" because we pass our ref to the iton entry of the
+  // table.  strtables can ref their keys, but the inttable doesn't know that
+  // the value is a string.
   return true;
 
 src_err:
   upb_copyerr(status, upb_src_status(src));
 err:
+  upb_string_unref(name);
   return false;
 }
 
@@ -368,12 +374,12 @@ static bool upb_addfield(upb_src *src, upb_msgdef *m, upb_status *status)
         f->number = tmp;
         break;
       case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME_FIELDNUM:
-        CHECKSRC(upb_src_getstr(src, &f->name));
-        f->name = upb_string_getref(f->name);
+        f->name = upb_string_tryrecycle(f->name);
+        CHECKSRC(upb_src_getstr(src, f->name));
         break;
       case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME_FIELDNUM: {
-        upb_string *str;
-        CHECKSRC(upb_src_getstr(src, &str));
+        upb_string *str = upb_string_new();
+        CHECKSRC(upb_src_getstr(src, str));
         if(f->def) upb_def_unref(f->def);
         f->def = UPB_UPCAST(upb_unresolveddef_new(str));
         f->owned = true;
@@ -415,9 +421,8 @@ static bool upb_addmsg(upb_src *src, upb_deflist *defs, upb_status *status)
   while((f = upb_src_getdef(src)) != NULL) {
     switch(f->number) {
       case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME_FIELDNUM:
-        upb_string_unref(m->base.fqname);
-        CHECKSRC(upb_src_getstr(src, &m->base.fqname));
-        m->base.fqname = upb_string_getref(m->base.fqname);
+        m->base.fqname = upb_string_tryrecycle(m->base.fqname);
+        CHECKSRC(upb_src_getstr(src, m->base.fqname));
         break;
       case GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD_FIELDNUM:
         CHECKSRC(upb_src_startmsg(src));
@@ -487,9 +492,8 @@ static bool upb_addfd(upb_src *src, upb_deflist *defs, upb_status *status)
   while((f = upb_src_getdef(src)) != NULL) {
     switch(f->number) {
       case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_NAME_FIELDNUM:
-        upb_string_unref(package);
-        CHECKSRC(upb_src_getstr(src, &package));
-        package = upb_string_getref(package);
+        package = upb_string_tryrecycle(package);
+        CHECKSRC(upb_src_getstr(src, package));
         break;
       case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE_FIELDNUM:
         CHECKSRC(upb_src_startmsg(src));

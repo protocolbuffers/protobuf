@@ -68,9 +68,6 @@ struct upb_decoder {
 
   upb_strlen_t packed_end_offset;
 
-  // String we return for string values.  We try to recycle it if possible.
-  upb_string *str;
-
   // We keep a stack of messages we have recursed into.
   upb_decoder_frame *top, *limit, stack[UPB_MAX_NESTING];
 };
@@ -93,18 +90,19 @@ static bool upb_decoder_nextbuf(upb_decoder *d)
            d->buf_bytesleft);
   }
 
-  // Recycle old buffer, pull new one.
+  // Recycle old buffer.
   if(d->buf) {
-    upb_bytesrc_recycle(d->bytesrc, d->buf);
+    d->buf = upb_string_tryrecycle(d->buf);
     d->buf_offset -= upb_string_len(d->buf);
     d->buf_stream_offset += upb_string_len(d->buf);
   }
-  d->buf = upb_bytesrc_get(d->bytesrc, UPB_MAX_ENCODED_SIZE);
 
-  // Handle cases arising from error or EOF.
-  if(d->buf) {
+  // Pull next buffer.
+  if(upb_bytesrc_get(d->bytesrc, d->buf, UPB_MAX_ENCODED_SIZE)) {
     d->buf_bytesleft += upb_string_len(d->buf);
+    return true;
   } else {
+    // Error or EOF.
     if(!upb_bytesrc_eof(d->bytesrc)) {
       // Error from bytesrc.
       upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
@@ -113,9 +111,11 @@ static bool upb_decoder_nextbuf(upb_decoder *d)
       // EOF from bytesrc and we don't have any residual bytes left.
       d->src.eof = true;
       return false;
+    } else {
+      // No more data left from the bytesrc, but we still have residual bytes.
+      return true;
     }
   }
-  return true;
 }
 
 static const uint8_t *upb_decoder_getbuf_full(upb_decoder *d, uint32_t *bytes)
@@ -369,85 +369,86 @@ again:
 
 bool upb_decoder_getval(upb_decoder *d, upb_valueptr val)
 {
-  upb_wire_type_t native_wire_type = upb_types[d->field->type].native_wire_type;
-  if(native_wire_type == UPB_WIRE_TYPE_DELIMITED) {
-    // A string, bytes, or a length-delimited submessage.  The latter isn't
-    // technically a string, but can be gotten as one to perform lazy parsing.
-    d->str = upb_string_tryrecycle(d->str);
-    const upb_strlen_t total_len = d->delimited_len;
-    if (d->buf_offset >= 0 && (int32_t)total_len <= d->buf_bytesleft) {
-      // The entire string is inside our current buffer, so we can just
-      // return a substring of the buffer without copying.
-      upb_string_substr(d->str, d->buf,
-                        upb_string_len(d->buf) - d->buf_bytesleft,
-                        total_len);
-      upb_decoder_skipbytes(d, total_len);
-      *val.str = d->str;
-    } else {
-      // The string spans buffers, so we must copy from the current buffer,
-      // the next buffer (if we have one), and finally from the bytesrc.
-      uint8_t *str = (uint8_t*)upb_string_getrwbuf(d->str, total_len);
-      upb_strlen_t len = 0;
-      if(d->buf_offset < 0) {
-        // Residual bytes we need to copy from tmpbuf.
-        memcpy(str, d->tmpbuf, -d->buf_offset);
-        len += -d->buf_offset;
-      }
-      if(d->buf) {
-        upb_strlen_t to_copy =
-            UPB_MIN(total_len - len, upb_string_len(d->buf) - d->buf_offset);
-        memcpy(str + len, upb_string_getrobuf(d->buf) + d->buf_offset, to_copy);
-      }
-      upb_decoder_skipbytes(d, len);
-      upb_string_getrwbuf(d->str, len);  // Cheap resize.
-      if(len < total_len) {
-        if(!upb_bytesrc_append(d->bytesrc, d->str, total_len - len)) {
-          upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
-          return false;
-        }
-        d->buf_stream_offset += total_len - len;
-      }
+  switch(upb_types[d->field->type].native_wire_type) {
+    case UPB_WIRE_TYPE_VARINT: {
+      uint32_t low, high;
+      if(!upb_decoder_readv64(d, &low, &high)) return false;
+      uint64_t u64 = ((uint64_t)high << 32) | low;
+      if(d->field->type == UPB_TYPE(SINT64))
+        *val.int64 = upb_zzdec_64(u64);
+      else
+        *val.uint64 = u64;
+      break;
     }
+    case UPB_WIRE_TYPE_32BIT_VARINT: {
+      uint32_t u32;
+      if(!upb_decoder_readv32(d, &u32)) return false;
+      if(d->field->type == UPB_TYPE(SINT32))
+        *val.int32 = upb_zzdec_32(u32);
+      else
+        *val.uint32 = u32;
+      break;
+    }
+    case UPB_WIRE_TYPE_64BIT:
+      if(!upb_decoder_readf64(d, val.uint64)) return false;
+      break;
+    case UPB_WIRE_TYPE_32BIT:
+      if(!upb_decoder_readf32(d, val.uint32)) return false;
+      break;
+    default:
+      upb_seterr(&d->src.status, UPB_STATUS_ERROR,
+                 "Attempted to call getval on a group.");
+      return false;
+  }
+  // For a packed field where we have not reached the end, we leave the field
+  // in the decoder so we will return it again without parsing a key.
+  if(d->wire_type != UPB_WIRE_TYPE_DELIMITED ||
+     upb_decoder_offset(d) >= d->packed_end_offset) {
     d->field = NULL;
+  }
+  return true;
+}
+
+bool upb_decoder_getstr(upb_decoder *d, upb_string *str) {
+  // A string, bytes, or a length-delimited submessage.  The latter isn't
+  // technically a string, but can be gotten as one to perform lazy parsing.
+  const int32_t total_len = d->delimited_len;
+  if (d->buf_offset >= 0 && (int32_t)total_len <= d->buf_bytesleft) {
+    // The entire string is inside our current buffer, so we can just
+    // return a substring of the buffer without copying.
+    upb_string_substr(str, d->buf,
+                      upb_string_len(d->buf) - d->buf_bytesleft,
+                      total_len);
+    upb_decoder_skipbytes(d, total_len);
   } else {
-    switch(native_wire_type) {
-      case UPB_WIRE_TYPE_VARINT: {
-        uint32_t low, high;
-        if(!upb_decoder_readv64(d, &low, &high)) return false;
-        uint64_t u64 = ((uint64_t)high << 32) | low;
-        if(d->field->type == UPB_TYPE(SINT64))
-          *val.int64 = upb_zzdec_64(u64);
-        else
-          *val.uint64 = u64;
-        break;
-      }
-      case UPB_WIRE_TYPE_32BIT_VARINT: {
-        uint32_t u32;
-        if(!upb_decoder_readv32(d, &u32)) return false;
-        if(d->field->type == UPB_TYPE(SINT32))
-          *val.int32 = upb_zzdec_32(u32);
-        else
-          *val.uint32 = u32;
-        break;
-      }
-      case UPB_WIRE_TYPE_64BIT:
-        if(!upb_decoder_readf64(d, val.uint64)) return false;
-        break;
-      case UPB_WIRE_TYPE_32BIT:
-        if(!upb_decoder_readf32(d, val.uint32)) return false;
-        break;
-      default:
-        upb_seterr(&d->src.status, UPB_STATUS_ERROR,
-                   "Attempted to call getval on a group.");
-        return false;
+    // The string spans buffers, so we must copy from the residual buffer
+    // (if any bytes are there), then the buffer, and finally from the bytesrc.
+    uint8_t *ptr = (uint8_t*)upb_string_getrwbuf(
+        str, UPB_MIN(total_len, d->buf_bytesleft));
+    int32_t len = 0;
+    if(d->buf_offset < 0) {
+      // Residual bytes we need to copy from tmpbuf.
+      memcpy(ptr, d->tmpbuf, -d->buf_offset);
+      len += -d->buf_offset;
     }
-    // For a packed field where we have not reached the end, we leave the field
-    // in the decoder so we will return it again without parsing a key.
-    if(d->wire_type != UPB_WIRE_TYPE_DELIMITED ||
-       upb_decoder_offset(d) >= d->packed_end_offset) {
-      d->field = NULL;
+    if(d->buf) {
+      // Bytes from the buffer.
+      memcpy(ptr + len, upb_string_getrobuf(d->buf) + d->buf_offset,
+             upb_string_len(str) - len);
+    }
+    upb_decoder_skipbytes(d, upb_string_len(str));
+    if(len < total_len) {
+      // Bytes from the bytesrc.
+      if(!upb_bytesrc_append(d->bytesrc, str, total_len - len)) {
+        upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
+        return false;
+      }
+      // Have to advance this since the buffering layer of the decoder will
+      // never see these bytes.
+      d->buf_stream_offset += total_len - len;
     }
   }
+  d->field = NULL;
   return true;
 }
 
@@ -549,21 +550,19 @@ upb_decoder *upb_decoder_new(upb_msgdef *msgdef)
   d->toplevel_msgdef = msgdef;
   d->limit = &d->stack[UPB_MAX_NESTING];
   d->buf = NULL;
-  d->str = upb_string_new();
   upb_src_init(&d->src, &upb_decoder_src_vtbl);
   return d;
 }
 
 void upb_decoder_free(upb_decoder *d)
 {
-  upb_string_unref(d->str);
-  if(d->buf) upb_string_unref(d->buf);
+  upb_string_unref(d->buf);
   free(d);
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc)
 {
-  if(d->buf) upb_bytesrc_recycle(d->bytesrc, d->buf);
+  upb_string_unref(d->buf);
   d->top = d->stack;
   d->top->msgdef = d->toplevel_msgdef;
   // The top-level message is not delimited (we can keep receiving data for it

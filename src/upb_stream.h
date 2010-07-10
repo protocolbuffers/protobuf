@@ -1,8 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * This file defines four general-purpose interfaces for pulling/pushing either
- * protobuf data or bytes:
+ * This file defines four general-purpose streaming interfaces for protobuf
+ * data or bytes:
  *
  * - upb_src: pull interface for protobuf data.
  * - upb_sink: push interface for protobuf data.
@@ -19,7 +19,7 @@
 #ifndef UPB_SRCSINK_H
 #define UPB_SRCSINK_H
 
-#include "upb_srcsink_vtbl.h"
+#include "upb_stream_vtbl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,10 +41,10 @@ struct _upb_fielddef;
 // error or end-of-stream.
 struct _upb_fielddef *upb_src_getdef(upb_src *src);
 
-// Retrieves and stores the next value in "val".  For string types the caller
-// does not own a ref to the returned type; you must ref it yourself if you
-// want one.  Returns false on error.
+// Retrieves and stores the next value in "val".  For string types "val" must
+// be a newly-recycled string.  Returns false on error.
 bool upb_src_getval(upb_src *src, upb_valueptr val);
+bool upb_src_getstr(upb_src *src, upb_string *val);
 
 // Like upb_src_getval() but skips the value.
 bool upb_src_skipval(upb_src *src);
@@ -72,7 +72,6 @@ bool upb_src_getuint32(upb_src *src, uint32_t *val);
 bool upb_src_getuint64(upb_src *src, uint64_t *val);
 bool upb_src_getfloat(upb_src *src, float *val);
 bool upb_src_getdouble(upb_src *src, double *val);
-bool upb_src_getstr(upb_src *src, upb_string **val);
 
 /* upb_sink *******************************************************************/
 
@@ -93,14 +92,9 @@ upb_status *upb_sink_status(upb_sink *sink);
 
 /* upb_bytesrc ****************************************************************/
 
-// Returns the next string in the stream.  NULL is returned on error or eof.
+// Returns the next string in the stream.  false is returned on error or eof.
 // The string must be at least "minlen" bytes long unless the stream is eof.
-//
-// A ref is passed to the caller, though the caller is encouraged to pass the
-// ref back to the bytesrc with upb_bytesrc_recycle().  This can help reduce
-// memory allocation/deallocation.
-upb_string *upb_bytesrc_get(upb_bytesrc *src, upb_strlen_t minlen);
-void upb_bytesrc_recycle(upb_bytesrc *src, upb_string *str);
+bool upb_bytesrc_get(upb_bytesrc *src, upb_string *str, upb_strlen_t minlen);
 
 // Appends the next "len" bytes in the stream in-place to "str".  This should
 // be used when the caller needs to build a contiguous string of the existing

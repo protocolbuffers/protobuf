@@ -38,7 +38,7 @@ extern "C" {
 // the associated functions.  Also, strings may *only* be allocated on the heap.
 struct _upb_string {
   char *ptr;
-  uint32_t len;
+  int32_t len;
   uint32_t size;
   upb_atomic_refcount_t refcount;
   union {
@@ -53,12 +53,22 @@ struct _upb_string {
 // longer needed, it should be unref'd, never freed directly.
 upb_string *upb_string_new();
 
-// Releases a ref on the given string, which may free the memory.
-void upb_string_unref(upb_string *str);
+void _upb_string_free(upb_string *str);
+
+// Releases a ref on the given string, which may free the memory.  "str"
+// can be NULL, in which case this is a no-op.
+INLINE void upb_string_unref(upb_string *str) {
+  if (str && upb_atomic_unref(&str->refcount)) _upb_string_free(str);
+}
 
 // Returns a string with the same contents as "str".  The caller owns a ref on
 // the returned string, which may or may not be the same object as "str.
-upb_string *upb_string_getref(upb_string *str);
+INLINE upb_string *upb_string_getref(upb_string *str) {
+  // If/when we support stack-allocated strings, this will have to allocate
+  // a new string if the given string is on the stack.
+  upb_atomic_ref(&str->refcount);
+  return str;
+}
 
 // Returns the length of the string.
 INLINE upb_strlen_t upb_string_len(upb_string *str) { return str->len; }
@@ -75,6 +85,17 @@ INLINE void upb_string_endread(upb_string *str) { (void)str; }
 // Attempts to recycle the string "str" so it may be reused and have different
 // data written to it.  The returned string is either "str" if it could be
 // recycled or a newly created string if "str" has other references.
+//
+// As a special case, passing NULL will allocate a new string.  This is
+// convenient for the pattern:
+//
+//   upb_string *str = NULL;
+//   while (x) {
+//     if (y) {
+//       str = upb_string_tryrecycle(str);
+//       upb_src_getstr(str);
+//     }
+//   }
 upb_string *upb_string_tryrecycle(upb_string *str);
 
 // The three options for setting the contents of a string.  These may only be

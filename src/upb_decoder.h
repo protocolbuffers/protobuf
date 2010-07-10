@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "upb_def.h"
-#include "upb_srcsink.h"
+#include "upb_stream.h"
 
 #ifdef __cplusplus
 extern "C" {
