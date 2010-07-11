@@ -201,7 +201,7 @@ INLINE void upb_status_init(upb_status *status) {
 }
 
 void upb_printerr(upb_status *status);
-void upb_status_reset(upb_status *status);
+void upb_clearerr(upb_status *status);
 void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,
                 ...);
 void upb_copyerr(upb_status *to, upb_status *from);

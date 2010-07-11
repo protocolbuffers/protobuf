@@ -211,7 +211,9 @@ static void upb_def_uninit(upb_def *def) {
 typedef struct _upb_unresolveddef {
   upb_def base;
 
-  // The target type name.  This may or may not be fully qualified.
+  // The target type name.  This may or may not be fully qualified.  It is
+  // tempting to want to use base.fqname for this, but that will be qualified
+  // which is inappropriate for a name we still have to resolve.
   upb_string *name;
 } upb_unresolveddef;
 
@@ -224,6 +226,7 @@ static upb_unresolveddef *upb_unresolveddef_new(upb_string *str) {
 }
 
 static void upb_unresolveddef_free(struct _upb_unresolveddef *def) {
+  upb_string_unref(def->name);
   upb_def_uninit(&def->base);
   free(def);
 }
@@ -232,6 +235,10 @@ static void upb_unresolveddef_free(struct _upb_unresolveddef *def) {
 /* upb_enumdef ****************************************************************/
 
 static void upb_enumdef_free(upb_enumdef *e) {
+  upb_enum_iter i;
+  for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
+    upb_string_unref(upb_enum_iter_name(i));
+  }
   upb_strtable_free(&e->ntoi);
   upb_inttable_free(&e->iton);
   upb_def_uninit(&e->base);
@@ -328,14 +335,11 @@ upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter) {
 /* upb_fielddef ***************************************************************/
 
 static void upb_fielddef_free(upb_fielddef *f) {
-  free(f);
-}
-
-static void upb_fielddef_uninit(upb_fielddef *f) {
   upb_string_unref(f->name);
   if(f->owned) {
     upb_def_unref(f->def);
   }
+  free(f);
 }
 
 static bool upb_addfield(upb_src *src, upb_msgdef *m, upb_status *status)
@@ -453,7 +457,7 @@ static void upb_msgdef_free(upb_msgdef *m)
 {
   upb_msg_iter i;
   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i))
-    upb_fielddef_uninit(upb_msg_iter_field(i));
+    upb_fielddef_free(upb_msg_iter_field(i));
   upb_strtable_free(&m->ntof);
   upb_inttable_free(&m->itof);
   upb_def_uninit(&m->base);
@@ -487,7 +491,7 @@ static bool upb_addfd(upb_src *src, upb_deflist *defs, upb_status *status)
   upb_fielddef *f;
   while((f = upb_src_getdef(src)) != NULL) {
     switch(f->number) {
-      case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_NAME_FIELDNUM:
+      case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_PACKAGE_FIELDNUM:
         package = upb_string_tryrecycle(package);
         CHECKSRC(upb_src_getstr(src, package));
         break;
@@ -589,6 +593,7 @@ static bool upb_symtab_findcycles(upb_msgdef *m, int depth, upb_status *status)
                  "in a cycle of length %d, which exceeds the maximum type "
                  "cycle length of %d.", UPB_UPCAST(m)->fqname, cycle_len,
                  UPB_MAX_TYPE_CYCLE_LEN);
+      return false;
     }
     return true;
   } else if(UPB_UPCAST(m)->search_depth > 0) {
@@ -664,7 +669,7 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
     upb_msgdef *m = upb_dyncast_msgdef(e->def);
     if(!m) continue;
     // The findcycles() call will decrement the external refcount of the
-    if(!upb_symtab_findcycles(m, 0, status)) return false;
+    upb_symtab_findcycles(m, 0, status);
     upb_msgdef *open_defs[UPB_MAX_TYPE_CYCLE_LEN];
     upb_cycle_ref_or_unref(m, NULL, open_defs, 0, true);
   }
@@ -735,7 +740,6 @@ err:
   upb_rwlock_unlock(&s->lock);
   for(upb_symtab_ent *e = upb_strtable_begin(&tmptab); e;
       e = upb_strtable_next(&tmptab, &e->e)) {
-    fprintf(stderr, "Unreffing def: '" UPB_STRFMT "'\n", UPB_STRARG(e->e.key));
     upb_def_unref(e->def);
   }
   upb_strtable_free(&tmptab);
@@ -921,12 +925,10 @@ static upb_fielddef *upb_baredecoder_getdef(upb_baredecoder *d)
   key = upb_baredecoder_readv32(d);
   d->wire_type = key & 0x7;
   d->field.number = key >> 3;
-  fprintf(stderr, "field num: %d, wire_type: %d\n", d->field.number, d->wire_type);
   if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
     // For delimited wire values we parse the length now, since we need it in
     // all cases.
     d->delimited_len = upb_baredecoder_readv32(d);
-    fprintf(stderr, "delimited size: %d\n", d->delimited_len);
   }
   return &d->field;
 }
@@ -1026,9 +1028,8 @@ void upb_symtab_add_descriptorproto(upb_symtab *symtab)
   if(!upb_ok(&status)) {
     // upb itself is corrupt.
     upb_printerr(&status);
+    upb_clearerr(&status);
     upb_symtab_unref(symtab);
     abort();
   }
-  fprintf(stderr, "Claims to have succeeded\n");
-  upb_printerr(&status);
 }

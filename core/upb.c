@@ -59,7 +59,7 @@ void upb_copyerr(upb_status *to, upb_status *from)
   if(from->str) to->str = upb_string_getref(from->str);
 }
 
-void upb_status_reset(upb_status *status) {
+void upb_clearerr(upb_status *status) {
   status->code = UPB_STATUS_OK;
   upb_string_unref(status->str);
   status->str = NULL;
