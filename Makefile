@@ -48,12 +48,13 @@ clean:
 # The core library (core/libupb.a)
 SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
     descriptor/descriptor.c
+$(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 core/upb_def.o: core/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
 core/upb_def.lo: core/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
 

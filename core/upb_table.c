@@ -179,7 +179,7 @@ static void strinsert(upb_strtable *t, upb_strtable_entry *e)
       memcpy(strent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
       upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
       while(1) {
-        assert(!upb_string_isnull(evictee_e->key));
+        assert(evictee_e->key);
         assert(evictee_e->next != UPB_END_OF_CHAIN);
         if(evictee_e->next == bucket) {
           evictee_e->next = empty_bucket;

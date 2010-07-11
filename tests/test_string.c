@@ -66,4 +66,7 @@ int main() {
 
   upb_string_unref(str);
   upb_string_unref(str2);
+
+  // Unref of NULL is harmless.
+  upb_string_unref(NULL);
 }

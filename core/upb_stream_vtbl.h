@@ -88,6 +88,7 @@ struct upb_bytesrc {
 INLINE void upb_src_init(upb_src *s, upb_src_vtable *vtbl) {
   s->vtbl = vtbl;
   s->eof = false;
+  upb_status_init(&s->status);
 #ifndef DEBUG
   // TODO: initialize debug-mode checking.
 #endif

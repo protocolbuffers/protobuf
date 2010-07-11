@@ -44,12 +44,11 @@ void upb_seterr(upb_status *status, enum upb_status_code code,
                 const char *msg, ...)
 {
   if(upb_ok(status)) {  // The first error is the most interesting.
-    status->str = upb_string_new();
-    char *str = upb_string_getrwbuf(status->str, UPB_ERRORMSG_MAXLEN);
     status->code = code;
+    status->str = upb_string_tryrecycle(status->str);
     va_list args;
     va_start(args, msg);
-    vsnprintf(str, UPB_ERRORMSG_MAXLEN, msg, args);
+    upb_string_vprintf(status->str, msg, args);
     va_end(args);
   }
 }
@@ -57,10 +56,10 @@ void upb_seterr(upb_status *status, enum upb_status_code code,
 void upb_copyerr(upb_status *to, upb_status *from)
 {
   to->code = from->code;
-  to->str = upb_string_getref(from->str);
+  if(from->str) to->str = upb_string_getref(from->str);
 }
 
-void upb_reset(upb_status *status) {
+void upb_status_reset(upb_status *status) {
   status->code = UPB_STATUS_OK;
   upb_string_unref(status->str);
   status->str = NULL;

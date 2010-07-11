@@ -135,11 +135,6 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
 typedef struct _upb_msgdef {
   upb_def base;
   upb_atomic_refcount_t cycle_refcount;
-  size_t size;
-  upb_field_count_t num_fields;
-  uint32_t set_flags_bytes;
-  uint32_t num_required_fields;  // Required fields have the lowest set bytemasks.
-  upb_fielddef *fields;   // We have exclusive ownership of these.
 
   // Tables for looking up fields by number and name.
   upb_inttable itof;  // int to field
@@ -170,6 +165,21 @@ INLINE upb_fielddef *upb_msg_ntof(upb_msgdef *m, upb_string *name) {
   return e ? e->f : NULL;
 }
 
+// Iteration over fields.  The order is undefined.
+//   upb_msg_iter i;
+//   for(i = upb_msg_begin(m); !upb_msg_done(&i); i = upb_msg_next(&i)) {
+//     // ...
+//   }
+typedef upb_itof_ent *upb_msg_iter;
+
+upb_msg_iter upb_msg_begin(upb_msgdef *m);
+upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter);
+INLINE bool upb_msg_done(upb_msg_iter iter) { return iter == NULL; }
+
+INLINE upb_fielddef *upb_msg_iter_field(upb_msg_iter iter) {
+  return iter->f;
+}
+
 /* upb_enumdef ****************************************************************/
 
 typedef struct _upb_enumdef {
@@ -177,6 +187,16 @@ typedef struct _upb_enumdef {
   upb_strtable ntoi;
   upb_inttable iton;
 } upb_enumdef;
+
+typedef struct {
+  upb_strtable_entry e;
+  uint32_t value;
+} upb_ntoi_ent;
+
+typedef struct {
+  upb_inttable_entry e;
+  upb_string *string;
+} upb_iton_ent;
 
 typedef int32_t upb_enumval_t;
 
@@ -186,18 +206,22 @@ upb_string *upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
 
 // Iteration over name/value pairs.  The order is undefined.
 //   upb_enum_iter i;
-//   for(upb_enum_begin(&i, e); !upb_enum_done(&i); upb_enum_next(&i)) {
+//   for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
 //     // ...
 //   }
-typedef struct {
-  upb_enumdef *e;
-  void *state;   // Internal iteration state.
-  upb_string *name;
-  upb_enumval_t val;
-} upb_enum_iter;
-void upb_enum_begin(upb_enum_iter *iter, upb_enumdef *e);
-void upb_enum_next(upb_enum_iter *iter);
-bool upb_enum_done(upb_enum_iter *iter);
+typedef upb_iton_ent *upb_enum_iter;
+
+upb_enum_iter upb_enum_begin(upb_enumdef *e);
+upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter);
+INLINE bool upb_enum_done(upb_enum_iter iter) { return iter == NULL; }
+
+INLINE upb_string *upb_enum_iter_name(upb_enum_iter iter) {
+  return iter->string;
+}
+INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
+  return iter->e.key;
+}
+
 
 /* upb_symtab *****************************************************************/
 
@@ -252,10 +276,10 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
 // more useful?  Maybe it should be an option.
 void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
 
-// Returns a symtab that defines google.protobuf.DescriptorProto and all other
-// types that are defined in descriptor.proto.  This allows you to load other
-// proto types.  The caller owns a ref on the returned symtab.
-upb_symtab *upb_get_descriptor_symtab();
+// Adds defs for google.protobuf.FileDescriptorSet and friends to this symtab.
+// This is necessary for bootstrapping, since these are the upb_defs that
+// specify other defs and allow them to be loaded.
+void upb_symtab_add_descriptorproto(upb_symtab *s);
 
 
 /* upb_def casts **************************************************************/

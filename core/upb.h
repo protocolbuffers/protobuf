@@ -195,7 +195,12 @@ INLINE bool upb_ok(upb_status *status) {
   return status->code == UPB_STATUS_OK;
 }
 
-void upb_reset(upb_status *status);
+INLINE void upb_status_init(upb_status *status) {
+  status->code = UPB_STATUS_OK;
+  status->str = NULL;
+}
+
+void upb_status_reset(upb_status *status);
 void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,
                 ...);
 void upb_copyerr(upb_status *to, upb_status *from);
