@@ -64,3 +64,12 @@ void upb_status_reset(upb_status *status) {
   upb_string_unref(status->str);
   status->str = NULL;
 }
+
+void upb_printerr(upb_status *status) {
+  if(status->str) {
+    fprintf(stderr, "code: %d, msg: " UPB_STRFMT "\n",
+            status->code, UPB_STRARG(status->str));
+  } else {
+    fprintf(stderr, "code: %d, no msg\n", status->code);
+  }
+}

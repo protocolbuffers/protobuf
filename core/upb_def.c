@@ -21,7 +21,7 @@ typedef struct {
 
 static void upb_deflist_init(upb_deflist *l) {
   l->size = 8;
-  l->defs = malloc(l->size);
+  l->defs = malloc(l->size * sizeof(void*));
   l->len = 0;
 }
 
@@ -34,7 +34,7 @@ static void upb_deflist_uninit(upb_deflist *l) {
 static void upb_deflist_push(upb_deflist *l, upb_def *d) {
   if(l->len == l->size) {
     l->size *= 2;
-    l->defs = realloc(l->defs, l->size);
+    l->defs = realloc(l->defs, l->size * sizeof(void*));
   }
   l->defs[l->len++] = d;
 }
@@ -238,6 +238,7 @@ static void upb_enumdef_free(upb_enumdef *e) {
   free(e);
 }
 
+// google.protobuf.EnumValueDescriptorProto.
 static bool upb_addenum_val(upb_src *src, upb_enumdef *e, upb_status *status)
 {
   int32_t number = -1;
@@ -245,12 +246,12 @@ static bool upb_addenum_val(upb_src *src, upb_enumdef *e, upb_status *status)
   upb_fielddef *f;
   while((f = upb_src_getdef(src)) != NULL) {
     switch(f->number) {
-      case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
-        CHECKSRC(upb_src_getint32(src, &number));
-        break;
       case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME_FIELDNUM:
         name = upb_string_tryrecycle(name);
         CHECKSRC(upb_src_getstr(src, name));
+        break;
+      case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
+        CHECKSRC(upb_src_getint32(src, &number));
         break;
       default:
         CHECKSRC(upb_src_skipval(src));
@@ -278,6 +279,7 @@ err:
   return false;
 }
 
+// google.protobuf.EnumDescriptorProto.
 static bool upb_addenum(upb_src *src, upb_deflist *defs, upb_status *status)
 {
   upb_enumdef *e = malloc(sizeof(*e));
@@ -290,8 +292,11 @@ static bool upb_addenum(upb_src *src, upb_deflist *defs, upb_status *status)
       case GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_NAME_FIELDNUM:
         e->base.fqname = upb_string_tryrecycle(e->base.fqname);
         CHECKSRC(upb_src_getstr(src, e->base.fqname));
+        break;
       case GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_VALUE_FIELDNUM:
+        CHECKSRC(upb_src_startmsg(src));
         CHECK(upb_addenum_val(src, e, status));
+        CHECKSRC(upb_src_endmsg(src));
         break;
       default:
         upb_src_skipval(src);
@@ -729,8 +734,10 @@ err:
   // We need to free all defs from "tmptab."
   upb_rwlock_unlock(&s->lock);
   for(upb_symtab_ent *e = upb_strtable_begin(&tmptab); e;
-      e = upb_strtable_next(&tmptab, &e->e))
+      e = upb_strtable_next(&tmptab, &e->e)) {
+    fprintf(stderr, "Unreffing def: '" UPB_STRFMT "'\n", UPB_STRARG(e->e.key));
     upb_def_unref(e->def);
+  }
   upb_strtable_free(&tmptab);
   return false;
 }
@@ -914,10 +921,12 @@ static upb_fielddef *upb_baredecoder_getdef(upb_baredecoder *d)
   key = upb_baredecoder_readv32(d);
   d->wire_type = key & 0x7;
   d->field.number = key >> 3;
+  fprintf(stderr, "field num: %d, wire_type: %d\n", d->field.number, d->wire_type);
   if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
     // For delimited wire values we parse the length now, since we need it in
     // all cases.
     d->delimited_len = upb_baredecoder_readv32(d);
+    fprintf(stderr, "delimited size: %d\n", d->delimited_len);
   }
   return &d->field;
 }
@@ -944,6 +953,7 @@ static bool upb_baredecoder_getval(upb_baredecoder *d, upb_valueptr val)
       *val.uint32 = upb_baredecoder_readf32(d);
       break;
     default:
+      *(char*)0 = 0;
       assert(false);
   }
   return true;
@@ -951,19 +961,24 @@ static bool upb_baredecoder_getval(upb_baredecoder *d, upb_valueptr val)
 
 static bool upb_baredecoder_skipval(upb_baredecoder *d)
 {
-  upb_value val;
-  return upb_baredecoder_getval(d, upb_value_addrof(&val));
+  if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
+    d->offset += d->delimited_len;
+    return true;
+  } else {
+    upb_value val;
+    return upb_baredecoder_getval(d, upb_value_addrof(&val));
+  }
 }
 
 static bool upb_baredecoder_startmsg(upb_baredecoder *d)
 {
-  *(d->top++) = d->offset + d->delimited_len;
+  *(++d->top) = d->offset + d->delimited_len;
   return true;
 }
 
 static bool upb_baredecoder_endmsg(upb_baredecoder *d)
 {
-  d->offset = *(--d->top);
+  d->offset = *(d->top--);
   return true;
 }
 
@@ -980,7 +995,9 @@ static upb_baredecoder *upb_baredecoder_new(upb_string *str)
 {
   upb_baredecoder *d = malloc(sizeof(*d));
   d->input = upb_string_getref(str);
+  d->offset = 0;
   d->top = &d->stack[0];
+  *(d->top) = upb_string_len(d->input);
   upb_src_init(&d->src, &upb_baredecoder_src_vtbl);
   return d;
 }
@@ -1001,9 +1018,17 @@ void upb_symtab_add_descriptorproto(upb_symtab *symtab)
   // TODO: allow upb_strings to be static or on the stack.
   upb_string *descriptor = upb_strduplen(descriptor_pb, descriptor_pb_len);
   upb_baredecoder *decoder = upb_baredecoder_new(descriptor);
-  upb_status status;
+  upb_status status = UPB_STATUS_INIT;
   upb_symtab_addfds(symtab, upb_baredecoder_src(decoder), &status);
-  assert(upb_ok(&status));
   upb_baredecoder_free(decoder);
   upb_string_unref(descriptor);
+
+  if(!upb_ok(&status)) {
+    // upb itself is corrupt.
+    upb_printerr(&status);
+    upb_symtab_unref(symtab);
+    abort();
+  }
+  fprintf(stderr, "Claims to have succeeded\n");
+  upb_printerr(&status);
 }

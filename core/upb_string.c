@@ -87,6 +87,7 @@ char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len) {
 
 void upb_string_substr(upb_string *str, upb_string *target_str,
                        upb_strlen_t start, upb_strlen_t len) {
+  if(str->ptr) *(char*)0 = 0;
   assert(str->ptr == NULL);
   str->src = upb_string_getref(target_str);
   str->ptr = upb_string_getrobuf(target_str) + start;
@@ -103,11 +104,15 @@ void upb_string_vprintf(upb_string *str, const char *format, va_list args) {
   uint32_t true_size = vsnprintf(buf, size, format, args_copy);
   va_end(args_copy);
 
-  if (true_size > size) {
-    // Need to reallocate.
+  if (true_size >= size) {
+    // Need to reallocate.  We reallocate even if the sizes were equal,
+    // because snprintf excludes the terminating NULL from its count.
+    // We don't care about the terminating NULL, but snprintf might
+    // bail out of printing even other characters if it doesn't have
+    // enough space to write the NULL also.
     str = upb_string_tryrecycle(str);
-    buf = upb_string_getrwbuf(str, true_size);
-    vsnprintf(buf, true_size, format, args);
+    buf = upb_string_getrwbuf(str, true_size + 1);
+    vsnprintf(buf, true_size + 1, format, args);
   }
   str->len = true_size;
 }
