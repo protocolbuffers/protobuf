@@ -29,8 +29,7 @@ static int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 // upb_decoder_frame is one frame of that stack.
 typedef struct {
   upb_msgdef *msgdef;
-  upb_fielddef *field;
-  upb_strlen_t end_offset;  // For groups, -1.
+  upb_strlen_t end_offset;  // For groups, UPB_GROUP_END_OFFSET.
 } upb_decoder_frame;
 
 struct upb_decoder {
@@ -57,9 +56,6 @@ struct upb_decoder {
   // The overall stream offset of the beginning of "buf".
   uint32_t buf_stream_offset;
 
-  // Fielddef for the key we just read.
-  upb_fielddef *field;
-
   // Wire type of the key we just read.
   upb_wire_type_t wire_type;
 
@@ -67,6 +63,9 @@ struct upb_decoder {
   upb_strlen_t delimited_len;
 
   upb_strlen_t packed_end_offset;
+
+  // Fielddef for the key we just read.
+  upb_fielddef *field;
 
   // We keep a stack of messages we have recursed into.
   upb_decoder_frame *top, *limit, stack[UPB_MAX_NESTING];
@@ -455,7 +454,6 @@ bool upb_decoder_getstr(upb_decoder *d, upb_string *str) {
 static bool upb_decoder_skipgroup(upb_decoder *d);
 
 bool upb_decoder_startmsg(upb_decoder *d) {
-  d->top->field = d->field;
   if(++d->top >= d->limit) {
     upb_seterr(&d->src.status, UPB_ERROR_MAX_NESTING_EXCEEDED,
                "Nesting exceeded maximum (%d levels)\n",
@@ -476,7 +474,7 @@ bool upb_decoder_endmsg(upb_decoder *d) {
   if(d->top > d->stack) {
     --d->top;
     if(!d->src.eof) {
-      if(d->top->field->type == UPB_TYPE(GROUP))
+      if(d->top->end_offset == UPB_GROUP_END_OFFSET)
         upb_decoder_skipgroup(d);
       else
         upb_decoder_skipbytes(d, d->top->end_offset - upb_decoder_offset(d));
