@@ -35,29 +35,58 @@ struct _upb_fielddef;
 
 /* upb_src ********************************************************************/
 
+// A upb_src is a pull parser for protobuf data.  Sample usage:
+//
+//   #define CHECK(x) if(!x) goto err;
+//
+//   bool parse_msg(upb_src *src, int indent) {
+//     upb_fielddef *f;
+//     while ((f = upb_src_getdef(src)) != NULL) {
+//       for (int i = 0; i < indent; i++) putchar(' ');
+//       printf("Parsed field; name=" UPB_STRFMT ", num=%d",
+//              UPB_STRARG(d->name), d->number);
+//       if (upb_issubmsg(f)) {
+//         CHECK(upb_src_startmsg(src));
+//         CHECK(parse_msg(src, indent + 2));
+//         CHECK(upb_src_endmsg(src));
+//       } else {
+//         CHECK(upb_src_skipval(src));
+//       }
+//     }
+//     // We should be EOF now, otherwise there was an error.
+//     CHECK(upb_src_eof(src));
+//     return true;
+//
+//   err:
+//     return false;
+//   }
+//
 // TODO: decide how to handle unknown fields.
 
 // Retrieves the fielddef for the next field in the stream.  Returns NULL on
-// error or end-of-stream.
+// error or end-of-stream.  End of stream can simply mean end of submessage.
 struct _upb_fielddef *upb_src_getdef(upb_src *src);
 
-// Retrieves and stores the next value in "val".  For string types "val" must
-// be a newly-recycled string.  Returns false on error.
+// Retrieves and stores the next value in "val".  upb_src_getval() is for all
+// numeric types and upb_src_getstr() is for strings.  For string types "str"
+// must be a newly-recycled string.  Returns false on error.
 bool upb_src_getval(upb_src *src, upb_valueptr val);
 bool upb_src_getstr(upb_src *src, upb_string *val);
 
 // Like upb_src_getval() but skips the value.
 bool upb_src_skipval(upb_src *src);
 
-// Descends into a submessage.  May only be called after a def has been
-// returned that indicates a submessage.
+// Descends into a submessage.  May only be called when upb_issubmsg(f) is true
+// for an f = upb_src_getdef(src) that was just parsed.
 bool upb_src_startmsg(upb_src *src);
 
 // Stops reading a submessage.  May be called before the stream is EOF, in
 // which case the rest of the submessage is skipped.
 bool upb_src_endmsg(upb_src *src);
 
-// Returns the current error/eof status for the stream.
+// Returns the current error/eof status for the stream.  If a stream is eof
+// but we are inside a submessage, calling upb_src_endmsg(src) will reset
+// the eof marker.
 INLINE upb_status *upb_src_status(upb_src *src) { return &src->status; }
 INLINE bool upb_src_eof(upb_src *src) { return src->eof; }
 
@@ -80,9 +109,7 @@ bool upb_sink_putdef(upb_sink *sink, struct _upb_fielddef *def);
 
 // Puts the given value into the stream.
 bool upb_sink_putval(upb_sink *sink, upb_value val);
-
-// Starts a submessage.  (needed?  the def tells us we're starting a submsg.)
-bool upb_sink_startmsg(upb_sink *sink);
+bool upb_sink_putstr(upb_sink *sink, upb_string *str);
 
 // Ends a submessage.
 bool upb_sink_endmsg(upb_sink *sink);
@@ -113,6 +140,12 @@ int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str);
 
 // Returns the current error status for the stream.
 upb_status *upb_bytesink_status(upb_bytesink *sink);
+
+/* Utility functions **********************************************************/
+
+// Streams data from src to sink until EOF or error.
+void upb_streamdata(upb_src *src, upb_sink *sink, upb_status *status);
+
 
 #ifdef __cplusplus
 }  /* extern "C" */

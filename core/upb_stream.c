@@ -16,10 +16,10 @@ void upb_streamdata(upb_src *src, upb_sink *sink, upb_status *status) {
   upb_string *str = NULL;
   while((f = upb_src_getdef(src)) != NULL) {
     CHECKSINK(upb_sink_putdef(sink, f));
-    if(f->type == UPB_TYPE(GROUP) || f->type == UPB_TYPE(MESSAGE)) {
+    if(upb_issubmsg(f)) {
       // We always recurse into submessages, but the putdef above already told
       // the sink that.
-    } else if(f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES)) {
+    } else if(upb_isstring(f)) {
       str = upb_string_tryrecycle(str);
       CHECKSRC(upb_src_getstr(src, str));
       CHECKSINK(upb_sink_putstr(sink, str));

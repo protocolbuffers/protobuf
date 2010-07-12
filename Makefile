@@ -47,6 +47,7 @@ clean:
 
 # The core library (core/libupb.a)
 SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
+    core/upb_stream.c \
     descriptor/descriptor.c
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
