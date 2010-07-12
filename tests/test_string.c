@@ -3,8 +3,33 @@
 #include "upb_string.h"
 
 char static_str[] = "Static string.";
+upb_string static_upbstr = UPB_STATIC_STRING(static_str);
 
-int main() {
+static void test_static() {
+  // Static string is initialized appropriately.
+  assert(upb_streql(&static_upbstr, UPB_STRLIT("Static string.")));
+
+  // Taking a ref on a static string returns the same string, and repeated
+  // refs don't get the string in a confused state.
+  assert(upb_string_getref(&static_upbstr) == &static_upbstr);
+  assert(upb_string_getref(&static_upbstr) == &static_upbstr);
+  assert(upb_string_getref(&static_upbstr) == &static_upbstr);
+
+  // Unreffing a static string does nothing (is not harmful).
+  upb_string_unref(&static_upbstr);
+  upb_string_unref(&static_upbstr);
+  upb_string_unref(&static_upbstr);
+  upb_string_unref(&static_upbstr);
+  upb_string_unref(&static_upbstr);
+
+  // Recycling a static string returns a new string (that can be modified).
+  upb_string *str = upb_string_tryrecycle(&static_upbstr);
+  assert(str != &static_upbstr);
+
+  upb_string_unref(str);
+}
+
+static void test_dynamic() {
   upb_string *str = upb_string_new();
   assert(str != NULL);
   upb_string_unref(str);
@@ -29,6 +54,7 @@ int main() {
   const char *robuf2 = upb_string_getrobuf(str);
   assert(robuf2 == robuf);
   assert(upb_streqlc(str, "XX"));
+  assert(upb_streql(str, UPB_STRLIT("XX")));
 
   // Make string alias part of another string.
   str2 = upb_strdupc("WXYZ");
@@ -78,4 +104,9 @@ int main() {
 
   // Unref of NULL is harmless.
   upb_string_unref(NULL);
+}
+
+int main() {
+  test_static();
+  test_dynamic();
 }

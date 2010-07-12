@@ -11,12 +11,13 @@
 #ifndef UPB_DESCRIPTOR_H_
 #define UPB_DESCRIPTOR_H_
 
+#include "upb_string.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern unsigned char descriptor_pb[];
-extern unsigned int descriptor_pb_len;
+extern upb_string descriptor_str;
 
 #ifdef __cplusplus
 }  /* extern "C" */

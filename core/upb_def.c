@@ -1018,12 +1018,10 @@ static upb_src *upb_baredecoder_src(upb_baredecoder *d)
 void upb_symtab_add_descriptorproto(upb_symtab *symtab)
 {
   // TODO: allow upb_strings to be static or on the stack.
-  upb_string *descriptor = upb_strduplen(descriptor_pb, descriptor_pb_len);
-  upb_baredecoder *decoder = upb_baredecoder_new(descriptor);
+  upb_baredecoder *decoder = upb_baredecoder_new(&descriptor_str);
   upb_status status = UPB_STATUS_INIT;
   upb_symtab_addfds(symtab, upb_baredecoder_src(decoder), &status);
   upb_baredecoder_free(decoder);
-  upb_string_unref(descriptor);
 
   if(!upb_ok(&status)) {
     // upb itself is corrupt.

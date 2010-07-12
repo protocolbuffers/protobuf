@@ -61,12 +61,12 @@ void _upb_string_free(upb_string *str) {
 }
 
 upb_string *upb_string_tryrecycle(upb_string *str) {
-  if(str == NULL || upb_atomic_read(&str->refcount) > 1) {
-    return upb_string_new();
-  } else {
+  if(str && upb_atomic_read(&str->refcount) == 1) {
     str->ptr = NULL;
     upb_string_release(str);
     return str;
+  } else {
+    return upb_string_new();
   }
 }
 
@@ -123,5 +123,11 @@ upb_string *upb_string_asprintf(const char *format, ...) {
   va_start(args, format);
   upb_string_vprintf(str, format, args);
   va_end(args);
+  return str;
+}
+
+upb_string *upb_strdup(upb_string *s) {
+  upb_string *str = upb_string_new();
+  upb_strcpy(str, s);
   return str;
 }

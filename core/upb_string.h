@@ -63,6 +63,17 @@ struct _upb_string {
   struct _upb_string *src;
 };
 
+// Internal-only initializer for upb_string instances.
+#ifdef UPB_HAVE_MSIZE
+#define _UPB_STRING_INIT(str, len, refcount) {(char*)str, NULL, len, {refcount}, NULL}
+#else
+#define _UPB_STRING_INIT(str, len, refcount) {(char*)str, NULL, len, 0, {refcount}, NULL}
+#endif
+
+// Special pseudo-refcounts for static/stack-allocated strings, respectively.
+#define _UPB_STRING_REFCOUNT_STATIC -1
+#define _UPB_STRING_REFCOUNT_STACK -2
+
 // Returns a newly-created, empty, non-finalized string.  When the string is no
 // longer needed, it should be unref'd, never freed directly.
 upb_string *upb_string_new();
@@ -72,15 +83,21 @@ void _upb_string_free(upb_string *str);
 // Releases a ref on the given string, which may free the memory.  "str"
 // can be NULL, in which case this is a no-op.
 INLINE void upb_string_unref(upb_string *str) {
-  if (str && upb_atomic_unref(&str->refcount)) _upb_string_free(str);
+  if (str && upb_atomic_read(&str->refcount) > 0 &&
+      upb_atomic_unref(&str->refcount)) {
+    _upb_string_free(str);
+  }
 }
+
+upb_string *upb_strdup(upb_string *s);  // Forward-declare.
 
 // Returns a string with the same contents as "str".  The caller owns a ref on
 // the returned string, which may or may not be the same object as "str.
 INLINE upb_string *upb_string_getref(upb_string *str) {
-  // If/when we support stack-allocated strings, this will have to allocate
-  // a new string if the given string is on the stack.
-  upb_atomic_ref(&str->refcount);
+  int refcount = upb_atomic_read(&str->refcount);
+  if (refcount == _UPB_STRING_REFCOUNT_STACK) return upb_strdup(str);
+  // We don't ref the special <0 refcount for static strings.
+  if (refcount > 0) upb_atomic_ref(&str->refcount);
   return str;
 }
 
@@ -150,6 +167,38 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
 //   printf("String is: " UPB_STRFMT, UPB_STRARG(str)); */
 #define UPB_STRARG(str) upb_string_len(str), upb_string_getrobuf(str)
 #define UPB_STRFMT "%.*s"
+
+// Macros for constructing upb_string objects statically or on the stack.  These
+// can be used like:
+//
+// upb_string static_str = UPB_STATIC_STRING("Foo");
+//
+// int main() {
+//   upb_string stack_str = UPB_STACK_STRING("Foo");
+//   // Now:
+//   //   upb_streql(&static_str, &stack_str) == true
+//   //   upb_streql(&static_str, UPB_STRLIT("Foo")) == true
+// }
+//
+// You can also use UPB_STACK_STRING or UPB_STATIC_STRING with character arrays,
+// but you must not change the underlying data once you've passed the string on:
+//
+// void foo() {
+//   char data[] = "ABC123";
+//   upb_string stack_str = UPB_STACK_STR(data);
+//   bar(&stack_str);
+//   data[0] = "B";  // NOT ALLOWED!!
+// }
+//
+// TODO: should the stack business just be like attach/detach?  The latter seems
+// more flexible, though it does require a stack allocation.  Maybe put this off
+// until there is a clear use case.
+#define UPB_STATIC_STRING(str) \
+    _UPB_STRING_INIT(str, sizeof(str)-1, _UPB_STRING_REFCOUNT_STATIC)
+#define UPB_STATIC_STRING_LEN(str, len) \
+    _UPB_STRING_INIT(str, len, _UPB_STRING_REFCOUNT_STATIC)
+#define UPB_STACK_STRING(str) _UPB_STRING_INIT(str, _UPB_STRING_REFCOUNT_STACK)
+#define UPB_STRLIT(str) &(upb_string)UPB_STATIC_STRING(str)
 
 /* upb_string library functions ***********************************************/
 
