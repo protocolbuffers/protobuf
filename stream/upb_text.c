@@ -9,9 +9,9 @@
 #include "upb_text.h"
 #include "upb_data.h"
 
-void upb_text_printval(upb_field_type_t type, upb_value val, FILE *file)
-{
-#define CASE(fmtstr, member) fprintf(file, fmtstr, val.member); break;
+bool upb_textprinter_putval(upb_textprinter *p, upb_value val) {
+  upb_string *p->str = upb_string_tryrecycle(p->str);
+#define CASE(fmtstr, member) upb_string_printf(p->str, fmtstr, val.member); break;
   switch(type) {
     case UPB_TYPE(DOUBLE):
       CASE("%0.f", _double);
@@ -34,18 +34,22 @@ void upb_text_printval(upb_field_type_t type, upb_value val, FILE *file)
       CASE("%" PRIu32, uint32);
     case UPB_TYPE(BOOL):
       CASE("%hhu", _bool);
-    case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES):
-      /* TODO: escaping. */
-      fprintf(file, "\"" UPB_STRFMT "\"", UPB_STRARG(val.str)); break;
   }
+  return upb_bytesink_put(p->str);
+}
+
+bool upb_textprinter_putstr(upb_textprinter *p, upb_string *str) {
+  upb_bytesink_put(UPB_STRLIT("\""));
+  // TODO: escaping.
+  upb_bytesink_put(str);
+  upb_bytesink_put(UPB_STRLIT("\""));
 }
 
 static void print_indent(upb_text_printer *p, FILE *stream)
 {
   if(!p->single_line)
     for(int i = 0; i < p->indent_depth; i++)
-      fprintf(stream, "  ");
+      upb_bytesink_put(UPB_STRLIT("  "));
 }
 
 void upb_text_printfield(upb_text_printer *p, upb_strptr name,
@@ -61,7 +65,7 @@ void upb_text_printfield(upb_text_printer *p, upb_strptr name,
     fputc('\n', stream);
 }
 
-void upb_text_push(upb_text_printer *p, upb_strptr submsg_type, FILE *stream)
+void upb_textprinter_startmsg(upb_textprinter *p)
 {
   print_indent(p, stream);
   fprintf(stream, UPB_STRFMT " {", UPB_STRARG(submsg_type));
@@ -77,28 +81,6 @@ void upb_text_pop(upb_text_printer *p, FILE *stream)
 }
 
 static void printval(upb_text_printer *printer, upb_value v, upb_fielddef *f,
-                     FILE *stream);
-
-static void printmsg(upb_text_printer *printer, upb_msg *msg, upb_msgdef *md,
-                     FILE *stream)
-{
-  for(upb_field_count_t i = 0; i < md->num_fields; i++) {
-    upb_fielddef *f = &md->fields[i];
-    if(!upb_msg_has(msg, f)) continue;
-    upb_value v = upb_msg_get(msg, f);
-    if(upb_isarray(f)) {
-      upb_arrayptr arr = v.arr;
-      for(uint32_t j = 0; j < upb_array_len(arr); j++) {
-        upb_value elem = upb_array_get(arr, f, j);
-        printval(printer, elem, f, stream);
-      }
-    } else {
-      printval(printer, v, f, stream);
-    }
-  }
-}
-
-static void printval(upb_text_printer *printer, upb_value v, upb_fielddef *f,
                      FILE *stream)
 {
   if(upb_issubmsg(f)) {
@@ -109,13 +91,3 @@ static void printval(upb_text_printer *printer, upb_value v, upb_fielddef *f,
     upb_text_printfield(printer, f->name, f->type, v, stream);
   }
 }
-
-
-void upb_msg_print(upb_msg *msg, upb_msgdef *md, bool single_line,
-                   FILE *stream)
-{
-  upb_text_printer printer;
-  upb_text_printer_init(&printer, single_line);
-  printmsg(&printer, msg, md, stream);
-}
-
