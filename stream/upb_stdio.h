@@ -21,7 +21,7 @@ struct upb_stdio;
 typedef struct upb_stdio upb_stdio;
 
 // Creation/deletion.
-upb_stdio_ *upb_stdio__new();
+upb_stdio *upb_stdio_new();
 void upb_stdio_free(upb_stdio *stdio);
 
 // Reset/initialize the object for use.  The src or sink will call

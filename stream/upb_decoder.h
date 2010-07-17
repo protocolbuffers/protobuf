@@ -44,7 +44,7 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc);
 
 // Returns a upb_src pointer by which the decoder can be used.  The returned
 // upb_src is invalidated by upb_decoder_reset() or upb_decoder_free().
-upb_src *upb_decoder_getsrc(upb_decoder *d);
+upb_src *upb_decoder_src(upb_decoder *d);
 
 #ifdef __cplusplus
 }  /* extern "C" */

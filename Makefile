@@ -27,7 +27,7 @@ rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
-INCLUDE=-Idescriptor -Icore -Itests -I.
+INCLUDE=-Idescriptor -Icore -Itests -Istream -I.
 CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 LDLIBS=-lpthread
 
@@ -47,7 +47,7 @@ clean:
 
 # The core library (core/libupb.a)
 SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
-    core/upb_stream.c \
+    core/upb_stream.c stream/upb_stdio.c stream/upb_textprinter.c \
     descriptor/descriptor.c
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
@@ -90,7 +90,8 @@ tests/test.proto.pb: tests/test.proto
 
 TESTS=tests/test_string \
     tests/test_table \
-    tests/test_def
+    tests/test_def \
+    tests/test_decoder
 tests: $(TESTS)
 
 OTHER_TESTS=tests/tests \

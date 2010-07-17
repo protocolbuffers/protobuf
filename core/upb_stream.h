@@ -111,7 +111,10 @@ bool upb_sink_putdef(upb_sink *sink, struct _upb_fielddef *def);
 bool upb_sink_putval(upb_sink *sink, upb_value val);
 bool upb_sink_putstr(upb_sink *sink, upb_string *str);
 
-// Ends a submessage.
+// Starts/ends a submessage.  upb_sink_startmsg may seem redundant, but a
+// client could have a submessage already serialized, and therefore put it
+// as a string instead of its individual elements.
+bool upb_sink_startmsg(upb_sink *sink);
 bool upb_sink_endmsg(upb_sink *sink);
 
 // Returns the current error status for the stream.

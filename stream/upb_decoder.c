@@ -574,3 +574,7 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc)
   d->buf_stream_offset = 0;
   d->buf_offset = 0;
 }
+
+upb_src *upb_decoder_src(upb_decoder *d) {
+  return &d->src;
+}
