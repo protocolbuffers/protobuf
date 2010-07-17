@@ -79,7 +79,7 @@ static bool upb_textprinter_putdef(upb_textprinter *p, upb_fielddef *f)
 {
   upb_textprinter_indent(p);
   upb_bytesink_put(p->bytesink, f->name);
-  upb_bytesink_put(p->bytesink, UPB_STRLIT(":"));
+  upb_bytesink_put(p->bytesink, UPB_STRLIT(": "));
   p->f = f;
   return upb_ok(upb_bytesink_status(p->bytesink));
 }
