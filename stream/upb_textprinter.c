@@ -7,7 +7,7 @@
 #include "upb_textprinter.h"
 
 #include <inttypes.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "upb_def.h"
 #include "upb_string.h"
 
