@@ -91,10 +91,10 @@ static bool upb_decoder_nextbuf(upb_decoder *d)
 
   // Recycle old buffer.
   if(d->buf) {
-    d->buf = upb_string_tryrecycle(d->buf);
     d->buf_offset -= upb_string_len(d->buf);
     d->buf_stream_offset += upb_string_len(d->buf);
   }
+  d->buf = upb_string_tryrecycle(d->buf);
 
   // Pull next buffer.
   if(upb_bytesrc_get(d->bytesrc, d->buf, UPB_MAX_ENCODED_SIZE)) {
@@ -569,6 +569,7 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc)
   // to UINT32_MAX so it doesn't equal UPB_GROUP_END_OFFSET.
   d->top->end_offset = UINT32_MAX - 1;
   d->bytesrc = bytesrc;
+  d->field = NULL;
   d->buf = NULL;
   d->buf_bytesleft = 0;
   d->buf_stream_offset = 0;

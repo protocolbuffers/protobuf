@@ -53,7 +53,7 @@ bool upb_stdio_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len) {
 }
 
 int32_t upb_stdio_put(upb_bytesink *sink, upb_string *str) {
-  upb_stdio *stdio = (upb_stdio*)sink - offsetof(upb_stdio, bytesink);
+  upb_stdio *stdio = (upb_stdio*)((char*)sink - offsetof(upb_stdio, bytesink));
   upb_strlen_t len = upb_string_len(str);
   size_t written = fwrite(upb_string_getrobuf(str), 1, len, stdio->file);
   if(written < len) {
