@@ -331,6 +331,12 @@ upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter) {
   return upb_inttable_next(&e->iton, &iter->e);
 }
 
+upb_string *upb_enumdef_iton(upb_enumdef *def, upb_enumval_t num) {
+  upb_iton_ent *e =
+      (upb_iton_ent*)upb_inttable_fastlookup(&def->iton, num, sizeof(*e));
+  return e ? e->string : NULL;
+}
+
 
 /* upb_fielddef ***************************************************************/
 

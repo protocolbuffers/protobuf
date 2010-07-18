@@ -29,38 +29,48 @@ static void upb_textprinter_endfield(upb_textprinter *p)
 }
 
 static bool upb_textprinter_putval(upb_textprinter *p, upb_value val) {
-  p->str = upb_string_tryrecycle(p->str);
+  upb_bytesink_put(p->bytesink, UPB_STRLIT(": "));
+  upb_enumdef *enum_def;
+  upb_string *enum_label;
+  if(p->f->type == UPB_TYPE(ENUM) &&
+     (enum_def = upb_downcast_enumdef(p->f->def)) != NULL &&
+     (enum_label = upb_enumdef_iton(enum_def, val.int32)) != NULL) {
+    // This is an enum value for which we found a corresponding string.
+    upb_bytesink_put(p->bytesink, enum_label);
+  } else {
+    p->str = upb_string_tryrecycle(p->str);
 #define CASE(fmtstr, member) upb_string_printf(p->str, fmtstr, val.member); break;
-  switch(p->f->type) {
-    case UPB_TYPE(DOUBLE):
-      CASE("%0.f", _double);
-    case UPB_TYPE(FLOAT):
-      CASE("%0.f", _float)
-    case UPB_TYPE(INT64):
-    case UPB_TYPE(SFIXED64):
-    case UPB_TYPE(SINT64):
-      CASE("%" PRId64, int64)
-    case UPB_TYPE(UINT64):
-    case UPB_TYPE(FIXED64):
-      CASE("%" PRIu64, uint64)
-    case UPB_TYPE(INT32):
-    case UPB_TYPE(SFIXED32):
-    case UPB_TYPE(SINT32):
-      CASE("%" PRId32, int32)
-    case UPB_TYPE(UINT32):
-    case UPB_TYPE(FIXED32):
-    case UPB_TYPE(ENUM):
-      CASE("%" PRIu32, uint32);
-    case UPB_TYPE(BOOL):
-      CASE("%hhu", _bool);
+    switch(p->f->type) {
+      case UPB_TYPE(DOUBLE):
+        CASE("%0.f", _double);
+      case UPB_TYPE(FLOAT):
+        CASE("%0.f", _float)
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SFIXED64):
+      case UPB_TYPE(SINT64):
+        CASE("%" PRId64, int64)
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64):
+        CASE("%" PRIu64, uint64)
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(SFIXED32):
+      case UPB_TYPE(SINT32):
+        CASE("%" PRId32, int32)
+      case UPB_TYPE(UINT32):
+      case UPB_TYPE(FIXED32):
+      case UPB_TYPE(ENUM):
+        CASE("%" PRIu32, uint32);
+      case UPB_TYPE(BOOL):
+        CASE("%hhu", _bool);
+    }
+    upb_bytesink_put(p->bytesink, p->str);
   }
-  upb_bytesink_put(p->bytesink, p->str);
   upb_textprinter_endfield(p);
   return upb_ok(upb_bytesink_status(p->bytesink));
 }
 
 static bool upb_textprinter_putstr(upb_textprinter *p, upb_string *str) {
-  upb_bytesink_put(p->bytesink, UPB_STRLIT("\""));
+  upb_bytesink_put(p->bytesink, UPB_STRLIT(": \""));
   // TODO: escaping.
   upb_bytesink_put(p->bytesink, str);
   upb_bytesink_put(p->bytesink, UPB_STRLIT("\""));
@@ -79,14 +89,12 @@ static bool upb_textprinter_putdef(upb_textprinter *p, upb_fielddef *f)
 {
   upb_textprinter_indent(p);
   upb_bytesink_put(p->bytesink, f->name);
-  upb_bytesink_put(p->bytesink, UPB_STRLIT(": "));
   p->f = f;
   return upb_ok(upb_bytesink_status(p->bytesink));
 }
 
 static bool upb_textprinter_startmsg(upb_textprinter *p)
 {
-  upb_bytesink_put(p->bytesink, p->f->def->fqname);
   upb_bytesink_put(p->bytesink, UPB_STRLIT(" {"));
   if(!p->single_line) upb_bytesink_put(p->bytesink, UPB_STRLIT("\n"));
   p->indent_depth++;

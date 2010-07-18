@@ -202,6 +202,7 @@ typedef int32_t upb_enumval_t;
 
 // Lookups from name to integer and vice-versa.
 bool upb_enumdef_ntoi(upb_enumdef *e, upb_string *name, upb_enumval_t *num);
+// Caller does not own a ref on the returned string.
 upb_string *upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
 
 // Iteration over name/value pairs.  The order is undefined.
