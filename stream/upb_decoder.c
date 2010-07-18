@@ -76,7 +76,7 @@ struct upb_decoder {
 
 static upb_strlen_t upb_decoder_offset(upb_decoder *d)
 {
-  return d->buf_stream_offset - d->buf_offset;
+  return d->buf_stream_offset + d->buf_offset;
 }
 
 static bool upb_decoder_nextbuf(upb_decoder *d)
@@ -101,33 +101,29 @@ static bool upb_decoder_nextbuf(upb_decoder *d)
     d->buf_bytesleft += upb_string_len(d->buf);
     return true;
   } else {
-    // Error or EOF.
-    if(!upb_bytesrc_eof(d->bytesrc)) {
-      // Error from bytesrc.
-      upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
-      return false;
-    } else if(d->buf_bytesleft == 0) {
-      // EOF from bytesrc and we don't have any residual bytes left.
-      d->src.eof = true;
-      return false;
-    } else {
-      // No more data left from the bytesrc, but we still have residual bytes.
-      return true;
-    }
+    return false;
   }
 }
 
 static const uint8_t *upb_decoder_getbuf_full(upb_decoder *d, uint32_t *bytes)
 {
-  if(d->buf_bytesleft < UPB_MAX_ENCODED_SIZE) {
-    // GCC is currently complaining about use of an uninitialized value if we
-    // don't set this now.  I think this is incorrect, but leaving this in
-    // to suppress the warning for now.
-    *bytes = 0;
-    if(!upb_decoder_nextbuf(d)) return NULL;
-  }
+  if(d->buf_bytesleft < UPB_MAX_ENCODED_SIZE && !upb_bytesrc_eof(d->bytesrc))
+    upb_decoder_nextbuf(d);
 
-  assert(d->buf_bytesleft >= UPB_MAX_ENCODED_SIZE);
+  if(d->buf_bytesleft < UPB_MAX_ENCODED_SIZE) {
+    if(upb_bytesrc_eof(d->bytesrc) && d->buf_bytesleft > 0) {
+      // We're working through the last few bytes of the buffer.
+    } else if(upb_bytesrc_eof(d->bytesrc)) {
+      // End of stream, no more bytes left.
+      assert(d->buf_bytesleft == 0);
+      d->src.eof = true;
+      return NULL;
+    } else {
+      // We are short of bytes even though the bytesrc isn't EOF; must be error.
+      upb_copyerr(&d->src.status, upb_bytesrc_status(d->bytesrc));
+      return NULL;
+    }
+  }
 
   if(d->buf_offset >= 0) {
     // Common case: the main buffer contains at least UPB_MAX_ENCODED_SIZE
@@ -467,6 +463,7 @@ bool upb_decoder_startmsg(upb_decoder *d) {
   } else {
     frame->end_offset = upb_decoder_offset(d) + d->delimited_len;
   }
+  d->field = NULL;
   return true;
 }
 

@@ -37,14 +37,19 @@ void upb_streamdata(upb_src *src, upb_sink *sink, upb_status *status) {
     CHECKSRC(upb_src_eof(src));
     if (depth == 0) break;
     --depth;
+    upb_src_endmsg(src);
+    upb_sink_endmsg(sink);
   }
+  upb_string_unref(str);
   return;
 
 src_err:
+  upb_string_unref(str);
   upb_copyerr(status, upb_src_status(src));
   return;
 
 sink_err:
+  upb_string_unref(str);
   upb_copyerr(status, upb_sink_status(sink));
   return;
 }

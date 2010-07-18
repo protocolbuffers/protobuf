@@ -23,9 +23,9 @@ struct _upb_textprinter {
 static void upb_textprinter_endfield(upb_textprinter *p)
 {
   if(p->single_line)
-    upb_bytesink_put(p->bytesink, UPB_STRLIT(' '));
+    upb_bytesink_put(p->bytesink, UPB_STRLIT(" "));
   else
-    upb_bytesink_put(p->bytesink, UPB_STRLIT('\n'));
+    upb_bytesink_put(p->bytesink, UPB_STRLIT("\n"));
 }
 
 static bool upb_textprinter_putval(upb_textprinter *p, upb_value val) {
@@ -86,10 +86,9 @@ static bool upb_textprinter_putdef(upb_textprinter *p, upb_fielddef *f)
 
 static bool upb_textprinter_startmsg(upb_textprinter *p)
 {
-  upb_textprinter_indent(p);
   upb_bytesink_put(p->bytesink, p->f->def->fqname);
   upb_bytesink_put(p->bytesink, UPB_STRLIT(" {"));
-  if(!p->single_line) upb_bytesink_put(p->bytesink, UPB_STRLIT('\n'));
+  if(!p->single_line) upb_bytesink_put(p->bytesink, UPB_STRLIT("\n"));
   p->indent_depth++;
   return upb_ok(upb_bytesink_status(p->bytesink));
 }
@@ -114,10 +113,12 @@ upb_sink_vtable upb_textprinter_vtbl = {
 upb_textprinter *upb_textprinter_new() {
   upb_textprinter *p = malloc(sizeof(*p));
   upb_sink_init(&p->sink, &upb_textprinter_vtbl);
+  p->str = NULL;
   return p;
 }
 
 void upb_textprinter_free(upb_textprinter *p) {
+  upb_string_unref(p->str);
   free(p);
 }
 
