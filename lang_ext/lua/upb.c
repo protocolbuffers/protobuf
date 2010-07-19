@@ -6,6 +6,7 @@
  * A Lua extension for upb.
  */
 
+#include <stdlib.h>
 #include "lauxlib.h"
 #include "upb_def.h"
 
@@ -141,6 +142,7 @@ static int lupb_symtab_gc(lua_State *L) {
 static void lupb_symtab_getorcreate(lua_State *L, upb_def *def, int mt) {
   // We may have this def cached, in which case we should return the same Lua
   // object (as long as the value in the underlying symtab has not changed.
+  lua_pushvalue(L, -1);  // Copy the name for cache insertion later.
   lua_rawget(L, mt);
   if (!lua_isnil(L, -1)) {
     // Def is cached, make sure it hasn't changed.
@@ -148,6 +150,8 @@ static void lupb_symtab_getorcreate(lua_State *L, upb_def *def, int mt) {
     if (!ldef) luaL_error(L, "upb's internal cache is corrupt.");
     if (ldef->def == def) {
       // Cache is good, we can just return the cached value.
+      lua_insert(L, -2);  // Move our cached def before the copy of the name.
+      lua_pop(L, 1);      // Our extra copy of the name.
       upb_def_unref(def);
       return;
     }
@@ -155,11 +159,13 @@ static void lupb_symtab_getorcreate(lua_State *L, upb_def *def, int mt) {
   // Cached entry didn't exist or wasn't good.
   lua_pop(L, 1);  // Remove bad cached value.
   lupb_pushnewdef(L, def);
+  lua_insert(L, -2);  // Move new def before the name, so stack is [def, name]
 
   // Set it in the cache.
-  lua_pushvalue(L, 2);  // push name (arg to this function).
-  lua_pushvalue(L, -2); // push the new def.
+  lua_pushvalue(L, -2);  // push def.
   lua_rawset(L, mt);    // set in the cache (the mt).
+
+  // Def is left at the top of the stack.
 }
 
 static int lupb_symtab_lookup(lua_State *L) {
@@ -207,6 +213,7 @@ static int lupb_symtab_getdefs(lua_State *L) {
     // Add it to our return table.
     lua_settable(L, ret);
   }
+  free(defs);
   return 1;
 }
 
