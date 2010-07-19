@@ -190,7 +190,7 @@ void _upb_def_cyclic_ref(upb_def *def) {
   upb_cycle_ref_or_unref(upb_downcast_msgdef(def), NULL, open_defs, 0, true);
 }
 
-static void upb_def_init(upb_def *def, upb_def_type type) {
+static void upb_def_init(upb_def *def, upb_deftype type) {
   def->type = type;
   def->is_cyclic = 0;  // We detect this later, after resolving refs.
   def->search_depth = 0;
@@ -779,7 +779,7 @@ void _upb_symtab_free(upb_symtab *s)
   free(s);
 }
 
-upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type)
+upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type)
 {
   upb_rwlock_rdlock(&s->lock);
   int total = upb_strtable_count(&s->symtab);

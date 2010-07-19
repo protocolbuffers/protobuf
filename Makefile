@@ -30,6 +30,13 @@ CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Icore -Itests -Istream -I.
 CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 LDLIBS=-lpthread
+ifeq ($(shell uname), Darwin)
+  CPPFLAGS += -I/usr/include/lua5.1
+  LDFLAGS += -L/usr/local/lib -llua
+else
+  CFLAGS += $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
+  LDFLAGS += $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
+endif
 
 LIBUPB=core/libupb.a
 LIBUPB_PIC=core/libupb_pic.a
@@ -58,6 +65,9 @@ core/upb_def.o: core/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
 core/upb_def.lo: core/upb_def.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+
+lang_ext/lua/upb.so: lang_ext/lua/upb.lo
+	$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< core/libupb_pic.a
 
 
 STATICOBJ=$(patsubst %.c,%.o,$(SRC))

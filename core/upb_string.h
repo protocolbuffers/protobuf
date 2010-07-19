@@ -197,7 +197,10 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
     _UPB_STRING_INIT(str, sizeof(str)-1, _UPB_STRING_REFCOUNT_STATIC)
 #define UPB_STATIC_STRING_LEN(str, len) \
     _UPB_STRING_INIT(str, len, _UPB_STRING_REFCOUNT_STATIC)
-#define UPB_STACK_STRING(str) _UPB_STRING_INIT(str, _UPB_STRING_REFCOUNT_STACK)
+#define UPB_STACK_STRING(str) \
+    _UPB_STRING_INIT(str, sizeof(str)-1, _UPB_STRING_REFCOUNT_STACK)
+#define UPB_STACK_STRING_LEN(str, len) \
+    _UPB_STRING_INIT(str, len, _UPB_STRING_REFCOUNT_STACK)
 #define UPB_STRLIT(str) &(upb_string)UPB_STATIC_STRING(str)
 
 /* upb_string library functions ***********************************************/

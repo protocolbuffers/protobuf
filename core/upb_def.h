@@ -48,15 +48,15 @@ typedef enum {
 
   // For specifying that defs of any type are requsted from getdefs.
   UPB_DEF_ANY = -1
-} upb_def_type;
+} upb_deftype;
 
 // This typedef is more space-efficient than declaring an enum var directly.
-typedef int8_t upb_def_type_t;
+typedef int8_t upb_deftype_t;
 
 typedef struct {
   upb_string *fqname;  // Fully qualified.
   upb_atomic_refcount_t refcount;
-  upb_def_type_t type;
+  upb_deftype_t type;
 
   // The is_cyclic flag could go in upb_msgdef instead of here, because only
   // messages can be involved in cycles.  However, putting them here is free
@@ -265,7 +265,7 @@ upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 // caller owns the returned array (which is of length *count) as well as a ref
 // to each symbol inside.  If type is UPB_DEF_ANY then defs of all types are
 // returned, otherwise only defs of the required type are returned.
-upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
+upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type);
 
 // "fds" is a upb_src that will yield data from the
 // google.protobuf.FileDescriptorSet message type.  upb_symtab_addfds() adds
