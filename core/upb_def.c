@@ -1023,7 +1023,16 @@ static upb_src *upb_baredecoder_src(upb_baredecoder *d)
 
 void upb_symtab_add_descriptorproto(upb_symtab *symtab)
 {
-  // TODO: allow upb_strings to be static or on the stack.
+  // For the moment we silently decline to perform the operation if the symbols
+  // already exist in the symtab.  Revisit this when we have a better story
+  // about whether syms in a table can be replaced.
+  upb_def *def = upb_symtab_lookup(
+      symtab, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
+  if(def) {
+    upb_def_unref(def);
+    return;
+  }
+
   upb_baredecoder *decoder = upb_baredecoder_new(&descriptor_str);
   upb_status status = UPB_STATUS_INIT;
   upb_symtab_addfds(symtab, upb_baredecoder_src(decoder), &status);
