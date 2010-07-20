@@ -10,17 +10,57 @@
 #include "lauxlib.h"
 #include "upb_def.h"
 
+/* object cache ***************************************************************/
+
+// We cache all the lua objects (userdata) we vend in a weak table, indexed by
+// the C pointer of the object they are caching.
+
+typedef void (*lupb_unref)(void *cobj);
+
+static void lupb_cache_getorcreate(lua_State *L, void *cobj, const char *type,
+                                   lupb_unref unref) {
+  // Lookup our cache in the registry (we don't put our objects in the registry
+  // directly because we need our cache to be a weak table).
+  lua_getfield(L, LUA_REGISTRYINDEX, "upb.objcache");
+  assert(!lua_isnil(L, -1));  // Should have been created by luaopen_upb.
+  lua_pushlightuserdata(L, cobj);
+  lua_rawget(L, -2);
+  // Stack: objcache, cached value.
+  if (lua_isnil(L, -1)) {
+    // Remove bad cached value and push new value.
+    lua_pop(L, 1);
+    // We take advantage of the fact that all of our objects are currently a
+    // single pointer, and thus have the same layout.
+    void **obj = lua_newuserdata(L, sizeof(void*));
+    *obj = cobj;
+    luaL_getmetatable(L, type);
+    lua_setmetatable(L, -2);
+
+    // Set it in the cache.
+    lua_pushlightuserdata(L, cobj);
+    lua_pushvalue(L, -2);
+    lua_rawset(L, -4);
+  } else {
+    unref(cobj);
+  }
+  lua_insert(L, -2);
+  lua_pop(L, 1);
+}
+
+
 /* lupb_def *******************************************************************/
 
-// All the def types share the same C layout, even though they are differen Lua
+// All the def types share the same C layout, even though they are different Lua
 // types with different metatables.
 typedef struct {
   upb_def *def;
 } lupb_def;
 
-static void lupb_pushnewdef(lua_State *L, upb_def *def) {
-  lupb_def *ldef = lua_newuserdata(L, sizeof(lupb_def));
-  ldef->def = def;
+static void lupb_def_unref(void *cobj) {
+  upb_def_unref((upb_def*)cobj);
+}
+
+static void lupb_def_getorcreate(lua_State *L, upb_def *def) {
   const char *type_name;
   switch(def->type) {
     case UPB_DEF_MSG:
@@ -32,8 +72,7 @@ static void lupb_pushnewdef(lua_State *L, upb_def *def) {
     default:
       luaL_error(L, "unknown deftype %d", def->type);
   }
-  luaL_getmetatable(L, type_name);
-  lua_setmetatable(L, -2);
+  return lupb_cache_getorcreate(L, def, type_name, lupb_def_unref);
 }
 
 static lupb_def *lupb_msgdef_check(lua_State *L, int narg) {
@@ -56,116 +95,46 @@ static int lupb_enumdef_gc(lua_State *L) {
   return 0;
 }
 
-static const struct luaL_Reg lupb_msgdef_methods[] = {
+static const struct luaL_Reg lupb_msgdef_mm[] = {
   {"__gc", lupb_msgdef_gc},
   {NULL, NULL}
 };
 
-static const struct luaL_Reg lupb_enumdef_methods[] = {
+static const struct luaL_Reg lupb_msgdef_m[] = {
+  {NULL, NULL}
+};
+
+static const struct luaL_Reg lupb_enumdef_mm[] = {
   {"__gc", lupb_enumdef_gc},
+  {NULL, NULL}
+};
+
+static const struct luaL_Reg lupb_enumdef_m[] = {
   {NULL, NULL}
 };
 
 
 /* lupb_symtab ****************************************************************/
 
-// lupb_symtab caches the Lua objects it vends (defs) via lookup or resolve.
-// It does this (instead of creating a new Lua object every time) for two
-// reasons:
-// * it uses less memory, because we can reuse existing objects.
-// * it gives the expected equality semantics, eg. symtab[sym] == symtab[sym].
-//
-// The downside is a bit of complexity.  We need a place to store these
-// cached defs; the only good answer is in the metatable.  This means we need
-// a new metatable for every symtab instance (instead of one shared by all
-// instances).  Since this is different than the regular pattern, we can't
-// use luaL_checkudata(), we have to implement it ourselves.
 typedef struct {
   upb_symtab *symtab;
 } lupb_symtab;
 
-static int lupb_symtab_gc(lua_State *L);
-
 // Inherits a ref on the symtab.
-static void lupb_pushnewsymtab(lua_State *L, upb_symtab *symtab) {
-  lupb_symtab *lsymtab = lua_newuserdata(L, sizeof(lupb_symtab));
-  lsymtab->symtab = symtab;
-  // Create its metatable (see note above about mt-per-object).
-  lua_createtable(L, 0, 1);
-  luaL_getmetatable(L, "upb.symtab");
-  lua_setfield(L, -2, "__index");  // Uses the type metatable to find methods.
-  lua_pushcfunction(L, lupb_symtab_gc);
-  lua_setfield(L, -2, "__gc");
-
-  // Put this metatable in the registry so we can find it for type validation.
-  lua_pushlightuserdata(L, lsymtab);
-  lua_pushvalue(L, -2);
-  lua_rawset(L, LUA_REGISTRYINDEX);
-
-  // Set the symtab's metatable.
-  lua_setmetatable(L, -2);
-}
-
 // Checks that narg is a proper lupb_symtab object.  If it is, leaves its
 // metatable on the stack for cache lookups/updates.
 lupb_symtab *lupb_symtab_check(lua_State *L, int narg) {
-  lupb_symtab *symtab = lua_touserdata(L, narg);
-  if (symtab != NULL) {
-    if (lua_getmetatable(L, narg)) {
-      // We use a metatable-per-object to support memoization of defs.
-      lua_pushlightuserdata(L, symtab);
-      lua_rawget(L, LUA_REGISTRYINDEX);
-      if (lua_rawequal(L, -1, -2)) {  // Does it have the correct mt?
-        lua_pop(L, 1);  // Remove one copy of the mt, keep the other.
-        return symtab;
-      }
-    }
-  }
-  luaL_typerror(L, narg, "upb.symtab");
-  return NULL;  // Placate the compiler; luaL_typerror will longjmp out of here.
+  return luaL_checkudata(L, narg, "upb.symtab");
 }
 
 static int lupb_symtab_gc(lua_State *L) {
   lupb_symtab *s = lupb_symtab_check(L, 1);
   upb_symtab_unref(s->symtab);
-
-  // Remove its metatable from the registry.
-  lua_pushlightuserdata(L, s);
-  lua_pushnil(L);
-  lua_rawset(L, LUA_REGISTRYINDEX);
   return 0;
 }
 
-// "mt" is the index of the metatable, -1 is the fqname of this def.
-// Leaves the Lua object for the def at the top of the stack.
-// Inherits a ref on "def".
-static void lupb_symtab_getorcreate(lua_State *L, upb_def *def, int mt) {
-  // We may have this def cached, in which case we should return the same Lua
-  // object (as long as the value in the underlying symtab has not changed.
-  lua_pushvalue(L, -1);  // Copy the name for cache insertion later.
-  lua_rawget(L, mt);
-  if (!lua_isnil(L, -1)) {
-    // Def is cached, make sure it hasn't changed.
-    lupb_def *ldef = lua_touserdata(L, -1);
-    if (!ldef) luaL_error(L, "upb's internal cache is corrupt.");
-    if (ldef->def == def) {
-      // Cache is good, we can just return the cached value.
-      lua_insert(L, -2);  // Move our cached def before the copy of the name.
-      lua_pop(L, 1);      // Our extra copy of the name.
-      upb_def_unref(def);
-      return;
-    }
-  }
-  // Cached entry didn't exist or wasn't good.
-  lua_pop(L, 1);  // Remove bad cached value.
-  lupb_pushnewdef(L, def);
-  lua_insert(L, -2);  // Move new def before the name, so stack is [def, name]
-
-  // Set it in the cache.
-  lua_pushvalue(L, -2);  // push def.
-  lua_rawset(L, mt);    // set in the cache (the mt).
-
-  // Def is left at the top of the stack.
+static void lupb_symtab_unref(void *cobj) {
+  upb_symtab_unref((upb_symtab*)cobj);
 }
 
 static int lupb_symtab_lookup(lua_State *L) {
@@ -174,22 +143,8 @@ static int lupb_symtab_lookup(lua_State *L) {
   const char *name = luaL_checklstring(L, 2, &len);
   upb_string namestr = UPB_STACK_STRING_LEN(name, len);
   upb_def *def = upb_symtab_lookup(s->symtab, &namestr);
-  if (!def) {
-    // There shouldn't be a value in our cache either because the symtab
-    // currently provides no API for deleting syms from a table.  In case
-    // this changes in the future, we explicitly delete from the cache here.
-    lua_pushvalue(L, 2);  // push name (arg to this function).
-    lua_pushnil(L);
-    lua_rawset(L, -3);  // lupb_symtab_check() left our mt on the stack.
-
-    // Return nil because the symbol was not found.
-    lua_pushnil(L);
-    return 1;
-  } else {
-    lua_pushvalue(L, 2);
-    lupb_symtab_getorcreate(L, def, 3);
-    return 1;
-  }
+  lupb_def_getorcreate(L, def);
+  return 1;
 }
 
 static int lupb_symtab_getdefs(lua_State *L) {
@@ -200,18 +155,13 @@ static int lupb_symtab_getdefs(lua_State *L) {
 
   // Create the table in which we will return the defs.
   lua_createtable(L, 0, count);
-  int ret = lua_gettop(L);
-
   for (int i = 0; i < count; i++) {
     upb_def *def = defs[i];
-    // Look it up in the cache by name.
     upb_string *name = def->fqname;
     lua_pushlstring(L, upb_string_getrobuf(name), upb_string_len(name));
-    lua_pushvalue(L, -1);  // Push it again since the getorcreate consumes one.
-    lupb_symtab_getorcreate(L, def, 3);
-
+    lupb_def_getorcreate(L, def);
     // Add it to our return table.
-    lua_settable(L, ret);
+    lua_settable(L, -3);
   }
   free(defs);
   return 1;
@@ -223,7 +173,7 @@ static int lupb_symtab_add_descriptorproto(lua_State *L) {
   return 0;  // No args to return.
 }
 
-static const struct luaL_Reg lupb_symtab_methods[] = {
+static const struct luaL_Reg lupb_symtab_m[] = {
   {"add_descriptorproto", lupb_symtab_add_descriptorproto},
   //{"addfds", lupb_symtab_addfds},
   {"getdefs", lupb_symtab_getdefs},
@@ -232,30 +182,45 @@ static const struct luaL_Reg lupb_symtab_methods[] = {
   {NULL, NULL}
 };
 
+static const struct luaL_Reg lupb_symtab_mm[] = {
+  {"__gc", lupb_symtab_gc},
+  {NULL, NULL}
+};
+
 
 /* lupb toplevel **************************************************************/
 
 static int lupb_symtab_new(lua_State *L) {
   upb_symtab *s = upb_symtab_new();
-  lupb_pushnewsymtab(L, s);
+  lupb_cache_getorcreate(L, s, "upb.symtab", lupb_symtab_unref);
   return 1;
 }
 
-static const struct luaL_Reg lupb_toplevel_methods[] = {
+static const struct luaL_Reg lupb_toplevel_m[] = {
   {"symtab", lupb_symtab_new},
   {NULL, NULL}
 };
 
+// Register the given type with the given methods and metamethods.
+static void lupb_register_type(lua_State *L, const char *name,
+                               const luaL_Reg *m, const luaL_Reg *mm) {
+  luaL_newmetatable(L, name);
+  luaL_register(L, NULL, mm);
+  lua_createtable(L, 0, 0);
+  luaL_register(L, NULL, m);
+  lua_setfield(L, -2, "__index");
+  lua_pop(L, 1);  // The mt.
+}
+
 int luaopen_upb(lua_State *L) {
-  luaL_newmetatable(L, "upb.msgdef");
-  luaL_register(L, NULL, lupb_msgdef_methods);
+  lupb_register_type(L, "upb.msgdef", lupb_msgdef_m, lupb_msgdef_mm);
+  lupb_register_type(L, "upb.enumdef", lupb_enumdef_m, lupb_enumdef_mm);
+  lupb_register_type(L, "upb.symtab", lupb_symtab_m, lupb_symtab_mm);
 
-  luaL_newmetatable(L, "upb.enumdef");
-  luaL_register(L, NULL, lupb_enumdef_methods);
+  // Create our object cache.  TODO: need to make this table weak!
+  lua_createtable(L, 0, 0);
+  lua_setfield(L, LUA_REGISTRYINDEX, "upb.objcache");
 
-  luaL_newmetatable(L, "upb.symtab");
-  luaL_register(L, NULL, lupb_symtab_methods);
-
-  luaL_register(L, "upb", lupb_toplevel_methods);
+  luaL_register(L, "upb", lupb_toplevel_m);
   return 1;  // Return package table.
 }
