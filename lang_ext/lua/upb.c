@@ -71,6 +71,7 @@ static void lupb_def_getorcreate(lua_State *L, upb_def *def) {
       break;
     default:
       luaL_error(L, "unknown deftype %d", def->type);
+      type_name = NULL;  // Placate the compiler.
   }
   return lupb_cache_getorcreate(L, def, type_name, lupb_def_unref);
 }
@@ -219,6 +220,9 @@ int luaopen_upb(lua_State *L) {
 
   // Create our object cache.  TODO: need to make this table weak!
   lua_createtable(L, 0, 0);
+  lua_createtable(L, 0, 1);  // Cache metatable.
+  lua_pushstring(L, "v");    // Values are weak.
+  lua_setfield(L, -2, "__mode");
   lua_setfield(L, LUA_REGISTRYINDEX, "upb.objcache");
 
   luaL_register(L, "upb", lupb_toplevel_m);
