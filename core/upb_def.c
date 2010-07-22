@@ -355,6 +355,7 @@ static bool upb_addfield(upb_src *src, upb_msgdef *m, upb_status *status)
   f->name = NULL;
   f->def = NULL;
   f->owned = false;
+  f->msgdef = m;
   upb_fielddef *parsed_f;
   int32_t tmp;
   while((parsed_f = upb_src_getdef(src))) {

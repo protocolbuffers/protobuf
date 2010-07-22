@@ -14,6 +14,8 @@ int main() {
   }
   free(defs);
 
+  printf("Size: %zd\n", sizeof(upb_ntof_ent));
+
   upb_string *str = upb_strdupc("google.protobuf.FileDescriptorSet");
   upb_def *fds = upb_symtab_lookup(s, str);
   assert(fds != NULL);

@@ -15,10 +15,14 @@
 // We cache all the lua objects (userdata) we vend in a weak table, indexed by
 // the C pointer of the object they are caching.
 
-typedef void (*lupb_unref)(void *cobj);
+typedef void (*lupb_cb)(void *cobj);
+
+static void lupb_nop(void *foo) {
+  (void)foo;
+}
 
 static void lupb_cache_getorcreate(lua_State *L, void *cobj, const char *type,
-                                   lupb_unref unref) {
+                                   lupb_cb ref, lupb_cb unref) {
   // Lookup our cache in the registry (we don't put our objects in the registry
   // directly because we need our cache to be a weak table).
   lua_getfield(L, LUA_REGISTRYINDEX, "upb.objcache");
@@ -40,6 +44,7 @@ static void lupb_cache_getorcreate(lua_State *L, void *cobj, const char *type,
     lua_pushlightuserdata(L, cobj);
     lua_pushvalue(L, -2);
     lua_rawset(L, -4);
+    ref(cobj);
   } else {
     unref(cobj);
   }
@@ -73,25 +78,17 @@ static void lupb_def_getorcreate(lua_State *L, upb_def *def) {
       luaL_error(L, "unknown deftype %d", def->type);
       type_name = NULL;  // Placate the compiler.
   }
-  return lupb_cache_getorcreate(L, def, type_name, lupb_def_unref);
+  return lupb_cache_getorcreate(L, def, type_name, lupb_nop, lupb_def_unref);
 }
+
+// msgdef
 
 static lupb_def *lupb_msgdef_check(lua_State *L, int narg) {
   return luaL_checkudata(L, narg, "upb.msgdef");
 }
 
-static lupb_def *lupb_enumdef_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, "upb.enumdef");
-}
-
 static int lupb_msgdef_gc(lua_State *L) {
   lupb_def *ldef = lupb_msgdef_check(L, 1);
-  upb_def_unref(ldef->def);
-  return 0;
-}
-
-static int lupb_enumdef_gc(lua_State *L) {
-  lupb_def *ldef = lupb_enumdef_check(L, 1);
   upb_def_unref(ldef->def);
   return 0;
 }
@@ -105,12 +102,58 @@ static const struct luaL_Reg lupb_msgdef_m[] = {
   {NULL, NULL}
 };
 
+// enumdef
+
+static lupb_def *lupb_enumdef_check(lua_State *L, int narg) {
+  return luaL_checkudata(L, narg, "upb.enumdef");
+}
+
+static int lupb_enumdef_gc(lua_State *L) {
+  lupb_def *ldef = lupb_enumdef_check(L, 1);
+  upb_def_unref(ldef->def);
+  return 0;
+}
+
 static const struct luaL_Reg lupb_enumdef_mm[] = {
   {"__gc", lupb_enumdef_gc},
   {NULL, NULL}
 };
 
 static const struct luaL_Reg lupb_enumdef_m[] = {
+  {NULL, NULL}
+};
+
+
+/* lupb_fielddef **************************************************************/
+
+typedef struct {
+  upb_fielddef *field;
+} lupb_fielddef;
+
+static void lupb_fielddef_ref(void *cobj) {
+  upb_def_ref(UPB_UPCAST(((upb_fielddef*)cobj)->msgdef));
+}
+
+static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f) {
+  lupb_cache_getorcreate(L, f, "upb.fielddef", lupb_fielddef_ref, lupb_nop);
+}
+
+static lupb_fielddef *lupb_fielddef_check(lua_State *L, int narg) {
+  return luaL_checkudata(L, narg, "upb.fielddef");
+}
+
+static int lupb_fielddef_gc(lua_State *L) {
+  lupb_fielddef *lfielddef = lupb_fielddef_check(L, 1);
+  upb_def_unref(UPB_UPCAST(lfielddef->field->msgdef));
+  return 0;
+}
+
+static const struct luaL_Reg lupb_fielddef_mm[] = {
+  {"__gc", lupb_fielddef_gc},
+  {NULL, NULL}
+};
+
+static const struct luaL_Reg lupb_fielddef_m[] = {
   {NULL, NULL}
 };
 
@@ -193,7 +236,7 @@ static const struct luaL_Reg lupb_symtab_mm[] = {
 
 static int lupb_symtab_new(lua_State *L) {
   upb_symtab *s = upb_symtab_new();
-  lupb_cache_getorcreate(L, s, "upb.symtab", lupb_symtab_unref);
+  lupb_cache_getorcreate(L, s, "upb.symtab", lupb_nop, lupb_symtab_unref);
   return 1;
 }
 
