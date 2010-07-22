@@ -187,7 +187,11 @@ static int lupb_symtab_lookup(lua_State *L) {
   const char *name = luaL_checklstring(L, 2, &len);
   upb_string namestr = UPB_STACK_STRING_LEN(name, len);
   upb_def *def = upb_symtab_lookup(s->symtab, &namestr);
-  lupb_def_getorcreate(L, def);
+  if (def) {
+    lupb_def_getorcreate(L, def);
+  } else {
+    lua_pushnil(L);
+  }
   return 1;
 }
 
