@@ -158,13 +158,13 @@ typedef struct {
 // Looks up a field by name or number.  While these are written to be as fast
 // as possible, it will still be faster to cache the results of this lookup if
 // possible.  These return NULL if no such field is found.
-INLINE upb_fielddef *upb_msg_itof(upb_msgdef *m, uint32_t num) {
+INLINE upb_fielddef *upb_msgdef_itof(upb_msgdef *m, uint32_t num) {
   upb_itof_ent *e =
       (upb_itof_ent*)upb_inttable_fastlookup(&m->itof, num, sizeof(*e));
   return e ? e->f : NULL;
 }
 
-INLINE upb_fielddef *upb_msg_ntof(upb_msgdef *m, upb_string *name) {
+INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, upb_string *name) {
   upb_ntof_ent *e = (upb_ntof_ent*)upb_strtable_lookup(&m->ntof, name);
   return e ? e->f : NULL;
 }

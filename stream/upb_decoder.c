@@ -342,7 +342,7 @@ again:
   }
 
   // Look up field by tag number.
-  upb_fielddef *f = upb_msg_itof(d->top->msgdef, field_number);
+  upb_fielddef *f = upb_msgdef_itof(d->top->msgdef, field_number);
 
   if (!f) {
     // Unknown field.  If/when the upb_src interface supports reporting

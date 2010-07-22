@@ -10,6 +10,10 @@
 #include "lauxlib.h"
 #include "upb_def.h"
 
+void lupb_pushstring(lua_State *L, upb_string *str) {
+  lua_pushlstring(L, upb_string_getrobuf(str), upb_string_len(str));
+}
+
 /* object cache ***************************************************************/
 
 // We cache all the lua objects (userdata) we vend in a weak table, indexed by
@@ -38,6 +42,7 @@ static void lupb_cache_getorcreate(lua_State *L, void *cobj, const char *type,
     void **obj = lua_newuserdata(L, sizeof(void*));
     *obj = cobj;
     luaL_getmetatable(L, type);
+    assert(!lua_isnil(L, -1));  // Should have been created by luaopen_upb.
     lua_setmetatable(L, -2);
 
     // Set it in the cache.
@@ -83,14 +88,43 @@ static void lupb_def_getorcreate(lua_State *L, upb_def *def) {
 
 // msgdef
 
-static lupb_def *lupb_msgdef_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, "upb.msgdef");
+static upb_msgdef *lupb_msgdef_check(lua_State *L, int narg) {
+  lupb_def *ldef = luaL_checkudata(L, narg, "upb.msgdef");
+  return upb_downcast_msgdef(ldef->def);
 }
 
 static int lupb_msgdef_gc(lua_State *L) {
-  lupb_def *ldef = lupb_msgdef_check(L, 1);
+  lupb_def *ldef = luaL_checkudata(L, 1, "upb.msgdef");
   upb_def_unref(ldef->def);
   return 0;
+}
+
+static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f);
+
+static int lupb_msgdef_fieldbyname(lua_State *L) {
+  upb_msgdef *m = lupb_msgdef_check(L, 1);
+  size_t len;
+  const char *name = luaL_checklstring(L, 2, &len);
+  upb_string namestr = UPB_STACK_STRING_LEN(name, len);
+  upb_fielddef *f = upb_msgdef_ntof(m, &namestr);
+  if (f) {
+    lupb_fielddef_getorcreate(L, f);
+  } else {
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+static int lupb_msgdef_fieldbynum(lua_State *L) {
+  upb_msgdef *m = lupb_msgdef_check(L, 1);
+  int num = luaL_checkint(L, 2);
+  upb_fielddef *f = upb_msgdef_itof(m, num);
+  if (f) {
+    lupb_fielddef_getorcreate(L, f);
+  } else {
+    lua_pushnil(L);
+  }
+  return 1;
 }
 
 static const struct luaL_Reg lupb_msgdef_mm[] = {
@@ -99,6 +133,8 @@ static const struct luaL_Reg lupb_msgdef_mm[] = {
 };
 
 static const struct luaL_Reg lupb_msgdef_m[] = {
+  {"fieldbyname", lupb_msgdef_fieldbyname},
+  {"fieldbynum", lupb_msgdef_fieldbynum},
   {NULL, NULL}
 };
 
@@ -142,6 +178,29 @@ static lupb_fielddef *lupb_fielddef_check(lua_State *L, int narg) {
   return luaL_checkudata(L, narg, "upb.fielddef");
 }
 
+static int lupb_fielddef_index(lua_State *L) {
+  lupb_fielddef *f = lupb_fielddef_check(L, 1);
+  const char *str = luaL_checkstring(L, 2);
+  if (strcmp(str, "name") == 0) {
+    lupb_pushstring(L, f->field->name);
+  } else if (strcmp(str, "number") == 0) {
+    lua_pushinteger(L, f->field->number);
+  } else if (strcmp(str, "type") == 0) {
+    lua_pushinteger(L, f->field->type);
+  } else if (strcmp(str, "label") == 0) {
+    lua_pushinteger(L, f->field->label);
+  } else if (strcmp(str, "def") == 0) {
+    upb_def_ref(f->field->def);
+    lupb_def_getorcreate(L, f->field->def);
+  } else if (strcmp(str, "msgdef") == 0) {
+    upb_def_ref(UPB_UPCAST(f->field->msgdef));
+    lupb_def_getorcreate(L, UPB_UPCAST(f->field->msgdef));
+  } else {
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
 static int lupb_fielddef_gc(lua_State *L) {
   lupb_fielddef *lfielddef = lupb_fielddef_check(L, 1);
   upb_def_unref(UPB_UPCAST(lfielddef->field->msgdef));
@@ -150,10 +209,7 @@ static int lupb_fielddef_gc(lua_State *L) {
 
 static const struct luaL_Reg lupb_fielddef_mm[] = {
   {"__gc", lupb_fielddef_gc},
-  {NULL, NULL}
-};
-
-static const struct luaL_Reg lupb_fielddef_m[] = {
+  {"__index", lupb_fielddef_index},
   {NULL, NULL}
 };
 
@@ -206,7 +262,7 @@ static int lupb_symtab_getdefs(lua_State *L) {
   for (int i = 0; i < count; i++) {
     upb_def *def = defs[i];
     upb_string *name = def->fqname;
-    lua_pushlstring(L, upb_string_getrobuf(name), upb_string_len(name));
+    lupb_pushstring(L, name);
     lupb_def_getorcreate(L, def);
     // Add it to our return table.
     lua_settable(L, -3);
@@ -255,14 +311,17 @@ static void lupb_register_type(lua_State *L, const char *name,
   luaL_newmetatable(L, name);
   luaL_register(L, NULL, mm);
   lua_createtable(L, 0, 0);
-  luaL_register(L, NULL, m);
-  lua_setfield(L, -2, "__index");
+  if (m) {
+    luaL_register(L, NULL, m);
+    lua_setfield(L, -2, "__index");
+  }
   lua_pop(L, 1);  // The mt.
 }
 
 int luaopen_upb(lua_State *L) {
   lupb_register_type(L, "upb.msgdef", lupb_msgdef_m, lupb_msgdef_mm);
   lupb_register_type(L, "upb.enumdef", lupb_enumdef_m, lupb_enumdef_mm);
+  lupb_register_type(L, "upb.fielddef", NULL, lupb_fielddef_mm);
   lupb_register_type(L, "upb.symtab", lupb_symtab_m, lupb_symtab_mm);
 
   // Create our object cache.  TODO: need to make this table weak!
