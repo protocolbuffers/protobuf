@@ -131,3 +131,21 @@ upb_string *upb_strdup(upb_string *s) {
   upb_strcpy(str, s);
   return str;
 }
+
+upb_string *upb_strreadfile(const char *filename) {
+  FILE *f = fopen(filename, "rb");
+  if(!f) return NULL;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
+  long size = ftell(f);
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  upb_string *s = upb_string_new();
+  char *buf = upb_string_getrwbuf(s, size);
+  if(fread(buf, size, 1, f) != 1) goto error;
+  fclose(f);
+  return s;
+
+error:
+  fclose(f);
+  return NULL;
+}

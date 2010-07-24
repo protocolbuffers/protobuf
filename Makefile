@@ -54,7 +54,7 @@ clean:
 
 # The core library (core/libupb.a)
 SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
-    core/upb_stream.c stream/upb_stdio.c stream/upb_textprinter.c \
+    core/upb_stream.c stream/upb_stdio.c stream/upb_strstream.c stream/upb_textprinter.c \
     descriptor/descriptor.c
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
@@ -154,10 +154,10 @@ tests/tests: core/libupb.a
 tools/upbc: core/libupb.a
 
 # Benchmarks
-UPB_BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
-               benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
-               benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
-               benchmarks/b.parsetostruct_googlemessage2.upb_table_byref
+#UPB_BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table \
+#               benchmarks/b.parsetostruct_googlemessage2.upb_table
+UPB_BENCHMARKS=benchmarks/b.parsestream_googlemessage1.upb_table \
+               benchmarks/b.parsestream_googlemessage2.upb_table
 
 BENCHMARKS=$(UPB_BENCHMARKS) \
            benchmarks/b.parsetostruct_googlemessage1.proto2_table \
@@ -203,6 +203,20 @@ benchmarks/b.parsetostruct_googlemessage2.upb_table_byref: \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
 	  -DBYREF=true $(LIBUPB)
+
+benchmarks/b.parsestream_googlemessage1.upb_table \
+benchmarks/b.parsestream_googlemessage2.upb_table: \
+    benchmarks/parsestream.upb_table.c $(LIBUPB) benchmarks/google_messages.proto.pb
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage1.upb_table $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  $(LIBUPB)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage2.upb_table $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  $(LIBUPB)
 
 benchmarks/b.parsetostruct_googlemessage1.proto2_table \
 benchmarks/b.parsetostruct_googlemessage2.proto2_table: \

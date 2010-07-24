@@ -128,7 +128,8 @@ bool upb_bytesrc_get(upb_bytesrc *src, upb_string *str, upb_strlen_t minlen);
 
 // Appends the next "len" bytes in the stream in-place to "str".  This should
 // be used when the caller needs to build a contiguous string of the existing
-// data in "str" with more data.
+// data in "str" with more data.  The call fails if fewer than len bytes are
+// available in the stream.
 bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
 
 // Returns the current error status for the stream.
