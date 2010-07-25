@@ -177,6 +177,12 @@ static bool upb_decoder_consume(upb_decoder *d, uint32_t bytes)
     memmove(d->tmpbuf, d->tmpbuf + bytes, -d->buf_offset);
   }
   assert(d->buf_bytesleft >= 0);
+
+  // Detect end-of-submessage.
+  if(upb_decoder_offset(d) >= d->top->end_offset) {
+    d->src.eof = true;
+  }
+
   return true;
 }
 
@@ -187,6 +193,12 @@ static bool upb_decoder_skipbytes(upb_decoder *d, int32_t bytes)
   while(d->buf_bytesleft < 0) {
     if(!upb_decoder_nextbuf(d)) return false;
   }
+
+  // Detect end-of-submessage.
+  if(upb_decoder_offset(d) >= d->top->end_offset) {
+    d->src.eof = true;
+  }
+
   return true;
 }
 
@@ -311,12 +323,7 @@ bool upb_decoder_skipval(upb_decoder *d);
 
 upb_fielddef *upb_decoder_getdef(upb_decoder *d)
 {
-  // Detect end-of-submessage.
-  if(upb_decoder_offset(d) >= d->top->end_offset) {
-    d->src.eof = true;
-    return NULL;
-  }
-
+  if (d->src.eof) return NULL;
   // Handles the packed field case.
   if(d->field) {
     return d->field;
@@ -481,7 +488,8 @@ bool upb_decoder_endmsg(upb_decoder *d) {
       else
         upb_decoder_skipbytes(d, d->top->end_offset - upb_decoder_offset(d));
     }
-    d->src.eof = false;
+    // Detect end-of-submessage.
+    d->src.eof = upb_decoder_offset(d) >= d->top->end_offset;
     return true;
   } else {
     return false;
@@ -571,6 +579,7 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc)
   // indefinitely), so we set the end offset as high as possible, but not equal
   // to UINT32_MAX so it doesn't equal UPB_GROUP_END_OFFSET.
   d->top->end_offset = UINT32_MAX - 1;
+  d->src.eof = false;
   d->bytesrc = bytesrc;
   d->field = NULL;
   d->buf = NULL;

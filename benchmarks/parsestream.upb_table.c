@@ -85,15 +85,14 @@ static size_t run(int i)
   upb_decoder_reset(decoder, upb_stringsrc_bytesrc(stringsrc));
   upb_src *src = upb_decoder_src(decoder);
   upb_fielddef *f;
-  upb_string *str = NULL;
   int depth = 0;
   while(1) {
-    while((f = upb_src_getdef(src)) != NULL) {
+    while(!upb_src_eof(src) && (f = upb_src_getdef(src)) != NULL) {
       if(upb_issubmsg(f)) {
         upb_src_startmsg(src);
         ++depth;
       } else if(upb_isstring(f)) {
-        tmp_str = upb_string_tryrecycle(str);
+        tmp_str = upb_string_tryrecycle(tmp_str);
         upb_src_getstr(src, tmp_str);
       } else {
         // Primitive type.
