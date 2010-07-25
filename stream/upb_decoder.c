@@ -318,7 +318,9 @@ upb_fielddef *upb_decoder_getdef(upb_decoder *d)
   }
 
   // Handles the packed field case.
-  if(d->field) return d->field;
+  if(d->field) {
+    return d->field;
+  }
 
   uint32_t key = 0;
 again:
@@ -457,12 +459,15 @@ bool upb_decoder_startmsg(upb_decoder *d) {
     return false;
   }
   upb_decoder_frame *frame = d->top;
-  frame->msgdef = upb_downcast_msgdef(d->field->def);
   if(d->field->type == UPB_TYPE(GROUP)) {
     frame->end_offset = UPB_GROUP_END_OFFSET;
-  } else {
+  } else if (d->field->type == UPB_TYPE(MESSAGE)) {
     frame->end_offset = upb_decoder_offset(d) + d->delimited_len;
+  } else {
+    upb_seterr(&d->src.status, UPB_STATUS_ERROR,
+               "Tried to startmsg a non-msg field.");
   }
+  frame->msgdef = upb_downcast_msgdef(d->field->def);
   d->field = NULL;
   return true;
 }
@@ -485,6 +490,7 @@ bool upb_decoder_endmsg(upb_decoder *d) {
 
 bool upb_decoder_skipval(upb_decoder *d) {
   upb_strlen_t bytes_to_skip;
+  d->field = NULL;
   switch(d->wire_type) {
     case UPB_WIRE_TYPE_VARINT: {
       return upb_decoder_skipv64(d);

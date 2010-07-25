@@ -53,6 +53,7 @@ static upb_bytesrc_vtable upb_stringsrc_vtbl = {
 
 upb_stringsrc *upb_stringsrc_new() {
   upb_stringsrc *s = malloc(sizeof(*s));
+  s->str = NULL;
   upb_bytesrc_init(&s->bytesrc, &upb_stringsrc_vtbl);
   return s;
 }

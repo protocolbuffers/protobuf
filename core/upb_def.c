@@ -384,6 +384,8 @@ static bool upb_addfield(upb_src *src, upb_msgdef *m, upb_status *status)
         f->owned = true;
         break;
       }
+      default:
+        upb_src_skipval(src);
     }
   }
   CHECKSRC(upb_src_eof(src));

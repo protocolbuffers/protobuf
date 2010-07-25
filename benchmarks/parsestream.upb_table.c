@@ -17,6 +17,12 @@ static bool initialize()
   upb_status status = UPB_STATUS_INIT;
   upb_symtab *s = upb_symtab_new();
   upb_symtab_add_descriptorproto(s);
+  upb_def *fds_def = upb_symtab_lookup(
+      s, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
+  if (!fds_def) {
+    fprintf(stderr, "Couldn't load FileDescriptorSet def");
+  }
+
   upb_string *fds_str = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(fds_str == NULL) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ":"),
@@ -26,8 +32,6 @@ static bool initialize()
 
   upb_stringsrc *ssrc = upb_stringsrc_new();
   upb_stringsrc_reset(ssrc, fds_str);
-  upb_def *fds_def = upb_symtab_lookup(
-      s, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
   upb_decoder *d = upb_decoder_new(upb_downcast_msgdef(fds_def));
   upb_decoder_reset(d, upb_stringsrc_bytesrc(ssrc));
 
