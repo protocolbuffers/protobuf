@@ -1035,6 +1035,19 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(222, ext2[1].bb)
     self.assertEqual(333, ext2[2].bb)
 
+  def testMergeFromBug(self):
+    message1 = unittest_pb2.TestAllTypes()
+    message2 = unittest_pb2.TestAllTypes()
+    
+    # Cause optional_nested_message to be instantiated within message1, even
+    # though it is not considered to be "present".
+    message1.optional_nested_message
+    self.assertFalse(message1.HasField('optional_nested_message'))
+    
+    # Merge into message2.  This should not instantiate the field is message2.
+    message2.MergeFrom(message1)
+    self.assertFalse(message2.HasField('optional_nested_message'))
+
   def testCopyFromSingularField(self):
     # Test copy with just a singular field.
     proto1 = unittest_pb2.TestAllTypes()
