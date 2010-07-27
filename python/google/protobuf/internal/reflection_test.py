@@ -200,6 +200,32 @@ class ReflectionTest(unittest.TestCase):
          unittest_pb2.ForeignMessage(c=12)],
         list(proto.repeated_foreign_message))
 
+  def testConstructorTypeError(self):
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, optional_int32="foo")
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, optional_string=1234)
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, optional_nested_message=1234)
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, repeated_int32=1234)
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, repeated_int32=["foo"])
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, repeated_string=1234)
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, repeated_string=[1234])
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, repeated_nested_message=1234)
+    self.assertRaises(TypeError, unittest_pb2.TestAllTypes, repeated_nested_message=[1234])
+
+  def testConstructorInvalidatesCachedByteSize(self):
+    message = unittest_pb2.TestAllTypes(optional_int32 = 12)
+    self.assertEquals(2, message.ByteSize())
+
+    message = unittest_pb2.TestAllTypes(
+        optional_nested_message = unittest_pb2.TestAllTypes.NestedMessage())
+    self.assertEquals(3, message.ByteSize())
+
+    message = unittest_pb2.TestAllTypes(repeated_int32 = [12])
+    self.assertEquals(3, message.ByteSize())
+
+    message = unittest_pb2.TestAllTypes(
+        repeated_nested_message = [unittest_pb2.TestAllTypes.NestedMessage()])
+    self.assertEquals(3, message.ByteSize())
+
   def testSimpleHasBits(self):
     # Test a scalar.
     proto = unittest_pb2.TestAllTypes()
@@ -1038,12 +1064,12 @@ class ReflectionTest(unittest.TestCase):
   def testMergeFromBug(self):
     message1 = unittest_pb2.TestAllTypes()
     message2 = unittest_pb2.TestAllTypes()
-    
+
     # Cause optional_nested_message to be instantiated within message1, even
     # though it is not considered to be "present".
     message1.optional_nested_message
     self.assertFalse(message1.HasField('optional_nested_message'))
-    
+
     # Merge into message2.  This should not instantiate the field is message2.
     message2.MergeFrom(message1)
     self.assertFalse(message2.HasField('optional_nested_message'))

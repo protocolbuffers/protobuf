@@ -384,7 +384,7 @@ def _AddInitMethod(message_descriptor, cls):
         copy.MergeFrom(field_value)
         self._fields[field] = copy
       else:
-        self._fields[field] = field_value
+        setattr(self, field_name, field_value)
 
   init.__module__ = None
   init.__doc__ = None
@@ -937,6 +937,10 @@ def _AddMergeFromMethod(cls):
   CPPTYPE_MESSAGE = _FieldDescriptor.CPPTYPE_MESSAGE
 
   def MergeFrom(self, msg):
+    if not isinstance(msg, cls):
+      raise TypeError(
+          "Parameter to MergeFrom() must be instance of same class.")
+
     assert msg is not self
     self._Modified()
 
