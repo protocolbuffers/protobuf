@@ -943,13 +943,21 @@ def _AddMergeFromMethod(cls):
     fields = self._fields
 
     for field, value in msg._fields.iteritems():
-      if field.label == LABEL_REPEATED or field.cpp_type == CPPTYPE_MESSAGE:
+      if field.label == LABEL_REPEATED:
         field_value = fields.get(field)
         if field_value is None:
           # Construct a new object to represent this field.
           field_value = field._default_constructor(self)
           fields[field] = field_value
         field_value.MergeFrom(value)
+      elif field.cpp_type == CPPTYPE_MESSAGE:
+        if value._is_present_in_parent:
+          field_value = fields.get(field)
+          if field_value is None:
+            # Construct a new object to represent this field.
+            field_value = field._default_constructor(self)
+            fields[field] = field_value
+          field_value.MergeFrom(value)
       else:
         self._fields[field] = value
   cls.MergeFrom = MergeFrom
