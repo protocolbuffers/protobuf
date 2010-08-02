@@ -103,7 +103,7 @@ typedef struct _upb_fielddef {
   upb_field_count_t field_index;  // Indicates set bit.
 
   upb_field_number_t number;
-  upb_field_type_t type;
+  upb_fieldtype_t type;
   upb_label_t label;
   // True if we own a ref on "def" (above).  This is true unless this edge is
   // part of a cycle.
@@ -112,10 +112,10 @@ typedef struct _upb_fielddef {
 
 // A variety of tests about the type of a field.
 INLINE bool upb_issubmsg(upb_fielddef *f) {
-  return upb_issubmsgtype(f->type);
+  return f->type == UPB_TYPE(GROUP) || f->type == UPB_TYPE(MESSAGE);
 }
 INLINE bool upb_isstring(upb_fielddef *f) {
-  return upb_isstringtype(f->type);
+  return f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES);
 }
 INLINE bool upb_isarray(upb_fielddef *f) {
   return f->label == UPB_LABEL(REPEATED);
@@ -123,6 +123,19 @@ INLINE bool upb_isarray(upb_fielddef *f) {
 // Does the type of this field imply that it should contain an associated def?
 INLINE bool upb_hasdef(upb_fielddef *f) {
   return upb_issubmsg(f) || f->type == UPB_TYPE(ENUM);
+}
+
+INLINE upb_valuetype_t upb_field_valuetype(upb_fielddef *f) {
+  if (upb_isarray(f)) {
+    return UPB_VALUETYPE_ARRAY;
+  } else {
+    return f->type;
+  }
+}
+
+INLINE upb_valuetype_t upb_elem_valuetype(upb_fielddef *f) {
+  assert(upb_isarray(f));
+  return f->type;
 }
 
 INLINE bool upb_field_ismm(upb_fielddef *f) {
@@ -139,6 +152,8 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
 typedef struct _upb_msgdef {
   upb_def base;
   upb_atomic_refcount_t cycle_refcount;
+  uint32_t size;
+  uint32_t set_flags_bytes;
 
   // Tables for looking up fields by number and name.
   upb_inttable itof;  // int to field
@@ -169,9 +184,14 @@ INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, upb_string *name) {
   return e ? e->f : NULL;
 }
 
+INLINE upb_field_count_t upb_msgdef_numfields(upb_msgdef *m) {
+  return upb_strtable_count(&m->ntof);
+}
+
 // Iteration over fields.  The order is undefined.
 //   upb_msg_iter i;
-//   for(i = upb_msg_begin(m); !upb_msg_done(&i); i = upb_msg_next(&i)) {
+//   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
+//     upb_fielddef *f = upb_msg_iter_field(i);
 //     // ...
 //   }
 typedef upb_itof_ent *upb_msg_iter;

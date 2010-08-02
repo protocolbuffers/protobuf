@@ -127,6 +127,10 @@ INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
        Implement them or compile with UPB_THREAD_UNSAFE.
 #endif
 
+INLINE bool upb_atomic_only(upb_atomic_refcount_t *a) {
+  return upb_atomic_read(a) == 1;
+}
+
 /* Reader/Writer lock. ********************************************************/
 
 #ifdef UPB_THREAD_UNSAFE

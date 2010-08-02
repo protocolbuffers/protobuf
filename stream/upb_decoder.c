@@ -14,8 +14,10 @@
 
 // Returns true if the give wire type and field type combination is valid,
 // taking into account both packed and non-packed encodings.
-static bool upb_check_type(upb_wire_type_t wt, upb_field_type_t ft) {
-  return (1 << wt) & upb_types[ft].allowed_wire_types;
+static bool upb_check_type(upb_wire_type_t wt, upb_fielddef *f) {
+  // TODO: need to take into account the label; only repeated fields are
+  // allowed to use packed encoding.
+  return (1 << wt) & upb_types[f->type].allowed_wire_types;
 }
 
 // Performs zig-zag decoding, which is used by sint32 and sint64.
@@ -358,7 +360,7 @@ again:
     // unknown fields we will implement that here.
     upb_decoder_skipval(d);
     goto again;
-  } else if (!upb_check_type(wire_type, f->type)) {
+  } else if (!upb_check_type(wire_type, f)) {
     // This is a recoverable error condition.  We skip the value but also
     // return NULL and report the error.
     upb_decoder_skipval(d);

@@ -31,7 +31,7 @@ void upb_stringsrc_free(upb_stringsrc *s);
 void upb_stringsrc_reset(upb_stringsrc *s, upb_string *str);
 
 // Returns the upb_bytesrc* for this stringsrc.  Invalidated by reset above.
-upb_bytesrc *upb_stringsrc_bytesrc();
+upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s);
 
 
 /* upb_stringsink *************************************************************/

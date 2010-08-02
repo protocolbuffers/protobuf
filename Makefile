@@ -55,6 +55,7 @@ clean:
 # The core library (core/libupb.a)
 SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
     core/upb_stream.c stream/upb_stdio.c stream/upb_strstream.c stream/upb_textprinter.c \
+    core/upb_msg.c \
     descriptor/descriptor.c
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
@@ -101,14 +102,13 @@ tests/test.proto.pb: tests/test.proto
 TESTS=tests/test_string \
     tests/test_table \
     tests/test_def \
-    tests/test_decoder
-tests: $(TESTS)
-
-OTHER_TESTS=tests/tests \
-    tests/test_table \
+    tests/test_decoder \
     tests/t.test_vs_proto2.googlemessage1 \
     tests/t.test_vs_proto2.googlemessage2 \
     tests/test.proto.pb
+tests: $(TESTS)
+
+OTHER_TESTS=tests/tests \
 $(TESTS): core/libupb.a
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 

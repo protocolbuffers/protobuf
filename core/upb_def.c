@@ -12,6 +12,16 @@
 #define CHECKSRC(x) if(!(x)) goto src_err
 #define CHECK(x) if(!(x)) goto err
 
+/* Rounds p up to the next multiple of t. */
+static size_t upb_align_up(size_t val, size_t align) {
+  return val % align == 0 ? val : val + align - (val % align);
+}
+
+static int upb_div_round_up(int numerator, int denominator) {
+  /* cf. http://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division */
+  return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
+}
+
 // A little dynamic array for storing a growing list of upb_defs.
 typedef struct {
   upb_def **defs;
@@ -409,6 +419,19 @@ src_err:
 
 /* upb_msgdef *****************************************************************/
 
+static int upb_compare_typed_fields(upb_fielddef *f1, upb_fielddef *f2) {
+  // Sort by data size (ascending) to reduce padding.
+  size_t size1 = upb_types[f1->type].size;
+  size_t size2 = upb_types[f2->type].size;
+  if (size1 != size2) return size1 - size2;
+  // Otherwise return in number order (just so we get a reproduceable order.
+  return f1->number - f2->number;
+}
+
+static int upb_compare_fields(const void *f1, const void *f2) {
+  return upb_compare_typed_fields(*(void**)f1, *(void**)f2);
+}
+
 // Processes a google.protobuf.DescriptorProto, adding defs to "defs."
 static bool upb_addmsg(upb_src *src, upb_deflist *defs, upb_status *status)
 {
@@ -418,7 +441,6 @@ static bool upb_addmsg(upb_src *src, upb_deflist *defs, upb_status *status)
   upb_inttable_init(&m->itof, 4, sizeof(upb_itof_ent));
   upb_strtable_init(&m->ntof, 4, sizeof(upb_ntof_ent));
   int32_t start_count = defs->len;
-
   upb_fielddef *f;
   while((f = upb_src_getdef(src)) != NULL) {
     switch(f->number) {
@@ -451,6 +473,45 @@ static bool upb_addmsg(upb_src *src, upb_deflist *defs, upb_status *status)
     upb_seterr(status, UPB_STATUS_ERROR, "Encountered message with no name.");
     goto err;
   }
+
+
+  // Create an ordering over the fields.
+  upb_field_count_t n = upb_msgdef_numfields(m);
+  upb_fielddef **sorted_fields = malloc(sizeof(upb_fielddef*) * n);
+  upb_field_count_t field = 0;
+  upb_msg_iter i;
+  for (i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
+    sorted_fields[field++]= upb_msg_iter_field(i);
+  }
+  qsort(sorted_fields, n, sizeof(*sorted_fields), upb_compare_fields);
+
+  // Assign offsets in the msg.
+  m->set_flags_bytes = upb_div_round_up(n, 8);
+  m->size = sizeof(upb_atomic_refcount_t) + m->set_flags_bytes;
+
+  size_t max_align = 0;
+  for (int i = 0; i < n; i++) {
+    upb_fielddef *f = sorted_fields[i];
+    upb_type_info *type_info = &upb_types[f->type];
+
+    // This identifies the set bit.  When we implement is_initialized (a
+    // general check about whether all required bits are set) we will probably
+    // want to use a different ordering that puts all the required bits
+    // together.
+    f->field_index = i;
+
+    // General alignment rules are: each member must be at an address that is a
+    // multiple of that type's alignment.  Also, the size of the structure as a
+    // whole must be a multiple of the greatest alignment of any member.
+    size_t offset = upb_align_up(m->size, type_info->align);
+    // Offsets are relative to the end of the refcount.
+    f->byte_offset = offset - sizeof(upb_atomic_refcount_t);
+    m->size = offset + type_info->size;
+    max_align = UPB_MAX(max_align, type_info->align);
+  }
+
+  if (max_align > 0) m->size = upb_align_up(m->size, max_align);
+
   upb_deflist_qualify(defs, m->base.fqname, start_count);
   upb_deflist_push(defs, UPB_UPCAST(m));
   return true;
@@ -664,7 +725,7 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
       }
 
       // Check the type of the found def.
-      upb_field_type_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
+      upb_fieldtype_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
       if(found->def->type != expected) {
         upb_seterr(status, UPB_STATUS_ERROR, "Unexpected type");
         return false;
