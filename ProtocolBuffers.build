@@ -266,10 +266,10 @@
       <property name="Configuration" value="Release" />
       <property name="Platform" value="Any CPU" />
     </msbuild>
-    <msbuild project="${src}/ProtocolBuffers.sln">
+    <!--msbuild project="${src}/ProtocolBuffers.sln">
       <property name="Configuration" value="Silverlight2" />
       <property name="Platform" value="Any CPU" />
-    </msbuild>
+    </msbuild-->
     <!-- Note the deliberate lack of space in the platform name -->
     <msbuild project="${src}/ProtocolBuffers/ProtocolBuffersCF.csproj">
       <property name="Configuration" value="Release" />
@@ -291,7 +291,7 @@
     <mkdir dir="${output-dir}/Protoc" />
     <mkdir dir="${output-dir}/Debug" />
     <mkdir dir="${output-dir}/Release" />
-    <mkdir dir="${output-dir}/Silverlight2" />
+    <!--mkdir dir="${output-dir}/Silverlight2" /-->
     <mkdir dir="${output-dir}/CompactFramework35" />
     <copy todir="${output-dir}/Protoc">
       <fileset basedir="${project::get-base-directory()}/lib">
@@ -321,12 +321,12 @@
         <exclude name="**/*vshost*" />
       </fileset>
     </copy>    
-    <copy todir="${output-dir}/Silverlight2"
+    <!--copy todir="${output-dir}/Silverlight2"
           flatten="true">
       <fileset basedir="${src}">
         <include name="ProtocolBuffers/bin/Silverlight2/Google.ProtocolBuffers.dll" />
       </fileset>
-    </copy>    
+    </copy-->    
     <copy todir="${output-dir}/CompactFramework35"
           flatten="true">
       <fileset basedir="${src}">
