@@ -29,3 +29,5 @@ mono/TestResult.xml
 mono/.libs
 mono/*.exe
 mono/*.dll
+
+src/ProtocolBuffers/objCF

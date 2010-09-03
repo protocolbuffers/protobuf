@@ -16,6 +16,7 @@
     </TargetFrameworkSubset>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.ProtoGen.snk</AssemblyOriginatorKeyFile>
+    <StartupObject>Google.ProtocolBuffers.ProtoGen.ProgramPreprocess</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -58,6 +59,7 @@
     <Compile Include="MessageFieldGenerator.cs" />
     <Compile Include="MessageGenerator.cs" />
     <Compile Include="PrimitiveFieldGenerator.cs" />
+    <Compile Include="ProgramPreprocess.cs" />
     <Compile Include="RepeatedEnumFieldGenerator.cs" />
     <Compile Include="RepeatedMessageFieldGenerator.cs" />
     <Compile Include="RepeatedPrimitiveFieldGenerator.cs" />

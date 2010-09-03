@@ -92,7 +92,13 @@ namespace Google.ProtocolBuffers.ProtoGen {
       if (!Descriptor.CSharpOptions.NestClasses) {
         writer.Outdent();
         writer.WriteLine("}");
-      }
+
+		//ROK 2010-09-03 - close the namespace around the umbrella class if defined
+		if (!Descriptor.CSharpOptions.NestClasses && Descriptor.CSharpOptions.UmbrellaNamespace != "") {
+			writer.Outdent();
+			writer.WriteLine("}");
+		}
+	  }
       WriteChildren(writer, "Enums", Descriptor.EnumTypes);
       WriteChildren(writer, "Messages", Descriptor.MessageTypes);
       WriteChildren(writer, "Services", Descriptor.Services);
@@ -115,7 +121,14 @@ namespace Google.ProtocolBuffers.ProtoGen {
         writer.WriteLine("namespace {0} {{", Descriptor.CSharpOptions.Namespace);
         writer.Indent();
         writer.WriteLine();
-      }    
+      }
+	  //ROK 2010-09-03 - add the namespace around the umbrella class if defined
+	  if(!Descriptor.CSharpOptions.NestClasses && Descriptor.CSharpOptions.UmbrellaNamespace != "") {
+        writer.WriteLine("namespace {0} {{", Descriptor.CSharpOptions.UmbrellaNamespace);
+        writer.Indent();
+        writer.WriteLine();
+	  }
+    
       if (Descriptor.CSharpOptions.CodeContracts) {
           writer.WriteLine("[global::System.Diagnostics.Contracts.ContractVerificationAttribute(false)]");
       }

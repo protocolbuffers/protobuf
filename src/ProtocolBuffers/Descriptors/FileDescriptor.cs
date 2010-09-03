@@ -73,21 +73,36 @@ namespace Google.ProtocolBuffers.Descriptors {
         (field, index) => new FieldDescriptor(field, this, null, index, true));
     }
 
-    private CSharpFileOptions BuildOrFakeCSharpOptions() {
-      // TODO(jonskeet): Check if we could use FileDescriptorProto.Descriptor.Name - interesting bootstrap issues
-      if (proto.Name == "google/protobuf/descriptor.proto") {
-        return new CSharpFileOptions.Builder {
-          Namespace = "Google.ProtocolBuffers.DescriptorProtos",
-          UmbrellaClassname = "DescriptorProtoFile", NestClasses = false, MultipleFiles = false, PublicClasses = true
-        }.Build();
-      }
-      if (proto.Name == "google/protobuf/csharp_options.proto") {
-        return new CSharpFileOptions.Builder {
-          Namespace = "Google.ProtocolBuffers.DescriptorProtos",
-          UmbrellaClassname = "CSharpOptions", NestClasses = false, MultipleFiles = false, PublicClasses = true
-        }.Build();
-      }
-      CSharpFileOptions.Builder builder = CSharpFileOptions.CreateBuilder();
+
+	/// <summary>
+	/// ROK - Added to allow the GeneratorOptions to sepcify the default for any or all of these values
+	/// </summary>
+	internal void ConfigureWithDefaultOptions(CSharpFileOptions options)
+	{
+		csharpFileOptions = BuildOrFakeWithDefaultOptions(options);
+	}
+	private CSharpFileOptions BuildOrFakeWithDefaultOptions(CSharpFileOptions defaultOptions)
+	{
+	  // ROK 2010-09-03 - fix for being able to relocate these files to any directory structure
+	  if(proto.Package == "google.protobuf") {
+	  	string filename = System.IO.Path.GetFileName(proto.Name);
+		// TODO(jonskeet): Check if we could use FileDescriptorProto.Descriptor.Name - interesting bootstrap issues)
+		if (filename == "descriptor.proto") {
+			return new CSharpFileOptions.Builder {
+			  Namespace = "Google.ProtocolBuffers.DescriptorProtos",
+			  UmbrellaClassname = "DescriptorProtoFile", NestClasses = false, MultipleFiles = false, PublicClasses = true,
+			  OutputDirectory = defaultOptions.OutputDirectory, IgnoreGoogleProtobuf = defaultOptions.IgnoreGoogleProtobuf
+			}.Build();
+		}
+		if (filename == "csharp_options.proto") {
+			return new CSharpFileOptions.Builder {
+			  Namespace = "Google.ProtocolBuffers.DescriptorProtos",
+			  UmbrellaClassname = "CSharpOptions", NestClasses = false, MultipleFiles = false, PublicClasses = true,
+			  OutputDirectory = defaultOptions.OutputDirectory, IgnoreGoogleProtobuf = defaultOptions.IgnoreGoogleProtobuf
+			}.Build();
+		}
+	  }
+	  CSharpFileOptions.Builder builder = defaultOptions.ToBuilder();
       if (proto.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions)) {
         builder.MergeFrom(proto.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions));
       }
@@ -99,6 +114,21 @@ namespace Google.ProtocolBuffers.Descriptors {
         string baseName = Name.Substring(lastSlash + 1);
         builder.UmbrellaClassname = NameHelpers.UnderscoresToPascalCase(NameHelpers.StripProto(baseName));        
       }
+
+	  // ROK 2010-09-03 - auto fix for name collision by placing umbrella class into a new namespace.  This
+	  // still won't fix the collisions with nesting enabled; however, you have to turn that on so whatever.
+	  if(!builder.NestClasses && !builder.HasUmbrellaNamespace) {
+		  bool collision = false;
+		  foreach (IDescriptor d in MessageTypes)
+			  collision |= d.Name == builder.UmbrellaClassname;
+		  foreach (IDescriptor d in Services)
+			  collision |= d.Name == builder.UmbrellaClassname;
+		  foreach (IDescriptor d in EnumTypes)
+			  collision |= d.Name == builder.UmbrellaClassname;
+		  if (collision)
+			  builder.UmbrellaNamespace = "Proto";
+	  }
+
       return builder.Build();
     }
 
@@ -124,7 +154,7 @@ namespace Google.ProtocolBuffers.Descriptors {
       get {
         lock (optionsLock) {
           if (csharpFileOptions == null) {
-            csharpFileOptions = BuildOrFakeCSharpOptions();
+            csharpFileOptions = BuildOrFakeWithDefaultOptions(CSharpFileOptions.DefaultInstance);
           }
         }
         return csharpFileOptions;

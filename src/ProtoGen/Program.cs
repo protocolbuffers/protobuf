@@ -41,7 +41,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// Entry point for the Protocol Buffers generator.
   /// </summary>
   class Program {
-    static int Main(string[] args) {
+  	internal static int Main(string[] args) {
       try {
         // Hack to make sure everything's initialized
         DescriptorProtoFile.Descriptor.ToString();
@@ -71,8 +71,11 @@ namespace Google.ProtocolBuffers.ProtoGen {
       //string baseDir = "c:\\Users\\Jon\\Documents\\Visual Studio 2008\\Projects\\ProtocolBuffers";
       //options.OutputDirectory = baseDir + "\\tmp";
       //options.InputFiles = new[] { baseDir + "\\protos\\nwind-solo.protobin" };
-      options.OutputDirectory = ".";
-      options.InputFiles = args;
+
+	  //ROK 2010-09-03 - fixes to allow parsing these options...
+      //options.OutputDirectory = ".";
+	  //options.InputFiles = args;
+      options.Arguments = args;
       return options;
     }
   }

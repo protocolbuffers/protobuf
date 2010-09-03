@@ -38,6 +38,23 @@ message CSharpFileOptions {
 
   // Generate attributes indicating non-CLS-compliance
   optional bool cls_compliance = 8 [default = true];
+
+  // ROK - 2010-09-03 additions to csoptions ...
+  // The extension that should be appended to the umbrella_classname when creating files.
+  optional string file_extension = 221 [default = ".cs"];
+  
+  // A nested namespace for the umbrella class.  Helpful for name collisions caused by 
+  // umbrella_classname conflicting with an existing type.  This will be automatically
+  // set to 'Proto' if a collision is detected with types being generated.  This value
+  // is ignored when nest_classes == true
+  optional string umbrella_namespace = 222;
+  
+  // The output path for the source file(s) generated
+  optional string output_directory = 223 [default = "."];
+
+  // Will ignore the type generations and remove dependencies for the descriptor proto
+  // files that declare their package to be "google.protobuf"
+  optional bool ignore_google_protobuf = 224 [default = false];
 }
 
 extend FileOptions {

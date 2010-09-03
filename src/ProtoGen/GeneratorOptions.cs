@@ -32,8 +32,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
+using Google.ProtocolBuffers.DescriptorProtos;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
 
@@ -44,8 +48,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// the generator.
   /// </summary>
   public sealed class GeneratorOptions {
-
-    public string OutputDirectory { get; set; }
+	//ROK, see below - public string OutputDirectory  { get; set; }
     public IList<string> InputFiles { get; set; }
 
     /// <summary>
@@ -58,12 +61,15 @@ namespace Google.ProtocolBuffers.ProtoGen {
     public bool TryValidate(out IList<string> reasons) {
       List<string> tmpReasons = new List<string>();
 
+	  //ROK 2010-09-03 see population of options below
+	  ParseArguments(tmpReasons);
+
       // Output directory validation
-      if (string.IsNullOrEmpty(OutputDirectory)) {
+      if (string.IsNullOrEmpty(FileOptions.OutputDirectory)) {
         tmpReasons.Add("No output directory specified");
       } else {
-        if (!Directory.Exists(OutputDirectory)) {
-          tmpReasons.Add("Specified output directory (" + OutputDirectory + " doesn't exist.");
+        if (!Directory.Exists(FileOptions.OutputDirectory)) {
+          tmpReasons.Add("Specified output directory (" + FileOptions.OutputDirectory + " doesn't exist.");
         }
       }
 
@@ -99,5 +105,179 @@ namespace Google.ProtocolBuffers.ProtoGen {
         throw new InvalidOptionsException(reasons);
       }
     }
+
+
+
+	// ROK - added to provide defaults for any of the options
+	//Raw arguments
+	public IList<string> Arguments { get; set; }
+	[Obsolete("Please use GeneratorOptions.FileOptions.OutputDirectory instead")]
+  	public string OutputDirectory
+  	{
+  		get {
+			return FileOptions.OutputDirectory;
+  		}
+  		set {
+			CSharpFileOptions.Builder bld = FileOptions.ToBuilder();
+			bld.OutputDirectory = value;
+			FileOptions = bld.Build();
+  		}
+  	}
+
+	private static readonly Regex ArgMatch = new Regex(@"^[-/](?<name>[\w_]+?)[:=](?<value>.*)$");
+	CSharpFileOptions _fileOptions;
+	public CSharpFileOptions FileOptions
+	{
+		get { return _fileOptions ?? (_fileOptions = CSharpFileOptions.DefaultInstance); }
+		set { _fileOptions = value; }
+	}
+
+	private void ParseArguments(IList<string> tmpReasons)
+	{
+		bool doHelp = Arguments.Count == 0;
+
+		//ROK Parse the raw arguments
+		InputFiles = new List<string>();
+		CSharpFileOptions.Builder builder = FileOptions.ToBuilder();
+		Dictionary<string, FieldDescriptor> fields =
+			new Dictionary<string, FieldDescriptor>(StringComparer.OrdinalIgnoreCase);
+		foreach (FieldDescriptor fld in builder.DescriptorForType.Fields)
+			fields.Add(fld.Name, fld);
+
+		foreach (string argument in Arguments)
+		{
+			if (StringComparer.OrdinalIgnoreCase.Equals("-help", argument) ||
+				StringComparer.OrdinalIgnoreCase.Equals("/help", argument) ||
+				StringComparer.OrdinalIgnoreCase.Equals("-?", argument) ||
+				StringComparer.OrdinalIgnoreCase.Equals("/?", argument))
+			{
+				doHelp = true;
+				break;
+			}
+
+			Match m = ArgMatch.Match(argument);
+			if (m.Success)
+			{
+				FieldDescriptor fld;
+				string name = m.Groups["name"].Value;
+				string value = m.Groups["value"].Value;
+
+				if (fields.TryGetValue(name, out fld))
+				{
+					object obj;
+					if (TryCoerceType(value, fld, out obj, tmpReasons))
+						builder[fld] = obj;
+				}
+				else if (!File.Exists(argument))
+				{
+					doHelp = true;
+					tmpReasons.Add("Unknown argument '" + name + "'.");
+				}
+				else
+					InputFiles.Add(argument);
+			}
+			else
+				InputFiles.Add(argument);
+		}
+
+		if (doHelp || InputFiles.Count == 0)
+		{
+			tmpReasons.Add("Arguments:");
+			foreach (KeyValuePair<string, FieldDescriptor> field in fields)
+			{
+				tmpReasons.Add(String.Format("-{0}=[{1}]", field.Key, field.Value.FieldType));
+			}
+			tmpReasons.Add("followed by one or more file paths.");
+		}
+		else
+			FileOptions = builder.Build();
+	}
+
+	private static bool TryCoerceType(string text, FieldDescriptor field, out object value, IList<string> tmpReasons)
+	{
+		value = null;
+
+		switch (field.FieldType)
+		{
+			case FieldType.Int32:
+			case FieldType.SInt32:
+			case FieldType.SFixed32:
+				value = Int32.Parse(text);
+				break;
+
+			case FieldType.Int64:
+			case FieldType.SInt64:
+			case FieldType.SFixed64:
+				value = Int64.Parse(text);
+				break;
+
+			case FieldType.UInt32:
+			case FieldType.Fixed32:
+				value = UInt32.Parse(text);
+				break;
+
+			case FieldType.UInt64:
+			case FieldType.Fixed64:
+				value = UInt64.Parse(text);
+				break;
+
+			case FieldType.Float:
+				value = float.Parse(text);
+				break;
+
+			case FieldType.Double:
+				value = Double.Parse(text);
+				break;
+
+			case FieldType.Bool:
+				value = Boolean.Parse(text);
+				break;
+
+			case FieldType.String:
+				value = text;
+				break;
+
+			case FieldType.Enum:
+				{
+
+					EnumDescriptor enumType = field.EnumType;
+
+					int number;
+					if (int.TryParse(text, out number))
+					{
+						value = enumType.FindValueByNumber(number);
+						if (value == null)
+						{
+							tmpReasons.Add(
+								"Enum type \"" + enumType.FullName +
+								"\" has no value with number " + number + ".");
+							return false;
+						}
+					}
+					else
+					{
+						value = enumType.FindValueByName(text);
+						if (value == null)
+						{
+							tmpReasons.Add(
+								"Enum type \"" + enumType.FullName +
+								"\" has no value named \"" + text + "\".");
+							return false;
+						}
+					}
+
+					break;
+				}
+
+			case FieldType.Bytes:
+			case FieldType.Message:
+			case FieldType.Group:
+				tmpReasons.Add("Unhandled field type " + field.FieldType.ToString() + ".");
+				return false;
+		}
+
+		return true;
+	}
+
   }
 }

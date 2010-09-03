@@ -1,10 +1,49 @@
+Work complete on csharptest/branch
+
+New Options (in csharp_options.proto):
+
+1 - Add a way to specify the output directory
+    Added an option to csharp_options.proto called "output_directory", defaults to "."
+
+2 - Added an option "file_extension" to control the suffix for cs files generated, defaults to ".cs"
+    This enables using ".Generated.cs" to provide easy filtering and cleanup of generated code.
+
+3 - Added the option for "umbrella_namespace" used when nest_classes=false and having name conflicts
+
+4 - Optionally remove dependencies to csharp options
+    provided option "ignore_google_protobuf" to prevent generation of code for csharp_options.proto and descriptor.proto
+    option also relaxes the contraint of having either of these compiled into the proto buffer input
+
+5 - Investigate command line parsing library
+    All proto options for csharp_options.proto can now be provided via the command-line by using the following format:
+      /option=value or -option:value
+      i.e. use /namespace=My.Name.Space
+
+6 - Investigate calling protoc directly
+    ProgramPreprocess.cs - input files with an extension of '.proto' by running protoc.exe.  If arguments
+    are supplied with '--' prefix they are provided to protoc.exe, otherwise they are assumed to
+    be used for ProtoGen.exe which is run on the resulting output proto buffer.  If the option
+    --descriptor_set_out= is specified the proto buffer file is kept, otherwise it will be removed
+    after code generation.
+
+7 - Unable to resolve dependencies correctly
+    Fixed an issue where two or more proto-buffers are provided to protogen.exe that depend on types
+    defined in one-another.  The dependency walker of the generator was not taking into account all
+    inputs when evaluating the descriptor's existence.
+
+8 - Added several (20) nunits to automate the command-line invocation of each option and ensured the
+    generated code compiles into a working assembly and contains some of the expected types.  Not sure
+    how to disable this test for mono, I'm certain it will not work; however, I still believe it's worth
+    having.  As a side-benefit from testing the command-line options, it verifies behavior of each
+    setting in csharp_options (save for multi-file).
+
 Current task list (not in order)
 
-- Optionally remove dependencies to csharp options
+? Optionally remove dependencies to csharp options
 - Remove multifile support
 - Docs
 - Clean up protogen code
-- Add flags to protogen
+X Add flags to protogen
 - Avoid using reflection for messages which don't need it (is this
   possible?)
 - Bring service generation into line with Java
@@ -14,7 +53,7 @@ Current task list (not in order)
 - Reformat code
 - Change generated format
 - Add regions to copyright
-- Investigate command line parsing library
-- Investigate calling protoc directly
+X Investigate command line parsing library
+X Investigate calling protoc directly
 - Build and publish binaries
 - Work out why the Compact Framework 3.5 build fails under VS2010
