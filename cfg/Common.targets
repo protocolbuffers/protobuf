@@ -8,7 +8,7 @@
 
 	<Target Name="_Compile">
 		<MSBuild Projects="%(Solution.Identity)" Properties="Configuration=%(Solution.Configuration);Platform=%(Solution.Platform)"
-				 Targets="%(Solution.BuildTarget)" BuildInParallel="true" Condition="%(Solution.CompileGroup) == $(CompileGroup)" ToolsVersion="4.0" />
+				 Targets="%(Solution.BuildTarget)" BuildInParallel="true" Condition="%(Solution.CompileGroup) == 'Build'" />
 	</Target>
 
 	<Target Name="_EnsureEnvironment">
@@ -16,7 +16,7 @@
 		<Error Text="Tool &quot;Protogen&quot; could not be found at path $(ProtogenExePath)" Condition="!Exists($(ProtogenExePath))" />
 	</Target>
 
-	<Target Name="_GenerateSource" DependsOnTargets="_Clean;_Compile;_Compile">
+	<Target Name="_GenerateSource" DependsOnTargets="_Clean;_Compile;_EnsureEnvironment">
 		<PropertyGroup>
 			<ProtosList>@(Protos)</ProtosList>
 			<Args>$(ProtosList.Replace(`;`,` `))</Args>
@@ -35,8 +35,8 @@
 				 Targets="%(Solution.BuildTarget)" BuildInParallel="true" Condition="%(Solution.CompileGroup) == $(CompileGroup)" />
 	</Target>
 
-	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">		
-		<Exec Command="&quot;$(NUnitExePath)&quot; %(NUnitTests.Identity) /xml=%(NUnitTests.Filename)%(NUnitTests.Extension).xml" WorkingDirectory="$(BuildTempDirectory)" />
+	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
+		<Exec Command="&quot;$(NUnitExePath)&quot; %(NUnitTests.Identity) /xml=%(NUnitTests.Filename)%(NUnitTests.Extension).txt" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
 	<Target Name="_Package" DependsOnTargets="_CopyGeneratedSource">
@@ -46,7 +46,7 @@
 	<!--
 		BENCHMARK - this needs optimising
 	-->
-	<Target Name="_GenerateBenchmarkSource">
+	<Target Name="_GenerateBenchmarkSource" DependsOnTargets="_Clean">
 		<PropertyGroup>
 			<Args>$(BenchmarkProtosDirectory)\google_size.proto $(BenchmarkProtosDirectory)\google_speed.proto</Args>
 		</PropertyGroup>
