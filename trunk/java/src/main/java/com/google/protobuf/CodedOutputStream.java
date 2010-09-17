@@ -193,23 +193,6 @@ public final class CodedOutputStream {
     writeStringNoTag(value);
   }
 
-  /**
-   * Write a {@code string} field, including tag, to the stream, where bytes
-   * is the encoded version of value. Used by the SPEED version of messages
-   * to avoid performing the UTF-8 conversion twice. bytes is simply a hint
-   * and may be null. If it is null, value will be converted as usual.
-   */
-  public void writeStringCached(final int fieldNumber, final String value,
-                                ByteString bytes)
-                                throws IOException {
-    // The cache can be null if serializing without getting the size first, or
-    // if there are multiple threads.
-    if (bytes == null) {
-      bytes = ByteString.copyFromUtf8(value);
-    }
-    writeBytes(fieldNumber, bytes);
-  }
-
   /** Write a {@code group} field, including tag, to the stream. */
   public void writeGroup(final int fieldNumber, final MessageLite value)
                          throws IOException {
