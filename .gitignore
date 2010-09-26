@@ -1,5 +1,6 @@
-# Untracked files
-
+#
+# 	Untracked directories
+#
 src/AddressBook/bin
 src/AddressBook/obj
 src/ProtocolBuffers/bin/
@@ -16,20 +17,21 @@ src/ProtoGen.Test/bin/
 src/ProtoGen.Test/obj/
 src/ProtoMunge/bin/
 src/ProtoMunge/obj/
-tmp/
-dist/
+mono/bin
+mono/tmp
+mono/protoc
+_tmp
+_dist
+_benchmark
+
+#
+# 	Untracked files
+#
 *.user
 *.suo
 _ReSharper.*
 *.sln.cache
-mono/bin
-mono/tmp
-mono/protoc
 mono/TestResult.xml
 mono/.libs
 mono/*.exe
 mono/*.dll
-
-_tmp/
-_dist/
-_benchmark
