@@ -20,6 +20,10 @@ if os.path.exists("../src/protoc"):
   protoc = "../src/protoc"
 elif os.path.exists("../src/protoc.exe"):
   protoc = "../src/protoc.exe"
+elif os.path.exists("../vsprojects/Debug/protoc.exe"):
+  protoc = "../vsprojects/Debug/protoc.exe"
+elif os.path.exists("../vsprojects/Release/protoc.exe"):
+  protoc = "../vsprojects/Release/protoc.exe"
 else:
   protoc = find_executable("protoc")
 
