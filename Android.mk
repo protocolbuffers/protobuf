@@ -53,6 +53,7 @@ JAVA_LITE_SRC_FILES := \
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libprotobuf-java-2.3.0-micro
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/micro)
 
@@ -74,6 +75,7 @@ include $(BUILD_HOST_JAVA_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libprotobuf-java-2.3.0-lite
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(JAVA_LITE_SRC_FILES)
 
@@ -95,6 +97,7 @@ include $(BUILD_HOST_JAVA_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libprotobuf-cpp-2.3.0-lite
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_CPP_EXTENSION := .cc
 
@@ -135,6 +138,7 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libprotobuf-cpp-2.3.0-full
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_CPP_EXTENSION := .cc
 
