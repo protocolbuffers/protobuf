@@ -261,6 +261,10 @@ enum upb_status_code {
   UPB_ERROR_MAX_NESTING_EXCEEDED = -3
 };
 
+// TODO: consider making this a single word: a upb_string* where we use the low
+// bits as flags indicating whether there is an error and whether it is
+// resumable.  This would improve efficiency, because the code would not need
+// to be loaded after a call to a function returning a status.
 typedef struct {
   enum upb_status_code code;
   upb_string *str;
