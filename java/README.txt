@@ -110,7 +110,6 @@ CodedInputStreamMicro.java
 CodedOutputStreamMicro.java
 InvalidProtocolBufferException.java
 MessageMicro.java
-StringUtf8Micro.java
 WireFormatMicro.java
 
 If you wish to change on the code generator it is located
@@ -133,9 +132,9 @@ java_outer_classname -> <file-name>|<package-name>
 opt:
   This change the code generation to optimize for speed,
   opt=speed, or space, opt=space. When opt=speed this
-  changes the code generation for strings to use
-  StringUtf8Micro which eliminates multiple conversions
-  of the string to utf8. The default value is opt=space.
+  changes the code generation for strings so that multiple
+  conversions to Utf8 are eliminated. The default value
+  is opt=space.
 
 java_use_vector:
   Is a boolean flag either java_use_vector=true or
