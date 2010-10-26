@@ -113,14 +113,14 @@ namespace Google.ProtocolBuffers {
     /// byte array slice.
     /// </summary>
     public static CodedInputStream CreateInstance(byte[] buf, int offset, int length) {
-        return new CodedInputStream(buf, offset, length);
+      return new CodedInputStream(buf, offset, length);
     }
 
     private CodedInputStream(byte[] buffer, int offset, int length) {
-        this.buffer = buffer;
-        this.bufferPos = offset;
-        this.bufferSize = offset + length;
-        this.input = null;
+      this.buffer = buffer;
+      this.bufferPos = offset;
+      this.bufferSize = offset + length;
+      this.input = null;
     }
 
     private CodedInputStream(Stream input) {
