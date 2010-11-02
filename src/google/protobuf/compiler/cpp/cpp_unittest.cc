@@ -195,6 +195,48 @@ TEST(GeneratedMessageTest, MutableStringDefault) {
   EXPECT_EQ("hello", *message.mutable_default_string());
 }
 
+TEST(GeneratedMessageTest, ReleaseString) {
+  // Check that release_foo() starts out NULL, and gives us a value
+  // that we can delete after it's been set.
+  unittest::TestAllTypes message;
+
+  EXPECT_EQ(NULL, message.release_default_string());
+  EXPECT_FALSE(message.has_default_string());
+  EXPECT_EQ("hello", message.default_string());
+
+  message.set_default_string("blah");
+  EXPECT_TRUE(message.has_default_string());
+  string* str = message.release_default_string();
+  EXPECT_FALSE(message.has_default_string());
+  ASSERT_TRUE(str != NULL);
+  EXPECT_EQ("blah", *str);
+  delete str;
+
+  EXPECT_EQ(NULL, message.release_default_string());
+  EXPECT_FALSE(message.has_default_string());
+  EXPECT_EQ("hello", message.default_string());
+}
+
+TEST(GeneratedMessageTest, ReleaseMessage) {
+  // Check that release_foo() starts out NULL, and gives us a value
+  // that we can delete after it's been set.
+  unittest::TestAllTypes message;
+
+  EXPECT_EQ(NULL, message.release_optional_nested_message());
+  EXPECT_FALSE(message.has_optional_nested_message());
+
+  message.mutable_optional_nested_message()->set_bb(1);
+  unittest::TestAllTypes::NestedMessage* nest =
+      message.release_optional_nested_message();
+  EXPECT_FALSE(message.has_optional_nested_message());
+  ASSERT_TRUE(nest != NULL);
+  EXPECT_EQ(1, nest->bb());
+  delete nest;
+
+  EXPECT_EQ(NULL, message.release_optional_nested_message());
+  EXPECT_FALSE(message.has_optional_nested_message());
+}
+
 TEST(GeneratedMessageTest, Clear) {
   // Set every field to a unique value, clear the message, then check that
   // it is cleared.
@@ -281,6 +323,7 @@ TEST(GeneratedMessageTest, CopyFrom) {
   message2.CopyFrom(message2);
   TestUtil::ExpectAllFieldsSet(message2);
 }
+
 
 TEST(GeneratedMessageTest, SwapWithEmpty) {
   unittest::TestAllTypes message1, message2;
@@ -376,7 +419,7 @@ TEST(GeneratedMessageTest, CopyAssignmentOperator) {
   TestUtil::ExpectAllFieldsSet(message2);
 
   // Make sure that self-assignment does something sane.
-  message2 = message2;
+  message2.operator=(message2);
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
@@ -717,6 +760,7 @@ TEST(GeneratedMessageTest, TestSpaceUsed) {
 }
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
+
 
 TEST(GeneratedMessageTest, FieldConstantValues) {
   unittest::TestRequired message;

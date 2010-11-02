@@ -55,15 +55,24 @@ class FieldGenerator {
   FieldGenerator() {}
   virtual ~FieldGenerator();
 
+  virtual int GetNumBitsForMessage() const = 0;
+  virtual int GetNumBitsForBuilder() const = 0;
+  virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
   virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
+  virtual void GenerateBuilderClearCode(io::Printer* printer) const = 0;
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
   virtual void GenerateBuildingCode(io::Printer* printer) const = 0;
   virtual void GenerateParsingCode(io::Printer* printer) const = 0;
   virtual void GenerateParsingCodeFromPacked(io::Printer* printer) const;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
+  virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
+      const = 0;
+
+  virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
+  virtual void GenerateHashCode(io::Printer* printer) const = 0;
 
   virtual string GetBoxedType() const = 0;
 
@@ -85,7 +94,8 @@ class FieldGeneratorMap {
   scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
   scoped_array<scoped_ptr<FieldGenerator> > extension_generators_;
 
-  static FieldGenerator* MakeGenerator(const FieldDescriptor* field);
+  static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
+      int messageBitIndex, int builderBitIndex);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };

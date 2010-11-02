@@ -129,8 +129,8 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 
-namespace google {
 
+namespace google {
 namespace protobuf {
 
 class DescriptorPool;
@@ -782,7 +782,8 @@ inline const uint8* CodedInputStream::ReadLittleEndian64FromArray(
 }
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
   if (GOOGLE_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     memcpy(value, buffer_, sizeof(*value));
     Advance(sizeof(*value));
@@ -796,7 +797,8 @@ inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
 }
 
 inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST) && \
+    defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
   if (GOOGLE_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     memcpy(value, buffer_, sizeof(*value));
     Advance(sizeof(*value));
@@ -1093,10 +1095,10 @@ inline CodedInputStream::~CodedInputStream() {
 }  // namespace io
 }  // namespace protobuf
 
-}  // namespace google
 
 #if defined(_MSC_VER) && _MSC_VER >= 1300
   #pragma runtime_checks("c", restore)
 #endif  // _MSC_VER
 
+}  // namespace google
 #endif  // GOOGLE_PROTOBUF_IO_CODED_STREAM_H__

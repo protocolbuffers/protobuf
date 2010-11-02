@@ -75,7 +75,8 @@ void MessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
     "inline const $type$& $name$() const$deprecation$;\n"
-    "inline $type$* mutable_$name$()$deprecation$;\n");
+    "inline $type$* mutable_$name$()$deprecation$;\n"
+    "inline $type$* release_$name$()$deprecation$;\n");
 }
 
 void MessageFieldGenerator::
@@ -85,9 +86,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  return $name$_ != NULL ? *$name$_ : *default_instance_->$name$_;\n"
     "}\n"
     "inline $type$* $classname$::mutable_$name$() {\n"
-    "  _set_bit($index$);\n"
+    "  set_has_$name$();\n"
     "  if ($name$_ == NULL) $name$_ = new $type$;\n"
     "  return $name$_;\n"
+    "}\n"
+    "inline $type$* $classname$::release_$name$() {\n"
+    "  clear_has_$name$();\n"
+    "  $type$* temp = $name$_;\n"
+    "  $name$_ = NULL;\n"
+    "  return temp;\n"
     "}\n");
 }
 

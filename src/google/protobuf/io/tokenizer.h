@@ -122,11 +122,16 @@ class LIBPROTOBUF_EXPORT Tokenizer {
     // the token within the input stream.  They are zero-based.
     int line;
     int column;
+    int end_column;
   };
 
   // Get the current token.  This is updated when Next() is called.  Before
   // the first call to Next(), current() has type TYPE_START and no contents.
   const Token& current();
+
+  // Return the previous token -- i.e. what current() returned before the
+  // previous call to Next().
+  const Token& previous();
 
   // Advance to the next token.  Returns false if the end of the input is
   // reached.
@@ -180,6 +185,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Tokenizer);
 
   Token current_;           // Returned by current().
+  Token previous_;          // Returned by previous().
 
   ZeroCopyInputStream* input_;
   ErrorCollector* error_collector_;
@@ -289,6 +295,10 @@ class LIBPROTOBUF_EXPORT Tokenizer {
 // inline methods ====================================================
 inline const Tokenizer::Token& Tokenizer::current() {
   return current_;
+}
+
+inline const Tokenizer::Token& Tokenizer::previous() {
+  return previous_;
 }
 
 inline void Tokenizer::ParseString(const string& text, string* output) {

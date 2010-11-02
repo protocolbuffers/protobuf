@@ -67,7 +67,25 @@ public final class CodedInputStream {
    */
   public static CodedInputStream newInstance(final byte[] buf, final int off,
                                              final int len) {
-    return new CodedInputStream(buf, off, len);
+    CodedInputStream result = new CodedInputStream(buf, off, len);
+    try {
+      // Some uses of CodedInputStream can be more efficient if they know
+      // exactly how many bytes are available.  By pushing the end point of the
+      // buffer as a limit, we allow them to get this information via
+      // getBytesUntilLimit().  Pushing a limit that we know is at the end of
+      // the stream can never hurt, since we can never past that point anyway.
+      result.pushLimit(len);
+    } catch (InvalidProtocolBufferException ex) {
+      // The only reason pushLimit() might throw an exception here is if len
+      // is negative. Normally pushLimit()'s parameter comes directly off the
+      // wire, so it's important to catch exceptions in case of corrupt or
+      // malicious data. However, in this case, we expect that len is not a
+      // user-supplied value, so we can assume that it being negative indicates
+      // a programming error. Therefore, throwing an unchecked exception is
+      // appropriate.
+      throw new IllegalArgumentException(ex);
+    }
+    return result;
   }
 
   // -----------------------------------------------------------------
@@ -263,7 +281,9 @@ public final class CodedInputStream {
   /** Read a {@code bytes} field value from the stream. */
   public ByteString readBytes() throws IOException {
     final int size = readRawVarint32();
-    if (size <= (bufferSize - bufferPos) && size > 0) {
+    if (size == 0) {
+      return ByteString.EMPTY;
+    } else if (size <= (bufferSize - bufferPos) && size > 0) {
       // Fast path:  We already have the bytes in a contiguous buffer, so
       //   just copy directly from it.
       final ByteString result = ByteString.copyFrom(buffer, bufferPos, size);
@@ -368,8 +388,8 @@ public final class CodedInputStream {
    * has already read one byte.  This allows the caller to determine if EOF
    * has been reached before attempting to read.
    */
-  static int readRawVarint32(final int firstByte,
-                             final InputStream input) throws IOException {
+  public static int readRawVarint32(
+      final int firstByte, final InputStream input) throws IOException {
     if ((firstByte & 0x80) == 0) {
       return firstByte;
     }
@@ -847,19 +867,19 @@ public final class CodedInputStream {
     } else {
       // Skipping more bytes than are in the buffer.  First skip what we have.
       int pos = bufferSize - bufferPos;
-      totalBytesRetired += pos;
-      bufferPos = 0;
-      bufferSize = 0;
+      bufferPos = bufferSize;
 
-      // Then skip directly from the InputStream for the rest.
-      while (pos < size) {
-        final int n = (input == null) ? -1 : (int) input.skip(size - pos);
-        if (n <= 0) {
-          throw InvalidProtocolBufferException.truncatedMessage();
-        }
-        pos += n;
-        totalBytesRetired += n;
+      // Keep refilling the buffer until we get to the point we wanted to skip
+      // to.  This has the side effect of ensuring the limits are updated
+      // correctly.
+      refillBuffer(true);
+      while (size - pos > bufferSize) {
+        pos += bufferSize;
+        bufferPos = bufferSize;
+        refillBuffer(true);
       }
+
+      bufferPos = size - pos; 
     }
   }
 }

@@ -132,6 +132,17 @@ void Printer::Print(const char* text,
   Print(vars, text);
 }
 
+void Printer::Print(const char* text,
+                    const char* variable1, const string& value1,
+                    const char* variable2, const string& value2,
+                    const char* variable3, const string& value3) {
+  map<string, string> vars;
+  vars[variable1] = value1;
+  vars[variable2] = value2;
+  vars[variable3] = value3;
+  Print(vars, text);
+}
+
 void Printer::Indent() {
   indent_ += "  ";
 }

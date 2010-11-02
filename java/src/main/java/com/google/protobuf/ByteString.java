@@ -194,6 +194,18 @@ public final class ByteString {
   }
 
   /**
+   * Copies bytes into a ByteBuffer.
+   *
+   * @param target ByteBuffer to copy into.
+   * @throws ReadOnlyBufferException if the {@code target} is read-only
+   * @throws BufferOverflowException if the {@code target}'s remaining()
+   *         space is not large enough to hold the data.
+   */
+  public void copyTo(ByteBuffer target) {
+    target.put(bytes, 0, bytes.length);
+  }
+
+  /**
    * Copies bytes to a {@code byte[]}.
    */
   public byte[] toByteArray() {

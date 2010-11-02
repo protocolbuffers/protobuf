@@ -104,6 +104,15 @@ void EnumGenerator::Generate(io::Printer* printer) {
       "public static final $classname$ $name$ = $canonical_name$;\n");
   }
 
+  for (int i = 0; i < descriptor_->value_count(); i++) {
+    map<string, string> vars;
+    vars["name"] = descriptor_->value(i)->name();
+    vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+    printer->Print(vars,
+      "public static final int $name$_VALUE = $number$;\n");
+  }
+  printer->Print("\n");
+
   // -----------------------------------------------------------------
 
   printer->Print(
@@ -218,17 +227,6 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Print(
     "  this.value = value;\n"
     "}\n");
-
-  if (HasDescriptorMethods(descriptor_)) {
-    // Force the static initialization code for the file to run, since it may
-    // initialize static variables declared in this class.
-    printer->Print(
-      "\n"
-      "static {\n"
-      "  $file$.getDescriptor();\n"
-      "}\n",
-      "file", ClassName(descriptor_->file()));
-  }
 
   printer->Print(
     "\n"

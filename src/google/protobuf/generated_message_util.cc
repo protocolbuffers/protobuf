@@ -47,6 +47,8 @@ double NaN() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
+const ::std::string kEmptyString;
+
 
 }  // namespace internal
 }  // namespace protobuf

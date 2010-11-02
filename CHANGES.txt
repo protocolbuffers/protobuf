@@ -1,3 +1,66 @@
+2010-11-01 version 2.4.0:
+
+  General
+  * The RPC (cc|java|py)_generic_services default value is now false instead of
+    true.
+  * Custom options can have aggregate types. For example,
+      message MyOption {
+        optional string comment = 1;
+        optional string author = 2;
+      }
+      extend google.protobuf.FieldOptions {
+        optional MyOption myoption = 12345;
+      }
+    This option can now be set as follows:
+      message SomeType {
+        optional int32 field = 1 [(myoption) = { comment:'x' author:'y' }];
+      }
+
+  C++
+  * Various speed and code size optimizations.
+  * Added a release_foo() method on string and message fields.
+  * Fixed gzip_output_stream sub-stream handling.
+
+  Java
+  * Builders now maintain sub-builders for sub-messages. Use getFooBuilder() to
+    get the builder for the sub-message "foo". This allows you to repeatedly
+    modify deeply-nested sub-messages without rebuilding them.
+  * Builder.build() no longer invalidates the Builder for generated messages
+    (You may continue to modify it and then build another message).
+  * Code generator will generate efficient equals() and hashCode()
+    implementations if new option java_generate_equals_and_hash is enabled.
+    (Otherwise, reflection-based implementations are used.)
+  * Generated messages now implement Serializable.
+  * Fields with [deprecated=true] will be marked with @Deprecated in Java.
+  * Added lazy conversion of UTF-8 encoded strings to String objects to improve
+    performance.
+  * Various optimizations.
+  * Enum value can be accessed directly, instead of calling getNumber() on the
+    enum member.
+  * For each enum value, an integer constant is also generated with the suffix
+    _VALUE.
+
+  Python
+  * Added an experimental  C++ implementation for Python messages via a Python
+    extension. Implementation type is controlled by an environment variable
+    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION (valid values: "cpp" and "python")
+    The default value is currently "python" but will be changed to "cpp" in
+    future release.
+  * Improved performance on message instantiation significantly.
+    Most of the work on message instantiation is done just once per message
+    class, instead of once per message instance.
+  * Improved performance on text message parsing.
+  * Allow add() to forward keyword arguments to the concrete class.
+      E.g. instead of
+        item = repeated_field.add()
+        item.foo = bar
+        item.baz = quux
+      You can do:
+        repeated_field.add(foo=bar, baz=quux)
+  * Added a sort() interface to the BaseContainer.
+  * Added an extend() method to repeated composite fields.
+  * Added UTF8 debug string support.
+
 2010-01-08 version 2.3.0:
 
   General

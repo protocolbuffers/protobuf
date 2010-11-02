@@ -178,6 +178,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_primitive_field.h         \
   google/protobuf/compiler/java/java_service.cc                \
   google/protobuf/compiler/java/java_service.h                 \
+  google/protobuf/compiler/java/java_string_field.cc           \
+  google/protobuf/compiler/java/java_string_field.h            \
   google/protobuf/compiler/python/python_generator.cc
 
 bin_PROGRAMS = protoc

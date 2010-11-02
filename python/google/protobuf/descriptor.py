@@ -28,21 +28,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# TODO(robinson): We probably need to provide deep-copy methods for
-# descriptor types.  When a FieldDescriptor is passed into
-# Descriptor.__init__(), we should make a deep copy and then set
-# containing_type on it.  Alternatively, we could just get
-# rid of containing_type (iit's not needed for reflection.py, at least).
-#
-# TODO(robinson): Print method?
-#
-# TODO(robinson): Useful __repr__?
-
 """Descriptors essentially contain exactly the information found in a .proto
 file, in types that make this information accessible in Python.
 """
 
 __author__ = 'robinson@google.com (Will Robinson)'
+
+
+from google.protobuf.internal import api_implementation
+
+
+if api_implementation.Type() == 'cpp':
+  from google.protobuf.internal import cpp_message
 
 
 class Error(Exception):
@@ -396,6 +393,13 @@ class FieldDescriptor(DescriptorBase):
     self.enum_type = enum_type
     self.is_extension = is_extension
     self.extension_scope = extension_scope
+    if api_implementation.Type() == 'cpp':
+      if is_extension:
+        self._cdescriptor = cpp_message.GetExtensionDescriptor(full_name)
+      else:
+        self._cdescriptor = cpp_message.GetFieldDescriptor(full_name)
+    else:
+      self._cdescriptor = None
 
 
 class EnumDescriptor(_NestedDescriptorBase):
@@ -567,9 +571,13 @@ class FileDescriptor(DescriptorBase):
     """Constructor."""
     super(FileDescriptor, self).__init__(options, 'FileOptions')
 
+    self.message_types_by_name = {}
     self.name = name
     self.package = package
     self.serialized_pb = serialized_pb
+    if (api_implementation.Type() == 'cpp' and
+        self.serialized_pb is not None):
+      cpp_message.BuildFile(self.serialized_pb)
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.

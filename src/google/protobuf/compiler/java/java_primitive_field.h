@@ -46,49 +46,69 @@ namespace java {
 
 class PrimitiveFieldGenerator : public FieldGenerator {
  public:
-  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+      int messageBitIndex, int builderBitIndex);
   ~PrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
+  int GetNumBitsForMessage() const;
+  int GetNumBitsForBuilder() const;
+  void GenerateInterfaceMembers(io::Printer* printer) const;
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
+  void GenerateBuilderClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateBuildingCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
+  void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCode(io::Printer* printer) const;
 
   string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
+  const int messageBitIndex_;
+  const int builderBitIndex_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
 };
 
 class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+      int messageBitIndex, int builderBitIndex);
   ~RepeatedPrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
+  int GetNumBitsForMessage() const;
+  int GetNumBitsForBuilder() const;
+  void GenerateInterfaceMembers(io::Printer* printer) const;
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
+  void GenerateBuilderClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateBuildingCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateParsingCodeFromPacked(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
+  void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCode(io::Printer* printer) const;
 
   string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
+  const int messageBitIndex_;
+  const int builderBitIndex_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPrimitiveFieldGenerator);
 };

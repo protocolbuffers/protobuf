@@ -35,6 +35,7 @@
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import difflib
+import re
 
 import unittest
 from google.protobuf import text_format
@@ -95,12 +96,13 @@ class TextFormatTest(unittest.TestCase):
 
   def testPrintExotic(self):
     message = unittest_pb2.TestAllTypes()
-    message.repeated_int64.append(-9223372036854775808);
-    message.repeated_uint64.append(18446744073709551615);
-    message.repeated_double.append(123.456);
-    message.repeated_double.append(1.23e22);
-    message.repeated_double.append(1.23e-18);
-    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'\"');
+    message.repeated_int64.append(-9223372036854775808)
+    message.repeated_uint64.append(18446744073709551615)
+    message.repeated_double.append(123.456)
+    message.repeated_double.append(1.23e22)
+    message.repeated_double.append(1.23e-18)
+    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
+    message.repeated_string.append(u'\u00fc\ua71f')
     self.CompareToGoldenText(
       self.RemoveRedundantZeros(text_format.MessageToString(message)),
       'repeated_int64: -9223372036854775808\n'
@@ -109,7 +111,95 @@ class TextFormatTest(unittest.TestCase):
       'repeated_double: 1.23e+22\n'
       'repeated_double: 1.23e-18\n'
       'repeated_string: '
-        '\"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\\"\"\n')
+        '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
+      'repeated_string: "\\303\\274\\352\\234\\237"\n')
+
+  def testPrintNestedMessageAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    msg = message.repeated_nested_message.add()
+    msg.bb = 42;
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'repeated_nested_message { bb: 42 }')
+
+  def testPrintRepeatedFieldsAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int32.append(1)
+    message.repeated_int32.append(1)
+    message.repeated_int32.append(3)
+    message.repeated_string.append("Google")
+    message.repeated_string.append("Zurich")
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'repeated_int32: 1 repeated_int32: 1 repeated_int32: 3 '
+        'repeated_string: "Google" repeated_string: "Zurich"')
+
+  def testPrintNestedNewLineInStringAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_string = "a\nnew\nline"
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'optional_string: "a\\nnew\\nline"')
+
+  def testPrintMessageSetAsOneLine(self):
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    message.message_set.Extensions[ext1].i = 23
+    message.message_set.Extensions[ext2].str = 'foo'
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'message_set {'
+        ' [protobuf_unittest.TestMessageSetExtension1] {'
+        ' i: 23'
+        ' }'
+        ' [protobuf_unittest.TestMessageSetExtension2] {'
+        ' str: \"foo\"'
+        ' }'
+        ' }')
+
+  def testPrintExoticAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int64.append(-9223372036854775808)
+    message.repeated_uint64.append(18446744073709551615)
+    message.repeated_double.append(123.456)
+    message.repeated_double.append(1.23e22)
+    message.repeated_double.append(1.23e-18)
+    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
+    message.repeated_string.append(u'\u00fc\ua71f')
+    self.CompareToGoldenText(
+      self.RemoveRedundantZeros(
+          text_format.MessageToString(message, as_one_line=True)),
+      'repeated_int64: -9223372036854775808'
+      ' repeated_uint64: 18446744073709551615'
+      ' repeated_double: 123.456'
+      ' repeated_double: 1.23e+22'
+      ' repeated_double: 1.23e-18'
+      ' repeated_string: '
+      '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""'
+      ' repeated_string: "\\303\\274\\352\\234\\237"')
+
+  def testRoundTripExoticAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int64.append(-9223372036854775808)
+    message.repeated_uint64.append(18446744073709551615)
+    message.repeated_double.append(123.456)
+    message.repeated_double.append(1.23e22)
+    message.repeated_double.append(1.23e-18)
+    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
+    message.repeated_string.append(u'\u00fc\ua71f')
+
+    wire_text = text_format.MessageToString(message, as_one_line=True)
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(wire_text, parsed_message)
+    self.assertEquals(message, parsed_message)
+
+  def testPrintRawUtf8String(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_string.append(u'\u00fc\ua71f')
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_utf8 = True),
+        'repeated_string: "\303\274\352\234\237"\n')
 
   def testMessageToString(self):
     message = unittest_pb2.ForeignMessage()
@@ -119,8 +209,12 @@ class TextFormatTest(unittest.TestCase):
   def RemoveRedundantZeros(self, text):
     # Some platforms print 1e+5 as 1e+005.  This is fine, but we need to remove
     # these zeros in order to match the golden file.
-    return text.replace('e+0','e+').replace('e+0','e+') \
+    text = text.replace('e+0','e+').replace('e+0','e+') \
                .replace('e-0','e-').replace('e-0','e-')
+    # Floating point fields are printed with .0 suffix even if they are
+    # actualy integer numbers.
+    text = re.compile('\.0$', re.MULTILINE).sub('', text)
+    return text
 
   def testMergeGolden(self):
     golden_text = '\n'.join(self.ReadGolden('text_format_unittest_data.txt'))
@@ -191,8 +285,11 @@ class TextFormatTest(unittest.TestCase):
             'repeated_double: 1.23e+22\n'
             'repeated_double: 1.23e-18\n'
             'repeated_string: \n'
-            '\"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\\"\"\n'
-            'repeated_string: "foo" \'corge\' "grault"')
+            '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
+            'repeated_string: "foo" \'corge\' "grault"\n'
+            'repeated_string: "\\303\\274\\352\\234\\237"\n'
+            'repeated_string: "\\xc3\\xbc"\n'
+            'repeated_string: "\xc3\xbc"\n')
     text_format.Merge(text, message)
 
     self.assertEqual(-9223372036854775808, message.repeated_int64[0])
@@ -201,8 +298,30 @@ class TextFormatTest(unittest.TestCase):
     self.assertEqual(1.23e22, message.repeated_double[1])
     self.assertEqual(1.23e-18, message.repeated_double[2])
     self.assertEqual(
-        '\000\001\a\b\f\n\r\t\v\\\'\"', message.repeated_string[0])
+        '\000\001\a\b\f\n\r\t\v\\\'"', message.repeated_string[0])
     self.assertEqual('foocorgegrault', message.repeated_string[1])
+    self.assertEqual(u'\u00fc\ua71f', message.repeated_string[2])
+    self.assertEqual(u'\u00fc', message.repeated_string[3])
+
+  def testMergeEmptyText(self):
+    message = unittest_pb2.TestAllTypes()
+    text = ''
+    text_format.Merge(text, message)
+    self.assertEquals(unittest_pb2.TestAllTypes(), message)
+
+  def testMergeInvalidUtf8(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'repeated_string: "\\xc3\\xc3"'
+    self.assertRaises(text_format.ParseError, text_format.Merge, text, message)
+
+  def testMergeSingleWord(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'foo'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:1 : Message type "protobuf_unittest.TestAllTypes" has no field named '
+         '"foo".'),
+        text_format.Merge, text, message)
 
   def testMergeUnknownField(self):
     message = unittest_pb2.TestAllTypes()
@@ -297,7 +416,8 @@ class TokenizerTest(unittest.TestCase):
             'identifiER_4 : 1.1e+2 ID5:-0.23 ID6:\'aaaa\\\'bbbb\'\n'
             'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
             'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
-            'ID12: 2222222222222222222')
+            'ID12: 2222222222222222222 '
+            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f ' )
     tokenizer = text_format._Tokenizer(text)
     methods = [(tokenizer.ConsumeIdentifier, 'identifier1'),
                ':',
@@ -347,7 +467,19 @@ class TokenizerTest(unittest.TestCase):
                (tokenizer.ConsumeInt32, -22),
                (tokenizer.ConsumeIdentifier, 'ID12'),
                ':',
-               (tokenizer.ConsumeUint64, 2222222222222222222)]
+               (tokenizer.ConsumeUint64, 2222222222222222222),
+               (tokenizer.ConsumeIdentifier, 'false_bool'),
+               ':',
+               (tokenizer.ConsumeBool, False),
+               (tokenizer.ConsumeIdentifier, 'true_BOOL'),
+               ':',
+               (tokenizer.ConsumeBool, True),
+               (tokenizer.ConsumeIdentifier, 'true_bool1'),
+               ':',
+               (tokenizer.ConsumeBool, True),
+               (tokenizer.ConsumeIdentifier, 'false_BOOL1'),
+               ':',
+               (tokenizer.ConsumeBool, False)]
 
     i = 0
     while not tokenizer.AtEnd():

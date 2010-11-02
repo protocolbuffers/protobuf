@@ -32,6 +32,8 @@
 
 #include <google/protobuf/compiler/subprocess.h>
 
+#include <algorithm>
+
 #ifndef _WIN32
 #include <errno.h>
 #include <sys/select.h>
@@ -39,7 +41,6 @@
 #include <signal.h>
 #endif
 
-#include <algorithm>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/substitute.h>

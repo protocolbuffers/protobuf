@@ -53,24 +53,26 @@ class ParseError(Exception):
   """Thrown in case of ASCII parsing error."""
 
 
-def MessageToString(message):
+def MessageToString(message, as_utf8=False, as_one_line=False):
   out = cStringIO.StringIO()
-  PrintMessage(message, out)
+  PrintMessage(message, out, as_utf8=as_utf8, as_one_line=as_one_line)
   result = out.getvalue()
   out.close()
+  if as_one_line:
+    return result.rstrip()
   return result
 
 
-def PrintMessage(message, out, indent = 0):
+def PrintMessage(message, out, indent=0, as_utf8=False, as_one_line=False):
   for field, value in message.ListFields():
     if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
       for element in value:
-        PrintField(field, element, out, indent)
+        PrintField(field, element, out, indent, as_utf8, as_one_line)
     else:
-      PrintField(field, value, out, indent)
+      PrintField(field, value, out, indent, as_utf8, as_one_line)
 
 
-def PrintField(field, value, out, indent = 0):
+def PrintField(field, value, out, indent=0, as_utf8=False, as_one_line=False):
   """Print a single field name/value pair.  For repeated fields, the value
   should be a single element."""
 
@@ -96,23 +98,35 @@ def PrintField(field, value, out, indent = 0):
     # don't include it.
     out.write(': ')
 
-  PrintFieldValue(field, value, out, indent)
-  out.write('\n')
+  PrintFieldValue(field, value, out, indent, as_utf8, as_one_line)
+  if as_one_line:
+    out.write(' ')
+  else:
+    out.write('\n')
 
 
-def PrintFieldValue(field, value, out, indent = 0):
+def PrintFieldValue(field, value, out, indent=0,
+                    as_utf8=False, as_one_line=False):
   """Print a single field value (not including name).  For repeated fields,
   the value should be a single element."""
 
   if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
-    out.write(' {\n')
-    PrintMessage(value, out, indent + 2)
-    out.write(' ' * indent + '}')
+    if as_one_line:
+      out.write(' { ')
+      PrintMessage(value, out, indent, as_utf8, as_one_line)
+      out.write('}')
+    else:
+      out.write(' {\n')
+      PrintMessage(value, out, indent + 2, as_utf8, as_one_line)
+      out.write(' ' * indent + '}')
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
     out.write(field.enum_type.values_by_number[value].name)
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
     out.write('\"')
-    out.write(_CEscape(value))
+    if type(value) is unicode:
+      out.write(_CEscape(value.encode('utf-8'), as_utf8))
+    else:
+      out.write(_CEscape(value, as_utf8))
     out.write('\"')
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
     if value:
@@ -334,10 +348,10 @@ class _Tokenizer(object):
     Returns:
       True iff the end was reached.
     """
-    return not self._lines and not self._current_line
+    return self.token == ''
 
   def _PopLine(self):
-    while not self._current_line:
+    while len(self._current_line) <= self._column:
       if not self._lines:
         self._current_line = ''
         return
@@ -348,11 +362,10 @@ class _Tokenizer(object):
   def _SkipWhitespace(self):
     while True:
       self._PopLine()
-      match = re.match(self._WHITESPACE, self._current_line)
+      match = self._WHITESPACE.match(self._current_line, self._column)
       if not match:
         break
       length = len(match.group(0))
-      self._current_line = self._current_line[length:]
       self._column += length
 
   def TryConsume(self, token):
@@ -402,7 +415,7 @@ class _Tokenizer(object):
       ParseError: If an identifier couldn't be consumed.
     """
     result = self.token
-    if not re.match(self._IDENTIFIER, result):
+    if not self._IDENTIFIER.match(result):
       raise self._ParseError('Expected identifier.')
     self.NextToken()
     return result
@@ -481,13 +494,13 @@ class _Tokenizer(object):
       ParseError: If a floating point number couldn't be consumed.
     """
     text = self.token
-    if re.match(self._FLOAT_INFINITY, text):
+    if self._FLOAT_INFINITY.match(text):
       self.NextToken()
       if text.startswith('-'):
         return -_INFINITY
       return _INFINITY
 
-    if re.match(self._FLOAT_NAN, text):
+    if self._FLOAT_NAN.match(text):
       self.NextToken()
       return _NAN
 
@@ -507,10 +520,10 @@ class _Tokenizer(object):
     Raises:
       ParseError: If a boolean value couldn't be consumed.
     """
-    if self.token == 'true':
+    if self.token in ('true', 't', '1'):
       self.NextToken()
       return True
-    elif self.token == 'false':
+    elif self.token in ('false', 'f', '0'):
       self.NextToken()
       return False
     else:
@@ -525,7 +538,11 @@ class _Tokenizer(object):
     Raises:
       ParseError: If a string value couldn't be consumed.
     """
-    return unicode(self.ConsumeByteString(), 'utf-8')
+    bytes = self.ConsumeByteString()
+    try:
+      return unicode(bytes, 'utf-8')
+    except UnicodeDecodeError, e:
+      raise self._StringParseError(e)
 
   def ConsumeByteString(self):
     """Consumes a byte array value.
@@ -609,7 +626,7 @@ class _Tokenizer(object):
   def _ParseError(self, message):
     """Creates and *returns* a ParseError for the current token."""
     return ParseError('%d:%d : %s' % (
-        self._line + 1, self._column + 1, message))
+        self._line + 1, self._column - len(self.token) + 1, message))
 
   def _IntegerParseError(self, e):
     return self._ParseError('Couldn\'t parse integer: ' + str(e))
@@ -617,27 +634,27 @@ class _Tokenizer(object):
   def _FloatParseError(self, e):
     return self._ParseError('Couldn\'t parse number: ' + str(e))
 
+  def _StringParseError(self, e):
+    return self._ParseError('Couldn\'t parse string: ' + str(e))
+
   def NextToken(self):
     """Reads the next meaningful token."""
     self._previous_line = self._line
     self._previous_column = self._column
-    if self.AtEnd():
+
+    self._column += len(self.token)
+    self._SkipWhitespace()
+
+    if not self._lines and len(self._current_line) <= self._column:
       self.token = ''
       return
-    self._column += len(self.token)
 
-    # Make sure there is data to work on.
-    self._PopLine()
-
-    match = re.match(self._TOKEN, self._current_line)
+    match = self._TOKEN.match(self._current_line, self._column)
     if match:
       token = match.group(0)
-      self._current_line = self._current_line[len(token):]
       self.token = token
     else:
-      self.token = self._current_line[0]
-      self._current_line = self._current_line[1:]
-    self._SkipWhitespace()
+      self.token = self._current_line[self._column]
 
 
 # text.encode('string_escape') does not seem to satisfy our needs as it
@@ -645,7 +662,7 @@ class _Tokenizer(object):
 # C++ unescaping function allows hex escapes to be any length.  So,
 # "\0011".encode('string_escape') ends up being "\\x011", which will be
 # decoded in C++ as a single-character string with char code 0x11.
-def _CEscape(text):
+def _CEscape(text, as_utf8):
   def escape(c):
     o = ord(c)
     if o == 10: return r"\n"   # optional escape
@@ -656,12 +673,13 @@ def _CEscape(text):
     if o == 34: return r'\"'   # necessary escape
     if o == 92: return r"\\"   # necessary escape
 
-    if o >= 127 or o < 32: return "\\%03o" % o # necessary escapes
+    # necessary escapes
+    if not as_utf8 and (o >= 127 or o < 32): return "\\%03o" % o
     return c
   return "".join([escape(c) for c in text])
 
 
-_CUNESCAPE_HEX = re.compile('\\\\x([0-9a-fA-F]{2}|[0-9a-f-A-F])')
+_CUNESCAPE_HEX = re.compile('\\\\x([0-9a-fA-F]{2}|[0-9a-fA-F])')
 
 
 def _CUnescape(text):

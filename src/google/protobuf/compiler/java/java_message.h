@@ -67,11 +67,19 @@ class MessageGenerator {
   // Generate the class itself.
   void Generate(io::Printer* printer);
 
+  // Generates the base interface that both the class and its builder implement
+  void GenerateInterface(io::Printer* printer);
+
   // Generate code to register all contained extensions with an
   // ExtensionRegistry.
   void GenerateExtensionRegistrationCode(io::Printer* printer);
 
  private:
+  enum UseMemoization {
+    MEMOIZE,
+    DONT_MEMOIZE
+  };
+
   void GenerateMessageSerializationMethods(io::Printer* printer);
   void GenerateParseFromMethods(io::Printer* printer);
   void GenerateSerializeOneField(io::Printer* printer,
@@ -81,8 +89,11 @@ class MessageGenerator {
 
   void GenerateBuilder(io::Printer* printer);
   void GenerateCommonBuilderMethods(io::Printer* printer);
+  void GenerateDescriptorMethods(io::Printer* printer);
   void GenerateBuilderParsingMethods(io::Printer* printer);
-  void GenerateIsInitialized(io::Printer* printer);
+  void GenerateIsInitialized(io::Printer* printer,
+      UseMemoization useMemoization);
+  void GenerateEqualsAndHashCode(io::Printer* printer);
 
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;

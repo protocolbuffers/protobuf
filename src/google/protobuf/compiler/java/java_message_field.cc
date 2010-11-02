@@ -51,16 +51,43 @@ namespace {
 // TODO(kenton):  Factor out a "SetCommonFieldVariables()" to get rid of
 //   repeat code between this and the other field types.
 void SetMessageVariables(const FieldDescriptor* descriptor,
+                         int messageBitIndex,
+                         int builderBitIndex,
                          map<string, string>* variables) {
   (*variables)["name"] =
     UnderscoresToCamelCase(descriptor);
   (*variables)["capitalized_name"] =
     UnderscoresToCapitalizedCamelCase(descriptor);
+  (*variables)["constant_name"] = FieldConstantName(descriptor);
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["type"] = ClassName(descriptor->message_type());
   (*variables)["group_or_message"] =
     (GetType(descriptor) == FieldDescriptor::TYPE_GROUP) ?
     "Group" : "Message";
+  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // by the proto compiler
+  (*variables)["deprecation"] = descriptor->options().deprecated()
+      ? "@java.lang.Deprecated " : "";
+  (*variables)["on_changed"] =
+      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
+
+  // For singular messages and builders, one bit is used for the hasField bit.
+  (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
+
+  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
+  (*variables)["set_has_field_bit_builder"] = GenerateSetBit(builderBitIndex);
+  (*variables)["clear_has_field_bit_builder"] =
+      GenerateClearBit(builderBitIndex);
+
+  // For repated builders, one bit is used for whether the array is immutable.
+  (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
+  (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
+  (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
+
+  (*variables)["get_has_field_bit_from_local"] =
+      GenerateGetBitFromLocal(builderBitIndex);
+  (*variables)["set_has_field_bit_to_local"] =
+      GenerateSetBitToLocal(messageBitIndex);
 }
 
 }  // namespace
@@ -68,65 +95,241 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 // ===================================================================
 
 MessageFieldGenerator::
-MessageFieldGenerator(const FieldDescriptor* descriptor)
-  : descriptor_(descriptor) {
-  SetMessageVariables(descriptor, &variables_);
+MessageFieldGenerator(const FieldDescriptor* descriptor,
+                      int messageBitIndex,
+                      int builderBitIndex)
+  : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
+    builderBitIndex_(builderBitIndex) {
+  SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
+                      &variables_);
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
+int MessageFieldGenerator::GetNumBitsForMessage() const {
+  return 1;
+}
+
+int MessageFieldGenerator::GetNumBitsForBuilder() const {
+  return 1;
+}
+
+void MessageFieldGenerator::
+GenerateInterfaceMembers(io::Printer* printer) const {
+  // TODO(jonp): In the future, consider having a method specific to the
+  // interface so that builders can choose dynamically to either return a
+  // message or a nested builder, so that asking for the interface doesn't
+  // cause a message to ever be built.
+  printer->Print(variables_,
+    "$deprecation$boolean has$capitalized_name$();\n"
+    "$deprecation$$type$ get$capitalized_name$();\n");
+
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "$deprecation$$type$OrBuilder get$capitalized_name$OrBuilder();\n");
+  }
+}
+
 void MessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private boolean has$capitalized_name$;\n"
     "private $type$ $name$_;\n"
-    "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n"
-    "public $type$ get$capitalized_name$() { return $name$_; }\n");
+    "$deprecation$public boolean has$capitalized_name$() {\n"
+    "  return $get_has_field_bit_message$;\n"
+    "}\n"
+    "$deprecation$public $type$ get$capitalized_name$() {\n"
+    "  return $name$_;\n"
+    "}\n");
+
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "$deprecation$public $type$OrBuilder get$capitalized_name$OrBuilder() {\n"
+      "  return $name$_;\n"
+      "}\n");
+  }
+}
+
+void MessageFieldGenerator::PrintNestedBuilderCondition(
+    io::Printer* printer,
+    const char* regular_case,
+    const char* nested_builder_case) const {
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+     printer->Print(variables_, "if ($name$Builder_ == null) {\n");
+     printer->Indent();
+     printer->Print(variables_, regular_case);
+     printer->Outdent();
+     printer->Print("} else {\n");
+     printer->Indent();
+     printer->Print(variables_, nested_builder_case);
+     printer->Outdent();
+     printer->Print("}\n");
+   } else {
+     printer->Print(variables_, regular_case);
+   }
+}
+
+void MessageFieldGenerator::PrintNestedBuilderFunction(
+    io::Printer* printer,
+    const char* method_prototype,
+    const char* regular_case,
+    const char* nested_builder_case,
+    const char* trailing_code) const {
+  printer->Print(variables_, method_prototype);
+  printer->Print(" {\n");
+  printer->Indent();
+  PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
+  if (trailing_code != NULL) {
+    printer->Print(variables_, trailing_code);
+  }
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void MessageFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
+  // When using nested-builders, the code initially works just like the
+  // non-nested builder case. It only creates a nested builder lazily on
+  // demand and then forever delegates to it after creation.
+
   printer->Print(variables_,
-    "public boolean has$capitalized_name$() {\n"
-    "  return result.has$capitalized_name$();\n"
-    "}\n"
-    "public $type$ get$capitalized_name$() {\n"
-    "  return result.get$capitalized_name$();\n"
-    "}\n"
-    "public Builder set$capitalized_name$($type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  result.has$capitalized_name$ = true;\n"
-    "  result.$name$_ = value;\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder set$capitalized_name$($type$.Builder builderForValue) {\n"
-    "  result.has$capitalized_name$ = true;\n"
-    "  result.$name$_ = builderForValue.build();\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder merge$capitalized_name$($type$ value) {\n"
-    "  if (result.has$capitalized_name$() &&\n"
-    "      result.$name$_ != $type$.getDefaultInstance()) {\n"
-    "    result.$name$_ =\n"
-    "      $type$.newBuilder(result.$name$_).mergeFrom(value).buildPartial();\n"
-    "  } else {\n"
-    "    result.$name$_ = value;\n"
-    "  }\n"
-    "  result.has$capitalized_name$ = true;\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder clear$capitalized_name$() {\n"
-    "  result.has$capitalized_name$ = false;\n"
-    "  result.$name$_ = $type$.getDefaultInstance();\n"
-    "  return this;\n"
+    // Used when the builder is null.
+    "private $type$ $name$_ = $type$.getDefaultInstance();\n");
+
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      // If this builder is non-null, it is used and the other fields are
+      // ignored.
+      "private com.google.protobuf.SingleFieldBuilder<\n"
+      "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
+      "\n");
+  }
+
+  // The comments above the methods below are based on a hypothetical
+  // field of type "Field" called "Field".
+
+  // boolean hasField()
+  printer->Print(variables_,
+    "$deprecation$public boolean has$capitalized_name$() {\n"
+    "  return $get_has_field_bit_builder$;\n"
     "}\n");
+
+  // Field getField()
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public $type$ get$capitalized_name$()",
+
+    "return $name$_;\n",
+
+    "return $name$Builder_.getMessage();\n",
+
+    NULL);
+
+  // Field.Builder setField(Field value)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder set$capitalized_name$($type$ value)",
+
+    "if (value == null) {\n"
+    "  throw new NullPointerException();\n"
+    "}\n"
+    "$name$_ = value;\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.setMessage(value);\n",
+
+    "$set_has_field_bit_builder$;\n"
+    "return this;\n");
+
+  // Field.Builder setField(Field.Builder builderForValue)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder set$capitalized_name$(\n"
+    "    $type$.Builder builderForValue)",
+
+    "$name$_ = builderForValue.build();\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.setMessage(builderForValue.build());\n",
+
+    "$set_has_field_bit_builder$;\n"
+    "return this;\n");
+
+  // Field.Builder mergeField(Field value)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder merge$capitalized_name$($type$ value)",
+
+    "if ($get_has_field_bit_builder$ &&\n"
+    "    $name$_ != $type$.getDefaultInstance()) {\n"
+    "  $name$_ =\n"
+    "    $type$.newBuilder($name$_).mergeFrom(value).buildPartial();\n"
+    "} else {\n"
+    "  $name$_ = value;\n"
+    "}\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.mergeFrom(value);\n",
+
+    "$set_has_field_bit_builder$;\n"
+    "return this;\n");
+
+  // Field.Builder clearField()
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder clear$capitalized_name$()",
+
+    "$name$_ = $type$.getDefaultInstance();\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.clear();\n",
+
+    "$clear_has_field_bit_builder$;\n"
+    "return this;\n");
+
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "$deprecation$public $type$.Builder get$capitalized_name$Builder() {\n"
+      "  $set_has_field_bit_builder$;\n"
+      "  $on_changed$\n"
+      "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
+      "}\n"
+      "$deprecation$public $type$OrBuilder get$capitalized_name$OrBuilder() {\n"
+      "  if ($name$Builder_ != null) {\n"
+      "    return $name$Builder_.getMessageOrBuilder();\n"
+      "  } else {\n"
+      "    return $name$_;\n"
+      "  }\n"
+      "}\n"
+      "private com.google.protobuf.SingleFieldBuilder<\n"
+      "    $type$, $type$.Builder, $type$OrBuilder> \n"
+      "    get$capitalized_name$FieldBuilder() {\n"
+      "  if ($name$Builder_ == null) {\n"
+      "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
+      "        $type$, $type$.Builder, $type$OrBuilder>(\n"
+      "            $name$_,\n"
+      "            getParentForChildren(),\n"
+      "            isClean());\n"
+      "    $name$_ = null;\n"
+      "  }\n"
+      "  return $name$Builder_;\n"
+      "}\n");
+  }
 }
+
+void MessageFieldGenerator::
+GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
+  printer->Print(variables_,
+    "get$capitalized_name$FieldBuilder();\n");
+}
+
 
 void MessageFieldGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = $type$.getDefaultInstance();\n");
+}
+
+void MessageFieldGenerator::
+GenerateBuilderClearCode(io::Printer* printer) const {
+  PrintNestedBuilderCondition(printer,
+    "$name$_ = $type$.getDefaultInstance();\n",
+
+    "$name$Builder_.clear();\n");
+  printer->Print(variables_, "$clear_has_field_bit_builder$;\n");
 }
 
 void MessageFieldGenerator::
@@ -139,7 +342,16 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
-  // Nothing to do for singular fields.
+
+  printer->Print(variables_,
+      "if ($get_has_field_bit_from_local$) {\n"
+      "  $set_has_field_bit_to_local$;\n"
+      "}\n");
+
+  PrintNestedBuilderCondition(printer,
+    "result.$name$_ = $name$_;\n",
+
+    "result.$name$_ = $name$Builder_.build();\n");
 }
 
 void MessageFieldGenerator::
@@ -165,18 +377,32 @@ GenerateParsingCode(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
-    "  output.write$group_or_message$($number$, get$capitalized_name$());\n"
+    "if ($get_has_field_bit_message$) {\n"
+    "  output.write$group_or_message$($number$, $name$_);\n"
     "}\n");
 }
 
 void MessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($get_has_field_bit_message$) {\n"
     "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .compute$group_or_message$Size($number$, get$capitalized_name$());\n"
+    "    .compute$group_or_message$Size($number$, $name$_);\n"
     "}\n");
+}
+
+void MessageFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = result && get$capitalized_name$()\n"
+    "    .equals(other.get$capitalized_name$());\n");
+}
+
+void MessageFieldGenerator::
+GenerateHashCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "hash = (37 * hash) + $constant_name$;\n"
+    "hash = (53 * hash) + get$capitalized_name$().hashCode();\n");
 }
 
 string MessageFieldGenerator::GetBoxedType() const {
@@ -186,109 +412,416 @@ string MessageFieldGenerator::GetBoxedType() const {
 // ===================================================================
 
 RepeatedMessageFieldGenerator::
-RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor)
-  : descriptor_(descriptor) {
-  SetMessageVariables(descriptor, &variables_);
+RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
+                              int messageBitIndex,
+                              int builderBitIndex)
+  : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
+    builderBitIndex_(builderBitIndex) {
+  SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
+                      &variables_);
 }
 
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
+int RepeatedMessageFieldGenerator::GetNumBitsForMessage() const {
+  return 0;
+}
+
+int RepeatedMessageFieldGenerator::GetNumBitsForBuilder() const {
+  return 1;
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateInterfaceMembers(io::Printer* printer) const {
+  // TODO(jonp): In the future, consider having methods specific to the
+  // interface so that builders can choose dynamically to either return a
+  // message or a nested builder, so that asking for the interface doesn't
+  // cause a message to ever be built.
+  printer->Print(variables_,
+    "$deprecation$java.util.List<$type$> \n"
+    "    get$capitalized_name$List();\n"
+    "$deprecation$$type$ get$capitalized_name$(int index);\n"
+    "$deprecation$int get$capitalized_name$Count();\n");
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "$deprecation$java.util.List<? extends $type$OrBuilder> \n"
+      "    get$capitalized_name$OrBuilderList();\n"
+      "$deprecation$$type$OrBuilder get$capitalized_name$OrBuilder(\n"
+      "    int index);\n");
+  }
+}
+
 void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private java.util.List<$type$> $name$_ =\n"
-    "  java.util.Collections.emptyList();\n"
-    "public java.util.List<$type$> get$capitalized_name$List() {\n"
+    "private java.util.List<$type$> $name$_;\n"
+    "$deprecation$public java.util.List<$type$> get$capitalized_name$List() {\n"
     "  return $name$_;\n"   // note:  unmodifiable list
     "}\n"
-    "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
-    "public $type$ get$capitalized_name$(int index) {\n"
+    "$deprecation$public java.util.List<? extends $type$OrBuilder> \n"
+    "    get$capitalized_name$OrBuilderList() {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "$deprecation$public int get$capitalized_name$Count() {\n"
+    "  return $name$_.size();\n"
+    "}\n"
+    "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
+    "  return $name$_.get(index);\n"
+    "}\n"
+    "$deprecation$public $type$OrBuilder get$capitalized_name$OrBuilder(\n"
+    "    int index) {\n"
     "  return $name$_.get(index);\n"
     "}\n");
+
+}
+
+void RepeatedMessageFieldGenerator::PrintNestedBuilderCondition(
+    io::Printer* printer,
+    const char* regular_case,
+    const char* nested_builder_case) const {
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+     printer->Print(variables_, "if ($name$Builder_ == null) {\n");
+     printer->Indent();
+     printer->Print(variables_, regular_case);
+     printer->Outdent();
+     printer->Print("} else {\n");
+     printer->Indent();
+     printer->Print(variables_, nested_builder_case);
+     printer->Outdent();
+     printer->Print("}\n");
+   } else {
+     printer->Print(variables_, regular_case);
+   }
+}
+
+void RepeatedMessageFieldGenerator::PrintNestedBuilderFunction(
+    io::Printer* printer,
+    const char* method_prototype,
+    const char* regular_case,
+    const char* nested_builder_case,
+    const char* trailing_code) const {
+  printer->Print(variables_, method_prototype);
+  printer->Print(" {\n");
+  printer->Indent();
+  PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
+  if (trailing_code != NULL) {
+    printer->Print(variables_, trailing_code);
+  }
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
+  // When using nested-builders, the code initially works just like the
+  // non-nested builder case. It only creates a nested builder lazily on
+  // demand and then forever delegates to it after creation.
+
   printer->Print(variables_,
-    // Note:  We return an unmodifiable list because otherwise the caller
-    //   could hold on to the returned list and modify it after the message
-    //   has been built, thus mutating the message which is supposed to be
-    //   immutable.
-    "public java.util.List<$type$> get$capitalized_name$List() {\n"
-    "  return java.util.Collections.unmodifiableList(result.$name$_);\n"
+    // Used when the builder is null.
+    // One field is the list and the other field keeps track of whether the
+    // list is immutable. If it's immutable, the invariant is that it must
+    // either an instance of Collections.emptyList() or it's an ArrayList
+    // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
+    // a refererence to the underlying ArrayList. This invariant allows us to
+    // share instances of lists between protocol buffers avoiding expensive
+    // memory allocations. Note, immutable is a strong guarantee here -- not
+    // just that the list cannot be modified via the reference but that the
+    // list can never be modified.
+    "private java.util.List<$type$> $name$_ =\n"
+    "  java.util.Collections.emptyList();\n"
+
+    "private void ensure$capitalized_name$IsMutable() {\n"
+    "  if (!$get_mutable_bit_builder$) {\n"
+    "    $name$_ = new java.util.ArrayList<$type$>($name$_);\n"
+    "    $set_mutable_bit_builder$;\n"
+    "   }\n"
     "}\n"
-    "public int get$capitalized_name$Count() {\n"
-    "  return result.get$capitalized_name$Count();\n"
+    "\n");
+
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      // If this builder is non-null, it is used and the other fields are
+      // ignored.
+      "private com.google.protobuf.RepeatedFieldBuilder<\n"
+      "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;\n"
+      "\n");
+  }
+
+  // The comments above the methods below are based on a hypothetical
+  // repeated field of type "Field" called "RepeatedField".
+
+  // List<Field> getRepeatedFieldList()
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public java.util.List<$type$> get$capitalized_name$List()",
+
+    "return java.util.Collections.unmodifiableList($name$_);\n",
+    "return $name$Builder_.getMessageList();\n",
+
+    NULL);
+
+  // int getRepeatedFieldCount()
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public int get$capitalized_name$Count()",
+
+    "return $name$_.size();\n",
+    "return $name$Builder_.getCount();\n",
+
+    NULL);
+
+  // Field getRepeatedField(int index)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public $type$ get$capitalized_name$(int index)",
+
+    "return $name$_.get(index);\n",
+
+    "return $name$Builder_.getMessage(index);\n",
+
+    NULL);
+
+  // Builder setRepeatedField(int index, Field value)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder set$capitalized_name$(\n"
+    "    int index, $type$ value)",
+    "if (value == null) {\n"
+    "  throw new NullPointerException();\n"
     "}\n"
-    "public $type$ get$capitalized_name$(int index) {\n"
-    "  return result.get$capitalized_name$(index);\n"
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.set(index, value);\n"
+    "$on_changed$\n",
+    "$name$Builder_.setMessage(index, value);\n",
+    "return this;\n");
+
+  // Builder setRepeatedField(int index, Field.Builder builderForValue)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder set$capitalized_name$(\n"
+    "    int index, $type$.Builder builderForValue)",
+
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.set(index, builderForValue.build());\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.setMessage(index, builderForValue.build());\n",
+
+    "return this;\n");
+
+  // Builder addRepeatedField(Field value)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder add$capitalized_name$($type$ value)",
+
+    "if (value == null) {\n"
+    "  throw new NullPointerException();\n"
     "}\n"
-    "public Builder set$capitalized_name$(int index, $type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  result.$name$_.set(index, value);\n"
-    "  return this;\n"
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.add(value);\n"
+
+    "$on_changed$\n",
+
+    "$name$Builder_.addMessage(value);\n",
+
+    "return this;\n");
+
+  // Builder addRepeatedField(int index, Field value)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder add$capitalized_name$(\n"
+    "    int index, $type$ value)",
+
+    "if (value == null) {\n"
+    "  throw new NullPointerException();\n"
     "}\n"
-    "public Builder set$capitalized_name$(int index, "
-      "$type$.Builder builderForValue) {\n"
-    "  result.$name$_.set(index, builderForValue.build());\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder add$capitalized_name$($type$ value) {\n"
-    "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
-    "  }\n"
-    "  if (result.$name$_.isEmpty()) {\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
-    "  }\n"
-    "  result.$name$_.add(value);\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder add$capitalized_name$($type$.Builder builderForValue) {\n"
-    "  if (result.$name$_.isEmpty()) {\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
-    "  }\n"
-    "  result.$name$_.add(builderForValue.build());\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder addAll$capitalized_name$(\n"
-    "    java.lang.Iterable<? extends $type$> values) {\n"
-    "  if (result.$name$_.isEmpty()) {\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
-    "  }\n"
-    "  super.addAll(values, result.$name$_);\n"
-    "  return this;\n"
-    "}\n"
-    "public Builder clear$capitalized_name$() {\n"
-    "  result.$name$_ = java.util.Collections.emptyList();\n"
-    "  return this;\n"
-    "}\n");
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.add(index, value);\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.addMessage(index, value);\n",
+
+    "return this;\n");
+
+  // Builder addRepeatedField(Field.Builder builderForValue)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder add$capitalized_name$(\n"
+    "    $type$.Builder builderForValue)",
+
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.add(builderForValue.build());\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.addMessage(builderForValue.build());\n",
+
+    "return this;\n");
+
+  // Builder addRepeatedField(int index, Field.Builder builderForValue)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder add$capitalized_name$(\n"
+    "    int index, $type$.Builder builderForValue)",
+
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.add(index, builderForValue.build());\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.addMessage(index, builderForValue.build());\n",
+
+    "return this;\n");
+
+  // Builder addAllRepeatedField(Iterable<Field> values)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder addAll$capitalized_name$(\n"
+    "    java.lang.Iterable<? extends $type$> values)",
+
+    "ensure$capitalized_name$IsMutable();\n"
+    "super.addAll(values, $name$_);\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.addAllMessages(values);\n",
+
+    "return this;\n");
+
+  // Builder clearAllRepeatedField()
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder clear$capitalized_name$()",
+
+    "$name$_ = java.util.Collections.emptyList();\n"
+    "$clear_mutable_bit_builder$;\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.clear();\n",
+
+    "return this;\n");
+
+  // Builder removeRepeatedField(int index)
+  PrintNestedBuilderFunction(printer,
+    "$deprecation$public Builder remove$capitalized_name$(int index)",
+
+    "ensure$capitalized_name$IsMutable();\n"
+    "$name$_.remove(index);\n"
+    "$on_changed$\n",
+
+    "$name$Builder_.remove(index);\n",
+
+    "return this;\n");
+
+  if (HasNestedBuilders(descriptor_->containing_type())) {
+    printer->Print(variables_,
+      "$deprecation$public $type$.Builder get$capitalized_name$Builder(\n"
+      "    int index) {\n"
+      "  return get$capitalized_name$FieldBuilder().getBuilder(index);\n"
+      "}\n"
+
+      "$deprecation$public $type$OrBuilder get$capitalized_name$OrBuilder(\n"
+      "    int index) {\n"
+      "  if ($name$Builder_ == null) {\n"
+      "    return $name$_.get(index);"
+      "  } else {\n"
+      "    return $name$Builder_.getMessageOrBuilder(index);\n"
+      "  }\n"
+      "}\n"
+
+      "$deprecation$public java.util.List<? extends $type$OrBuilder> \n"
+      "     get$capitalized_name$OrBuilderList() {\n"
+      "  if ($name$Builder_ != null) {\n"
+      "    return $name$Builder_.getMessageOrBuilderList();\n"
+      "  } else {\n"
+      "    return java.util.Collections.unmodifiableList($name$_);\n"
+      "  }\n"
+      "}\n"
+
+      "$deprecation$public $type$.Builder add$capitalized_name$Builder() {\n"
+      "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
+      "      $type$.getDefaultInstance());\n"
+      "}\n"
+      "$deprecation$public $type$.Builder add$capitalized_name$Builder(\n"
+      "    int index) {\n"
+      "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
+      "      index, $type$.getDefaultInstance());\n"
+      "}\n"
+      "$deprecation$public java.util.List<$type$.Builder> \n"
+      "     get$capitalized_name$BuilderList() {\n"
+      "  return get$capitalized_name$FieldBuilder().getBuilderList();\n"
+      "}\n"
+      "private com.google.protobuf.RepeatedFieldBuilder<\n"
+      "    $type$, $type$.Builder, $type$OrBuilder> \n"
+      "    get$capitalized_name$FieldBuilder() {\n"
+      "  if ($name$Builder_ == null) {\n"
+      "    $name$Builder_ = new com.google.protobuf.RepeatedFieldBuilder<\n"
+      "        $type$, $type$.Builder, $type$OrBuilder>(\n"
+      "            $name$_,\n"
+      "            $get_mutable_bit_builder$,\n"
+      "            getParentForChildren(),\n"
+      "            isClean());\n"
+      "    $name$_ = null;\n"
+      "  }\n"
+      "  return $name$Builder_;\n"
+      "}\n");
+  }
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
+  printer->Print(variables_,
+    "get$capitalized_name$FieldBuilder();\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
-  // Initialized inline.
+  printer->Print(variables_, "$name$_ = java.util.Collections.emptyList();\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateBuilderClearCode(io::Printer* printer) const {
+  PrintNestedBuilderCondition(printer,
+    "$name$_ = java.util.Collections.emptyList();\n"
+    "$clear_mutable_bit_builder$;\n",
+
+    "$name$Builder_.clear();\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_,
+  // The code below does two optimizations (non-nested builder case):
+  //   1. If the other list is empty, there's nothing to do. This ensures we
+  //      don't allocate a new array if we already have an immutable one.
+  //   2. If the other list is non-empty and our current list is empty, we can
+  //      reuse the other list which is guaranteed to be immutable.
+  PrintNestedBuilderCondition(printer,
     "if (!other.$name$_.isEmpty()) {\n"
-    "  if (result.$name$_.isEmpty()) {\n"
-    "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
+    "  if ($name$_.isEmpty()) {\n"
+    "    $name$_ = other.$name$_;\n"
+    "    $clear_mutable_bit_builder$;\n"
+    "  } else {\n"
+    "    ensure$capitalized_name$IsMutable();\n"
+    "    $name$_.addAll(other.$name$_);\n"
     "  }\n"
-    "  result.$name$_.addAll(other.$name$_);\n"
+    "  $on_changed$\n"
+    "}\n",
+
+    "if (!other.$name$_.isEmpty()) {\n"
+    "  if ($name$Builder_.isEmpty()) {\n"
+    "    $name$Builder_.dispose();\n"
+    "    $name$Builder_ = null;\n"
+    "    $name$_ = other.$name$_;\n"
+    "    $clear_mutable_bit_builder$;\n"
+    "    $name$Builder_ = \n"
+    "      com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?\n"
+    "         get$capitalized_name$FieldBuilder() : null;\n"
+    "  } else {\n"
+    "    $name$Builder_.addAllMessages(other.$name$_);\n"
+    "  }\n"
     "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (result.$name$_ != java.util.Collections.EMPTY_LIST) {\n"
-    "  result.$name$_ =\n"
-    "    java.util.Collections.unmodifiableList(result.$name$_);\n"
-    "}\n");
+  // The code below (non-nested builder case) ensures that the result has an
+  // immutable list. If our list is immutable, we can just reuse it. If not,
+  // we make it immutable.
+  PrintNestedBuilderCondition(printer,
+    "if ($get_mutable_bit_builder$) {\n"
+    "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
+    "  $clear_mutable_bit_builder$;\n"
+    "}\n"
+    "result.$name$_ = $name$_;\n",
+
+    "result.$name$_ = $name$Builder_.build();\n");
 }
 
 void RepeatedMessageFieldGenerator::
@@ -311,17 +844,33 @@ GenerateParsingCode(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\n"
-    "  output.write$group_or_message$($number$, element);\n"
+    "for (int i = 0; i < $name$_.size(); i++) {\n"
+    "  output.write$group_or_message$($number$, $name$_.get(i));\n"
     "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : get$capitalized_name$List()) {\n"
+    "for (int i = 0; i < $name$_.size(); i++) {\n"
     "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .compute$group_or_message$Size($number$, element);\n"
+    "    .compute$group_or_message$Size($number$, $name$_.get(i));\n"
+    "}\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = result && get$capitalized_name$List()\n"
+    "    .equals(other.get$capitalized_name$List());\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateHashCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (get$capitalized_name$Count() > 0) {\n"
+    "  hash = (37 * hash) + $constant_name$;\n"
+    "  hash = (53 * hash) + get$capitalized_name$List().hashCode();\n"
     "}\n");
 }
 

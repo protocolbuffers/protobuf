@@ -34,6 +34,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <map>
 
 #include <google/protobuf/compiler/parser.h>
 
@@ -45,6 +46,7 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/stubs/map-util.h>
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -117,6 +119,9 @@ class ParserTest : public testing::Test {
     parser_->Parse(input_.get(), &actual);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
     ASSERT_EQ("", error_collector_.text_);
+
+    // We don't cover SourceCodeInfo in these tests.
+    actual.clear_source_code_info();
 
     // Parse the ASCII representation in order to canonicalize it.  We could
     // just compare directly to actual.DebugString(), but that would require
@@ -930,6 +935,12 @@ TEST_F(ParseErrorTest, MultipleParseErrors) {
     "3:25: Expected \";\".\n");
 }
 
+TEST_F(ParseErrorTest, EofInAggregateValue) {
+  ExpectHasErrors(
+      "option (fileopt) = { i:100\n",
+      "1:0: Unexpected end of stream while parsing aggregate value.\n");
+}
+
 // -------------------------------------------------------------------
 // Enum errors
 
@@ -1245,6 +1256,861 @@ TEST_F(ParseDecriptorDebugTest, TestAllDescriptorTypes) {
   // but the strings are too long for it, and if I increase its max size,
   // we get a memory allocation failure :(
   EXPECT_EQ(expected.DebugString(), parsed.DebugString());
+}
+
+// ===================================================================
+// SourceCodeInfo tests.
+
+// Follows a path -- as defined by SourceCodeInfo.Location.path -- from a
+// message to a particular sub-field.
+// * If the target is itself a message, sets *output_message to point at it,
+//   *output_field to NULL, and *output_index to -1.
+// * Otherwise, if the target is an element of a repeated field, sets
+//   *output_message to the containing message, *output_field to the descriptor
+//   of the field, and *output_index to the index of the element.
+// * Otherwise, the target is a field (possibly a repeated field, but not any
+//   one element).  Sets *output_message to the containing message,
+//   *output_field to the descriptor of the field, and *output_index to -1.
+// Returns true if the path was valid, false otherwise.  A gTest failure is
+// recorded before returning false.
+bool FollowPath(const Message& root,
+                const int* path_begin, const int* path_end,
+                const Message** output_message,
+                const FieldDescriptor** output_field,
+                int* output_index) {
+  if (path_begin == path_end) {
+    // Path refers to this whole message.
+    *output_message = &root;
+    *output_field = NULL;
+    *output_index = -1;
+    return true;
+  }
+
+  const Descriptor* descriptor = root.GetDescriptor();
+  const Reflection* reflection = root.GetReflection();
+
+  const FieldDescriptor* field = descriptor->FindFieldByNumber(*path_begin);
+
+  if (field == NULL) {
+    ADD_FAILURE() << descriptor->name() << " has no field number: "
+                  << *path_begin;
+    return false;
+  }
+
+  ++path_begin;
+
+  if (field->is_repeated()) {
+    if (path_begin == path_end) {
+      // Path refers to the whole repeated field.
+      *output_message = &root;
+      *output_field = field;
+      *output_index = -1;
+      return true;
+    }
+
+    int index = *path_begin++;
+    int size = reflection->FieldSize(root, field);
+
+    if (index >= size) {
+      ADD_FAILURE() << descriptor->name() << "." << field->name()
+                    << " has size " << size << ", but path contained index: "
+                    << index;
+      return false;
+    }
+
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      // Descend into child message.
+      const Message& child = reflection->GetRepeatedMessage(root, field, index);
+      return FollowPath(child, path_begin, path_end,
+                        output_message, output_field, output_index);
+    } else if (path_begin == path_end) {
+      // Path refers to this element.
+      *output_message = &root;
+      *output_field = field;
+      *output_index = index;
+      return true;
+    } else {
+      ADD_FAILURE() << descriptor->name() << "." << field->name()
+                    << " is not a message; cannot descend into it.";
+      return false;
+    }
+  } else {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      const Message& child = reflection->GetMessage(root, field);
+      return FollowPath(child, path_begin, path_end,
+                        output_message, output_field, output_index);
+    } else if (path_begin == path_end) {
+      // Path refers to this field.
+      *output_message = &root;
+      *output_field = field;
+      *output_index = -1;
+      return true;
+    } else {
+      ADD_FAILURE() << descriptor->name() << "." << field->name()
+                    << " is not a message; cannot descend into it.";
+      return false;
+    }
+  }
+}
+
+// Split some text on line breaks.  The line breaks are retained in the output,
+// so each line (except the last) ends with a '\n', and the lines can be
+// concatenated to produce the original text.
+//
+// I couldn't find the proper string utility function for this.  Our
+// split-on-delimiter functions don't include the delimiter in the output.
+void SplitLines(const string& text, vector<string>* lines) {
+  string::size_type pos = 0;
+
+  while (pos != string::npos) {
+    string::size_type last_pos = pos;
+    pos = text.find_first_of('\n', pos);
+    if (pos != string::npos) ++pos;
+    lines->push_back(text.substr(last_pos, pos - last_pos));
+  }
+}
+
+// Look for the given tags in the given text and construct a span (as defined
+// by SourceCodeInfo.Location.span) from them.  E.g. for text like:
+//   /*a*/message /*b*/Foo/*c*/ {}/*d*/
+// There are four tags:  "a", "b", "c", and "d".  The constructed span starts
+// immediately after the start tag's trailing '/' and ends immediately before
+// the end tags leading '/'.
+void MakeExpectedSpan(const vector<string>& lines,
+                      const string& start_tag, const string& end_tag,
+                      RepeatedField<int>* output) {
+  string start_comment = "/*" + start_tag + "*/";
+  string end_comment = "/*" + end_tag + "*/";
+
+  int start_line = -1;
+  int start_column = -1;
+  for (int i = 0; i < lines.size(); i++) {
+    string::size_type pos = lines[i].find(start_comment);
+    if (pos != string::npos) {
+      start_line = i;
+      start_column = pos + start_comment.size();
+      break;
+    }
+  }
+  ASSERT_NE(start_line, -1)
+      << "Tag \"" << start_comment << "\" not found in text.";
+
+  int end_line = -1;
+  int end_column = -1;
+  for (int i = start_line; i < lines.size(); i++) {
+    string::size_type pos = lines[i].find(end_comment);
+    if (pos != string::npos) {
+      end_line = i;
+      end_column = pos;
+      break;
+    }
+  }
+  ASSERT_NE(end_line, -1)
+      << "Tag \"" << end_comment << "\" not found in text.";
+
+  output->Add(start_line);
+  output->Add(start_column);
+  if (end_line != start_line) output->Add(end_line);
+  output->Add(end_column);
+}
+
+// Check if two spans are equal.
+bool CompareSpans(const RepeatedField<int>& span1,
+                  const RepeatedField<int>& span2) {
+  if (span1.size() != span2.size()) return false;
+  for (int i = 0; i < span1.size(); i++) {
+    if (span1.Get(i) != span2.Get(i)) return false;
+  }
+  return true;
+}
+
+// Test fixture for source info tests, which check that source locations are
+// recorded correctly in FileDescriptorProto.source_code_info.location.
+class SourceInfoTest : public ParserTest {
+ protected:
+  // The parsed file (initialized by Parse()).
+  FileDescriptorProto file_;
+
+  // Parse the given text as a .proto file and populate the spans_ map with
+  // all the source location spans in its SourceCodeInfo table.
+  bool Parse(const char* text) {
+    SetupParser(text);
+    SplitLines(text, &lines_);
+    if (!parser_->Parse(input_.get(), &file_)) {
+      return false;
+    }
+
+    const SourceCodeInfo& source_info = file_.source_code_info();
+    for (int i = 0; i < source_info.location_size(); i++) {
+      const SourceCodeInfo::Location& location = source_info.location(i);
+      const Message* descriptor_proto = NULL;
+      const FieldDescriptor* field = NULL;
+      int index = 0;
+      if (!FollowPath(file_, location.path().begin(), location.path().end(),
+                      &descriptor_proto, &field, &index)) {
+        return false;
+      }
+
+      spans_.insert(make_pair(SpanKey(*descriptor_proto, field, index),
+                              &location));
+    }
+
+    return true;
+  }
+
+  virtual void TearDown() {
+    EXPECT_TRUE(spans_.empty())
+        << "Forgot to call HasSpan() for:\n"
+        << spans_.begin()->second->DebugString();
+  }
+
+  // -----------------------------------------------------------------
+  // HasSpan() checks that the span of source code delimited by the given
+  // tags (comments) correspond via the SourceCodeInfo table to the given
+  // part of the FileDescriptorProto.  (If unclear, look at the actual tests;
+  // it should quickly become obvious.)
+
+  bool HasSpan(const char* start_tag, const char* end_tag,
+               const Message& descriptor_proto) {
+    return HasSpan(start_tag, end_tag, descriptor_proto, NULL, -1);
+  }
+
+  bool HasSpan(const char* start_tag, const char* end_tag,
+               const Message& descriptor_proto, const string& field_name) {
+    return HasSpan(start_tag, end_tag, descriptor_proto, field_name, -1);
+  }
+
+  bool HasSpan(const char* start_tag, const char* end_tag,
+               const Message& descriptor_proto, const string& field_name,
+               int index) {
+    const FieldDescriptor* field =
+        descriptor_proto.GetDescriptor()->FindFieldByName(field_name);
+    if (field == NULL) {
+      ADD_FAILURE() << descriptor_proto.GetDescriptor()->name()
+                    << " has no such field: " << field_name;
+      return false;
+    }
+
+    return HasSpan(start_tag, end_tag, descriptor_proto, field, index);
+  }
+
+  bool HasSpan(const Message& descriptor_proto) {
+    return HasSpan(NULL, NULL, descriptor_proto, NULL, -1);
+  }
+
+  bool HasSpan(const Message& descriptor_proto, const string& field_name) {
+    return HasSpan(NULL, NULL, descriptor_proto, field_name, -1);
+  }
+
+  bool HasSpan(const Message& descriptor_proto, const string& field_name,
+               int index) {
+    return HasSpan(NULL, NULL, descriptor_proto, field_name, index);
+  }
+
+  bool HasSpan(const char* start_tag, const char* end_tag,
+               const Message& descriptor_proto, const FieldDescriptor* field,
+               int index) {
+    pair<SpanMap::iterator, SpanMap::iterator> range =
+        spans_.equal_range(SpanKey(descriptor_proto, field, index));
+
+    if (start_tag == NULL) {
+      if (range.first == range.second) {
+        return false;
+      } else {
+        spans_.erase(range.first);
+        return true;
+      }
+    } else {
+      RepeatedField<int> expected_span;
+      MakeExpectedSpan(lines_, start_tag, end_tag, &expected_span);
+
+      for (SpanMap::iterator iter = range.first; iter != range.second; ++iter) {
+        if (CompareSpans(expected_span, iter->second->span())) {
+          spans_.erase(iter);
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }
+
+ private:
+  struct SpanKey {
+    const Message* descriptor_proto;
+    const FieldDescriptor* field;
+    int index;
+
+    inline SpanKey() {}
+    inline SpanKey(const Message& descriptor_proto,
+                   const FieldDescriptor* field,
+                   int index)
+        : descriptor_proto(&descriptor_proto), field(field), index(index) {}
+
+    inline bool operator<(const SpanKey& other) const {
+      if (descriptor_proto < other.descriptor_proto) return true;
+      if (descriptor_proto > other.descriptor_proto) return false;
+      if (field < other.field) return true;
+      if (field > other.field) return false;
+      return index < other.index;
+    }
+  };
+
+  typedef multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
+  SpanMap spans_;
+  vector<string> lines_;
+};
+
+TEST_F(SourceInfoTest, BasicFileDecls) {
+  EXPECT_TRUE(Parse(
+      "/*a*/syntax = \"proto2\";\n"
+      "package /*b*/foo.bar/*c*/;\n"
+      "import /*d*/\"baz.proto\"/*e*/;\n"
+      "import /*f*/\"qux.proto\"/*g*/;/*h*/\n"
+      "// comment ignored\n"));
+
+  EXPECT_TRUE(HasSpan("a", "h", file_));
+  EXPECT_TRUE(HasSpan("b", "c", file_, "package"));
+  EXPECT_TRUE(HasSpan("d", "e", file_, "dependency", 0));
+  EXPECT_TRUE(HasSpan("f", "g", file_, "dependency", 1));
+}
+
+TEST_F(SourceInfoTest, Messages) {
+  EXPECT_TRUE(Parse(
+      "/*a*/message /*b*/Foo/*c*/ {}/*d*/\n"
+      "/*e*/message /*f*/Bar/*g*/ {}/*h*/\n"));
+
+  EXPECT_TRUE(HasSpan("a", "d", file_.message_type(0)));
+  EXPECT_TRUE(HasSpan("b", "c", file_.message_type(0), "name"));
+  EXPECT_TRUE(HasSpan("e", "h", file_.message_type(1)));
+  EXPECT_TRUE(HasSpan("f", "g", file_.message_type(1), "name"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+}
+
+TEST_F(SourceInfoTest, Fields) {
+  EXPECT_TRUE(Parse(
+      "message Foo {\n"
+      "  /*a*/optional/*b*/ /*c*/int32/*d*/ /*e*/bar/*f*/ = /*g*/1/*h*/;/*i*/\n"
+      "  /*j*/repeated/*k*/ /*l*/X.Y/*m*/ /*n*/baz/*o*/ = /*p*/2/*q*/;/*r*/\n"
+      "}\n"));
+
+  const FieldDescriptorProto& field1 = file_.message_type(0).field(0);
+  const FieldDescriptorProto& field2 = file_.message_type(0).field(1);
+
+  EXPECT_TRUE(HasSpan("a", "i", field1));
+  EXPECT_TRUE(HasSpan("a", "b", field1, "label"));
+  EXPECT_TRUE(HasSpan("c", "d", field1, "type"));
+  EXPECT_TRUE(HasSpan("e", "f", field1, "name"));
+  EXPECT_TRUE(HasSpan("g", "h", field1, "number"));
+
+  EXPECT_TRUE(HasSpan("j", "r", field2));
+  EXPECT_TRUE(HasSpan("j", "k", field2, "label"));
+  EXPECT_TRUE(HasSpan("l", "m", field2, "type_name"));
+  EXPECT_TRUE(HasSpan("n", "o", field2, "name"));
+  EXPECT_TRUE(HasSpan("p", "q", field2, "number"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, Extensions) {
+  EXPECT_TRUE(Parse(
+      "/*a*/extend /*b*/Foo/*c*/ {\n"
+      "  /*d*/optional/*e*/ int32 bar = 1;/*f*/\n"
+      "  /*g*/repeated/*h*/ X.Y baz = 2;/*i*/\n"
+      "}/*j*/\n"
+      "/*k*/extend /*l*/Bar/*m*/ {\n"
+      "  /*n*/optional int32 qux = 1;/*o*/\n"
+      "}/*p*/\n"));
+
+  const FieldDescriptorProto& field1 = file_.extension(0);
+  const FieldDescriptorProto& field2 = file_.extension(1);
+  const FieldDescriptorProto& field3 = file_.extension(2);
+
+  EXPECT_TRUE(HasSpan("a", "j", file_, "extension"));
+  EXPECT_TRUE(HasSpan("k", "p", file_, "extension"));
+
+  EXPECT_TRUE(HasSpan("d", "f", field1));
+  EXPECT_TRUE(HasSpan("d", "e", field1, "label"));
+  EXPECT_TRUE(HasSpan("b", "c", field1, "extendee"));
+
+  EXPECT_TRUE(HasSpan("g", "i", field2));
+  EXPECT_TRUE(HasSpan("g", "h", field2, "label"));
+  EXPECT_TRUE(HasSpan("b", "c", field2, "extendee"));
+
+  EXPECT_TRUE(HasSpan("n", "o", field3));
+  EXPECT_TRUE(HasSpan("l", "m", field3, "extendee"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(field1, "type"));
+  EXPECT_TRUE(HasSpan(field1, "name"));
+  EXPECT_TRUE(HasSpan(field1, "number"));
+  EXPECT_TRUE(HasSpan(field2, "type_name"));
+  EXPECT_TRUE(HasSpan(field2, "name"));
+  EXPECT_TRUE(HasSpan(field2, "number"));
+  EXPECT_TRUE(HasSpan(field3, "label"));
+  EXPECT_TRUE(HasSpan(field3, "type"));
+  EXPECT_TRUE(HasSpan(field3, "name"));
+  EXPECT_TRUE(HasSpan(field3, "number"));
+}
+
+TEST_F(SourceInfoTest, NestedExtensions) {
+  EXPECT_TRUE(Parse(
+      "message Message {\n"
+      "  /*a*/extend /*b*/Foo/*c*/ {\n"
+      "    /*d*/optional/*e*/ int32 bar = 1;/*f*/\n"
+      "    /*g*/repeated/*h*/ X.Y baz = 2;/*i*/\n"
+      "  }/*j*/\n"
+      "  /*k*/extend /*l*/Bar/*m*/ {\n"
+      "    /*n*/optional int32 qux = 1;/*o*/\n"
+      "  }/*p*/\n"
+      "}\n"));
+
+  const FieldDescriptorProto& field1 = file_.message_type(0).extension(0);
+  const FieldDescriptorProto& field2 = file_.message_type(0).extension(1);
+  const FieldDescriptorProto& field3 = file_.message_type(0).extension(2);
+
+  EXPECT_TRUE(HasSpan("a", "j", file_.message_type(0), "extension"));
+  EXPECT_TRUE(HasSpan("k", "p", file_.message_type(0), "extension"));
+
+  EXPECT_TRUE(HasSpan("d", "f", field1));
+  EXPECT_TRUE(HasSpan("d", "e", field1, "label"));
+  EXPECT_TRUE(HasSpan("b", "c", field1, "extendee"));
+
+  EXPECT_TRUE(HasSpan("g", "i", field2));
+  EXPECT_TRUE(HasSpan("g", "h", field2, "label"));
+  EXPECT_TRUE(HasSpan("b", "c", field2, "extendee"));
+
+  EXPECT_TRUE(HasSpan("n", "o", field3));
+  EXPECT_TRUE(HasSpan("l", "m", field3, "extendee"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+  EXPECT_TRUE(HasSpan(field1, "type"));
+  EXPECT_TRUE(HasSpan(field1, "name"));
+  EXPECT_TRUE(HasSpan(field1, "number"));
+  EXPECT_TRUE(HasSpan(field2, "type_name"));
+  EXPECT_TRUE(HasSpan(field2, "name"));
+  EXPECT_TRUE(HasSpan(field2, "number"));
+  EXPECT_TRUE(HasSpan(field3, "label"));
+  EXPECT_TRUE(HasSpan(field3, "type"));
+  EXPECT_TRUE(HasSpan(field3, "name"));
+  EXPECT_TRUE(HasSpan(field3, "number"));
+}
+
+TEST_F(SourceInfoTest, ExtensionRanges) {
+  EXPECT_TRUE(Parse(
+      "message Message {\n"
+      "  /*a*/extensions /*b*/1/*c*/ to /*d*/4/*e*/, /*f*/6/*g*/;/*h*/\n"
+      "  /*i*/extensions /*j*/8/*k*/ to /*l*/max/*m*/;/*n*/\n"
+      "}\n"));
+
+  const DescriptorProto::ExtensionRange& range1 =
+      file_.message_type(0).extension_range(0);
+  const DescriptorProto::ExtensionRange& range2 =
+      file_.message_type(0).extension_range(1);
+  const DescriptorProto::ExtensionRange& range3 =
+      file_.message_type(0).extension_range(2);
+
+  EXPECT_TRUE(HasSpan("a", "h", file_.message_type(0), "extension_range"));
+  EXPECT_TRUE(HasSpan("i", "n", file_.message_type(0), "extension_range"));
+
+  EXPECT_TRUE(HasSpan("b", "e", range1));
+  EXPECT_TRUE(HasSpan("b", "c", range1, "start"));
+  EXPECT_TRUE(HasSpan("d", "e", range1, "end"));
+
+  EXPECT_TRUE(HasSpan("f", "g", range2));
+  EXPECT_TRUE(HasSpan("f", "g", range2, "start"));
+  EXPECT_TRUE(HasSpan("f", "g", range2, "end"));
+
+  EXPECT_TRUE(HasSpan("j", "m", range3));
+  EXPECT_TRUE(HasSpan("j", "k", range3, "start"));
+  EXPECT_TRUE(HasSpan("l", "m", range3, "end"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, NestedMessages) {
+  EXPECT_TRUE(Parse(
+      "message Foo {\n"
+      "  /*a*/message /*b*/Bar/*c*/ {\n"
+      "    /*d*/message /*e*/Baz/*f*/ {}/*g*/\n"
+      "  }/*h*/\n"
+      "  /*i*/message /*j*/Qux/*k*/ {}/*l*/\n"
+      "}\n"));
+
+  const DescriptorProto& bar = file_.message_type(0).nested_type(0);
+  const DescriptorProto& baz = bar.nested_type(0);
+  const DescriptorProto& qux = file_.message_type(0).nested_type(1);
+
+  EXPECT_TRUE(HasSpan("a", "h", bar));
+  EXPECT_TRUE(HasSpan("b", "c", bar, "name"));
+  EXPECT_TRUE(HasSpan("d", "g", baz));
+  EXPECT_TRUE(HasSpan("e", "f", baz, "name"));
+  EXPECT_TRUE(HasSpan("i", "l", qux));
+  EXPECT_TRUE(HasSpan("j", "k", qux, "name"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, Groups) {
+  EXPECT_TRUE(Parse(
+      "message Foo {\n"
+      "  message Bar {}\n"
+      "  /*a*/optional/*b*/ /*c*/group/*d*/ /*e*/Baz/*f*/ = /*g*/1/*h*/ {\n"
+      "    /*i*/message Qux {}/*j*/\n"
+      "  }/*k*/\n"
+      "}\n"));
+
+  const DescriptorProto& bar = file_.message_type(0).nested_type(0);
+  const DescriptorProto& baz = file_.message_type(0).nested_type(1);
+  const DescriptorProto& qux = baz.nested_type(0);
+  const FieldDescriptorProto& field = file_.message_type(0).field(0);
+
+  EXPECT_TRUE(HasSpan("a", "k", field));
+  EXPECT_TRUE(HasSpan("a", "b", field, "label"));
+  EXPECT_TRUE(HasSpan("c", "d", field, "type"));
+  EXPECT_TRUE(HasSpan("e", "f", field, "name"));
+  EXPECT_TRUE(HasSpan("e", "f", field, "type_name"));
+  EXPECT_TRUE(HasSpan("g", "h", field, "number"));
+
+  EXPECT_TRUE(HasSpan("a", "k", baz));
+  EXPECT_TRUE(HasSpan("e", "f", baz, "name"));
+  EXPECT_TRUE(HasSpan("i", "j", qux));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+  EXPECT_TRUE(HasSpan(bar));
+  EXPECT_TRUE(HasSpan(bar, "name"));
+  EXPECT_TRUE(HasSpan(qux, "name"));
+}
+
+TEST_F(SourceInfoTest, Enums) {
+  EXPECT_TRUE(Parse(
+      "/*a*/enum /*b*/Foo/*c*/ {}/*d*/\n"
+      "/*e*/enum /*f*/Bar/*g*/ {}/*h*/\n"));
+
+  EXPECT_TRUE(HasSpan("a", "d", file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan("b", "c", file_.enum_type(0), "name"));
+  EXPECT_TRUE(HasSpan("e", "h", file_.enum_type(1)));
+  EXPECT_TRUE(HasSpan("f", "g", file_.enum_type(1), "name"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+}
+
+TEST_F(SourceInfoTest, EnumValues) {
+  EXPECT_TRUE(Parse(
+      "enum Foo {\n"
+      "  /*a*/BAR/*b*/ = /*c*/1/*d*/;/*e*/\n"
+      "  /*f*/BAZ/*g*/ = /*h*/2/*i*/;/*j*/\n"
+      "}"));
+
+  const EnumValueDescriptorProto& bar = file_.enum_type(0).value(0);
+  const EnumValueDescriptorProto& baz = file_.enum_type(0).value(1);
+
+  EXPECT_TRUE(HasSpan("a", "e", bar));
+  EXPECT_TRUE(HasSpan("a", "b", bar, "name"));
+  EXPECT_TRUE(HasSpan("c", "d", bar, "number"));
+  EXPECT_TRUE(HasSpan("f", "j", baz));
+  EXPECT_TRUE(HasSpan("f", "g", baz, "name"));
+  EXPECT_TRUE(HasSpan("h", "i", baz, "number"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, NestedEnums) {
+  EXPECT_TRUE(Parse(
+      "message Foo {\n"
+      "  /*a*/enum /*b*/Bar/*c*/ {}/*d*/\n"
+      "  /*e*/enum /*f*/Baz/*g*/ {}/*h*/\n"
+      "}\n"));
+
+  const EnumDescriptorProto& bar = file_.message_type(0).enum_type(0);
+  const EnumDescriptorProto& baz = file_.message_type(0).enum_type(1);
+
+  EXPECT_TRUE(HasSpan("a", "d", bar));
+  EXPECT_TRUE(HasSpan("b", "c", bar, "name"));
+  EXPECT_TRUE(HasSpan("e", "h", baz));
+  EXPECT_TRUE(HasSpan("f", "g", baz, "name"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, Services) {
+  EXPECT_TRUE(Parse(
+      "/*a*/service /*b*/Foo/*c*/ {}/*d*/\n"
+      "/*e*/service /*f*/Bar/*g*/ {}/*h*/\n"));
+
+  EXPECT_TRUE(HasSpan("a", "d", file_.service(0)));
+  EXPECT_TRUE(HasSpan("b", "c", file_.service(0), "name"));
+  EXPECT_TRUE(HasSpan("e", "h", file_.service(1)));
+  EXPECT_TRUE(HasSpan("f", "g", file_.service(1), "name"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+}
+
+TEST_F(SourceInfoTest, Methods) {
+  EXPECT_TRUE(Parse(
+      "service Foo {\n"
+      "  /*a*/rpc /*b*/Bar/*c*/(/*d*/X/*e*/) returns(/*f*/Y/*g*/);/*h*/"
+      "  /*i*/rpc /*j*/Baz/*k*/(/*l*/Z/*m*/) returns(/*n*/W/*o*/);/*p*/"
+      "}"));
+
+  const MethodDescriptorProto& bar = file_.service(0).method(0);
+  const MethodDescriptorProto& baz = file_.service(0).method(1);
+
+  EXPECT_TRUE(HasSpan("a", "h", bar));
+  EXPECT_TRUE(HasSpan("b", "c", bar, "name"));
+  EXPECT_TRUE(HasSpan("d", "e", bar, "input_type"));
+  EXPECT_TRUE(HasSpan("f", "g", bar, "output_type"));
+
+  EXPECT_TRUE(HasSpan("i", "p", baz));
+  EXPECT_TRUE(HasSpan("j", "k", baz, "name"));
+  EXPECT_TRUE(HasSpan("l", "m", baz, "input_type"));
+  EXPECT_TRUE(HasSpan("n", "o", baz, "output_type"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.service(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0), "name"));
+}
+
+TEST_F(SourceInfoTest, Options) {
+  EXPECT_TRUE(Parse(
+      "/*a*/option /*b*/foo/*c*/./*d*/(/*e*/bar.baz/*f*/)/*g*/ = "
+          "/*h*/123/*i*/;/*j*/\n"
+      "/*k*/option qux = /*l*/-123/*m*/;/*n*/\n"
+      "/*o*/option corge = /*p*/abc/*q*/;/*r*/\n"
+      "/*s*/option grault = /*t*/'blah'/*u*/;/*v*/\n"
+      "/*w*/option garply = /*x*/{ yadda yadda }/*y*/;/*z*/\n"
+      "/*0*/option waldo = /*1*/123.0/*2*/;/*3*/\n"
+  ));
+
+  const UninterpretedOption& option1 = file_.options().uninterpreted_option(0);
+  const UninterpretedOption& option2 = file_.options().uninterpreted_option(1);
+  const UninterpretedOption& option3 = file_.options().uninterpreted_option(2);
+  const UninterpretedOption& option4 = file_.options().uninterpreted_option(3);
+  const UninterpretedOption& option5 = file_.options().uninterpreted_option(4);
+  const UninterpretedOption& option6 = file_.options().uninterpreted_option(5);
+
+  EXPECT_TRUE(HasSpan("a", "j", file_.options()));
+  EXPECT_TRUE(HasSpan("b", "i", option1));
+  EXPECT_TRUE(HasSpan("b", "g", option1, "name"));
+  EXPECT_TRUE(HasSpan("b", "c", option1.name(0)));
+  EXPECT_TRUE(HasSpan("b", "c", option1.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan("d", "g", option1.name(1)));
+  EXPECT_TRUE(HasSpan("e", "f", option1.name(1), "name_part"));
+  EXPECT_TRUE(HasSpan("h", "i", option1, "positive_int_value"));
+
+  EXPECT_TRUE(HasSpan("k", "n", file_.options()));
+  EXPECT_TRUE(HasSpan("l", "m", option2, "negative_int_value"));
+
+  EXPECT_TRUE(HasSpan("o", "r", file_.options()));
+  EXPECT_TRUE(HasSpan("p", "q", option3, "identifier_value"));
+
+  EXPECT_TRUE(HasSpan("s", "v", file_.options()));
+  EXPECT_TRUE(HasSpan("t", "u", option4, "string_value"));
+
+  EXPECT_TRUE(HasSpan("w", "z", file_.options()));
+  EXPECT_TRUE(HasSpan("x", "y", option5, "aggregate_value"));
+
+  EXPECT_TRUE(HasSpan("0", "3", file_.options()));
+  EXPECT_TRUE(HasSpan("1", "2", option6, "double_value"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(option2));
+  EXPECT_TRUE(HasSpan(option3));
+  EXPECT_TRUE(HasSpan(option4));
+  EXPECT_TRUE(HasSpan(option5));
+  EXPECT_TRUE(HasSpan(option6));
+  EXPECT_TRUE(HasSpan(option2, "name"));
+  EXPECT_TRUE(HasSpan(option3, "name"));
+  EXPECT_TRUE(HasSpan(option4, "name"));
+  EXPECT_TRUE(HasSpan(option5, "name"));
+  EXPECT_TRUE(HasSpan(option6, "name"));
+  EXPECT_TRUE(HasSpan(option2.name(0)));
+  EXPECT_TRUE(HasSpan(option3.name(0)));
+  EXPECT_TRUE(HasSpan(option4.name(0)));
+  EXPECT_TRUE(HasSpan(option5.name(0)));
+  EXPECT_TRUE(HasSpan(option6.name(0)));
+  EXPECT_TRUE(HasSpan(option2.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option3.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option4.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option5.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option6.name(0), "name_part"));
+}
+
+TEST_F(SourceInfoTest, ScopedOptions) {
+  EXPECT_TRUE(Parse(
+    "message Foo {\n"
+    "  /*a*/option mopt = 1;/*b*/\n"
+    "}\n"
+    "enum Bar {\n"
+    "  /*c*/option eopt = 1;/*d*/\n"
+    "}\n"
+    "service Baz {\n"
+    "  /*e*/option sopt = 1;/*f*/\n"
+    "  rpc M(X) returns(Y) {\n"
+    "    /*g*/option mopt = 1;/*h*/\n"
+    "  }\n"
+    "}\n"));
+
+  EXPECT_TRUE(HasSpan("a", "b", file_.message_type(0).options()));
+  EXPECT_TRUE(HasSpan("c", "d", file_.enum_type(0).options()));
+  EXPECT_TRUE(HasSpan("e", "f", file_.service(0).options()));
+  EXPECT_TRUE(HasSpan("g", "h", file_.service(0).method(0).options()));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.message_type(0).options()
+                      .uninterpreted_option(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0).options()
+                      .uninterpreted_option(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.message_type(0).options()
+                      .uninterpreted_option(0).name(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0).options()
+                      .uninterpreted_option(0).name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(file_.message_type(0).options()
+                      .uninterpreted_option(0), "positive_int_value"));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0).options()
+                      .uninterpreted_option(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0).options()
+                      .uninterpreted_option(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0).options()
+                      .uninterpreted_option(0).name(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0).options()
+                      .uninterpreted_option(0).name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0).options()
+                      .uninterpreted_option(0), "positive_int_value"));
+  EXPECT_TRUE(HasSpan(file_.service(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0).options()
+                      .uninterpreted_option(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0).options()
+                      .uninterpreted_option(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.service(0).options()
+                      .uninterpreted_option(0).name(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0).options()
+                      .uninterpreted_option(0).name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(file_.service(0).options()
+                      .uninterpreted_option(0), "positive_int_value"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0), "input_type"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0), "output_type"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0).options()
+                      .uninterpreted_option(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0).options()
+                      .uninterpreted_option(0), "name"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0).options()
+                      .uninterpreted_option(0).name(0)));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0).options()
+                      .uninterpreted_option(0).name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(file_.service(0).method(0).options()
+                      .uninterpreted_option(0), "positive_int_value"));
+}
+
+TEST_F(SourceInfoTest, FieldOptions) {
+  // The actual "name = value" pairs are parsed by the same code as for
+  // top-level options so we won't re-test that -- just make sure that the
+  // syntax used for field options is understood.
+  EXPECT_TRUE(Parse(
+      "message Foo {"
+      "  optional int32 bar = 1 "
+          "/*a*/[default=/*b*/123/*c*/,/*d*/opt1=123/*e*/,"
+          "/*f*/opt2='hi'/*g*/]/*h*/;"
+      "}\n"
+  ));
+
+  const FieldDescriptorProto& field = file_.message_type(0).field(0);
+  const UninterpretedOption& option1 = field.options().uninterpreted_option(0);
+  const UninterpretedOption& option2 = field.options().uninterpreted_option(1);
+
+  EXPECT_TRUE(HasSpan("a", "h", field.options()));
+  EXPECT_TRUE(HasSpan("b", "c", field, "default_value"));
+  EXPECT_TRUE(HasSpan("d", "e", option1));
+  EXPECT_TRUE(HasSpan("f", "g", option2));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+  EXPECT_TRUE(HasSpan(field));
+  EXPECT_TRUE(HasSpan(field, "label"));
+  EXPECT_TRUE(HasSpan(field, "type"));
+  EXPECT_TRUE(HasSpan(field, "name"));
+  EXPECT_TRUE(HasSpan(field, "number"));
+  EXPECT_TRUE(HasSpan(option1, "name"));
+  EXPECT_TRUE(HasSpan(option2, "name"));
+  EXPECT_TRUE(HasSpan(option1.name(0)));
+  EXPECT_TRUE(HasSpan(option2.name(0)));
+  EXPECT_TRUE(HasSpan(option1.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option2.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option1, "positive_int_value"));
+  EXPECT_TRUE(HasSpan(option2, "string_value"));
+}
+
+TEST_F(SourceInfoTest, EnumValueOptions) {
+  // The actual "name = value" pairs are parsed by the same code as for
+  // top-level options so we won't re-test that -- just make sure that the
+  // syntax used for enum options is understood.
+  EXPECT_TRUE(Parse(
+      "enum Foo {"
+      "  BAR = 1 /*a*/[/*b*/opt1=123/*c*/,/*d*/opt2='hi'/*e*/]/*f*/;"
+      "}\n"
+  ));
+
+  const EnumValueDescriptorProto& value = file_.enum_type(0).value(0);
+  const UninterpretedOption& option1 = value.options().uninterpreted_option(0);
+  const UninterpretedOption& option2 = value.options().uninterpreted_option(1);
+
+  EXPECT_TRUE(HasSpan("a", "f", value.options()));
+  EXPECT_TRUE(HasSpan("b", "c", option1));
+  EXPECT_TRUE(HasSpan("d", "e", option2));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+  EXPECT_TRUE(HasSpan(value));
+  EXPECT_TRUE(HasSpan(value, "name"));
+  EXPECT_TRUE(HasSpan(value, "number"));
+  EXPECT_TRUE(HasSpan(option1, "name"));
+  EXPECT_TRUE(HasSpan(option2, "name"));
+  EXPECT_TRUE(HasSpan(option1.name(0)));
+  EXPECT_TRUE(HasSpan(option2.name(0)));
+  EXPECT_TRUE(HasSpan(option1.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option2.name(0), "name_part"));
+  EXPECT_TRUE(HasSpan(option1, "positive_int_value"));
+  EXPECT_TRUE(HasSpan(option2, "string_value"));
 }
 
 // ===================================================================

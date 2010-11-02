@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 
 /**
  * Encodes and writes protocol message fields.
@@ -381,9 +382,8 @@ public final class CodedOutputStream {
 
   /** Write a {@code bytes} field to the stream. */
   public void writeBytesNoTag(final ByteString value) throws IOException {
-    final byte[] bytes = value.toByteArray();
-    writeRawVarint32(bytes.length);
-    writeRawBytes(bytes);
+    writeRawVarint32(value.size());
+    writeRawBytes(value);
   }
 
   /** Write a {@code uint32} field to the stream. */
@@ -870,6 +870,11 @@ public final class CodedOutputStream {
     writeRawByte((byte) value);
   }
 
+  /** Write a byte string. */
+  public void writeRawBytes(final ByteString value) throws IOException {
+    writeRawBytes(value, 0, value.size());
+  }
+
   /** Write an array of bytes. */
   public void writeRawBytes(final byte[] value) throws IOException {
     writeRawBytes(value, 0, value.length);
@@ -902,6 +907,53 @@ public final class CodedOutputStream {
       } else {
         // Write is very big.  Let's do it all at once.
         output.write(value, offset, length);
+      }
+    }
+  }
+
+  /** Write part of a byte string. */
+  public void writeRawBytes(final ByteString value, int offset, int length)
+                            throws IOException {
+    if (limit - position >= length) {
+      // We have room in the current buffer.
+      value.copyTo(buffer, offset, position, length);
+      position += length;
+    } else {
+      // Write extends past current buffer.  Fill the rest of this buffer and
+      // flush.
+      final int bytesWritten = limit - position;
+      value.copyTo(buffer, offset, position, bytesWritten);
+      offset += bytesWritten;
+      length -= bytesWritten;
+      position = limit;
+      refreshBuffer();
+
+      // Now deal with the rest.
+      // Since we have an output stream, this is our buffer
+      // and buffer offset == 0
+      if (length <= limit) {
+        // Fits in new buffer.
+        value.copyTo(buffer, offset, 0, length);
+        position = length;
+      } else {
+        // Write is very big, but we can't do it all at once without allocating
+        // an a copy of the byte array since ByteString does not give us access
+        // to the underlying bytes. Use the InputStream interface on the
+        // ByteString and our buffer to copy between the two.
+        InputStream inputStreamFrom = value.newInput();
+        if (offset != inputStreamFrom.skip(offset)) {
+          throw new IllegalStateException("Skip failed? Should never happen.");
+        }
+        // Use the buffer as the temporary buffer to avoid allocating memory.
+        while (length > 0) {
+          int bytesToRead = Math.min(length, limit);
+          int bytesRead = inputStreamFrom.read(buffer, 0, bytesToRead);
+          if (bytesRead != bytesToRead) {
+            throw new IllegalStateException("Read failed? Should never happen");
+          }
+          output.write(buffer, 0, bytesRead);
+          length -= bytesRead;
+        }
       }
     }
   }

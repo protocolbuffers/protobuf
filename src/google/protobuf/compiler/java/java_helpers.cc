@@ -134,16 +134,27 @@ string FileClassName(const FileDescriptor* file) {
 }
 
 string FileJavaPackage(const FileDescriptor* file) {
+  string result;
+
   if (file->options().has_java_package()) {
-    return file->options().java_package();
+    result = file->options().java_package();
   } else {
-    string result = kDefaultPackage;
+    result = kDefaultPackage;
     if (!file->package().empty()) {
       if (!result.empty()) result += '.';
       result += file->package();
     }
-    return result;
   }
+
+
+  return result;
+}
+
+string JavaPackageToDir(string package_name) {
+  string package_dir =
+    StringReplace(package_name, ".", "/", true);
+  if (!package_dir.empty()) package_dir += "/";
+  return package_dir;
 }
 
 string ToJavaName(const string& full_name, const FileDescriptor* file) {
@@ -333,6 +344,132 @@ string DefaultValue(const FieldDescriptor* field) {
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return "";
+}
+
+bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
+  // Switch on CppType since we need to know which default_value_* method
+  // of FieldDescriptor to call.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() == 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() == 0;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() == 0L;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() == 0L;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() == 0.0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() == 0.0;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() == false;
+
+    case FieldDescriptor::CPPTYPE_STRING:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+
+    // No default because we want the compiler to complain if any new
+    // types are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
+}
+
+const char* bit_masks[] = {
+  "0x00000001",
+  "0x00000002",
+  "0x00000004",
+  "0x00000008",
+  "0x00000010",
+  "0x00000020",
+  "0x00000040",
+  "0x00000080",
+
+  "0x00000100",
+  "0x00000200",
+  "0x00000400",
+  "0x00000800",
+  "0x00001000",
+  "0x00002000",
+  "0x00004000",
+  "0x00008000",
+
+  "0x00010000",
+  "0x00020000",
+  "0x00040000",
+  "0x00080000",
+  "0x00100000",
+  "0x00200000",
+  "0x00400000",
+  "0x00800000",
+
+  "0x01000000",
+  "0x02000000",
+  "0x04000000",
+  "0x08000000",
+  "0x10000000",
+  "0x20000000",
+  "0x40000000",
+  "0x80000000",
+};
+
+string GetBitFieldName(int index) {
+  string varName = "bitField";
+  varName += SimpleItoa(index);
+  varName += "_";
+  return varName;
+}
+
+string GetBitFieldNameForBit(int bitIndex) {
+  return GetBitFieldName(bitIndex / 32);
+}
+
+string GenerateGetBit(int bitIndex) {
+  string varName = GetBitFieldNameForBit(bitIndex);
+  int bitInVarIndex = bitIndex % 32;
+
+  string mask = bit_masks[bitInVarIndex];
+  string result = "((" + varName + " & " + mask + ") == " + mask + ")";
+  return result;
+}
+
+string GenerateSetBit(int bitIndex) {
+  string varName = GetBitFieldNameForBit(bitIndex);
+  int bitInVarIndex = bitIndex % 32;
+
+  string mask = bit_masks[bitInVarIndex];
+  string result = varName + " |= " + mask;
+  return result;
+}
+
+string GenerateClearBit(int bitIndex) {
+  string varName = GetBitFieldNameForBit(bitIndex);
+  int bitInVarIndex = bitIndex % 32;
+
+  string mask = bit_masks[bitInVarIndex];
+  string result = varName + " = (" + varName + " & ~" + mask + ")";
+  return result;
+}
+
+string GenerateGetBitFromLocal(int bitIndex) {
+  string varName = "from_" + GetBitFieldNameForBit(bitIndex);
+  int bitInVarIndex = bitIndex % 32;
+
+  string mask = bit_masks[bitInVarIndex];
+  string result = "((" + varName + " & " + mask + ") == " + mask + ")";
+  return result;
+}
+
+string GenerateSetBitToLocal(int bitIndex) {
+  string varName = "to_" + GetBitFieldNameForBit(bitIndex);
+  int bitInVarIndex = bitIndex % 32;
+
+  string mask = bit_masks[bitInVarIndex];
+  string result = varName + " |= " + mask;
+  return result;
 }
 
 }  // namespace java

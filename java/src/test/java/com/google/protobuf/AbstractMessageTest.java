@@ -366,7 +366,7 @@ public class AbstractMessageTest extends TestCase {
 
   // -----------------------------------------------------------------
   // Tests for equals and hashCode
-  
+
   public void testEqualsAndHashCode() throws Exception {
     TestAllTypes a = TestUtil.getAllSet();
     TestAllTypes b = TestAllTypes.newBuilder().build();
@@ -382,7 +382,7 @@ public class AbstractMessageTest extends TestCase {
     checkEqualsIsConsistent(d);
     checkEqualsIsConsistent(e);
     checkEqualsIsConsistent(f);
-    
+
     checkNotEqual(a, b);
     checkNotEqual(a, c);
     checkNotEqual(a, d);
@@ -413,19 +413,20 @@ public class AbstractMessageTest extends TestCase {
     checkEqualsIsConsistent(eUnknownFields);
     checkEqualsIsConsistent(fUnknownFields);
 
-    // Subseqent reconstitutions should be identical
+    // Subsequent reconstitutions should be identical
     UnittestProto.TestEmptyMessage eUnknownFields2 =
         UnittestProto.TestEmptyMessage.parseFrom(e.toByteArray());
     checkEqualsIsConsistent(eUnknownFields, eUnknownFields2);
   }
-  
+
+
   /**
    * Asserts that the given proto has symetric equals and hashCode methods.
    */
   private void checkEqualsIsConsistent(Message message) {
     // Object should be equal to itself.
     assertEquals(message, message);
-    
+
     // Object should be equal to a dynamic copy of itself.
     DynamicMessage dynamic = DynamicMessage.newBuilder(message).build();
     checkEqualsIsConsistent(message, dynamic);
@@ -442,7 +443,7 @@ public class AbstractMessageTest extends TestCase {
 
   /**
    * Asserts that the given protos are not equal and have different hash codes.
-   * 
+   *
    * @warning It's valid for non-equal objects to have the same hash code, so
    *   this test is stricter than it needs to be. However, this should happen
    *   relatively rarely.

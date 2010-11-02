@@ -48,69 +48,7 @@ import java.util.Map;
  *
  * @author kenton@google.com Kenton Varda
  */
-public interface Message extends MessageLite {
-  /**
-   * Get the message's type's descriptor.  This differs from the
-   * {@code getDescriptor()} method of generated message classes in that
-   * this method is an abstract method of the {@code Message} interface
-   * whereas {@code getDescriptor()} is a static method of a specific class.
-   * They return the same thing.
-   */
-  Descriptors.Descriptor getDescriptorForType();
-
-  // (From MessageLite, re-declared here only for return type covariance.)
-  Message getDefaultInstanceForType();
-
-  /**
-   * Returns a collection of all the fields in this message which are set
-   * and their corresponding values.  A singular ("required" or "optional")
-   * field is set iff hasField() returns true for that field.  A "repeated"
-   * field is set iff getRepeatedFieldSize() is greater than zero.  The
-   * values are exactly what would be returned by calling
-   * {@link #getField(Descriptors.FieldDescriptor)} for each field.  The map
-   * is guaranteed to be a sorted map, so iterating over it will return fields
-   * in order by field number.
-   */
-  Map<Descriptors.FieldDescriptor, Object> getAllFields();
-
-  /**
-   * Returns true if the given field is set.  This is exactly equivalent to
-   * calling the generated "has" accessor method corresponding to the field.
-   * @throws IllegalArgumentException The field is a repeated field, or
-   *           {@code field.getContainingType() != getDescriptorForType()}.
-   */
-  boolean hasField(Descriptors.FieldDescriptor field);
-
-  /**
-   * Obtains the value of the given field, or the default value if it is
-   * not set.  For primitive fields, the boxed primitive value is returned.
-   * For enum fields, the EnumValueDescriptor for the value is returend. For
-   * embedded message fields, the sub-message is returned.  For repeated
-   * fields, a java.util.List is returned.
-   */
-  Object getField(Descriptors.FieldDescriptor field);
-
-  /**
-   * Gets the number of elements of a repeated field.  This is exactly
-   * equivalent to calling the generated "Count" accessor method corresponding
-   * to the field.
-   * @throws IllegalArgumentException The field is not a repeated field, or
-   *           {@code field.getContainingType() != getDescriptorForType()}.
-   */
-  int getRepeatedFieldCount(Descriptors.FieldDescriptor field);
-
-  /**
-   * Gets an element of a repeated field.  For primitive fields, the boxed
-   * primitive value is returned.  For enum fields, the EnumValueDescriptor
-   * for the value is returend. For embedded message fields, the sub-message
-   * is returned.
-   * @throws IllegalArgumentException The field is not a repeated field, or
-   *           {@code field.getContainingType() != getDescriptorForType()}.
-   */
-  Object getRepeatedField(Descriptors.FieldDescriptor field, int index);
-
-  /** Get the {@link UnknownFieldSet} for this message. */
-  UnknownFieldSet getUnknownFields();
+public interface Message extends MessageLite, MessageOrBuilder {
 
   // -----------------------------------------------------------------
   // Comparison and hashing
@@ -119,7 +57,8 @@ public interface Message extends MessageLite {
    * Compares the specified object with this message for equality.  Returns
    * <tt>true</tt> if the given object is a message of the same type (as
    * defined by {@code getDescriptorForType()}) and has identical values for
-   * all of its fields.
+   * all of its fields.  Subclasses must implement this; inheriting
+   * {@code Object.equals()} is incorrect.
    *
    * @param other object to be compared for equality with this message
    * @return <tt>true</tt> if the specified object is equal to this message
@@ -129,8 +68,9 @@ public interface Message extends MessageLite {
 
   /**
    * Returns the hash code value for this message.  The hash code of a message
-   * is defined to be <tt>getDescriptor().hashCode() ^ map.hashCode()</tt>,
-   * where <tt>map</tt> is a map of field numbers to field values.
+   * should mix the message's type (object identity of the decsriptor) with its
+   * contents (known and unknown field values).  Subclasses must implement this;
+   * inheriting {@code Object.hashCode()} is incorrect.
    *
    * @return the hash code value for this message
    * @see Map#hashCode()
@@ -158,7 +98,7 @@ public interface Message extends MessageLite {
   /**
    * Abstract interface implemented by Protocol Message builders.
    */
-  interface Builder extends MessageLite.Builder {
+  interface Builder extends MessageLite.Builder, MessageOrBuilder {
     // (From MessageLite.Builder, re-declared here only for return type
     // covariance.)
     Builder clear();
@@ -197,29 +137,12 @@ public interface Message extends MessageLite {
      */
     Descriptors.Descriptor getDescriptorForType();
 
-    // (From MessageLite.Builder, re-declared here only for return type
-    // covariance.)
-    Message getDefaultInstanceForType();
-
-    /**
-     * Like {@link Message#getAllFields()}.  The returned map may or may not
-     * reflect future changes to the builder.  Either way, the returned map is
-     * itself unmodifiable.
-     */
-    Map<Descriptors.FieldDescriptor, Object> getAllFields();
-
     /**
      * Create a Builder for messages of the appropriate type for the given
      * field.  Messages built with this can then be passed to setField(),
      * setRepeatedField(), or addRepeatedField().
      */
     Builder newBuilderForField(Descriptors.FieldDescriptor field);
-
-    /** Like {@link Message#hasField(Descriptors.FieldDescriptor)} */
-    boolean hasField(Descriptors.FieldDescriptor field);
-
-    /** Like {@link Message#getField(Descriptors.FieldDescriptor)} */
-    Object getField(Descriptors.FieldDescriptor field);
 
     /**
      * Sets a field to the given value.  The value must be of the correct type
@@ -233,16 +156,6 @@ public interface Message extends MessageLite {
      * "clear" accessor method corresponding to the field.
      */
     Builder clearField(Descriptors.FieldDescriptor field);
-
-    /**
-     * Like {@link Message#getRepeatedFieldCount(Descriptors.FieldDescriptor)}
-     */
-    int getRepeatedFieldCount(Descriptors.FieldDescriptor field);
-
-    /**
-     * Like {@link Message#getRepeatedField(Descriptors.FieldDescriptor,int)}
-     */
-    Object getRepeatedField(Descriptors.FieldDescriptor field, int index);
 
     /**
      * Sets an element of a repeated field to the given value.  The value must
@@ -261,9 +174,6 @@ public interface Message extends MessageLite {
      *           {@code field.getContainingType() != getDescriptorForType()}.
      */
     Builder addRepeatedField(Descriptors.FieldDescriptor field, Object value);
-
-    /** Get the {@link UnknownFieldSet} for this message. */
-    UnknownFieldSet getUnknownFields();
 
     /** Set the {@link UnknownFieldSet} for this message. */
     Builder setUnknownFields(UnknownFieldSet unknownFields);

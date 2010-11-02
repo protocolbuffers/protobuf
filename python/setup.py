@@ -7,7 +7,7 @@
 from ez_setup import use_setuptools
 use_setuptools()
 
-from setuptools import setup
+from setuptools import setup, Extension
 from distutils.spawn import find_executable
 import sys
 import os
@@ -60,6 +60,7 @@ def MakeTestSuite():
     del sys.modules['google']
 
   generate_proto("../src/google/protobuf/unittest.proto")
+  generate_proto("../src/google/protobuf/unittest_custom_options.proto")
   generate_proto("../src/google/protobuf/unittest_import.proto")
   generate_proto("../src/google/protobuf/unittest_mset.proto")
   generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
@@ -94,24 +95,39 @@ if __name__ == '__main__':
     for (dirpath, dirnames, filenames) in os.walk("."):
       for filename in filenames:
         filepath = os.path.join(dirpath, filename)
-        if filepath.endswith("_pb2.py") or filepath.endswith(".pyc"):
+        if filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or \
+          filepath.endswith(".so") or filepath.endswith(".o"):
           os.remove(filepath)
   else:
     # Generate necessary .proto file if it doesn't exist.
     # TODO(kenton):  Maybe we should hook this into a distutils command?
     generate_proto("../src/google/protobuf/descriptor.proto")
 
+  python_c_extension = Extension("google.protobuf.internal._net_proto2___python",
+                                 [ "google/protobuf/pyext/python_descriptor.cc",
+                                   "google/protobuf/pyext/python_protobuf.cc",
+                                   "google/protobuf/pyext/python-proto2.cc",
+                                   ],
+                                 include_dirs = [ "../src", ".", ],
+                                 libraries = [ "protobuf" ],
+                                 runtime_library_dirs = [ "../src/.libs" ],
+                                 library_dirs = [ "../src/.libs" ],
+                                 )
+
   setup(name = 'protobuf',
-        version = '2.3.1-pre',
+        version = '2.4.0-pre',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         test_suite = 'setup.MakeTestSuite',
         # Must list modules explicitly so that we don't install tests.
         py_modules = [
+          'google.protobuf.internal.api_implementation',
           'google.protobuf.internal.containers',
+          'google.protobuf.internal.cpp_message',
           'google.protobuf.internal.decoder',
           'google.protobuf.internal.encoder',
           'google.protobuf.internal.message_listener',
+          'google.protobuf.internal.python_message',
           'google.protobuf.internal.type_checkers',
           'google.protobuf.internal.wire_format',
           'google.protobuf.descriptor',
@@ -121,6 +137,7 @@ if __name__ == '__main__':
           'google.protobuf.service',
           'google.protobuf.service_reflection',
           'google.protobuf.text_format' ],
+        ext_modules = [ python_c_extension ],
         url = 'http://code.google.com/p/protobuf/',
         maintainer = maintainer_email,
         maintainer_email = 'protobuf@googlegroups.com',

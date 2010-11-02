@@ -90,20 +90,20 @@ class LIBPROTOBUF_EXPORT TextFormat {
     ~Printer();
 
     // Like TextFormat::Print
-    bool Print(const Message& message, io::ZeroCopyOutputStream* output);
+    bool Print(const Message& message, io::ZeroCopyOutputStream* output) const;
     // Like TextFormat::PrintUnknownFields
     bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                            io::ZeroCopyOutputStream* output);
+                            io::ZeroCopyOutputStream* output) const;
     // Like TextFormat::PrintToString
-    bool PrintToString(const Message& message, string* output);
+    bool PrintToString(const Message& message, string* output) const;
     // Like TextFormat::PrintUnknownFieldsToString
     bool PrintUnknownFieldsToString(const UnknownFieldSet& unknown_fields,
-                                    string* output);
+                                    string* output) const;
     // Like TextFormat::PrintFieldValueToString
     void PrintFieldValueToString(const Message& message,
                                  const FieldDescriptor* field,
                                  int index,
-                                 string* output);
+                                 string* output) const;
 
     // Adjust the initial indent level of all output.  Each indent level is
     // equal to two spaces.
@@ -121,8 +121,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
     //   field_name: [1, 2, 3, 4]
     // instead of printing each value on its own line.  Short format applies
     // only to primitive values -- i.e. everything except strings and
-    // sub-messages/groups.  Note that at present this format is not recognized
-    // by the parser.
+    // sub-messages/groups.
     void SetUseShortRepeatedPrimitives(bool use_short_repeated_primitives) {
       use_short_repeated_primitives_ = use_short_repeated_primitives;
     }
@@ -143,26 +142,26 @@ class LIBPROTOBUF_EXPORT TextFormat {
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
     void Print(const Message& message,
-               TextGenerator& generator);
+               TextGenerator& generator) const;
 
     // Print a single field.
     void PrintField(const Message& message,
                     const Reflection* reflection,
                     const FieldDescriptor* field,
-                    TextGenerator& generator);
+                    TextGenerator& generator) const;
 
     // Print a repeated primitive field in short form.
     void PrintShortRepeatedField(const Message& message,
                                  const Reflection* reflection,
                                  const FieldDescriptor* field,
-                                 TextGenerator& generator);
+                                 TextGenerator& generator) const;
 
     // Print the name of a field -- i.e. everything that comes before the
     // ':' for a single name/value pair.
     void PrintFieldName(const Message& message,
                         const Reflection* reflection,
                         const FieldDescriptor* field,
-                        TextGenerator& generator);
+                        TextGenerator& generator) const;
 
     // Outputs a textual representation of the value of the field supplied on
     // the message supplied or the default value if not set.
@@ -170,13 +169,13 @@ class LIBPROTOBUF_EXPORT TextFormat {
                          const Reflection* reflection,
                          const FieldDescriptor* field,
                          int index,
-                         TextGenerator& generator);
+                         TextGenerator& generator) const;
 
     // Print the fields in an UnknownFieldSet.  They are printed by tag number
     // only.  Embedded messages are heuristically identified by attempting to
     // parse them.
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                            TextGenerator& generator);
+                            TextGenerator& generator) const;
 
     int initial_indent_level_;
 
@@ -207,6 +206,20 @@ class LIBPROTOBUF_EXPORT TextFormat {
                                         const FieldDescriptor* field,
                                         Message* message);
 
+  // Interface that TextFormat::Parser can use to find extensions.
+  // This class may be extended in the future to find more information
+  // like fields, etc.
+  class LIBPROTOBUF_EXPORT Finder {
+   public:
+    virtual ~Finder();
+
+    // Try to find an extension of *message by fully-qualified field
+    // name.  Returns NULL if no extension is known for this name or number.
+    virtual const FieldDescriptor* FindExtension(
+        Message* message,
+        const string& name) const = 0;
+  };
+
   // For more control over parsing, use this class.
   class LIBPROTOBUF_EXPORT Parser {
    public:
@@ -226,6 +239,13 @@ class LIBPROTOBUF_EXPORT TextFormat {
     // be printed to stderr.
     void RecordErrorsTo(io::ErrorCollector* error_collector) {
       error_collector_ = error_collector;
+    }
+
+    // Set how parser finds extensions.  If NULL (the default), the
+    // parser will use the standard Reflection object associated with
+    // the message being parsed.
+    void SetFinder(Finder* finder) {
+      finder_ = finder;
     }
 
     // Normally parsing fails if, after parsing, output->IsInitialized()
@@ -251,6 +271,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
                         ParserImpl* parser_impl);
 
     io::ErrorCollector* error_collector_;
+    Finder* finder_;
     bool allow_partial_;
   };
 

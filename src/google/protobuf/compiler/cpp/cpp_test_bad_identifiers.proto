@@ -36,6 +36,10 @@
 // though the same identifiers are used internally by the C++ code generator.
 
 
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option cc_generic_services = true;     // auto-added
+
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
 package protobuf_unittest;

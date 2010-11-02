@@ -186,6 +186,18 @@ int ExtensionSet::ExtensionSize(int number) const {
   return iter->second.GetSize();
 }
 
+FieldType ExtensionSet::ExtensionType(int number) const {
+  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  if (iter == extensions_.end()) {
+    GOOGLE_LOG(DFATAL) << "Don't lookup extension types if they aren't present (1). ";
+    return 0;
+  }
+  if (iter->second.is_cleared) {
+    GOOGLE_LOG(DFATAL) << "Don't lookup extension types if they aren't present (2). ";
+  }
+  return iter->second.type;
+}
+
 void ExtensionSet::ClearExtension(int number) {
   map<int, Extension>::iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) return;

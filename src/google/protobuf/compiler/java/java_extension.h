@@ -60,7 +60,7 @@ class ExtensionGenerator {
   ~ExtensionGenerator();
 
   void Generate(io::Printer* printer);
-  void GenerateInitializationCode(io::Printer* printer);
+  void GenerateNonNestedInitializationCode(io::Printer* printer);
   void GenerateRegistrationCode(io::Printer* printer);
 
  private:

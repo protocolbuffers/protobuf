@@ -353,6 +353,25 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
   TestUtil::ExpectAllExtensionsSet(proto_);
 }
 
+TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
+  // Create a parse string with a numerical value for an enum field.
+  string parse_string = strings::Substitute("optional_nested_enum: $0",
+                                            unittest::TestAllTypes::BAZ);
+  EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
+  EXPECT_TRUE(proto_.has_optional_nested_enum());
+  EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.optional_nested_enum());
+}
+
+TEST_F(TextFormatTest, ParseEnumFieldFromNegativeNumber) {
+  ASSERT_LT(unittest::SPARSE_E, 0);
+  string parse_string = strings::Substitute("sparse_enum: $0",
+                                            unittest::SPARSE_E);
+  unittest::SparseEnumMessage proto;
+  EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
+  EXPECT_TRUE(proto.has_sparse_enum());
+  EXPECT_EQ(unittest::SPARSE_E, proto.sparse_enum());
+}
+
 TEST_F(TextFormatTest, ParseStringEscape) {
   // Create a parse string with escpaed characters in it.
   string parse_string = "optional_string: "
@@ -404,6 +423,34 @@ TEST_F(TextFormatTest, ParseFloatWithSuffix) {
 
   // Compare.
   EXPECT_EQ(1.0, proto_.optional_float());
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedForm) {
+  string parse_string =
+      // Mixed short-form and long-form are simply concatenated.
+      "repeated_int32: 1\n"
+      "repeated_int32: [456, 789]\n"
+      "repeated_nested_enum: [  FOO ,BAR, # comment\n"
+      "                         3]\n"
+      // Note that while the printer won't print repeated strings in short-form,
+      // the parser will accept them.
+      "repeated_string: [ \"foo\", 'bar' ]\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
+
+  ASSERT_EQ(3, proto_.repeated_int32_size());
+  EXPECT_EQ(1, proto_.repeated_int32(0));
+  EXPECT_EQ(456, proto_.repeated_int32(1));
+  EXPECT_EQ(789, proto_.repeated_int32(2));
+
+  ASSERT_EQ(3, proto_.repeated_nested_enum_size());
+  EXPECT_EQ(unittest::TestAllTypes::FOO, proto_.repeated_nested_enum(0));
+  EXPECT_EQ(unittest::TestAllTypes::BAR, proto_.repeated_nested_enum(1));
+  EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.repeated_nested_enum(2));
+
+  ASSERT_EQ(2, proto_.repeated_string_size());
+  EXPECT_EQ("foo", proto_.repeated_string(0));
+  EXPECT_EQ("bar", proto_.repeated_string(1));
 }
 
 TEST_F(TextFormatTest, Comments) {
@@ -771,7 +818,12 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
   // bool
   EXPECT_FIELD(bool, true, "true");
   EXPECT_FIELD(bool, false, "false");
-  EXPECT_INVALID(bool, "1");
+  EXPECT_FIELD(bool, true, "1");
+  EXPECT_FIELD(bool, true, "t");
+  EXPECT_FIELD(bool, false, "0");
+  EXPECT_FIELD(bool, false, "f");
+  EXPECT_INVALID(bool, "2");
+  EXPECT_INVALID(bool, "-0");
   EXPECT_INVALID(bool, "on");
   EXPECT_INVALID(bool, "a");
   EXPECT_INVALID(bool, "True");
@@ -799,7 +851,8 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
 
   // enum
   EXPECT_FIELD(nested_enum, unittest::TestAllTypes::BAR, "BAR");
-  EXPECT_INVALID(nested_enum, "1");  // number not supported
+  EXPECT_FIELD(nested_enum, unittest::TestAllTypes::BAZ,
+               SimpleItoa(unittest::TestAllTypes::BAZ));
   EXPECT_INVALID(nested_enum, "FOOBAR");
 
   // message
@@ -820,7 +873,7 @@ TEST_F(TextFormatParserTest, InvalidToken) {
   ExpectFailure("optional_bool: true\n-5\n", "Expected identifier.",
                 2, 1);
 
-  ExpectFailure("optional_bool: true;\n", "Expected identifier.", 1, 20);
+  ExpectFailure("optional_bool: true!\n", "Expected identifier.", 1, 20);
   ExpectFailure("\"some string\"", "Expected identifier.", 1, 1);
 }
 
@@ -890,7 +943,7 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
 
   // Invalid values for a boolean field.
   ExpectFailure("optional_bool: \"hello\"\n", "Expected identifier.", 1, 16);
-  ExpectFailure("optional_bool: 5\n", "Expected identifier.", 1, 16);
+  ExpectFailure("optional_bool: 5\n", "Integer out of range.", 1, 16);
   ExpectFailure("optional_bool: -7.5\n", "Expected identifier.", 1, 16);
   ExpectFailure("optional_bool: !\n", "Expected identifier.", 1, 16);
 
@@ -911,12 +964,18 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
                 1, 17);
 
   // Invalid values for an enumeration field.
-  ExpectFailure("optional_nested_enum: \"hello\"\n", "Expected identifier.",
-                1, 23);
+  ExpectFailure("optional_nested_enum: \"hello\"\n",
+                "Expected integer or identifier.", 1, 23);
 
-  ExpectFailure("optional_nested_enum: 5\n", "Expected identifier.", 1, 23);
-  ExpectFailure("optional_nested_enum: -7.5\n", "Expected identifier.", 1, 23);
-  ExpectFailure("optional_nested_enum: !\n", "Expected identifier.", 1, 23);
+  // Valid token, but enum value is not defined.
+  ExpectFailure("optional_nested_enum: 5\n",
+                "Unknown enumeration value of \"5\" for field "
+                "\"optional_nested_enum\".", 2, 1);
+  // We consume the negative sign, so the error position starts one character
+  // later.
+  ExpectFailure("optional_nested_enum: -7.5\n", "Expected integer.", 1, 24);
+  ExpectFailure("optional_nested_enum: !\n",
+                "Expected integer or identifier.", 1, 23);
 
   ExpectFailure(
       "optional_nested_enum: grah\n",
@@ -984,6 +1043,14 @@ TEST_F(TextFormatParserTest, MergeDuplicateOptional) {
   TextFormat::Parser parser;
   EXPECT_TRUE(parser.MergeFromString("c: 1 c: 2", &message));
   EXPECT_EQ(2, message.c());
+}
+
+TEST_F(TextFormatParserTest, ExplicitDelimiters) {
+  unittest::TestRequired message;
+  EXPECT_TRUE(TextFormat::ParseFromString("a:1,b:2;c:3", &message));
+  EXPECT_EQ(1, message.a());
+  EXPECT_EQ(2, message.b());
+  EXPECT_EQ(3, message.c());
 }
 
 TEST_F(TextFormatParserTest, PrintErrorsToStderr) {

@@ -131,7 +131,7 @@ message CodeGeneratorResponse {
     // in order to work correctly in that context.
     //
     // The code generator that generates the initial file and the one which
-    // inserts into it must both run as part of a single invocatino of protoc.
+    // inserts into it must both run as part of a single invocation of protoc.
     // Code generators are executed in the order in which they appear on the
     // command line.
     //

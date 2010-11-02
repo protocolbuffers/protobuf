@@ -39,10 +39,10 @@
 #define GOOGLE_PROTOBUF_EXTENSION_SET_H__
 
 #include <vector>
-#include <stack>
 #include <map>
 #include <utility>
 #include <string>
+
 
 #include <google/protobuf/stubs/common.h>
 
@@ -214,6 +214,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   bool Has(int number) const;
   int ExtensionSize(int number) const;   // Size of a repeated extension.
+  FieldType ExtensionType(int number) const;
   void ClearExtension(int number);
 
   // singular fields -------------------------------------------------
@@ -450,6 +451,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void Free();
     int SpaceUsedExcludingSelf() const;
   };
+
 
   // Gets the extension with the given number, creating it if it does not
   // already exist.  Returns true if the extension did not already exist.
