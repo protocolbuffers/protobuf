@@ -2212,6 +2212,45 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   EXPECT_EQ(1234, options.GetExtension(protobuf_unittest::complex_opt1).foo());
 }
 
+// Check that aggregate options were parsed and saved correctly in
+// the appropriate descriptors.
+TEST(CustomOptions, AggregateOptions) {
+  const Descriptor* msg = protobuf_unittest::AggregateMessage::descriptor();
+  const FileDescriptor* file = msg->file();
+  const FieldDescriptor* field = msg->FindFieldByName("fieldname");
+  const EnumDescriptor* enumd = file->FindEnumTypeByName("AggregateEnum");
+  const EnumValueDescriptor* enumv = enumd->FindValueByName("VALUE");
+  const ServiceDescriptor* service = file->FindServiceByName(
+      "AggregateService");
+  const MethodDescriptor* method = service->FindMethodByName("Method");
+
+  // Tests for the different types of data embedded in fileopt
+  const protobuf_unittest::Aggregate& file_options =
+      file->options().GetExtension(protobuf_unittest::fileopt);
+  EXPECT_EQ(100, file_options.i());
+  EXPECT_EQ("FileAnnotation", file_options.s());
+  EXPECT_EQ("NestedFileAnnotation", file_options.sub().s());
+  EXPECT_EQ("FileExtensionAnnotation",
+            file_options.file().GetExtension(protobuf_unittest::fileopt).s());
+  EXPECT_EQ("EmbeddedMessageSetElement",
+            file_options.mset().GetExtension(
+                protobuf_unittest::AggregateMessageSetElement
+                ::message_set_extension).s());
+
+  // Simple tests for all the other types of annotations
+  EXPECT_EQ("MessageAnnotation",
+            msg->options().GetExtension(protobuf_unittest::msgopt).s());
+  EXPECT_EQ("FieldAnnotation",
+            field->options().GetExtension(protobuf_unittest::fieldopt).s());
+  EXPECT_EQ("EnumAnnotation",
+            enumd->options().GetExtension(protobuf_unittest::enumopt).s());
+  EXPECT_EQ("EnumValueAnnotation",
+            enumv->options().GetExtension(protobuf_unittest::enumvalopt).s());
+  EXPECT_EQ("ServiceAnnotation",
+            service->options().GetExtension(protobuf_unittest::serviceopt).s());
+  EXPECT_EQ("MethodAnnotation",
+            method->options().GetExtension(protobuf_unittest::methodopt).s());
+}
 
 // ===================================================================
 
@@ -3425,25 +3464,50 @@ TEST_F(ValidationErrorTest, StringOptionValueIsNotString) {
     "string option \"foo\".\n");
 }
 
-TEST_F(ValidationErrorTest, TryingToSetMessageValuedOption) {
+// Helper function for tests that check for aggregate value parsing
+// errors.  The "value" argument is embedded inside the
+// "uninterpreted_option" portion of the result.
+static string EmbedAggregateValue(const char* value) {
+  return strings::Substitute(
+      "name: \"foo.proto\" "
+      "dependency: \"google/protobuf/descriptor.proto\" "
+      "message_type { name: \"Foo\" } "
+      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
+      "            type: TYPE_MESSAGE type_name: \"Foo\" "
+      "            extendee: \"google.protobuf.FileOptions\" }"
+      "options { uninterpreted_option { name { name_part: \"foo\" "
+      "                                        is_extension: true } "
+      "                                 $0 } }",
+      value);
+}
+
+TEST_F(ValidationErrorTest, AggregateValueNotFound) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-    "name: \"foo.proto\" "
-    "dependency: \"google/protobuf/descriptor.proto\" "
-    "message_type { "
-    "  name: \"TestMessage\" "
-    "  field { name:\"baz\" number:1 label:LABEL_OPTIONAL type:TYPE_STRING }"
-    "}"
-    "extension { name: \"bar\" number: 7672757 label: LABEL_OPTIONAL "
-    "            type: TYPE_MESSAGE type_name: \"TestMessage\" "
-    "            extendee: \"google.protobuf.FileOptions\" }"
-    "options { uninterpreted_option { name { name_part: \"bar\" "
-    "                                        is_extension: true } "
-    "                                 identifier_value: \"QUUX\" } }",
+      EmbedAggregateValue("string_value: \"\""),
+      "foo.proto: foo.proto: OPTION_VALUE: Option \"foo\" is a message. "
+      "To set the entire message, use syntax like "
+      "\"foo = { <proto text format> }\". To set fields within it, use "
+      "syntax like \"foo.foo = value\".\n");
+}
 
-    "foo.proto: foo.proto: OPTION_NAME: Option field \"(bar)\" cannot be of "
-    "message type.\n");
+TEST_F(ValidationErrorTest, AggregateValueParseError) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+      EmbedAggregateValue("aggregate_value: \"1+2\""),
+      "foo.proto: foo.proto: OPTION_VALUE: Error while parsing option "
+      "value for \"foo\": Expected identifier.\n");
+}
+
+TEST_F(ValidationErrorTest, AggregateValueUnknownFields) {
+  BuildDescriptorMessagesInTestPool();
+
+  BuildFileWithErrors(
+      EmbedAggregateValue("aggregate_value: \"x:100\""),
+      "foo.proto: foo.proto: OPTION_VALUE: Error while parsing option "
+      "value for \"foo\": Message type \"Foo\" has no field named \"x\".\n");
 }
 
 TEST_F(ValidationErrorTest, NotLiteImportsLite) {
@@ -3483,7 +3547,11 @@ TEST_F(ValidationErrorTest, LiteExtendsNotLite) {
 TEST_F(ValidationErrorTest, NoLiteServices) {
   BuildFileWithErrors(
     "name: \"foo.proto\" "
-    "options { optimize_for: LITE_RUNTIME } "
+    "options {"
+    "  optimize_for: LITE_RUNTIME"
+    "  cc_generic_services: true"
+    "  java_generic_services: true"
+    "} "
     "service { name: \"Foo\" }",
 
     "foo.proto: Foo: NAME: Files with optimize_for = LITE_RUNTIME cannot "
@@ -3497,7 +3565,7 @@ TEST_F(ValidationErrorTest, NoLiteServices) {
     "  cc_generic_services: false"
     "  java_generic_services: false"
     "} "
-    "service { name: \"Foo\" }");
+    "service { name: \"Bar\" }");
 }
 
 TEST_F(ValidationErrorTest, RollbackAfterError) {

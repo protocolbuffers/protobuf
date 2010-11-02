@@ -53,7 +53,7 @@ CppGenerator::~CppGenerator() {}
 
 bool CppGenerator::Generate(const FileDescriptor* file,
                             const string& parameter,
-                            OutputDirectory* output_directory,
+                            GeneratorContext* generator_context,
                             string* error) const {
   vector<pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
@@ -100,7 +100,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // Generate header.
   {
     scoped_ptr<io::ZeroCopyOutputStream> output(
-      output_directory->Open(basename + ".h"));
+      generator_context->Open(basename + ".h"));
     io::Printer printer(output.get(), '$');
     file_generator.GenerateHeader(&printer);
   }
@@ -108,7 +108,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // Generate cc file.
   {
     scoped_ptr<io::ZeroCopyOutputStream> output(
-      output_directory->Open(basename + ".cc"));
+      generator_context->Open(basename + ".cc"));
     io::Printer printer(output.get(), '$');
     file_generator.GenerateSource(&printer);
   }

@@ -56,6 +56,15 @@ static const int kMaxVarintBytes = 10;
 static const int kMaxVarint32Bytes = 5;
 
 
+inline bool NextNonEmpty(ZeroCopyInputStream* input,
+                         const void** data, int* size) {
+  bool success;
+  do {
+    success = input->Next(data, size);
+  } while (success && *size == 0);
+  return success;
+}
+
 }  // namespace
 
 // CodedInputStream ==================================================
@@ -489,7 +498,7 @@ bool CodedInputStream::Refresh() {
 
   const void* void_buffer;
   int buffer_size;
-  if (input_->Next(&void_buffer, &buffer_size)) {
+  if (NextNonEmpty(input_, &void_buffer, &buffer_size)) {
     buffer_ = reinterpret_cast<const uint8*>(void_buffer);
     buffer_end_ = buffer_ + buffer_size;
     GOOGLE_CHECK_GE(buffer_size, 0);

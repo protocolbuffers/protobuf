@@ -193,6 +193,7 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
 
   current_.line = 0;
   current_.column = 0;
+  current_.end_column = 0;
   current_.type = TYPE_START;
 
   Refresh();
@@ -277,6 +278,7 @@ inline void Tokenizer::EndToken() {
     current_.text.append(buffer_ + token_start_, buffer_pos_ - token_start_);
   }
   token_start_ = -1;
+  current_.end_column = column_;
 }
 
 // -------------------------------------------------------------------
@@ -462,7 +464,7 @@ void Tokenizer::ConsumeBlockComment() {
 // -------------------------------------------------------------------
 
 bool Tokenizer::Next() {
-  TokenType last_token_type = current_.type;
+  previous_ = current_;
 
   // Did we skip any characters after the last token?
   bool skipped_stuff = false;
@@ -517,7 +519,7 @@ bool Tokenizer::Next() {
 
         if (TryConsumeOne<Digit>()) {
           // It's a floating-point number.
-          if (last_token_type == TYPE_IDENTIFIER && !skipped_stuff) {
+          if (previous_.type == TYPE_IDENTIFIER && !skipped_stuff) {
             // We don't accept syntax like "blah.123".
             error_collector_->AddError(line_, column_ - 2,
               "Need space between identifier and decimal point.");
@@ -551,6 +553,7 @@ bool Tokenizer::Next() {
   current_.text.clear();
   current_.line = line_;
   current_.column = column_;
+  current_.end_column = column_;
   return false;
 }
 

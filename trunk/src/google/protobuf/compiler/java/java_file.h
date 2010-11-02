@@ -46,7 +46,7 @@ namespace protobuf {
     class Printer;             // printer.h
   }
   namespace compiler {
-    class OutputDirectory;     // code_generator.h
+    class GeneratorContext;     // code_generator.h
   }
 }
 
@@ -70,11 +70,12 @@ class FileGenerator {
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).
   void GenerateSiblings(const string& package_dir,
-                        OutputDirectory* output_directory,
+                        GeneratorContext* generator_context,
                         vector<string>* file_list);
 
   const string& java_package() { return java_package_; }
   const string& classname()    { return classname_;    }
+
 
  private:
   // Returns whether the dependency should be included in the output file.
@@ -85,6 +86,7 @@ class FileGenerator {
   const FileDescriptor* file_;
   string java_package_;
   string classname_;
+
 
   void GenerateEmbeddedDescriptor(io::Printer* printer);
 

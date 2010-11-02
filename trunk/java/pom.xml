@@ -105,6 +105,12 @@
                   <arg value="../src/google/protobuf/unittest_mset.proto" />
                   <arg
                     value="src/test/java/com/google/protobuf/multiple_files_test.proto" />
+                  <arg value="src/test/java/com/google/protobuf/nested_builders_test.proto" />
+                  <arg value="src/test/java/com/google/protobuf/nested_extension.proto" />
+                  <arg value="src/test/java/com/google/protobuf/nested_extension_lite.proto" />
+                  <arg value="src/test/java/com/google/protobuf/non_nested_extension.proto" />
+                  <arg value="src/test/java/com/google/protobuf/non_nested_extension_lite.proto" />
+                  <arg value="src/test/java/com/google/protobuf/test_bad_identifiers.proto" />
                   <arg
                     value="../src/google/protobuf/unittest_optimize_for.proto" />
                   <arg

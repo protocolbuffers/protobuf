@@ -64,22 +64,8 @@ import java.io.OutputStream;
  *
  * @author kenton@google.com Kenton Varda
  */
-public interface MessageLite {
-  /**
-   * Get an instance of the type with all fields set to their default values.
-   * This may or may not be a singleton.  This differs from the
-   * {@code getDefaultInstance()} method of generated message classes in that
-   * this method is an abstract method of the {@code MessageLite} interface
-   * whereas {@code getDefaultInstance()} is a static method of a specific
-   * class.  They return the same thing.
-   */
-  MessageLite getDefaultInstanceForType();
+public interface MessageLite extends MessageLiteOrBuilder {
 
-  /**
-   * Returns true if all required fields in the message and all embedded
-   * messages are set, false otherwise.
-   */
-  boolean isInitialized();
 
   /**
    * Serializes the message and writes it to {@code output}.  This does not
@@ -153,7 +139,7 @@ public interface MessageLite {
   /**
    * Abstract interface implemented by Protocol Message builders.
    */
-  interface Builder extends Cloneable {
+  interface Builder extends MessageLiteOrBuilder, Cloneable {
     /** Resets all fields to their default values. */
     Builder clear();
 
@@ -185,12 +171,6 @@ public interface MessageLite {
      * @see Object#clone()
      */
     Builder clone();
-
-    /**
-     * Returns true if all required fields in the message and all embedded
-     * messages are set, false otherwise.
-     */
-    boolean isInitialized();
 
     /**
      * Parses a message of this type from the input and merges it with this
@@ -230,12 +210,6 @@ public interface MessageLite {
                       ExtensionRegistryLite extensionRegistry)
                       throws IOException;
 
-    /**
-     * Get the message's type's default instance.
-     * See {@link MessageLite#getDefaultInstanceForType()}.
-     */
-    MessageLite getDefaultInstanceForType();
-
     // ---------------------------------------------------------------
     // Convenience methods.
 
@@ -243,6 +217,8 @@ public interface MessageLite {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream)}.
+     *
+     * @return this
      */
     Builder mergeFrom(ByteString data) throws InvalidProtocolBufferException;
 
@@ -250,6 +226,8 @@ public interface MessageLite {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     *
+     * @return this
      */
     Builder mergeFrom(ByteString data,
                       ExtensionRegistryLite extensionRegistry)
@@ -259,6 +237,8 @@ public interface MessageLite {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream)}.
+     *
+     * @return this
      */
     Builder mergeFrom(byte[] data) throws InvalidProtocolBufferException;
 
@@ -266,6 +246,8 @@ public interface MessageLite {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream)}.
+     *
+     * @return this
      */
     Builder mergeFrom(byte[] data, int off, int len)
                       throws InvalidProtocolBufferException;
@@ -274,6 +256,8 @@ public interface MessageLite {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     *
+     * @return this
      */
     Builder mergeFrom(byte[] data,
                       ExtensionRegistryLite extensionRegistry)
@@ -283,6 +267,8 @@ public interface MessageLite {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     *
+     * @return this
      */
     Builder mergeFrom(byte[] data, int off, int len,
                       ExtensionRegistryLite extensionRegistry)
@@ -299,6 +285,8 @@ public interface MessageLite {
      * and {@link #mergeDelimitedFrom(InputStream)} to read it.
      * <p>
      * Despite usually reading the entire input, this does not close the stream.
+     *
+     * @return this
      */
     Builder mergeFrom(InputStream input) throws IOException;
 
@@ -306,6 +294,8 @@ public interface MessageLite {
      * Parse a message of this type from {@code input} and merge it with the
      * message being built.  This is just a small wrapper around
      * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     *
+     * @return this
      */
     Builder mergeFrom(InputStream input,
                       ExtensionRegistryLite extensionRegistry)

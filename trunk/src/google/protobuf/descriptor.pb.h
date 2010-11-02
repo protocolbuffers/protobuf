@@ -51,6 +51,8 @@ class ServiceOptions;
 class MethodOptions;
 class UninterpretedOption;
 class UninterpretedOption_NamePart;
+class SourceCodeInfo;
+class SourceCodeInfo_Location;
 
 enum FieldDescriptorProto_Type {
   FieldDescriptorProto_Type_TYPE_DOUBLE = 1,
@@ -217,26 +219,17 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static FileDescriptorSet* default_instance_;
@@ -306,6 +299,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // optional string package = 2;
   inline bool has_package() const;
@@ -316,6 +310,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   inline void set_package(const char* value);
   inline void set_package(const char* value, size_t size);
   inline ::std::string* mutable_package();
+  inline ::std::string* release_package();
   
   // repeated string dependency = 3;
   inline int dependency_size() const;
@@ -387,38 +382,45 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   static const int kOptionsFieldNumber = 8;
   inline const ::google::protobuf::FileOptions& options() const;
   inline ::google::protobuf::FileOptions* mutable_options();
+  inline ::google::protobuf::FileOptions* release_options();
+  
+  // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
+  inline bool has_source_code_info() const;
+  inline void clear_source_code_info();
+  static const int kSourceCodeInfoFieldNumber = 9;
+  inline const ::google::protobuf::SourceCodeInfo& source_code_info() const;
+  inline ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
+  inline ::google::protobuf::SourceCodeInfo* release_source_code_info();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_package();
+  inline void clear_has_package();
+  inline void set_has_options();
+  inline void clear_has_options();
+  inline void set_has_source_code_info();
+  inline void clear_has_source_code_info();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::std::string* package_;
-  static const ::std::string _default_package_;
   ::google::protobuf::RepeatedPtrField< ::std::string> dependency_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > message_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto > service_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
   ::google::protobuf::FileOptions* options_;
+  ::google::protobuf::SourceCodeInfo* source_code_info_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static FileDescriptorProto* default_instance_;
@@ -495,27 +497,22 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ExtensionRange)
  private:
+  inline void set_has_start();
+  inline void clear_has_start();
+  inline void set_has_end();
+  inline void clear_has_end();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::int32 start_;
   ::google::protobuf::int32 end_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static DescriptorProto_ExtensionRange* default_instance_;
@@ -587,6 +584,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   inline int field_size() const;
@@ -654,36 +652,31 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   static const int kOptionsFieldNumber = 7;
   inline const ::google::protobuf::MessageOptions& options() const;
   inline ::google::protobuf::MessageOptions* mutable_options();
+  inline ::google::protobuf::MessageOptions* release_options();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_options();
+  inline void clear_has_options();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > nested_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange > extension_range_;
   ::google::protobuf::MessageOptions* options_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static DescriptorProto* default_instance_;
@@ -818,6 +811,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // optional int32 number = 3;
   inline bool has_number() const;
@@ -849,6 +843,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline void set_type_name(const char* value);
   inline void set_type_name(const char* value, size_t size);
   inline ::std::string* mutable_type_name();
+  inline ::std::string* release_type_name();
   
   // optional string extendee = 2;
   inline bool has_extendee() const;
@@ -859,6 +854,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline void set_extendee(const char* value);
   inline void set_extendee(const char* value, size_t size);
   inline ::std::string* mutable_extendee();
+  inline ::std::string* release_extendee();
   
   // optional string default_value = 7;
   inline bool has_default_value() const;
@@ -869,6 +865,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline void set_default_value(const char* value);
   inline void set_default_value(const char* value, size_t size);
   inline ::std::string* mutable_default_value();
+  inline ::std::string* release_default_value();
   
   // optional .google.protobuf.FieldOptions options = 8;
   inline bool has_options() const;
@@ -876,40 +873,44 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   static const int kOptionsFieldNumber = 8;
   inline const ::google::protobuf::FieldOptions& options() const;
   inline ::google::protobuf::FieldOptions* mutable_options();
+  inline ::google::protobuf::FieldOptions* release_options();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_number();
+  inline void clear_has_number();
+  inline void set_has_label();
+  inline void clear_has_label();
+  inline void set_has_type();
+  inline void clear_has_type();
+  inline void set_has_type_name();
+  inline void clear_has_type_name();
+  inline void set_has_extendee();
+  inline void clear_has_extendee();
+  inline void set_has_default_value();
+  inline void clear_has_default_value();
+  inline void set_has_options();
+  inline void clear_has_options();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::google::protobuf::int32 number_;
   int label_;
-  int type_;
   ::std::string* type_name_;
-  static const ::std::string _default_type_name_;
   ::std::string* extendee_;
-  static const ::std::string _default_extendee_;
   ::std::string* default_value_;
-  static const ::std::string _default_default_value_;
   ::google::protobuf::FieldOptions* options_;
+  int type_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static FieldDescriptorProto* default_instance_;
@@ -979,6 +980,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   inline int value_size() const;
@@ -998,32 +1000,27 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   static const int kOptionsFieldNumber = 3;
   inline const ::google::protobuf::EnumOptions& options() const;
   inline ::google::protobuf::EnumOptions* mutable_options();
+  inline ::google::protobuf::EnumOptions* release_options();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_options();
+  inline void clear_has_options();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
   ::google::protobuf::EnumOptions* options_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static EnumDescriptorProto* default_instance_;
@@ -1093,6 +1090,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // optional int32 number = 2;
   inline bool has_number() const;
@@ -1107,32 +1105,29 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   static const int kOptionsFieldNumber = 3;
   inline const ::google::protobuf::EnumValueOptions& options() const;
   inline ::google::protobuf::EnumValueOptions* mutable_options();
+  inline ::google::protobuf::EnumValueOptions* release_options();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueDescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_number();
+  inline void clear_has_number();
+  inline void set_has_options();
+  inline void clear_has_options();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
-  ::google::protobuf::int32 number_;
   ::google::protobuf::EnumValueOptions* options_;
+  ::google::protobuf::int32 number_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static EnumValueDescriptorProto* default_instance_;
@@ -1202,6 +1197,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
   inline int method_size() const;
@@ -1221,32 +1217,27 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   static const int kOptionsFieldNumber = 3;
   inline const ::google::protobuf::ServiceOptions& options() const;
   inline ::google::protobuf::ServiceOptions* mutable_options();
+  inline ::google::protobuf::ServiceOptions* release_options();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_options();
+  inline void clear_has_options();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
   ::google::protobuf::ServiceOptions* options_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static ServiceDescriptorProto* default_instance_;
@@ -1316,6 +1307,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // optional string input_type = 2;
   inline bool has_input_type() const;
@@ -1326,6 +1318,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline void set_input_type(const char* value);
   inline void set_input_type(const char* value, size_t size);
   inline ::std::string* mutable_input_type();
+  inline ::std::string* release_input_type();
   
   // optional string output_type = 3;
   inline bool has_output_type() const;
@@ -1336,6 +1329,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline void set_output_type(const char* value);
   inline void set_output_type(const char* value, size_t size);
   inline ::std::string* mutable_output_type();
+  inline ::std::string* release_output_type();
   
   // optional .google.protobuf.MethodOptions options = 4;
   inline bool has_options() const;
@@ -1343,35 +1337,32 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   static const int kOptionsFieldNumber = 4;
   inline const ::google::protobuf::MethodOptions& options() const;
   inline ::google::protobuf::MethodOptions* mutable_options();
+  inline ::google::protobuf::MethodOptions* release_options();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_input_type();
+  inline void clear_has_input_type();
+  inline void set_has_output_type();
+  inline void clear_has_output_type();
+  inline void set_has_options();
+  inline void clear_has_options();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::std::string* input_type_;
-  static const ::std::string _default_input_type_;
   ::std::string* output_type_;
-  static const ::std::string _default_output_type_;
   ::google::protobuf::MethodOptions* options_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static MethodDescriptorProto* default_instance_;
@@ -1466,6 +1457,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void set_java_package(const char* value);
   inline void set_java_package(const char* value, size_t size);
   inline ::std::string* mutable_java_package();
+  inline ::std::string* release_java_package();
   
   // optional string java_outer_classname = 8;
   inline bool has_java_outer_classname() const;
@@ -1476,6 +1468,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void set_java_outer_classname(const char* value);
   inline void set_java_outer_classname(const char* value, size_t size);
   inline ::std::string* mutable_java_outer_classname();
+  inline ::std::string* release_java_outer_classname();
   
   // optional bool java_multiple_files = 10 [default = false];
   inline bool has_java_multiple_files() const;
@@ -1484,6 +1477,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline bool java_multiple_files() const;
   inline void set_java_multiple_files(bool value);
   
+  // optional bool java_generate_equals_and_hash = 20 [default = false];
+  inline bool has_java_generate_equals_and_hash() const;
+  inline void clear_java_generate_equals_and_hash();
+  static const int kJavaGenerateEqualsAndHashFieldNumber = 20;
+  inline bool java_generate_equals_and_hash() const;
+  inline void set_java_generate_equals_and_hash(bool value);
+  
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
   inline bool has_optimize_for() const;
   inline void clear_optimize_for();
@@ -1491,21 +1491,21 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
   inline void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
   
-  // optional bool cc_generic_services = 16 [default = true];
+  // optional bool cc_generic_services = 16 [default = false];
   inline bool has_cc_generic_services() const;
   inline void clear_cc_generic_services();
   static const int kCcGenericServicesFieldNumber = 16;
   inline bool cc_generic_services() const;
   inline void set_cc_generic_services(bool value);
   
-  // optional bool java_generic_services = 17 [default = true];
+  // optional bool java_generic_services = 17 [default = false];
   inline bool has_java_generic_services() const;
   inline void clear_java_generic_services();
   static const int kJavaGenericServicesFieldNumber = 17;
   inline bool java_generic_services() const;
   inline void set_java_generic_services(bool value);
   
-  // optional bool py_generic_services = 18 [default = true];
+  // optional bool py_generic_services = 18 [default = false];
   inline bool has_py_generic_services() const;
   inline void clear_py_generic_services();
   static const int kPyGenericServicesFieldNumber = 18;
@@ -1527,36 +1527,43 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FileOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.FileOptions)
  private:
+  inline void set_has_java_package();
+  inline void clear_has_java_package();
+  inline void set_has_java_outer_classname();
+  inline void clear_has_java_outer_classname();
+  inline void set_has_java_multiple_files();
+  inline void clear_has_java_multiple_files();
+  inline void set_has_java_generate_equals_and_hash();
+  inline void clear_has_java_generate_equals_and_hash();
+  inline void set_has_optimize_for();
+  inline void clear_has_optimize_for();
+  inline void set_has_cc_generic_services();
+  inline void clear_has_cc_generic_services();
+  inline void set_has_java_generic_services();
+  inline void clear_has_java_generic_services();
+  inline void set_has_py_generic_services();
+  inline void clear_has_py_generic_services();
+  
   ::google::protobuf::internal::ExtensionSet _extensions_;
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* java_package_;
-  static const ::std::string _default_java_package_;
   ::std::string* java_outer_classname_;
-  static const ::std::string _default_java_outer_classname_;
-  bool java_multiple_files_;
   int optimize_for_;
+  bool java_multiple_files_;
+  bool java_generate_equals_and_hash_;
   bool cc_generic_services_;
   bool java_generic_services_;
-  bool py_generic_services_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  bool py_generic_services_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static FileOptions* default_instance_;
@@ -1646,29 +1653,25 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(MessageOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.MessageOptions)
  private:
-  ::google::protobuf::internal::ExtensionSet _extensions_;
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
+  inline void set_has_message_set_wire_format();
+  inline void clear_has_message_set_wire_format();
+  inline void set_has_no_standard_descriptor_accessor();
+  inline void clear_has_no_standard_descriptor_accessor();
   
+  ::google::protobuf::internal::ExtensionSet _extensions_;
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool message_set_wire_format_;
   bool no_standard_descriptor_accessor_;
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static MessageOptions* default_instance_;
@@ -1784,6 +1787,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   inline void set_experimental_map_key(const char* value);
   inline void set_experimental_map_key(const char* value, size_t size);
   inline ::std::string* mutable_experimental_map_key();
+  inline ::std::string* release_experimental_map_key();
   
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   inline int uninterpreted_option_size() const;
@@ -1800,32 +1804,31 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FieldOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions)
  private:
+  inline void set_has_ctype();
+  inline void clear_has_ctype();
+  inline void set_has_packed();
+  inline void clear_has_packed();
+  inline void set_has_deprecated();
+  inline void clear_has_deprecated();
+  inline void set_has_experimental_map_key();
+  inline void clear_has_experimental_map_key();
+  
   ::google::protobuf::internal::ExtensionSet _extensions_;
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   int ctype_;
   bool packed_;
   bool deprecated_;
   ::std::string* experimental_map_key_;
-  static const ::std::string _default_experimental_map_key_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static FieldOptions* default_instance_;
@@ -1901,27 +1904,19 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(EnumOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumOptions)
  private:
+  
   ::google::protobuf::internal::ExtensionSet _extensions_;
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static EnumOptions* default_instance_;
@@ -1997,27 +1992,19 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(EnumValueOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueOptions)
  private:
+  
   ::google::protobuf::internal::ExtensionSet _extensions_;
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static EnumValueOptions* default_instance_;
@@ -2093,27 +2080,19 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(ServiceOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceOptions)
  private:
+  
   ::google::protobuf::internal::ExtensionSet _extensions_;
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static ServiceOptions* default_instance_;
@@ -2189,27 +2168,19 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(MethodOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodOptions)
  private:
+  
   ::google::protobuf::internal::ExtensionSet _extensions_;
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static MethodOptions* default_instance_;
@@ -2279,6 +2250,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   inline void set_name_part(const char* value);
   inline void set_name_part(const char* value, size_t size);
   inline ::std::string* mutable_name_part();
+  inline ::std::string* release_name_part();
   
   // required bool is_extension = 2;
   inline bool has_is_extension() const;
@@ -2289,28 +2261,22 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption.NamePart)
  private:
+  inline void set_has_name_part();
+  inline void clear_has_name_part();
+  inline void set_has_is_extension();
+  inline void clear_has_is_extension();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_part_;
-  static const ::std::string _default_name_part_;
   bool is_extension_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static UninterpretedOption_NamePart* default_instance_;
@@ -2394,6 +2360,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   inline void set_identifier_value(const char* value);
   inline void set_identifier_value(const char* value, size_t size);
   inline ::std::string* mutable_identifier_value();
+  inline ::std::string* release_identifier_value();
   
   // optional uint64 positive_int_value = 4;
   inline bool has_positive_int_value() const;
@@ -2425,39 +2392,240 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   inline void set_string_value(const char* value);
   inline void set_string_value(const void* value, size_t size);
   inline ::std::string* mutable_string_value();
+  inline ::std::string* release_string_value();
+  
+  // optional string aggregate_value = 8;
+  inline bool has_aggregate_value() const;
+  inline void clear_aggregate_value();
+  static const int kAggregateValueFieldNumber = 8;
+  inline const ::std::string& aggregate_value() const;
+  inline void set_aggregate_value(const ::std::string& value);
+  inline void set_aggregate_value(const char* value);
+  inline void set_aggregate_value(const char* value, size_t size);
+  inline ::std::string* mutable_aggregate_value();
+  inline ::std::string* release_aggregate_value();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
  private:
+  inline void set_has_identifier_value();
+  inline void clear_has_identifier_value();
+  inline void set_has_positive_int_value();
+  inline void clear_has_positive_int_value();
+  inline void set_has_negative_int_value();
+  inline void clear_has_negative_int_value();
+  inline void set_has_double_value();
+  inline void clear_has_double_value();
+  inline void set_has_string_value();
+  inline void clear_has_string_value();
+  inline void set_has_aggregate_value();
+  inline void clear_has_aggregate_value();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
   ::std::string* identifier_value_;
-  static const ::std::string _default_identifier_value_;
   ::google::protobuf::uint64 positive_int_value_;
   ::google::protobuf::int64 negative_int_value_;
   double double_value_;
   ::std::string* string_value_;
-  static const ::std::string _default_string_value_;
+  ::std::string* aggregate_value_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
-  
   void InitAsDefaultInstance();
   static UninterpretedOption* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Message {
+ public:
+  SourceCodeInfo_Location();
+  virtual ~SourceCodeInfo_Location();
+  
+  SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
+  
+  inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SourceCodeInfo_Location& default_instance();
+  
+  void Swap(SourceCodeInfo_Location* other);
+  
+  // implements Message ----------------------------------------------
+  
+  SourceCodeInfo_Location* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SourceCodeInfo_Location& from);
+  void MergeFrom(const SourceCodeInfo_Location& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // repeated int32 path = 1 [packed = true];
+  inline int path_size() const;
+  inline void clear_path();
+  static const int kPathFieldNumber = 1;
+  inline ::google::protobuf::int32 path(int index) const;
+  inline void set_path(int index, ::google::protobuf::int32 value);
+  inline void add_path(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      path() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_path();
+  
+  // repeated int32 span = 2 [packed = true];
+  inline int span_size() const;
+  inline void clear_span();
+  static const int kSpanFieldNumber = 2;
+  inline ::google::protobuf::int32 span(int index) const;
+  inline void set_span(int index, ::google::protobuf::int32 value);
+  inline void add_span(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      span() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_span();
+  
+  // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
+ private:
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > path_;
+  mutable int _path_cached_byte_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > span_;
+  mutable int _span_cached_byte_size_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
+  void InitAsDefaultInstance();
+  static SourceCodeInfo_Location* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message {
+ public:
+  SourceCodeInfo();
+  virtual ~SourceCodeInfo();
+  
+  SourceCodeInfo(const SourceCodeInfo& from);
+  
+  inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SourceCodeInfo& default_instance();
+  
+  void Swap(SourceCodeInfo* other);
+  
+  // implements Message ----------------------------------------------
+  
+  SourceCodeInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SourceCodeInfo& from);
+  void MergeFrom(const SourceCodeInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  typedef SourceCodeInfo_Location Location;
+  
+  // accessors -------------------------------------------------------
+  
+  // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
+  inline int location_size() const;
+  inline void clear_location();
+  static const int kLocationFieldNumber = 1;
+  inline const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
+  inline ::google::protobuf::SourceCodeInfo_Location* mutable_location(int index);
+  inline ::google::protobuf::SourceCodeInfo_Location* add_location();
+  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >&
+      location() const;
+  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >*
+      mutable_location();
+  
+  // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
+ private:
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+  
+  void InitAsDefaultInstance();
+  static SourceCodeInfo* default_instance_;
 };
 // ===================================================================
 
@@ -2497,86 +2665,118 @@ FileDescriptorSet::mutable_file() {
 
 // optional string name = 1;
 inline bool FileDescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FileDescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FileDescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void FileDescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& FileDescriptorProto::name() const {
   return *name_;
 }
 inline void FileDescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void FileDescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void FileDescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FileDescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
 }
+inline ::std::string* FileDescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string package = 2;
 inline bool FileDescriptorProto::has_package() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void FileDescriptorProto::set_has_package() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void FileDescriptorProto::clear_has_package() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void FileDescriptorProto::clear_package() {
-  if (package_ != &_default_package_) {
+  if (package_ != &::google::protobuf::internal::kEmptyString) {
     package_->clear();
   }
-  _clear_bit(1);
+  clear_has_package();
 }
 inline const ::std::string& FileDescriptorProto::package() const {
   return *package_;
 }
 inline void FileDescriptorProto::set_package(const ::std::string& value) {
-  _set_bit(1);
-  if (package_ == &_default_package_) {
+  set_has_package();
+  if (package_ == &::google::protobuf::internal::kEmptyString) {
     package_ = new ::std::string;
   }
   package_->assign(value);
 }
 inline void FileDescriptorProto::set_package(const char* value) {
-  _set_bit(1);
-  if (package_ == &_default_package_) {
+  set_has_package();
+  if (package_ == &::google::protobuf::internal::kEmptyString) {
     package_ = new ::std::string;
   }
   package_->assign(value);
 }
 inline void FileDescriptorProto::set_package(const char* value, size_t size) {
-  _set_bit(1);
-  if (package_ == &_default_package_) {
+  set_has_package();
+  if (package_ == &::google::protobuf::internal::kEmptyString) {
     package_ = new ::std::string;
   }
   package_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FileDescriptorProto::mutable_package() {
-  _set_bit(1);
-  if (package_ == &_default_package_) {
+  set_has_package();
+  if (package_ == &::google::protobuf::internal::kEmptyString) {
     package_ = new ::std::string;
   }
   return package_;
+}
+inline ::std::string* FileDescriptorProto::release_package() {
+  clear_has_package();
+  if (package_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = package_;
+    package_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated string dependency = 3;
@@ -2725,19 +2925,60 @@ FileDescriptorProto::mutable_extension() {
 
 // optional .google.protobuf.FileOptions options = 8;
 inline bool FileDescriptorProto::has_options() const {
-  return _has_bit(7);
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void FileDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void FileDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FileDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::FileOptions::Clear();
-  _clear_bit(7);
+  clear_has_options();
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
-  _set_bit(7);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::FileOptions;
   return options_;
+}
+inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::FileOptions* temp = options_;
+  options_ = NULL;
+  return temp;
+}
+
+// optional .google.protobuf.SourceCodeInfo source_code_info = 9;
+inline bool FileDescriptorProto::has_source_code_info() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void FileDescriptorProto::set_has_source_code_info() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void FileDescriptorProto::clear_has_source_code_info() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void FileDescriptorProto::clear_source_code_info() {
+  if (source_code_info_ != NULL) source_code_info_->::google::protobuf::SourceCodeInfo::Clear();
+  clear_has_source_code_info();
+}
+inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const {
+  return source_code_info_ != NULL ? *source_code_info_ : *default_instance_->source_code_info_;
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
+  set_has_source_code_info();
+  if (source_code_info_ == NULL) source_code_info_ = new ::google::protobuf::SourceCodeInfo;
+  return source_code_info_;
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
+  clear_has_source_code_info();
+  ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
+  source_code_info_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -2746,33 +2987,45 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
 
 // optional int32 start = 1;
 inline bool DescriptorProto_ExtensionRange::has_start() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void DescriptorProto_ExtensionRange::set_has_start() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void DescriptorProto_ExtensionRange::clear_has_start() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void DescriptorProto_ExtensionRange::clear_start() {
   start_ = 0;
-  _clear_bit(0);
+  clear_has_start();
 }
 inline ::google::protobuf::int32 DescriptorProto_ExtensionRange::start() const {
   return start_;
 }
 inline void DescriptorProto_ExtensionRange::set_start(::google::protobuf::int32 value) {
-  _set_bit(0);
+  set_has_start();
   start_ = value;
 }
 
 // optional int32 end = 2;
 inline bool DescriptorProto_ExtensionRange::has_end() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void DescriptorProto_ExtensionRange::set_has_end() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void DescriptorProto_ExtensionRange::clear_has_end() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void DescriptorProto_ExtensionRange::clear_end() {
   end_ = 0;
-  _clear_bit(1);
+  clear_has_end();
 }
 inline ::google::protobuf::int32 DescriptorProto_ExtensionRange::end() const {
   return end_;
 }
 inline void DescriptorProto_ExtensionRange::set_end(::google::protobuf::int32 value) {
-  _set_bit(1);
+  set_has_end();
   end_ = value;
 }
 
@@ -2782,44 +3035,60 @@ inline void DescriptorProto_ExtensionRange::set_end(::google::protobuf::int32 va
 
 // optional string name = 1;
 inline bool DescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void DescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void DescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void DescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& DescriptorProto::name() const {
   return *name_;
 }
 inline void DescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void DescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void DescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* DescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
+}
+inline ::std::string* DescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated .google.protobuf.FieldDescriptorProto field = 2;
@@ -2949,19 +3218,31 @@ DescriptorProto::mutable_extension_range() {
 
 // optional .google.protobuf.MessageOptions options = 7;
 inline bool DescriptorProto::has_options() const {
-  return _has_bit(6);
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void DescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void DescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void DescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::MessageOptions::Clear();
-  _clear_bit(6);
+  clear_has_options();
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
-  _set_bit(6);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::MessageOptions;
   return options_;
+}
+inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::MessageOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -2970,237 +3251,331 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
 
 // optional string name = 1;
 inline bool FieldDescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FieldDescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FieldDescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void FieldDescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& FieldDescriptorProto::name() const {
   return *name_;
 }
 inline void FieldDescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void FieldDescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void FieldDescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FieldDescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
 }
+inline ::std::string* FieldDescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional int32 number = 3;
 inline bool FieldDescriptorProto::has_number() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void FieldDescriptorProto::set_has_number() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void FieldDescriptorProto::clear_has_number() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void FieldDescriptorProto::clear_number() {
   number_ = 0;
-  _clear_bit(1);
+  clear_has_number();
 }
 inline ::google::protobuf::int32 FieldDescriptorProto::number() const {
   return number_;
 }
 inline void FieldDescriptorProto::set_number(::google::protobuf::int32 value) {
-  _set_bit(1);
+  set_has_number();
   number_ = value;
 }
 
 // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
 inline bool FieldDescriptorProto::has_label() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FieldDescriptorProto::set_has_label() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FieldDescriptorProto::clear_has_label() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void FieldDescriptorProto::clear_label() {
   label_ = 1;
-  _clear_bit(2);
+  clear_has_label();
 }
 inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::label() const {
   return static_cast< ::google::protobuf::FieldDescriptorProto_Label >(label_);
 }
 inline void FieldDescriptorProto::set_label(::google::protobuf::FieldDescriptorProto_Label value) {
   GOOGLE_DCHECK(::google::protobuf::FieldDescriptorProto_Label_IsValid(value));
-  _set_bit(2);
+  set_has_label();
   label_ = value;
 }
 
 // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
 inline bool FieldDescriptorProto::has_type() const {
-  return _has_bit(3);
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void FieldDescriptorProto::set_has_type() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void FieldDescriptorProto::clear_has_type() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void FieldDescriptorProto::clear_type() {
   type_ = 1;
-  _clear_bit(3);
+  clear_has_type();
 }
 inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::type() const {
   return static_cast< ::google::protobuf::FieldDescriptorProto_Type >(type_);
 }
 inline void FieldDescriptorProto::set_type(::google::protobuf::FieldDescriptorProto_Type value) {
   GOOGLE_DCHECK(::google::protobuf::FieldDescriptorProto_Type_IsValid(value));
-  _set_bit(3);
+  set_has_type();
   type_ = value;
 }
 
 // optional string type_name = 6;
 inline bool FieldDescriptorProto::has_type_name() const {
-  return _has_bit(4);
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void FieldDescriptorProto::set_has_type_name() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void FieldDescriptorProto::clear_has_type_name() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FieldDescriptorProto::clear_type_name() {
-  if (type_name_ != &_default_type_name_) {
+  if (type_name_ != &::google::protobuf::internal::kEmptyString) {
     type_name_->clear();
   }
-  _clear_bit(4);
+  clear_has_type_name();
 }
 inline const ::std::string& FieldDescriptorProto::type_name() const {
   return *type_name_;
 }
 inline void FieldDescriptorProto::set_type_name(const ::std::string& value) {
-  _set_bit(4);
-  if (type_name_ == &_default_type_name_) {
+  set_has_type_name();
+  if (type_name_ == &::google::protobuf::internal::kEmptyString) {
     type_name_ = new ::std::string;
   }
   type_name_->assign(value);
 }
 inline void FieldDescriptorProto::set_type_name(const char* value) {
-  _set_bit(4);
-  if (type_name_ == &_default_type_name_) {
+  set_has_type_name();
+  if (type_name_ == &::google::protobuf::internal::kEmptyString) {
     type_name_ = new ::std::string;
   }
   type_name_->assign(value);
 }
 inline void FieldDescriptorProto::set_type_name(const char* value, size_t size) {
-  _set_bit(4);
-  if (type_name_ == &_default_type_name_) {
+  set_has_type_name();
+  if (type_name_ == &::google::protobuf::internal::kEmptyString) {
     type_name_ = new ::std::string;
   }
   type_name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FieldDescriptorProto::mutable_type_name() {
-  _set_bit(4);
-  if (type_name_ == &_default_type_name_) {
+  set_has_type_name();
+  if (type_name_ == &::google::protobuf::internal::kEmptyString) {
     type_name_ = new ::std::string;
   }
   return type_name_;
 }
+inline ::std::string* FieldDescriptorProto::release_type_name() {
+  clear_has_type_name();
+  if (type_name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = type_name_;
+    type_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string extendee = 2;
 inline bool FieldDescriptorProto::has_extendee() const {
-  return _has_bit(5);
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void FieldDescriptorProto::set_has_extendee() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void FieldDescriptorProto::clear_has_extendee() {
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FieldDescriptorProto::clear_extendee() {
-  if (extendee_ != &_default_extendee_) {
+  if (extendee_ != &::google::protobuf::internal::kEmptyString) {
     extendee_->clear();
   }
-  _clear_bit(5);
+  clear_has_extendee();
 }
 inline const ::std::string& FieldDescriptorProto::extendee() const {
   return *extendee_;
 }
 inline void FieldDescriptorProto::set_extendee(const ::std::string& value) {
-  _set_bit(5);
-  if (extendee_ == &_default_extendee_) {
+  set_has_extendee();
+  if (extendee_ == &::google::protobuf::internal::kEmptyString) {
     extendee_ = new ::std::string;
   }
   extendee_->assign(value);
 }
 inline void FieldDescriptorProto::set_extendee(const char* value) {
-  _set_bit(5);
-  if (extendee_ == &_default_extendee_) {
+  set_has_extendee();
+  if (extendee_ == &::google::protobuf::internal::kEmptyString) {
     extendee_ = new ::std::string;
   }
   extendee_->assign(value);
 }
 inline void FieldDescriptorProto::set_extendee(const char* value, size_t size) {
-  _set_bit(5);
-  if (extendee_ == &_default_extendee_) {
+  set_has_extendee();
+  if (extendee_ == &::google::protobuf::internal::kEmptyString) {
     extendee_ = new ::std::string;
   }
   extendee_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FieldDescriptorProto::mutable_extendee() {
-  _set_bit(5);
-  if (extendee_ == &_default_extendee_) {
+  set_has_extendee();
+  if (extendee_ == &::google::protobuf::internal::kEmptyString) {
     extendee_ = new ::std::string;
   }
   return extendee_;
 }
+inline ::std::string* FieldDescriptorProto::release_extendee() {
+  clear_has_extendee();
+  if (extendee_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = extendee_;
+    extendee_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string default_value = 7;
 inline bool FieldDescriptorProto::has_default_value() const {
-  return _has_bit(6);
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void FieldDescriptorProto::set_has_default_value() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void FieldDescriptorProto::clear_has_default_value() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void FieldDescriptorProto::clear_default_value() {
-  if (default_value_ != &_default_default_value_) {
+  if (default_value_ != &::google::protobuf::internal::kEmptyString) {
     default_value_->clear();
   }
-  _clear_bit(6);
+  clear_has_default_value();
 }
 inline const ::std::string& FieldDescriptorProto::default_value() const {
   return *default_value_;
 }
 inline void FieldDescriptorProto::set_default_value(const ::std::string& value) {
-  _set_bit(6);
-  if (default_value_ == &_default_default_value_) {
+  set_has_default_value();
+  if (default_value_ == &::google::protobuf::internal::kEmptyString) {
     default_value_ = new ::std::string;
   }
   default_value_->assign(value);
 }
 inline void FieldDescriptorProto::set_default_value(const char* value) {
-  _set_bit(6);
-  if (default_value_ == &_default_default_value_) {
+  set_has_default_value();
+  if (default_value_ == &::google::protobuf::internal::kEmptyString) {
     default_value_ = new ::std::string;
   }
   default_value_->assign(value);
 }
 inline void FieldDescriptorProto::set_default_value(const char* value, size_t size) {
-  _set_bit(6);
-  if (default_value_ == &_default_default_value_) {
+  set_has_default_value();
+  if (default_value_ == &::google::protobuf::internal::kEmptyString) {
     default_value_ = new ::std::string;
   }
   default_value_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FieldDescriptorProto::mutable_default_value() {
-  _set_bit(6);
-  if (default_value_ == &_default_default_value_) {
+  set_has_default_value();
+  if (default_value_ == &::google::protobuf::internal::kEmptyString) {
     default_value_ = new ::std::string;
   }
   return default_value_;
 }
+inline ::std::string* FieldDescriptorProto::release_default_value() {
+  clear_has_default_value();
+  if (default_value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = default_value_;
+    default_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional .google.protobuf.FieldOptions options = 8;
 inline bool FieldDescriptorProto::has_options() const {
-  return _has_bit(7);
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void FieldDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void FieldDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FieldDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::FieldOptions::Clear();
-  _clear_bit(7);
+  clear_has_options();
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() {
-  _set_bit(7);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::FieldOptions;
   return options_;
+}
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::FieldOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -3209,44 +3584,60 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options()
 
 // optional string name = 1;
 inline bool EnumDescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void EnumDescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void EnumDescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void EnumDescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& EnumDescriptorProto::name() const {
   return *name_;
 }
 inline void EnumDescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void EnumDescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void EnumDescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* EnumDescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
+}
+inline ::std::string* EnumDescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
@@ -3276,19 +3667,31 @@ EnumDescriptorProto::mutable_value() {
 
 // optional .google.protobuf.EnumOptions options = 3;
 inline bool EnumDescriptorProto::has_options() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void EnumDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void EnumDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void EnumDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::EnumOptions::Clear();
-  _clear_bit(2);
+  clear_has_options();
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
-  _set_bit(2);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::EnumOptions;
   return options_;
+}
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::EnumOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -3297,77 +3700,111 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
 
 // optional string name = 1;
 inline bool EnumValueDescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void EnumValueDescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void EnumValueDescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void EnumValueDescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& EnumValueDescriptorProto::name() const {
   return *name_;
 }
 inline void EnumValueDescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void EnumValueDescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void EnumValueDescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* EnumValueDescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
 }
+inline ::std::string* EnumValueDescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional int32 number = 2;
 inline bool EnumValueDescriptorProto::has_number() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void EnumValueDescriptorProto::set_has_number() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void EnumValueDescriptorProto::clear_has_number() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void EnumValueDescriptorProto::clear_number() {
   number_ = 0;
-  _clear_bit(1);
+  clear_has_number();
 }
 inline ::google::protobuf::int32 EnumValueDescriptorProto::number() const {
   return number_;
 }
 inline void EnumValueDescriptorProto::set_number(::google::protobuf::int32 value) {
-  _set_bit(1);
+  set_has_number();
   number_ = value;
 }
 
 // optional .google.protobuf.EnumValueOptions options = 3;
 inline bool EnumValueDescriptorProto::has_options() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void EnumValueDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void EnumValueDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void EnumValueDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::EnumValueOptions::Clear();
-  _clear_bit(2);
+  clear_has_options();
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
-  _set_bit(2);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::EnumValueOptions;
   return options_;
+}
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::EnumValueOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -3376,44 +3813,60 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_o
 
 // optional string name = 1;
 inline bool ServiceDescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ServiceDescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ServiceDescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void ServiceDescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& ServiceDescriptorProto::name() const {
   return *name_;
 }
 inline void ServiceDescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void ServiceDescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void ServiceDescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* ServiceDescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
+}
+inline ::std::string* ServiceDescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated .google.protobuf.MethodDescriptorProto method = 2;
@@ -3443,19 +3896,31 @@ ServiceDescriptorProto::mutable_method() {
 
 // optional .google.protobuf.ServiceOptions options = 3;
 inline bool ServiceDescriptorProto::has_options() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ServiceDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ServiceDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ServiceDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::ServiceOptions::Clear();
-  _clear_bit(2);
+  clear_has_options();
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() {
-  _set_bit(2);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::ServiceOptions;
   return options_;
+}
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::ServiceOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -3464,145 +3929,205 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_optio
 
 // optional string name = 1;
 inline bool MethodDescriptorProto::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MethodDescriptorProto::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MethodDescriptorProto::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void MethodDescriptorProto::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& MethodDescriptorProto::name() const {
   return *name_;
 }
 inline void MethodDescriptorProto::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void MethodDescriptorProto::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void MethodDescriptorProto::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* MethodDescriptorProto::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
 }
+inline ::std::string* MethodDescriptorProto::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string input_type = 2;
 inline bool MethodDescriptorProto::has_input_type() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MethodDescriptorProto::set_has_input_type() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MethodDescriptorProto::clear_has_input_type() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void MethodDescriptorProto::clear_input_type() {
-  if (input_type_ != &_default_input_type_) {
+  if (input_type_ != &::google::protobuf::internal::kEmptyString) {
     input_type_->clear();
   }
-  _clear_bit(1);
+  clear_has_input_type();
 }
 inline const ::std::string& MethodDescriptorProto::input_type() const {
   return *input_type_;
 }
 inline void MethodDescriptorProto::set_input_type(const ::std::string& value) {
-  _set_bit(1);
-  if (input_type_ == &_default_input_type_) {
+  set_has_input_type();
+  if (input_type_ == &::google::protobuf::internal::kEmptyString) {
     input_type_ = new ::std::string;
   }
   input_type_->assign(value);
 }
 inline void MethodDescriptorProto::set_input_type(const char* value) {
-  _set_bit(1);
-  if (input_type_ == &_default_input_type_) {
+  set_has_input_type();
+  if (input_type_ == &::google::protobuf::internal::kEmptyString) {
     input_type_ = new ::std::string;
   }
   input_type_->assign(value);
 }
 inline void MethodDescriptorProto::set_input_type(const char* value, size_t size) {
-  _set_bit(1);
-  if (input_type_ == &_default_input_type_) {
+  set_has_input_type();
+  if (input_type_ == &::google::protobuf::internal::kEmptyString) {
     input_type_ = new ::std::string;
   }
   input_type_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* MethodDescriptorProto::mutable_input_type() {
-  _set_bit(1);
-  if (input_type_ == &_default_input_type_) {
+  set_has_input_type();
+  if (input_type_ == &::google::protobuf::internal::kEmptyString) {
     input_type_ = new ::std::string;
   }
   return input_type_;
 }
+inline ::std::string* MethodDescriptorProto::release_input_type() {
+  clear_has_input_type();
+  if (input_type_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = input_type_;
+    input_type_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string output_type = 3;
 inline bool MethodDescriptorProto::has_output_type() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void MethodDescriptorProto::set_has_output_type() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void MethodDescriptorProto::clear_has_output_type() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void MethodDescriptorProto::clear_output_type() {
-  if (output_type_ != &_default_output_type_) {
+  if (output_type_ != &::google::protobuf::internal::kEmptyString) {
     output_type_->clear();
   }
-  _clear_bit(2);
+  clear_has_output_type();
 }
 inline const ::std::string& MethodDescriptorProto::output_type() const {
   return *output_type_;
 }
 inline void MethodDescriptorProto::set_output_type(const ::std::string& value) {
-  _set_bit(2);
-  if (output_type_ == &_default_output_type_) {
+  set_has_output_type();
+  if (output_type_ == &::google::protobuf::internal::kEmptyString) {
     output_type_ = new ::std::string;
   }
   output_type_->assign(value);
 }
 inline void MethodDescriptorProto::set_output_type(const char* value) {
-  _set_bit(2);
-  if (output_type_ == &_default_output_type_) {
+  set_has_output_type();
+  if (output_type_ == &::google::protobuf::internal::kEmptyString) {
     output_type_ = new ::std::string;
   }
   output_type_->assign(value);
 }
 inline void MethodDescriptorProto::set_output_type(const char* value, size_t size) {
-  _set_bit(2);
-  if (output_type_ == &_default_output_type_) {
+  set_has_output_type();
+  if (output_type_ == &::google::protobuf::internal::kEmptyString) {
     output_type_ = new ::std::string;
   }
   output_type_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* MethodDescriptorProto::mutable_output_type() {
-  _set_bit(2);
-  if (output_type_ == &_default_output_type_) {
+  set_has_output_type();
+  if (output_type_ == &::google::protobuf::internal::kEmptyString) {
     output_type_ = new ::std::string;
   }
   return output_type_;
 }
+inline ::std::string* MethodDescriptorProto::release_output_type() {
+  clear_has_output_type();
+  if (output_type_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = output_type_;
+    output_type_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional .google.protobuf.MethodOptions options = 4;
 inline bool MethodDescriptorProto::has_options() const {
-  return _has_bit(3);
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void MethodDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void MethodDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void MethodDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::MethodOptions::Clear();
-  _clear_bit(3);
+  clear_has_options();
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const {
   return options_ != NULL ? *options_ : *default_instance_->options_;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() {
-  _set_bit(3);
+  set_has_options();
   if (options_ == NULL) options_ = new ::google::protobuf::MethodOptions;
   return options_;
+}
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options() {
+  clear_has_options();
+  ::google::protobuf::MethodOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -3611,166 +4136,250 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options
 
 // optional string java_package = 1;
 inline bool FileOptions::has_java_package() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FileOptions::set_has_java_package() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FileOptions::clear_has_java_package() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void FileOptions::clear_java_package() {
-  if (java_package_ != &_default_java_package_) {
+  if (java_package_ != &::google::protobuf::internal::kEmptyString) {
     java_package_->clear();
   }
-  _clear_bit(0);
+  clear_has_java_package();
 }
 inline const ::std::string& FileOptions::java_package() const {
   return *java_package_;
 }
 inline void FileOptions::set_java_package(const ::std::string& value) {
-  _set_bit(0);
-  if (java_package_ == &_default_java_package_) {
+  set_has_java_package();
+  if (java_package_ == &::google::protobuf::internal::kEmptyString) {
     java_package_ = new ::std::string;
   }
   java_package_->assign(value);
 }
 inline void FileOptions::set_java_package(const char* value) {
-  _set_bit(0);
-  if (java_package_ == &_default_java_package_) {
+  set_has_java_package();
+  if (java_package_ == &::google::protobuf::internal::kEmptyString) {
     java_package_ = new ::std::string;
   }
   java_package_->assign(value);
 }
 inline void FileOptions::set_java_package(const char* value, size_t size) {
-  _set_bit(0);
-  if (java_package_ == &_default_java_package_) {
+  set_has_java_package();
+  if (java_package_ == &::google::protobuf::internal::kEmptyString) {
     java_package_ = new ::std::string;
   }
   java_package_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FileOptions::mutable_java_package() {
-  _set_bit(0);
-  if (java_package_ == &_default_java_package_) {
+  set_has_java_package();
+  if (java_package_ == &::google::protobuf::internal::kEmptyString) {
     java_package_ = new ::std::string;
   }
   return java_package_;
 }
+inline ::std::string* FileOptions::release_java_package() {
+  clear_has_java_package();
+  if (java_package_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = java_package_;
+    java_package_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string java_outer_classname = 8;
 inline bool FileOptions::has_java_outer_classname() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void FileOptions::set_has_java_outer_classname() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void FileOptions::clear_has_java_outer_classname() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void FileOptions::clear_java_outer_classname() {
-  if (java_outer_classname_ != &_default_java_outer_classname_) {
+  if (java_outer_classname_ != &::google::protobuf::internal::kEmptyString) {
     java_outer_classname_->clear();
   }
-  _clear_bit(1);
+  clear_has_java_outer_classname();
 }
 inline const ::std::string& FileOptions::java_outer_classname() const {
   return *java_outer_classname_;
 }
 inline void FileOptions::set_java_outer_classname(const ::std::string& value) {
-  _set_bit(1);
-  if (java_outer_classname_ == &_default_java_outer_classname_) {
+  set_has_java_outer_classname();
+  if (java_outer_classname_ == &::google::protobuf::internal::kEmptyString) {
     java_outer_classname_ = new ::std::string;
   }
   java_outer_classname_->assign(value);
 }
 inline void FileOptions::set_java_outer_classname(const char* value) {
-  _set_bit(1);
-  if (java_outer_classname_ == &_default_java_outer_classname_) {
+  set_has_java_outer_classname();
+  if (java_outer_classname_ == &::google::protobuf::internal::kEmptyString) {
     java_outer_classname_ = new ::std::string;
   }
   java_outer_classname_->assign(value);
 }
 inline void FileOptions::set_java_outer_classname(const char* value, size_t size) {
-  _set_bit(1);
-  if (java_outer_classname_ == &_default_java_outer_classname_) {
+  set_has_java_outer_classname();
+  if (java_outer_classname_ == &::google::protobuf::internal::kEmptyString) {
     java_outer_classname_ = new ::std::string;
   }
   java_outer_classname_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FileOptions::mutable_java_outer_classname() {
-  _set_bit(1);
-  if (java_outer_classname_ == &_default_java_outer_classname_) {
+  set_has_java_outer_classname();
+  if (java_outer_classname_ == &::google::protobuf::internal::kEmptyString) {
     java_outer_classname_ = new ::std::string;
   }
   return java_outer_classname_;
 }
+inline ::std::string* FileOptions::release_java_outer_classname() {
+  clear_has_java_outer_classname();
+  if (java_outer_classname_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = java_outer_classname_;
+    java_outer_classname_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional bool java_multiple_files = 10 [default = false];
 inline bool FileOptions::has_java_multiple_files() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FileOptions::set_has_java_multiple_files() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FileOptions::clear_has_java_multiple_files() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void FileOptions::clear_java_multiple_files() {
   java_multiple_files_ = false;
-  _clear_bit(2);
+  clear_has_java_multiple_files();
 }
 inline bool FileOptions::java_multiple_files() const {
   return java_multiple_files_;
 }
 inline void FileOptions::set_java_multiple_files(bool value) {
-  _set_bit(2);
+  set_has_java_multiple_files();
   java_multiple_files_ = value;
+}
+
+// optional bool java_generate_equals_and_hash = 20 [default = false];
+inline bool FileOptions::has_java_generate_equals_and_hash() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void FileOptions::set_has_java_generate_equals_and_hash() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void FileOptions::clear_has_java_generate_equals_and_hash() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void FileOptions::clear_java_generate_equals_and_hash() {
+  java_generate_equals_and_hash_ = false;
+  clear_has_java_generate_equals_and_hash();
+}
+inline bool FileOptions::java_generate_equals_and_hash() const {
+  return java_generate_equals_and_hash_;
+}
+inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
+  set_has_java_generate_equals_and_hash();
+  java_generate_equals_and_hash_ = value;
 }
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  return _has_bit(3);
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void FileOptions::set_has_optimize_for() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void FileOptions::clear_has_optimize_for() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FileOptions::clear_optimize_for() {
   optimize_for_ = 1;
-  _clear_bit(3);
+  clear_has_optimize_for();
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() const {
   return static_cast< ::google::protobuf::FileOptions_OptimizeMode >(optimize_for_);
 }
 inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   GOOGLE_DCHECK(::google::protobuf::FileOptions_OptimizeMode_IsValid(value));
-  _set_bit(3);
+  set_has_optimize_for();
   optimize_for_ = value;
 }
 
-// optional bool cc_generic_services = 16 [default = true];
+// optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  return _has_bit(4);
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void FileOptions::set_has_cc_generic_services() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void FileOptions::clear_has_cc_generic_services() {
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FileOptions::clear_cc_generic_services() {
-  cc_generic_services_ = true;
-  _clear_bit(4);
+  cc_generic_services_ = false;
+  clear_has_cc_generic_services();
 }
 inline bool FileOptions::cc_generic_services() const {
   return cc_generic_services_;
 }
 inline void FileOptions::set_cc_generic_services(bool value) {
-  _set_bit(4);
+  set_has_cc_generic_services();
   cc_generic_services_ = value;
 }
 
-// optional bool java_generic_services = 17 [default = true];
+// optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  return _has_bit(5);
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void FileOptions::set_has_java_generic_services() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void FileOptions::clear_has_java_generic_services() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void FileOptions::clear_java_generic_services() {
-  java_generic_services_ = true;
-  _clear_bit(5);
+  java_generic_services_ = false;
+  clear_has_java_generic_services();
 }
 inline bool FileOptions::java_generic_services() const {
   return java_generic_services_;
 }
 inline void FileOptions::set_java_generic_services(bool value) {
-  _set_bit(5);
+  set_has_java_generic_services();
   java_generic_services_ = value;
 }
 
-// optional bool py_generic_services = 18 [default = true];
+// optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  return _has_bit(6);
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void FileOptions::set_has_py_generic_services() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void FileOptions::clear_has_py_generic_services() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FileOptions::clear_py_generic_services() {
-  py_generic_services_ = true;
-  _clear_bit(6);
+  py_generic_services_ = false;
+  clear_has_py_generic_services();
 }
 inline bool FileOptions::py_generic_services() const {
   return py_generic_services_;
 }
 inline void FileOptions::set_py_generic_services(bool value) {
-  _set_bit(6);
+  set_has_py_generic_services();
   py_generic_services_ = value;
 }
 
@@ -3805,33 +4414,45 @@ FileOptions::mutable_uninterpreted_option() {
 
 // optional bool message_set_wire_format = 1 [default = false];
 inline bool MessageOptions::has_message_set_wire_format() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MessageOptions::set_has_message_set_wire_format() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MessageOptions::clear_has_message_set_wire_format() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void MessageOptions::clear_message_set_wire_format() {
   message_set_wire_format_ = false;
-  _clear_bit(0);
+  clear_has_message_set_wire_format();
 }
 inline bool MessageOptions::message_set_wire_format() const {
   return message_set_wire_format_;
 }
 inline void MessageOptions::set_message_set_wire_format(bool value) {
-  _set_bit(0);
+  set_has_message_set_wire_format();
   message_set_wire_format_ = value;
 }
 
 // optional bool no_standard_descriptor_accessor = 2 [default = false];
 inline bool MessageOptions::has_no_standard_descriptor_accessor() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MessageOptions::set_has_no_standard_descriptor_accessor() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MessageOptions::clear_has_no_standard_descriptor_accessor() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void MessageOptions::clear_no_standard_descriptor_accessor() {
   no_standard_descriptor_accessor_ = false;
-  _clear_bit(1);
+  clear_has_no_standard_descriptor_accessor();
 }
 inline bool MessageOptions::no_standard_descriptor_accessor() const {
   return no_standard_descriptor_accessor_;
 }
 inline void MessageOptions::set_no_standard_descriptor_accessor(bool value) {
-  _set_bit(1);
+  set_has_no_standard_descriptor_accessor();
   no_standard_descriptor_accessor_ = value;
 }
 
@@ -3866,93 +4487,127 @@ MessageOptions::mutable_uninterpreted_option() {
 
 // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
 inline bool FieldOptions::has_ctype() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FieldOptions::set_has_ctype() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FieldOptions::clear_has_ctype() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void FieldOptions::clear_ctype() {
   ctype_ = 0;
-  _clear_bit(0);
+  clear_has_ctype();
 }
 inline ::google::protobuf::FieldOptions_CType FieldOptions::ctype() const {
   return static_cast< ::google::protobuf::FieldOptions_CType >(ctype_);
 }
 inline void FieldOptions::set_ctype(::google::protobuf::FieldOptions_CType value) {
   GOOGLE_DCHECK(::google::protobuf::FieldOptions_CType_IsValid(value));
-  _set_bit(0);
+  set_has_ctype();
   ctype_ = value;
 }
 
 // optional bool packed = 2;
 inline bool FieldOptions::has_packed() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void FieldOptions::set_has_packed() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void FieldOptions::clear_has_packed() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void FieldOptions::clear_packed() {
   packed_ = false;
-  _clear_bit(1);
+  clear_has_packed();
 }
 inline bool FieldOptions::packed() const {
   return packed_;
 }
 inline void FieldOptions::set_packed(bool value) {
-  _set_bit(1);
+  set_has_packed();
   packed_ = value;
 }
 
 // optional bool deprecated = 3 [default = false];
 inline bool FieldOptions::has_deprecated() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FieldOptions::set_has_deprecated() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FieldOptions::clear_has_deprecated() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void FieldOptions::clear_deprecated() {
   deprecated_ = false;
-  _clear_bit(2);
+  clear_has_deprecated();
 }
 inline bool FieldOptions::deprecated() const {
   return deprecated_;
 }
 inline void FieldOptions::set_deprecated(bool value) {
-  _set_bit(2);
+  set_has_deprecated();
   deprecated_ = value;
 }
 
 // optional string experimental_map_key = 9;
 inline bool FieldOptions::has_experimental_map_key() const {
-  return _has_bit(3);
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void FieldOptions::set_has_experimental_map_key() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void FieldOptions::clear_has_experimental_map_key() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void FieldOptions::clear_experimental_map_key() {
-  if (experimental_map_key_ != &_default_experimental_map_key_) {
+  if (experimental_map_key_ != &::google::protobuf::internal::kEmptyString) {
     experimental_map_key_->clear();
   }
-  _clear_bit(3);
+  clear_has_experimental_map_key();
 }
 inline const ::std::string& FieldOptions::experimental_map_key() const {
   return *experimental_map_key_;
 }
 inline void FieldOptions::set_experimental_map_key(const ::std::string& value) {
-  _set_bit(3);
-  if (experimental_map_key_ == &_default_experimental_map_key_) {
+  set_has_experimental_map_key();
+  if (experimental_map_key_ == &::google::protobuf::internal::kEmptyString) {
     experimental_map_key_ = new ::std::string;
   }
   experimental_map_key_->assign(value);
 }
 inline void FieldOptions::set_experimental_map_key(const char* value) {
-  _set_bit(3);
-  if (experimental_map_key_ == &_default_experimental_map_key_) {
+  set_has_experimental_map_key();
+  if (experimental_map_key_ == &::google::protobuf::internal::kEmptyString) {
     experimental_map_key_ = new ::std::string;
   }
   experimental_map_key_->assign(value);
 }
 inline void FieldOptions::set_experimental_map_key(const char* value, size_t size) {
-  _set_bit(3);
-  if (experimental_map_key_ == &_default_experimental_map_key_) {
+  set_has_experimental_map_key();
+  if (experimental_map_key_ == &::google::protobuf::internal::kEmptyString) {
     experimental_map_key_ = new ::std::string;
   }
   experimental_map_key_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* FieldOptions::mutable_experimental_map_key() {
-  _set_bit(3);
-  if (experimental_map_key_ == &_default_experimental_map_key_) {
+  set_has_experimental_map_key();
+  if (experimental_map_key_ == &::google::protobuf::internal::kEmptyString) {
     experimental_map_key_ = new ::std::string;
   }
   return experimental_map_key_;
+}
+inline ::std::string* FieldOptions::release_experimental_map_key() {
+  clear_has_experimental_map_key();
+  if (experimental_map_key_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = experimental_map_key_;
+    experimental_map_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -4102,59 +4757,81 @@ MethodOptions::mutable_uninterpreted_option() {
 
 // required string name_part = 1;
 inline bool UninterpretedOption_NamePart::has_name_part() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void UninterpretedOption_NamePart::set_has_name_part() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void UninterpretedOption_NamePart::clear_has_name_part() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void UninterpretedOption_NamePart::clear_name_part() {
-  if (name_part_ != &_default_name_part_) {
+  if (name_part_ != &::google::protobuf::internal::kEmptyString) {
     name_part_->clear();
   }
-  _clear_bit(0);
+  clear_has_name_part();
 }
 inline const ::std::string& UninterpretedOption_NamePart::name_part() const {
   return *name_part_;
 }
 inline void UninterpretedOption_NamePart::set_name_part(const ::std::string& value) {
-  _set_bit(0);
-  if (name_part_ == &_default_name_part_) {
+  set_has_name_part();
+  if (name_part_ == &::google::protobuf::internal::kEmptyString) {
     name_part_ = new ::std::string;
   }
   name_part_->assign(value);
 }
 inline void UninterpretedOption_NamePart::set_name_part(const char* value) {
-  _set_bit(0);
-  if (name_part_ == &_default_name_part_) {
+  set_has_name_part();
+  if (name_part_ == &::google::protobuf::internal::kEmptyString) {
     name_part_ = new ::std::string;
   }
   name_part_->assign(value);
 }
 inline void UninterpretedOption_NamePart::set_name_part(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_part_ == &_default_name_part_) {
+  set_has_name_part();
+  if (name_part_ == &::google::protobuf::internal::kEmptyString) {
     name_part_ = new ::std::string;
   }
   name_part_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* UninterpretedOption_NamePart::mutable_name_part() {
-  _set_bit(0);
-  if (name_part_ == &_default_name_part_) {
+  set_has_name_part();
+  if (name_part_ == &::google::protobuf::internal::kEmptyString) {
     name_part_ = new ::std::string;
   }
   return name_part_;
 }
+inline ::std::string* UninterpretedOption_NamePart::release_name_part() {
+  clear_has_name_part();
+  if (name_part_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_part_;
+    name_part_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // required bool is_extension = 2;
 inline bool UninterpretedOption_NamePart::has_is_extension() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void UninterpretedOption_NamePart::set_has_is_extension() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void UninterpretedOption_NamePart::clear_has_is_extension() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void UninterpretedOption_NamePart::clear_is_extension() {
   is_extension_ = false;
-  _clear_bit(1);
+  clear_has_is_extension();
 }
 inline bool UninterpretedOption_NamePart::is_extension() const {
   return is_extension_;
 }
 inline void UninterpretedOption_NamePart::set_is_extension(bool value) {
-  _set_bit(1);
+  set_has_is_extension();
   is_extension_ = value;
 }
 
@@ -4189,134 +4866,325 @@ UninterpretedOption::mutable_name() {
 
 // optional string identifier_value = 3;
 inline bool UninterpretedOption::has_identifier_value() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void UninterpretedOption::set_has_identifier_value() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void UninterpretedOption::clear_has_identifier_value() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void UninterpretedOption::clear_identifier_value() {
-  if (identifier_value_ != &_default_identifier_value_) {
+  if (identifier_value_ != &::google::protobuf::internal::kEmptyString) {
     identifier_value_->clear();
   }
-  _clear_bit(1);
+  clear_has_identifier_value();
 }
 inline const ::std::string& UninterpretedOption::identifier_value() const {
   return *identifier_value_;
 }
 inline void UninterpretedOption::set_identifier_value(const ::std::string& value) {
-  _set_bit(1);
-  if (identifier_value_ == &_default_identifier_value_) {
+  set_has_identifier_value();
+  if (identifier_value_ == &::google::protobuf::internal::kEmptyString) {
     identifier_value_ = new ::std::string;
   }
   identifier_value_->assign(value);
 }
 inline void UninterpretedOption::set_identifier_value(const char* value) {
-  _set_bit(1);
-  if (identifier_value_ == &_default_identifier_value_) {
+  set_has_identifier_value();
+  if (identifier_value_ == &::google::protobuf::internal::kEmptyString) {
     identifier_value_ = new ::std::string;
   }
   identifier_value_->assign(value);
 }
 inline void UninterpretedOption::set_identifier_value(const char* value, size_t size) {
-  _set_bit(1);
-  if (identifier_value_ == &_default_identifier_value_) {
+  set_has_identifier_value();
+  if (identifier_value_ == &::google::protobuf::internal::kEmptyString) {
     identifier_value_ = new ::std::string;
   }
   identifier_value_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* UninterpretedOption::mutable_identifier_value() {
-  _set_bit(1);
-  if (identifier_value_ == &_default_identifier_value_) {
+  set_has_identifier_value();
+  if (identifier_value_ == &::google::protobuf::internal::kEmptyString) {
     identifier_value_ = new ::std::string;
   }
   return identifier_value_;
 }
+inline ::std::string* UninterpretedOption::release_identifier_value() {
+  clear_has_identifier_value();
+  if (identifier_value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = identifier_value_;
+    identifier_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional uint64 positive_int_value = 4;
 inline bool UninterpretedOption::has_positive_int_value() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void UninterpretedOption::set_has_positive_int_value() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void UninterpretedOption::clear_has_positive_int_value() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void UninterpretedOption::clear_positive_int_value() {
   positive_int_value_ = GOOGLE_ULONGLONG(0);
-  _clear_bit(2);
+  clear_has_positive_int_value();
 }
 inline ::google::protobuf::uint64 UninterpretedOption::positive_int_value() const {
   return positive_int_value_;
 }
 inline void UninterpretedOption::set_positive_int_value(::google::protobuf::uint64 value) {
-  _set_bit(2);
+  set_has_positive_int_value();
   positive_int_value_ = value;
 }
 
 // optional int64 negative_int_value = 5;
 inline bool UninterpretedOption::has_negative_int_value() const {
-  return _has_bit(3);
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void UninterpretedOption::set_has_negative_int_value() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void UninterpretedOption::clear_has_negative_int_value() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void UninterpretedOption::clear_negative_int_value() {
   negative_int_value_ = GOOGLE_LONGLONG(0);
-  _clear_bit(3);
+  clear_has_negative_int_value();
 }
 inline ::google::protobuf::int64 UninterpretedOption::negative_int_value() const {
   return negative_int_value_;
 }
 inline void UninterpretedOption::set_negative_int_value(::google::protobuf::int64 value) {
-  _set_bit(3);
+  set_has_negative_int_value();
   negative_int_value_ = value;
 }
 
 // optional double double_value = 6;
 inline bool UninterpretedOption::has_double_value() const {
-  return _has_bit(4);
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void UninterpretedOption::set_has_double_value() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void UninterpretedOption::clear_has_double_value() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void UninterpretedOption::clear_double_value() {
   double_value_ = 0;
-  _clear_bit(4);
+  clear_has_double_value();
 }
 inline double UninterpretedOption::double_value() const {
   return double_value_;
 }
 inline void UninterpretedOption::set_double_value(double value) {
-  _set_bit(4);
+  set_has_double_value();
   double_value_ = value;
 }
 
 // optional bytes string_value = 7;
 inline bool UninterpretedOption::has_string_value() const {
-  return _has_bit(5);
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void UninterpretedOption::set_has_string_value() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void UninterpretedOption::clear_has_string_value() {
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void UninterpretedOption::clear_string_value() {
-  if (string_value_ != &_default_string_value_) {
+  if (string_value_ != &::google::protobuf::internal::kEmptyString) {
     string_value_->clear();
   }
-  _clear_bit(5);
+  clear_has_string_value();
 }
 inline const ::std::string& UninterpretedOption::string_value() const {
   return *string_value_;
 }
 inline void UninterpretedOption::set_string_value(const ::std::string& value) {
-  _set_bit(5);
-  if (string_value_ == &_default_string_value_) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
     string_value_ = new ::std::string;
   }
   string_value_->assign(value);
 }
 inline void UninterpretedOption::set_string_value(const char* value) {
-  _set_bit(5);
-  if (string_value_ == &_default_string_value_) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
     string_value_ = new ::std::string;
   }
   string_value_->assign(value);
 }
 inline void UninterpretedOption::set_string_value(const void* value, size_t size) {
-  _set_bit(5);
-  if (string_value_ == &_default_string_value_) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
     string_value_ = new ::std::string;
   }
   string_value_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* UninterpretedOption::mutable_string_value() {
-  _set_bit(5);
-  if (string_value_ == &_default_string_value_) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
     string_value_ = new ::std::string;
   }
   return string_value_;
+}
+inline ::std::string* UninterpretedOption::release_string_value() {
+  clear_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = string_value_;
+    string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string aggregate_value = 8;
+inline bool UninterpretedOption::has_aggregate_value() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void UninterpretedOption::set_has_aggregate_value() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void UninterpretedOption::clear_has_aggregate_value() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void UninterpretedOption::clear_aggregate_value() {
+  if (aggregate_value_ != &::google::protobuf::internal::kEmptyString) {
+    aggregate_value_->clear();
+  }
+  clear_has_aggregate_value();
+}
+inline const ::std::string& UninterpretedOption::aggregate_value() const {
+  return *aggregate_value_;
+}
+inline void UninterpretedOption::set_aggregate_value(const ::std::string& value) {
+  set_has_aggregate_value();
+  if (aggregate_value_ == &::google::protobuf::internal::kEmptyString) {
+    aggregate_value_ = new ::std::string;
+  }
+  aggregate_value_->assign(value);
+}
+inline void UninterpretedOption::set_aggregate_value(const char* value) {
+  set_has_aggregate_value();
+  if (aggregate_value_ == &::google::protobuf::internal::kEmptyString) {
+    aggregate_value_ = new ::std::string;
+  }
+  aggregate_value_->assign(value);
+}
+inline void UninterpretedOption::set_aggregate_value(const char* value, size_t size) {
+  set_has_aggregate_value();
+  if (aggregate_value_ == &::google::protobuf::internal::kEmptyString) {
+    aggregate_value_ = new ::std::string;
+  }
+  aggregate_value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* UninterpretedOption::mutable_aggregate_value() {
+  set_has_aggregate_value();
+  if (aggregate_value_ == &::google::protobuf::internal::kEmptyString) {
+    aggregate_value_ = new ::std::string;
+  }
+  return aggregate_value_;
+}
+inline ::std::string* UninterpretedOption::release_aggregate_value() {
+  clear_has_aggregate_value();
+  if (aggregate_value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = aggregate_value_;
+    aggregate_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// -------------------------------------------------------------------
+
+// SourceCodeInfo_Location
+
+// repeated int32 path = 1 [packed = true];
+inline int SourceCodeInfo_Location::path_size() const {
+  return path_.size();
+}
+inline void SourceCodeInfo_Location::clear_path() {
+  path_.Clear();
+}
+inline ::google::protobuf::int32 SourceCodeInfo_Location::path(int index) const {
+  return path_.Get(index);
+}
+inline void SourceCodeInfo_Location::set_path(int index, ::google::protobuf::int32 value) {
+  path_.Set(index, value);
+}
+inline void SourceCodeInfo_Location::add_path(::google::protobuf::int32 value) {
+  path_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+SourceCodeInfo_Location::path() const {
+  return path_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+SourceCodeInfo_Location::mutable_path() {
+  return &path_;
+}
+
+// repeated int32 span = 2 [packed = true];
+inline int SourceCodeInfo_Location::span_size() const {
+  return span_.size();
+}
+inline void SourceCodeInfo_Location::clear_span() {
+  span_.Clear();
+}
+inline ::google::protobuf::int32 SourceCodeInfo_Location::span(int index) const {
+  return span_.Get(index);
+}
+inline void SourceCodeInfo_Location::set_span(int index, ::google::protobuf::int32 value) {
+  span_.Set(index, value);
+}
+inline void SourceCodeInfo_Location::add_span(::google::protobuf::int32 value) {
+  span_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+SourceCodeInfo_Location::span() const {
+  return span_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+SourceCodeInfo_Location::mutable_span() {
+  return &span_;
+}
+
+// -------------------------------------------------------------------
+
+// SourceCodeInfo
+
+// repeated .google.protobuf.SourceCodeInfo.Location location = 1;
+inline int SourceCodeInfo::location_size() const {
+  return location_.size();
+}
+inline void SourceCodeInfo::clear_location() {
+  location_.Clear();
+}
+inline const ::google::protobuf::SourceCodeInfo_Location& SourceCodeInfo::location(int index) const {
+  return location_.Get(index);
+}
+inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::mutable_location(int index) {
+  return location_.Mutable(index);
+}
+inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::add_location() {
+  return location_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >&
+SourceCodeInfo::location() const {
+  return location_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >*
+SourceCodeInfo::mutable_location() {
+  return &location_;
 }
 
 

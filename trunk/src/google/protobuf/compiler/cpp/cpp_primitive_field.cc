@@ -125,7 +125,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  return $name$_;\n"
     "}\n"
     "inline void $classname$::set_$name$($type$ value) {\n"
-    "  _set_bit($index$);\n"
+    "  set_has_$name$();\n"
     "  $name$_ = value;\n"
     "}\n");
 }
@@ -156,7 +156,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         $type$, $wire_format_field_type$>(\n"
     "       input, &$name$_)));\n"
-    "_set_bit($index$);\n");
+    "set_has_$name$();\n");
 }
 
 void PrimitiveFieldGenerator::

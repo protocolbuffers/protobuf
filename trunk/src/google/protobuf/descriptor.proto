@@ -67,6 +67,12 @@ message FileDescriptorProto {
   repeated FieldDescriptorProto extension = 7;
 
   optional FileOptions options = 8;
+
+  // This field contains optional information about the original source code.
+  // You may safely remove this entire field whithout harming runtime
+  // functionality of the descriptors -- the information is needed only by
+  // development tools.
+  optional SourceCodeInfo source_code_info = 9;
 }
 
 // Describes a message type.
@@ -245,6 +251,12 @@ message FileOptions {
   // top-level extensions defined in the file.
   optional bool java_multiple_files = 10 [default=false];
 
+  // If set true, then the Java code generator will generate equals() and
+  // hashCode() methods for all messages defined in the .proto file. This is
+  // purely a speed optimization, as the AbstractMessage base class includes
+  // reflection-based implementations of these methods.
+  optional bool java_generate_equals_and_hash = 20 [default=false];
+
   // Generated classes can be optimized for speed or code size.
   enum OptimizeMode {
     SPEED = 1;        // Generate complete code for parsing, serialization,
@@ -264,13 +276,12 @@ message FileOptions {
   // early versions of proto2.
   //
   // Generic services are now considered deprecated in favor of using plugins
-  // that generate code specific to your particular RPC system.  If you are
-  // using such a plugin, set these to false.  In the future, we may change
-  // the default to false, so if you explicitly want generic services, you
-  // should explicitly set these to true.
-  optional bool cc_generic_services = 16 [default=true];
-  optional bool java_generic_services = 17 [default=true];
-  optional bool py_generic_services = 18 [default=true];
+  // that generate code specific to your particular RPC system.  Therefore,
+  // these default to false.  Old code which depends on generic services should
+  // explicitly set them to true.
+  optional bool cc_generic_services = 16 [default=false];
+  optional bool java_generic_services = 17 [default=false];
+  optional bool py_generic_services = 18 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -430,4 +441,93 @@ message UninterpretedOption {
   optional int64 negative_int_value = 5;
   optional double double_value = 6;
   optional bytes string_value = 7;
+  optional string aggregate_value = 8;
+}
+
+// ===================================================================
+// Optional source code info
+
+// Encapsulates information about the original source file from which a
+// FileDescriptorProto was generated.
+message SourceCodeInfo {
+  // A Location identifies a piece of source code in a .proto file which
+  // corresponds to a particular definition.  This information is intended
+  // to be useful to IDEs, code indexers, documentation generators, and similar
+  // tools.
+  //
+  // For example, say we have a file like:
+  //   message Foo {
+  //     optional string foo = 1;
+  //   }
+  // Let's look at just the field definition:
+  //   optional string foo = 1;
+  //   ^       ^^     ^^  ^  ^^^
+  //   a       bc     de  f  ghi
+  // We have the following locations:
+  //   span   path               represents
+  //   [a,i)  [ 4, 0, 2, 0 ]     The whole field definition.
+  //   [a,b)  [ 4, 0, 2, 0, 4 ]  The label (optional).
+  //   [c,d)  [ 4, 0, 2, 0, 5 ]  The type (string).
+  //   [e,f)  [ 4, 0, 2, 0, 1 ]  The name (foo).
+  //   [g,h)  [ 4, 0, 2, 0, 3 ]  The number (1).
+  //
+  // Notes:
+  // - A location may refer to a repeated field itself (i.e. not to any
+  //   particular index within it).  This is used whenever a set of elements are
+  //   logically enclosed in a single code segment.  For example, an entire
+  //   extend block (possibly containing multiple extension definitions) will
+  //   have an outer location whose path refers to the "extensions" repeated
+  //   field without an index.
+  // - Multiple locations may have the same path.  This happens when a single
+  //   logical declaration is spread out across multiple places.  The most
+  //   obvious example is the "extend" block again -- there may be multiple
+  //   extend blocks in the same scope, each of which will have the same path.
+  // - A location's span is not always a subset of its parent's span.  For
+  //   example, the "extendee" of an extension declaration appears at the
+  //   beginning of the "extend" block and is shared by all extensions within
+  //   the block.
+  // - Just because a location's span is a subset of some other location's span
+  //   does not mean that it is a descendent.  For example, a "group" defines
+  //   both a type and a field in a single declaration.  Thus, the locations
+  //   corresponding to the type and field and their components will overlap.
+  // - Code which tries to interpret locations should probably be designed to
+  //   ignore those that it doesn't understand, as more types of locations could
+  //   be recorded in the future.
+  repeated Location location = 1;
+  message Location {
+    // Identifies which part of the FileDescriptorProto was defined at this
+    // location.
+    //
+    // Each element is a field number or an index.  They form a path from
+    // the root FileDescriptorProto to the place where the definition.  For
+    // example, this path:
+    //   [ 4, 3, 2, 7, 1 ]
+    // refers to:
+    //   file.message_type(3)  // 4, 3
+    //       .field(7)         // 2, 7
+    //       .name()           // 1
+    // This is because FileDescriptorProto.message_type has field number 4:
+    //   repeated DescriptorProto message_type = 4;
+    // and DescriptorProto.field has field number 2:
+    //   repeated FieldDescriptorProto field = 2;
+    // and FieldDescriptorProto.name has field number 1:
+    //   optional string name = 1;
+    //
+    // Thus, the above path gives the location of a field name.  If we removed
+    // the last element:
+    //   [ 4, 3, 2, 7 ]
+    // this path refers to the whole field declaration (from the beginning
+    // of the label to the terminating semicolon).
+    repeated int32 path = 1 [packed=true];
+
+    // Always has exactly three or four elements: start line, start column,
+    // end line (optional, otherwise assumed same as start line), end column.
+    // These are packed into a single field for efficiency.  Note that line
+    // and column numbers are zero-based -- typically you will want to add
+    // 1 to each before displaying to a user.
+    repeated int32 span = 2 [packed=true];
+
+    // TODO(kenton):  Record comments appearing before and after the
+    // declaration.
+  }
 }

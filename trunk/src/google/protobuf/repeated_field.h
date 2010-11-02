@@ -72,7 +72,10 @@ template <typename Element>
 class RepeatedField {
  public:
   RepeatedField();
+  RepeatedField(const RepeatedField& other);
   ~RepeatedField();
+
+  RepeatedField& operator=(const RepeatedField& other);
 
   int size() const;
 
@@ -90,6 +93,7 @@ class RepeatedField {
   void RemoveLast();
   void Clear();
   void MergeFrom(const RepeatedField& other);
+  void CopyFrom(const RepeatedField& other);
 
   // Reserve space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.
@@ -116,6 +120,7 @@ class RepeatedField {
   // STL-like iterator support
   typedef Element* iterator;
   typedef const Element* const_iterator;
+  typedef Element value_type;
 
   iterator begin();
   const_iterator begin() const;
@@ -127,8 +132,6 @@ class RepeatedField {
   int SpaceUsedExcludingSelf() const;
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedField);
-
   static const int kInitialSize = 4;
 
   Element* elements_;
@@ -203,6 +206,8 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Clear();
   template <typename TypeHandler>
   void MergeFrom(const RepeatedPtrFieldBase& other);
+  template <typename TypeHandler>
+  void CopyFrom(const RepeatedPtrFieldBase& other);
 
   void Reserve(int new_size);
 
@@ -300,7 +305,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static void Merge(const string& from, string* to) { *to = from; }
 };
 
-class StringTypeHandler : public StringTypeHandlerBase {
+class LIBPROTOBUF_EXPORT StringTypeHandler : public StringTypeHandlerBase {
  public:
   static int SpaceUsed(const string& value)  {
     return sizeof(value) + StringSpaceUsedExcludingSelf(value);
@@ -316,8 +321,10 @@ template <typename Element>
 class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
  public:
   RepeatedPtrField();
-
+  RepeatedPtrField(const RepeatedPtrField& other);
   ~RepeatedPtrField();
+
+  RepeatedPtrField& operator=(const RepeatedPtrField& other);
 
   int size() const;
 
@@ -327,6 +334,7 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   void RemoveLast();  // Remove the last element in the array.
   void Clear();
   void MergeFrom(const RepeatedPtrField& other);
+  void CopyFrom(const RepeatedPtrField& other);
 
   // Reserve space to expand the field to at least the given size.  This only
   // resizes the pointer array; it doesn't allocate any objects.  If the
@@ -349,6 +357,7 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   // STL-like iterator support
   typedef internal::RepeatedPtrIterator<Element> iterator;
   typedef internal::RepeatedPtrIterator<const Element> const_iterator;
+  typedef Element value_type;
 
   iterator begin();
   const_iterator begin() const;
@@ -364,11 +373,6 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   // Returns (an estimate of) the number of bytes used by the repeated field,
   // excluding sizeof(*this).
   int SpaceUsedExcludingSelf() const;
-
-  // The spaced used just by the pointer array, not counting the objects pointed
-  // at.  Returns zero if the array is inlined (i.e. initial_space_ is being
-  // used).
-  int SpaceUsedByArray() const;
 
   // Advanced memory management --------------------------------------
   // When hardcore memory management becomes necessary -- as it often
@@ -410,9 +414,6 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   //   methods on RepeatedPtrFieldBase.
   class TypeHandler;
 
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrField);
 };
 
 // implementation ====================================================
@@ -425,10 +426,25 @@ inline RepeatedField<Element>::RepeatedField()
 }
 
 template <typename Element>
+inline RepeatedField<Element>::RepeatedField(const RepeatedField& other)
+  : elements_(initial_space_),
+    current_size_(0),
+    total_size_(kInitialSize) {
+  CopyFrom(other);
+}
+
+template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
   if (elements_ != initial_space_) {
     delete [] elements_;
   }
+}
+
+template <typename Element>
+inline RepeatedField<Element>&
+RepeatedField<Element>::operator=(const RepeatedField& other) {
+  CopyFrom(other);
+  return *this;
 }
 
 template <typename Element>
@@ -499,6 +515,12 @@ inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   Reserve(current_size_ + other.current_size_);
   CopyArray(elements_ + current_size_, other.elements_, other.current_size_);
   current_size_ += other.current_size_;
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::CopyFrom(const RepeatedField& other) {
+  Clear();
+  MergeFrom(other);
 }
 
 template <typename Element>
@@ -679,6 +701,12 @@ inline void RepeatedPtrFieldBase::MergeFrom(const RepeatedPtrFieldBase& other) {
   }
 }
 
+template <typename TypeHandler>
+inline void RepeatedPtrFieldBase::CopyFrom(const RepeatedPtrFieldBase& other) {
+  RepeatedPtrFieldBase::Clear<TypeHandler>();
+  RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+}
+
 inline int RepeatedPtrFieldBase::Capacity() const {
   return total_size_;
 }
@@ -805,8 +833,21 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField() {}
 
 template <typename Element>
+inline RepeatedPtrField<Element>::RepeatedPtrField(
+    const RepeatedPtrField& other) {
+  CopyFrom(other);
+}
+
+template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   Destroy<TypeHandler>();
+}
+
+template <typename Element>
+inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
+    const RepeatedPtrField& other) {
+  CopyFrom(other);
+  return *this;
 }
 
 template <typename Element>
@@ -843,6 +884,12 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::MergeFrom(
     const RepeatedPtrField& other) {
   RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::CopyFrom(
+    const RepeatedPtrField& other) {
+  RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other);
 }
 
 template <typename Element>
@@ -944,7 +991,7 @@ class RepeatedPtrIterator
   template<typename OtherElement>
   RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
       : it_(other.it_) {
-    // Force a compiler error if the other type is not convertable to ours.
+    // Force a compiler error if the other type is not convertible to ours.
     if (false) {
       implicit_cast<Element*, OtherElement*>(0);
     }

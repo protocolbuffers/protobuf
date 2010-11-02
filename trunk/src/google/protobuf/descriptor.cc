@@ -42,10 +42,12 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
@@ -2056,6 +2058,8 @@ class DescriptorBuilder {
     // Otherwise returns true.
     bool InterpretOptions(OptionsToInterpret* options_to_interpret);
 
+    class AggregateOptionFinder;
+
    private:
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
@@ -2081,6 +2085,11 @@ class DescriptorBuilder {
     // option and then sets it on the unknown_field.
     bool SetOptionValue(const FieldDescriptor* option_field,
                         UnknownFieldSet* unknown_fields);
+
+    // Parses an aggregate value for a CPPTYPE_MESSAGE option and
+    // saves it into *unknown_fields.
+    bool SetAggregateOption(const FieldDescriptor* option_field,
+                            UnknownFieldSet* unknown_fields);
 
     // Convenience functions to set an int field the right way, depending on
     // its wire type (a single int CppType can represent multiple wire types).
@@ -2128,6 +2137,10 @@ class DescriptorBuilder {
     // can use it to find locations recorded by the parser.
     const UninterpretedOption* uninterpreted_option_;
 
+    // Factory used to create the dynamic messages we need to parse
+    // any aggregate option values we encounter.
+    DynamicMessageFactory dynamic_factory_;
+
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OptionInterpreter);
   };
 
@@ -2139,6 +2152,8 @@ class DescriptorBuilder {
   // redundantly declare OptionInterpreter a friend just to make things extra
   // clear for these bad compilers.
   friend class OptionInterpreter;
+  friend class OptionInterpreter::AggregateOptionFinder;
+
   static inline bool get_allow_unknown(const DescriptorPool* pool) {
     return pool->allow_unknown_;
   }
@@ -3973,9 +3988,6 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
         intermediate_fields.push_back(field);
         descriptor = field->message_type();
       }
-    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      return AddNameError("Option field \"" + debug_msg_name +
-                          "\" cannot be of message type.");
     }
   }
 
@@ -4310,16 +4322,93 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       break;
 
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      // We don't currently support defining a message-typed option, so we
-      // should never actually get here.
-      return AddValueError("Option \"" + option_field->full_name() +
-                           "\" is a message.  To set fields within it, use "
-                           "syntax like \"" + option_field->name() +
-                           ".foo = value\".");
+      if (!SetAggregateOption(option_field, unknown_fields)) {
+        return false;
+      }
       break;
   }
 
   return true;
+}
+
+class DescriptorBuilder::OptionInterpreter::AggregateOptionFinder
+    : public TextFormat::Finder {
+ public:
+  DescriptorBuilder* builder_;
+
+  virtual const FieldDescriptor* FindExtension(
+      Message* message, const string& name) const {
+    if (builder_->pool_->mutex_ != NULL) {
+      builder_->pool_->mutex_->AssertHeld();
+    }
+    Symbol result = builder_->LookupSymbolNoPlaceholder(
+        name, message->GetDescriptor()->full_name());
+    if (result.type == Symbol::FIELD &&
+        result.field_descriptor->is_extension()) {
+      return result.field_descriptor;
+    } else {
+      return NULL;
+    }
+  }
+};
+
+// A custom error collector to record any text-format parsing errors
+namespace {
+class AggregateErrorCollector : public io::ErrorCollector {
+ public:
+  string error_;
+
+  virtual void AddError(int line, int column, const string& message) {
+    if (!error_.empty()) {
+      error_ += "; ";
+    }
+    error_ += message;
+  }
+
+  virtual void AddWarning(int line, int column, const string& message) {
+    // Ignore warnings
+  }
+};
+}
+
+// We construct a dynamic message of the type corresponding to
+// option_field, parse the supplied text-format string into this
+// message, and serialize the resulting message to produce the value.
+bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
+    const FieldDescriptor* option_field,
+    UnknownFieldSet* unknown_fields) {
+  if (!uninterpreted_option_->has_aggregate_value()) {
+    return AddValueError("Option \"" + option_field->full_name() +
+                         "\" is a message. To set the entire message, use "
+                         "syntax like \"" + option_field->name() +
+                         " = { <proto text format> }\". "
+                         "To set fields within it, use "
+                         "syntax like \"" + option_field->name() +
+                         ".foo = value\".");
+  }
+
+  const Descriptor* type = option_field->message_type();
+  scoped_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
+  GOOGLE_CHECK(dynamic.get() != NULL)
+      << "Could not create an instance of " << option_field->DebugString();
+
+  AggregateErrorCollector collector;
+  AggregateOptionFinder finder;
+  finder.builder_ = builder_;
+  TextFormat::Parser parser;
+  parser.RecordErrorsTo(&collector);
+  parser.SetFinder(&finder);
+  if (!parser.ParseFromString(uninterpreted_option_->aggregate_value(),
+                              dynamic.get())) {
+    AddValueError("Error while parsing option value for \"" +
+                  option_field->name() + "\": " + collector.error_);
+    return false;
+  } else {
+    string serial;
+    dynamic->SerializeToString(&serial);  // Never fails
+    unknown_fields->AddLengthDelimited(option_field->number(), serial);
+    return true;
+  }
 }
 
 void DescriptorBuilder::OptionInterpreter::SetInt32(int number, int32 value,

@@ -214,7 +214,9 @@ import static com.google.protobuf.UnittestLite.packedBoolExtensionLite;
 import static com.google.protobuf.UnittestLite.packedEnumExtensionLite;
 
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllExtensionsOrBuilder;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
@@ -225,6 +227,7 @@ import com.google.protobuf.test.UnittestImport.ImportEnum;
 
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
+import com.google.protobuf.UnittestLite.TestAllExtensionsLiteOrBuilder;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.UnittestLite.ForeignMessageLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
@@ -244,9 +247,12 @@ import java.io.RandomAccessFile;
  * set all fields of a message, serialize it, parse it, and check that all
  * fields are set.
  *
+ * <p>This code is not to be used outside of {@code com.google.protobuf} and
+ * subpackages.
+ *
  * @author kenton@google.com Kenton Varda
  */
-class TestUtil {
+public final class TestUtil {
   private TestUtil() {}
 
   /** Helper to convert a String to ByteString. */
@@ -485,7 +491,7 @@ class TestUtil {
    * Assert (using {@code junit.framework.Assert}} that all fields of
    * {@code message} are set to the values assigned by {@code setAllFields}.
    */
-  public static void assertAllFieldsSet(TestAllTypes message) {
+  public static void assertAllFieldsSet(TestAllTypesOrBuilder message) {
     Assert.assertTrue(message.hasOptionalInt32   ());
     Assert.assertTrue(message.hasOptionalInt64   ());
     Assert.assertTrue(message.hasOptionalUint32  ());
@@ -682,13 +688,12 @@ class TestUtil {
   }
 
   // -------------------------------------------------------------------
-
   /**
    * Assert (using {@code junit.framework.Assert}} that all fields of
    * {@code message} are cleared, and that getting the fields returns their
    * default values.
    */
-  public static void assertClear(TestAllTypes message) {
+  public static void assertClear(TestAllTypesOrBuilder message) {
     // hasBlah() should initially be false for all optional fields.
     Assert.assertFalse(message.hasOptionalInt32   ());
     Assert.assertFalse(message.hasOptionalInt64   ());
@@ -838,7 +843,8 @@ class TestUtil {
    * {@code message} are set to the values assigned by {@code setAllFields}
    * followed by {@code modifyRepeatedFields}.
    */
-  public static void assertRepeatedFieldsModified(TestAllTypes message) {
+  public static void assertRepeatedFieldsModified(
+      TestAllTypesOrBuilder message) {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
@@ -1352,7 +1358,8 @@ class TestUtil {
    * Assert (using {@code junit.framework.Assert}} that all extensions of
    * {@code message} are set to the values assigned by {@code setAllExtensions}.
    */
-  public static void assertAllExtensionsSet(TestAllExtensions message) {
+  public static void assertAllExtensionsSet(
+      TestAllExtensionsOrBuilder message) {
     Assert.assertTrue(message.hasExtension(optionalInt32Extension   ));
     Assert.assertTrue(message.hasExtension(optionalInt64Extension   ));
     Assert.assertTrue(message.hasExtension(optionalUint32Extension  ));
@@ -1567,7 +1574,7 @@ class TestUtil {
    * {@code message} are cleared, and that getting the extensions returns their
    * default values.
    */
-  public static void assertExtensionsClear(TestAllExtensions message) {
+  public static void assertExtensionsClear(TestAllExtensionsOrBuilder message) {
     // hasBlah() should initially be false for all optional fields.
     Assert.assertFalse(message.hasExtension(optionalInt32Extension   ));
     Assert.assertFalse(message.hasExtension(optionalInt64Extension   ));
@@ -1752,7 +1759,7 @@ class TestUtil {
    * followed by {@code modifyRepeatedExtensions}.
    */
   public static void assertRepeatedExtensionsModified(
-      TestAllExtensions message) {
+      TestAllExtensionsOrBuilder message) {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
@@ -2106,7 +2113,8 @@ class TestUtil {
    * Assert (using {@code junit.framework.Assert}} that all extensions of
    * {@code message} are set to the values assigned by {@code setAllExtensions}.
    */
-  public static void assertAllExtensionsSet(TestAllExtensionsLite message) {
+  public static void assertAllExtensionsSet(
+      TestAllExtensionsLiteOrBuilder message) {
     Assert.assertTrue(message.hasExtension(optionalInt32ExtensionLite   ));
     Assert.assertTrue(message.hasExtension(optionalInt64ExtensionLite   ));
     Assert.assertTrue(message.hasExtension(optionalUint32ExtensionLite  ));
@@ -2321,7 +2329,8 @@ class TestUtil {
    * {@code message} are cleared, and that getting the extensions returns their
    * default values.
    */
-  public static void assertExtensionsClear(TestAllExtensionsLite message) {
+  public static void assertExtensionsClear(
+      TestAllExtensionsLiteOrBuilder message) {
     // hasBlah() should initially be false for all optional fields.
     Assert.assertFalse(message.hasExtension(optionalInt32ExtensionLite   ));
     Assert.assertFalse(message.hasExtension(optionalInt64ExtensionLite   ));
@@ -2478,7 +2487,7 @@ class TestUtil {
    * followed by {@code modifyRepeatedExtensions}.
    */
   public static void assertRepeatedExtensionsModified(
-      TestAllExtensionsLite message) {
+      TestAllExtensionsLiteOrBuilder message) {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
@@ -3015,7 +3024,7 @@ class TestUtil {
      * {@code message} are set to the values assigned by {@code setAllFields},
      * using the {@link Message} reflection interface.
      */
-    public void assertAllFieldsSetViaReflection(Message message) {
+    public void assertAllFieldsSetViaReflection(MessageOrBuilder message) {
       Assert.assertTrue(message.hasField(f("optional_int32"   )));
       Assert.assertTrue(message.hasField(f("optional_int64"   )));
       Assert.assertTrue(message.hasField(f("optional_uint32"  )));
@@ -3248,7 +3257,7 @@ class TestUtil {
      * {@code message} are cleared, and that getting the fields returns their
      * default values, using the {@link Message} reflection interface.
      */
-    public void assertClearViaReflection(Message message) {
+    public void assertClearViaReflection(MessageOrBuilder message) {
       // has_blah() should initially be false for all optional fields.
       Assert.assertFalse(message.hasField(f("optional_int32"   )));
       Assert.assertFalse(message.hasField(f("optional_int64"   )));
@@ -3405,9 +3414,11 @@ class TestUtil {
       Assert.assertEquals("123", message.getField(f("default_cord")));
     }
 
+
     // ---------------------------------------------------------------
 
-    public void assertRepeatedFieldsModifiedViaReflection(Message message) {
+    public void assertRepeatedFieldsModifiedViaReflection(
+        MessageOrBuilder message) {
       // ModifyRepeatedFields only sets the second repeated element of each
       // field.  In addition to verifying this, we also verify that the first
       // element and size were *not* modified.
@@ -3543,7 +3554,7 @@ class TestUtil {
       message.addRepeatedField(f("packed_enum" ),  foreignBaz);
     }
 
-    public void assertPackedFieldsSetViaReflection(Message message) {
+    public void assertPackedFieldsSetViaReflection(MessageOrBuilder message) {
       Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_int32"   )));
       Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_int64"   )));
       Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_uint32"  )));
@@ -3699,7 +3710,7 @@ class TestUtil {
 
   /**
    * @param filePath The path relative to
-   * {@link com.google.testing.util.TestUtil#getDefaultSrcDir}.
+   * {@link #getTestDataDir}.
    */
   public static String readTextFromFile(String filePath) {
     return readBytesFromFile(filePath).toStringUtf8();
@@ -3728,8 +3739,8 @@ class TestUtil {
   }
 
   /**
-   * @param filePath The path relative to
-   * {@link com.google.testing.util.TestUtil#getDefaultSrcDir}.
+   * @param filename The path relative to
+   * {@link #getTestDataDir}.
    */
   public static ByteString readBytesFromFile(String filename) {
     File fullPath = new File(getTestDataDir(), filename);
@@ -3749,7 +3760,7 @@ class TestUtil {
   /**
    * Get the bytes of the "golden message".  This is a serialized TestAllTypes
    * with all fields set as they would be by
-   * {@link setAllFields(TestAllTypes.Builder)}, but it is loaded from a file
+   * {@link #setAllFields(TestAllTypes.Builder)}, but it is loaded from a file
    * on disk rather than generated dynamically.  The file is actually generated
    * by C++ code, so testing against it verifies compatibility with C++.
    */
@@ -3764,7 +3775,7 @@ class TestUtil {
   /**
    * Get the bytes of the "golden packed fields message".  This is a serialized
    * TestPackedTypes with all fields set as they would be by
-   * {@link setPackedFields(TestPackedTypes.Builder)}, but it is loaded from a
+   * {@link #setPackedFields(TestPackedTypes.Builder)}, but it is loaded from a
    * file on disk rather than generated dynamically.  The file is actually
    * generated by C++ code, so testing against it verifies compatibility with
    * C++.
@@ -3777,4 +3788,24 @@ class TestUtil {
     return goldenPackedFieldsMessage;
   }
   private static ByteString goldenPackedFieldsMessage = null;
+
+  /**
+   * Mock implementation of {@link GeneratedMessage.BuilderParent} for testing.
+   *
+   * @author jonp@google.com (Jon Perlow)
+   */
+  public static class MockBuilderParent
+      implements GeneratedMessage.BuilderParent {
+
+    private int invalidations;
+
+    @Override
+    public void markDirty() {
+      invalidations++;
+    }
+
+    public int getInvalidationCount() {
+      return invalidations;
+    }
+  }
 }

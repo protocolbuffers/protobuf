@@ -86,105 +86,120 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor)
 
 ExtensionGenerator::~ExtensionGenerator() {}
 
-void ExtensionGenerator::Generate(io::Printer* printer) {
-  map<string, string> vars;
-  vars["name"] = UnderscoresToCamelCase(descriptor_);
-  vars["containing_type"] = ClassName(descriptor_->containing_type());
-  vars["number"] = SimpleItoa(descriptor_->number());
-  vars["constant_name"] = FieldConstantName(descriptor_);
-  vars["lite"] = HasDescriptorMethods(descriptor_->file()) ? "" : "Lite";
-
-  JavaType java_type = GetJavaType(descriptor_);
-  string singular_type;
-  switch (java_type) {
-    case JAVATYPE_MESSAGE:
-      vars["type"] = ClassName(descriptor_->message_type());
-      break;
-    case JAVATYPE_ENUM:
-      vars["type"] = ClassName(descriptor_->enum_type());
-      break;
-    default:
-      vars["type"] = BoxedPrimitiveTypeName(java_type);
-      break;
-  }
-
-  printer->Print(vars,
-    "public static final int $constant_name$ = $number$;\n");
-  if (descriptor_->is_repeated()) {
-    printer->Print(vars,
-      "public static final\n"
-      "  com.google.protobuf.GeneratedMessage$lite$.GeneratedExtension<\n"
-      "    $containing_type$,\n"
-      "    java.util.List<$type$>> $name$ =\n"
-      "      com.google.protobuf.GeneratedMessage$lite$\n"
-      "        .newGeneratedExtension();\n");
-  } else {
-    printer->Print(vars,
-      "public static final\n"
-      "  com.google.protobuf.GeneratedMessage$lite$.GeneratedExtension<\n"
-      "    $containing_type$,\n"
-      "    $type$> $name$ =\n"
-      "      com.google.protobuf.GeneratedMessage$lite$\n"
-      "        .newGeneratedExtension();\n");
-  }
-}
-
-void ExtensionGenerator::GenerateInitializationCode(io::Printer* printer) {
-  map<string, string> vars;
-  vars["name"] = UnderscoresToCamelCase(descriptor_);
-  vars["scope"] = scope_;
-  vars["index"] = SimpleItoa(descriptor_->index());
-  vars["extendee"] = ClassName(descriptor_->containing_type());
-  vars["default"] = descriptor_->is_repeated() ? "" : DefaultValue(descriptor_);
-  vars["number"] = SimpleItoa(descriptor_->number());
-  vars["type_constant"] = TypeName(GetType(descriptor_));
-  vars["packed"] = descriptor_->options().packed() ? "true" : "false";
+// Initializes the vars referenced in the generated code templates.
+void InitTemplateVars(const FieldDescriptor* descriptor,
+                      const string& scope,
+                      map<string, string>* vars_pointer) {
+  map<string, string> &vars = *vars_pointer;
+  vars["scope"] = scope;
+  vars["name"] = UnderscoresToCamelCase(descriptor);
+  vars["containing_type"] = ClassName(descriptor->containing_type());
+  vars["number"] = SimpleItoa(descriptor->number());
+  vars["constant_name"] = FieldConstantName(descriptor);
+  vars["index"] = SimpleItoa(descriptor->index());
+  vars["default"] =
+      descriptor->is_repeated() ? "" : DefaultValue(descriptor);
+  vars["type_constant"] = TypeName(GetType(descriptor));
+  vars["packed"] = descriptor->options().packed() ? "true" : "false";
   vars["enum_map"] = "null";
   vars["prototype"] = "null";
 
-  JavaType java_type = GetJavaType(descriptor_);
+  JavaType java_type = GetJavaType(descriptor);
   string singular_type;
   switch (java_type) {
     case JAVATYPE_MESSAGE:
-      vars["type"] = ClassName(descriptor_->message_type());
-      vars["prototype"] = ClassName(descriptor_->message_type()) +
-                          ".getDefaultInstance()";
+      singular_type = ClassName(descriptor->message_type());
+      vars["prototype"] = singular_type + ".getDefaultInstance()";
       break;
     case JAVATYPE_ENUM:
-      vars["type"] = ClassName(descriptor_->enum_type());
-      vars["enum_map"] = ClassName(descriptor_->enum_type()) +
-                         ".internalGetValueMap()";
+      singular_type = ClassName(descriptor->enum_type());
+      vars["enum_map"] = singular_type + ".internalGetValueMap()";
       break;
     default:
-      vars["type"] = BoxedPrimitiveTypeName(java_type);
+      singular_type = BoxedPrimitiveTypeName(java_type);
       break;
   }
+  vars["type"] = descriptor->is_repeated() ?
+      "java.util.List<" + singular_type + ">" : singular_type;
+  vars["singular_type"] = singular_type;
+}
+
+void ExtensionGenerator::Generate(io::Printer* printer) {
+  map<string, string> vars;
+  InitTemplateVars(descriptor_, scope_, &vars);
+  printer->Print(vars,
+      "public static final int $constant_name$ = $number$;\n");
 
   if (HasDescriptorMethods(descriptor_->file())) {
-    printer->Print(vars,
-      "$scope$.$name$.internalInit(\n"
-      "    $scope$.getDescriptor().getExtensions().get($index$),\n"
-      "    $type$.class);\n");
-  } else {
-    if (descriptor_->is_repeated()) {
-      printer->Print(vars,
-        "$scope$.$name$.internalInitRepeated(\n"
-        "    $extendee$.getDefaultInstance(),\n"
-        "    $prototype$,\n"
-        "    $enum_map$,\n"
-        "    $number$,\n"
-        "    com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
-        "    $packed$);\n");
+    // Non-lite extensions
+    if (descriptor_->extension_scope() == NULL) {
+      // Non-nested
+      printer->Print(
+          vars,
+          "public static final\n"
+          "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "    $containing_type$,\n"
+          "    $type$> $name$ = com.google.protobuf.GeneratedMessage\n"
+          "        .newFileScopedGeneratedExtension(\n"
+          "      $singular_type$.class,\n"
+          "      $prototype$);\n");
     } else {
-      printer->Print(vars,
-        "$scope$.$name$.internalInitSingular(\n"
-        "    $extendee$.getDefaultInstance(),\n"
-        "    $default$,\n"
-        "    $prototype$,\n"
-        "    $enum_map$,\n"
-        "    $number$,\n"
-        "    com.google.protobuf.WireFormat.FieldType.$type_constant$);\n");
+      // Nested
+      printer->Print(
+          vars,
+          "public static final\n"
+          "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "    $containing_type$,\n"
+          "    $type$> $name$ = com.google.protobuf.GeneratedMessage\n"
+          "        .newMessageScopedGeneratedExtension(\n"
+          "      $scope$.getDefaultInstance(),\n"
+          "      $index$,\n"
+          "      $singular_type$.class,\n"
+          "      $prototype$);\n");
     }
+  } else {
+    // Lite extensions
+    if (descriptor_->is_repeated()) {
+      printer->Print(
+          vars,
+          "public static final\n"
+          "  com.google.protobuf.GeneratedMessageLite.GeneratedExtension<\n"
+          "    $containing_type$,\n"
+          "    $type$> $name$ = com.google.protobuf.GeneratedMessageLite\n"
+          "        .newRepeatedGeneratedExtension(\n"
+          "      $containing_type$.getDefaultInstance(),\n"
+          "      $prototype$,\n"
+          "      $enum_map$,\n"
+          "      $number$,\n"
+          "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
+          "      $packed$);\n");
+    } else {
+      printer->Print(
+          vars,
+          "public static final\n"
+          "  com.google.protobuf.GeneratedMessageLite.GeneratedExtension<\n"
+          "    $containing_type$,\n"
+          "    $type$> $name$ = com.google.protobuf.GeneratedMessageLite\n"
+          "        .newSingularGeneratedExtension(\n"
+          "      $containing_type$.getDefaultInstance(),\n"
+          "      $default$,\n"
+          "      $prototype$,\n"
+          "      $enum_map$,\n"
+          "      $number$,\n"
+          "      com.google.protobuf.WireFormat.FieldType.$type_constant$);\n");
+    }
+  }
+}
+
+void ExtensionGenerator::GenerateNonNestedInitializationCode(
+    io::Printer* printer) {
+  if (descriptor_->extension_scope() == NULL &&
+      HasDescriptorMethods(descriptor_->file())) {
+    // Only applies to non-nested, non-lite extensions.
+    printer->Print(
+        "$name$.internalInit(descriptor.getExtensions().get($index$));\n",
+        "name", UnderscoresToCamelCase(descriptor_),
+        "index", SimpleItoa(descriptor_->index()));
   }
 }
 

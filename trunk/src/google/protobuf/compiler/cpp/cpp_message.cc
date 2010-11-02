@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <google/protobuf/stubs/hash.h>
 #include <map>
+#include <utility>
 #include <vector>
 #include <google/protobuf/compiler/cpp/cpp_message.h>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
@@ -141,6 +142,137 @@ static bool HasRequiredFields(
 static bool HasRequiredFields(const Descriptor* type) {
   hash_set<const Descriptor*> already_seen;
   return HasRequiredFields(type, &already_seen);
+}
+
+// This returns an estimate of the compiler's alignment for the field.  This
+// can't guarantee to be correct because the generated code could be compiled on
+// different systems with different alignment rules.  The estimates below assume
+// 64-bit pointers.
+int EstimateAlignmentSize(const FieldDescriptor* field) {
+  if (field == NULL) return 0;
+  if (field->is_repeated()) return 8;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_STRING:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+  }
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
+// FieldGroup is just a helper for OptimizePadding below.  It holds a vector of
+// fields that are grouped together because they have compatible alignment, and
+// a preferred location in the final field ordering.
+class FieldGroup {
+ public:
+  FieldGroup()
+      : preferred_location_(0) {}
+
+  // A group with a single field.
+  FieldGroup(float preferred_location, const FieldDescriptor* field)
+      : preferred_location_(preferred_location),
+        fields_(1, field) {}
+
+  // Append the fields in 'other' to this group.
+  void Append(const FieldGroup& other) {
+    if (other.fields_.empty()) {
+      return;
+    }
+    // Preferred location is the average among all the fields, so we weight by
+    // the number of fields on each FieldGroup object.
+    preferred_location_ =
+        (preferred_location_ * fields_.size() +
+         (other.preferred_location_ * other.fields_.size())) /
+        (fields_.size() + other.fields_.size());
+    fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
+  }
+
+  void SetPreferredLocation(float location) { preferred_location_ = location; }
+  const vector<const FieldDescriptor*>& fields() const { return fields_; }
+
+  // FieldGroup objects sort by their preferred location.
+  bool operator<(const FieldGroup& other) const {
+    return preferred_location_ < other.preferred_location_;
+  }
+
+ private:
+  // "preferred_location_" is an estimate of where this group should go in the
+  // final list of fields.  We compute this by taking the average index of each
+  // field in this group in the original ordering of fields.  This is very
+  // approximate, but should put this group close to where its member fields
+  // originally went.
+  float preferred_location_;
+  vector<const FieldDescriptor*> fields_;
+  // We rely on the default copy constructor and operator= so this type can be
+  // used in a vector.
+};
+
+// Reorder 'fields' so that if the fields are output into a c++ class in the new
+// order, the alignment padding is minimized.  We try to do this while keeping
+// each field as close as possible to its original position so that we don't
+// reduce cache locality much for function that access each field in order.
+void OptimizePadding(vector<const FieldDescriptor*>* fields) {
+  // First divide fields into those that align to 1 byte, 4 bytes or 8 bytes.
+  vector<FieldGroup> aligned_to_1, aligned_to_4, aligned_to_8;
+  for (int i = 0; i < fields->size(); ++i) {
+    switch (EstimateAlignmentSize((*fields)[i])) {
+      case 1: aligned_to_1.push_back(FieldGroup(i, (*fields)[i])); break;
+      case 4: aligned_to_4.push_back(FieldGroup(i, (*fields)[i])); break;
+      case 8: aligned_to_8.push_back(FieldGroup(i, (*fields)[i])); break;
+      default:
+        GOOGLE_LOG(FATAL) << "Unknown alignment size.";
+    }
+  }
+
+  // Now group fields aligned to 1 byte into sets of 4, and treat those like a
+  // single field aligned to 4 bytes.
+  for (int i = 0; i < aligned_to_1.size(); i += 4) {
+    FieldGroup field_group;
+    for (int j = i; j < aligned_to_1.size() && j < i + 4; ++j) {
+      field_group.Append(aligned_to_1[j]);
+    }
+    aligned_to_4.push_back(field_group);
+  }
+  // Sort by preferred location to keep fields as close to their original
+  // location as possible.
+  sort(aligned_to_4.begin(), aligned_to_4.end());
+
+  // Now group fields aligned to 4 bytes (or the 4-field groups created above)
+  // into pairs, and treat those like a single field aligned to 8 bytes.
+  for (int i = 0; i < aligned_to_4.size(); i += 2) {
+    FieldGroup field_group;
+    for (int j = i; j < aligned_to_4.size() && j < i + 2; ++j) {
+      field_group.Append(aligned_to_4[j]);
+    }
+    if (i == aligned_to_4.size() - 1) {
+      // Move incomplete 4-byte block to the end.
+      field_group.SetPreferredLocation(fields->size() + 1);
+    }
+    aligned_to_8.push_back(field_group);
+  }
+  // Sort by preferred location to keep fields as close to their original
+  // location as possible.
+  sort(aligned_to_8.begin(), aligned_to_8.end());
+
+  // Now pull out all the FieldDescriptors in order.
+  fields->clear();
+  for (int i = 0; i < aligned_to_8.size(); ++i) {
+    fields->insert(fields->end(),
+                   aligned_to_8[i].fields().begin(),
+                   aligned_to_8[i].fields().end());
+  }
 }
 
 }
@@ -264,10 +396,20 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
         "}\n");
     } else {
       // Singular field.
+      char buffer[kFastToBufferSize];
+      vars["has_array_index"] = SimpleItoa(field->index() / 32);
+      vars["has_mask"] = FastHex32ToBuffer(1u << (field->index() % 32), buffer);
       printer->Print(vars,
         "inline bool $classname$::has_$name$() const {\n"
-        "  return _has_bit($index$);\n"
-        "}\n");
+        "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
+        "}\n"
+        "inline void $classname$::set_has_$name$() {\n"
+        "  _has_bits_[$has_array_index$] |= 0x$has_mask$u;\n"
+        "}\n"
+        "inline void $classname$::clear_has_$name$() {\n"
+        "  _has_bits_[$has_array_index$] &= ~0x$has_mask$u;\n"
+        "}\n"
+        );
     }
 
     // Generate clear_$name$()
@@ -279,7 +421,8 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     printer->Outdent();
 
     if (!field->is_repeated()) {
-      printer->Print(vars, "  _clear_bit($index$);\n");
+      printer->Print(vars,
+                     "  clear_has_$name$();\n");
     }
 
     printer->Print("}\n");
@@ -444,28 +587,74 @@ GenerateClassDefinition(io::Printer* printer) {
     "// @@protoc_insertion_point(class_scope:$full_name$)\n",
     "full_name", descriptor_->full_name());
 
-  // Generate private members for fields.
+  // Generate private members.
   printer->Outdent();
   printer->Print(" private:\n");
   printer->Indent();
 
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (!descriptor_->field(i)->is_repeated()) {
+      printer->Print(
+        "inline void set_has_$name$();\n",
+        "name", FieldName(descriptor_->field(i)));
+      printer->Print(
+        "inline void clear_has_$name$();\n",
+        "name", FieldName(descriptor_->field(i)));
+    }
+  }
+  printer->Print("\n");
+
+  // To minimize padding, data members are divided into three sections:
+  // (1) members assumed to align to 8 bytes
+  // (2) members corresponding to message fields, re-ordered to optimize
+  //     alignment.
+  // (3) members assumed to align to 4 bytes.
+
+  // Members assumed to align to 8 bytes:
+
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "::google::protobuf::internal::ExtensionSet _extensions_;\n");
+      "::google::protobuf::internal::ExtensionSet _extensions_;\n"
+      "\n");
   }
 
   if (HasUnknownFields(descriptor_->file())) {
     printer->Print(
-      "::google::protobuf::UnknownFieldSet _unknown_fields_;\n");
+      "::google::protobuf::UnknownFieldSet _unknown_fields_;\n"
+      "\n");
   }
+
+  // Field members:
+
+  vector<const FieldDescriptor*> fields;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    fields.push_back(descriptor_->field(i));
+  }
+  OptimizePadding(&fields);
+  for (int i = 0; i < fields.size(); ++i) {
+    field_generators_.get(fields[i]).GeneratePrivateMembers(printer);
+  }
+
+  // Members assumed to align to 4 bytes:
 
   // TODO(kenton):  Make _cached_size_ an atomic<int> when C++ supports it.
   printer->Print(
-    "mutable int _cached_size_;\n"
-    "\n");
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(descriptor_->field(i))
-                     .GeneratePrivateMembers(printer);
+      "\n"
+      "mutable int _cached_size_;\n");
+
+  // Generate _has_bits_.
+  if (descriptor_->field_count() > 0) {
+    printer->Print(vars,
+      "::google::protobuf::uint32 _has_bits_[($field_count$ + 31) / 32];\n"
+      "\n");
+  } else {
+    // Zero-size arrays aren't technically allowed, and MSVC in particular
+    // doesn't like them.  We still need to declare these arrays to make
+    // other code compile.  Since this is an uncommon case, we'll just declare
+    // them with size 1 and waste some space.  Oh well.
+    printer->Print(
+      "::google::protobuf::uint32 _has_bits_[1];\n"
+      "\n");
   }
 
   // Declare AddDescriptors(), BuildDescriptors(), and ShutdownFile() as
@@ -484,32 +673,7 @@ GenerateClassDefinition(io::Printer* printer) {
       GlobalAssignDescriptorsName(descriptor_->file()->name()),
     "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
 
-  // Generate offsets and _has_bits_ boilerplate.
-  if (descriptor_->field_count() > 0) {
-    printer->Print(vars,
-      "::google::protobuf::uint32 _has_bits_[($field_count$ + 31) / 32];\n");
-  } else {
-    // Zero-size arrays aren't technically allowed, and MSVC in particular
-    // doesn't like them.  We still need to declare these arrays to make
-    // other code compile.  Since this is an uncommon case, we'll just declare
-    // them with size 1 and waste some space.  Oh well.
-    printer->Print(
-      "::google::protobuf::uint32 _has_bits_[1];\n");
-  }
-
   printer->Print(
-    "\n"
-    "// WHY DOES & HAVE LOWER PRECEDENCE THAN != !?\n"
-    "inline bool _has_bit(int index) const {\n"
-    "  return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;\n"
-    "}\n"
-    "inline void _set_bit(int index) {\n"
-    "  _has_bits_[index / 32] |= (1u << (index % 32));\n"
-    "}\n"
-    "inline void _clear_bit(int index) {\n"
-    "  _has_bits_[index / 32] &= ~(1u << (index % 32));\n"
-    "}\n"
-    "\n"
     "void InitAsDefaultInstance();\n"
     "static $classname$* default_instance_;\n",
     "classname", classname_);
@@ -961,9 +1125,6 @@ GenerateClear(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (!field->is_repeated()) {
-      map<string, string> vars;
-      vars["index"] = SimpleItoa(field->index());
-
       // We can use the fact that _has_bits_ is a giant bitfield to our
       // advantage:  We can check up to 32 bits at a time for equality to
       // zero, and skip the whole range if so.  This can improve the speed
@@ -975,8 +1136,9 @@ GenerateClear(io::Printer* printer) {
           printer->Outdent();
           printer->Print("}\n");
         }
-        printer->Print(vars,
-          "if (_has_bits_[$index$ / 32] & (0xffu << ($index$ % 32))) {\n");
+        printer->Print(
+          "if (_has_bits_[$index$ / 32] & (0xffu << ($index$ % 32))) {\n",
+          "index", SimpleItoa(field->index()));
         printer->Indent();
       }
       last_index = i;
@@ -989,7 +1151,9 @@ GenerateClear(io::Printer* printer) {
         field->cpp_type() == FieldDescriptor::CPPTYPE_STRING;
 
       if (should_check_bit) {
-        printer->Print(vars, "if (_has_bit($index$)) {\n");
+        printer->Print(
+          "if (has_$name$()) {\n",
+          "name", FieldName(field));
         printer->Indent();
       }
 
@@ -1129,24 +1293,23 @@ GenerateMergeFrom(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (!field->is_repeated()) {
-      map<string, string> vars;
-      vars["index"] = SimpleItoa(field->index());
-
       // See above in GenerateClear for an explanation of this.
       if (i / 8 != last_index / 8 || last_index < 0) {
         if (last_index >= 0) {
           printer->Outdent();
           printer->Print("}\n");
         }
-        printer->Print(vars,
-          "if (from._has_bits_[$index$ / 32] & (0xffu << ($index$ % 32))) {\n");
+        printer->Print(
+          "if (from._has_bits_[$index$ / 32] & (0xffu << ($index$ % 32))) {\n",
+          "index", SimpleItoa(field->index()));
         printer->Indent();
       }
 
       last_index = i;
 
-      printer->Print(vars,
-        "if (from._has_bit($index$)) {\n");
+      printer->Print(
+        "if (from.has_$name$()) {\n",
+        "name", FieldName(field));
       printer->Indent();
 
       field_generators_.get(field).GenerateMergingCode(printer);
@@ -1423,8 +1586,8 @@ void MessageGenerator::GenerateSerializeOneField(
 
   if (!field->is_repeated()) {
     printer->Print(
-      "if (_has_bit($index$)) {\n",
-      "index", SimpleItoa(field->index()));
+      "if (has_$name$()) {\n",
+      "name", FieldName(field));
     printer->Indent();
   }
 

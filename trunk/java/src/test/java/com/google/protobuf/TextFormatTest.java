@@ -31,14 +31,14 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import protobuf_unittest.UnittestProto.OneString;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestEmptyMessage;
-import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestMset.TestMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
+import protobuf_unittest.UnittestProto.OneString;
+import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
+import protobuf_unittest.UnittestProto.TestEmptyMessage;
 
 import junit.framework.TestCase;
 
@@ -133,40 +133,44 @@ public class TextFormatTest extends TestCase {
     assertEquals(allExtensionsSetText, javaText);
   }
 
+  // Creates an example unknown field set.
+  private UnknownFieldSet makeUnknownFieldSet() {
+    return UnknownFieldSet.newBuilder()
+        .addField(5,
+            UnknownFieldSet.Field.newBuilder()
+            .addVarint(1)
+            .addFixed32(2)
+            .addFixed64(3)
+            .addLengthDelimited(ByteString.copyFromUtf8("4"))
+            .addGroup(
+                UnknownFieldSet.newBuilder()
+                .addField(10,
+                    UnknownFieldSet.Field.newBuilder()
+                    .addVarint(5)
+                    .build())
+                .build())
+            .build())
+        .addField(8,
+            UnknownFieldSet.Field.newBuilder()
+            .addVarint(1)
+            .addVarint(2)
+            .addVarint(3)
+            .build())
+        .addField(15,
+            UnknownFieldSet.Field.newBuilder()
+            .addVarint(0xABCDEF1234567890L)
+            .addFixed32(0xABCD1234)
+            .addFixed64(0xABCDEF1234567890L)
+            .build())
+        .build();
+  }
+
   public void testPrintUnknownFields() throws Exception {
     // Test printing of unknown fields in a message.
 
     TestEmptyMessage message =
       TestEmptyMessage.newBuilder()
-        .setUnknownFields(
-          UnknownFieldSet.newBuilder()
-            .addField(5,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(1)
-                .addFixed32(2)
-                .addFixed64(3)
-                .addLengthDelimited(ByteString.copyFromUtf8("4"))
-                .addGroup(
-                  UnknownFieldSet.newBuilder()
-                    .addField(10,
-                      UnknownFieldSet.Field.newBuilder()
-                        .addVarint(5)
-                        .build())
-                    .build())
-                .build())
-            .addField(8,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(1)
-                .addVarint(2)
-                .addVarint(3)
-                .build())
-            .addField(15,
-              UnknownFieldSet.Field.newBuilder()
-                .addVarint(0xABCDEF1234567890L)
-                .addFixed32(0xABCD1234)
-                .addFixed64(0xABCDEF1234567890L)
-                .build())
-            .build())
+        .setUnknownFields(makeUnknownFieldSet())
         .build();
 
     assertEquals(
@@ -409,6 +413,9 @@ public class TextFormatTest extends TestCase {
       "1:16: Expected \"true\" or \"false\".",
       "optional_bool: maybe");
     assertParseError(
+      "1:16: Expected \"true\" or \"false\".",
+      "optional_bool: 2");
+    assertParseError(
       "1:18: Expected string.",
       "optional_string: 123");
     assertParseError(
@@ -484,6 +491,11 @@ public class TextFormatTest extends TestCase {
     assertEquals("\u1234", TextFormat.unescapeText("\\xe1\\x88\\xb4"));
     assertEquals(bytes(0xe1, 0x88, 0xb4),
                  TextFormat.unescapeBytes("\\xe1\\x88\\xb4"));
+
+    // Handling of strings with unescaped Unicode characters > 255.
+    final String zh = "\u9999\u6e2f\u4e0a\u6d77\ud84f\udf80\u8c50\u9280\u884c";
+    ByteString zhByteString = ByteString.copyFromUtf8(zh);
+    assertEquals(zhByteString, TextFormat.unescapeBytes(zh));
 
     // Errors.
     try {
@@ -626,6 +638,13 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  public void testParseString() throws Exception {
+    final String zh = "\u9999\u6e2f\u4e0a\u6d77\ud84f\udf80\u8c50\u9280\u884c";
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TextFormat.merge("optional_string: \"" + zh + "\"", builder);
+    assertEquals(zh, builder.getOptionalString());
+  }
+
   public void testParseLongString() throws Exception {
     String longText =
       "123456789012345678901234567890123456789012345678901234567890" +
@@ -654,9 +673,80 @@ public class TextFormatTest extends TestCase {
     assertEquals(longText, builder.getOptionalString());
   }
 
+  public void testParseBoolean() throws Exception {
+    String goodText =
+        "repeated_bool: t  repeated_bool : 0\n" +
+        "repeated_bool :f repeated_bool:1";
+    String goodTextCanonical =
+        "repeated_bool: true\n" +
+        "repeated_bool: false\n" +
+        "repeated_bool: false\n" +
+        "repeated_bool: true\n";
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TextFormat.merge(goodText, builder);
+    assertEquals(goodTextCanonical, builder.build().toString());
+
+    try {
+      TestAllTypes.Builder badBuilder = TestAllTypes.newBuilder();
+      TextFormat.merge("optional_bool:2", badBuilder);
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.ParseException e) {
+      // success
+    }
+    try {
+      TestAllTypes.Builder badBuilder = TestAllTypes.newBuilder();
+      TextFormat.merge("optional_bool: foo", badBuilder);
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.ParseException e) {
+      // success
+    }
+  }
+
   public void testParseAdjacentStringLiterals() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("optional_string: \"foo\" 'corge' \"grault\"", builder);
     assertEquals("foocorgegrault", builder.getOptionalString());
+  }
+
+  public void testPrintFieldValue() throws Exception {
+    assertPrintFieldValue("\"Hello\"", "Hello", "repeated_string");
+    assertPrintFieldValue("123.0",  123f, "repeated_float");
+    assertPrintFieldValue("123.0",  123d, "repeated_double");
+    assertPrintFieldValue("123",  123, "repeated_int32");
+    assertPrintFieldValue("123",  123L, "repeated_int64");
+    assertPrintFieldValue("true",  true, "repeated_bool");
+    assertPrintFieldValue("4294967295", 0xFFFFFFFF, "repeated_uint32");
+    assertPrintFieldValue("18446744073709551615",  0xFFFFFFFFFFFFFFFFL,
+        "repeated_uint64");
+    assertPrintFieldValue("\"\\001\\002\\003\"",
+        ByteString.copyFrom(new byte[] {1, 2, 3}), "repeated_bytes");
+  }
+
+  private void assertPrintFieldValue(String expect, Object value,
+      String fieldName) throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    StringBuilder sb = new StringBuilder();
+    TextFormat.printFieldValue(
+        TestAllTypes.getDescriptor().findFieldByName(fieldName),
+        value, sb);
+    assertEquals(expect, sb.toString());
+  }
+
+  public void testShortDebugString() {
+    assertEquals("optional_nested_message { bb: 42 } repeated_int32: 1"
+        + " repeated_uint32: 2",
+        TextFormat.shortDebugString(TestAllTypes.newBuilder()
+            .addRepeatedInt32(1)
+            .addRepeatedUint32(2)
+            .setOptionalNestedMessage(
+                NestedMessage.newBuilder().setBb(42).build())
+            .build()));
+  }
+
+  public void testShortDebugString_unknown() {
+    assertEquals("5: 1 5: 0x00000002 5: 0x0000000000000003 5: \"4\" 5 { 10: 5 }"
+        + " 8: 1 8: 2 8: 3 15: 12379813812177893520 15: 0xabcd1234 15:"
+        + " 0xabcdef1234567890",
+        TextFormat.shortDebugString(makeUnknownFieldSet()));
   }
 }

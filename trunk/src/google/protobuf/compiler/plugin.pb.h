@@ -120,6 +120,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   inline void set_parameter(const char* value);
   inline void set_parameter(const char* value, size_t size);
   inline ::std::string* mutable_parameter();
+  inline ::std::string* release_parameter();
   
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   inline int proto_file_size() const;
@@ -135,29 +136,21 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
+  inline void set_has_parameter();
+  inline void clear_has_parameter();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::google::protobuf::RepeatedPtrField< ::std::string> file_to_generate_;
   ::std::string* parameter_;
-  static const ::std::string _default_parameter_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static CodeGeneratorRequest* default_instance_;
@@ -227,6 +220,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline void set_name(const char* value);
   inline void set_name(const char* value, size_t size);
   inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
   
   // optional string insertion_point = 2;
   inline bool has_insertion_point() const;
@@ -237,6 +231,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline void set_insertion_point(const char* value);
   inline void set_insertion_point(const char* value, size_t size);
   inline ::std::string* mutable_insertion_point();
+  inline ::std::string* release_insertion_point();
   
   // optional string content = 15;
   inline bool has_content() const;
@@ -247,34 +242,29 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline void set_content(const char* value);
   inline void set_content(const char* value, size_t size);
   inline ::std::string* mutable_content();
+  inline ::std::string* release_content();
   
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_insertion_point();
+  inline void clear_has_insertion_point();
+  inline void set_has_content();
+  inline void clear_has_content();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* name_;
-  static const ::std::string _default_name_;
   ::std::string* insertion_point_;
-  static const ::std::string _default_insertion_point_;
   ::std::string* content_;
-  static const ::std::string _default_content_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static CodeGeneratorResponse_File* default_instance_;
@@ -346,6 +336,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   inline void set_error(const char* value);
   inline void set_error(const char* value, size_t size);
   inline ::std::string* mutable_error();
+  inline ::std::string* release_error();
   
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   inline int file_size() const;
@@ -361,28 +352,20 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
+  inline void set_has_error();
+  inline void clear_has_error();
+  
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
   
   ::std::string* error_;
-  static const ::std::string _default_error_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
   
   void InitAsDefaultInstance();
   static CodeGeneratorResponse* default_instance_;
@@ -440,44 +423,60 @@ CodeGeneratorRequest::mutable_file_to_generate() {
 
 // optional string parameter = 2;
 inline bool CodeGeneratorRequest::has_parameter() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CodeGeneratorRequest::set_has_parameter() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CodeGeneratorRequest::clear_has_parameter() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
-  if (parameter_ != &_default_parameter_) {
+  if (parameter_ != &::google::protobuf::internal::kEmptyString) {
     parameter_->clear();
   }
-  _clear_bit(1);
+  clear_has_parameter();
 }
 inline const ::std::string& CodeGeneratorRequest::parameter() const {
   return *parameter_;
 }
 inline void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
-  _set_bit(1);
-  if (parameter_ == &_default_parameter_) {
+  set_has_parameter();
+  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
     parameter_ = new ::std::string;
   }
   parameter_->assign(value);
 }
 inline void CodeGeneratorRequest::set_parameter(const char* value) {
-  _set_bit(1);
-  if (parameter_ == &_default_parameter_) {
+  set_has_parameter();
+  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
     parameter_ = new ::std::string;
   }
   parameter_->assign(value);
 }
 inline void CodeGeneratorRequest::set_parameter(const char* value, size_t size) {
-  _set_bit(1);
-  if (parameter_ == &_default_parameter_) {
+  set_has_parameter();
+  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
     parameter_ = new ::std::string;
   }
   parameter_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorRequest::mutable_parameter() {
-  _set_bit(1);
-  if (parameter_ == &_default_parameter_) {
+  set_has_parameter();
+  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
     parameter_ = new ::std::string;
   }
   return parameter_;
+}
+inline ::std::string* CodeGeneratorRequest::release_parameter() {
+  clear_has_parameter();
+  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = parameter_;
+    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -511,128 +510,176 @@ CodeGeneratorRequest::mutable_proto_file() {
 
 // optional string name = 1;
 inline bool CodeGeneratorResponse_File::has_name() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CodeGeneratorResponse_File::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CodeGeneratorResponse_File::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorResponse_File::clear_name() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     name_->clear();
   }
-  _clear_bit(0);
+  clear_has_name();
 }
 inline const ::std::string& CodeGeneratorResponse_File::name() const {
   return *name_;
 }
 inline void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_name(const char* value) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_name(const char* value, size_t size) {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_name() {
-  _set_bit(0);
-  if (name_ == &_default_name_) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
     name_ = new ::std::string;
   }
   return name_;
 }
+inline ::std::string* CodeGeneratorResponse_File::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string insertion_point = 2;
 inline bool CodeGeneratorResponse_File::has_insertion_point() const {
-  return _has_bit(1);
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CodeGeneratorResponse_File::set_has_insertion_point() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CodeGeneratorResponse_File::clear_has_insertion_point() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
-  if (insertion_point_ != &_default_insertion_point_) {
+  if (insertion_point_ != &::google::protobuf::internal::kEmptyString) {
     insertion_point_->clear();
   }
-  _clear_bit(1);
+  clear_has_insertion_point();
 }
 inline const ::std::string& CodeGeneratorResponse_File::insertion_point() const {
   return *insertion_point_;
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value) {
-  _set_bit(1);
-  if (insertion_point_ == &_default_insertion_point_) {
+  set_has_insertion_point();
+  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
     insertion_point_ = new ::std::string;
   }
   insertion_point_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
-  _set_bit(1);
-  if (insertion_point_ == &_default_insertion_point_) {
+  set_has_insertion_point();
+  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
     insertion_point_ = new ::std::string;
   }
   insertion_point_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const char* value, size_t size) {
-  _set_bit(1);
-  if (insertion_point_ == &_default_insertion_point_) {
+  set_has_insertion_point();
+  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
     insertion_point_ = new ::std::string;
   }
   insertion_point_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
-  _set_bit(1);
-  if (insertion_point_ == &_default_insertion_point_) {
+  set_has_insertion_point();
+  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
     insertion_point_ = new ::std::string;
   }
   return insertion_point_;
 }
+inline ::std::string* CodeGeneratorResponse_File::release_insertion_point() {
+  clear_has_insertion_point();
+  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = insertion_point_;
+    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
 
 // optional string content = 15;
 inline bool CodeGeneratorResponse_File::has_content() const {
-  return _has_bit(2);
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void CodeGeneratorResponse_File::set_has_content() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void CodeGeneratorResponse_File::clear_has_content() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void CodeGeneratorResponse_File::clear_content() {
-  if (content_ != &_default_content_) {
+  if (content_ != &::google::protobuf::internal::kEmptyString) {
     content_->clear();
   }
-  _clear_bit(2);
+  clear_has_content();
 }
 inline const ::std::string& CodeGeneratorResponse_File::content() const {
   return *content_;
 }
 inline void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
-  _set_bit(2);
-  if (content_ == &_default_content_) {
+  set_has_content();
+  if (content_ == &::google::protobuf::internal::kEmptyString) {
     content_ = new ::std::string;
   }
   content_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_content(const char* value) {
-  _set_bit(2);
-  if (content_ == &_default_content_) {
+  set_has_content();
+  if (content_ == &::google::protobuf::internal::kEmptyString) {
     content_ = new ::std::string;
   }
   content_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_content(const char* value, size_t size) {
-  _set_bit(2);
-  if (content_ == &_default_content_) {
+  set_has_content();
+  if (content_ == &::google::protobuf::internal::kEmptyString) {
     content_ = new ::std::string;
   }
   content_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_content() {
-  _set_bit(2);
-  if (content_ == &_default_content_) {
+  set_has_content();
+  if (content_ == &::google::protobuf::internal::kEmptyString) {
     content_ = new ::std::string;
   }
   return content_;
+}
+inline ::std::string* CodeGeneratorResponse_File::release_content() {
+  clear_has_content();
+  if (content_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = content_;
+    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // -------------------------------------------------------------------
@@ -641,44 +688,60 @@ inline ::std::string* CodeGeneratorResponse_File::mutable_content() {
 
 // optional string error = 1;
 inline bool CodeGeneratorResponse::has_error() const {
-  return _has_bit(0);
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CodeGeneratorResponse::set_has_error() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CodeGeneratorResponse::clear_has_error() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorResponse::clear_error() {
-  if (error_ != &_default_error_) {
+  if (error_ != &::google::protobuf::internal::kEmptyString) {
     error_->clear();
   }
-  _clear_bit(0);
+  clear_has_error();
 }
 inline const ::std::string& CodeGeneratorResponse::error() const {
   return *error_;
 }
 inline void CodeGeneratorResponse::set_error(const ::std::string& value) {
-  _set_bit(0);
-  if (error_ == &_default_error_) {
+  set_has_error();
+  if (error_ == &::google::protobuf::internal::kEmptyString) {
     error_ = new ::std::string;
   }
   error_->assign(value);
 }
 inline void CodeGeneratorResponse::set_error(const char* value) {
-  _set_bit(0);
-  if (error_ == &_default_error_) {
+  set_has_error();
+  if (error_ == &::google::protobuf::internal::kEmptyString) {
     error_ = new ::std::string;
   }
   error_->assign(value);
 }
 inline void CodeGeneratorResponse::set_error(const char* value, size_t size) {
-  _set_bit(0);
-  if (error_ == &_default_error_) {
+  set_has_error();
+  if (error_ == &::google::protobuf::internal::kEmptyString) {
     error_ = new ::std::string;
   }
   error_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse::mutable_error() {
-  _set_bit(0);
-  if (error_ == &_default_error_) {
+  set_has_error();
+  if (error_ == &::google::protobuf::internal::kEmptyString) {
     error_ = new ::std::string;
   }
   return error_;
+}
+inline ::std::string* CodeGeneratorResponse::release_error() {
+  clear_has_error();
+  if (error_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = error_;
+    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;

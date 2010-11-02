@@ -66,7 +66,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   // CodeGenerator methods.
   virtual bool Generate(const FileDescriptor* file,
                         const string& parameter,
-                        OutputDirectory* output_directory,
+                        GeneratorContext* generator_context,
                         string* error) const;
 
  private:
@@ -104,6 +104,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void FixForeignFieldsInField(const Descriptor* containing_type,
                                const FieldDescriptor& field,
                                const string& python_dict_name) const;
+  void AddMessageToFileDescriptor(const Descriptor& descriptor) const;
   string FieldReferencingExpression(const Descriptor* containing_type,
                                     const FieldDescriptor& field,
                                     const string& python_dict_name) const;

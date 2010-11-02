@@ -143,6 +143,10 @@ class CommandLineInterfaceTest : public testing::Test {
                        const string& proto_name,
                        const string& message_name,
                        const string& output_directory);
+  void ExpectGeneratedWithMultipleInputs(const string& generator_name,
+                                         const string& all_proto_names,
+                                         const string& proto_name,
+                                         const string& message_name);
   void ExpectGeneratedWithInsertions(const string& generator_name,
                                      const string& parameter,
                                      const string& insertions,
@@ -190,7 +194,7 @@ class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file,
                 const string& parameter,
-                OutputDirectory* output_directory,
+                GeneratorContext* context,
                 string* error) const {
     called_ = true;
     parameter_ = parameter;
@@ -251,7 +255,6 @@ void CommandLineInterfaceTest::Run(const string& command) {
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
-
     const char* possible_paths[] = {
       // When building with shared libraries, libtool hides the real executable
       // in .libs and puts a fake wrapper in the current directory.
@@ -353,7 +356,8 @@ void CommandLineInterfaceTest::ExpectGenerated(
     const string& proto_name,
     const string& message_name) {
   MockCodeGenerator::ExpectGenerated(
-      generator_name, parameter, "", proto_name, message_name, temp_directory_);
+      generator_name, parameter, "", proto_name, message_name, proto_name,
+      temp_directory_);
 }
 
 void CommandLineInterfaceTest::ExpectGenerated(
@@ -363,8 +367,19 @@ void CommandLineInterfaceTest::ExpectGenerated(
     const string& message_name,
     const string& output_directory) {
   MockCodeGenerator::ExpectGenerated(
-      generator_name, parameter, "", proto_name, message_name,
+      generator_name, parameter, "", proto_name, message_name, proto_name,
       temp_directory_ + "/" + output_directory);
+}
+
+void CommandLineInterfaceTest::ExpectGeneratedWithMultipleInputs(
+    const string& generator_name,
+    const string& all_proto_names,
+    const string& proto_name,
+    const string& message_name) {
+  MockCodeGenerator::ExpectGenerated(
+      generator_name, "", "", proto_name, message_name,
+      all_proto_names,
+      temp_directory_);
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
@@ -375,7 +390,7 @@ void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
     const string& message_name) {
   MockCodeGenerator::ExpectGenerated(
       generator_name, parameter, insertions, proto_name, message_name,
-      temp_directory_);
+      proto_name, temp_directory_);
 }
 
 void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
@@ -455,8 +470,44 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs) {
       "--proto_path=$tmpdir foo.proto bar.proto");
 
   ExpectNoErrors();
-  ExpectGenerated("test_generator", "", "foo.proto", "Foo");
-  ExpectGenerated("test_generator", "", "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+}
+
+TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport) {
+  // Test parsing multiple input files with an import of a separate file.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "import \"baz.proto\";\n"
+    "message Bar {\n"
+    "  optional Baz a = 1;\n"
+    "}\n");
+  CreateTempFile("baz.proto",
+    "syntax = \"proto2\";\n"
+    "message Baz {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto bar.proto");
+
+  ExpectNoErrors();
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
 }
 
 TEST_F(CommandLineInterfaceTest, CreateDirectory) {

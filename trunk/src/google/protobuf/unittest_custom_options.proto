@@ -35,6 +35,12 @@
 // A proto file used to test the "custom options" feature of proto2.
 
 
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option cc_generic_services = true;     // auto-added
+option java_generic_services = true;   // auto-added
+option py_generic_services = true;
+
 // A custom file option (defined below).
 option (file_opt1) = 9876543210;
 
@@ -272,4 +278,89 @@ message VariousComplexOptions {
   option (protobuf_unittest.complex_opt3).qux = 9;
   option (complex_opt3).complexoptiontype5.plugh = 22;
   option (complexopt6).xyzzy = 24;
+}
+
+// ------------------------------------------------------
+// Definitions for testing aggregate option parsing.
+// See descriptor_unittest.cc.
+
+message AggregateMessageSet {
+  option message_set_wire_format = true;
+  extensions 4 to max;
+}
+
+message AggregateMessageSetElement {
+  extend AggregateMessageSet {
+    optional AggregateMessageSetElement message_set_extension = 15447542;
+  }
+  optional string s = 1;
+}
+
+// A helper type used to test aggregate option parsing
+message Aggregate {
+  optional int32 i = 1;
+  optional string s = 2;
+
+  // A nested object
+  optional Aggregate sub = 3;
+
+  // To test the parsing of extensions inside aggregate values
+  optional google.protobuf.FileOptions file = 4;
+  extend google.protobuf.FileOptions {
+    optional Aggregate nested = 15476903;
+  }
+
+  // An embedded message set
+  optional AggregateMessageSet mset = 5;
+}
+
+// Allow Aggregate to be used as an option at all possible locations
+// in the .proto grammer.
+extend google.protobuf.FileOptions      { optional Aggregate fileopt    = 15478479; }
+extend google.protobuf.MessageOptions   { optional Aggregate msgopt     = 15480088; }
+extend google.protobuf.FieldOptions     { optional Aggregate fieldopt   = 15481374; }
+extend google.protobuf.EnumOptions      { optional Aggregate enumopt    = 15483218; }
+extend google.protobuf.EnumValueOptions { optional Aggregate enumvalopt = 15486921; }
+extend google.protobuf.ServiceOptions   { optional Aggregate serviceopt = 15497145; }
+extend google.protobuf.MethodOptions    { optional Aggregate methodopt  = 15512713; }
+
+// Try using AggregateOption at different points in the proto grammar
+option (fileopt) = {
+  s: 'FileAnnotation'
+  // Also test the handling of comments
+  /* of both types */ i: 100
+
+  sub { s: 'NestedFileAnnotation' }
+
+  // Include a google.protobuf.FileOptions and recursively extend it with
+  // another fileopt.
+  file {
+    [protobuf_unittest.fileopt] {
+      s:'FileExtensionAnnotation'
+    }
+  }
+
+  // A message set inside an option value
+  mset {
+    [protobuf_unittest.AggregateMessageSetElement.message_set_extension] {
+      s: 'EmbeddedMessageSetElement'
+    }
+  }
+};
+
+message AggregateMessage {
+  option (msgopt) = { i:101 s:'MessageAnnotation' };
+  optional int32 fieldname = 1 [(fieldopt) = { s:'FieldAnnotation' }];
+}
+
+service AggregateService {
+  option (serviceopt) = { s:'ServiceAnnotation' };
+  rpc Method (AggregateMessage) returns (AggregateMessage) {
+    option (methodopt) = { s:'MethodAnnotation' };
+  }
+}
+
+enum AggregateEnum {
+  option (enumopt) = { s:'EnumAnnotation' };
+  VALUE = 1 [(enumvalopt) = { s:'EnumValueAnnotation' }];
 }

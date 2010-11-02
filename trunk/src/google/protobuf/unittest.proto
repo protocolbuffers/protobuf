@@ -35,6 +35,12 @@
 // A proto file we will use for unit testing.
 
 
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option cc_generic_services = true;     // auto-added
+option java_generic_services = true;   // auto-added
+option py_generic_services = true;     // auto-added
+
 import "google/protobuf/unittest_import.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
@@ -489,6 +495,10 @@ message TestExtremeDefaultValues {
   optional float nan_float = 19 [default = nan];
 }
 
+message SparseEnumMessage {
+  optional TestSparseEnum sparse_enum = 1;
+}
+
 // Test String and Bytes: string is for valid UTF-8 strings
 message OneString {
   optional string data = 1;
@@ -597,6 +607,7 @@ message TestRepeatedScalarDifferentTagSizes {
   repeated float   repeated_float   = 262142;
   repeated uint64  repeated_uint64  = 262143;
 }
+
 
 // Test that RPC services work.
 message FooRequest  {}

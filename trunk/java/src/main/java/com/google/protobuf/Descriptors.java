@@ -46,6 +46,11 @@ import java.io.UnsupportedEncodingException;
  * its fields and other information about a type.  You can get a message
  * type's descriptor by calling {@code MessageType.getDescriptor()}, or
  * (given a message object of the type) {@code message.getDescriptorForType()}.
+ * Furthermore, each message is associated with a {@link FileDescriptor} for
+ * a relevant {@code .proto} file. You can obtain it by calling
+ * {@code Descriptor.getFile()}. A {@link FileDescriptor} contains descriptors
+ * for all the messages defined in that file, and file descriptors for all the
+ * imported {@code .proto} files.
  *
  * Descriptors are built from DescriptorProtos, as defined in
  * {@code google/protobuf/descriptor.proto}.
@@ -55,6 +60,9 @@ import java.io.UnsupportedEncodingException;
 public final class Descriptors {
   /**
    * Describes a {@code .proto} file, including everything defined within.
+   * That includes, in particular, descriptors for all the messages and
+   * file descriptors for all other imported {@code .proto} files
+   * (dependencies).
    */
   public static final class FileDescriptor {
     /** Convert the descriptor to its protocol message representation. */

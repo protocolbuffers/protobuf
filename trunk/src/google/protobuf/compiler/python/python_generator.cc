@@ -230,7 +230,7 @@ Generator::~Generator() {
 
 bool Generator::Generate(const FileDescriptor* file,
                          const string& parameter,
-                         OutputDirectory* output_directory,
+                         GeneratorContext* context,
                          string* error) const {
 
   // Completely serialize all Generate() calls on this instance.  The
@@ -252,20 +252,18 @@ bool Generator::Generate(const FileDescriptor* file,
   fdp.SerializeToString(&file_descriptor_serialized_);
 
 
-  scoped_ptr<io::ZeroCopyOutputStream> output(output_directory->Open(filename));
+  scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
   GOOGLE_CHECK(output.get());
   io::Printer printer(output.get(), '$');
   printer_ = &printer;
 
   PrintTopBoilerplate(printer_, file_, GeneratingDescriptorProto());
+  PrintImports();
   PrintFileDescriptor();
   PrintTopLevelEnums();
   PrintTopLevelExtensions();
   PrintAllNestedEnumsInFile();
   PrintMessageDescriptors();
-  // We have to print the imports after the descriptors, so that mutually
-  // recursive protos in separate files can successfully reference each other.
-  PrintImports();
   FixForeignFieldsInDescriptors();
   PrintMessages();
   // We have to fix up the extensions after the message classes themselves,
@@ -377,7 +375,7 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   printer_->Print("containing_type=None,\n");
   printer_->Print("options=$options_value$,\n",
                   "options_value",
-                  OptionsValue("EnumOptions", CEscape(options_string)));
+                  OptionsValue("EnumOptions", options_string));
   EnumDescriptorProto edp;
   PrintSerializedPbInterval(enum_descriptor, edp);
   printer_->Outdent();
@@ -674,6 +672,17 @@ void Generator::FixForeignFieldsInDescriptor(
   }
 }
 
+void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
+  map<string, string> m;
+  m["descriptor_name"] = kDescriptorKey;
+  m["message_name"] = descriptor.name();
+  m["message_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
+  const char file_descriptor_template[] =
+      "$descriptor_name$.message_types_by_name['$message_name$'] = "
+      "$message_descriptor_name$\n";
+  printer_->Print(m, file_descriptor_template);
+}
+
 // Sets any necessary message_type and enum_type attributes
 // for the Python version of |field|.
 //
@@ -752,6 +761,9 @@ void Generator::FixForeignFieldsInDescriptors() const {
   for (int i = 0; i < file_->message_type_count(); ++i) {
     FixForeignFieldsInDescriptor(*file_->message_type(i), NULL);
   }
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    AddMessageToFileDescriptor(*file_->message_type(i));
+  }
   printer_->Print("\n");
 }
 
@@ -823,6 +835,8 @@ void Generator::PrintEnumValueDescriptor(
       "  type=None)");
 }
 
+// Returns a Python expression that calls descriptor._ParseOptions using
+// the given descriptor class name and serialized options protobuf string.
 string Generator::OptionsValue(
     const string& class_name, const string& serialized_options) const {
   if (serialized_options.length() == 0 || GeneratingDescriptorProto()) {

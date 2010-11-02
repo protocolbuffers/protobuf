@@ -56,7 +56,7 @@ template<typename T> class RepeatedPtrField;  // repeated_field.h
 namespace compiler {
 
 class CodeGenerator;        // code_generator.h
-class OutputDirectory;      // code_generator.h
+class GeneratorContext;      // code_generator.h
 class DiskSourceTree;       // importer.h
 
 // This class implements the command-line interface to the protocol compiler.
@@ -174,7 +174,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // -----------------------------------------------------------------
 
   class ErrorPrinter;
-  class MemoryOutputDirectory;
+  class GeneratorContextImpl;
   class MemoryOutputStream;
 
   // Clear state from previous Run().
@@ -212,11 +212,11 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   struct OutputDirective;  // see below
   bool GenerateOutput(const vector<const FileDescriptor*>& parsed_files,
                       const OutputDirective& output_directive,
-                      OutputDirectory* output_directory);
+                      GeneratorContext* generator_context);
   bool GeneratePluginOutput(const vector<const FileDescriptor*>& parsed_files,
                             const string& plugin_name,
                             const string& parameter,
-                            OutputDirectory* output_directory,
+                            GeneratorContext* generator_context,
                             string* error);
 
   // Implements --encode and --decode.

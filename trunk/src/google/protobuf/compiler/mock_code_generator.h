@@ -69,11 +69,14 @@ class MockCodeGenerator : public CodeGenerator {
   //
   // |insertions| is a comma-separated list of names of MockCodeGenerators which
   // should have inserted lines into this file.
+  // |parsed_file_list| is a comma-separated list of names of the files
+  // that are being compiled together in this run.
   static void ExpectGenerated(const string& name,
                               const string& parameter,
                               const string& insertions,
                               const string& file,
                               const string& first_message_name,
+                              const string& parsed_file_list,
                               const string& output_directory);
 
   // Get the name of the file which would be written by the given generator.
@@ -86,7 +89,7 @@ class MockCodeGenerator : public CodeGenerator {
 
   virtual bool Generate(const FileDescriptor* file,
                         const string& parameter,
-                        OutputDirectory* output_directory,
+                        GeneratorContext* context,
                         string* error) const;
 
  private:
@@ -94,10 +97,12 @@ class MockCodeGenerator : public CodeGenerator {
 
   static string GetOutputFileContent(const string& generator_name,
                                      const string& parameter,
-                                     const FileDescriptor* file);
+                                     const FileDescriptor* file,
+                                     GeneratorContext *context);
   static string GetOutputFileContent(const string& generator_name,
                                      const string& parameter,
                                      const string& file,
+                                     const string& parsed_file_list,
                                      const string& first_message_name);
 };
 

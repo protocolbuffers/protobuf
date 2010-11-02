@@ -257,6 +257,7 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   EXPECT_EQ("", tokenizer.current().text);
   EXPECT_EQ(0, tokenizer.current().line);
   EXPECT_EQ(0, tokenizer.current().column);
+  EXPECT_EQ(0, tokenizer.current().end_column);
 
   // Parse the token.
   ASSERT_TRUE(tokenizer.Next());
@@ -268,6 +269,8 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   // Check that it is located at the beginning of the input
   EXPECT_EQ(0, tokenizer.current().line);
   EXPECT_EQ(0, tokenizer.current().column);
+  EXPECT_EQ(kSimpleTokenCases_case.input.size(),
+            tokenizer.current().end_column);
 
   // There should be no more input.
   EXPECT_FALSE(tokenizer.Next());
@@ -277,6 +280,8 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   EXPECT_EQ("", tokenizer.current().text);
   EXPECT_EQ(0, tokenizer.current().line);
   EXPECT_EQ(kSimpleTokenCases_case.input.size(), tokenizer.current().column);
+  EXPECT_EQ(kSimpleTokenCases_case.input.size(),
+            tokenizer.current().end_column);
 
   // There should be no errors.
   EXPECT_TRUE(error_collector.text_.empty());
@@ -339,76 +344,83 @@ MultiTokenCase kMultiTokenCases[] = {
 
   // Test all token types at the same time.
   { "foo 1 1.2 + 'bar'", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo"  , 0,  0 },
-    { Tokenizer::TYPE_INTEGER   , "1"    , 0,  4 },
-    { Tokenizer::TYPE_FLOAT     , "1.2"  , 0,  6 },
-    { Tokenizer::TYPE_SYMBOL    , "+"    , 0, 10 },
-    { Tokenizer::TYPE_STRING    , "'bar'", 0, 12 },
-    { Tokenizer::TYPE_END       , ""     , 0, 17 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo"  , 0,  0,  3 },
+    { Tokenizer::TYPE_INTEGER   , "1"    , 0,  4,  5 },
+    { Tokenizer::TYPE_FLOAT     , "1.2"  , 0,  6,  9 },
+    { Tokenizer::TYPE_SYMBOL    , "+"    , 0, 10, 11 },
+    { Tokenizer::TYPE_STRING    , "'bar'", 0, 12, 17 },
+    { Tokenizer::TYPE_END       , ""     , 0, 17, 17 },
   }},
 
   // Test that consecutive symbols are parsed as separate tokens.
   { "!@+%", {
-    { Tokenizer::TYPE_SYMBOL    , "!"    , 0, 0 },
-    { Tokenizer::TYPE_SYMBOL    , "@"    , 0, 1 },
-    { Tokenizer::TYPE_SYMBOL    , "+"    , 0, 2 },
-    { Tokenizer::TYPE_SYMBOL    , "%"    , 0, 3 },
-    { Tokenizer::TYPE_END       , ""     , 0, 4 },
+    { Tokenizer::TYPE_SYMBOL    , "!"    , 0, 0, 1 },
+    { Tokenizer::TYPE_SYMBOL    , "@"    , 0, 1, 2 },
+    { Tokenizer::TYPE_SYMBOL    , "+"    , 0, 2, 3 },
+    { Tokenizer::TYPE_SYMBOL    , "%"    , 0, 3, 4 },
+    { Tokenizer::TYPE_END       , ""     , 0, 4, 4 },
   }},
 
   // Test that newlines affect line numbers correctly.
   { "foo bar\nrab oof", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  4 },
-    { Tokenizer::TYPE_IDENTIFIER, "rab", 1,  0 },
-    { Tokenizer::TYPE_IDENTIFIER, "oof", 1,  4 },
-    { Tokenizer::TYPE_END       , ""   , 1,  7 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0, 3 },
+    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  4, 7 },
+    { Tokenizer::TYPE_IDENTIFIER, "rab", 1,  0, 3 },
+    { Tokenizer::TYPE_IDENTIFIER, "oof", 1,  4, 7 },
+    { Tokenizer::TYPE_END       , ""   , 1,  7, 7 },
   }},
 
   // Test that tabs affect column numbers correctly.
   { "foo\tbar  \tbaz", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  8 },
-    { Tokenizer::TYPE_IDENTIFIER, "baz", 0, 16 },
-    { Tokenizer::TYPE_END       , ""   , 0, 19 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
+    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  8, 11 },
+    { Tokenizer::TYPE_IDENTIFIER, "baz", 0, 16, 19 },
+    { Tokenizer::TYPE_END       , ""   , 0, 19, 19 },
+  }},
+
+  // Test that tabs in string literals affect column numbers correctly.
+  { "\"foo\tbar\" baz", {
+    { Tokenizer::TYPE_STRING    , "\"foo\tbar\"", 0,  0, 12 },
+    { Tokenizer::TYPE_IDENTIFIER, "baz"         , 0, 13, 16 },
+    { Tokenizer::TYPE_END       , ""            , 0, 16, 16 },
   }},
 
   // Test that line comments are ignored.
   { "foo // This is a comment\n"
     "bar // This is another comment", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 1,  0 },
-    { Tokenizer::TYPE_END       , ""   , 1, 30 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
+    { Tokenizer::TYPE_IDENTIFIER, "bar", 1,  0,  3 },
+    { Tokenizer::TYPE_END       , ""   , 1, 30, 30 },
   }},
 
   // Test that block comments are ignored.
   { "foo /* This is a block comment */ bar", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0, 34 },
-    { Tokenizer::TYPE_END       , ""   , 0, 37 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
+    { Tokenizer::TYPE_IDENTIFIER, "bar", 0, 34, 37 },
+    { Tokenizer::TYPE_END       , ""   , 0, 37, 37 },
   }},
 
   // Test that sh-style comments are not ignored by default.
   { "foo # bar\n"
     "baz", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0 },
-    { Tokenizer::TYPE_SYMBOL    , "#"  , 0,  4 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 0,  6 },
-    { Tokenizer::TYPE_IDENTIFIER, "baz", 1,  0 },
-    { Tokenizer::TYPE_END       , ""   , 1, 3 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3 },
+    { Tokenizer::TYPE_SYMBOL    , "#"  , 0, 4, 5 },
+    { Tokenizer::TYPE_IDENTIFIER, "bar", 0, 6, 9 },
+    { Tokenizer::TYPE_IDENTIFIER, "baz", 1, 0, 3 },
+    { Tokenizer::TYPE_END       , ""   , 1, 3, 3 },
   }},
 
   // Bytes with the high-order bit set should not be seen as control characters.
   { "\300", {
-    { Tokenizer::TYPE_SYMBOL, "\300", 0, 0 },
-    { Tokenizer::TYPE_END   , ""    , 0, 1 },
+    { Tokenizer::TYPE_SYMBOL, "\300", 0, 0, 1 },
+    { Tokenizer::TYPE_END   , ""    , 0, 1, 1 },
   }},
 
   // Test all whitespace chars
   { "foo\n\t\r\v\fbar", {
-    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0 },
-    { Tokenizer::TYPE_IDENTIFIER, "bar", 1, 11 },
-    { Tokenizer::TYPE_END       , ""   , 1, 14 },
+    { Tokenizer::TYPE_IDENTIFIER, "foo", 0,  0,  3 },
+    { Tokenizer::TYPE_IDENTIFIER, "bar", 1, 11, 14 },
+    { Tokenizer::TYPE_END       , ""   , 1, 14, 14 },
   }},
 };
 
@@ -425,6 +437,7 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   EXPECT_EQ("", tokenizer.current().text);
   EXPECT_EQ(0, tokenizer.current().line);
   EXPECT_EQ(0, tokenizer.current().column);
+  EXPECT_EQ(0, tokenizer.current().end_column);
 
   // Loop through all expected tokens.
   int i = 0;
@@ -434,6 +447,8 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
 
     SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
 
+    Tokenizer::Token previous = tokenizer.current();
+
     // Next() should only return false when it hits the end token.
     if (token.type != Tokenizer::TYPE_END) {
       ASSERT_TRUE(tokenizer.Next());
@@ -441,11 +456,19 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
       ASSERT_FALSE(tokenizer.Next());
     }
 
+    // Check that the previous token is set correctly.
+    EXPECT_EQ(previous.type, tokenizer.previous().type);
+    EXPECT_EQ(previous.text, tokenizer.previous().text);
+    EXPECT_EQ(previous.line, tokenizer.previous().line);
+    EXPECT_EQ(previous.column, tokenizer.previous().column);
+    EXPECT_EQ(previous.end_column, tokenizer.previous().end_column);
+
     // Check that the token matches the expected one.
     EXPECT_EQ(token.type, tokenizer.current().type);
     EXPECT_EQ(token.text, tokenizer.current().text);
     EXPECT_EQ(token.line, tokenizer.current().line);
     EXPECT_EQ(token.column, tokenizer.current().column);
+    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
 
   } while (token.type != Tokenizer::TYPE_END);
 

@@ -57,7 +57,7 @@ class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file,
                 const string& parameter,
-                OutputDirectory* output_directory,
+                GeneratorContext* generator_context,
                 string* error) const;
 
  private:

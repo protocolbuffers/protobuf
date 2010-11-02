@@ -42,11 +42,12 @@ further ensures that we can use Python protocol message objects as we expect.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
+from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_no_generic_services_pb2
-
+from google.protobuf import service
 
 MAX_EXTENSION = 536870912
 
@@ -140,6 +141,13 @@ class GeneratorTest(unittest.TestCase):
     proto = unittest_mset_pb2.TestMessageSet()
     self.assertTrue(proto.DESCRIPTOR.GetOptions().message_set_wire_format)
 
+  def testMessageWithCustomOptions(self):
+    proto = unittest_custom_options_pb2.TestMessageWithCustomOptions()
+    enum_options = proto.DESCRIPTOR.enum_types_by_name['AnEnum'].GetOptions()
+    self.assertTrue(enum_options is not None)
+    # TODO(gps): We really should test for the presense of the enum_opt1
+    # extension and for its value to be set to -789.
+
   def testNestedTypes(self):
     self.assertEquals(
         set(unittest_pb2.TestAllTypes.DESCRIPTOR.nested_types),
@@ -208,12 +216,27 @@ class GeneratorTest(unittest.TestCase):
     self.assertFalse(unittest_pb2.DESCRIPTOR.serialized_pb is None)
 
   def testNoGenericServices(self):
-    # unittest_no_generic_services.proto should contain defs for everything
-    # except services.
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "TestMessage"))
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "FOO"))
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "test_extension"))
-    self.assertFalse(hasattr(unittest_no_generic_services_pb2, "TestService"))
+
+    # Make sure unittest_no_generic_services_pb2 has no services subclassing
+    # Proto2 Service class.
+    if hasattr(unittest_no_generic_services_pb2, "TestService"):
+      self.assertFalse(issubclass(unittest_no_generic_services_pb2.TestService,
+                                  service.Service))
+
+  def testMessageTypesByName(self):
+    file_type = unittest_pb2.DESCRIPTOR
+    self.assertEqual(
+        unittest_pb2._TESTALLTYPES,
+        file_type.message_types_by_name[unittest_pb2._TESTALLTYPES.name])
+
+    # Nested messages shouldn't be included in the message_types_by_name
+    # dictionary (like in the C++ API).
+    self.assertFalse(
+        unittest_pb2._TESTALLTYPES_NESTEDMESSAGE.name in
+        file_type.message_types_by_name)
 
 
 if __name__ == '__main__':

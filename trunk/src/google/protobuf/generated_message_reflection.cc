@@ -45,8 +45,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-namespace { const string kEmptyString; }
-
 int StringSpaceUsedExcludingSelf(const string& str) {
   const void* start = &str;
   const void* end = &str + 1;
@@ -69,7 +67,6 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor,
 }
 
 const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
-  static string kEmptyString;
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
   return (d == NULL ? kEmptyString : d->name());
 }

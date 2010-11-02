@@ -67,6 +67,11 @@ class Message(object):
 
   DESCRIPTOR = None
 
+  def __deepcopy__(self, memo=None):
+    clone = type(self)()
+    clone.MergeFrom(self)
+    return clone
+
   def __eq__(self, other_msg):
     raise NotImplementedError
 
@@ -74,7 +79,13 @@ class Message(object):
     # Can't just say self != other_msg, since that would infinitely recurse. :)
     return not self == other_msg
 
+  def __hash__(self):
+    raise TypeError('unhashable object')
+
   def __str__(self):
+    raise NotImplementedError
+
+  def __unicode__(self):
     raise NotImplementedError
 
   def MergeFrom(self, other_msg):

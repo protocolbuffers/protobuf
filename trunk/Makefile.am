@@ -83,33 +83,57 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/GeneratedMessageLite.java           \
   java/src/main/java/com/google/protobuf/Internal.java                       \
   java/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java \
+  java/src/main/java/com/google/protobuf/LazyStringArrayList.java            \
+  java/src/main/java/com/google/protobuf/LazyStringList.java                 \
   java/src/main/java/com/google/protobuf/Message.java                        \
   java/src/main/java/com/google/protobuf/MessageLite.java                    \
+  java/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java           \
+  java/src/main/java/com/google/protobuf/MessageOrBuilder.java               \
   java/src/main/java/com/google/protobuf/ProtocolMessageEnum.java            \
+  java/src/main/java/com/google/protobuf/RepeatedFieldBuilder.java           \
   java/src/main/java/com/google/protobuf/RpcCallback.java                    \
   java/src/main/java/com/google/protobuf/RpcChannel.java                     \
   java/src/main/java/com/google/protobuf/RpcController.java                  \
   java/src/main/java/com/google/protobuf/RpcUtil.java                        \
   java/src/main/java/com/google/protobuf/Service.java                        \
   java/src/main/java/com/google/protobuf/ServiceException.java               \
+  java/src/main/java/com/google/protobuf/SingleFieldBuilder.java             \
+  java/src/main/java/com/google/protobuf/SmallSortedMap.java                 \
   java/src/main/java/com/google/protobuf/TextFormat.java                     \
   java/src/main/java/com/google/protobuf/UninitializedMessageException.java  \
   java/src/main/java/com/google/protobuf/UnknownFieldSet.java                \
+  java/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java     \
   java/src/main/java/com/google/protobuf/WireFormat.java                     \
   java/src/test/java/com/google/protobuf/AbstractMessageTest.java            \
   java/src/test/java/com/google/protobuf/CodedInputStreamTest.java           \
   java/src/test/java/com/google/protobuf/CodedOutputStreamTest.java          \
+  java/src/test/java/com/google/protobuf/DeprecatedFieldTest.java            \
   java/src/test/java/com/google/protobuf/DescriptorsTest.java                \
   java/src/test/java/com/google/protobuf/DynamicMessageTest.java             \
+  java/src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java       \
   java/src/test/java/com/google/protobuf/GeneratedMessageTest.java           \
+  java/src/test/java/com/google/protobuf/LazyStringArrayListTest.java        \
+  java/src/test/java/com/google/protobuf/LazyStringEndToEndTest.java         \
   java/src/test/java/com/google/protobuf/LiteTest.java                       \
   java/src/test/java/com/google/protobuf/MessageTest.java                    \
+  java/src/test/java/com/google/protobuf/NestedBuildersTest.java             \
+  java/src/test/java/com/google/protobuf/RepeatedFieldBuilderTest.java       \
   java/src/test/java/com/google/protobuf/ServiceTest.java                    \
+  java/src/test/java/com/google/protobuf/SingleFieldBuilderTest.java         \
+  java/src/test/java/com/google/protobuf/SmallSortedMapTest.java             \
+  java/src/test/java/com/google/protobuf/TestBadIdentifiers.java             \
   java/src/test/java/com/google/protobuf/TestUtil.java                       \
   java/src/test/java/com/google/protobuf/TextFormatTest.java                 \
   java/src/test/java/com/google/protobuf/UnknownFieldSetTest.java            \
+  java/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java \
   java/src/test/java/com/google/protobuf/WireFormatTest.java                 \
   java/src/test/java/com/google/protobuf/multiple_files_test.proto           \
+  java/src/test/java/com/google/protobuf/nested_builders_test.proto          \
+  java/src/test/java/com/google/protobuf/nested_extension.proto              \
+  java/src/test/java/com/google/protobuf/nested_extension_lite.proto         \
+  java/src/test/java/com/google/protobuf/non_nested_extension.proto          \
+  java/src/test/java/com/google/protobuf/non_nested_extension_lite.proto     \
+  java/src/test/java/com/google/protobuf/test_bad_identifiers.proto          \
   java/pom.xml                                                               \
   java/README.txt                                                            \
   python/google/protobuf/internal/generator_test.py                          \
@@ -121,6 +145,9 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/internal/message_test.py                            \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_messages.proto                        \
+  python/google/protobuf/internal/python_message.py                          \
+  python/google/protobuf/internal/cpp_message.py                             \
+  python/google/protobuf/internal/api_implementation.py                      \
   python/google/protobuf/internal/reflection_test.py                         \
   python/google/protobuf/internal/service_reflection_test.py                 \
   python/google/protobuf/internal/test_util.py                               \
@@ -129,6 +156,11 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/internal/wire_format.py                             \
   python/google/protobuf/internal/wire_format_test.py                        \
   python/google/protobuf/internal/__init__.py                                \
+  python/google/protobuf/pyext/python-proto2.cc                              \
+  python/google/protobuf/pyext/python_descriptor.cc                          \
+  python/google/protobuf/pyext/python_descriptor.h                           \
+  python/google/protobuf/pyext/python_protobuf.cc                            \
+  python/google/protobuf/pyext/python_protobuf.h                             \
   python/google/protobuf/descriptor.py                                       \
   python/google/protobuf/message.py                                          \
   python/google/protobuf/reflection.py                                       \

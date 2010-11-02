@@ -72,8 +72,14 @@ class BaseContainer(object):
     # The concrete classes should define __eq__.
     return not self == other
 
+  def __hash__(self):
+    raise TypeError('unhashable object')
+
   def __repr__(self):
     return repr(self._values)
+
+  def sort(self, sort_function=cmp):
+    self._values.sort(sort_function)
 
 
 class RepeatedScalarFieldContainer(BaseContainer):
@@ -198,27 +204,36 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     super(RepeatedCompositeFieldContainer, self).__init__(message_listener)
     self._message_descriptor = message_descriptor
 
-  def add(self):
-    new_element = self._message_descriptor._concrete_class()
+  def add(self, **kwargs):
+    """Adds a new element at the end of the list and returns it. Keyword
+    arguments may be used to initialize the element.
+    """
+    new_element = self._message_descriptor._concrete_class(**kwargs)
     new_element._SetListener(self._message_listener)
     self._values.append(new_element)
     if not self._message_listener.dirty:
       self._message_listener.Modified()
     return new_element
 
-  def MergeFrom(self, other):
-    """Appends the contents of another repeated field of the same type to this
-    one, copying each individual message.
+  def extend(self, elem_seq):
+    """Extends by appending the given sequence of elements of the same type
+    as this one, copying each individual message.
     """
     message_class = self._message_descriptor._concrete_class
     listener = self._message_listener
     values = self._values
-    for message in other._values:
+    for message in elem_seq:
       new_element = message_class()
       new_element._SetListener(listener)
       new_element.MergeFrom(message)
       values.append(new_element)
     listener.Modified()
+
+  def MergeFrom(self, other):
+    """Appends the contents of another repeated field of the same type to this
+    one, copying each individual message.
+    """
+    self.extend(other._values)
 
   def __getslice__(self, start, stop):
     """Retrieves the subset of items from between the specified indices."""

@@ -86,6 +86,13 @@ from google.protobuf.internal import wire_format
 from google.protobuf import message
 
 
+# This will overflow and thus become IEEE-754 "infinity".  We would use
+# "float('inf')" but it doesn't work on Windows pre-Python-2.6.
+_POS_INF = 1e10000
+_NEG_INF = -_POS_INF
+_NAN = _POS_INF * 0
+
+
 # This is not for optimization, but rather to avoid conflicts with local
 # variables named "message".
 _DecodeError = message.DecodeError
@@ -269,6 +276,72 @@ def _StructPackDecoder(wire_type, format):
   return _SimpleDecoder(wire_type, InnerDecode)
 
 
+def _FloatDecoder():
+  """Returns a decoder for a float field.
+
+  This code works around a bug in struct.unpack for non-finite 32-bit
+  floating-point values.
+  """
+
+  local_unpack = struct.unpack
+
+  def InnerDecode(buffer, pos):
+    # We expect a 32-bit value in little-endian byte order.  Bit 1 is the sign
+    # bit, bits 2-9 represent the exponent, and bits 10-32 are the significand.
+    new_pos = pos + 4
+    float_bytes = buffer[pos:new_pos]
+
+    # If this value has all its exponent bits set, then it's non-finite.
+    # In Python 2.4, struct.unpack will convert it to a finite 64-bit value.
+    # To avoid that, we parse it specially.
+    if ((float_bytes[3] in '\x7F\xFF')
+        and (float_bytes[2] >= '\x80')):
+      # If at least one significand bit is set...
+      if float_bytes[0:3] != '\x00\x00\x80':
+        return (_NAN, new_pos)
+      # If sign bit is set...
+      if float_bytes[3] == '\xFF':
+        return (_NEG_INF, new_pos)
+      return (_POS_INF, new_pos)
+
+    # Note that we expect someone up-stack to catch struct.error and convert
+    # it to _DecodeError -- this way we don't have to set up exception-
+    # handling blocks every time we parse one value.
+    result = local_unpack('<f', float_bytes)[0]
+    return (result, new_pos)
+  return _SimpleDecoder(wire_format.WIRETYPE_FIXED32, InnerDecode)
+
+
+def _DoubleDecoder():
+  """Returns a decoder for a double field.
+
+  This code works around a bug in struct.unpack for not-a-number.
+  """
+
+  local_unpack = struct.unpack
+
+  def InnerDecode(buffer, pos):
+    # We expect a 64-bit value in little-endian byte order.  Bit 1 is the sign
+    # bit, bits 2-12 represent the exponent, and bits 13-64 are the significand.
+    new_pos = pos + 8
+    double_bytes = buffer[pos:new_pos]
+
+    # If this value has all its exponent bits set and at least one significand
+    # bit set, it's not a number.  In Python 2.4, struct.unpack will treat it
+    # as inf or -inf.  To avoid that, we treat it specially.
+    if ((double_bytes[7] in '\x7F\xFF')
+        and (double_bytes[6] >= '\xF0')
+        and (double_bytes[0:7] != '\x00\x00\x00\x00\x00\x00\xF0')):
+      return (_NAN, new_pos)
+
+    # Note that we expect someone up-stack to catch struct.error and convert
+    # it to _DecodeError -- this way we don't have to set up exception-
+    # handling blocks every time we parse one value.
+    result = local_unpack('<d', double_bytes)[0]
+    return (result, new_pos)
+  return _SimpleDecoder(wire_format.WIRETYPE_FIXED64, InnerDecode)
+
+
 # --------------------------------------------------------------------
 
 
@@ -294,8 +367,8 @@ Fixed32Decoder  = _StructPackDecoder(wire_format.WIRETYPE_FIXED32, '<I')
 Fixed64Decoder  = _StructPackDecoder(wire_format.WIRETYPE_FIXED64, '<Q')
 SFixed32Decoder = _StructPackDecoder(wire_format.WIRETYPE_FIXED32, '<i')
 SFixed64Decoder = _StructPackDecoder(wire_format.WIRETYPE_FIXED64, '<q')
-FloatDecoder    = _StructPackDecoder(wire_format.WIRETYPE_FIXED32, '<f')
-DoubleDecoder   = _StructPackDecoder(wire_format.WIRETYPE_FIXED64, '<d')
+FloatDecoder = _FloatDecoder()
+DoubleDecoder = _DoubleDecoder()
 
 BoolDecoder = _ModifiedDecoder(
     wire_format.WIRETYPE_VARINT, _DecodeVarint, bool)

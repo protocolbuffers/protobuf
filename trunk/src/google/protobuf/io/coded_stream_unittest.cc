@@ -208,6 +208,33 @@ TEST_2D(CodedStreamTest, ReadTag, kVarintCases, kBlockSizes) {
   EXPECT_EQ(kVarintCases_case.size, input.ByteCount());
 }
 
+// This is the regression test that verifies that there is no issues
+// with the empty input buffers handling.
+TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
+  class In : public ZeroCopyInputStream {
+   public:
+    In() : count_(0) {}
+   private:
+    virtual bool Next(const void** data, int* size) {
+      *data = NULL;
+      *size = 0;
+      return count_++ < 2;
+    }
+    virtual void BackUp(int count)  {
+      GOOGLE_LOG(FATAL) << "Tests never call this.";
+    }
+    virtual bool Skip(int count) {
+      GOOGLE_LOG(FATAL) << "Tests never call this.";
+      return false;
+    }
+    virtual int64 ByteCount() const { return 0; }
+    int count_;
+  } in;
+  CodedInputStream input(&in);
+  input.ReadTag();
+  EXPECT_TRUE(input.ConsumedEntireMessage());
+}
+
 TEST_1D(CodedStreamTest, ExpectTag, kVarintCases) {
   // Leave one byte at the beginning of the buffer so we can read it
   // to force the first buffer to be loaded.
@@ -994,6 +1021,7 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
   EXPECT_EQ(0, coded_input.ReadTag());
   EXPECT_FALSE(coded_input.ConsumedEntireMessage());
 }
+
 
 TEST_F(CodedStreamTest, RecursionLimit) {
   ArrayInputStream input(buffer_, sizeof(buffer_));

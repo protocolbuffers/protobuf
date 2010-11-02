@@ -232,6 +232,54 @@ TEST(RepeatedField, MergeFrom) {
   EXPECT_EQ(5, destination.Get(4));
 }
 
+TEST(RepeatedField, CopyFrom) {
+  RepeatedField<int> source, destination;
+
+  source.Add(4);
+  source.Add(5);
+
+  destination.Add(1);
+  destination.Add(2);
+  destination.Add(3);
+
+  destination.CopyFrom(source);
+
+  ASSERT_EQ(2, destination.size());
+
+  EXPECT_EQ(4, destination.Get(0));
+  EXPECT_EQ(5, destination.Get(1));
+}
+
+TEST(RepeatedField, CopyConstruct) {
+  RepeatedField<int> source;
+  source.Add(1);
+  source.Add(2);
+
+  RepeatedField<int> destination(source);
+
+  ASSERT_EQ(2, destination.size());
+  EXPECT_EQ(1, destination.Get(0));
+  EXPECT_EQ(2, destination.Get(1));
+}
+
+TEST(RepeatedField, CopyAssign) {
+  RepeatedField<int> source, destination;
+
+  source.Add(4);
+  source.Add(5);
+
+  destination.Add(1);
+  destination.Add(2);
+  destination.Add(3);
+
+  destination = source;
+
+  ASSERT_EQ(2, destination.size());
+
+  EXPECT_EQ(4, destination.Get(0));
+  EXPECT_EQ(5, destination.Get(1));
+}
+
 TEST(RepeatedField, MutableDataIsMutable) {
   RepeatedField<int> field;
   field.Add(1);
@@ -536,6 +584,55 @@ TEST(RepeatedPtrField, MergeFrom) {
   EXPECT_EQ("5", destination.Get(4));
 }
 
+TEST(RepeatedPtrField, CopyFrom) {
+  RepeatedPtrField<string> source, destination;
+
+  source.Add()->assign("4");
+  source.Add()->assign("5");
+
+  destination.Add()->assign("1");
+  destination.Add()->assign("2");
+  destination.Add()->assign("3");
+
+  destination.CopyFrom(source);
+
+  ASSERT_EQ(2, destination.size());
+
+  EXPECT_EQ("4", destination.Get(0));
+  EXPECT_EQ("5", destination.Get(1));
+}
+
+TEST(RepeatedPtrField, CopyConstruct) {
+  RepeatedPtrField<string> source;
+
+  source.Add()->assign("1");
+  source.Add()->assign("2");
+
+  RepeatedPtrField<string> destination(source);
+
+  ASSERT_EQ(2, destination.size());
+  EXPECT_EQ("1", destination.Get(0));
+  EXPECT_EQ("2", destination.Get(1));
+}
+
+TEST(RepeatedPtrField, CopyAssign) {
+  RepeatedPtrField<string> source, destination;
+
+  source.Add()->assign("4");
+  source.Add()->assign("5");
+
+  destination.Add()->assign("1");
+  destination.Add()->assign("2");
+  destination.Add()->assign("3");
+
+  destination = source;
+
+  ASSERT_EQ(2, destination.size());
+
+  EXPECT_EQ("4", destination.Get(0));
+  EXPECT_EQ("5", destination.Get(1));
+}
+
 TEST(RepeatedPtrField, MutableDataIsMutable) {
   RepeatedPtrField<string> field;
   *field.Add() = "1";
@@ -564,7 +661,8 @@ class RepeatedFieldIteratorTest : public testing::Test {
 TEST_F(RepeatedFieldIteratorTest, Convertible) {
   RepeatedField<int>::iterator iter = proto_array_.begin();
   RepeatedField<int>::const_iterator c_iter = iter;
-  EXPECT_EQ(0, *c_iter);
+  RepeatedField<int>::value_type value = *c_iter;
+  EXPECT_EQ(0, value);
 }
 
 TEST_F(RepeatedFieldIteratorTest, MutableIteration) {
@@ -613,6 +711,8 @@ class RepeatedPtrFieldIteratorTest : public testing::Test {
 TEST_F(RepeatedPtrFieldIteratorTest, Convertible) {
   RepeatedPtrField<string>::iterator iter = proto_array_.begin();
   RepeatedPtrField<string>::const_iterator c_iter = iter;
+  RepeatedPtrField<string>::value_type value = *c_iter;
+  EXPECT_EQ("foo", value);
 }
 
 TEST_F(RepeatedPtrFieldIteratorTest, MutableIteration) {
