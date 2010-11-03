@@ -37,23 +37,26 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "6gEKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "6wIKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
           "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
           "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
           "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIEiQKHGV4cGFuZF9u" + 
           "YW1lc3BhY2VfZGlyZWN0b3JpZXMYByABKAgSHAoOY2xzX2NvbXBsaWFuY2UY" + 
-          "CCABKAg6BHRydWUiKwoSQ1NoYXJwRmllbGRPcHRpb25zEhUKDXByb3BlcnR5" + 
-          "X25hbWUYASABKAk6XgoTY3NoYXJwX2ZpbGVfb3B0aW9ucxIcLmdvb2dsZS5w" + 
-          "cm90b2J1Zi5GaWxlT3B0aW9ucxjoByABKAsyIi5nb29nbGUucHJvdG9idWYu" + 
-          "Q1NoYXJwRmlsZU9wdGlvbnM6YQoUY3NoYXJwX2ZpZWxkX29wdGlvbnMSHS5n" + 
-          "b29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zGOgHIAEoCzIjLmdvb2dsZS5w" + 
-          "cm90b2J1Zi5DU2hhcnBGaWVsZE9wdGlvbnM=");
+          "CCABKAg6BHRydWUSHAoOZmlsZV9leHRlbnNpb24Y3QEgASgJOgMuY3MSGwoS" + 
+          "dW1icmVsbGFfbmFtZXNwYWNlGN4BIAEoCRIcChBvdXRwdXRfZGlyZWN0b3J5" + 
+          "GN8BIAEoCToBLhImChZpZ25vcmVfZ29vZ2xlX3Byb3RvYnVmGOABIAEoCDoF" + 
+          "ZmFsc2UiKwoSQ1NoYXJwRmllbGRPcHRpb25zEhUKDXByb3BlcnR5X25hbWUY" + 
+          "ASABKAk6XgoTY3NoYXJwX2ZpbGVfb3B0aW9ucxIcLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5GaWxlT3B0aW9ucxjoByABKAsyIi5nb29nbGUucHJvdG9idWYuQ1NoYXJw" + 
+          "RmlsZU9wdGlvbnM6YQoUY3NoYXJwX2ZpZWxkX29wdGlvbnMSHS5nb29nbGUu" + 
+          "cHJvdG9idWYuRmllbGRPcHRpb25zGOgHIAEoCzIjLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5DU2hhcnBGaWVsZE9wdGlvbnM=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
         internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", });
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", });
         internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
@@ -173,6 +176,46 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return clsCompliance_; }
     }
     
+    public const int FileExtensionFieldNumber = 221;
+    private bool hasFileExtension;
+    private string fileExtension_ = ".cs";
+    public bool HasFileExtension {
+      get { return hasFileExtension; }
+    }
+    public string FileExtension {
+      get { return fileExtension_; }
+    }
+    
+    public const int UmbrellaNamespaceFieldNumber = 222;
+    private bool hasUmbrellaNamespace;
+    private string umbrellaNamespace_ = "";
+    public bool HasUmbrellaNamespace {
+      get { return hasUmbrellaNamespace; }
+    }
+    public string UmbrellaNamespace {
+      get { return umbrellaNamespace_; }
+    }
+    
+    public const int OutputDirectoryFieldNumber = 223;
+    private bool hasOutputDirectory;
+    private string outputDirectory_ = ".";
+    public bool HasOutputDirectory {
+      get { return hasOutputDirectory; }
+    }
+    public string OutputDirectory {
+      get { return outputDirectory_; }
+    }
+    
+    public const int IgnoreGoogleProtobufFieldNumber = 224;
+    private bool hasIgnoreGoogleProtobuf;
+    private bool ignoreGoogleProtobuf_ = false;
+    public bool HasIgnoreGoogleProtobuf {
+      get { return hasIgnoreGoogleProtobuf; }
+    }
+    public bool IgnoreGoogleProtobuf {
+      get { return ignoreGoogleProtobuf_; }
+    }
+    
     public override bool IsInitialized {
       get {
         return true;
@@ -204,6 +247,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       if (HasClsCompliance) {
         output.WriteBool(8, ClsCompliance);
+      }
+      if (HasFileExtension) {
+        output.WriteString(221, FileExtension);
+      }
+      if (HasUmbrellaNamespace) {
+        output.WriteString(222, UmbrellaNamespace);
+      }
+      if (HasOutputDirectory) {
+        output.WriteString(223, OutputDirectory);
+      }
+      if (HasIgnoreGoogleProtobuf) {
+        output.WriteBool(224, IgnoreGoogleProtobuf);
       }
       UnknownFields.WriteTo(output);
     }
@@ -238,6 +293,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (HasClsCompliance) {
           size += pb::CodedOutputStream.ComputeBoolSize(8, ClsCompliance);
+        }
+        if (HasFileExtension) {
+          size += pb::CodedOutputStream.ComputeStringSize(221, FileExtension);
+        }
+        if (HasUmbrellaNamespace) {
+          size += pb::CodedOutputStream.ComputeStringSize(222, UmbrellaNamespace);
+        }
+        if (HasOutputDirectory) {
+          size += pb::CodedOutputStream.ComputeStringSize(223, OutputDirectory);
+        }
+        if (HasIgnoreGoogleProtobuf) {
+          size += pb::CodedOutputStream.ComputeBoolSize(224, IgnoreGoogleProtobuf);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -355,6 +422,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasClsCompliance) {
           ClsCompliance = other.ClsCompliance;
         }
+        if (other.HasFileExtension) {
+          FileExtension = other.FileExtension;
+        }
+        if (other.HasUmbrellaNamespace) {
+          UmbrellaNamespace = other.UmbrellaNamespace;
+        }
+        if (other.HasOutputDirectory) {
+          OutputDirectory = other.OutputDirectory;
+        }
+        if (other.HasIgnoreGoogleProtobuf) {
+          IgnoreGoogleProtobuf = other.IgnoreGoogleProtobuf;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -417,6 +496,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             }
             case 64: {
               ClsCompliance = input.ReadBool();
+              break;
+            }
+            case 1770: {
+              FileExtension = input.ReadString();
+              break;
+            }
+            case 1778: {
+              UmbrellaNamespace = input.ReadString();
+              break;
+            }
+            case 1786: {
+              OutputDirectory = input.ReadString();
+              break;
+            }
+            case 1792: {
+              IgnoreGoogleProtobuf = input.ReadBool();
               break;
             }
           }
@@ -567,6 +662,81 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearClsCompliance() {
         result.hasClsCompliance = false;
         result.clsCompliance_ = true;
+        return this;
+      }
+      
+      public bool HasFileExtension {
+        get { return result.HasFileExtension; }
+      }
+      public string FileExtension {
+        get { return result.FileExtension; }
+        set { SetFileExtension(value); }
+      }
+      public Builder SetFileExtension(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasFileExtension = true;
+        result.fileExtension_ = value;
+        return this;
+      }
+      public Builder ClearFileExtension() {
+        result.hasFileExtension = false;
+        result.fileExtension_ = ".cs";
+        return this;
+      }
+      
+      public bool HasUmbrellaNamespace {
+        get { return result.HasUmbrellaNamespace; }
+      }
+      public string UmbrellaNamespace {
+        get { return result.UmbrellaNamespace; }
+        set { SetUmbrellaNamespace(value); }
+      }
+      public Builder SetUmbrellaNamespace(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasUmbrellaNamespace = true;
+        result.umbrellaNamespace_ = value;
+        return this;
+      }
+      public Builder ClearUmbrellaNamespace() {
+        result.hasUmbrellaNamespace = false;
+        result.umbrellaNamespace_ = "";
+        return this;
+      }
+      
+      public bool HasOutputDirectory {
+        get { return result.HasOutputDirectory; }
+      }
+      public string OutputDirectory {
+        get { return result.OutputDirectory; }
+        set { SetOutputDirectory(value); }
+      }
+      public Builder SetOutputDirectory(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasOutputDirectory = true;
+        result.outputDirectory_ = value;
+        return this;
+      }
+      public Builder ClearOutputDirectory() {
+        result.hasOutputDirectory = false;
+        result.outputDirectory_ = ".";
+        return this;
+      }
+      
+      public bool HasIgnoreGoogleProtobuf {
+        get { return result.HasIgnoreGoogleProtobuf; }
+      }
+      public bool IgnoreGoogleProtobuf {
+        get { return result.IgnoreGoogleProtobuf; }
+        set { SetIgnoreGoogleProtobuf(value); }
+      }
+      public Builder SetIgnoreGoogleProtobuf(bool value) {
+        result.hasIgnoreGoogleProtobuf = true;
+        result.ignoreGoogleProtobuf_ = value;
+        return this;
+      }
+      public Builder ClearIgnoreGoogleProtobuf() {
+        result.hasIgnoreGoogleProtobuf = false;
+        result.ignoreGoogleProtobuf_ = false;
         return this;
       }
     }

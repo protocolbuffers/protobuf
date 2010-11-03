@@ -17,6 +17,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoBench", "ProtoBench\Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoDump", "ProtoDump\ProtoDump.csproj", "{D7282E99-2DC3-405B-946F-177DB2FD2AE2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{1F896D5C-5FC2-4671-9216-781CB8187EC7}"
+	ProjectSection(SolutionItems) = preProject
+		..\protos\tutorial\addressbook.proto = ..\protos\tutorial\addressbook.proto
+		..\protos\google\protobuf\csharp_options.proto = ..\protos\google\protobuf\csharp_options.proto
+		..\protos\google\protobuf\descriptor.proto = ..\protos\google\protobuf\descriptor.proto
+		..\todo.txt = ..\todo.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
