@@ -5,44 +5,50 @@ using System.Text;
 
 namespace Google.ProtocolBuffers.ProtoGen
 {
-	class ProtoFile : TempFile
-	{
-		public ProtoFile (string filename, string contents)
-		{
-			_tempFile = filename;
-			File.WriteAllText(_tempFile, contents);
-		}
-	}
-	class TempFile : IDisposable
-	{
-		protected string _tempFile;
+    class ProtoFile : TempFile
+    {
+        public ProtoFile(string filename, string contents)
+            : base(filename, contents)
+        {
+        }
+    }
+    class TempFile : IDisposable
+    {
+        private string tempFile;
 
-		public static TempFile Attach(string path) 
-		{
-			TempFile f = new TempFile();
-			f._tempFile = path;
-			return f;
-		}
+        public static TempFile Attach(string path) 
+        {
+            return new TempFile(path, null);
+        }
 
-		protected TempFile() { }
-		public TempFile(string contents)
-		{
-			File.WriteAllText(_tempFile = Path.GetTempFileName(), contents, Encoding.ASCII);
-		}
+        protected TempFile(string filename, string contents) {
+            tempFile = filename;
+            if (contents != null)
+            {
+                File.WriteAllText(tempFile, contents, new UTF8Encoding(false));
+            }
+        }
 
-		public string TempPath { get { return _tempFile; } }
+        public TempFile(string contents)
+            : this(Path.GetTempFileName(), contents)
+        {
+        }
 
-		public void ChangeExtension(string ext)
-		{
-			string newFile = Path.ChangeExtension(_tempFile, ext);
-			File.Move(_tempFile, newFile);
-			_tempFile = newFile;
-		}
+        public string TempPath { get { return tempFile; } }
 
-		public void Dispose()
-		{
-			if(File.Exists(_tempFile))
-				File.Delete(_tempFile);
-		}
-	}
+        public void ChangeExtension(string ext)
+        {
+            string newFile = Path.ChangeExtension(tempFile, ext);
+            File.Move(tempFile, newFile);
+            tempFile = newFile;
+        }
+
+        public void Dispose()
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
+    }
 }

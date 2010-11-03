@@ -76,7 +76,7 @@ namespace Google.ProtocolBuffers {
     public void DynamicMessageSettersRejectNull() {
       IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
       reflectionTester.AssertReflectionSettersRejectNull(builder);
-	  }
+      }
 
     [Test]
     public void DynamicMessageExtensionAccessors() {
@@ -93,7 +93,7 @@ namespace Google.ProtocolBuffers {
     public void DynamicMessageExtensionSettersRejectNull() {
       IBuilder builder = DynamicMessage.CreateBuilder(TestAllExtensions.Descriptor);
       extensionsReflectionTester.AssertReflectionSettersRejectNull(builder);
-	  }
+      }
 
     [Test]
     public void DynamicMessageRepeatedSetters() {

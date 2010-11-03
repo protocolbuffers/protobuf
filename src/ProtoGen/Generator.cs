@@ -60,30 +60,30 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void Generate() {
-		
-	  List<FileDescriptorSet> descriptorProtos = new List<FileDescriptorSet>();
+        
+      List<FileDescriptorSet> descriptorProtos = new List<FileDescriptorSet>();
       foreach (string inputFile in options.InputFiles) {
         ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
         extensionRegistry.Add(CSharpOptions.CSharpFileOptions);
         extensionRegistry.Add(CSharpOptions.CSharpFieldOptions);
         using (Stream inputStream = File.OpenRead(inputFile)) {
-			descriptorProtos.Add(FileDescriptorSet.ParseFrom(inputStream, extensionRegistry));
+            descriptorProtos.Add(FileDescriptorSet.ParseFrom(inputStream, extensionRegistry));
         }
-	  }
+      }
       
-		IList<FileDescriptor> descriptors = ConvertDescriptors(options.FileOptions, descriptorProtos.ToArray());
+      IList<FileDescriptor> descriptors = ConvertDescriptors(options.FileOptions, descriptorProtos.ToArray());
 
-		//ROK Combine with Options...
-		foreach (FileDescriptor descriptor in descriptors)
-			descriptor.ConfigureWithDefaultOptions(options.FileOptions);
+      // Combine with options from command line
+      foreach (FileDescriptor descriptor in descriptors) {
+        descriptor.ConfigureWithDefaultOptions(options.FileOptions);
+      }
 
-        foreach (FileDescriptor descriptor in descriptors) {
-			//ROK 2010-09-03 Ignore google protobuf package
-			if(descriptor.CSharpOptions.IgnoreGoogleProtobuf && descriptor.Package == "google.protobuf")
-				continue;
-
-          Generate(descriptor);
-        
+      foreach (FileDescriptor descriptor in descriptors) {
+        // Optionally exclude descriptors in google.protobuf
+        if (descriptor.CSharpOptions.IgnoreGoogleProtobuf && descriptor.Package == "google.protobuf") {
+          continue;
+        }
+        Generate(descriptor);
       }
     }
 
@@ -102,13 +102,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
     private string GetOutputFile(FileDescriptor descriptor) {
       CSharpFileOptions fileOptions = descriptor.CSharpOptions;
 
-	  //ROK 2010-09-03 - added the ability to sepcify the extension used within the options
-	  //string filename = descriptor.CSharpOptions.UmbrellaClassname + ".cs";
-	  string filename = descriptor.CSharpOptions.UmbrellaClassname + descriptor.CSharpOptions.FileExtension;
+      string filename = descriptor.CSharpOptions.UmbrellaClassname + descriptor.CSharpOptions.FileExtension;
 
-	  //ROK 2010-09-03 - output directory can be specific to a descriptor file
-	  //string outputDirectory = options.OutputDirectory;
-	  string outputDirectory = descriptor.CSharpOptions.OutputDirectory;
+      string outputDirectory = descriptor.CSharpOptions.OutputDirectory;
       if (fileOptions.ExpandNamespaceDirectories) {
         string package = fileOptions.Namespace;
         if (!string.IsNullOrEmpty(package)) {
@@ -117,15 +113,11 @@ namespace Google.ProtocolBuffers.ProtoGen {
             outputDirectory = Path.Combine(outputDirectory, bit);
           }
         }
-	  }
-	  //ROK 2010-09-03 - Always force output directory exists since they can specify this in .proto options
-	  Directory.CreateDirectory(outputDirectory);
+      }
+      
+      // As the directory can be explicitly specified in options, we need to make sure it exists
+      Directory.CreateDirectory(outputDirectory);
       return Path.Combine(outputDirectory, filename);
-    }
-
-    // ROK 2010-09-03 - used by unit tests, we will continue to allow them to function as-is.
-	internal static IList<FileDescriptor> ConvertDescriptors(FileDescriptorSet descriptorProtos) {
-		return ConvertDescriptors(CSharpFileOptions.DefaultInstance, descriptorProtos);
     }
 
     /// <summary>
@@ -134,12 +126,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
     /// Note: this method is internal rather than private to allow testing.
     /// </summary>
     /// <exception cref="DependencyResolutionException">Not all dependencies could be resolved.</exception>
-    private static IList<FileDescriptor> ConvertDescriptors(CSharpFileOptions options, params FileDescriptorSet[] descriptorProtos) {
+    internal static IList<FileDescriptor> ConvertDescriptors(CSharpFileOptions options, params FileDescriptorSet[] descriptorProtos) {
       // Simple strategy: Keep going through the list of protos to convert, only doing ones where
       // we've already converted all the dependencies, until we get to a stalemate
       List<FileDescriptorProto> fileList = new List<FileDescriptorProto>();
-	  foreach (FileDescriptorSet set in descriptorProtos)
-	    fileList.AddRange(set.FileList);
+      foreach (FileDescriptorSet set in descriptorProtos)
+        fileList.AddRange(set.FileList);
 
       FileDescriptor[] converted = new FileDescriptor[fileList.Count];
 
@@ -158,31 +150,28 @@ namespace Google.ProtocolBuffers.ProtoGen {
           FileDescriptorProto candidate = fileList[i];
           FileDescriptor[] dependencies = new FileDescriptor[candidate.DependencyList.Count];
 
-			
-		  CSharpFileOptions.Builder builder = options.ToBuilder();
-		  if (candidate.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions)) {
-			builder.MergeFrom(candidate.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions));
-		  }
+            
+          CSharpFileOptions.Builder builder = options.ToBuilder();
+          if (candidate.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions)) {
+            builder.MergeFrom(candidate.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions));
+          }
           CSharpFileOptions localOptions = builder.Build();
 
           bool foundAllDependencies = true;
           for (int j = 0; j < dependencies.Length; j++) {
             if (!convertedMap.TryGetValue(candidate.DependencyList[j], out dependencies[j])) {
-
-				// ROK 2010-09-03 - we can auto-magically resolve these since we already have their description
-				// This way if the file is only referencing options it does not need to be built with the
-				// --include_imports definition.
-				if (localOptions.IgnoreGoogleProtobuf && (candidate.DependencyList[j] == "google/protobuf/csharp_options.proto"))
-				{
-					dependencies[j] = CSharpOptions.Descriptor;
-					continue;
-				}
-				if (localOptions.IgnoreGoogleProtobuf && (candidate.DependencyList[j] == "google/protobuf/descriptor.proto"))
-				{
-					dependencies[j] = DescriptorProtoFile.Descriptor;
-					continue;
-				}
-            	foundAllDependencies = false;
+              // We can auto-magically resolve these since we already have their description
+              // This way if the file is only referencing options it does not need to be built with the
+              // --include_imports definition.
+              if (localOptions.IgnoreGoogleProtobuf && (candidate.DependencyList[j] == "google/protobuf/csharp_options.proto")) {
+                dependencies[j] = CSharpOptions.Descriptor;
+                continue;
+              }
+              if (localOptions.IgnoreGoogleProtobuf && (candidate.DependencyList[j] == "google/protobuf/descriptor.proto")) {
+                dependencies[j] = DescriptorProtoFile.Descriptor;
+                continue;
+              }
+              foundAllDependencies = false;
               break;
             }
           }

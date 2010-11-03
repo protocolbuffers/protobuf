@@ -39,7 +39,6 @@ message CSharpFileOptions {
   // Generate attributes indicating non-CLS-compliance
   optional bool cls_compliance = 8 [default = true];
 
-  // ROK - 2010-09-03 additions to csoptions ...
   // The extension that should be appended to the umbrella_classname when creating files.
   optional string file_extension = 221 [default = ".cs"];
   

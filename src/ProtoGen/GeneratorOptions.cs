@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -40,7 +42,6 @@ using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
-
   /// <summary>
   /// All the configuration required for the generator - where to generate
   /// output files, the location of input files etc. While this isn't immutable
@@ -48,7 +49,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// the generator.
   /// </summary>
   public sealed class GeneratorOptions {
-	//ROK, see below - public string OutputDirectory  { get; set; }
     public IList<string> InputFiles { get; set; }
 
     /// <summary>
@@ -61,13 +61,13 @@ namespace Google.ProtocolBuffers.ProtoGen {
     public bool TryValidate(out IList<string> reasons) {
       List<string> tmpReasons = new List<string>();
 
-	  //ROK 2010-09-03 see population of options below
-	  ParseArguments(tmpReasons);
+      ParseArguments(tmpReasons);
 
       // Output directory validation
       if (string.IsNullOrEmpty(FileOptions.OutputDirectory)) {
         tmpReasons.Add("No output directory specified");
-      } else {
+      }
+      else {
         if (!Directory.Exists(FileOptions.OutputDirectory)) {
           tmpReasons.Add("Specified output directory (" + FileOptions.OutputDirectory + " doesn't exist.");
         }
@@ -76,7 +76,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // Input file validation (just in terms of presence)
       if (InputFiles == null || InputFiles.Count == 0) {
         tmpReasons.Add("No input files specified");
-      } else {
+      }
+      else {
         foreach (string input in InputFiles) {
           FileInfo fi = new FileInfo(input);
           if (!fi.Exists) {
@@ -106,178 +107,160 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
+    // Raw arguments, used to provide defaults for proto file options
+    public IList<string> Arguments { get; set; }
 
+    [Obsolete("Please use GeneratorOptions.FileOptions.OutputDirectory instead")]
+    public string OutputDirectory {
+      get { return FileOptions.OutputDirectory; }
+      set {
+        CSharpFileOptions.Builder bld = FileOptions.ToBuilder();
+        bld.OutputDirectory = value;
+        FileOptions = bld.Build();
+      }
+    }
 
-	// ROK - added to provide defaults for any of the options
-	//Raw arguments
-	public IList<string> Arguments { get; set; }
-	[Obsolete("Please use GeneratorOptions.FileOptions.OutputDirectory instead")]
-  	public string OutputDirectory
-  	{
-  		get {
-			return FileOptions.OutputDirectory;
-  		}
-  		set {
-			CSharpFileOptions.Builder bld = FileOptions.ToBuilder();
-			bld.OutputDirectory = value;
-			FileOptions = bld.Build();
-  		}
-  	}
+    private static readonly Regex ArgMatch = new Regex(@"^[-/](?<name>[\w_]+?)[:=](?<value>.*)$");
+    private CSharpFileOptions fileOptions;
 
-	private static readonly Regex ArgMatch = new Regex(@"^[-/](?<name>[\w_]+?)[:=](?<value>.*)$");
-	CSharpFileOptions _fileOptions;
-	public CSharpFileOptions FileOptions
-	{
-		get { return _fileOptions ?? (_fileOptions = CSharpFileOptions.DefaultInstance); }
-		set { _fileOptions = value; }
-	}
+    public CSharpFileOptions FileOptions {
+      get { return fileOptions ?? (fileOptions = CSharpFileOptions.DefaultInstance); }
+      set { fileOptions = value; }
+    }
 
-	private void ParseArguments(IList<string> tmpReasons)
-	{
-		bool doHelp = Arguments.Count == 0;
+    private void ParseArguments(IList<string> tmpReasons) {
+      bool doHelp = Arguments.Count == 0;
 
-		//ROK Parse the raw arguments
-		InputFiles = new List<string>();
-		CSharpFileOptions.Builder builder = FileOptions.ToBuilder();
-		Dictionary<string, FieldDescriptor> fields =
-			new Dictionary<string, FieldDescriptor>(StringComparer.OrdinalIgnoreCase);
-		foreach (FieldDescriptor fld in builder.DescriptorForType.Fields)
-			fields.Add(fld.Name, fld);
+      InputFiles = new List<string>();
+      CSharpFileOptions.Builder builder = FileOptions.ToBuilder();
+      Dictionary<string, FieldDescriptor> fields =
+        new Dictionary<string, FieldDescriptor>(StringComparer.OrdinalIgnoreCase);
+      foreach (FieldDescriptor fld in builder.DescriptorForType.Fields) {
+        fields.Add(fld.Name, fld);
+      }
 
-		foreach (string argument in Arguments)
-		{
-			if (StringComparer.OrdinalIgnoreCase.Equals("-help", argument) ||
-				StringComparer.OrdinalIgnoreCase.Equals("/help", argument) ||
-				StringComparer.OrdinalIgnoreCase.Equals("-?", argument) ||
-				StringComparer.OrdinalIgnoreCase.Equals("/?", argument))
-			{
-				doHelp = true;
-				break;
-			}
+      foreach (string argument in Arguments) {
+        if (StringComparer.OrdinalIgnoreCase.Equals("-help", argument) ||
+            StringComparer.OrdinalIgnoreCase.Equals("/help", argument) ||
+            StringComparer.OrdinalIgnoreCase.Equals("-?", argument) ||
+            StringComparer.OrdinalIgnoreCase.Equals("/?", argument)) {
+          doHelp = true;
+          break;
+        }
 
-			Match m = ArgMatch.Match(argument);
-			if (m.Success)
-			{
-				FieldDescriptor fld;
-				string name = m.Groups["name"].Value;
-				string value = m.Groups["value"].Value;
+        Match m = ArgMatch.Match(argument);
+        if (m.Success) {
+          FieldDescriptor fld;
+          string name = m.Groups["name"].Value;
+          string value = m.Groups["value"].Value;
 
-				if (fields.TryGetValue(name, out fld))
-				{
-					object obj;
-					if (TryCoerceType(value, fld, out obj, tmpReasons))
-						builder[fld] = obj;
-				}
-				else if (!File.Exists(argument))
-				{
-					doHelp = true;
-					tmpReasons.Add("Unknown argument '" + name + "'.");
-				}
-				else
-					InputFiles.Add(argument);
-			}
-			else
-				InputFiles.Add(argument);
-		}
+          if (fields.TryGetValue(name, out fld)) {
+            object obj;
+            if (TryCoerceType(value, fld, out obj, tmpReasons)) {
+              builder[fld] = obj;
+            }
+          }
+          else if (!File.Exists(argument)) {
+            doHelp = true;
+            tmpReasons.Add("Unknown argument '" + name + "'.");
+          }
+          else {
+            InputFiles.Add(argument);
+          }
+        }
+        else {
+          InputFiles.Add(argument);
+        }
+      }
 
-		if (doHelp || InputFiles.Count == 0)
-		{
-			tmpReasons.Add("Arguments:");
-			foreach (KeyValuePair<string, FieldDescriptor> field in fields)
-			{
-				tmpReasons.Add(String.Format("-{0}=[{1}]", field.Key, field.Value.FieldType));
-			}
-			tmpReasons.Add("followed by one or more file paths.");
-		}
-		else
-			FileOptions = builder.Build();
-	}
+      if (doHelp || InputFiles.Count == 0) {
+        tmpReasons.Add("Arguments:");
+        foreach (KeyValuePair<string, FieldDescriptor> field in fields) {
+          tmpReasons.Add(String.Format("-{0}=[{1}]", field.Key, field.Value.FieldType));
+        }
+        tmpReasons.Add("followed by one or more file paths.");
+      }
+      else {
+        FileOptions = builder.Build();
+      }
+    }
 
-	private static bool TryCoerceType(string text, FieldDescriptor field, out object value, IList<string> tmpReasons)
-	{
-		value = null;
+    private static bool TryCoerceType(string text, FieldDescriptor field, out object value, IList<string> tmpReasons) {
+      value = null;
 
-		switch (field.FieldType)
-		{
-			case FieldType.Int32:
-			case FieldType.SInt32:
-			case FieldType.SFixed32:
-				value = Int32.Parse(text);
-				break;
+      switch (field.FieldType) {
+        case FieldType.Int32:
+        case FieldType.SInt32:
+        case FieldType.SFixed32:
+          value = Int32.Parse(text);
+          break;
 
-			case FieldType.Int64:
-			case FieldType.SInt64:
-			case FieldType.SFixed64:
-				value = Int64.Parse(text);
-				break;
+        case FieldType.Int64:
+        case FieldType.SInt64:
+        case FieldType.SFixed64:
+          value = Int64.Parse(text);
+          break;
 
-			case FieldType.UInt32:
-			case FieldType.Fixed32:
-				value = UInt32.Parse(text);
-				break;
+        case FieldType.UInt32:
+        case FieldType.Fixed32:
+          value = UInt32.Parse(text);
+          break;
 
-			case FieldType.UInt64:
-			case FieldType.Fixed64:
-				value = UInt64.Parse(text);
-				break;
+        case FieldType.UInt64:
+        case FieldType.Fixed64:
+          value = UInt64.Parse(text);
+          break;
 
-			case FieldType.Float:
-				value = float.Parse(text);
-				break;
+        case FieldType.Float:
+          value = float.Parse(text);
+          break;
 
-			case FieldType.Double:
-				value = Double.Parse(text);
-				break;
+        case FieldType.Double:
+          value = Double.Parse(text);
+          break;
 
-			case FieldType.Bool:
-				value = Boolean.Parse(text);
-				break;
+        case FieldType.Bool:
+          value = Boolean.Parse(text);
+          break;
 
-			case FieldType.String:
-				value = text;
-				break;
+        case FieldType.String:
+          value = text;
+          break;
 
-			case FieldType.Enum:
-				{
+        case FieldType.Enum: {
+          EnumDescriptor enumType = field.EnumType;
 
-					EnumDescriptor enumType = field.EnumType;
+          int number;
+          if (int.TryParse(text, out number)) {
+            value = enumType.FindValueByNumber(number);
+            if (value == null) {
+              tmpReasons.Add(
+                "Enum type \"" + enumType.FullName +
+                "\" has no value with number " + number + ".");
+              return false;
+            }
+          }
+          else {
+            value = enumType.FindValueByName(text);
+            if (value == null) {
+              tmpReasons.Add(
+                "Enum type \"" + enumType.FullName +
+                "\" has no value named \"" + text + "\".");
+              return false;
+            }
+          }
 
-					int number;
-					if (int.TryParse(text, out number))
-					{
-						value = enumType.FindValueByNumber(number);
-						if (value == null)
-						{
-							tmpReasons.Add(
-								"Enum type \"" + enumType.FullName +
-								"\" has no value with number " + number + ".");
-							return false;
-						}
-					}
-					else
-					{
-						value = enumType.FindValueByName(text);
-						if (value == null)
-						{
-							tmpReasons.Add(
-								"Enum type \"" + enumType.FullName +
-								"\" has no value named \"" + text + "\".");
-							return false;
-						}
-					}
+          break;
+        }
 
-					break;
-				}
+        case FieldType.Bytes:
+        case FieldType.Message:
+        case FieldType.Group:
+          tmpReasons.Add("Unhandled field type " + field.FieldType.ToString() + ".");
+          return false;
+      }
 
-			case FieldType.Bytes:
-			case FieldType.Message:
-			case FieldType.Group:
-				tmpReasons.Add("Unhandled field type " + field.FieldType.ToString() + ".");
-				return false;
-		}
-
-		return true;
-	}
-
+      return true;
+    }
   }
 }

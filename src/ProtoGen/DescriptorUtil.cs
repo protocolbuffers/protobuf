@@ -45,24 +45,25 @@ namespace Google.ProtocolBuffers.ProtoGen {
     internal static string GetFullUmbrellaClassName(IDescriptor descriptor) {
       CSharpFileOptions options = descriptor.File.CSharpOptions;
       string result = options.Namespace;
-      if (result != "") result += '.';
-	  result += QualifiedUmbrellaClassName(options);
+      if (result != "") {
+        result += '.';
+      }
+      result += GetQualifiedUmbrellaClassName(options);
       return "global::" + result;
     }
 
     /// <summary>
-    /// ROK 2010-09-03
     /// Evaluates the options and returns the qualified name of the umbrella class
-    /// relative to the descriptor type's namespace.  Basically contacts the
-	/// UmbrellaNamespace + UmbrellaClassname fields.
+    /// relative to the descriptor type's namespace.  Basically concatenates the
+    /// UmbrellaNamespace + UmbrellaClassname fields.
     /// </summary>
-	internal static string QualifiedUmbrellaClassName(CSharpFileOptions options)
-	{
-		string fullName = options.UmbrellaClassname;
-		if (!options.NestClasses && options.UmbrellaNamespace != "")
-			fullName = String.Format("{0}.{1}", options.UmbrellaNamespace, options.UmbrellaClassname);
-    	return fullName;
-	}
+    internal static string GetQualifiedUmbrellaClassName(CSharpFileOptions options) {
+      string fullName = options.UmbrellaClassname;
+      if (!options.NestClasses && options.UmbrellaNamespace != "") {
+        fullName = String.Format("{0}.{1}", options.UmbrellaNamespace, options.UmbrellaClassname);
+      }
+      return fullName;
+    }
 
     internal static string GetMappedTypeName(MappedType type) {
       switch(type) {
