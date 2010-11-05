@@ -35,7 +35,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
 
@@ -47,90 +46,23 @@ namespace Google.ProtocolBuffers {
   /// use explicit interface implemenation for the non-generic form. This mirrors
   /// how IEnumerable and IEnumerable&lt;T&gt; work.
   /// </summary>
-  public interface IBuilder {
+  public interface IBuilderLite {
     /// <summary>
     /// Returns true iff all required fields in the message and all
     /// embedded messages are set.
     /// </summary>
     bool IsInitialized { get; }
 
-    /// <summary>
-    /// Only present in the nongeneric interface - useful for tests, but
-    /// not as much in real life.
-    /// </summary>
-    IBuilder SetField(FieldDescriptor field, object value);
-
-    /// <summary>
-    /// Only present in the nongeneric interface - useful for tests, but
-    /// not as much in real life.
-    /// </summary>
-    IBuilder SetRepeatedField(FieldDescriptor field, int index, object value);
-
-    /// <summary>
-    /// Behaves like the equivalent property in IMessage&lt;T&gt;.
-    /// The returned map may or may not reflect future changes to the builder.
-    /// Either way, the returned map is unmodifiable.
-    /// </summary>
-    IDictionary<FieldDescriptor, object> AllFields { get; }
-
-    /// <summary>
-    /// Allows getting and setting of a field.
-    /// <see cref="IMessage{TMessage, TBuilder}.Item(FieldDescriptor)"/>
-    /// </summary>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    object this[FieldDescriptor field] { get; set; }
-
-    /// <summary>
-    /// Get the message's type descriptor.
-    /// <see cref="IMessage{TMessage, TBuilder}.DescriptorForType"/>
-    /// </summary>
-    MessageDescriptor DescriptorForType { get; }
-
-    /// <summary>
-    /// <see cref="IMessage{TMessage, TBuilder}.GetRepeatedFieldCount"/>
-    /// </summary>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    int GetRepeatedFieldCount(FieldDescriptor field);
-
-    /// <summary>
-    /// Allows getting and setting of a repeated field value.
-    /// <see cref="IMessage{TMessage, TBuilder}.Item(FieldDescriptor, int)"/>
-    /// </summary>
-    object this[FieldDescriptor field, int index] { get; set; }
-
-    /// <summary>
-    /// <see cref="IMessage{TMessage, TBuilder}.HasField"/>
-    /// </summary>
-    bool HasField(FieldDescriptor field);
-
-    /// <summary>
-    /// <see cref="IMessage{TMessage, TBuilder}.UnknownFields"/>
-    /// </summary>
-    UnknownFieldSet UnknownFields { get; set; }
-
-    /// <summary>
-    /// Create a builder for messages of the appropriate type for the given field.
-    /// Messages built with this can then be passed to the various mutation properties
-    /// and methods.
-    /// </summary>
-    IBuilder CreateBuilderForField(FieldDescriptor field);
-
-    #region Methods which are like those of the generic form, but without any knowledge of the type parameters
-    IBuilder WeakAddRepeatedField(FieldDescriptor field, object value);
-    IBuilder WeakClear();
-    IBuilder WeakClearField(FieldDescriptor field);
-    IBuilder WeakMergeFrom(IMessage message);
-    IBuilder WeakMergeFrom(ByteString data);
-    IBuilder WeakMergeFrom(ByteString data, ExtensionRegistry registry);
-    IBuilder WeakMergeFrom(CodedInputStream input);
-    IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry);
-    IMessage WeakBuild();
-    IMessage WeakBuildPartial();
-    IBuilder WeakClone();
-    IMessage WeakDefaultInstanceForType { get; }
-    #endregion
+    IBuilderLite WeakClear();
+    IBuilderLite WeakMergeFrom(IMessageLite message);
+    IBuilderLite WeakMergeFrom(ByteString data);
+    IBuilderLite WeakMergeFrom(ByteString data, ExtensionRegistryLite registry);
+    IBuilderLite WeakMergeFrom(CodedInputStream input);
+    IBuilderLite WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry);
+    IMessageLite WeakBuild();
+    IMessageLite WeakBuildPartial();
+    IBuilderLite WeakClone();
+    IMessageLite WeakDefaultInstanceForType { get; }
   }
 
   /// <summary>
@@ -139,11 +71,9 @@ namespace Google.ProtocolBuffers {
   /// </summary>
   /// <typeparam name="TMessage">Type of message</typeparam>
   /// <typeparam name="TBuilder">Type of builder</typeparam>
-  public interface IBuilder<TMessage, TBuilder> : IBuilder
-      where TMessage : IMessage<TMessage, TBuilder> 
-      where TBuilder : IBuilder<TMessage, TBuilder> {
-
-    TBuilder SetUnknownFields(UnknownFieldSet unknownFields);
+  public interface IBuilderLite<TMessage, TBuilder> : IBuilderLite
+      where TMessage : IMessageLite<TMessage, TBuilder> 
+      where TBuilder : IBuilderLite<TMessage, TBuilder> {
 
     /// <summary>
     /// Resets all fields to their default values.
@@ -169,7 +99,7 @@ namespace Google.ProtocolBuffers {
     /// Merge the specified other message which may be a different implementation of
     /// the same message descriptor.
     /// </summary>
-    TBuilder MergeFrom(IMessage other);
+    TBuilder MergeFrom(IMessageLite other);
 
     /// <summary>
     /// Constructs the final message. Once this is called, this Builder instance
@@ -221,36 +151,14 @@ namespace Google.ProtocolBuffers {
     /// in <paramref name="extensionRegistry"/>. Extensions not in the registry
     /// will be treated as unknown fields.
     /// </summary>
-    TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
+    TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry);
 
     /// <summary>
     /// Get's the message's type's default instance.
-    /// <see cref="IMessage{TMessage}.DefaultInstanceForType" />
+    /// <see cref="IMessageLite{TMessage}.DefaultInstanceForType" />
     /// </summary>
     TMessage DefaultInstanceForType { get; }
 
-    /// <summary>
-    /// Clears the field. This is exactly equivalent to calling the generated
-    /// Clear method corresponding to the field.
-    /// </summary>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    TBuilder ClearField(FieldDescriptor field);
-
-    /// <summary>
-    /// Appends the given value as a new element for the specified repeated field.
-    /// </summary>
-    /// <exception cref="ArgumentException">the field is not a repeated field,
-    /// the field does not belong to this builder's type, or the value is
-    /// of the incorrect type
-    /// </exception>
-    TBuilder AddRepeatedField(FieldDescriptor field, object value);
-
-    /// <summary>
-    /// Merge some unknown fields into the set for this message.
-    /// </summary>
-    TBuilder MergeUnknownFields(UnknownFieldSet unknownFields);
-    
     /// <summary>
     /// Like MergeFrom(Stream), but does not read until the end of the file.
     /// Instead, the size of the message (encoded as a varint) is read first,
@@ -263,7 +171,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Like MergeDelimitedFrom(Stream) but supporting extensions.
     /// </summary>
-    TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry);
+    TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistryLite extensionRegistry);
 
     #region Convenience methods
     /// <summary>
@@ -278,7 +186,7 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
+    TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
@@ -292,7 +200,7 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
+    TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="input"/> as a message of this type and merge
@@ -311,7 +219,7 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
+    TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry);
     #endregion
   }
 }

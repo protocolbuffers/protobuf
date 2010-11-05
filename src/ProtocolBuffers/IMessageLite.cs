@@ -35,7 +35,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
 
@@ -43,68 +42,7 @@ namespace Google.ProtocolBuffers {
   /// Non-generic interface used for all parts of the API which don't require
   /// any type knowledge.
   /// </summary>
-  public interface IMessage {
-    /// <summary>
-    /// Returns the message's type's descriptor. This differs from the
-    /// Descriptor property of each generated message class in that this
-    /// method is an abstract method of IMessage whereas Descriptor is
-    /// a static property of a specific class. They return the same thing.
-    /// </summary>
-    MessageDescriptor DescriptorForType { get; }
-    /// <summary>
-    /// Returns a collection of all the fields in this message which are set
-    /// and their corresponding values.  A singular ("required" or "optional")
-    /// field is set iff HasField() returns true for that field.  A "repeated"
-    /// field is set iff GetRepeatedFieldSize() is greater than zero.  The
-    /// values are exactly what would be returned by calling
-    /// GetField(FieldDescriptor) for each field.  The map
-    /// is guaranteed to be a sorted map, so iterating over it will return fields
-    /// in order by field number. 
-    /// </summary>
-    IDictionary<FieldDescriptor, object> AllFields { get; }
-
-    /// <summary>
-    /// Returns true if the given field is set. This is exactly equivalent
-    /// to calling the generated "Has" property corresponding to the field.
-    /// </summary>
-    /// <exception cref="ArgumentException">the field is a repeated field,
-    /// or it's not a field of this type</exception>
-    bool HasField(FieldDescriptor field);
-
-    /// <summary>
-    /// Obtains the value of the given field, or the default value if
-    /// it isn't set. For value type fields, the boxed value is returned.
-    /// For enum fields, the EnumValueDescriptor for the enum is returned.
-    /// For embedded message fields, the sub-message
-    /// is returned. For repeated fields, an IList&lt;T&gt; is returned.
-    /// </summary>
-    object this[FieldDescriptor field] { get; }
-
-    /// <summary>
-    /// Returns the number of elements of a repeated field. This is
-    /// exactly equivalent to calling the generated "Count" property
-    /// corresponding to the field.
-    /// </summary>
-    /// <exception cref="ArgumentException">the field is not a repeated field,
-    /// or it's not a field of this type</exception>
-    int GetRepeatedFieldCount(FieldDescriptor field);
-
-    /// <summary>
-    /// Gets an element of a repeated field. For value type fields 
-    /// excluding enums, the boxed value is returned. For embedded
-    /// message fields, the sub-message is returned. For enums, the
-    /// relevant EnumValueDescriptor is returned.
-    /// </summary>
-    /// <exception cref="ArgumentException">the field is not a repeated field,
-    /// or it's not a field of this type</exception>
-    /// <exception cref="ArgumentOutOfRangeException">the index is out of
-    /// range for the repeated field's value</exception>
-    object this[FieldDescriptor field, int index] { get; }
-
-    /// <summary>
-    /// Returns the unknown fields for this message.
-    /// </summary>
-    UnknownFieldSet UnknownFields { get; }
+  public interface IMessageLite {
 
     /// <summary>
     /// Returns true iff all required fields in the message and all embedded
@@ -191,19 +129,19 @@ namespace Google.ProtocolBuffers {
     /// is typically implemented by strongly typed messages by just returning
     /// the result of CreateBuilderForType.
     /// </summary>
-    IBuilder WeakCreateBuilderForType();
+    IBuilderLite WeakCreateBuilderForType();
 
     /// <summary>
     /// Creates a builder with the same contents as this message. This
     /// is typically implemented by strongly typed messages by just returning
     /// the result of ToBuilder.
     /// </summary>
-    IBuilder WeakToBuilder();
+    IBuilderLite WeakToBuilder();
 
-    IMessage WeakDefaultInstanceForType { get; }
+    IMessageLite WeakDefaultInstanceForType { get; }
   }
 
-  public interface IMessage<TMessage> : IMessage {
+  public interface IMessageLite<TMessage> : IMessageLite {
     /// <summary>
     /// Returns an instance of this message type with all fields set to
     /// their default values. This may or may not be a singleton. This differs
@@ -217,9 +155,9 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// Type-safe interface for all generated messages to implement.
   /// </summary>
-  public interface IMessage<TMessage, TBuilder> : IMessage<TMessage>
-      where TMessage : IMessage<TMessage, TBuilder> 
-      where TBuilder : IBuilder<TMessage, TBuilder> {
+  public interface IMessageLite<TMessage, TBuilder> : IMessageLite<TMessage>
+      where TMessage : IMessageLite<TMessage, TBuilder> 
+      where TBuilder : IBuilderLite<TMessage, TBuilder> {
     #region Builders
     /// <summary>
     /// Constructs a new builder for a message of the same type as this message.

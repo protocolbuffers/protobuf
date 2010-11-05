@@ -36,8 +36,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+#if !LITE
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
+#endif
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -47,13 +49,9 @@ namespace Google.ProtocolBuffers {
 
     private readonly IList<string> missingFields;
 
-    public UninitializedMessageException(IMessage message)
-        : this(FindMissingFields(message)) {
-    }
-
     private UninitializedMessageException(IList<string> missingFields)
         : base(BuildDescription(missingFields)) {
-      this.missingFields = Lists.AsReadOnly(missingFields);
+      this.missingFields = new List<string>(missingFields);
     }
 
     
@@ -90,6 +88,11 @@ namespace Google.ProtocolBuffers {
         description.Append(field);
       }
       return description.ToString();
+    }
+
+#if !LITE
+    public UninitializedMessageException(IMessage message)
+        : this(FindMissingFields(message)) {
     }
 
     /// <summary>
@@ -148,5 +151,6 @@ namespace Google.ProtocolBuffers {
       result.Append('.');
       return result.ToString();
     }
+#endif
   }
 }

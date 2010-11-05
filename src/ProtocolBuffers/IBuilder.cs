@@ -47,12 +47,12 @@ namespace Google.ProtocolBuffers {
   /// use explicit interface implemenation for the non-generic form. This mirrors
   /// how IEnumerable and IEnumerable&lt;T&gt; work.
   /// </summary>
-  public interface IBuilder {
+  public interface IBuilder : IBuilderLite {
     /// <summary>
     /// Returns true iff all required fields in the message and all
     /// embedded messages are set.
     /// </summary>
-    bool IsInitialized { get; }
+    new bool IsInitialized { get; }
 
     /// <summary>
     /// Only present in the nongeneric interface - useful for tests, but
@@ -119,17 +119,17 @@ namespace Google.ProtocolBuffers {
 
     #region Methods which are like those of the generic form, but without any knowledge of the type parameters
     IBuilder WeakAddRepeatedField(FieldDescriptor field, object value);
-    IBuilder WeakClear();
+    new IBuilder WeakClear();
     IBuilder WeakClearField(FieldDescriptor field);
     IBuilder WeakMergeFrom(IMessage message);
-    IBuilder WeakMergeFrom(ByteString data);
-    IBuilder WeakMergeFrom(ByteString data, ExtensionRegistry registry);
-    IBuilder WeakMergeFrom(CodedInputStream input);
-    IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry);
-    IMessage WeakBuild();
-    IMessage WeakBuildPartial();
-    IBuilder WeakClone();
-    IMessage WeakDefaultInstanceForType { get; }
+    new IBuilder WeakMergeFrom(ByteString data);
+    new IBuilder WeakMergeFrom(ByteString data, ExtensionRegistryLite registry);
+    new IBuilder WeakMergeFrom(CodedInputStream input);
+    new IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry);
+    new IMessage WeakBuild();
+    new IMessage WeakBuildPartial();
+    new IBuilder WeakClone();
+    new IMessage WeakDefaultInstanceForType { get; }
     #endregion
   }
 
@@ -139,7 +139,7 @@ namespace Google.ProtocolBuffers {
   /// </summary>
   /// <typeparam name="TMessage">Type of message</typeparam>
   /// <typeparam name="TBuilder">Type of builder</typeparam>
-  public interface IBuilder<TMessage, TBuilder> : IBuilder
+  public interface IBuilder<TMessage, TBuilder> : IBuilder, IBuilderLite<TMessage, TBuilder>
       where TMessage : IMessage<TMessage, TBuilder> 
       where TBuilder : IBuilder<TMessage, TBuilder> {
 
@@ -148,7 +148,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Resets all fields to their default values.
     /// </summary>
-    TBuilder Clear();
+    new TBuilder Clear();
 
     /// <summary>
     /// Merge the specified other message into the message being
@@ -163,7 +163,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    TBuilder MergeFrom(TMessage other);
+    new TBuilder MergeFrom(TMessage other);
 
     /// <summary>
     /// Merge the specified other message which may be a different implementation of
@@ -180,19 +180,19 @@ namespace Google.ProtocolBuffers {
     /// <exception cref="UninitializedMessageException">the message
     /// is missing one or more required fields; use BuildPartial to bypass
     /// this check</exception>
-    TMessage Build();
+    new TMessage Build();
 
     /// <summary>
     /// Like Build(), but does not throw an exception if the message is missing
     /// required fields. Instead, a partial message is returned.
     /// </summary>
-    TMessage BuildPartial();
+    new TMessage BuildPartial();
 
     /// <summary>
     /// Clones this builder.
     /// TODO(jonskeet): Explain depth of clone.
     /// </summary>
-    TBuilder Clone();
+    new TBuilder Clone();
 
     /// <summary>
     /// Parses a message of this type from the input and merges it with this
@@ -213,7 +213,7 @@ namespace Google.ProtocolBuffers {
     /// Use BuildPartial to build, which ignores missing required fields.
     /// </list>
     /// </remarks>
-    TBuilder MergeFrom(CodedInputStream input);
+    new TBuilder MergeFrom(CodedInputStream input);
 
     /// <summary>
     /// Like MergeFrom(CodedInputStream), but also parses extensions.
@@ -221,13 +221,13 @@ namespace Google.ProtocolBuffers {
     /// in <paramref name="extensionRegistry"/>. Extensions not in the registry
     /// will be treated as unknown fields.
     /// </summary>
-    TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
+    new TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry);
 
     /// <summary>
     /// Get's the message's type's default instance.
     /// <see cref="IMessage{TMessage}.DefaultInstanceForType" />
     /// </summary>
-    TMessage DefaultInstanceForType { get; }
+    new TMessage DefaultInstanceForType { get; }
 
     /// <summary>
     /// Clears the field. This is exactly equivalent to calling the generated
@@ -258,12 +258,12 @@ namespace Google.ProtocolBuffers {
     /// write messages in this format.
     /// </summary>
     /// <param name="input"></param>
-    TBuilder MergeDelimitedFrom(Stream input);
+    new TBuilder MergeDelimitedFrom(Stream input);
 
     /// <summary>
     /// Like MergeDelimitedFrom(Stream) but supporting extensions.
     /// </summary>
-    TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry);
+    new TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistryLite extensionRegistry);
 
     #region Convenience methods
     /// <summary>
@@ -271,28 +271,28 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream).
     /// </summary>
-    TBuilder MergeFrom(ByteString data);
+    new TBuilder MergeFrom(ByteString data);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
-    /// MergeFrom(CodedInputStream, ExtensionRegistry).
+    /// MergeFrom(CodedInputStream, ExtensionRegistryLite).
     /// </summary>
-    TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
+    new TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream).
     /// </summary>
-    TBuilder MergeFrom(byte[] data);
+    new TBuilder MergeFrom(byte[] data);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
-    /// MergeFrom(CodedInputStream, ExtensionRegistry).
+    /// MergeFrom(CodedInputStream, ExtensionRegistryLite).
     /// </summary>
-    TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
+    new TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="input"/> as a message of this type and merge
@@ -304,14 +304,14 @@ namespace Google.ProtocolBuffers {
     /// to write your message and MmergeDelimitedFrom(Stream) to read it.
     /// Despite usually reading the entire stream, this method never closes the stream. 
     /// </summary>
-    TBuilder MergeFrom(Stream input);
+    new TBuilder MergeFrom(Stream input);
 
     /// <summary>
     /// Parse <paramref name="input"/> as a message of this type and merge
     /// it with the message being built. This is just a small wrapper around
-    /// MergeFrom(CodedInputStream, ExtensionRegistry).
+    /// MergeFrom(CodedInputStream, ExtensionRegistryLite).
     /// </summary>
-    TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
+    new TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry);
     #endregion
   }
 }

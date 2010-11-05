@@ -72,6 +72,10 @@ namespace Google.ProtocolBuffers {
       return ToBuilder();
     }
 
+    IMessageLite IMessageLite.WeakDefaultInstanceForType {
+      get { return DefaultInstanceForType; }
+    }
+
     public IMessage WeakDefaultInstanceForType {
       get { return DefaultInstanceForType; }
     }
@@ -232,6 +236,13 @@ namespace Google.ProtocolBuffers {
       hash = (53 * hash) + Dictionaries.GetHashCode(AllFields);
       hash = (29 * hash) + UnknownFields.GetHashCode();
       return hash;
+    }
+
+    IBuilderLite IMessageLite.WeakCreateBuilderForType() {
+      return WeakCreateBuilderForType(); }
+
+    IBuilderLite IMessageLite.WeakToBuilder() {
+      return WeakToBuilder();
     }
   }
 }

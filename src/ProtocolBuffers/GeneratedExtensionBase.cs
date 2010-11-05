@@ -39,6 +39,7 @@ using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
+
   /// <summary>
   /// Base type for all generated extensions.
   /// </summary>
@@ -85,6 +86,10 @@ namespace Google.ProtocolBuffers {
 
     public FieldDescriptor Descriptor {
       get { return descriptor; }
+    }
+
+    public int Number {
+      get { return Descriptor.FieldNumber; }
     }
 
     /// <summary>

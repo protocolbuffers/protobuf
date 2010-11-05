@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers {
       return MergeFrom(input);
     }
 
-    public IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry) {
+    public IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
       return MergeFrom(input, registry);
     }
 
@@ -96,7 +96,7 @@ namespace Google.ProtocolBuffers {
       return MergeFrom(data);
     }
 
-    public IBuilder WeakMergeFrom(ByteString data, ExtensionRegistry registry) {
+    public IBuilder WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
       return MergeFrom(data, registry);
     }
 
@@ -173,6 +173,10 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+      return MergeFrom(input, (ExtensionRegistryLite)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
       unknownFields.MergeFrom(input, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
@@ -194,6 +198,10 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
+      return MergeFrom(data, (ExtensionRegistryLite)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry) {
       CodedInputStream input = data.CreateCodedInput();
       MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
@@ -208,6 +216,10 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
+      return MergeFrom(data, (ExtensionRegistryLite)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
@@ -222,6 +234,10 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
+      return MergeFrom(input, (ExtensionRegistryLite)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
       MergeFrom(codedInput, extensionRegistry);
       codedInput.CheckLastTagWas(0);
@@ -229,6 +245,10 @@ namespace Google.ProtocolBuffers {
     }
 
     public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry) {
+      return MergeDelimitedFrom(input, (ExtensionRegistryLite)extensionRegistry);
+    }
+
+    public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
       int size = (int) CodedInputStream.ReadRawVarint32(input);
       Stream limitedStream = new LimitedInputStream(input, size);
       return MergeFrom(limitedStream, extensionRegistry);
@@ -279,15 +299,15 @@ namespace Google.ProtocolBuffers {
       }
 
       public override long Length {
-        get { throw new NotImplementedException(); }
+        get { throw new NotSupportedException(); }
       }
 
       public override long Position {
         get {
-          throw new NotImplementedException();
+          throw new NotSupportedException();
         }
         set {
-          throw new NotImplementedException();
+          throw new NotSupportedException();
         }
       }
 
@@ -301,16 +321,60 @@ namespace Google.ProtocolBuffers {
       }
 
       public override long Seek(long offset, SeekOrigin origin) {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
       }
 
       public override void SetLength(long value) {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
       }
 
       public override void Write(byte[] buffer, int offset, int count) {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
       }
+    }
+
+    IBuilderLite IBuilderLite.WeakClear() {
+      return WeakClear();
+    }
+
+    public IBuilderLite WeakMergeFrom(IMessageLite message) {
+      return MergeFrom(message);
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data) {
+      return WeakMergeFrom(data); 
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
+      throw new NotImplementedException();
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input) {
+      return WeakMergeFrom(input);
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
+      throw new NotImplementedException();
+    }
+
+    IMessageLite IBuilderLite.WeakBuild() {
+      return WeakBuild(); 
+    }
+
+    IMessageLite IBuilderLite.WeakBuildPartial() {
+      return WeakBuildPartial(); 
+    }
+
+    IBuilderLite IBuilderLite.WeakClone() {
+      return WeakClone(); 
+    }
+
+    IMessageLite IBuilderLite.WeakDefaultInstanceForType {
+      get { return WeakDefaultInstanceForType; }
+    }
+
+    public TBuilder MergeFrom(IMessageLite other) {
+      throw new NotImplementedException();
     }
   }
 }

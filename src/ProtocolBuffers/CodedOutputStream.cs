@@ -35,8 +35,9 @@
 using System;
 using System.IO;
 using System.Text;
+#if !LITE
 using Google.ProtocolBuffers.Descriptors;
-
+#endif
 namespace Google.ProtocolBuffers {
 
   /// <summary>
@@ -206,19 +207,20 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Writes a group field value, including tag, to the stream.
     /// </summary>
-    public void WriteGroup(int fieldNumber, IMessage value) {
+    public void WriteGroup(int fieldNumber, IMessageLite value) {
       WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
       value.WriteTo(this);
       WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
     }
 
-    public void WriteUnknownGroup(int fieldNumber, UnknownFieldSet value) {
+    [Obsolete]
+    public void WriteUnknownGroup(int fieldNumber, IMessageLite value) {
       WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
       value.WriteTo(this);
       WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
     }
 
-    public void WriteMessage(int fieldNumber, IMessage value) {
+    public void WriteMessage(int fieldNumber, IMessageLite value) {
       WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
       WriteRawVarint32((uint)value.SerializedSize);
       value.WriteTo(this);
@@ -263,7 +265,7 @@ namespace Google.ProtocolBuffers {
       WriteRawVarint64(EncodeZigZag64(value));
     }
 
-    public void WriteMessageSetExtension(int fieldNumber, IMessage value) {
+    public void WriteMessageSetExtension(int fieldNumber, IMessageLite value) {
       WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
       WriteUInt32(WireFormat.MessageSetField.TypeID, (uint)fieldNumber);
       WriteMessage(WireFormat.MessageSetField.Message, value);
@@ -277,6 +279,7 @@ namespace Google.ProtocolBuffers {
       WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
     }
 
+#if !LITE
     public void WriteField(FieldType fieldType, int fieldNumber, object value) {
       switch (fieldType) {
         case FieldType.Double: WriteDouble(fieldNumber, (double)value); break;
@@ -324,6 +327,7 @@ namespace Google.ProtocolBuffers {
           break;
       }
     }
+#endif
     #endregion
 
     #region Writing of values without tags
@@ -420,11 +424,11 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Writes a group field value, without a tag, to the stream.
     /// </summary>
-    public void WriteGroupNoTag(IMessage value) {
+    public void WriteGroupNoTag(IMessageLite value) {
       value.WriteTo(this);
     }
 
-    public void WriteMessageNoTag(IMessage value) {
+    public void WriteMessageNoTag(IMessageLite value) {
       WriteRawVarint32((uint)value.SerializedSize);
       value.WriteTo(this);
     }
@@ -685,7 +689,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field, including the tag.
     /// </summary>
-    public static int ComputeGroupSize(int fieldNumber, IMessage value) {
+    public static int ComputeGroupSize(int fieldNumber, IMessageLite value) {
       return ComputeTagSize(fieldNumber) * 2 + value.SerializedSize;
     }
 
@@ -693,8 +697,9 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field represented by an UnknownFieldSet, including the tag.
     /// </summary>
+    [Obsolete]
     public static int ComputeUnknownGroupSize(int fieldNumber,
-                                              UnknownFieldSet value) {
+                                              IMessageLite value) {
       return ComputeTagSize(fieldNumber) * 2 + value.SerializedSize;
     }
 
@@ -702,7 +707,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode an
     /// embedded message field, including the tag.
     /// </summary>
-    public static int ComputeMessageSize(int fieldNumber, IMessage value) {
+    public static int ComputeMessageSize(int fieldNumber, IMessageLite value) {
       int size = value.SerializedSize;
       return ComputeTagSize(fieldNumber) + ComputeRawVarint32Size((uint)size) + size;
     }
@@ -853,7 +858,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field, including the tag.
     /// </summary>
-    public static int ComputeGroupSizeNoTag(IMessage value) {
+    public static int ComputeGroupSizeNoTag(IMessageLite value) {
       return value.SerializedSize;
     }
 
@@ -861,7 +866,8 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field represented by an UnknownFieldSet, including the tag.
     /// </summary>
-    public static int ComputeUnknownGroupSizeNoTag(UnknownFieldSet value) {
+    [Obsolete]
+    public static int ComputeUnknownGroupSizeNoTag(IMessageLite value) {
       return value.SerializedSize;
     }
 
@@ -869,7 +875,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode an
     /// embedded message field, including the tag.
     /// </summary>
-    public static int ComputeMessageSizeNoTag(IMessage value) {
+    public static int ComputeMessageSizeNoTag(IMessageLite value) {
       int size = value.SerializedSize;
       return ComputeRawVarint32Size((uint)size) + size;
     }
@@ -943,7 +949,7 @@ namespace Google.ProtocolBuffers {
     /// MessageSet extension to the stream. For historical reasons,
     /// the wire format differs from normal fields.
     /// </summary>
-    public static int ComputeMessageSetExtensionSize(int fieldNumber, IMessage value) {
+    public static int ComputeMessageSetExtensionSize(int fieldNumber, IMessageLite value) {
       return ComputeTagSize(WireFormat.MessageSetField.Item) * 2 +
              ComputeUInt32Size(WireFormat.MessageSetField.TypeID, (uint) fieldNumber) +
              ComputeMessageSize(WireFormat.MessageSetField.Message, value);
@@ -989,6 +995,7 @@ namespace Google.ProtocolBuffers {
       return 10;
     }
 
+#if !LITE
     /// <summary>
     /// Compute the number of bytes that would be needed to encode a
     /// field of arbitrary type, including the tag, to the stream.
@@ -1046,6 +1053,7 @@ namespace Google.ProtocolBuffers {
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }
     }
+#endif
 
     /// <summary>
     /// Compute the number of bytes that would be needed to encode a tag.

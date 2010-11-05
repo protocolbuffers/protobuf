@@ -36,7 +36,7 @@ using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
 {
-  public sealed class ExtensionInfo {
+  public sealed class ExtensionInfo : IGeneratedExtensionLite {
     /// <summary>
     /// The extension's descriptor
     /// </summary>
@@ -55,5 +55,21 @@ namespace Google.ProtocolBuffers
       Descriptor = descriptor;
       DefaultInstance = defaultInstance;
     }
+
+    #region IGeneratedExtensionLite Members
+
+    int IGeneratedExtensionLite.Number {
+      get { return Descriptor.FieldNumber; }
+    }
+
+    object IGeneratedExtensionLite.ContainingType {
+      get { return Descriptor; }
+    }
+
+    IMessageLite IGeneratedExtensionLite.MessageDefaultInstance {
+      get { return DefaultInstance; }
+    }
+
+    #endregion
   }
 }

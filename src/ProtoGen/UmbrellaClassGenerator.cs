@@ -74,10 +74,6 @@ namespace Google.ProtocolBuffers.ProtoGen {
       return false;
     }
 
-    public string UmbrellaClassName {
-      get { throw new NotImplementedException(); }
-    }
-
     public void Generate(TextGenerator writer) {
       WriteIntroduction(writer);
       WriteExtensionRegistration(writer);

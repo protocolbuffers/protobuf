@@ -84,8 +84,11 @@
     <Compile Include="DynamicMessage.cs" />
     <Compile Include="ExtendableBuilder.cs" />
     <Compile Include="ExtendableMessage.cs" />
-    <Compile Include="ExtensionInfo.cs" />
+    <Compile Include="ExtensionInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ExtensionRegistry.cs" />
+    <Compile Include="ExtensionRegistryLite.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />
     <Compile Include="FieldAccess\SingleEnumAccessor.cs" />
     <Compile Include="FieldAccess\SingleMessageAccessor.cs" />
@@ -97,12 +100,17 @@
     <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="GeneratedBuilder.cs" />
+    <Compile Include="GeneratedExtensionLite.cs" />
     <Compile Include="GeneratedRepeatExtension.cs" />
     <Compile Include="GeneratedSingleExtension.cs" />
     <Compile Include="GeneratedMessage.cs" />
     <Compile Include="IBuilder.cs" />
     <Compile Include="GeneratedExtensionBase.cs" />
+    <Compile Include="IBuilderLite.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="IMessage.cs" />
+    <Compile Include="IMessageLite.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="IRpcChannel.cs" />
     <Compile Include="IRpcController.cs" />

@@ -36,7 +36,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+#if !LITE
 using Google.ProtocolBuffers.Descriptors;
+#endif
 
 namespace Google.ProtocolBuffers {
 
@@ -258,8 +260,8 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Reads a group field value from the stream.
     /// </summary>    
-    public void ReadGroup(int fieldNumber, IBuilder builder,
-                          ExtensionRegistry extensionRegistry) {
+    public void ReadGroup(int fieldNumber, IBuilderLite builder,
+                          ExtensionRegistryLite extensionRegistry) {
       if (recursionDepth >= recursionLimit) {
         throw InvalidProtocolBufferException.RecursionLimitExceeded();
       }
@@ -273,12 +275,14 @@ namespace Google.ProtocolBuffers {
     /// Reads a group field value from the stream and merges it into the given
     /// UnknownFieldSet.
     /// </summary>   
-    public void ReadUnknownGroup(int fieldNumber, UnknownFieldSet.Builder builder) {
+    [Obsolete]
+    public void ReadUnknownGroup(int fieldNumber, IBuilderLite builder)
+    {
       if (recursionDepth >= recursionLimit) {
         throw InvalidProtocolBufferException.RecursionLimitExceeded();
       }
       ++recursionDepth;
-      builder.MergeFrom(this);
+      builder.WeakMergeFrom(this);
       CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
       --recursionDepth;
     }
@@ -286,7 +290,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Reads an embedded message field value from the stream.
     /// </summary>   
-    public void ReadMessage(IBuilder builder, ExtensionRegistry extensionRegistry) {
+    public void ReadMessage(IBuilderLite builder, ExtensionRegistryLite extensionRegistry) {
       int length = (int) ReadRawVarint32();
       if (recursionDepth >= recursionLimit) {
         throw InvalidProtocolBufferException.RecursionLimitExceeded();
@@ -359,7 +363,7 @@ namespace Google.ProtocolBuffers {
     public long ReadSInt64() {
       return DecodeZigZag64(ReadRawVarint64());
     }
-
+#if !LITE
     /// <summary>
     /// Reads a field of any primitive type. Enums, groups and embedded
     /// messages are not handled by this method.
@@ -393,7 +397,7 @@ namespace Google.ProtocolBuffers {
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }
     }
-
+#endif
     #endregion
 
     #region Underlying reading primitives
