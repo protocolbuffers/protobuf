@@ -103,7 +103,7 @@ namespace Google.ProtocolBuffers {
       this.extensionsByNumber = extensionsByNumber;
       this.readOnly = readOnly;
     }
-
+#if LITE
     /// <summary>
     /// Construct a new, empty instance.
     /// </summary>
@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers {
     public static ExtensionRegistryLite Empty {
       get { return empty; }
     }
-
+#endif
     public ExtensionRegistryLite AsReadOnly() {
       return MakeReadOnly();
     }

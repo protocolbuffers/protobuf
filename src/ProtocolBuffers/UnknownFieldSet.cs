@@ -504,7 +504,7 @@ namespace Google.ProtocolBuffers {
             break;
           }
 
-          ExtensionRegistry extensionRegistry = (extensionRegistryLite as ExtensionRegistry) ?? ExtensionRegistry.CreateInstance();
+          ExtensionRegistry extensionRegistry = (ExtensionRegistry)extensionRegistryLite;
           if (!MergeFieldFrom(input, extensionRegistry, builder, tag)) {
             // end group tag
             break;

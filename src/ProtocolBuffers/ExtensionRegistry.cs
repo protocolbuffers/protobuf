@@ -107,7 +107,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Construct a new, empty instance.
     /// </summary>
-    public static new ExtensionRegistry CreateInstance() {
+    public static ExtensionRegistry CreateInstance() {
       return new ExtensionRegistry(new Dictionary<string, ExtensionInfo>(),
         new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(), false);
     }
@@ -115,7 +115,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Get the unmodifiable singleton empty instance.
     /// </summary>
-    public new static ExtensionRegistry Empty {
+    public static ExtensionRegistry Empty {
       get { return empty; }
     }
 

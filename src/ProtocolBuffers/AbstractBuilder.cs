@@ -173,10 +173,6 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
-      return MergeFrom(input, (ExtensionRegistryLite)extensionRegistry);
-    }
-
-    public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
       unknownFields.MergeFrom(input, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
@@ -198,10 +194,6 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
-      return MergeFrom(data, (ExtensionRegistryLite)extensionRegistry);
-    }
-
-    public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry) {
       CodedInputStream input = data.CreateCodedInput();
       MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
@@ -216,10 +208,6 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
-      return MergeFrom(data, (ExtensionRegistryLite)extensionRegistry);
-    }
-
-    public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry) {
       CodedInputStream input = CodedInputStream.CreateInstance(data);
       MergeFrom(input, extensionRegistry);
       input.CheckLastTagWas(0);
@@ -234,10 +222,6 @@ namespace Google.ProtocolBuffers {
     }
 
     public virtual TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
-      return MergeFrom(input, (ExtensionRegistryLite)extensionRegistry);
-    }
-
-    public virtual TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
       CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
       MergeFrom(codedInput, extensionRegistry);
       codedInput.CheckLastTagWas(0);
@@ -245,7 +229,7 @@ namespace Google.ProtocolBuffers {
     }
 
     public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry) {
-      return MergeDelimitedFrom(input, (ExtensionRegistryLite)extensionRegistry);
+      return Lite.MergeDelimitedFrom(input, extensionRegistry);
     }
 
     public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
@@ -266,9 +250,81 @@ namespace Google.ProtocolBuffers {
     public virtual IBuilder SetRepeatedField(FieldDescriptor field, int index, object value) {
       this[field, index] = value;
       return ThisBuilder;
-    }
+	  }
+
 
     /// <summary>
+    /// used internally to explicitly resolve lite edition methods
+    /// </summary>
+    protected IBuilderLite<TMessage, TBuilder> Lite { get { return this; } }
+
+    public virtual TBuilder MergeFrom(IMessageLite other) {
+#warning Not implemented for Lite edition
+      return MergeFrom((IMessage)other);
+    }
+
+    public TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry) {
+#warning Not implemented for Lite edition
+      return MergeFrom(input, (ExtensionRegistry)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry) {
+#warning Not implemented for Lite edition
+      return MergeFrom(data, (ExtensionRegistry)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry) {
+#warning Not implemented for Lite edition
+      return MergeFrom(data, (ExtensionRegistry)extensionRegistry);
+    }
+
+    public virtual TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
+#warning Not implemented for Lite edition
+      return MergeFrom(input, (ExtensionRegistry)extensionRegistry);
+    }
+
+    IBuilderLite IBuilderLite.WeakClear() {
+      return WeakClear();
+    }
+
+    public IBuilderLite WeakMergeFrom(IMessageLite message) {
+      return MergeFrom(message);
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data) {
+      return WeakMergeFrom(data); 
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
+      return WeakMergeFrom(data, registry);
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input) {
+      return WeakMergeFrom(input);
+    }
+
+    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
+      return WeakMergeFrom(input, registry);
+    }
+
+    IMessageLite IBuilderLite.WeakBuild() {
+      return WeakBuild(); 
+    }
+
+    IMessageLite IBuilderLite.WeakBuildPartial() {
+      return WeakBuildPartial(); 
+    }
+
+    IBuilderLite IBuilderLite.WeakClone() {
+      return WeakClone(); 
+    }
+
+    IMessageLite IBuilderLite.WeakDefaultInstanceForType {
+      get { return WeakDefaultInstanceForType; }
+    }
+
+	#region LimitedInputStream
+	/// <summary>
     /// Stream implementation which proxies another stream, only allowing a certain amount
     /// of data to be read. Note that this is only used to read delimited streams, so it
     /// doesn't attempt to implement everything.
@@ -331,50 +387,7 @@ namespace Google.ProtocolBuffers {
       public override void Write(byte[] buffer, int offset, int count) {
         throw new NotSupportedException();
       }
-    }
-
-    IBuilderLite IBuilderLite.WeakClear() {
-      return WeakClear();
-    }
-
-    public IBuilderLite WeakMergeFrom(IMessageLite message) {
-      return MergeFrom(message);
-    }
-
-    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data) {
-      return WeakMergeFrom(data); 
-    }
-
-    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
-      throw new NotImplementedException();
-    }
-
-    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input) {
-      return WeakMergeFrom(input);
-    }
-
-    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
-      throw new NotImplementedException();
-    }
-
-    IMessageLite IBuilderLite.WeakBuild() {
-      return WeakBuild(); 
-    }
-
-    IMessageLite IBuilderLite.WeakBuildPartial() {
-      return WeakBuildPartial(); 
-    }
-
-    IBuilderLite IBuilderLite.WeakClone() {
-      return WeakClone(); 
-    }
-
-    IMessageLite IBuilderLite.WeakDefaultInstanceForType {
-      get { return WeakDefaultInstanceForType; }
-    }
-
-    public TBuilder MergeFrom(IMessageLite other) {
-      throw new NotImplementedException();
-    }
+	}
+	#endregion
   }
 }
