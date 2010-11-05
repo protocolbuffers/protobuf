@@ -143,6 +143,14 @@
       <arg file="${protos-dir}/google/protobuf/unittest_import.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_mset.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_optimize_for.proto" />
+
+      <arg file="${protos-dir}/google/protobuf/unittest_empty.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_enormous_descriptor.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_import_lite.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_lite.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_lite_imports_nonlite.proto" />
+      <arg file="${protos-dir}/google/protobuf/unittest_no_generic_services.proto" />
+           
       <arg file="${protos-dir}/tutorial/addressbook.proto" />
     </exec>
     
@@ -154,6 +162,7 @@
   
   <target name="copy-generated-source" 
           description="Copies generated source from temporary directory to source tree. Use with care!">
+    
     <copy todir="${src}/ProtocolBuffers/DescriptorProtos">
       <fileset basedir="${tmp-dir}">
         <include name="DescriptorProtoFile.cs" />
@@ -163,22 +172,34 @@
 
     <copy todir="${src}/ProtocolBuffers.Test/TestProtos">
       <fileset basedir="${tmp-dir}">
-        <include name="UnitTestProtoFile.cs" />
         <include name="UnitTestCSharpOptionsProtoFile.cs" />
         <include name="UnitTestCustomOptionsProtoFile.cs" />
         <include name="UnitTestEmbedOptimizeForProtoFile.cs" />
+        <include name="UnitTestEmptyProtoFile.cs" />
+        <include name="UnitTestEnormousDescriptorProtoFile.cs" />
+        <include name="UnitTestImportLiteProtoFile.cs" />
         <include name="UnitTestImportProtoFile.cs" />
         <include name="UnitTestMessageSetProtoFile.cs" />
+        <include name="UnitTestNoGenericServicesProtoFile.cs" />
         <include name="UnitTestOptimizeForProtoFile.cs" />
+        <include name="UnitTestProtoFile.cs" />
       </fileset>
     </copy>
-    
+
+    <copy todir="${src}/ProtocolBuffersLite.Test/TestProtos">
+      <fileset basedir="${tmp-dir}">
+        <include name="UnitTestLiteImportNonLiteProtoFile.cs" />
+        <include name="UnitTestLiteProtoFile.cs" />
+      </fileset>
+    </copy>
+
     <copy todir="${src}/AddressBook">
       <fileset basedir="${tmp-dir}">
         <include name="AddressBookProtos.cs" />
       </fileset>
     </copy>
-  </target>
+
+</target>
 
   <target name="build"
           description="Builds all C# code">

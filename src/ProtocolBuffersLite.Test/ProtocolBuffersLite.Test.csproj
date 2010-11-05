@@ -5,15 +5,15 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DD01ED24-3750-4567-9A23-1DB676A15610}</ProjectGuid>
+    <ProjectGuid>{EE01ED24-3750-4567-9A23-1DB676A15610}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Google.ProtocolBuffers</RootNamespace>
-    <AssemblyName>Google.ProtocolBuffers.Test</AssemblyName>
+    <AssemblyName>Google.ProtocolBuffersLite.Test</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.Test.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\ProtocolBuffers.Test\Properties\Google.ProtocolBuffers.Test.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,49 +54,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractMessageTest.cs" />
-    <Compile Include="ByteStringTest.cs" />
-    <Compile Include="CodedInputStreamTest.cs" />
-    <Compile Include="CodedOutputStreamTest.cs" />
-    <Compile Include="Collections\PopsicleListTest.cs" />
-    <Compile Include="CSharpOptionsTest.cs" />
-    <Compile Include="DescriptorsTest.cs" />
-    <Compile Include="Descriptors\MessageDescriptorTest.cs" />
-    <Compile Include="DynamicMessageTest.cs" />
-    <Compile Include="GeneratedMessageTest.cs" />
-    <Compile Include="MessageStreamIteratorTest.cs" />
-    <Compile Include="MessageStreamWriterTest.cs" />
-    <Compile Include="MessageTest.cs" />
-    <Compile Include="MessageUtilTest.cs" />
-    <Compile Include="NameHelpersTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReflectionTester.cs" />
-    <Compile Include="ServiceTest.cs" />
-    <Compile Include="TestProtos\FIXUP.cs" />
-    <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestEmptyProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestEnormousDescriptorProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestNoGenericServicesProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
-    <Compile Include="TestUtil.cs" />
-    <Compile Include="TextFormatTest.cs" />
-    <Compile Include="UnknownFieldSetTest.cs" />
-    <Compile Include="WireFormatTest.cs" />
+    <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <None Include="TestProtos\UnittestLite.cs" />
+    <None Include="TestProtos\UnittestLiteImportsNonlite.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
-      <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
-      <Name>ProtocolBuffers</Name>
+    <None Include="..\ProtocolBuffers.Test\Properties\Google.ProtocolBuffers.Test.snk">
+      <Link>Properties\Google.ProtocolBuffers.Test.snk</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffersLite.csproj">
+      <Project>{6969BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
+      <Name>ProtocolBuffersLite</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Google.ProtocolBuffers.Test.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

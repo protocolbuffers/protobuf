@@ -94,6 +94,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedDoubleExtension);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedBoolExtension);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.PackedEnumExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.Test);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.TestRequired.Single);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.TestRequired.Multi);
     }
@@ -294,6 +295,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder> internal__static_protobuf_unittest_TestAllTypes_OptionalGroup__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder> internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields, global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields.Builder> internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ForeignMessage__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder> internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllExtensions__Descriptor;
@@ -302,6 +305,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Builder> internal__static_protobuf_unittest_OptionalGroup_extension__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Builder> internal__static_protobuf_unittest_RepeatedGroup_extension__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestNestedExtension__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedExtension, global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.Builder> internal__static_protobuf_unittest_TestNestedExtension__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequired__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequired, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder> internal__static_protobuf_unittest_TestRequired__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRequiredForeign__Descriptor;
@@ -312,6 +317,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Builder> internal__static_protobuf_unittest_TestEmptyMessage__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Builder> internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMultipleExtensionRanges__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges, global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges.Builder> internal__static_protobuf_unittest_TestMultipleExtensionRanges__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber, global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Builder> internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor;
@@ -336,10 +343,22 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings, global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Builder> internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder> internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_OneString__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OneString, global::Google.ProtocolBuffers.TestProtos.OneString.Builder> internal__static_protobuf_unittest_OneString__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_OneBytes__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OneBytes, global::Google.ProtocolBuffers.TestProtos.OneBytes.Builder> internal__static_protobuf_unittest_OneBytes__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedTypes__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder> internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes, global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes.Builder> internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedExtensions__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder> internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDynamicExtensions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions, global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Builder> internal__static_protobuf_unittest_TestDynamicExtensions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType, global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.Builder> internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes, global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes.Builder> internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooRequest__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder> internal__static_protobuf_unittest_FooRequest__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooResponse__Descriptor;
@@ -420,251 +439,290 @@ namespace Google.ProtocolBuffers.TestProtos {
           "X3BpZWNlGFQgASgJOgNhYmNCAggCEh0KDGRlZmF1bHRfY29yZBhVIAEoCToD" + 
           "MTIzQgIIARobCg1OZXN0ZWRNZXNzYWdlEgoKAmJiGAEgASgFGhoKDU9wdGlv" + 
           "bmFsR3JvdXASCQoBYRgRIAEoBRoaCg1SZXBlYXRlZEdyb3VwEgkKAWEYLyAB" + 
-          "KAUiJwoKTmVzdGVkRW51bRIHCgNGT08QARIHCgNCQVIQAhIHCgNCQVoQAyIb" + 
-          "Cg5Gb3JlaWduTWVzc2FnZRIJCgFjGAEgASgFIh0KEVRlc3RBbGxFeHRlbnNp" + 
-          "b25zKggIARCAgICAAiIkChdPcHRpb25hbEdyb3VwX2V4dGVuc2lvbhIJCgFh" + 
-          "GBEgASgFIiQKF1JlcGVhdGVkR3JvdXBfZXh0ZW5zaW9uEgkKAWEYLyABKAUi" + 
-          "1QUKDFRlc3RSZXF1aXJlZBIJCgFhGAEgAigFEg4KBmR1bW15MhgCIAEoBRIJ" + 
-          "CgFiGAMgAigFEg4KBmR1bW15NBgEIAEoBRIOCgZkdW1teTUYBSABKAUSDgoG" + 
-          "ZHVtbXk2GAYgASgFEg4KBmR1bW15NxgHIAEoBRIOCgZkdW1teTgYCCABKAUS" + 
-          "DgoGZHVtbXk5GAkgASgFEg8KB2R1bW15MTAYCiABKAUSDwoHZHVtbXkxMRgL" + 
-          "IAEoBRIPCgdkdW1teTEyGAwgASgFEg8KB2R1bW15MTMYDSABKAUSDwoHZHVt" + 
-          "bXkxNBgOIAEoBRIPCgdkdW1teTE1GA8gASgFEg8KB2R1bW15MTYYECABKAUS" + 
-          "DwoHZHVtbXkxNxgRIAEoBRIPCgdkdW1teTE4GBIgASgFEg8KB2R1bW15MTkY" + 
-          "EyABKAUSDwoHZHVtbXkyMBgUIAEoBRIPCgdkdW1teTIxGBUgASgFEg8KB2R1" + 
-          "bW15MjIYFiABKAUSDwoHZHVtbXkyMxgXIAEoBRIPCgdkdW1teTI0GBggASgF" + 
-          "Eg8KB2R1bW15MjUYGSABKAUSDwoHZHVtbXkyNhgaIAEoBRIPCgdkdW1teTI3" + 
-          "GBsgASgFEg8KB2R1bW15MjgYHCABKAUSDwoHZHVtbXkyORgdIAEoBRIPCgdk" + 
-          "dW1teTMwGB4gASgFEg8KB2R1bW15MzEYHyABKAUSDwoHZHVtbXkzMhggIAEo" + 
-          "BRIJCgFjGCEgAigFMlYKBnNpbmdsZRIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-          "c3RBbGxFeHRlbnNpb25zGOgHIAEoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-          "c3RSZXF1aXJlZDJVCgVtdWx0aRIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
-          "bGxFeHRlbnNpb25zGOkHIAMoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RS" + 
-          "ZXF1aXJlZCKaAQoTVGVzdFJlcXVpcmVkRm9yZWlnbhI5ChBvcHRpb25hbF9t" + 
-          "ZXNzYWdlGAEgASgLMh8ucHJvdG9idWZfdW5pdHRlc3QuVGVzdFJlcXVpcmVk" + 
-          "EjkKEHJlcGVhdGVkX21lc3NhZ2UYAiADKAsyHy5wcm90b2J1Zl91bml0dGVz" + 
-          "dC5UZXN0UmVxdWlyZWQSDQoFZHVtbXkYAyABKAUiWgoRVGVzdEZvcmVpZ25O" + 
-          "ZXN0ZWQSRQoOZm9yZWlnbl9uZXN0ZWQYASABKAsyLS5wcm90b2J1Zl91bml0" + 
-          "dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZSISChBUZXN0RW1wdHlN" + 
-          "ZXNzYWdlIioKHlRlc3RFbXB0eU1lc3NhZ2VXaXRoRXh0ZW5zaW9ucyoICAEQ" + 
-          "gICAgAIiNAoYVGVzdFJlYWxseUxhcmdlVGFnTnVtYmVyEgkKAWEYASABKAUS" + 
-          "DQoCYmIY////fyABKAUiVQoUVGVzdFJlY3Vyc2l2ZU1lc3NhZ2USMgoBYRgB" + 
-          "IAEoCzInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RSZWN1cnNpdmVNZXNzYWdl" + 
-          "EgkKAWkYAiABKAUiSwoUVGVzdE11dHVhbFJlY3Vyc2lvbkESMwoCYmIYASAB" + 
-          "KAsyJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0TXV0dWFsUmVjdXJzaW9uQiJi" + 
-          "ChRUZXN0TXV0dWFsUmVjdXJzaW9uQhIyCgFhGAEgASgLMicucHJvdG9idWZf" + 
-          "dW5pdHRlc3QuVGVzdE11dHVhbFJlY3Vyc2lvbkESFgoOb3B0aW9uYWxfaW50" + 
-          "MzIYAiABKAUiswEKElRlc3REdXBGaWVsZE51bWJlchIJCgFhGAEgASgFEjYK" + 
-          "A2ZvbxgCIAEoCjIpLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3REdXBGaWVsZE51" + 
-          "bWJlci5Gb28SNgoDYmFyGAMgASgKMikucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-          "dER1cEZpZWxkTnVtYmVyLkJhchoQCgNGb28SCQoBYRgBIAEoBRoQCgNCYXIS" + 
-          "CQoBYRgBIAEoBSKAAgoYVGVzdE5lc3RlZE1lc3NhZ2VIYXNCaXRzEloKF29w" + 
-          "dGlvbmFsX25lc3RlZF9tZXNzYWdlGAEgASgLMjkucHJvdG9idWZfdW5pdHRl" + 
-          "c3QuVGVzdE5lc3RlZE1lc3NhZ2VIYXNCaXRzLk5lc3RlZE1lc3NhZ2UahwEK" + 
-          "DU5lc3RlZE1lc3NhZ2USJAocbmVzdGVkbWVzc2FnZV9yZXBlYXRlZF9pbnQz" + 
-          "MhgBIAMoBRJQCiVuZXN0ZWRtZXNzYWdlX3JlcGVhdGVkX2ZvcmVpZ25tZXNz" + 
-          "YWdlGAIgAygLMiEucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2Ui" + 
-          "5QMKF1Rlc3RDYW1lbENhc2VGaWVsZE5hbWVzEhYKDlByaW1pdGl2ZUZpZWxk" + 
-          "GAEgASgFEhMKC1N0cmluZ0ZpZWxkGAIgASgJEjEKCUVudW1GaWVsZBgDIAEo" + 
-          "DjIeLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtEjcKDE1lc3NhZ2VG" + 
-          "aWVsZBgEIAEoCzIhLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25NZXNzYWdl" + 
-          "EhwKEFN0cmluZ1BpZWNlRmllbGQYBSABKAlCAggCEhUKCUNvcmRGaWVsZBgG" + 
-          "IAEoCUICCAESHgoWUmVwZWF0ZWRQcmltaXRpdmVGaWVsZBgHIAMoBRIbChNS" + 
-          "ZXBlYXRlZFN0cmluZ0ZpZWxkGAggAygJEjkKEVJlcGVhdGVkRW51bUZpZWxk" + 
-          "GAkgAygOMh4ucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW0SPwoUUmVw" + 
-          "ZWF0ZWRNZXNzYWdlRmllbGQYCiADKAsyIS5wcm90b2J1Zl91bml0dGVzdC5G" + 
-          "b3JlaWduTWVzc2FnZRIkChhSZXBlYXRlZFN0cmluZ1BpZWNlRmllbGQYCyAD" + 
-          "KAlCAggCEh0KEVJlcGVhdGVkQ29yZEZpZWxkGAwgAygJQgIIASJVChJUZXN0" + 
-          "RmllbGRPcmRlcmluZ3MSEQoJbXlfc3RyaW5nGAsgASgJEg4KBm15X2ludBgB" + 
-          "IAEoAxIQCghteV9mbG9hdBhlIAEoAioECAIQCyoECAwQZSKQAgoYVGVzdEV4" + 
-          "dHJlbWVEZWZhdWx0VmFsdWVzEj8KDWVzY2FwZWRfYnl0ZXMYASABKAw6KFww" + 
-          "MDBcMDAxXDAwN1wwMTBcMDE0XG5cclx0XDAxM1xcXCdcIlwzNzYSIAoMbGFy" + 
-          "Z2VfdWludDMyGAIgASgNOgo0Mjk0OTY3Mjk1EioKDGxhcmdlX3VpbnQ2NBgD" + 
-          "IAEoBDoUMTg0NDY3NDQwNzM3MDk1NTE2MTUSIAoLc21hbGxfaW50MzIYBCAB" + 
-          "KAU6Cy0yMTQ3NDgzNjQ3EikKC3NtYWxsX2ludDY0GAUgASgDOhQtOTIyMzM3" + 
-          "MjAzNjg1NDc3NTgwNxIYCgt1dGY4X3N0cmluZxgGIAEoCToD4Yi0IqoDCg9U" + 
-          "ZXN0UGFja2VkVHlwZXMSGAoMcGFja2VkX2ludDMyGFogAygFQgIQARIYCgxw" + 
-          "YWNrZWRfaW50NjQYWyADKANCAhABEhkKDXBhY2tlZF91aW50MzIYXCADKA1C" + 
-          "AhABEhkKDXBhY2tlZF91aW50NjQYXSADKARCAhABEhkKDXBhY2tlZF9zaW50" + 
-          "MzIYXiADKBFCAhABEhkKDXBhY2tlZF9zaW50NjQYXyADKBJCAhABEhoKDnBh" + 
-          "Y2tlZF9maXhlZDMyGGAgAygHQgIQARIaCg5wYWNrZWRfZml4ZWQ2NBhhIAMo" + 
-          "BkICEAESGwoPcGFja2VkX3NmaXhlZDMyGGIgAygPQgIQARIbCg9wYWNrZWRf" + 
-          "c2ZpeGVkNjQYYyADKBBCAhABEhgKDHBhY2tlZF9mbG9hdBhkIAMoAkICEAES" + 
-          "GQoNcGFja2VkX2RvdWJsZRhlIAMoAUICEAESFwoLcGFja2VkX2Jvb2wYZiAD" + 
-          "KAhCAhABEjcKC3BhY2tlZF9lbnVtGGcgAygOMh4ucHJvdG9idWZfdW5pdHRl" + 
-          "c3QuRm9yZWlnbkVudW1CAhABIiAKFFRlc3RQYWNrZWRFeHRlbnNpb25zKggI" + 
-          "ARCAgICAAiIMCgpGb29SZXF1ZXN0Ig0KC0Zvb1Jlc3BvbnNlIgwKCkJhclJl" + 
-          "cXVlc3QiDQoLQmFyUmVzcG9uc2UqQAoLRm9yZWlnbkVudW0SDwoLRk9SRUlH" + 
-          "Tl9GT08QBBIPCgtGT1JFSUdOX0JBUhAFEg8KC0ZPUkVJR05fQkFaEAYqRwoU" + 
-          "VGVzdEVudW1XaXRoRHVwVmFsdWUSCAoERk9PMRABEggKBEJBUjEQAhIHCgNC" + 
-          "QVoQAxIICgRGT08yEAESCAoEQkFSMhACKokBCg5UZXN0U3BhcnNlRW51bRIM" + 
-          "CghTUEFSU0VfQRB7Eg4KCFNQQVJTRV9CEKbnAxIPCghTUEFSU0VfQxCysYAG" + 
-          "EhUKCFNQQVJTRV9EEPH//////////wESFQoIU1BBUlNFX0UQtN78////////" + 
-          "ARIMCghTUEFSU0VfRhAAEgwKCFNQQVJTRV9HEAIymQEKC1Rlc3RTZXJ2aWNl" + 
-          "EkQKA0ZvbxIdLnByb3RvYnVmX3VuaXR0ZXN0LkZvb1JlcXVlc3QaHi5wcm90" + 
-          "b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXISHS5wcm90b2J1Zl91" + 
-          "bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5pdHRlc3QuQmFyUmVz" + 
-          "cG9uc2U6RgoYb3B0aW9uYWxfaW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
-          "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYASABKAU6RgoYb3B0aW9uYWxf" + 
-          "aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
-          "dGVuc2lvbnMYAiABKAM6RwoZb3B0aW9uYWxfdWludDMyX2V4dGVuc2lvbhIk" + 
-          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAMgASgNOkcK" + 
-          "GW9wdGlvbmFsX3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
-          "dC5UZXN0QWxsRXh0ZW5zaW9ucxgEIAEoBDpHChlvcHRpb25hbF9zaW50MzJf" + 
+          "KAUiJwoKTmVzdGVkRW51bRIHCgNGT08QARIHCgNCQVIQAhIHCgNCQVoQAyI0" + 
+          "ChRUZXN0RGVwcmVjYXRlZEZpZWxkcxIcChBkZXByZWNhdGVkX2ludDMyGAEg" + 
+          "ASgFQgIYASIbCg5Gb3JlaWduTWVzc2FnZRIJCgFjGAEgASgFIh0KEVRlc3RB" + 
+          "bGxFeHRlbnNpb25zKggIARCAgICAAiIkChdPcHRpb25hbEdyb3VwX2V4dGVu" + 
+          "c2lvbhIJCgFhGBEgASgFIiQKF1JlcGVhdGVkR3JvdXBfZXh0ZW5zaW9uEgkK" + 
+          "AWEYLyABKAUiUAoTVGVzdE5lc3RlZEV4dGVuc2lvbjI5CgR0ZXN0EiQucHJv" + 
+          "dG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY6gcgASgJOgR0ZXN0" + 
+          "ItUFCgxUZXN0UmVxdWlyZWQSCQoBYRgBIAIoBRIOCgZkdW1teTIYAiABKAUS" + 
+          "CQoBYhgDIAIoBRIOCgZkdW1teTQYBCABKAUSDgoGZHVtbXk1GAUgASgFEg4K" + 
+          "BmR1bW15NhgGIAEoBRIOCgZkdW1teTcYByABKAUSDgoGZHVtbXk4GAggASgF" + 
+          "Eg4KBmR1bW15ORgJIAEoBRIPCgdkdW1teTEwGAogASgFEg8KB2R1bW15MTEY" + 
+          "CyABKAUSDwoHZHVtbXkxMhgMIAEoBRIPCgdkdW1teTEzGA0gASgFEg8KB2R1" + 
+          "bW15MTQYDiABKAUSDwoHZHVtbXkxNRgPIAEoBRIPCgdkdW1teTE2GBAgASgF" + 
+          "Eg8KB2R1bW15MTcYESABKAUSDwoHZHVtbXkxOBgSIAEoBRIPCgdkdW1teTE5" + 
+          "GBMgASgFEg8KB2R1bW15MjAYFCABKAUSDwoHZHVtbXkyMRgVIAEoBRIPCgdk" + 
+          "dW1teTIyGBYgASgFEg8KB2R1bW15MjMYFyABKAUSDwoHZHVtbXkyNBgYIAEo" + 
+          "BRIPCgdkdW1teTI1GBkgASgFEg8KB2R1bW15MjYYGiABKAUSDwoHZHVtbXky" + 
+          "NxgbIAEoBRIPCgdkdW1teTI4GBwgASgFEg8KB2R1bW15MjkYHSABKAUSDwoH" + 
+          "ZHVtbXkzMBgeIAEoBRIPCgdkdW1teTMxGB8gASgFEg8KB2R1bW15MzIYICAB" + 
+          "KAUSCQoBYxghIAIoBTJWCgZzaW5nbGUSJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0QWxsRXh0ZW5zaW9ucxjoByABKAsyHy5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0UmVxdWlyZWQyVQoFbXVsdGkSJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
+          "QWxsRXh0ZW5zaW9ucxjpByADKAsyHy5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
+          "UmVxdWlyZWQimgEKE1Rlc3RSZXF1aXJlZEZvcmVpZ24SOQoQb3B0aW9uYWxf" + 
+          "bWVzc2FnZRgBIAEoCzIfLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RSZXF1aXJl" + 
+          "ZBI5ChByZXBlYXRlZF9tZXNzYWdlGAIgAygLMh8ucHJvdG9idWZfdW5pdHRl" + 
+          "c3QuVGVzdFJlcXVpcmVkEg0KBWR1bW15GAMgASgFIloKEVRlc3RGb3JlaWdu" + 
+          "TmVzdGVkEkUKDmZvcmVpZ25fbmVzdGVkGAEgASgLMi0ucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2UiEgoQVGVzdEVtcHR5" + 
+          "TWVzc2FnZSIqCh5UZXN0RW1wdHlNZXNzYWdlV2l0aEV4dGVuc2lvbnMqCAgB" + 
+          "EICAgIACIjcKG1Rlc3RNdWx0aXBsZUV4dGVuc2lvblJhbmdlcyoECCoQKyoG" + 
+          "CK8gEJQhKgoIgIAEEICAgIACIjQKGFRlc3RSZWFsbHlMYXJnZVRhZ051bWJl" + 
+          "chIJCgFhGAEgASgFEg0KAmJiGP///38gASgFIlUKFFRlc3RSZWN1cnNpdmVN" + 
+          "ZXNzYWdlEjIKAWEYASABKAsyJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UmVj" + 
+          "dXJzaXZlTWVzc2FnZRIJCgFpGAIgASgFIksKFFRlc3RNdXR1YWxSZWN1cnNp" + 
+          "b25BEjMKAmJiGAEgASgLMicucHJvdG9idWZfdW5pdHRlc3QuVGVzdE11dHVh" + 
+          "bFJlY3Vyc2lvbkIiYgoUVGVzdE11dHVhbFJlY3Vyc2lvbkISMgoBYRgBIAEo" + 
+          "CzInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RNdXR1YWxSZWN1cnNpb25BEhYK" + 
+          "Dm9wdGlvbmFsX2ludDMyGAIgASgFIrMBChJUZXN0RHVwRmllbGROdW1iZXIS" + 
+          "CQoBYRgBIAEoBRI2CgNmb28YAiABKAoyKS5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0RHVwRmllbGROdW1iZXIuRm9vEjYKA2JhchgDIAEoCjIpLnByb3RvYnVm" + 
+          "X3VuaXR0ZXN0LlRlc3REdXBGaWVsZE51bWJlci5CYXIaEAoDRm9vEgkKAWEY" + 
+          "ASABKAUaEAoDQmFyEgkKAWEYASABKAUigAIKGFRlc3ROZXN0ZWRNZXNzYWdl" + 
+          "SGFzQml0cxJaChdvcHRpb25hbF9uZXN0ZWRfbWVzc2FnZRgBIAEoCzI5LnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LlRlc3ROZXN0ZWRNZXNzYWdlSGFzQml0cy5OZXN0" + 
+          "ZWRNZXNzYWdlGocBCg1OZXN0ZWRNZXNzYWdlEiQKHG5lc3RlZG1lc3NhZ2Vf" + 
+          "cmVwZWF0ZWRfaW50MzIYASADKAUSUAolbmVzdGVkbWVzc2FnZV9yZXBlYXRl" + 
+          "ZF9mb3JlaWdubWVzc2FnZRgCIAMoCzIhLnByb3RvYnVmX3VuaXR0ZXN0LkZv" + 
+          "cmVpZ25NZXNzYWdlIuUDChdUZXN0Q2FtZWxDYXNlRmllbGROYW1lcxIWCg5Q" + 
+          "cmltaXRpdmVGaWVsZBgBIAEoBRITCgtTdHJpbmdGaWVsZBgCIAEoCRIxCglF" + 
+          "bnVtRmllbGQYAyABKA4yHi5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51" + 
+          "bRI3CgxNZXNzYWdlRmllbGQYBCABKAsyIS5wcm90b2J1Zl91bml0dGVzdC5G" + 
+          "b3JlaWduTWVzc2FnZRIcChBTdHJpbmdQaWVjZUZpZWxkGAUgASgJQgIIAhIV" + 
+          "CglDb3JkRmllbGQYBiABKAlCAggBEh4KFlJlcGVhdGVkUHJpbWl0aXZlRmll" + 
+          "bGQYByADKAUSGwoTUmVwZWF0ZWRTdHJpbmdGaWVsZBgIIAMoCRI5ChFSZXBl" + 
+          "YXRlZEVudW1GaWVsZBgJIAMoDjIeLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVp" + 
+          "Z25FbnVtEj8KFFJlcGVhdGVkTWVzc2FnZUZpZWxkGAogAygLMiEucHJvdG9i" + 
+          "dWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2USJAoYUmVwZWF0ZWRTdHJpbmdQ" + 
+          "aWVjZUZpZWxkGAsgAygJQgIIAhIdChFSZXBlYXRlZENvcmRGaWVsZBgMIAMo" + 
+          "CUICCAEiVQoSVGVzdEZpZWxkT3JkZXJpbmdzEhEKCW15X3N0cmluZxgLIAEo" + 
+          "CRIOCgZteV9pbnQYASABKAMSEAoIbXlfZmxvYXQYZSABKAIqBAgCEAsqBAgM" + 
+          "EGUi9gQKGFRlc3RFeHRyZW1lRGVmYXVsdFZhbHVlcxI/Cg1lc2NhcGVkX2J5" + 
+          "dGVzGAEgASgMOihcMDAwXDAwMVwwMDdcMDEwXDAxNFxuXHJcdFwwMTNcXFwn" + 
+          "XCJcMzc2EiAKDGxhcmdlX3VpbnQzMhgCIAEoDToKNDI5NDk2NzI5NRIqCgxs" + 
+          "YXJnZV91aW50NjQYAyABKAQ6FDE4NDQ2NzQ0MDczNzA5NTUxNjE1EiAKC3Nt" + 
+          "YWxsX2ludDMyGAQgASgFOgstMjE0NzQ4MzY0NxIpCgtzbWFsbF9pbnQ2NBgF" + 
+          "IAEoAzoULTkyMjMzNzIwMzY4NTQ3NzU4MDcSGAoLdXRmOF9zdHJpbmcYBiAB" + 
+          "KAk6A+GItBIVCgp6ZXJvX2Zsb2F0GAcgASgCOgEwEhQKCW9uZV9mbG9hdBgI" + 
+          "IAEoAjoBMRIYCgtzbWFsbF9mbG9hdBgJIAEoAjoDMS41Eh4KEm5lZ2F0aXZl" + 
+          "X29uZV9mbG9hdBgKIAEoAjoCLTESHAoObmVnYXRpdmVfZmxvYXQYCyABKAI6" + 
+          "BC0xLjUSGwoLbGFyZ2VfZmxvYXQYDCABKAI6BjJlKzAwOBIlChRzbWFsbF9u" + 
+          "ZWdhdGl2ZV9mbG9hdBgNIAEoAjoHLThlLTAyOBIXCgppbmZfZG91YmxlGA4g" + 
+          "ASgBOgNpbmYSHAoObmVnX2luZl9kb3VibGUYDyABKAE6BC1pbmYSFwoKbmFu" + 
+          "X2RvdWJsZRgQIAEoAToDbmFuEhYKCWluZl9mbG9hdBgRIAEoAjoDaW5mEhsK" + 
+          "DW5lZ19pbmZfZmxvYXQYEiABKAI6BC1pbmYSFgoJbmFuX2Zsb2F0GBMgASgC" + 
+          "OgNuYW4iGQoJT25lU3RyaW5nEgwKBGRhdGEYASABKAkiGAoIT25lQnl0ZXMS" + 
+          "DAoEZGF0YRgBIAEoDCKqAwoPVGVzdFBhY2tlZFR5cGVzEhgKDHBhY2tlZF9p" + 
+          "bnQzMhhaIAMoBUICEAESGAoMcGFja2VkX2ludDY0GFsgAygDQgIQARIZCg1w" + 
+          "YWNrZWRfdWludDMyGFwgAygNQgIQARIZCg1wYWNrZWRfdWludDY0GF0gAygE" + 
+          "QgIQARIZCg1wYWNrZWRfc2ludDMyGF4gAygRQgIQARIZCg1wYWNrZWRfc2lu" + 
+          "dDY0GF8gAygSQgIQARIaCg5wYWNrZWRfZml4ZWQzMhhgIAMoB0ICEAESGgoO" + 
+          "cGFja2VkX2ZpeGVkNjQYYSADKAZCAhABEhsKD3BhY2tlZF9zZml4ZWQzMhhi" + 
+          "IAMoD0ICEAESGwoPcGFja2VkX3NmaXhlZDY0GGMgAygQQgIQARIYCgxwYWNr" + 
+          "ZWRfZmxvYXQYZCADKAJCAhABEhkKDXBhY2tlZF9kb3VibGUYZSADKAFCAhAB" + 
+          "EhcKC3BhY2tlZF9ib29sGGYgAygIQgIQARI3CgtwYWNrZWRfZW51bRhnIAMo" + 
+          "DjIeLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtQgIQASLIAwoRVGVz" + 
+          "dFVucGFja2VkVHlwZXMSGgoOdW5wYWNrZWRfaW50MzIYWiADKAVCAhAAEhoK" + 
+          "DnVucGFja2VkX2ludDY0GFsgAygDQgIQABIbCg91bnBhY2tlZF91aW50MzIY" + 
+          "XCADKA1CAhAAEhsKD3VucGFja2VkX3VpbnQ2NBhdIAMoBEICEAASGwoPdW5w" + 
+          "YWNrZWRfc2ludDMyGF4gAygRQgIQABIbCg91bnBhY2tlZF9zaW50NjQYXyAD" + 
+          "KBJCAhAAEhwKEHVucGFja2VkX2ZpeGVkMzIYYCADKAdCAhAAEhwKEHVucGFj" + 
+          "a2VkX2ZpeGVkNjQYYSADKAZCAhAAEh0KEXVucGFja2VkX3NmaXhlZDMyGGIg" + 
+          "AygPQgIQABIdChF1bnBhY2tlZF9zZml4ZWQ2NBhjIAMoEEICEAASGgoOdW5w" + 
+          "YWNrZWRfZmxvYXQYZCADKAJCAhAAEhsKD3VucGFja2VkX2RvdWJsZRhlIAMo" + 
+          "AUICEAASGQoNdW5wYWNrZWRfYm9vbBhmIAMoCEICEAASOQoNdW5wYWNrZWRf" + 
+          "ZW51bRhnIAMoDjIeLnByb3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtQgIQ" + 
+          "ACIgChRUZXN0UGFja2VkRXh0ZW5zaW9ucyoICAEQgICAgAIimQQKFVRlc3RE" + 
+          "eW5hbWljRXh0ZW5zaW9ucxIZChBzY2FsYXJfZXh0ZW5zaW9uGNAPIAEoBxI3" + 
+          "Cg5lbnVtX2V4dGVuc2lvbhjRDyABKA4yHi5wcm90b2J1Zl91bml0dGVzdC5G" + 
+          "b3JlaWduRW51bRJZChZkeW5hbWljX2VudW1fZXh0ZW5zaW9uGNIPIAEoDjI4" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3REeW5hbWljRXh0ZW5zaW9ucy5EeW5h" + 
+          "bWljRW51bVR5cGUSPQoRbWVzc2FnZV9leHRlbnNpb24Y0w8gASgLMiEucHJv" + 
+          "dG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2USXwoZZHluYW1pY19tZXNz" + 
+          "YWdlX2V4dGVuc2lvbhjUDyABKAsyOy5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
+          "RHluYW1pY0V4dGVuc2lvbnMuRHluYW1pY01lc3NhZ2VUeXBlEhsKEnJlcGVh" + 
+          "dGVkX2V4dGVuc2lvbhjVDyADKAkSHQoQcGFja2VkX2V4dGVuc2lvbhjWDyAD" + 
+          "KBFCAhABGiwKEkR5bmFtaWNNZXNzYWdlVHlwZRIWCg1keW5hbWljX2ZpZWxk" + 
+          "GLQQIAEoBSJHCg9EeW5hbWljRW51bVR5cGUSEAoLRFlOQU1JQ19GT08QmBES" + 
+          "EAoLRFlOQU1JQ19CQVIQmRESEAoLRFlOQU1JQ19CQVoQmhEiwAEKI1Rlc3RS" + 
+          "ZXBlYXRlZFNjYWxhckRpZmZlcmVudFRhZ1NpemVzEhgKEHJlcGVhdGVkX2Zp" + 
+          "eGVkMzIYDCADKAcSFgoOcmVwZWF0ZWRfaW50MzIYDSADKAUSGQoQcmVwZWF0" + 
+          "ZWRfZml4ZWQ2NBj+DyADKAYSFwoOcmVwZWF0ZWRfaW50NjQY/w8gAygDEhgK" + 
+          "DnJlcGVhdGVkX2Zsb2F0GP7/DyADKAISGQoPcmVwZWF0ZWRfdWludDY0GP//" + 
+          "DyADKAQiDAoKRm9vUmVxdWVzdCINCgtGb29SZXNwb25zZSIMCgpCYXJSZXF1" + 
+          "ZXN0Ig0KC0JhclJlc3BvbnNlKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05f" + 
+          "Rk9PEAQSDwoLRk9SRUlHTl9CQVIQBRIPCgtGT1JFSUdOX0JBWhAGKkcKFFRl" + 
+          "c3RFbnVtV2l0aER1cFZhbHVlEggKBEZPTzEQARIICgRCQVIxEAISBwoDQkFa" + 
+          "EAMSCAoERk9PMhABEggKBEJBUjIQAiqJAQoOVGVzdFNwYXJzZUVudW0SDAoI" + 
+          "U1BBUlNFX0EQexIOCghTUEFSU0VfQhCm5wMSDwoIU1BBUlNFX0MQsrGABhIV" + 
+          "CghTUEFSU0VfRBDx//////////8BEhUKCFNQQVJTRV9FELTe/P///////wES" + 
+          "DAoIU1BBUlNFX0YQABIMCghTUEFSU0VfRxACMpkBCgtUZXN0U2VydmljZRJE" + 
+          "CgNGb28SHS5wcm90b2J1Zl91bml0dGVzdC5Gb29SZXF1ZXN0Gh4ucHJvdG9i" + 
+          "dWZfdW5pdHRlc3QuRm9vUmVzcG9uc2USRAoDQmFyEh0ucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuQmFyUmVxdWVzdBoeLnByb3RvYnVmX3VuaXR0ZXN0LkJhclJlc3Bv" + 
+          "bnNlOkYKGG9wdGlvbmFsX2ludDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
+          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAEgASgFOkYKGG9wdGlvbmFsX2lu" + 
+          "dDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRl" + 
+          "bnNpb25zGAIgASgDOkcKGW9wdGlvbmFsX3VpbnQzMl9leHRlbnNpb24SJC5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgDIAEoDTpHChlv" + 
+          "cHRpb25hbF91aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
+          "VGVzdEFsbEV4dGVuc2lvbnMYBCABKAQ6RwoZb3B0aW9uYWxfc2ludDMyX2V4" + 
+          "dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25z" + 
+          "GAUgASgROkcKGW9wdGlvbmFsX3NpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgGIAEoEjpIChpvcHRpb25h" + 
+          "bF9maXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
+          "bGxFeHRlbnNpb25zGAcgASgHOkgKGm9wdGlvbmFsX2ZpeGVkNjRfZXh0ZW5z" + 
+          "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYCCAB" + 
+          "KAY6SQobb3B0aW9uYWxfc2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYCSABKA86SQobb3B0aW9uYWxf" + 
+          "c2ZpeGVkNjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
+          "bEV4dGVuc2lvbnMYCiABKBA6RgoYb3B0aW9uYWxfZmxvYXRfZXh0ZW5zaW9u" + 
+          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYCyABKAI6" + 
+          "RwoZb3B0aW9uYWxfZG91YmxlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAwgASgBOkUKF29wdGlvbmFsX2Jvb2xf" + 
           "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
-          "bnMYBSABKBE6RwoZb3B0aW9uYWxfc2ludDY0X2V4dGVuc2lvbhIkLnByb3Rv" + 
-          "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGAYgASgSOkgKGm9wdGlv" + 
-          "bmFsX2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-          "dEFsbEV4dGVuc2lvbnMYByABKAc6SAoab3B0aW9uYWxfZml4ZWQ2NF9leHRl" + 
-          "bnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgI" + 
-          "IAEoBjpJChtvcHRpb25hbF9zZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
-          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgJIAEoDzpJChtvcHRpb25h" + 
-          "bF9zZml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
-          "QWxsRXh0ZW5zaW9ucxgKIAEoEDpGChhvcHRpb25hbF9mbG9hdF9leHRlbnNp" + 
-          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgLIAEo" + 
-          "AjpHChlvcHRpb25hbF9kb3VibGVfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDCABKAE6RQoXb3B0aW9uYWxfYm9v" + 
-          "bF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5z" + 
-          "aW9ucxgNIAEoCDpHChlvcHRpb25hbF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJv" + 
-          "dG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYDiABKAk6RgoYb3B0" + 
-          "aW9uYWxfYnl0ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
-          "dEFsbEV4dGVuc2lvbnMYDyABKAw6cQoXb3B0aW9uYWxncm91cF9leHRlbnNp" + 
-          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgQIAEo" + 
-          "CjIqLnByb3RvYnVmX3VuaXR0ZXN0Lk9wdGlvbmFsR3JvdXBfZXh0ZW5zaW9u" + 
-          "On4KIW9wdGlvbmFsX25lc3RlZF9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3Rv" + 
-          "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBIgASgLMi0ucHJvdG9i" + 
-          "dWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2U6cwoib3B0" + 
-          "aW9uYWxfZm9yZWlnbl9tZXNzYWdlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBMgASgLMiEucHJvdG9idWZfdW5p" + 
-          "dHRlc3QuRm9yZWlnbk1lc3NhZ2U6eAohb3B0aW9uYWxfaW1wb3J0X21lc3Nh" + 
-          "Z2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-          "c2lvbnMYFCABKAsyJy5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQuSW1wb3J0" + 
-          "TWVzc2FnZTp4Ch5vcHRpb25hbF9uZXN0ZWRfZW51bV9leHRlbnNpb24SJC5w" + 
-          "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgVIAEoDjIqLnBy" + 
-          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOm0KH29w" + 
-          "dGlvbmFsX2ZvcmVpZ25fZW51bV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
-          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgWIAEoDjIeLnByb3RvYnVmX3VuaXR0" + 
-          "ZXN0LkZvcmVpZ25FbnVtOnIKHm9wdGlvbmFsX2ltcG9ydF9lbnVtX2V4dGVu" + 
-          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBcg" + 
-          "ASgOMiQucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydEVudW06UQof" + 
-          "b3B0aW9uYWxfc3RyaW5nX3BpZWNlX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGBggASgJQgIIAjpJChdvcHRpb25h" + 
-          "bF9jb3JkX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-          "eHRlbnNpb25zGBkgASgJQgIIATpGChhyZXBlYXRlZF9pbnQzMl9leHRlbnNp" + 
-          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgfIAMo" + 
-          "BTpGChhyZXBlYXRlZF9pbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
-          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxggIAMoAzpHChlyZXBlYXRlZF91aW50" + 
-          "MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-          "c2lvbnMYISADKA06RwoZcmVwZWF0ZWRfdWludDY0X2V4dGVuc2lvbhIkLnBy" + 
-          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCIgAygEOkcKGXJl" + 
-          "cGVhdGVkX3NpbnQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
-          "ZXN0QWxsRXh0ZW5zaW9ucxgjIAMoETpHChlyZXBlYXRlZF9zaW50NjRfZXh0" + 
-          "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-          "JCADKBI6SAoacmVwZWF0ZWRfZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1" + 
-          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxglIAMoBzpIChpyZXBlYXRl" + 
-          "ZF9maXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
-          "bGxFeHRlbnNpb25zGCYgAygGOkkKG3JlcGVhdGVkX3NmaXhlZDMyX2V4dGVu" + 
-          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCcg" + 
-          "AygPOkkKG3JlcGVhdGVkX3NmaXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
-          "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCggAygQOkYKGHJlcGVhdGVk" + 
-          "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-          "eHRlbnNpb25zGCkgAygCOkcKGXJlcGVhdGVkX2RvdWJsZV9leHRlbnNpb24S" + 
-          "JC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgqIAMoATpF" + 
-          "ChdyZXBlYXRlZF9ib29sX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0" + 
-          "LlRlc3RBbGxFeHRlbnNpb25zGCsgAygIOkcKGXJlcGVhdGVkX3N0cmluZ19l" + 
-          "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
-          "cxgsIAMoCTpGChhyZXBlYXRlZF9ieXRlc19leHRlbnNpb24SJC5wcm90b2J1" + 
-          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgtIAMoDDpxChdyZXBlYXRl" + 
-          "ZGdyb3VwX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-          "eHRlbnNpb25zGC4gAygKMioucHJvdG9idWZfdW5pdHRlc3QuUmVwZWF0ZWRH" + 
-          "cm91cF9leHRlbnNpb246fgohcmVwZWF0ZWRfbmVzdGVkX21lc3NhZ2VfZXh0" + 
-          "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-          "MCADKAsyLS5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
-          "TWVzc2FnZTpzCiJyZXBlYXRlZF9mb3JlaWduX21lc3NhZ2VfZXh0ZW5zaW9u" + 
-          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYMSADKAsy" + 
-          "IS5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduTWVzc2FnZTp4CiFyZXBlYXRl" + 
-          "ZF9pbXBvcnRfbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVz" + 
-          "dC5UZXN0QWxsRXh0ZW5zaW9ucxgyIAMoCzInLnByb3RvYnVmX3VuaXR0ZXN0" + 
-          "X2ltcG9ydC5JbXBvcnRNZXNzYWdlOngKHnJlcGVhdGVkX25lc3RlZF9lbnVt" + 
+          "bnMYDSABKAg6RwoZb3B0aW9uYWxfc3RyaW5nX2V4dGVuc2lvbhIkLnByb3Rv" + 
+          "YnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGA4gASgJOkYKGG9wdGlv" + 
+          "bmFsX2J5dGVzX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RB" + 
+          "bGxFeHRlbnNpb25zGA8gASgMOnEKF29wdGlvbmFsZ3JvdXBfZXh0ZW5zaW9u" + 
+          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYECABKAoy" + 
+          "Ki5wcm90b2J1Zl91bml0dGVzdC5PcHRpb25hbEdyb3VwX2V4dGVuc2lvbjp+" + 
+          "CiFvcHRpb25hbF9uZXN0ZWRfbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgSIAEoCzItLnByb3RvYnVm" + 
+          "X3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlOnMKIm9wdGlv" + 
+          "bmFsX2ZvcmVpZ25fbWVzc2FnZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgTIAEoCzIhLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LkZvcmVpZ25NZXNzYWdlOngKIW9wdGlvbmFsX2ltcG9ydF9tZXNzYWdl" + 
           "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
-          "b25zGDMgAygOMioucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5l" + 
-          "c3RlZEVudW06bQofcmVwZWF0ZWRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
-          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDQgAygOMh4u" + 
-          "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06cgoecmVwZWF0ZWRfaW1w" + 
-          "b3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFs" + 
-          "bEV4dGVuc2lvbnMYNSADKA4yJC5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnQu" + 
-          "SW1wb3J0RW51bTpRCh9yZXBlYXRlZF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9u" + 
-          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNiADKAlC" + 
-          "AggCOkkKF3JlcGVhdGVkX2NvcmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYNyADKAlCAggBOkkKF2RlZmF1bHRf" + 
-          "aW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
-          "dGVuc2lvbnMYPSABKAU6AjQxOkkKF2RlZmF1bHRfaW50NjRfZXh0ZW5zaW9u" + 
-          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYPiABKAM6" + 
-          "AjQyOkoKGGRlZmF1bHRfdWludDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3Vu" + 
-          "aXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGD8gASgNOgI0MzpKChhkZWZhdWx0" + 
-          "X3VpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
-          "RXh0ZW5zaW9ucxhAIAEoBDoCNDQ6SwoYZGVmYXVsdF9zaW50MzJfZXh0ZW5z" + 
-          "aW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYQSAB" + 
-          "KBE6Ay00NTpKChhkZWZhdWx0X3NpbnQ2NF9leHRlbnNpb24SJC5wcm90b2J1" + 
-          "Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhCIAEoEjoCNDY6SwoZZGVm" + 
-          "YXVsdF9maXhlZDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
-          "c3RBbGxFeHRlbnNpb25zGEMgASgHOgI0NzpLChlkZWZhdWx0X2ZpeGVkNjRf" + 
-          "ZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lv" + 
-          "bnMYRCABKAY6AjQ4OkwKGmRlZmF1bHRfc2ZpeGVkMzJfZXh0ZW5zaW9uEiQu" + 
-          "cHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRSABKA86AjQ5" + 
-          "Ok0KGmRlZmF1bHRfc2ZpeGVkNjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYRiABKBA6Ay01MDpLChdkZWZhdWx0" + 
-          "X2Zsb2F0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
-          "eHRlbnNpb25zGEcgASgCOgQ1MS41Ok0KGGRlZmF1bHRfZG91YmxlX2V4dGVu" + 
-          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEgg" + 
-          "ASgBOgU1MjAwMDpKChZkZWZhdWx0X2Jvb2xfZXh0ZW5zaW9uEiQucHJvdG9i" + 
-          "dWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYSSABKAg6BHRydWU6TQoY" + 
-          "ZGVmYXVsdF9zdHJpbmdfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
-          "VGVzdEFsbEV4dGVuc2lvbnMYSiABKAk6BWhlbGxvOkwKF2RlZmF1bHRfYnl0" + 
-          "ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-          "c2lvbnMYSyABKAw6BXdvcmxkOnwKHWRlZmF1bHRfbmVzdGVkX2VudW1fZXh0" + 
+          "b25zGBQgASgLMicucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydE1l" + 
+          "c3NhZ2U6eAoeb3B0aW9uYWxfbmVzdGVkX2VudW1fZXh0ZW5zaW9uEiQucHJv" + 
+          "dG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYFSABKA4yKi5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVkRW51bTptCh9vcHRp" + 
+          "b25hbF9mb3JlaWduX2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRl" + 
+          "c3QuVGVzdEFsbEV4dGVuc2lvbnMYFiABKA4yHi5wcm90b2J1Zl91bml0dGVz" + 
+          "dC5Gb3JlaWduRW51bTpyCh5vcHRpb25hbF9pbXBvcnRfZW51bV9leHRlbnNp" + 
+          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgXIAEo" + 
+          "DjIkLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydC5JbXBvcnRFbnVtOlEKH29w" + 
+          "dGlvbmFsX3N0cmluZ19waWVjZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgYIAEoCUICCAI6SQoXb3B0aW9uYWxf" + 
+          "Y29yZF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0" + 
+          "ZW5zaW9ucxgZIAEoCUICCAE6RgoYcmVwZWF0ZWRfaW50MzJfZXh0ZW5zaW9u" + 
+          "EiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYHyADKAU6" + 
+          "RgoYcmVwZWF0ZWRfaW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRl" + 
+          "c3QuVGVzdEFsbEV4dGVuc2lvbnMYICADKAM6RwoZcmVwZWF0ZWRfdWludDMy" + 
+          "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
+          "b25zGCEgAygNOkcKGXJlcGVhdGVkX3VpbnQ2NF9leHRlbnNpb24SJC5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgiIAMoBDpHChlyZXBl" + 
+          "YXRlZF9zaW50MzJfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+          "dEFsbEV4dGVuc2lvbnMYIyADKBE6RwoZcmVwZWF0ZWRfc2ludDY0X2V4dGVu" + 
+          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGCQg" + 
+          "AygSOkgKGnJlcGVhdGVkX2ZpeGVkMzJfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYJSADKAc6SAoacmVwZWF0ZWRf" + 
+          "Zml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxs" + 
+          "RXh0ZW5zaW9ucxgmIAMoBjpJChtyZXBlYXRlZF9zZml4ZWQzMl9leHRlbnNp" + 
+          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgnIAMo" + 
+          "DzpJChtyZXBlYXRlZF9zZml4ZWQ2NF9leHRlbnNpb24SJC5wcm90b2J1Zl91" + 
+          "bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxgoIAMoEDpGChhyZXBlYXRlZF9m" + 
+          "bG9hdF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0" + 
+          "ZW5zaW9ucxgpIAMoAjpHChlyZXBlYXRlZF9kb3VibGVfZXh0ZW5zaW9uEiQu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYKiADKAE6RQoX" + 
+          "cmVwZWF0ZWRfYm9vbF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
+          "ZXN0QWxsRXh0ZW5zaW9ucxgrIAMoCDpHChlyZXBlYXRlZF9zdHJpbmdfZXh0" + 
           "ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMY" + 
-          "USABKA4yKi5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlwZXMuTmVzdGVk" + 
-          "RW51bToDQkFSOnkKHmRlZmF1bHRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIk" + 
-          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGFIgASgOMh4u" + 
-          "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW06C0ZPUkVJR05fQkFSOn0K" + 
-          "HWRlZmF1bHRfaW1wb3J0X2VudW1fZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5p" + 
-          "dHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYUyABKA4yJC5wcm90b2J1Zl91bml0" + 
-          "dGVzdF9pbXBvcnQuSW1wb3J0RW51bToKSU1QT1JUX0JBUjpVCh5kZWZhdWx0" + 
-          "X3N0cmluZ19waWVjZV9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5U" + 
-          "ZXN0QWxsRXh0ZW5zaW9ucxhUIAEoCToDYWJjQgIIAjpNChZkZWZhdWx0X2Nv" + 
-          "cmRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4dGVu" + 
-          "c2lvbnMYVSABKAk6AzEyM0ICCAE6QgoTbXlfZXh0ZW5zaW9uX3N0cmluZxIl" + 
-          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVsZE9yZGVyaW5ncxgyIAEoCTo/" + 
-          "ChBteV9leHRlbnNpb25faW50EiUucHJvdG9idWZfdW5pdHRlc3QuVGVzdEZp" + 
-          "ZWxkT3JkZXJpbmdzGAUgASgFOksKFnBhY2tlZF9pbnQzMl9leHRlbnNpb24S" + 
-          "Jy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhaIAMo" + 
-          "BUICEAE6SwoWcGFja2VkX2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
-          "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGFsgAygDQgIQATpMChdwYWNr" + 
-          "ZWRfdWludDMyX2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQ" + 
-          "YWNrZWRFeHRlbnNpb25zGFwgAygNQgIQATpMChdwYWNrZWRfdWludDY0X2V4" + 
-          "dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNp" + 
-          "b25zGF0gAygEQgIQATpMChdwYWNrZWRfc2ludDMyX2V4dGVuc2lvbhInLnBy" + 
-          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF4gAygRQgIQ" + 
-          "ATpMChdwYWNrZWRfc2ludDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0" + 
-          "ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGF8gAygSQgIQATpNChhwYWNrZWRf" + 
-          "Zml4ZWQzMl9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFj" + 
-          "a2VkRXh0ZW5zaW9ucxhgIAMoB0ICEAE6TQoYcGFja2VkX2ZpeGVkNjRfZXh0" + 
-          "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
-          "bnMYYSADKAZCAhABOk4KGXBhY2tlZF9zZml4ZWQzMl9leHRlbnNpb24SJy5w" + 
-          "cm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhiIAMoD0IC" + 
-          "EAE6TgoZcGFja2VkX3NmaXhlZDY0X2V4dGVuc2lvbhInLnByb3RvYnVmX3Vu" + 
-          "aXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGMgAygQQgIQATpLChZwYWNr" + 
-          "ZWRfZmxvYXRfZXh0ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBh" + 
-          "Y2tlZEV4dGVuc2lvbnMYZCADKAJCAhABOkwKF3BhY2tlZF9kb3VibGVfZXh0" + 
-          "ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lv" + 
-          "bnMYZSADKAFCAhABOkoKFXBhY2tlZF9ib29sX2V4dGVuc2lvbhInLnByb3Rv" + 
-          "YnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25zGGYgAygIQgIQATpq" + 
-          "ChVwYWNrZWRfZW51bV9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5U" + 
-          "ZXN0UGFja2VkRXh0ZW5zaW9ucxhnIAMoDjIeLnByb3RvYnVmX3VuaXR0ZXN0" + 
-          "LkZvcmVpZ25FbnVtQgIQAUJKQg1Vbml0dGVzdFByb3RvSAHCPjYKIUdvb2ds" + 
-          "ZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIRVW5pdFRlc3RQcm90b0Zp" + 
-          "bGU=");
+          "LCADKAk6RgoYcmVwZWF0ZWRfYnl0ZXNfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYLSADKAw6cQoXcmVwZWF0ZWRn" + 
+          "cm91cF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0" + 
+          "ZW5zaW9ucxguIAMoCjIqLnByb3RvYnVmX3VuaXR0ZXN0LlJlcGVhdGVkR3Jv" + 
+          "dXBfZXh0ZW5zaW9uOn4KIXJlcGVhdGVkX25lc3RlZF9tZXNzYWdlX2V4dGVu" + 
+          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDAg" + 
+          "AygLMi0ucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZE1l" + 
+          "c3NhZ2U6cwoicmVwZWF0ZWRfZm9yZWlnbl9tZXNzYWdlX2V4dGVuc2lvbhIk" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDEgAygLMiEu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2U6eAohcmVwZWF0ZWRf" + 
+          "aW1wb3J0X21lc3NhZ2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3Qu" + 
+          "VGVzdEFsbEV4dGVuc2lvbnMYMiADKAsyJy5wcm90b2J1Zl91bml0dGVzdF9p" + 
+          "bXBvcnQuSW1wb3J0TWVzc2FnZTp4Ch5yZXBlYXRlZF9uZXN0ZWRfZW51bV9l" + 
+          "eHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9u" + 
+          "cxgzIAMoDjIqLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxUeXBlcy5OZXN0" + 
+          "ZWRFbnVtOm0KH3JlcGVhdGVkX2ZvcmVpZ25fZW51bV9leHRlbnNpb24SJC5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxg0IAMoDjIeLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtOnIKHnJlcGVhdGVkX2ltcG9y" + 
+          "dF9lbnVtX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxF" + 
+          "eHRlbnNpb25zGDUgAygOMiQucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0Lklt" + 
+          "cG9ydEVudW06UQofcmVwZWF0ZWRfc3RyaW5nX3BpZWNlX2V4dGVuc2lvbhIk" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDYgAygJQgII" + 
+          "AjpJChdyZXBlYXRlZF9jb3JkX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LlRlc3RBbGxFeHRlbnNpb25zGDcgAygJQgIIATpJChdkZWZhdWx0X2lu" + 
+          "dDMyX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRl" + 
+          "bnNpb25zGD0gASgFOgI0MTpJChdkZWZhdWx0X2ludDY0X2V4dGVuc2lvbhIk" + 
+          "LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGD4gASgDOgI0" + 
+          "MjpKChhkZWZhdWx0X3VpbnQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxg/IAEoDToCNDM6SgoYZGVmYXVsdF91" + 
+          "aW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbEV4" + 
+          "dGVuc2lvbnMYQCABKAQ6AjQ0OksKGGRlZmF1bHRfc2ludDMyX2V4dGVuc2lv" + 
+          "bhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEEgASgR" + 
+          "OgMtNDU6SgoYZGVmYXVsdF9zaW50NjRfZXh0ZW5zaW9uEiQucHJvdG9idWZf" + 
+          "dW5pdHRlc3QuVGVzdEFsbEV4dGVuc2lvbnMYQiABKBI6AjQ2OksKGWRlZmF1" + 
+          "bHRfZml4ZWQzMl9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0" + 
+          "QWxsRXh0ZW5zaW9ucxhDIAEoBzoCNDc6SwoZZGVmYXVsdF9maXhlZDY0X2V4" + 
+          "dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25z" + 
+          "GEQgASgGOgI0ODpMChpkZWZhdWx0X3NmaXhlZDMyX2V4dGVuc2lvbhIkLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEUgASgPOgI0OTpN" + 
+          "ChpkZWZhdWx0X3NmaXhlZDY0X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEYgASgQOgMtNTA6SwoXZGVmYXVsdF9m" + 
+          "bG9hdF9leHRlbnNpb24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0" + 
+          "ZW5zaW9ucxhHIAEoAjoENTEuNTpNChhkZWZhdWx0X2RvdWJsZV9leHRlbnNp" + 
+          "b24SJC5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhIIAEo" + 
+          "AToFNTIwMDA6SgoWZGVmYXVsdF9ib29sX2V4dGVuc2lvbhIkLnByb3RvYnVm" + 
+          "X3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGEkgASgIOgR0cnVlOk0KGGRl" + 
+          "ZmF1bHRfc3RyaW5nX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRl" + 
+          "c3RBbGxFeHRlbnNpb25zGEogASgJOgVoZWxsbzpMChdkZWZhdWx0X2J5dGVz" + 
+          "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
+          "b25zGEsgASgMOgV3b3JsZDp8Ch1kZWZhdWx0X25lc3RlZF9lbnVtX2V4dGVu" + 
+          "c2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNpb25zGFEg" + 
+          "ASgOMioucHJvdG9idWZfdW5pdHRlc3QuVGVzdEFsbFR5cGVzLk5lc3RlZEVu" + 
+          "dW06A0JBUjp5Ch5kZWZhdWx0X2ZvcmVpZ25fZW51bV9leHRlbnNpb24SJC5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5UZXN0QWxsRXh0ZW5zaW9ucxhSIAEoDjIeLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LkZvcmVpZ25FbnVtOgtGT1JFSUdOX0JBUjp9Ch1k" + 
+          "ZWZhdWx0X2ltcG9ydF9lbnVtX2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LlRlc3RBbGxFeHRlbnNpb25zGFMgASgOMiQucHJvdG9idWZfdW5pdHRl" + 
+          "c3RfaW1wb3J0LkltcG9ydEVudW06CklNUE9SVF9CQVI6VQoeZGVmYXVsdF9z" + 
+          "dHJpbmdfcGllY2VfZXh0ZW5zaW9uEiQucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+          "dEFsbEV4dGVuc2lvbnMYVCABKAk6A2FiY0ICCAI6TQoWZGVmYXVsdF9jb3Jk" + 
+          "X2V4dGVuc2lvbhIkLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RBbGxFeHRlbnNp" + 
+          "b25zGFUgASgJOgMxMjNCAggBOkIKE215X2V4dGVuc2lvbl9zdHJpbmcSJS5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5UZXN0RmllbGRPcmRlcmluZ3MYMiABKAk6PwoQ" + 
+          "bXlfZXh0ZW5zaW9uX2ludBIlLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVs" + 
+          "ZE9yZGVyaW5ncxgFIAEoBTpLChZwYWNrZWRfaW50MzJfZXh0ZW5zaW9uEicu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lvbnMYWiADKAVC" + 
+          "AhABOksKFnBhY2tlZF9pbnQ2NF9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhbIAMoA0ICEAE6TAoXcGFja2Vk" + 
+          "X3VpbnQzMl9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFj" + 
+          "a2VkRXh0ZW5zaW9ucxhcIAMoDUICEAE6TAoXcGFja2VkX3VpbnQ2NF9leHRl" + 
+          "bnNpb24SJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9u" + 
+          "cxhdIAMoBEICEAE6TAoXcGFja2VkX3NpbnQzMl9leHRlbnNpb24SJy5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxheIAMoEUICEAE6" + 
+          "TAoXcGFja2VkX3NpbnQ2NF9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0dGVz" + 
+          "dC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhfIAMoEkICEAE6TQoYcGFja2VkX2Zp" + 
+          "eGVkMzJfZXh0ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVzdFBhY2tl" + 
+          "ZEV4dGVuc2lvbnMYYCADKAdCAhABOk0KGHBhY2tlZF9maXhlZDY0X2V4dGVu" + 
+          "c2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25z" + 
+          "GGEgAygGQgIQATpOChlwYWNrZWRfc2ZpeGVkMzJfZXh0ZW5zaW9uEicucHJv" + 
+          "dG9idWZfdW5pdHRlc3QuVGVzdFBhY2tlZEV4dGVuc2lvbnMYYiADKA9CAhAB" + 
+          "Ok4KGXBhY2tlZF9zZml4ZWQ2NF9leHRlbnNpb24SJy5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhjIAMoEEICEAE6SwoWcGFja2Vk" + 
+          "X2Zsb2F0X2V4dGVuc2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNr" + 
+          "ZWRFeHRlbnNpb25zGGQgAygCQgIQATpMChdwYWNrZWRfZG91YmxlX2V4dGVu" + 
+          "c2lvbhInLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQYWNrZWRFeHRlbnNpb25z" + 
+          "GGUgAygBQgIQATpKChVwYWNrZWRfYm9vbF9leHRlbnNpb24SJy5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5UZXN0UGFja2VkRXh0ZW5zaW9ucxhmIAMoCEICEAE6agoV" + 
+          "cGFja2VkX2VudW1fZXh0ZW5zaW9uEicucHJvdG9idWZfdW5pdHRlc3QuVGVz" + 
+          "dFBhY2tlZEV4dGVuc2lvbnMYZyADKA4yHi5wcm90b2J1Zl91bml0dGVzdC5G" + 
+          "b3JlaWduRW51bUICEAFCSkINVW5pdHRlc3RQcm90b0gBwj42CiFHb29nbGUu" + 
+          "UHJvdG9jb2xCdWZmZXJzLlRlc3RQcm90b3MSEVVuaXRUZXN0UHJvdG9GaWxl");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_protobuf_unittest_TestAllTypes__Descriptor = Descriptor.MessageTypes[0];
@@ -683,61 +741,74 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder>(internal__static_protobuf_unittest_TestAllTypes_RepeatedGroup__Descriptor,
                 new string[] { "A", });
-        internal__static_protobuf_unittest_ForeignMessage__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields, global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields.Builder>(internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor,
+                new string[] { "DeprecatedInt32", });
+        internal__static_protobuf_unittest_ForeignMessage__Descriptor = Descriptor.MessageTypes[2];
         internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder>(internal__static_protobuf_unittest_ForeignMessage__Descriptor,
                 new string[] { "C", });
-        internal__static_protobuf_unittest_TestAllExtensions__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_protobuf_unittest_TestAllExtensions__Descriptor = Descriptor.MessageTypes[3];
         internal__static_protobuf_unittest_TestAllExtensions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllExtensions, global::Google.ProtocolBuffers.TestProtos.TestAllExtensions.Builder>(internal__static_protobuf_unittest_TestAllExtensions__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor = Descriptor.MessageTypes[4];
         internal__static_protobuf_unittest_OptionalGroup_extension__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension.Builder>(internal__static_protobuf_unittest_OptionalGroup_extension__Descriptor,
                 new string[] { "A", });
-        internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor = Descriptor.MessageTypes[4];
+        internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor = Descriptor.MessageTypes[5];
         internal__static_protobuf_unittest_RepeatedGroup_extension__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension.Builder>(internal__static_protobuf_unittest_RepeatedGroup_extension__Descriptor,
                 new string[] { "A", });
-        internal__static_protobuf_unittest_TestRequired__Descriptor = Descriptor.MessageTypes[5];
+        internal__static_protobuf_unittest_TestNestedExtension__Descriptor = Descriptor.MessageTypes[6];
+        internal__static_protobuf_unittest_TestNestedExtension__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedExtension, global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.Builder>(internal__static_protobuf_unittest_TestNestedExtension__Descriptor,
+                new string[] { });
+        global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.Test = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.Descriptor.Extensions[0]);
+        internal__static_protobuf_unittest_TestRequired__Descriptor = Descriptor.MessageTypes[7];
         internal__static_protobuf_unittest_TestRequired__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequired, global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder>(internal__static_protobuf_unittest_TestRequired__Descriptor,
                 new string[] { "A", "Dummy2", "B", "Dummy4", "Dummy5", "Dummy6", "Dummy7", "Dummy8", "Dummy9", "Dummy10", "Dummy11", "Dummy12", "Dummy13", "Dummy14", "Dummy15", "Dummy16", "Dummy17", "Dummy18", "Dummy19", "Dummy20", "Dummy21", "Dummy22", "Dummy23", "Dummy24", "Dummy25", "Dummy26", "Dummy27", "Dummy28", "Dummy29", "Dummy30", "Dummy31", "Dummy32", "C", });
         global::Google.ProtocolBuffers.TestProtos.TestRequired.Single = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestRequired.Descriptor.Extensions[0]);
         global::Google.ProtocolBuffers.TestProtos.TestRequired.Multi = pb::GeneratedRepeatExtension<global::Google.ProtocolBuffers.TestProtos.TestRequired>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestRequired.Descriptor.Extensions[1]);
-        internal__static_protobuf_unittest_TestRequiredForeign__Descriptor = Descriptor.MessageTypes[6];
+        internal__static_protobuf_unittest_TestRequiredForeign__Descriptor = Descriptor.MessageTypes[8];
         internal__static_protobuf_unittest_TestRequiredForeign__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign, global::Google.ProtocolBuffers.TestProtos.TestRequiredForeign.Builder>(internal__static_protobuf_unittest_TestRequiredForeign__Descriptor,
                 new string[] { "OptionalMessage", "RepeatedMessage", "Dummy", });
-        internal__static_protobuf_unittest_TestForeignNested__Descriptor = Descriptor.MessageTypes[7];
+        internal__static_protobuf_unittest_TestForeignNested__Descriptor = Descriptor.MessageTypes[9];
         internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestForeignNested, global::Google.ProtocolBuffers.TestProtos.TestForeignNested.Builder>(internal__static_protobuf_unittest_TestForeignNested__Descriptor,
                 new string[] { "ForeignNested", });
-        internal__static_protobuf_unittest_TestEmptyMessage__Descriptor = Descriptor.MessageTypes[8];
+        internal__static_protobuf_unittest_TestEmptyMessage__Descriptor = Descriptor.MessageTypes[10];
         internal__static_protobuf_unittest_TestEmptyMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessage.Builder>(internal__static_protobuf_unittest_TestEmptyMessage__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor = Descriptor.MessageTypes[9];
+        internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor = Descriptor.MessageTypes[11];
         internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions, global::Google.ProtocolBuffers.TestProtos.TestEmptyMessageWithExtensions.Builder>(internal__static_protobuf_unittest_TestEmptyMessageWithExtensions__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor = Descriptor.MessageTypes[10];
+        internal__static_protobuf_unittest_TestMultipleExtensionRanges__Descriptor = Descriptor.MessageTypes[12];
+        internal__static_protobuf_unittest_TestMultipleExtensionRanges__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges, global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges.Builder>(internal__static_protobuf_unittest_TestMultipleExtensionRanges__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor = Descriptor.MessageTypes[13];
         internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber, global::Google.ProtocolBuffers.TestProtos.TestReallyLargeTagNumber.Builder>(internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor,
                 new string[] { "A", "Bb", });
-        internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor = Descriptor.MessageTypes[11];
+        internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor = Descriptor.MessageTypes[14];
         internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage, global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder>(internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor,
                 new string[] { "A", "I", });
-        internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor = Descriptor.MessageTypes[12];
+        internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor = Descriptor.MessageTypes[15];
         internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder>(internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor,
                 new string[] { "Bb", });
-        internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor = Descriptor.MessageTypes[13];
+        internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor = Descriptor.MessageTypes[16];
         internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB, global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder>(internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor,
                 new string[] { "A", "OptionalInt32", });
-        internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor = Descriptor.MessageTypes[14];
+        internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor = Descriptor.MessageTypes[17];
         internal__static_protobuf_unittest_TestDupFieldNumber__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber__Descriptor,
                 new string[] { "A", "Foo", "Bar", });
@@ -749,7 +820,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_TestDupFieldNumber_Bar__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar, global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder>(internal__static_protobuf_unittest_TestDupFieldNumber_Bar__Descriptor,
                 new string[] { "A", });
-        internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor = Descriptor.MessageTypes[15];
+        internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor = Descriptor.MessageTypes[18];
         internal__static_protobuf_unittest_TestNestedMessageHasBits__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Builder>(internal__static_protobuf_unittest_TestNestedMessageHasBits__Descriptor,
                 new string[] { "OptionalNestedMessage", });
@@ -757,39 +828,63 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder>(internal__static_protobuf_unittest_TestNestedMessageHasBits_NestedMessage__Descriptor,
                 new string[] { "NestedmessageRepeatedInt32", "NestedmessageRepeatedForeignmessage", });
-        internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor = Descriptor.MessageTypes[16];
+        internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor = Descriptor.MessageTypes[19];
         internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames, global::Google.ProtocolBuffers.TestProtos.TestCamelCaseFieldNames.Builder>(internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor,
                 new string[] { "PrimitiveField", "StringField", "EnumField", "MessageField", "StringPieceField", "CordField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedStringPieceField", "RepeatedCordField", });
-        internal__static_protobuf_unittest_TestFieldOrderings__Descriptor = Descriptor.MessageTypes[17];
+        internal__static_protobuf_unittest_TestFieldOrderings__Descriptor = Descriptor.MessageTypes[20];
         internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings, global::Google.ProtocolBuffers.TestProtos.TestFieldOrderings.Builder>(internal__static_protobuf_unittest_TestFieldOrderings__Descriptor,
                 new string[] { "MyString", "MyInt", "MyFloat", });
-        internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor = Descriptor.MessageTypes[18];
+        internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor = Descriptor.MessageTypes[21];
         internal__static_protobuf_unittest_TestExtremeDefaultValues__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues, global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Builder>(internal__static_protobuf_unittest_TestExtremeDefaultValues__Descriptor,
-                new string[] { "EscapedBytes", "LargeUint32", "LargeUint64", "SmallInt32", "SmallInt64", "Utf8String", });
-        internal__static_protobuf_unittest_TestPackedTypes__Descriptor = Descriptor.MessageTypes[19];
+                new string[] { "EscapedBytes", "LargeUint32", "LargeUint64", "SmallInt32", "SmallInt64", "Utf8String", "ZeroFloat", "OneFloat", "SmallFloat", "NegativeOneFloat", "NegativeFloat", "LargeFloat", "SmallNegativeFloat", "InfDouble", "NegInfDouble", "NanDouble", "InfFloat", "NegInfFloat", "NanFloat", });
+        internal__static_protobuf_unittest_OneString__Descriptor = Descriptor.MessageTypes[22];
+        internal__static_protobuf_unittest_OneString__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OneString, global::Google.ProtocolBuffers.TestProtos.OneString.Builder>(internal__static_protobuf_unittest_OneString__Descriptor,
+                new string[] { "Data", });
+        internal__static_protobuf_unittest_OneBytes__Descriptor = Descriptor.MessageTypes[23];
+        internal__static_protobuf_unittest_OneBytes__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.OneBytes, global::Google.ProtocolBuffers.TestProtos.OneBytes.Builder>(internal__static_protobuf_unittest_OneBytes__Descriptor,
+                new string[] { "Data", });
+        internal__static_protobuf_unittest_TestPackedTypes__Descriptor = Descriptor.MessageTypes[24];
         internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedTypes, global::Google.ProtocolBuffers.TestProtos.TestPackedTypes.Builder>(internal__static_protobuf_unittest_TestPackedTypes__Descriptor,
                 new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", });
-        internal__static_protobuf_unittest_TestPackedExtensions__Descriptor = Descriptor.MessageTypes[20];
+        internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor = Descriptor.MessageTypes[25];
+        internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes, global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes.Builder>(internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor,
+                new string[] { "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum", });
+        internal__static_protobuf_unittest_TestPackedExtensions__Descriptor = Descriptor.MessageTypes[26];
         internal__static_protobuf_unittest_TestPackedExtensions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions, global::Google.ProtocolBuffers.TestProtos.TestPackedExtensions.Builder>(internal__static_protobuf_unittest_TestPackedExtensions__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_FooRequest__Descriptor = Descriptor.MessageTypes[21];
+        internal__static_protobuf_unittest_TestDynamicExtensions__Descriptor = Descriptor.MessageTypes[27];
+        internal__static_protobuf_unittest_TestDynamicExtensions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions, global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Builder>(internal__static_protobuf_unittest_TestDynamicExtensions__Descriptor,
+                new string[] { "ScalarExtension", "EnumExtension", "DynamicEnumExtension", "MessageExtension", "DynamicMessageExtension", "RepeatedExtension", "PackedExtension", });
+        internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__Descriptor = internal__static_protobuf_unittest_TestDynamicExtensions__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType, global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.Builder>(internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__Descriptor,
+                new string[] { "DynamicField", });
+        internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor = Descriptor.MessageTypes[28];
+        internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes, global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes.Builder>(internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor,
+                new string[] { "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64", });
+        internal__static_protobuf_unittest_FooRequest__Descriptor = Descriptor.MessageTypes[29];
         internal__static_protobuf_unittest_FooRequest__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooRequest, global::Google.ProtocolBuffers.TestProtos.FooRequest.Builder>(internal__static_protobuf_unittest_FooRequest__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_FooResponse__Descriptor = Descriptor.MessageTypes[22];
+        internal__static_protobuf_unittest_FooResponse__Descriptor = Descriptor.MessageTypes[30];
         internal__static_protobuf_unittest_FooResponse__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FooResponse, global::Google.ProtocolBuffers.TestProtos.FooResponse.Builder>(internal__static_protobuf_unittest_FooResponse__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_BarRequest__Descriptor = Descriptor.MessageTypes[23];
+        internal__static_protobuf_unittest_BarRequest__Descriptor = Descriptor.MessageTypes[31];
         internal__static_protobuf_unittest_BarRequest__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarRequest, global::Google.ProtocolBuffers.TestProtos.BarRequest.Builder>(internal__static_protobuf_unittest_BarRequest__Descriptor,
                 new string[] { });
-        internal__static_protobuf_unittest_BarResponse__Descriptor = Descriptor.MessageTypes[24];
+        internal__static_protobuf_unittest_BarResponse__Descriptor = Descriptor.MessageTypes[32];
         internal__static_protobuf_unittest_BarResponse__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.BarResponse, global::Google.ProtocolBuffers.TestProtos.BarResponse.Builder>(internal__static_protobuf_unittest_BarResponse__Descriptor,
                 new string[] { });
@@ -5222,6 +5317,221 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  public sealed partial class TestDeprecatedFields : pb::GeneratedMessage<TestDeprecatedFields, TestDeprecatedFields.Builder> {
+    private static readonly TestDeprecatedFields defaultInstance = new Builder().BuildPartial();
+    public static TestDeprecatedFields DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestDeprecatedFields DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestDeprecatedFields ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestDeprecatedFields, TestDeprecatedFields.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable; }
+    }
+    
+    public const int DeprecatedInt32FieldNumber = 1;
+    private bool hasDeprecatedInt32;
+    private int deprecatedInt32_ = 0;
+    public bool HasDeprecatedInt32 {
+      get { return hasDeprecatedInt32; }
+    }
+    public int DeprecatedInt32 {
+      get { return deprecatedInt32_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (HasDeprecatedInt32) {
+        output.WriteInt32(1, DeprecatedInt32);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasDeprecatedInt32) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, DeprecatedInt32);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestDeprecatedFields ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestDeprecatedFields ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestDeprecatedFields prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestDeprecatedFields, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestDeprecatedFields result = new TestDeprecatedFields();
+      
+      protected override TestDeprecatedFields MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestDeprecatedFields();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields.Descriptor; }
+      }
+      
+      public override TestDeprecatedFields DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields.DefaultInstance; }
+      }
+      
+      public override TestDeprecatedFields BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        TestDeprecatedFields returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestDeprecatedFields) {
+          return MergeFrom((TestDeprecatedFields) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestDeprecatedFields other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestDeprecatedFields.DefaultInstance) return this;
+        if (other.HasDeprecatedInt32) {
+          DeprecatedInt32 = other.DeprecatedInt32;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 8: {
+              DeprecatedInt32 = input.ReadInt32();
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public bool HasDeprecatedInt32 {
+        get { return result.HasDeprecatedInt32; }
+      }
+      public int DeprecatedInt32 {
+        get { return result.DeprecatedInt32; }
+        set { SetDeprecatedInt32(value); }
+      }
+      public Builder SetDeprecatedInt32(int value) {
+        result.hasDeprecatedInt32 = true;
+        result.deprecatedInt32_ = value;
+        return this;
+      }
+      public Builder ClearDeprecatedInt32() {
+        result.hasDeprecatedInt32 = false;
+        result.deprecatedInt32_ = 0;
+        return this;
+      }
+    }
+    static TestDeprecatedFields() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
   public sealed partial class ForeignMessage : pb::GeneratedMessage<ForeignMessage, ForeignMessage.Builder> {
     private static readonly ForeignMessage defaultInstance = new Builder().BuildPartial();
     public static ForeignMessage DefaultInstance {
@@ -6042,6 +6352,182 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static RepeatedGroup_extension() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class TestNestedExtension : pb::GeneratedMessage<TestNestedExtension, TestNestedExtension.Builder> {
+    private static readonly TestNestedExtension defaultInstance = new Builder().BuildPartial();
+    public static TestNestedExtension DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestNestedExtension DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestNestedExtension ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestNestedExtension__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestNestedExtension, TestNestedExtension.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestNestedExtension__FieldAccessorTable; }
+    }
+    
+    public const int TestFieldNumber = 1002;
+    public static pb::GeneratedExtensionBase<string> Test;
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestNestedExtension ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestNestedExtension ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestNestedExtension ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestNestedExtension ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestNestedExtension prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestNestedExtension, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestNestedExtension result = new TestNestedExtension();
+      
+      protected override TestNestedExtension MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestNestedExtension();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.Descriptor; }
+      }
+      
+      public override TestNestedExtension DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.DefaultInstance; }
+      }
+      
+      public override TestNestedExtension BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        TestNestedExtension returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestNestedExtension) {
+          return MergeFrom((TestNestedExtension) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestNestedExtension other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestNestedExtension.DefaultInstance) return this;
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
+    }
+    static TestNestedExtension() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
     }
   }
@@ -8518,6 +9004,187 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static TestEmptyMessageWithExtensions() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class TestMultipleExtensionRanges : pb::ExtendableMessage<TestMultipleExtensionRanges, TestMultipleExtensionRanges.Builder> {
+    private static readonly TestMultipleExtensionRanges defaultInstance = new Builder().BuildPartial();
+    public static TestMultipleExtensionRanges DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestMultipleExtensionRanges DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestMultipleExtensionRanges ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestMultipleExtensionRanges__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestMultipleExtensionRanges, TestMultipleExtensionRanges.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestMultipleExtensionRanges__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (!ExtensionsAreInitialized) return false;
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      pb::ExtendableMessage<TestMultipleExtensionRanges, TestMultipleExtensionRanges.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
+      extensionWriter.WriteUntil(43, output);
+      extensionWriter.WriteUntil(4244, output);
+      extensionWriter.WriteUntil(536870912, output);
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += ExtensionsSerializedSize;
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestMultipleExtensionRanges ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestMultipleExtensionRanges ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestMultipleExtensionRanges prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::ExtendableBuilder<TestMultipleExtensionRanges, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestMultipleExtensionRanges result = new TestMultipleExtensionRanges();
+      
+      protected override TestMultipleExtensionRanges MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestMultipleExtensionRanges();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges.Descriptor; }
+      }
+      
+      public override TestMultipleExtensionRanges DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges.DefaultInstance; }
+      }
+      
+      public override TestMultipleExtensionRanges BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        TestMultipleExtensionRanges returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestMultipleExtensionRanges) {
+          return MergeFrom((TestMultipleExtensionRanges) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestMultipleExtensionRanges other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestMultipleExtensionRanges.DefaultInstance) return this;
+          this.MergeExtensionFields(other);
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+          }
+        }
+      }
+      
+    }
+    static TestMultipleExtensionRanges() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
     }
   }
@@ -12113,6 +12780,136 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return utf8String_; }
     }
     
+    public const int ZeroFloatFieldNumber = 7;
+    private bool hasZeroFloat;
+    private float zeroFloat_ = 0F;
+    public bool HasZeroFloat {
+      get { return hasZeroFloat; }
+    }
+    public float ZeroFloat {
+      get { return zeroFloat_; }
+    }
+    
+    public const int OneFloatFieldNumber = 8;
+    private bool hasOneFloat;
+    private float oneFloat_ = 1F;
+    public bool HasOneFloat {
+      get { return hasOneFloat; }
+    }
+    public float OneFloat {
+      get { return oneFloat_; }
+    }
+    
+    public const int SmallFloatFieldNumber = 9;
+    private bool hasSmallFloat;
+    private float smallFloat_ = 1.5F;
+    public bool HasSmallFloat {
+      get { return hasSmallFloat; }
+    }
+    public float SmallFloat {
+      get { return smallFloat_; }
+    }
+    
+    public const int NegativeOneFloatFieldNumber = 10;
+    private bool hasNegativeOneFloat;
+    private float negativeOneFloat_ = -1F;
+    public bool HasNegativeOneFloat {
+      get { return hasNegativeOneFloat; }
+    }
+    public float NegativeOneFloat {
+      get { return negativeOneFloat_; }
+    }
+    
+    public const int NegativeFloatFieldNumber = 11;
+    private bool hasNegativeFloat;
+    private float negativeFloat_ = -1.5F;
+    public bool HasNegativeFloat {
+      get { return hasNegativeFloat; }
+    }
+    public float NegativeFloat {
+      get { return negativeFloat_; }
+    }
+    
+    public const int LargeFloatFieldNumber = 12;
+    private bool hasLargeFloat;
+    private float largeFloat_ = 2E+08F;
+    public bool HasLargeFloat {
+      get { return hasLargeFloat; }
+    }
+    public float LargeFloat {
+      get { return largeFloat_; }
+    }
+    
+    public const int SmallNegativeFloatFieldNumber = 13;
+    private bool hasSmallNegativeFloat;
+    private float smallNegativeFloat_ = -8E-28F;
+    public bool HasSmallNegativeFloat {
+      get { return hasSmallNegativeFloat; }
+    }
+    public float SmallNegativeFloat {
+      get { return smallNegativeFloat_; }
+    }
+    
+    public const int InfDoubleFieldNumber = 14;
+    private bool hasInfDouble;
+    private double infDouble_ = InfinityD;
+    public bool HasInfDouble {
+      get { return hasInfDouble; }
+    }
+    public double InfDouble {
+      get { return infDouble_; }
+    }
+    
+    public const int NegInfDoubleFieldNumber = 15;
+    private bool hasNegInfDouble;
+    private double negInfDouble_ = -InfinityD;
+    public bool HasNegInfDouble {
+      get { return hasNegInfDouble; }
+    }
+    public double NegInfDouble {
+      get { return negInfDouble_; }
+    }
+    
+    public const int NanDoubleFieldNumber = 16;
+    private bool hasNanDouble;
+    private double nanDouble_ = NaND;
+    public bool HasNanDouble {
+      get { return hasNanDouble; }
+    }
+    public double NanDouble {
+      get { return nanDouble_; }
+    }
+    
+    public const int InfFloatFieldNumber = 17;
+    private bool hasInfFloat;
+    private float infFloat_ = InfinityF;
+    public bool HasInfFloat {
+      get { return hasInfFloat; }
+    }
+    public float InfFloat {
+      get { return infFloat_; }
+    }
+    
+    public const int NegInfFloatFieldNumber = 18;
+    private bool hasNegInfFloat;
+    private float negInfFloat_ = -InfinityF;
+    public bool HasNegInfFloat {
+      get { return hasNegInfFloat; }
+    }
+    public float NegInfFloat {
+      get { return negInfFloat_; }
+    }
+    
+    public const int NanFloatFieldNumber = 19;
+    private bool hasNanFloat;
+    private float nanFloat_ = NaNF;
+    public bool HasNanFloat {
+      get { return hasNanFloat; }
+    }
+    public float NanFloat {
+      get { return nanFloat_; }
+    }
+    
     public override bool IsInitialized {
       get {
         return true;
@@ -12138,6 +12935,45 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       if (HasUtf8String) {
         output.WriteString(6, Utf8String);
+      }
+      if (HasZeroFloat) {
+        output.WriteFloat(7, ZeroFloat);
+      }
+      if (HasOneFloat) {
+        output.WriteFloat(8, OneFloat);
+      }
+      if (HasSmallFloat) {
+        output.WriteFloat(9, SmallFloat);
+      }
+      if (HasNegativeOneFloat) {
+        output.WriteFloat(10, NegativeOneFloat);
+      }
+      if (HasNegativeFloat) {
+        output.WriteFloat(11, NegativeFloat);
+      }
+      if (HasLargeFloat) {
+        output.WriteFloat(12, LargeFloat);
+      }
+      if (HasSmallNegativeFloat) {
+        output.WriteFloat(13, SmallNegativeFloat);
+      }
+      if (HasInfDouble) {
+        output.WriteDouble(14, InfDouble);
+      }
+      if (HasNegInfDouble) {
+        output.WriteDouble(15, NegInfDouble);
+      }
+      if (HasNanDouble) {
+        output.WriteDouble(16, NanDouble);
+      }
+      if (HasInfFloat) {
+        output.WriteFloat(17, InfFloat);
+      }
+      if (HasNegInfFloat) {
+        output.WriteFloat(18, NegInfFloat);
+      }
+      if (HasNanFloat) {
+        output.WriteFloat(19, NanFloat);
       }
       UnknownFields.WriteTo(output);
     }
@@ -12166,6 +13002,45 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         if (HasUtf8String) {
           size += pb::CodedOutputStream.ComputeStringSize(6, Utf8String);
+        }
+        if (HasZeroFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(7, ZeroFloat);
+        }
+        if (HasOneFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(8, OneFloat);
+        }
+        if (HasSmallFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(9, SmallFloat);
+        }
+        if (HasNegativeOneFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(10, NegativeOneFloat);
+        }
+        if (HasNegativeFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(11, NegativeFloat);
+        }
+        if (HasLargeFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(12, LargeFloat);
+        }
+        if (HasSmallNegativeFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(13, SmallNegativeFloat);
+        }
+        if (HasInfDouble) {
+          size += pb::CodedOutputStream.ComputeDoubleSize(14, InfDouble);
+        }
+        if (HasNegInfDouble) {
+          size += pb::CodedOutputStream.ComputeDoubleSize(15, NegInfDouble);
+        }
+        if (HasNanDouble) {
+          size += pb::CodedOutputStream.ComputeDoubleSize(16, NanDouble);
+        }
+        if (HasInfFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(17, InfFloat);
+        }
+        if (HasNegInfFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(18, NegInfFloat);
+        }
+        if (HasNanFloat) {
+          size += pb::CodedOutputStream.ComputeFloatSize(19, NanFloat);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -12277,6 +13152,45 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (other.HasUtf8String) {
           Utf8String = other.Utf8String;
         }
+        if (other.HasZeroFloat) {
+          ZeroFloat = other.ZeroFloat;
+        }
+        if (other.HasOneFloat) {
+          OneFloat = other.OneFloat;
+        }
+        if (other.HasSmallFloat) {
+          SmallFloat = other.SmallFloat;
+        }
+        if (other.HasNegativeOneFloat) {
+          NegativeOneFloat = other.NegativeOneFloat;
+        }
+        if (other.HasNegativeFloat) {
+          NegativeFloat = other.NegativeFloat;
+        }
+        if (other.HasLargeFloat) {
+          LargeFloat = other.LargeFloat;
+        }
+        if (other.HasSmallNegativeFloat) {
+          SmallNegativeFloat = other.SmallNegativeFloat;
+        }
+        if (other.HasInfDouble) {
+          InfDouble = other.InfDouble;
+        }
+        if (other.HasNegInfDouble) {
+          NegInfDouble = other.NegInfDouble;
+        }
+        if (other.HasNanDouble) {
+          NanDouble = other.NanDouble;
+        }
+        if (other.HasInfFloat) {
+          InfFloat = other.InfFloat;
+        }
+        if (other.HasNegInfFloat) {
+          NegInfFloat = other.NegInfFloat;
+        }
+        if (other.HasNanFloat) {
+          NanFloat = other.NanFloat;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -12331,6 +13245,58 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 50: {
               Utf8String = input.ReadString();
+              break;
+            }
+            case 61: {
+              ZeroFloat = input.ReadFloat();
+              break;
+            }
+            case 69: {
+              OneFloat = input.ReadFloat();
+              break;
+            }
+            case 77: {
+              SmallFloat = input.ReadFloat();
+              break;
+            }
+            case 85: {
+              NegativeOneFloat = input.ReadFloat();
+              break;
+            }
+            case 93: {
+              NegativeFloat = input.ReadFloat();
+              break;
+            }
+            case 101: {
+              LargeFloat = input.ReadFloat();
+              break;
+            }
+            case 109: {
+              SmallNegativeFloat = input.ReadFloat();
+              break;
+            }
+            case 113: {
+              InfDouble = input.ReadDouble();
+              break;
+            }
+            case 121: {
+              NegInfDouble = input.ReadDouble();
+              break;
+            }
+            case 129: {
+              NanDouble = input.ReadDouble();
+              break;
+            }
+            case 141: {
+              InfFloat = input.ReadFloat();
+              break;
+            }
+            case 149: {
+              NegInfFloat = input.ReadFloat();
+              break;
+            }
+            case 157: {
+              NanFloat = input.ReadFloat();
               break;
             }
           }
@@ -12451,8 +13417,674 @@ namespace Google.ProtocolBuffers.TestProtos {
         result.utf8String_ = (string) global::Google.ProtocolBuffers.TestProtos.TestExtremeDefaultValues.Descriptor.Fields[5].DefaultValue;
         return this;
       }
+      
+      public bool HasZeroFloat {
+        get { return result.HasZeroFloat; }
+      }
+      public float ZeroFloat {
+        get { return result.ZeroFloat; }
+        set { SetZeroFloat(value); }
+      }
+      public Builder SetZeroFloat(float value) {
+        result.hasZeroFloat = true;
+        result.zeroFloat_ = value;
+        return this;
+      }
+      public Builder ClearZeroFloat() {
+        result.hasZeroFloat = false;
+        result.zeroFloat_ = 0F;
+        return this;
+      }
+      
+      public bool HasOneFloat {
+        get { return result.HasOneFloat; }
+      }
+      public float OneFloat {
+        get { return result.OneFloat; }
+        set { SetOneFloat(value); }
+      }
+      public Builder SetOneFloat(float value) {
+        result.hasOneFloat = true;
+        result.oneFloat_ = value;
+        return this;
+      }
+      public Builder ClearOneFloat() {
+        result.hasOneFloat = false;
+        result.oneFloat_ = 1F;
+        return this;
+      }
+      
+      public bool HasSmallFloat {
+        get { return result.HasSmallFloat; }
+      }
+      public float SmallFloat {
+        get { return result.SmallFloat; }
+        set { SetSmallFloat(value); }
+      }
+      public Builder SetSmallFloat(float value) {
+        result.hasSmallFloat = true;
+        result.smallFloat_ = value;
+        return this;
+      }
+      public Builder ClearSmallFloat() {
+        result.hasSmallFloat = false;
+        result.smallFloat_ = 1.5F;
+        return this;
+      }
+      
+      public bool HasNegativeOneFloat {
+        get { return result.HasNegativeOneFloat; }
+      }
+      public float NegativeOneFloat {
+        get { return result.NegativeOneFloat; }
+        set { SetNegativeOneFloat(value); }
+      }
+      public Builder SetNegativeOneFloat(float value) {
+        result.hasNegativeOneFloat = true;
+        result.negativeOneFloat_ = value;
+        return this;
+      }
+      public Builder ClearNegativeOneFloat() {
+        result.hasNegativeOneFloat = false;
+        result.negativeOneFloat_ = -1F;
+        return this;
+      }
+      
+      public bool HasNegativeFloat {
+        get { return result.HasNegativeFloat; }
+      }
+      public float NegativeFloat {
+        get { return result.NegativeFloat; }
+        set { SetNegativeFloat(value); }
+      }
+      public Builder SetNegativeFloat(float value) {
+        result.hasNegativeFloat = true;
+        result.negativeFloat_ = value;
+        return this;
+      }
+      public Builder ClearNegativeFloat() {
+        result.hasNegativeFloat = false;
+        result.negativeFloat_ = -1.5F;
+        return this;
+      }
+      
+      public bool HasLargeFloat {
+        get { return result.HasLargeFloat; }
+      }
+      public float LargeFloat {
+        get { return result.LargeFloat; }
+        set { SetLargeFloat(value); }
+      }
+      public Builder SetLargeFloat(float value) {
+        result.hasLargeFloat = true;
+        result.largeFloat_ = value;
+        return this;
+      }
+      public Builder ClearLargeFloat() {
+        result.hasLargeFloat = false;
+        result.largeFloat_ = 2E+08F;
+        return this;
+      }
+      
+      public bool HasSmallNegativeFloat {
+        get { return result.HasSmallNegativeFloat; }
+      }
+      public float SmallNegativeFloat {
+        get { return result.SmallNegativeFloat; }
+        set { SetSmallNegativeFloat(value); }
+      }
+      public Builder SetSmallNegativeFloat(float value) {
+        result.hasSmallNegativeFloat = true;
+        result.smallNegativeFloat_ = value;
+        return this;
+      }
+      public Builder ClearSmallNegativeFloat() {
+        result.hasSmallNegativeFloat = false;
+        result.smallNegativeFloat_ = -8E-28F;
+        return this;
+      }
+      
+      public bool HasInfDouble {
+        get { return result.HasInfDouble; }
+      }
+      public double InfDouble {
+        get { return result.InfDouble; }
+        set { SetInfDouble(value); }
+      }
+      public Builder SetInfDouble(double value) {
+        result.hasInfDouble = true;
+        result.infDouble_ = value;
+        return this;
+      }
+      public Builder ClearInfDouble() {
+        result.hasInfDouble = false;
+        result.infDouble_ = InfinityD;
+        return this;
+      }
+      
+      public bool HasNegInfDouble {
+        get { return result.HasNegInfDouble; }
+      }
+      public double NegInfDouble {
+        get { return result.NegInfDouble; }
+        set { SetNegInfDouble(value); }
+      }
+      public Builder SetNegInfDouble(double value) {
+        result.hasNegInfDouble = true;
+        result.negInfDouble_ = value;
+        return this;
+      }
+      public Builder ClearNegInfDouble() {
+        result.hasNegInfDouble = false;
+        result.negInfDouble_ = -InfinityD;
+        return this;
+      }
+      
+      public bool HasNanDouble {
+        get { return result.HasNanDouble; }
+      }
+      public double NanDouble {
+        get { return result.NanDouble; }
+        set { SetNanDouble(value); }
+      }
+      public Builder SetNanDouble(double value) {
+        result.hasNanDouble = true;
+        result.nanDouble_ = value;
+        return this;
+      }
+      public Builder ClearNanDouble() {
+        result.hasNanDouble = false;
+        result.nanDouble_ = NaND;
+        return this;
+      }
+      
+      public bool HasInfFloat {
+        get { return result.HasInfFloat; }
+      }
+      public float InfFloat {
+        get { return result.InfFloat; }
+        set { SetInfFloat(value); }
+      }
+      public Builder SetInfFloat(float value) {
+        result.hasInfFloat = true;
+        result.infFloat_ = value;
+        return this;
+      }
+      public Builder ClearInfFloat() {
+        result.hasInfFloat = false;
+        result.infFloat_ = InfinityF;
+        return this;
+      }
+      
+      public bool HasNegInfFloat {
+        get { return result.HasNegInfFloat; }
+      }
+      public float NegInfFloat {
+        get { return result.NegInfFloat; }
+        set { SetNegInfFloat(value); }
+      }
+      public Builder SetNegInfFloat(float value) {
+        result.hasNegInfFloat = true;
+        result.negInfFloat_ = value;
+        return this;
+      }
+      public Builder ClearNegInfFloat() {
+        result.hasNegInfFloat = false;
+        result.negInfFloat_ = -InfinityF;
+        return this;
+      }
+      
+      public bool HasNanFloat {
+        get { return result.HasNanFloat; }
+      }
+      public float NanFloat {
+        get { return result.NanFloat; }
+        set { SetNanFloat(value); }
+      }
+      public Builder SetNanFloat(float value) {
+        result.hasNanFloat = true;
+        result.nanFloat_ = value;
+        return this;
+      }
+      public Builder ClearNanFloat() {
+        result.hasNanFloat = false;
+        result.nanFloat_ = NaNF;
+        return this;
+      }
     }
     static TestExtremeDefaultValues() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class OneString : pb::GeneratedMessage<OneString, OneString.Builder> {
+    private static readonly OneString defaultInstance = new Builder().BuildPartial();
+    public static OneString DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override OneString DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override OneString ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_OneString__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<OneString, OneString.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_OneString__FieldAccessorTable; }
+    }
+    
+    public const int DataFieldNumber = 1;
+    private bool hasData;
+    private string data_ = "";
+    public bool HasData {
+      get { return hasData; }
+    }
+    public string Data {
+      get { return data_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (HasData) {
+        output.WriteString(1, Data);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasData) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, Data);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static OneString ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static OneString ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static OneString ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static OneString ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static OneString ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static OneString ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static OneString ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static OneString ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static OneString ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static OneString ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(OneString prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<OneString, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      OneString result = new OneString();
+      
+      protected override OneString MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new OneString();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.OneString.Descriptor; }
+      }
+      
+      public override OneString DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.OneString.DefaultInstance; }
+      }
+      
+      public override OneString BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        OneString returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is OneString) {
+          return MergeFrom((OneString) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(OneString other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.OneString.DefaultInstance) return this;
+        if (other.HasData) {
+          Data = other.Data;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              Data = input.ReadString();
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public bool HasData {
+        get { return result.HasData; }
+      }
+      public string Data {
+        get { return result.Data; }
+        set { SetData(value); }
+      }
+      public Builder SetData(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasData = true;
+        result.data_ = value;
+        return this;
+      }
+      public Builder ClearData() {
+        result.hasData = false;
+        result.data_ = "";
+        return this;
+      }
+    }
+    static OneString() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class OneBytes : pb::GeneratedMessage<OneBytes, OneBytes.Builder> {
+    private static readonly OneBytes defaultInstance = new Builder().BuildPartial();
+    public static OneBytes DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override OneBytes DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override OneBytes ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_OneBytes__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<OneBytes, OneBytes.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_OneBytes__FieldAccessorTable; }
+    }
+    
+    public const int DataFieldNumber = 1;
+    private bool hasData;
+    private pb::ByteString data_ = pb::ByteString.Empty;
+    public bool HasData {
+      get { return hasData; }
+    }
+    public pb::ByteString Data {
+      get { return data_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (HasData) {
+        output.WriteBytes(1, Data);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasData) {
+          size += pb::CodedOutputStream.ComputeBytesSize(1, Data);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static OneBytes ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static OneBytes ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static OneBytes ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static OneBytes ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static OneBytes ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static OneBytes ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static OneBytes ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static OneBytes ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static OneBytes ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static OneBytes ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(OneBytes prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<OneBytes, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      OneBytes result = new OneBytes();
+      
+      protected override OneBytes MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new OneBytes();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.OneBytes.Descriptor; }
+      }
+      
+      public override OneBytes DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.OneBytes.DefaultInstance; }
+      }
+      
+      public override OneBytes BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        OneBytes returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is OneBytes) {
+          return MergeFrom((OneBytes) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(OneBytes other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.OneBytes.DefaultInstance) return this;
+        if (other.HasData) {
+          Data = other.Data;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              Data = input.ReadBytes();
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public bool HasData {
+        get { return result.HasData; }
+      }
+      public pb::ByteString Data {
+        get { return result.Data; }
+        set { SetData(value); }
+      }
+      public Builder SetData(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasData = true;
+        result.data_ = value;
+        return this;
+      }
+      public Builder ClearData() {
+        result.hasData = false;
+        result.data_ = pb::ByteString.Empty;
+        return this;
+      }
+    }
+    static OneBytes() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
     }
   }
@@ -13634,6 +15266,1030 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  public sealed partial class TestUnpackedTypes : pb::GeneratedMessage<TestUnpackedTypes, TestUnpackedTypes.Builder> {
+    private static readonly TestUnpackedTypes defaultInstance = new Builder().BuildPartial();
+    public static TestUnpackedTypes DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestUnpackedTypes DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestUnpackedTypes ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestUnpackedTypes, TestUnpackedTypes.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable; }
+    }
+    
+    public const int UnpackedInt32FieldNumber = 90;
+    private pbc::PopsicleList<int> unpackedInt32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> UnpackedInt32List {
+      get { return pbc::Lists.AsReadOnly(unpackedInt32_); }
+    }
+    public int UnpackedInt32Count {
+      get { return unpackedInt32_.Count; }
+    }
+    public int GetUnpackedInt32(int index) {
+      return unpackedInt32_[index];
+    }
+    
+    public const int UnpackedInt64FieldNumber = 91;
+    private pbc::PopsicleList<long> unpackedInt64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> UnpackedInt64List {
+      get { return pbc::Lists.AsReadOnly(unpackedInt64_); }
+    }
+    public int UnpackedInt64Count {
+      get { return unpackedInt64_.Count; }
+    }
+    public long GetUnpackedInt64(int index) {
+      return unpackedInt64_[index];
+    }
+    
+    public const int UnpackedUint32FieldNumber = 92;
+    private pbc::PopsicleList<uint> unpackedUint32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<uint> UnpackedUint32List {
+      get { return pbc::Lists.AsReadOnly(unpackedUint32_); }
+    }
+    public int UnpackedUint32Count {
+      get { return unpackedUint32_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public uint GetUnpackedUint32(int index) {
+      return unpackedUint32_[index];
+    }
+    
+    public const int UnpackedUint64FieldNumber = 93;
+    private pbc::PopsicleList<ulong> unpackedUint64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<ulong> UnpackedUint64List {
+      get { return pbc::Lists.AsReadOnly(unpackedUint64_); }
+    }
+    public int UnpackedUint64Count {
+      get { return unpackedUint64_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public ulong GetUnpackedUint64(int index) {
+      return unpackedUint64_[index];
+    }
+    
+    public const int UnpackedSint32FieldNumber = 94;
+    private pbc::PopsicleList<int> unpackedSint32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> UnpackedSint32List {
+      get { return pbc::Lists.AsReadOnly(unpackedSint32_); }
+    }
+    public int UnpackedSint32Count {
+      get { return unpackedSint32_.Count; }
+    }
+    public int GetUnpackedSint32(int index) {
+      return unpackedSint32_[index];
+    }
+    
+    public const int UnpackedSint64FieldNumber = 95;
+    private pbc::PopsicleList<long> unpackedSint64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> UnpackedSint64List {
+      get { return pbc::Lists.AsReadOnly(unpackedSint64_); }
+    }
+    public int UnpackedSint64Count {
+      get { return unpackedSint64_.Count; }
+    }
+    public long GetUnpackedSint64(int index) {
+      return unpackedSint64_[index];
+    }
+    
+    public const int UnpackedFixed32FieldNumber = 96;
+    private pbc::PopsicleList<uint> unpackedFixed32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<uint> UnpackedFixed32List {
+      get { return pbc::Lists.AsReadOnly(unpackedFixed32_); }
+    }
+    public int UnpackedFixed32Count {
+      get { return unpackedFixed32_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public uint GetUnpackedFixed32(int index) {
+      return unpackedFixed32_[index];
+    }
+    
+    public const int UnpackedFixed64FieldNumber = 97;
+    private pbc::PopsicleList<ulong> unpackedFixed64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<ulong> UnpackedFixed64List {
+      get { return pbc::Lists.AsReadOnly(unpackedFixed64_); }
+    }
+    public int UnpackedFixed64Count {
+      get { return unpackedFixed64_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public ulong GetUnpackedFixed64(int index) {
+      return unpackedFixed64_[index];
+    }
+    
+    public const int UnpackedSfixed32FieldNumber = 98;
+    private pbc::PopsicleList<int> unpackedSfixed32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> UnpackedSfixed32List {
+      get { return pbc::Lists.AsReadOnly(unpackedSfixed32_); }
+    }
+    public int UnpackedSfixed32Count {
+      get { return unpackedSfixed32_.Count; }
+    }
+    public int GetUnpackedSfixed32(int index) {
+      return unpackedSfixed32_[index];
+    }
+    
+    public const int UnpackedSfixed64FieldNumber = 99;
+    private pbc::PopsicleList<long> unpackedSfixed64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> UnpackedSfixed64List {
+      get { return pbc::Lists.AsReadOnly(unpackedSfixed64_); }
+    }
+    public int UnpackedSfixed64Count {
+      get { return unpackedSfixed64_.Count; }
+    }
+    public long GetUnpackedSfixed64(int index) {
+      return unpackedSfixed64_[index];
+    }
+    
+    public const int UnpackedFloatFieldNumber = 100;
+    private pbc::PopsicleList<float> unpackedFloat_ = new pbc::PopsicleList<float>();
+    public scg::IList<float> UnpackedFloatList {
+      get { return pbc::Lists.AsReadOnly(unpackedFloat_); }
+    }
+    public int UnpackedFloatCount {
+      get { return unpackedFloat_.Count; }
+    }
+    public float GetUnpackedFloat(int index) {
+      return unpackedFloat_[index];
+    }
+    
+    public const int UnpackedDoubleFieldNumber = 101;
+    private pbc::PopsicleList<double> unpackedDouble_ = new pbc::PopsicleList<double>();
+    public scg::IList<double> UnpackedDoubleList {
+      get { return pbc::Lists.AsReadOnly(unpackedDouble_); }
+    }
+    public int UnpackedDoubleCount {
+      get { return unpackedDouble_.Count; }
+    }
+    public double GetUnpackedDouble(int index) {
+      return unpackedDouble_[index];
+    }
+    
+    public const int UnpackedBoolFieldNumber = 102;
+    private pbc::PopsicleList<bool> unpackedBool_ = new pbc::PopsicleList<bool>();
+    public scg::IList<bool> UnpackedBoolList {
+      get { return pbc::Lists.AsReadOnly(unpackedBool_); }
+    }
+    public int UnpackedBoolCount {
+      get { return unpackedBool_.Count; }
+    }
+    public bool GetUnpackedBool(int index) {
+      return unpackedBool_[index];
+    }
+    
+    public const int UnpackedEnumFieldNumber = 103;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> unpackedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> UnpackedEnumList {
+      get { return pbc::Lists.AsReadOnly(unpackedEnum_); }
+    }
+    public int UnpackedEnumCount {
+      get { return unpackedEnum_.Count; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.ForeignEnum GetUnpackedEnum(int index) {
+      return unpackedEnum_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (unpackedInt32_.Count > 0) {
+        foreach (int element in unpackedInt32_) {
+          output.WriteInt32(90, element);
+        }
+      }
+      if (unpackedInt64_.Count > 0) {
+        foreach (long element in unpackedInt64_) {
+          output.WriteInt64(91, element);
+        }
+      }
+      if (unpackedUint32_.Count > 0) {
+        foreach (uint element in unpackedUint32_) {
+          output.WriteUInt32(92, element);
+        }
+      }
+      if (unpackedUint64_.Count > 0) {
+        foreach (ulong element in unpackedUint64_) {
+          output.WriteUInt64(93, element);
+        }
+      }
+      if (unpackedSint32_.Count > 0) {
+        foreach (int element in unpackedSint32_) {
+          output.WriteSInt32(94, element);
+        }
+      }
+      if (unpackedSint64_.Count > 0) {
+        foreach (long element in unpackedSint64_) {
+          output.WriteSInt64(95, element);
+        }
+      }
+      if (unpackedFixed32_.Count > 0) {
+        foreach (uint element in unpackedFixed32_) {
+          output.WriteFixed32(96, element);
+        }
+      }
+      if (unpackedFixed64_.Count > 0) {
+        foreach (ulong element in unpackedFixed64_) {
+          output.WriteFixed64(97, element);
+        }
+      }
+      if (unpackedSfixed32_.Count > 0) {
+        foreach (int element in unpackedSfixed32_) {
+          output.WriteSFixed32(98, element);
+        }
+      }
+      if (unpackedSfixed64_.Count > 0) {
+        foreach (long element in unpackedSfixed64_) {
+          output.WriteSFixed64(99, element);
+        }
+      }
+      if (unpackedFloat_.Count > 0) {
+        foreach (float element in unpackedFloat_) {
+          output.WriteFloat(100, element);
+        }
+      }
+      if (unpackedDouble_.Count > 0) {
+        foreach (double element in unpackedDouble_) {
+          output.WriteDouble(101, element);
+        }
+      }
+      if (unpackedBool_.Count > 0) {
+        foreach (bool element in unpackedBool_) {
+          output.WriteBool(102, element);
+        }
+      }
+      if (unpackedEnum_.Count > 0) {
+        foreach (int element in unpackedEnum_) {
+          output.WriteEnum(103, element);
+        }
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        {
+          int dataSize = 0;
+          foreach (int element in UnpackedInt32List) {
+            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedInt32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in UnpackedInt64List) {
+            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedInt64_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (uint element in UnpackedUint32List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedUint32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (ulong element in UnpackedUint64List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedUint64_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (int element in UnpackedSint32List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedSint32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in UnpackedSint64List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedSint64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * unpackedFixed32_.Count;
+          size += dataSize;
+          size += 2 * unpackedFixed32_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * unpackedFixed64_.Count;
+          size += dataSize;
+          size += 2 * unpackedFixed64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * unpackedSfixed32_.Count;
+          size += dataSize;
+          size += 2 * unpackedSfixed32_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * unpackedSfixed64_.Count;
+          size += dataSize;
+          size += 2 * unpackedSfixed64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * unpackedFloat_.Count;
+          size += dataSize;
+          size += 2 * unpackedFloat_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * unpackedDouble_.Count;
+          size += dataSize;
+          size += 2 * unpackedDouble_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 1 * unpackedBool_.Count;
+          size += dataSize;
+          size += 2 * unpackedBool_.Count;
+        }
+        {
+          int dataSize = 0;
+          if (unpackedEnum_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in unpackedEnum_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 2 * unpackedEnum_.Count;
+          }
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestUnpackedTypes ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestUnpackedTypes ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestUnpackedTypes prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestUnpackedTypes, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestUnpackedTypes result = new TestUnpackedTypes();
+      
+      protected override TestUnpackedTypes MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestUnpackedTypes();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes.Descriptor; }
+      }
+      
+      public override TestUnpackedTypes DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes.DefaultInstance; }
+      }
+      
+      public override TestUnpackedTypes BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        result.unpackedInt32_.MakeReadOnly();
+        result.unpackedInt64_.MakeReadOnly();
+        result.unpackedUint32_.MakeReadOnly();
+        result.unpackedUint64_.MakeReadOnly();
+        result.unpackedSint32_.MakeReadOnly();
+        result.unpackedSint64_.MakeReadOnly();
+        result.unpackedFixed32_.MakeReadOnly();
+        result.unpackedFixed64_.MakeReadOnly();
+        result.unpackedSfixed32_.MakeReadOnly();
+        result.unpackedSfixed64_.MakeReadOnly();
+        result.unpackedFloat_.MakeReadOnly();
+        result.unpackedDouble_.MakeReadOnly();
+        result.unpackedBool_.MakeReadOnly();
+        result.unpackedEnum_.MakeReadOnly();
+        TestUnpackedTypes returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestUnpackedTypes) {
+          return MergeFrom((TestUnpackedTypes) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestUnpackedTypes other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypes.DefaultInstance) return this;
+        if (other.unpackedInt32_.Count != 0) {
+          base.AddRange(other.unpackedInt32_, result.unpackedInt32_);
+        }
+        if (other.unpackedInt64_.Count != 0) {
+          base.AddRange(other.unpackedInt64_, result.unpackedInt64_);
+        }
+        if (other.unpackedUint32_.Count != 0) {
+          base.AddRange(other.unpackedUint32_, result.unpackedUint32_);
+        }
+        if (other.unpackedUint64_.Count != 0) {
+          base.AddRange(other.unpackedUint64_, result.unpackedUint64_);
+        }
+        if (other.unpackedSint32_.Count != 0) {
+          base.AddRange(other.unpackedSint32_, result.unpackedSint32_);
+        }
+        if (other.unpackedSint64_.Count != 0) {
+          base.AddRange(other.unpackedSint64_, result.unpackedSint64_);
+        }
+        if (other.unpackedFixed32_.Count != 0) {
+          base.AddRange(other.unpackedFixed32_, result.unpackedFixed32_);
+        }
+        if (other.unpackedFixed64_.Count != 0) {
+          base.AddRange(other.unpackedFixed64_, result.unpackedFixed64_);
+        }
+        if (other.unpackedSfixed32_.Count != 0) {
+          base.AddRange(other.unpackedSfixed32_, result.unpackedSfixed32_);
+        }
+        if (other.unpackedSfixed64_.Count != 0) {
+          base.AddRange(other.unpackedSfixed64_, result.unpackedSfixed64_);
+        }
+        if (other.unpackedFloat_.Count != 0) {
+          base.AddRange(other.unpackedFloat_, result.unpackedFloat_);
+        }
+        if (other.unpackedDouble_.Count != 0) {
+          base.AddRange(other.unpackedDouble_, result.unpackedDouble_);
+        }
+        if (other.unpackedBool_.Count != 0) {
+          base.AddRange(other.unpackedBool_, result.unpackedBool_);
+        }
+        if (other.unpackedEnum_.Count != 0) {
+          base.AddRange(other.unpackedEnum_, result.unpackedEnum_);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 720: {
+              AddUnpackedInt32(input.ReadInt32());
+              break;
+            }
+            case 728: {
+              AddUnpackedInt64(input.ReadInt64());
+              break;
+            }
+            case 736: {
+              AddUnpackedUint32(input.ReadUInt32());
+              break;
+            }
+            case 744: {
+              AddUnpackedUint64(input.ReadUInt64());
+              break;
+            }
+            case 752: {
+              AddUnpackedSint32(input.ReadSInt32());
+              break;
+            }
+            case 760: {
+              AddUnpackedSint64(input.ReadSInt64());
+              break;
+            }
+            case 773: {
+              AddUnpackedFixed32(input.ReadFixed32());
+              break;
+            }
+            case 777: {
+              AddUnpackedFixed64(input.ReadFixed64());
+              break;
+            }
+            case 789: {
+              AddUnpackedSfixed32(input.ReadSFixed32());
+              break;
+            }
+            case 793: {
+              AddUnpackedSfixed64(input.ReadSFixed64());
+              break;
+            }
+            case 805: {
+              AddUnpackedFloat(input.ReadFloat());
+              break;
+            }
+            case 809: {
+              AddUnpackedDouble(input.ReadDouble());
+              break;
+            }
+            case 816: {
+              AddUnpackedBool(input.ReadBool());
+              break;
+            }
+            case 824: {
+              int rawValue = input.ReadEnum();
+              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                unknownFields.MergeVarintField(103, (ulong) rawValue);
+              } else {
+                AddUnpackedEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue);
+              }
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public pbc::IPopsicleList<int> UnpackedInt32List {
+        get { return result.unpackedInt32_; }
+      }
+      public int UnpackedInt32Count {
+        get { return result.UnpackedInt32Count; }
+      }
+      public int GetUnpackedInt32(int index) {
+        return result.GetUnpackedInt32(index);
+      }
+      public Builder SetUnpackedInt32(int index, int value) {
+        result.unpackedInt32_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedInt32(int value) {
+        result.unpackedInt32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedInt32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.unpackedInt32_);
+        return this;
+      }
+      public Builder ClearUnpackedInt32() {
+        result.unpackedInt32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> UnpackedInt64List {
+        get { return result.unpackedInt64_; }
+      }
+      public int UnpackedInt64Count {
+        get { return result.UnpackedInt64Count; }
+      }
+      public long GetUnpackedInt64(int index) {
+        return result.GetUnpackedInt64(index);
+      }
+      public Builder SetUnpackedInt64(int index, long value) {
+        result.unpackedInt64_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedInt64(long value) {
+        result.unpackedInt64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedInt64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.unpackedInt64_);
+        return this;
+      }
+      public Builder ClearUnpackedInt64() {
+        result.unpackedInt64_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<uint> UnpackedUint32List {
+        get { return result.unpackedUint32_; }
+      }
+      public int UnpackedUint32Count {
+        get { return result.UnpackedUint32Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public uint GetUnpackedUint32(int index) {
+        return result.GetUnpackedUint32(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedUint32(int index, uint value) {
+        result.unpackedUint32_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedUint32(uint value) {
+        result.unpackedUint32_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedUint32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.unpackedUint32_);
+        return this;
+      }
+      public Builder ClearUnpackedUint32() {
+        result.unpackedUint32_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<ulong> UnpackedUint64List {
+        get { return result.unpackedUint64_; }
+      }
+      public int UnpackedUint64Count {
+        get { return result.UnpackedUint64Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public ulong GetUnpackedUint64(int index) {
+        return result.GetUnpackedUint64(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedUint64(int index, ulong value) {
+        result.unpackedUint64_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedUint64(ulong value) {
+        result.unpackedUint64_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedUint64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.unpackedUint64_);
+        return this;
+      }
+      public Builder ClearUnpackedUint64() {
+        result.unpackedUint64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<int> UnpackedSint32List {
+        get { return result.unpackedSint32_; }
+      }
+      public int UnpackedSint32Count {
+        get { return result.UnpackedSint32Count; }
+      }
+      public int GetUnpackedSint32(int index) {
+        return result.GetUnpackedSint32(index);
+      }
+      public Builder SetUnpackedSint32(int index, int value) {
+        result.unpackedSint32_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSint32(int value) {
+        result.unpackedSint32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSint32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.unpackedSint32_);
+        return this;
+      }
+      public Builder ClearUnpackedSint32() {
+        result.unpackedSint32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> UnpackedSint64List {
+        get { return result.unpackedSint64_; }
+      }
+      public int UnpackedSint64Count {
+        get { return result.UnpackedSint64Count; }
+      }
+      public long GetUnpackedSint64(int index) {
+        return result.GetUnpackedSint64(index);
+      }
+      public Builder SetUnpackedSint64(int index, long value) {
+        result.unpackedSint64_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSint64(long value) {
+        result.unpackedSint64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSint64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.unpackedSint64_);
+        return this;
+      }
+      public Builder ClearUnpackedSint64() {
+        result.unpackedSint64_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<uint> UnpackedFixed32List {
+        get { return result.unpackedFixed32_; }
+      }
+      public int UnpackedFixed32Count {
+        get { return result.UnpackedFixed32Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public uint GetUnpackedFixed32(int index) {
+        return result.GetUnpackedFixed32(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedFixed32(int index, uint value) {
+        result.unpackedFixed32_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedFixed32(uint value) {
+        result.unpackedFixed32_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedFixed32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.unpackedFixed32_);
+        return this;
+      }
+      public Builder ClearUnpackedFixed32() {
+        result.unpackedFixed32_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<ulong> UnpackedFixed64List {
+        get { return result.unpackedFixed64_; }
+      }
+      public int UnpackedFixed64Count {
+        get { return result.UnpackedFixed64Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public ulong GetUnpackedFixed64(int index) {
+        return result.GetUnpackedFixed64(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedFixed64(int index, ulong value) {
+        result.unpackedFixed64_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedFixed64(ulong value) {
+        result.unpackedFixed64_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedFixed64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.unpackedFixed64_);
+        return this;
+      }
+      public Builder ClearUnpackedFixed64() {
+        result.unpackedFixed64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<int> UnpackedSfixed32List {
+        get { return result.unpackedSfixed32_; }
+      }
+      public int UnpackedSfixed32Count {
+        get { return result.UnpackedSfixed32Count; }
+      }
+      public int GetUnpackedSfixed32(int index) {
+        return result.GetUnpackedSfixed32(index);
+      }
+      public Builder SetUnpackedSfixed32(int index, int value) {
+        result.unpackedSfixed32_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSfixed32(int value) {
+        result.unpackedSfixed32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSfixed32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.unpackedSfixed32_);
+        return this;
+      }
+      public Builder ClearUnpackedSfixed32() {
+        result.unpackedSfixed32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> UnpackedSfixed64List {
+        get { return result.unpackedSfixed64_; }
+      }
+      public int UnpackedSfixed64Count {
+        get { return result.UnpackedSfixed64Count; }
+      }
+      public long GetUnpackedSfixed64(int index) {
+        return result.GetUnpackedSfixed64(index);
+      }
+      public Builder SetUnpackedSfixed64(int index, long value) {
+        result.unpackedSfixed64_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSfixed64(long value) {
+        result.unpackedSfixed64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSfixed64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.unpackedSfixed64_);
+        return this;
+      }
+      public Builder ClearUnpackedSfixed64() {
+        result.unpackedSfixed64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<float> UnpackedFloatList {
+        get { return result.unpackedFloat_; }
+      }
+      public int UnpackedFloatCount {
+        get { return result.UnpackedFloatCount; }
+      }
+      public float GetUnpackedFloat(int index) {
+        return result.GetUnpackedFloat(index);
+      }
+      public Builder SetUnpackedFloat(int index, float value) {
+        result.unpackedFloat_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedFloat(float value) {
+        result.unpackedFloat_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedFloat(scg::IEnumerable<float> values) {
+        base.AddRange(values, result.unpackedFloat_);
+        return this;
+      }
+      public Builder ClearUnpackedFloat() {
+        result.unpackedFloat_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<double> UnpackedDoubleList {
+        get { return result.unpackedDouble_; }
+      }
+      public int UnpackedDoubleCount {
+        get { return result.UnpackedDoubleCount; }
+      }
+      public double GetUnpackedDouble(int index) {
+        return result.GetUnpackedDouble(index);
+      }
+      public Builder SetUnpackedDouble(int index, double value) {
+        result.unpackedDouble_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedDouble(double value) {
+        result.unpackedDouble_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedDouble(scg::IEnumerable<double> values) {
+        base.AddRange(values, result.unpackedDouble_);
+        return this;
+      }
+      public Builder ClearUnpackedDouble() {
+        result.unpackedDouble_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<bool> UnpackedBoolList {
+        get { return result.unpackedBool_; }
+      }
+      public int UnpackedBoolCount {
+        get { return result.UnpackedBoolCount; }
+      }
+      public bool GetUnpackedBool(int index) {
+        return result.GetUnpackedBool(index);
+      }
+      public Builder SetUnpackedBool(int index, bool value) {
+        result.unpackedBool_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedBool(bool value) {
+        result.unpackedBool_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedBool(scg::IEnumerable<bool> values) {
+        base.AddRange(values, result.unpackedBool_);
+        return this;
+      }
+      public Builder ClearUnpackedBool() {
+        result.unpackedBool_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> UnpackedEnumList {
+        get { return result.unpackedEnum_; }
+      }
+      public int UnpackedEnumCount {
+        get { return result.UnpackedEnumCount; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.ForeignEnum GetUnpackedEnum(int index) {
+        return result.GetUnpackedEnum(index);
+      }
+      public Builder SetUnpackedEnum(int index, global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+        result.unpackedEnum_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedEnum(global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+        result.unpackedEnum_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> values) {
+        base.AddRange(values, result.unpackedEnum_);
+        return this;
+      }
+      public Builder ClearUnpackedEnum() {
+        result.unpackedEnum_.Clear();
+        return this;
+      }
+    }
+    static TestUnpackedTypes() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
   public sealed partial class TestPackedExtensions : pb::ExtendableMessage<TestPackedExtensions, TestPackedExtensions.Builder> {
     private static readonly TestPackedExtensions defaultInstance = new Builder().BuildPartial();
     public static TestPackedExtensions DefaultInstance {
@@ -13809,6 +16465,1350 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static TestPackedExtensions() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class TestDynamicExtensions : pb::GeneratedMessage<TestDynamicExtensions, TestDynamicExtensions.Builder> {
+    private static readonly TestDynamicExtensions defaultInstance = new Builder().BuildPartial();
+    public static TestDynamicExtensions DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestDynamicExtensions DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestDynamicExtensions ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDynamicExtensions__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestDynamicExtensions, TestDynamicExtensions.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDynamicExtensions__FieldAccessorTable; }
+    }
+    
+    #region Nested types
+    public static class Types {
+      public enum DynamicEnumType {
+        DYNAMIC_FOO = 2200,
+        DYNAMIC_BAR = 2201,
+        DYNAMIC_BAZ = 2202,
+      }
+      
+      public sealed partial class DynamicMessageType : pb::GeneratedMessage<DynamicMessageType, DynamicMessageType.Builder> {
+        private static readonly DynamicMessageType defaultInstance = new Builder().BuildPartial();
+        public static DynamicMessageType DefaultInstance {
+          get { return defaultInstance; }
+        }
+        
+        public override DynamicMessageType DefaultInstanceForType {
+          get { return defaultInstance; }
+        }
+        
+        protected override DynamicMessageType ThisMessage {
+          get { return this; }
+        }
+        
+        public static pbd::MessageDescriptor Descriptor {
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__Descriptor; }
+        }
+        
+        protected override pb::FieldAccess.FieldAccessorTable<DynamicMessageType, DynamicMessageType.Builder> InternalFieldAccessors {
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestDynamicExtensions_DynamicMessageType__FieldAccessorTable; }
+        }
+        
+        public const int DynamicFieldFieldNumber = 2100;
+        private bool hasDynamicField;
+        private int dynamicField_ = 0;
+        public bool HasDynamicField {
+          get { return hasDynamicField; }
+        }
+        public int DynamicField {
+          get { return dynamicField_; }
+        }
+        
+        public override bool IsInitialized {
+          get {
+            return true;
+          }
+        }
+        
+        public override void WriteTo(pb::CodedOutputStream output) {
+          int size = SerializedSize;
+          if (HasDynamicField) {
+            output.WriteInt32(2100, DynamicField);
+          }
+          UnknownFields.WriteTo(output);
+        }
+        
+        private int memoizedSerializedSize = -1;
+        public override int SerializedSize {
+          get {
+            int size = memoizedSerializedSize;
+            if (size != -1) return size;
+            
+            size = 0;
+            if (HasDynamicField) {
+              size += pb::CodedOutputStream.ComputeInt32Size(2100, DynamicField);
+            }
+            size += UnknownFields.SerializedSize;
+            memoizedSerializedSize = size;
+            return size;
+          }
+        }
+        
+        public static DynamicMessageType ParseFrom(pb::ByteString data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(byte[] data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(global::System.IO.Stream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static DynamicMessageType ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static DynamicMessageType ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(pb::CodedInputStream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static DynamicMessageType ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
+        public override Builder CreateBuilderForType() { return new Builder(); }
+        public static Builder CreateBuilder(DynamicMessageType prototype) {
+          return (Builder) new Builder().MergeFrom(prototype);
+        }
+        
+        public sealed partial class Builder : pb::GeneratedBuilder<DynamicMessageType, Builder> {
+          protected override Builder ThisBuilder {
+            get { return this; }
+          }
+          public Builder() {}
+          
+          DynamicMessageType result = new DynamicMessageType();
+          
+          protected override DynamicMessageType MessageBeingBuilt {
+            get { return result; }
+          }
+          
+          public override Builder Clear() {
+            result = new DynamicMessageType();
+            return this;
+          }
+          
+          public override Builder Clone() {
+            return new Builder().MergeFrom(result);
+          }
+          
+          public override pbd::MessageDescriptor DescriptorForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.Descriptor; }
+          }
+          
+          public override DynamicMessageType DefaultInstanceForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.DefaultInstance; }
+          }
+          
+          public override DynamicMessageType BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
+            DynamicMessageType returnMe = result;
+            result = null;
+            return returnMe;
+          }
+          
+          public override Builder MergeFrom(pb::IMessage other) {
+            if (other is DynamicMessageType) {
+              return MergeFrom((DynamicMessageType) other);
+            } else {
+              base.MergeFrom(other);
+              return this;
+            }
+          }
+          
+          public override Builder MergeFrom(DynamicMessageType other) {
+            if (other == global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.DefaultInstance) return this;
+            if (other.HasDynamicField) {
+              DynamicField = other.DynamicField;
+            }
+            this.MergeUnknownFields(other.UnknownFields);
+            return this;
+          }
+          
+          public override Builder MergeFrom(pb::CodedInputStream input) {
+            return MergeFrom(input, pb::ExtensionRegistry.Empty);
+          }
+          
+          public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+            pb::UnknownFieldSet.Builder unknownFields = null;
+            while (true) {
+              uint tag = input.ReadTag();
+              switch (tag) {
+                case 0: {
+                  if (unknownFields != null) {
+                    this.UnknownFields = unknownFields.Build();
+                  }
+                  return this;
+                }
+                default: {
+                  if (pb::WireFormat.IsEndGroupTag(tag)) {
+                    if (unknownFields != null) {
+                      this.UnknownFields = unknownFields.Build();
+                    }
+                    return this;
+                  }
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  break;
+                }
+                case 16800: {
+                  DynamicField = input.ReadInt32();
+                  break;
+                }
+              }
+            }
+          }
+          
+          
+          public bool HasDynamicField {
+            get { return result.HasDynamicField; }
+          }
+          public int DynamicField {
+            get { return result.DynamicField; }
+            set { SetDynamicField(value); }
+          }
+          public Builder SetDynamicField(int value) {
+            result.hasDynamicField = true;
+            result.dynamicField_ = value;
+            return this;
+          }
+          public Builder ClearDynamicField() {
+            result.hasDynamicField = false;
+            result.dynamicField_ = 0;
+            return this;
+          }
+        }
+        static DynamicMessageType() {
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+        }
+      }
+      
+    }
+    #endregion
+    
+    public const int ScalarExtensionFieldNumber = 2000;
+    private bool hasScalarExtension;
+    private uint scalarExtension_ = 0;
+    public bool HasScalarExtension {
+      get { return hasScalarExtension; }
+    }
+    [global::System.CLSCompliant(false)]
+    public uint ScalarExtension {
+      get { return scalarExtension_; }
+    }
+    
+    public const int EnumExtensionFieldNumber = 2001;
+    private bool hasEnumExtension;
+    private global::Google.ProtocolBuffers.TestProtos.ForeignEnum enumExtension_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_FOO;
+    public bool HasEnumExtension {
+      get { return hasEnumExtension; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.ForeignEnum EnumExtension {
+      get { return enumExtension_; }
+    }
+    
+    public const int DynamicEnumExtensionFieldNumber = 2002;
+    private bool hasDynamicEnumExtension;
+    private global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType dynamicEnumExtension_ = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType.DYNAMIC_FOO;
+    public bool HasDynamicEnumExtension {
+      get { return hasDynamicEnumExtension; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType DynamicEnumExtension {
+      get { return dynamicEnumExtension_; }
+    }
+    
+    public const int MessageExtensionFieldNumber = 2003;
+    private bool hasMessageExtension;
+    private global::Google.ProtocolBuffers.TestProtos.ForeignMessage messageExtension_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance;
+    public bool HasMessageExtension {
+      get { return hasMessageExtension; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.ForeignMessage MessageExtension {
+      get { return messageExtension_; }
+    }
+    
+    public const int DynamicMessageExtensionFieldNumber = 2004;
+    private bool hasDynamicMessageExtension;
+    private global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType dynamicMessageExtension_ = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.DefaultInstance;
+    public bool HasDynamicMessageExtension {
+      get { return hasDynamicMessageExtension; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType DynamicMessageExtension {
+      get { return dynamicMessageExtension_; }
+    }
+    
+    public const int RepeatedExtensionFieldNumber = 2005;
+    private pbc::PopsicleList<string> repeatedExtension_ = new pbc::PopsicleList<string>();
+    public scg::IList<string> RepeatedExtensionList {
+      get { return pbc::Lists.AsReadOnly(repeatedExtension_); }
+    }
+    public int RepeatedExtensionCount {
+      get { return repeatedExtension_.Count; }
+    }
+    public string GetRepeatedExtension(int index) {
+      return repeatedExtension_[index];
+    }
+    
+    public const int PackedExtensionFieldNumber = 2006;
+    private int packedExtensionMemoizedSerializedSize;
+    private pbc::PopsicleList<int> packedExtension_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> PackedExtensionList {
+      get { return pbc::Lists.AsReadOnly(packedExtension_); }
+    }
+    public int PackedExtensionCount {
+      get { return packedExtension_.Count; }
+    }
+    public int GetPackedExtension(int index) {
+      return packedExtension_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (HasScalarExtension) {
+        output.WriteFixed32(2000, ScalarExtension);
+      }
+      if (HasEnumExtension) {
+        output.WriteEnum(2001, (int) EnumExtension);
+      }
+      if (HasDynamicEnumExtension) {
+        output.WriteEnum(2002, (int) DynamicEnumExtension);
+      }
+      if (HasMessageExtension) {
+        output.WriteMessage(2003, MessageExtension);
+      }
+      if (HasDynamicMessageExtension) {
+        output.WriteMessage(2004, DynamicMessageExtension);
+      }
+      if (repeatedExtension_.Count > 0) {
+        foreach (string element in repeatedExtension_) {
+          output.WriteString(2005, element);
+        }
+      }
+      if (packedExtension_.Count > 0) {
+        output.WriteRawVarint32(16050);
+        output.WriteRawVarint32((uint) packedExtensionMemoizedSerializedSize);
+        foreach (int element in packedExtension_) {
+          output.WriteSInt32NoTag(element);
+        }
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasScalarExtension) {
+          size += pb::CodedOutputStream.ComputeFixed32Size(2000, ScalarExtension);
+        }
+        if (HasEnumExtension) {
+          size += pb::CodedOutputStream.ComputeEnumSize(2001, (int) EnumExtension);
+        }
+        if (HasDynamicEnumExtension) {
+          size += pb::CodedOutputStream.ComputeEnumSize(2002, (int) DynamicEnumExtension);
+        }
+        if (HasMessageExtension) {
+          size += pb::CodedOutputStream.ComputeMessageSize(2003, MessageExtension);
+        }
+        if (HasDynamicMessageExtension) {
+          size += pb::CodedOutputStream.ComputeMessageSize(2004, DynamicMessageExtension);
+        }
+        {
+          int dataSize = 0;
+          foreach (string element in RepeatedExtensionList) {
+            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedExtension_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (int element in PackedExtensionList) {
+            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          if (packedExtension_.Count != 0) {
+            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+          }
+          packedExtensionMemoizedSerializedSize = dataSize;
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestDynamicExtensions ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestDynamicExtensions ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestDynamicExtensions prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestDynamicExtensions, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestDynamicExtensions result = new TestDynamicExtensions();
+      
+      protected override TestDynamicExtensions MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestDynamicExtensions();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Descriptor; }
+      }
+      
+      public override TestDynamicExtensions DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.DefaultInstance; }
+      }
+      
+      public override TestDynamicExtensions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        result.repeatedExtension_.MakeReadOnly();
+        result.packedExtension_.MakeReadOnly();
+        TestDynamicExtensions returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestDynamicExtensions) {
+          return MergeFrom((TestDynamicExtensions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestDynamicExtensions other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.DefaultInstance) return this;
+        if (other.HasScalarExtension) {
+          ScalarExtension = other.ScalarExtension;
+        }
+        if (other.HasEnumExtension) {
+          EnumExtension = other.EnumExtension;
+        }
+        if (other.HasDynamicEnumExtension) {
+          DynamicEnumExtension = other.DynamicEnumExtension;
+        }
+        if (other.HasMessageExtension) {
+          MergeMessageExtension(other.MessageExtension);
+        }
+        if (other.HasDynamicMessageExtension) {
+          MergeDynamicMessageExtension(other.DynamicMessageExtension);
+        }
+        if (other.repeatedExtension_.Count != 0) {
+          base.AddRange(other.repeatedExtension_, result.repeatedExtension_);
+        }
+        if (other.packedExtension_.Count != 0) {
+          base.AddRange(other.packedExtension_, result.packedExtension_);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 16005: {
+              ScalarExtension = input.ReadFixed32();
+              break;
+            }
+            case 16008: {
+              int rawValue = input.ReadEnum();
+              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                unknownFields.MergeVarintField(2001, (ulong) rawValue);
+              } else {
+                EnumExtension = (global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue;
+              }
+              break;
+            }
+            case 16016: {
+              int rawValue = input.ReadEnum();
+              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType), rawValue)) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                unknownFields.MergeVarintField(2002, (ulong) rawValue);
+              } else {
+                DynamicEnumExtension = (global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType) rawValue;
+              }
+              break;
+            }
+            case 16026: {
+              global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
+              if (HasMessageExtension) {
+                subBuilder.MergeFrom(MessageExtension);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              MessageExtension = subBuilder.BuildPartial();
+              break;
+            }
+            case 16034: {
+              global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.CreateBuilder();
+              if (HasDynamicMessageExtension) {
+                subBuilder.MergeFrom(DynamicMessageExtension);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              DynamicMessageExtension = subBuilder.BuildPartial();
+              break;
+            }
+            case 16042: {
+              AddRepeatedExtension(input.ReadString());
+              break;
+            }
+            case 16050: {
+              int length = input.ReadInt32();
+              int limit = input.PushLimit(length);
+              while (!input.ReachedLimit) {
+                AddPackedExtension(input.ReadSInt32());
+              }
+              input.PopLimit(limit);
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public bool HasScalarExtension {
+        get { return result.HasScalarExtension; }
+      }
+      [global::System.CLSCompliant(false)]
+      public uint ScalarExtension {
+        get { return result.ScalarExtension; }
+        set { SetScalarExtension(value); }
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetScalarExtension(uint value) {
+        result.hasScalarExtension = true;
+        result.scalarExtension_ = value;
+        return this;
+      }
+      public Builder ClearScalarExtension() {
+        result.hasScalarExtension = false;
+        result.scalarExtension_ = 0;
+        return this;
+      }
+      
+      public bool HasEnumExtension {
+       get { return result.HasEnumExtension; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.ForeignEnum EnumExtension {
+        get { return result.EnumExtension; }
+        set { SetEnumExtension(value); }
+      }
+      public Builder SetEnumExtension(global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+        result.hasEnumExtension = true;
+        result.enumExtension_ = value;
+        return this;
+      }
+      public Builder ClearEnumExtension() {
+        result.hasEnumExtension = false;
+        result.enumExtension_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_FOO;
+        return this;
+      }
+      
+      public bool HasDynamicEnumExtension {
+       get { return result.HasDynamicEnumExtension; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType DynamicEnumExtension {
+        get { return result.DynamicEnumExtension; }
+        set { SetDynamicEnumExtension(value); }
+      }
+      public Builder SetDynamicEnumExtension(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType value) {
+        result.hasDynamicEnumExtension = true;
+        result.dynamicEnumExtension_ = value;
+        return this;
+      }
+      public Builder ClearDynamicEnumExtension() {
+        result.hasDynamicEnumExtension = false;
+        result.dynamicEnumExtension_ = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType.DYNAMIC_FOO;
+        return this;
+      }
+      
+      public bool HasMessageExtension {
+       get { return result.HasMessageExtension; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.ForeignMessage MessageExtension {
+        get { return result.MessageExtension; }
+        set { SetMessageExtension(value); }
+      }
+      public Builder SetMessageExtension(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasMessageExtension = true;
+        result.messageExtension_ = value;
+        return this;
+      }
+      public Builder SetMessageExtension(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        result.hasMessageExtension = true;
+        result.messageExtension_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeMessageExtension(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        if (result.HasMessageExtension &&
+            result.messageExtension_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
+            result.messageExtension_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.messageExtension_).MergeFrom(value).BuildPartial();
+        } else {
+          result.messageExtension_ = value;
+        }
+        result.hasMessageExtension = true;
+        return this;
+      }
+      public Builder ClearMessageExtension() {
+        result.hasMessageExtension = false;
+        result.messageExtension_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance;
+        return this;
+      }
+      
+      public bool HasDynamicMessageExtension {
+       get { return result.HasDynamicMessageExtension; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType DynamicMessageExtension {
+        get { return result.DynamicMessageExtension; }
+        set { SetDynamicMessageExtension(value); }
+      }
+      public Builder SetDynamicMessageExtension(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasDynamicMessageExtension = true;
+        result.dynamicMessageExtension_ = value;
+        return this;
+      }
+      public Builder SetDynamicMessageExtension(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        result.hasDynamicMessageExtension = true;
+        result.dynamicMessageExtension_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeDynamicMessageExtension(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        if (result.HasDynamicMessageExtension &&
+            result.dynamicMessageExtension_ != global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.DefaultInstance) {
+            result.dynamicMessageExtension_ = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.CreateBuilder(result.dynamicMessageExtension_).MergeFrom(value).BuildPartial();
+        } else {
+          result.dynamicMessageExtension_ = value;
+        }
+        result.hasDynamicMessageExtension = true;
+        return this;
+      }
+      public Builder ClearDynamicMessageExtension() {
+        result.hasDynamicMessageExtension = false;
+        result.dynamicMessageExtension_ = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.DefaultInstance;
+        return this;
+      }
+      
+      public pbc::IPopsicleList<string> RepeatedExtensionList {
+        get { return result.repeatedExtension_; }
+      }
+      public int RepeatedExtensionCount {
+        get { return result.RepeatedExtensionCount; }
+      }
+      public string GetRepeatedExtension(int index) {
+        return result.GetRepeatedExtension(index);
+      }
+      public Builder SetRepeatedExtension(int index, string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.repeatedExtension_[index] = value;
+        return this;
+      }
+      public Builder AddRepeatedExtension(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.repeatedExtension_.Add(value);
+        return this;
+      }
+      public Builder AddRangeRepeatedExtension(scg::IEnumerable<string> values) {
+        base.AddRange(values, result.repeatedExtension_);
+        return this;
+      }
+      public Builder ClearRepeatedExtension() {
+        result.repeatedExtension_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<int> PackedExtensionList {
+        get { return result.packedExtension_; }
+      }
+      public int PackedExtensionCount {
+        get { return result.PackedExtensionCount; }
+      }
+      public int GetPackedExtension(int index) {
+        return result.GetPackedExtension(index);
+      }
+      public Builder SetPackedExtension(int index, int value) {
+        result.packedExtension_[index] = value;
+        return this;
+      }
+      public Builder AddPackedExtension(int value) {
+        result.packedExtension_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedExtension(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.packedExtension_);
+        return this;
+      }
+      public Builder ClearPackedExtension() {
+        result.packedExtension_.Clear();
+        return this;
+      }
+    }
+    static TestDynamicExtensions() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::GeneratedMessage<TestRepeatedScalarDifferentTagSizes, TestRepeatedScalarDifferentTagSizes.Builder> {
+    private static readonly TestRepeatedScalarDifferentTagSizes defaultInstance = new Builder().BuildPartial();
+    public static TestRepeatedScalarDifferentTagSizes DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestRepeatedScalarDifferentTagSizes DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestRepeatedScalarDifferentTagSizes ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestRepeatedScalarDifferentTagSizes, TestRepeatedScalarDifferentTagSizes.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable; }
+    }
+    
+    public const int RepeatedFixed32FieldNumber = 12;
+    private pbc::PopsicleList<uint> repeatedFixed32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<uint> RepeatedFixed32List {
+      get { return pbc::Lists.AsReadOnly(repeatedFixed32_); }
+    }
+    public int RepeatedFixed32Count {
+      get { return repeatedFixed32_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public uint GetRepeatedFixed32(int index) {
+      return repeatedFixed32_[index];
+    }
+    
+    public const int RepeatedInt32FieldNumber = 13;
+    private pbc::PopsicleList<int> repeatedInt32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> RepeatedInt32List {
+      get { return pbc::Lists.AsReadOnly(repeatedInt32_); }
+    }
+    public int RepeatedInt32Count {
+      get { return repeatedInt32_.Count; }
+    }
+    public int GetRepeatedInt32(int index) {
+      return repeatedInt32_[index];
+    }
+    
+    public const int RepeatedFixed64FieldNumber = 2046;
+    private pbc::PopsicleList<ulong> repeatedFixed64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<ulong> RepeatedFixed64List {
+      get { return pbc::Lists.AsReadOnly(repeatedFixed64_); }
+    }
+    public int RepeatedFixed64Count {
+      get { return repeatedFixed64_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public ulong GetRepeatedFixed64(int index) {
+      return repeatedFixed64_[index];
+    }
+    
+    public const int RepeatedInt64FieldNumber = 2047;
+    private pbc::PopsicleList<long> repeatedInt64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> RepeatedInt64List {
+      get { return pbc::Lists.AsReadOnly(repeatedInt64_); }
+    }
+    public int RepeatedInt64Count {
+      get { return repeatedInt64_.Count; }
+    }
+    public long GetRepeatedInt64(int index) {
+      return repeatedInt64_[index];
+    }
+    
+    public const int RepeatedFloatFieldNumber = 262142;
+    private pbc::PopsicleList<float> repeatedFloat_ = new pbc::PopsicleList<float>();
+    public scg::IList<float> RepeatedFloatList {
+      get { return pbc::Lists.AsReadOnly(repeatedFloat_); }
+    }
+    public int RepeatedFloatCount {
+      get { return repeatedFloat_.Count; }
+    }
+    public float GetRepeatedFloat(int index) {
+      return repeatedFloat_[index];
+    }
+    
+    public const int RepeatedUint64FieldNumber = 262143;
+    private pbc::PopsicleList<ulong> repeatedUint64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<ulong> RepeatedUint64List {
+      get { return pbc::Lists.AsReadOnly(repeatedUint64_); }
+    }
+    public int RepeatedUint64Count {
+      get { return repeatedUint64_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public ulong GetRepeatedUint64(int index) {
+      return repeatedUint64_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (repeatedFixed32_.Count > 0) {
+        foreach (uint element in repeatedFixed32_) {
+          output.WriteFixed32(12, element);
+        }
+      }
+      if (repeatedInt32_.Count > 0) {
+        foreach (int element in repeatedInt32_) {
+          output.WriteInt32(13, element);
+        }
+      }
+      if (repeatedFixed64_.Count > 0) {
+        foreach (ulong element in repeatedFixed64_) {
+          output.WriteFixed64(2046, element);
+        }
+      }
+      if (repeatedInt64_.Count > 0) {
+        foreach (long element in repeatedInt64_) {
+          output.WriteInt64(2047, element);
+        }
+      }
+      if (repeatedFloat_.Count > 0) {
+        foreach (float element in repeatedFloat_) {
+          output.WriteFloat(262142, element);
+        }
+      }
+      if (repeatedUint64_.Count > 0) {
+        foreach (ulong element in repeatedUint64_) {
+          output.WriteUInt64(262143, element);
+        }
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        {
+          int dataSize = 0;
+          dataSize = 4 * repeatedFixed32_.Count;
+          size += dataSize;
+          size += 1 * repeatedFixed32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (int element in RepeatedInt32List) {
+            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 1 * repeatedInt32_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * repeatedFixed64_.Count;
+          size += dataSize;
+          size += 2 * repeatedFixed64_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in RepeatedInt64List) {
+            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * repeatedInt64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * repeatedFloat_.Count;
+          size += dataSize;
+          size += 3 * repeatedFloat_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (ulong element in RepeatedUint64List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 3 * repeatedUint64_.Count;
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestRepeatedScalarDifferentTagSizes ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestRepeatedScalarDifferentTagSizes prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestRepeatedScalarDifferentTagSizes, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestRepeatedScalarDifferentTagSizes result = new TestRepeatedScalarDifferentTagSizes();
+      
+      protected override TestRepeatedScalarDifferentTagSizes MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestRepeatedScalarDifferentTagSizes();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes.Descriptor; }
+      }
+      
+      public override TestRepeatedScalarDifferentTagSizes DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes.DefaultInstance; }
+      }
+      
+      public override TestRepeatedScalarDifferentTagSizes BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        result.repeatedFixed32_.MakeReadOnly();
+        result.repeatedInt32_.MakeReadOnly();
+        result.repeatedFixed64_.MakeReadOnly();
+        result.repeatedInt64_.MakeReadOnly();
+        result.repeatedFloat_.MakeReadOnly();
+        result.repeatedUint64_.MakeReadOnly();
+        TestRepeatedScalarDifferentTagSizes returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is TestRepeatedScalarDifferentTagSizes) {
+          return MergeFrom((TestRepeatedScalarDifferentTagSizes) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestRepeatedScalarDifferentTagSizes other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestRepeatedScalarDifferentTagSizes.DefaultInstance) return this;
+        if (other.repeatedFixed32_.Count != 0) {
+          base.AddRange(other.repeatedFixed32_, result.repeatedFixed32_);
+        }
+        if (other.repeatedInt32_.Count != 0) {
+          base.AddRange(other.repeatedInt32_, result.repeatedInt32_);
+        }
+        if (other.repeatedFixed64_.Count != 0) {
+          base.AddRange(other.repeatedFixed64_, result.repeatedFixed64_);
+        }
+        if (other.repeatedInt64_.Count != 0) {
+          base.AddRange(other.repeatedInt64_, result.repeatedInt64_);
+        }
+        if (other.repeatedFloat_.Count != 0) {
+          base.AddRange(other.repeatedFloat_, result.repeatedFloat_);
+        }
+        if (other.repeatedUint64_.Count != 0) {
+          base.AddRange(other.repeatedUint64_, result.repeatedUint64_);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 101: {
+              AddRepeatedFixed32(input.ReadFixed32());
+              break;
+            }
+            case 104: {
+              AddRepeatedInt32(input.ReadInt32());
+              break;
+            }
+            case 16369: {
+              AddRepeatedFixed64(input.ReadFixed64());
+              break;
+            }
+            case 16376: {
+              AddRepeatedInt64(input.ReadInt64());
+              break;
+            }
+            case 2097141: {
+              AddRepeatedFloat(input.ReadFloat());
+              break;
+            }
+            case 2097144: {
+              AddRepeatedUint64(input.ReadUInt64());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<uint> RepeatedFixed32List {
+        get { return result.repeatedFixed32_; }
+      }
+      public int RepeatedFixed32Count {
+        get { return result.RepeatedFixed32Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public uint GetRepeatedFixed32(int index) {
+        return result.GetRepeatedFixed32(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetRepeatedFixed32(int index, uint value) {
+        result.repeatedFixed32_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRepeatedFixed32(uint value) {
+        result.repeatedFixed32_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeRepeatedFixed32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.repeatedFixed32_);
+        return this;
+      }
+      public Builder ClearRepeatedFixed32() {
+        result.repeatedFixed32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<int> RepeatedInt32List {
+        get { return result.repeatedInt32_; }
+      }
+      public int RepeatedInt32Count {
+        get { return result.RepeatedInt32Count; }
+      }
+      public int GetRepeatedInt32(int index) {
+        return result.GetRepeatedInt32(index);
+      }
+      public Builder SetRepeatedInt32(int index, int value) {
+        result.repeatedInt32_[index] = value;
+        return this;
+      }
+      public Builder AddRepeatedInt32(int value) {
+        result.repeatedInt32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeRepeatedInt32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.repeatedInt32_);
+        return this;
+      }
+      public Builder ClearRepeatedInt32() {
+        result.repeatedInt32_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<ulong> RepeatedFixed64List {
+        get { return result.repeatedFixed64_; }
+      }
+      public int RepeatedFixed64Count {
+        get { return result.RepeatedFixed64Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public ulong GetRepeatedFixed64(int index) {
+        return result.GetRepeatedFixed64(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetRepeatedFixed64(int index, ulong value) {
+        result.repeatedFixed64_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRepeatedFixed64(ulong value) {
+        result.repeatedFixed64_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeRepeatedFixed64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.repeatedFixed64_);
+        return this;
+      }
+      public Builder ClearRepeatedFixed64() {
+        result.repeatedFixed64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> RepeatedInt64List {
+        get { return result.repeatedInt64_; }
+      }
+      public int RepeatedInt64Count {
+        get { return result.RepeatedInt64Count; }
+      }
+      public long GetRepeatedInt64(int index) {
+        return result.GetRepeatedInt64(index);
+      }
+      public Builder SetRepeatedInt64(int index, long value) {
+        result.repeatedInt64_[index] = value;
+        return this;
+      }
+      public Builder AddRepeatedInt64(long value) {
+        result.repeatedInt64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeRepeatedInt64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.repeatedInt64_);
+        return this;
+      }
+      public Builder ClearRepeatedInt64() {
+        result.repeatedInt64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<float> RepeatedFloatList {
+        get { return result.repeatedFloat_; }
+      }
+      public int RepeatedFloatCount {
+        get { return result.RepeatedFloatCount; }
+      }
+      public float GetRepeatedFloat(int index) {
+        return result.GetRepeatedFloat(index);
+      }
+      public Builder SetRepeatedFloat(int index, float value) {
+        result.repeatedFloat_[index] = value;
+        return this;
+      }
+      public Builder AddRepeatedFloat(float value) {
+        result.repeatedFloat_.Add(value);
+        return this;
+      }
+      public Builder AddRangeRepeatedFloat(scg::IEnumerable<float> values) {
+        base.AddRange(values, result.repeatedFloat_);
+        return this;
+      }
+      public Builder ClearRepeatedFloat() {
+        result.repeatedFloat_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<ulong> RepeatedUint64List {
+        get { return result.repeatedUint64_; }
+      }
+      public int RepeatedUint64Count {
+        get { return result.RepeatedUint64Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public ulong GetRepeatedUint64(int index) {
+        return result.GetRepeatedUint64(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetRepeatedUint64(int index, ulong value) {
+        result.repeatedUint64_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRepeatedUint64(ulong value) {
+        result.repeatedUint64_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeRepeatedUint64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.repeatedUint64_);
+        return this;
+      }
+      public Builder ClearRepeatedUint64() {
+        result.repeatedUint64_.Clear();
+        return this;
+      }
+    }
+    static TestRepeatedScalarDifferentTagSizes() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestProtoFile.Descriptor, null);
     }
   }

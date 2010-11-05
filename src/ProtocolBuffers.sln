@@ -28,6 +28,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{1F896D5C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLite", "ProtocolBuffers\ProtocolBuffersLite.csproj", "{6969BDCE-D925-43F3-94AC-A531E6DF2591}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLite.Test", "ProtocolBuffersLite.Test\ProtocolBuffersLite.Test.csproj", "{EE01ED24-3750-4567-9A23-1DB676A15610}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8D3015A-EA39-4F03-AEEC-3FF1F2087A12}"
+	ProjectSection(SolutionItems) = preProject
+		..\protos\google\protobuf\unittest.proto = ..\protos\google\protobuf\unittest.proto
+		..\protos\google\protobuf\unittest_csharp_options.proto = ..\protos\google\protobuf\unittest_csharp_options.proto
+		..\protos\google\protobuf\unittest_custom_options.proto = ..\protos\google\protobuf\unittest_custom_options.proto
+		..\protos\google\protobuf\unittest_embed_optimize_for.proto = ..\protos\google\protobuf\unittest_embed_optimize_for.proto
+		..\protos\google\protobuf\unittest_empty.proto = ..\protos\google\protobuf\unittest_empty.proto
+		..\protos\google\protobuf\unittest_enormous_descriptor.proto = ..\protos\google\protobuf\unittest_enormous_descriptor.proto
+		..\protos\google\protobuf\unittest_import.proto = ..\protos\google\protobuf\unittest_import.proto
+		..\protos\google\protobuf\unittest_import_lite.proto = ..\protos\google\protobuf\unittest_import_lite.proto
+		..\protos\google\protobuf\unittest_lite.proto = ..\protos\google\protobuf\unittest_lite.proto
+		..\protos\google\protobuf\unittest_lite_imports_nonlite.proto = ..\protos\google\protobuf\unittest_lite_imports_nonlite.proto
+		..\protos\google\protobuf\unittest_mset.proto = ..\protos\google\protobuf\unittest_mset.proto
+		..\protos\google\protobuf\unittest_no_generic_services.proto = ..\protos\google\protobuf\unittest_no_generic_services.proto
+		..\protos\google\protobuf\unittest_optimize_for.proto = ..\protos\google\protobuf\unittest_optimize_for.proto
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,8 +108,17 @@ Global
 		{6969BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6969BDCE-D925-43F3-94AC-A531E6DF2591}.Silverlight2|Any CPU.ActiveCfg = Silverlight2|Any CPU
 		{6969BDCE-D925-43F3-94AC-A531E6DF2591}.Silverlight2|Any CPU.Build.0 = Silverlight2|Any CPU
+		{EE01ED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE01ED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE01ED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE01ED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE01ED24-3750-4567-9A23-1DB676A15610}.Silverlight2|Any CPU.ActiveCfg = Silverlight2|Any CPU
+		{EE01ED24-3750-4567-9A23-1DB676A15610}.Silverlight2|Any CPU.Build.0 = Silverlight2|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C8D3015A-EA39-4F03-AEEC-3FF1F2087A12} = {1F896D5C-5FC2-4671-9216-781CB8187EC7}
 	EndGlobalSection
 EndGlobal

@@ -15,6 +15,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt1);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt2);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt1);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumValueOpt1);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ServiceOpt1);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MethodOpt1);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BoolOpt);
@@ -58,6 +59,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedExtensionBase<int> FieldOpt2;
     public const int EnumOpt1FieldNumber = 7753576;
     public static pb::GeneratedExtensionBase<int> EnumOpt1;
+    public const int EnumValueOpt1FieldNumber = 1560678;
+    public static pb::GeneratedExtensionBase<int> EnumValueOpt1;
     public const int ServiceOpt1FieldNumber = 7887650;
     public static pb::GeneratedExtensionBase<long> ServiceOpt1;
     public const int MethodOpt1FieldNumber = 7890860;
@@ -165,97 +168,99 @@ namespace Google.ProtocolBuffers.TestProtos {
           "Ci1nb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfY3VzdG9tX29wdGlvbnMucHJv" + 
           "dG8SEXByb3RvYnVmX3VuaXR0ZXN0GiRnb29nbGUvcHJvdG9idWYvY3NoYXJw" + 
           "X29wdGlvbnMucHJvdG8aIGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnBy" + 
-          "b3RvIoYBChxUZXN0TWVzc2FnZVdpdGhDdXN0b21PcHRpb25zEh4KBmZpZWxk" + 
-          "MRgBIAEoCUIOCAHB4MMdLeF1CgIAAAAiNAoGQW5FbnVtEg8KC0FORU5VTV9W" + 
-          "QUwxEAESDwoLQU5FTlVNX1ZBTDIQAhoIxfbJHev8//86EAgA4OnCHcj/////" + 
-          "/////wEiGAoWQ3VzdG9tT3B0aW9uRm9vUmVxdWVzdCIZChdDdXN0b21PcHRp" + 
-          "b25Gb29SZXNwb25zZSJtChpEdW1teU1lc3NhZ2VDb250YWluaW5nRW51bSJP" + 
-          "CgxUZXN0RW51bVR5cGUSGgoWVEVTVF9PUFRJT05fRU5VTV9UWVBFMRAWEiMK" + 
-          "FlRFU1RfT1BUSU9OX0VOVU1fVFlQRTIQ6f//////////ASIhCh9EdW1teU1l" + 
-          "c3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlIooBChxDdXN0b21PcHRpb25NaW5J" + 
-          "bnRlZ2VyVmFsdWVzOmqZ1qgdAAAAAAAAAICtja8dAAAAgJHurx0AAAAAAAAA" + 
-          "AJ31rx0AAAAA+JewHf///////////wGAxLAd/////w/49bAdAICTsh0AsLyy" + 
-          "HYCAgICAgICAgAHoxrIdgICAgPj/////AdDesh0AIpEBChxDdXN0b21PcHRp" + 
-          "b25NYXhJbnRlZ2VyVmFsdWVzOnGZ1qgd/////////3+tja8d////f5Hurx3/" + 
-          "/////////531rx3/////+JewHf7//////////wGAxLAd/v///w/49bAd////" + 
-          "////////AYCTsh3/////D7C8sh3//////////3/oxrId/////wfQ3rIdASJu" + 
-          "ChdDdXN0b21PcHRpb25PdGhlclZhbHVlczpTiNmiHen//////////wGy2aId" + 
-          "C0hlbGxvAFdvcmxkqtyiHQ5IZWxsbywgIldvcmxkIuncoh37WYxCysDzP/Xf" + 
-          "ox3nh0VB6MayHZz//////////wEiNAocU2V0dGluZ1JlYWxzRnJvbVBvc2l0" + 
-          "aXZlSW50czoU6dyiHQAAAAAAQGNA9d+jHQAAQEEiNAocU2V0dGluZ1JlYWxz" + 
-          "RnJvbU5lZ2F0aXZlSW50czoU6dyiHQAAAAAAQGPA9d+jHQAAQMEiKwoSQ29t" + 
-          "cGxleE9wdGlvblR5cGUxEgsKA2ZvbxgBIAEoBSoICGQQgICAgAIiwQIKEkNv" + 
-          "bXBsZXhPcHRpb25UeXBlMhIyCgNiYXIYASABKAsyJS5wcm90b2J1Zl91bml0" + 
-          "dGVzdC5Db21wbGV4T3B0aW9uVHlwZTESCwoDYmF6GAIgASgFEkYKBGZyZWQY" + 
-          "AyABKAsyOC5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIu" + 
-          "Q29tcGxleE9wdGlvblR5cGU0GpcBChJDb21wbGV4T3B0aW9uVHlwZTQSDQoF" + 
-          "d2FsZG8YASABKAUycgoMY29tcGxleF9vcHQ0Eh8uZ29vZ2xlLnByb3RvYnVm" + 
-          "Lk1lc3NhZ2VPcHRpb25zGIr10QMgASgLMjgucHJvdG9idWZfdW5pdHRlc3Qu" + 
-          "Q29tcGxleE9wdGlvblR5cGUyLkNvbXBsZXhPcHRpb25UeXBlNCoICGQQgICA" + 
-          "gAIinAEKEkNvbXBsZXhPcHRpb25UeXBlMxILCgNxdXgYASABKAUSVAoSY29t" + 
-          "cGxleG9wdGlvbnR5cGU1GAIgASgKMjgucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
-          "cGxleE9wdGlvblR5cGUzLkNvbXBsZXhPcHRpb25UeXBlNRojChJDb21wbGV4" + 
-          "T3B0aW9uVHlwZTUSDQoFcGx1Z2gYAyABKAUiHwoLQ29tcGxleE9wdDYSEAoF" + 
-          "eHl6enkY37/PAyABKAUi0AEKFVZhcmlvdXNDb21wbGV4T3B0aW9uczq2AePc" + 
-          "/Bz4/fscGOTc/BzSqI8dAwizD/rekB0CCAn63pAdBBMYFhSq/ZAdAxDbB6r9" + 
-          "kB0G+OaXHY4Fqv2QHQUKAwjnBar9kB0ICgbYhZ4dzw+q/ZAdCgoIkvWdHQMI" + 
-          "2A+q/ZAdCMKslx0DCOUFqv2QHQvCrJcdBtiFnh3OD6r9kB0NwqyXHQiS9Z0d" + 
-          "AwjJEKr9kB0FGgMIwQKi4pUdAggqouKVHQbYhZ4dxAKi4pUdCJL1nR0DCOwG" + 
-          "KjYKCk1ldGhvZE9wdDESEwoPTUVUSE9ET1BUMV9WQUwxEAESEwoPTUVUSE9E" + 
-          "T1BUMV9WQUwyEAIyjgEKHFRlc3RTZXJ2aWNlV2l0aEN1c3RvbU9wdGlvbnMS" + 
-          "YwoDRm9vEikucHJvdG9idWZfdW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVx" + 
-          "dWVzdBoqLnByb3RvYnVmX3VuaXR0ZXN0LkN1c3RvbU9wdGlvbkZvb1Jlc3Bv" + 
-          "bnNlIgXg+oweAhoJkLKLHtPbgMtJOjIKCWZpbGVfb3B0MRIcLmdvb2dsZS5w" + 
-          "cm90b2J1Zi5GaWxlT3B0aW9ucxiOndgDIAEoBDo4CgxtZXNzYWdlX29wdDES" + 
-          "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYnK3YAyABKAU6NAoK" + 
-          "ZmllbGRfb3B0MRIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMYiLzY" + 
-          "AyABKAY6OAoKZmllbGRfb3B0MhIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9w" + 
-          "dGlvbnMYuaHZAyABKAU6AjQyOjIKCWVudW1fb3B0MRIcLmdvb2dsZS5wcm90" + 
-          "b2J1Zi5FbnVtT3B0aW9ucxjontkDIAEoDzo4CgxzZXJ2aWNlX29wdDESHy5n" + 
-          "b29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMYorbhAyABKBI6VQoLbWV0" + 
-          "aG9kX29wdDESHi5nb29nbGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucxisz+ED" + 
-          "IAEoDjIdLnByb3RvYnVmX3VuaXR0ZXN0Lk1ldGhvZE9wdDE6NAoIYm9vbF9v" + 
-          "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY6qvWAyABKAg6" + 
-          "NQoJaW50MzJfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25z" + 
-          "GO2o1gMgASgFOjUKCWludDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNz" + 
-          "YWdlT3B0aW9ucxjGp9YDIAEoAzo2Cgp1aW50MzJfb3B0Eh8uZ29vZ2xlLnBy" + 
-          "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGLCi1gMgASgNOjYKCnVpbnQ2NF9vcHQS" + 
-          "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY347WAyABKAQ6NgoK" + 
-          "c2ludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjA" + 
-          "iNYDIAEoETo2CgpzaW50NjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3Nh" + 
-          "Z2VPcHRpb25zGP+C1gMgASgSOjcKC2ZpeGVkMzJfb3B0Eh8uZ29vZ2xlLnBy" + 
-          "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGNP+1QMgASgHOjcKC2ZpeGVkNjRfb3B0" + 
-          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGOL91QMgASgGOjgK" + 
-          "DHNmaXhlZDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
-          "cxjV8dUDIAEoDzo4CgxzZml4ZWQ2NF9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
-          "TWVzc2FnZU9wdGlvbnMY44rVAyABKBA6NQoJZmxvYXRfb3B0Eh8uZ29vZ2xl" + 
-          "LnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGP671AMgASgCOjYKCmRvdWJsZV9v" + 
-          "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYzavUAyABKAE6" + 
-          "NgoKc3RyaW5nX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
-          "cxjFq9QDIAEoCTo1CglieXRlc19vcHQSHy5nb29nbGUucHJvdG9idWYuTWVz" + 
-          "c2FnZU9wdGlvbnMYlqvUAyABKAw6cAoIZW51bV9vcHQSHy5nb29nbGUucHJv" + 
-          "dG9idWYuTWVzc2FnZU9wdGlvbnMYkavUAyABKA4yOi5wcm90b2J1Zl91bml0" + 
-          "dGVzdC5EdW1teU1lc3NhZ2VDb250YWluaW5nRW51bS5UZXN0RW51bVR5cGU6" + 
-          "cAoQbWVzc2FnZV90eXBlX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl" + 
-          "T3B0aW9ucxiv8tMDIAEoCzIyLnByb3RvYnVmX3VuaXR0ZXN0LkR1bW15TWVz" + 
-          "c2FnZUludmFsaWRBc09wdGlvblR5cGU6NgoEcXV1eBIlLnByb3RvYnVmX3Vu" + 
-          "aXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRjb4NMDIAEoBTpeCgVjb3JnZRIl" + 
-          "LnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRjS3tMDIAEo" + 
-          "CzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMzo4CgZn" + 
-          "cmF1bHQSJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIY" + 
-          "7/zSAyABKAU6XwoGZ2FycGx5EiUucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxl" + 
-          "eE9wdGlvblR5cGUyGMj10gMgASgLMiUucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
-          "cGxleE9wdGlvblR5cGUxOl8KDGNvbXBsZXhfb3B0MRIfLmdvb2dsZS5wcm90" + 
-          "b2J1Zi5NZXNzYWdlT3B0aW9ucxik3NIDIAEoCzIlLnByb3RvYnVmX3VuaXR0" + 
-          "ZXN0LkNvbXBsZXhPcHRpb25UeXBlMTpfCgxjb21wbGV4X29wdDISHy5nb29n" + 
-          "bGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY1Y/SAyABKAsyJS5wcm90b2J1" + 
-          "Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTI6XwoMY29tcGxleF9vcHQz" + 
-          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGO+L0gMgASgLMiUu" + 
-          "cHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUzOlcKC2NvbXBs" + 
-          "ZXhvcHQ2Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGMzLzwMg" + 
-          "ASgKMh4ucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdDZCT8I+QwohR29v" + 
-          "Z2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEh5Vbml0VGVzdEN1c3Rv" + 
-          "bU9wdGlvbnNQcm90b0ZpbGXw6MEd6q3A5SQ=");
+          "b3RvIo0BChxUZXN0TWVzc2FnZVdpdGhDdXN0b21PcHRpb25zEh4KBmZpZWxk" + 
+          "MRgBIAEoCUIOCAHB4MMdLeF1CgIAAAAiOwoGQW5FbnVtEg8KC0FORU5VTV9W" + 
+          "QUwxEAESFgoLQU5FTlVNX1ZBTDIQAhoFsIb6BXsaCMX2yR3r/P//OhAIAODp" + 
+          "wh3I//////////8BIhgKFkN1c3RvbU9wdGlvbkZvb1JlcXVlc3QiGQoXQ3Vz" + 
+          "dG9tT3B0aW9uRm9vUmVzcG9uc2UibQoaRHVtbXlNZXNzYWdlQ29udGFpbmlu" + 
+          "Z0VudW0iTwoMVGVzdEVudW1UeXBlEhoKFlRFU1RfT1BUSU9OX0VOVU1fVFlQ" + 
+          "RTEQFhIjChZURVNUX09QVElPTl9FTlVNX1RZUEUyEOn//////////wEiIQof" + 
+          "RHVtbXlNZXNzYWdlSW52YWxpZEFzT3B0aW9uVHlwZSKKAQocQ3VzdG9tT3B0" + 
+          "aW9uTWluSW50ZWdlclZhbHVlczpqmdaoHQAAAAAAAACArY2vHQAAAICR7q8d" + 
+          "AAAAAAAAAACd9a8dAAAAAPiXsB3///////////8BgMSwHf////8P+PWwHQCA" + 
+          "k7IdALC8sh2AgICAgICAgIAB6MayHYCAgID4/////wHQ3rIdACKRAQocQ3Vz" + 
+          "dG9tT3B0aW9uTWF4SW50ZWdlclZhbHVlczpxmdaoHf////////9/rY2vHf//" + 
+          "/3+R7q8d//////////+d9a8d//////iXsB3+//////////8BgMSwHf7///8P" + 
+          "+PWwHf///////////wGAk7Id/////w+wvLId//////////9/6MayHf////8H" + 
+          "0N6yHQEibgoXQ3VzdG9tT3B0aW9uT3RoZXJWYWx1ZXM6U4jZoh3p////////" + 
+          "//8BstmiHQtIZWxsbwBXb3JsZKrcoh0OSGVsbG8sICJXb3JsZCLp3KId+1mM" + 
+          "QsrA8z/136Md54dFQejGsh2c//////////8BIjQKHFNldHRpbmdSZWFsc0Zy" + 
+          "b21Qb3NpdGl2ZUludHM6FOncoh0AAAAAAEBjQPXfox0AAEBBIjQKHFNldHRp" + 
+          "bmdSZWFsc0Zyb21OZWdhdGl2ZUludHM6FOncoh0AAAAAAEBjwPXfox0AAEDB" + 
+          "IkcKEkNvbXBsZXhPcHRpb25UeXBlMRILCgNmb28YASABKAUSDAoEZm9vMhgC" + 
+          "IAEoBRIMCgRmb28zGAMgASgFKggIZBCAgICAAiLBAgoSQ29tcGxleE9wdGlv" + 
+          "blR5cGUyEjIKA2JhchgBIAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBs" + 
+          "ZXhPcHRpb25UeXBlMRILCgNiYXoYAiABKAUSRgoEZnJlZBgDIAEoCzI4LnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMi5Db21wbGV4T3B0" + 
+          "aW9uVHlwZTQalwEKEkNvbXBsZXhPcHRpb25UeXBlNBINCgV3YWxkbxgBIAEo" + 
+          "BTJyCgxjb21wbGV4X29wdDQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9w" + 
+          "dGlvbnMYivXRAyABKAsyOC5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0" + 
+          "aW9uVHlwZTIuQ29tcGxleE9wdGlvblR5cGU0KggIZBCAgICAAiKcAQoSQ29t" + 
+          "cGxleE9wdGlvblR5cGUzEgsKA3F1eBgBIAEoBRJUChJjb21wbGV4b3B0aW9u" + 
+          "dHlwZTUYAiABKAoyOC5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9u" + 
+          "VHlwZTMuQ29tcGxleE9wdGlvblR5cGU1GiMKEkNvbXBsZXhPcHRpb25UeXBl" + 
+          "NRINCgVwbHVnaBgDIAEoBSIfCgtDb21wbGV4T3B0NhIQCgV4eXp6eRjfv88D" + 
+          "IAEoBSLQAQoVVmFyaW91c0NvbXBsZXhPcHRpb25zOrYB49z8HPj9+xwY5Nz8" + 
+          "HNKojx0DCLMP+t6QHQIICfrekB0EExgWFKr9kB0DENsHqv2QHQb45pcdjgWq" + 
+          "/ZAdBQoDCOcFqv2QHQgKBtiFnh3PD6r9kB0KCgiS9Z0dAwjYD6r9kB0IwqyX" + 
+          "HQMI5QWq/ZAdC8Kslx0G2IWeHc4Pqv2QHQ3CrJcdCJL1nR0DCMkQqv2QHQUa" + 
+          "AwjBAqLilR0CCCqi4pUdBtiFnh3EAqLilR0IkvWdHQMI7AYqNgoKTWV0aG9k" + 
+          "T3B0MRITCg9NRVRIT0RPUFQxX1ZBTDEQARITCg9NRVRIT0RPUFQxX1ZBTDIQ" + 
+          "AjKOAQocVGVzdFNlcnZpY2VXaXRoQ3VzdG9tT3B0aW9ucxJjCgNGb28SKS5w" + 
+          "cm90b2J1Zl91bml0dGVzdC5DdXN0b21PcHRpb25Gb29SZXF1ZXN0GioucHJv" + 
+          "dG9idWZfdW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVzcG9uc2UiBeD6jB4C" + 
+          "GgmQsose09uAy0k6MgoJZmlsZV9vcHQxEhwuZ29vZ2xlLnByb3RvYnVmLkZp" + 
+          "bGVPcHRpb25zGI6d2AMgASgEOjgKDG1lc3NhZ2Vfb3B0MRIfLmdvb2dsZS5w" + 
+          "cm90b2J1Zi5NZXNzYWdlT3B0aW9ucxicrdgDIAEoBTo0CgpmaWVsZF9vcHQx" + 
+          "Eh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxiIvNgDIAEoBjo4Cgpm" + 
+          "aWVsZF9vcHQyEh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxi5odkD" + 
+          "IAEoBToCNDI6MgoJZW51bV9vcHQxEhwuZ29vZ2xlLnByb3RvYnVmLkVudW1P" + 
+          "cHRpb25zGOie2QMgASgPOjwKD2VudW1fdmFsdWVfb3B0MRIhLmdvb2dsZS5w" + 
+          "cm90b2J1Zi5FbnVtVmFsdWVPcHRpb25zGOagXyABKAU6OAoMc2VydmljZV9v" + 
+          "cHQxEh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VPcHRpb25zGKK24QMgASgS" + 
+          "OlUKC21ldGhvZF9vcHQxEh4uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlv" + 
+          "bnMYrM/hAyABKA4yHS5wcm90b2J1Zl91bml0dGVzdC5NZXRob2RPcHQxOjQK" + 
+          "CGJvb2xfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGOqr" + 
+          "1gMgASgIOjUKCWludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl" + 
+          "T3B0aW9ucxjtqNYDIAEoBTo1CglpbnQ2NF9vcHQSHy5nb29nbGUucHJvdG9i" + 
+          "dWYuTWVzc2FnZU9wdGlvbnMYxqfWAyABKAM6NgoKdWludDMyX29wdBIfLmdv" + 
+          "b2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxiwotYDIAEoDTo2Cgp1aW50" + 
+          "NjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGN+O1gMg" + 
+          "ASgEOjYKCnNpbnQzMl9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9w" + 
+          "dGlvbnMYwIjWAyABKBE6NgoKc2ludDY0X29wdBIfLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5NZXNzYWdlT3B0aW9ucxj/gtYDIAEoEjo3CgtmaXhlZDMyX29wdBIfLmdv" + 
+          "b2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjT/tUDIAEoBzo3CgtmaXhl" + 
+          "ZDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxji/dUD" + 
+          "IAEoBjo4CgxzZml4ZWQzMl9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2Fn" + 
+          "ZU9wdGlvbnMY1fHVAyABKA86OAoMc2ZpeGVkNjRfb3B0Eh8uZ29vZ2xlLnBy" + 
+          "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGOOK1QMgASgQOjUKCWZsb2F0X29wdBIf" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxj+u9QDIAEoAjo2Cgpk" + 
+          "b3VibGVfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGM2r" + 
+          "1AMgASgBOjYKCnN0cmluZ19vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2Fn" + 
+          "ZU9wdGlvbnMYxavUAyABKAk6NQoJYnl0ZXNfb3B0Eh8uZ29vZ2xlLnByb3Rv" + 
+          "YnVmLk1lc3NhZ2VPcHRpb25zGJar1AMgASgMOnAKCGVudW1fb3B0Eh8uZ29v" + 
+          "Z2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGJGr1AMgASgOMjoucHJvdG9i" + 
+          "dWZfdW5pdHRlc3QuRHVtbXlNZXNzYWdlQ29udGFpbmluZ0VudW0uVGVzdEVu" + 
+          "dW1UeXBlOnAKEG1lc3NhZ2VfdHlwZV9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
+          "TWVzc2FnZU9wdGlvbnMYr/LTAyABKAsyMi5wcm90b2J1Zl91bml0dGVzdC5E" + 
+          "dW1teU1lc3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlOjYKBHF1dXgSJS5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTEY2+DTAyABKAU6XgoF" + 
+          "Y29yZ2USJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTEY" + 
+          "0t7TAyABKAsyJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlw" + 
+          "ZTM6OAoGZ3JhdWx0EiUucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlv" + 
+          "blR5cGUyGO/80gMgASgFOl8KBmdhcnBseRIlLnByb3RvYnVmX3VuaXR0ZXN0" + 
+          "LkNvbXBsZXhPcHRpb25UeXBlMhjI9dIDIAEoCzIlLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0LkNvbXBsZXhPcHRpb25UeXBlMTpfCgxjb21wbGV4X29wdDESHy5nb29n" + 
+          "bGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYpNzSAyABKAsyJS5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTE6XwoMY29tcGxleF9vcHQy" + 
+          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGNWP0gMgASgLMiUu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUyOl8KDGNvbXBs" + 
+          "ZXhfb3B0MxIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjvi9ID" + 
+          "IAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMzpX" + 
+          "Cgtjb21wbGV4b3B0NhIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
+          "cxjMy88DIAEoCjIeLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHQ2Qk/C" + 
+          "PkMKIUdvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIeVW5pdFRl" + 
+          "c3RDdXN0b21PcHRpb25zUHJvdG9GaWxl8OjBHeqtwOUk");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor = Descriptor.MessageTypes[0];
@@ -301,7 +306,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_ComplexOptionType1__Descriptor = Descriptor.MessageTypes[10];
         internal__static_protobuf_unittest_ComplexOptionType1__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder>(internal__static_protobuf_unittest_ComplexOptionType1__Descriptor,
-                new string[] { "Foo", });
+                new string[] { "Foo", "Foo2", "Foo3", });
         internal__static_protobuf_unittest_ComplexOptionType2__Descriptor = Descriptor.MessageTypes[11];
         internal__static_protobuf_unittest_ComplexOptionType2__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2, global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Builder>(internal__static_protobuf_unittest_ComplexOptionType2__Descriptor,
@@ -332,33 +337,34 @@ namespace Google.ProtocolBuffers.TestProtos {
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt1 = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[2]);
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt2 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[3]);
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt1 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[4]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ServiceOpt1 = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[5]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MethodOpt1 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.MethodOpt1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[6]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BoolOpt = pb::GeneratedSingleExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[7]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[8]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[9]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint32Opt = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[10]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint64Opt = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[11]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[12]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[13]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed32Opt = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[14]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed64Opt = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[15]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[16]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[17]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FloatOpt = pb::GeneratedSingleExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[18]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.DoubleOpt = pb::GeneratedSingleExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[19]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.StringOpt = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[20]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BytesOpt = pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[21]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[22]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageTypeOpt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[23]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Quux = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[24]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Corge = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[25]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Grault = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[26]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Garply = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[27]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt1 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[28]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt2 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[29]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt3 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[30]);
-        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt6 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[31]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumValueOpt1 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[5]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ServiceOpt1 = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[6]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MethodOpt1 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.MethodOpt1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[7]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BoolOpt = pb::GeneratedSingleExtension<bool>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[8]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[9]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Int64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[10]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint32Opt = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[11]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Uint64Opt = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[12]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[13]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sint64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[14]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed32Opt = pb::GeneratedSingleExtension<uint>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[15]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fixed64Opt = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[16]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed32Opt = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[17]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Sfixed64Opt = pb::GeneratedSingleExtension<long>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[18]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FloatOpt = pb::GeneratedSingleExtension<float>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[19]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.DoubleOpt = pb::GeneratedSingleExtension<double>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[20]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.StringOpt = pb::GeneratedSingleExtension<string>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[21]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.BytesOpt = pb::GeneratedSingleExtension<pb::ByteString>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[22]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumOpt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[23]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageTypeOpt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.DummyMessageInvalidAsOptionType>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[24]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Quux = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[25]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Corge = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[26]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Grault = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[27]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Garply = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[28]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt1 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[29]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt2 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[30]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt3 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[31]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt6 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[32]);
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
@@ -2217,6 +2223,26 @@ namespace Google.ProtocolBuffers.TestProtos {
       get { return foo_; }
     }
     
+    public const int Foo2FieldNumber = 2;
+    private bool hasFoo2;
+    private int foo2_ = 0;
+    public bool HasFoo2 {
+      get { return hasFoo2; }
+    }
+    public int Foo2 {
+      get { return foo2_; }
+    }
+    
+    public const int Foo3FieldNumber = 3;
+    private bool hasFoo3;
+    private int foo3_ = 0;
+    public bool HasFoo3 {
+      get { return hasFoo3; }
+    }
+    public int Foo3 {
+      get { return foo3_; }
+    }
+    
     public override bool IsInitialized {
       get {
         if (!ExtensionsAreInitialized) return false;
@@ -2229,6 +2255,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       pb::ExtendableMessage<ComplexOptionType1, ComplexOptionType1.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasFoo) {
         output.WriteInt32(1, Foo);
+      }
+      if (HasFoo2) {
+        output.WriteInt32(2, Foo2);
+      }
+      if (HasFoo3) {
+        output.WriteInt32(3, Foo3);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -2243,6 +2275,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         size = 0;
         if (HasFoo) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, Foo);
+        }
+        if (HasFoo2) {
+          size += pb::CodedOutputStream.ComputeInt32Size(2, Foo2);
+        }
+        if (HasFoo3) {
+          size += pb::CodedOutputStream.ComputeInt32Size(3, Foo3);
         }
         size += ExtensionsSerializedSize;
         size += UnknownFields.SerializedSize;
@@ -2340,6 +2378,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (other.HasFoo) {
           Foo = other.Foo;
         }
+        if (other.HasFoo2) {
+          Foo2 = other.Foo2;
+        }
+        if (other.HasFoo3) {
+          Foo3 = other.Foo3;
+        }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -2377,6 +2421,14 @@ namespace Google.ProtocolBuffers.TestProtos {
               Foo = input.ReadInt32();
               break;
             }
+            case 16: {
+              Foo2 = input.ReadInt32();
+              break;
+            }
+            case 24: {
+              Foo3 = input.ReadInt32();
+              break;
+            }
           }
         }
       }
@@ -2397,6 +2449,42 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder ClearFoo() {
         result.hasFoo = false;
         result.foo_ = 0;
+        return this;
+      }
+      
+      public bool HasFoo2 {
+        get { return result.HasFoo2; }
+      }
+      public int Foo2 {
+        get { return result.Foo2; }
+        set { SetFoo2(value); }
+      }
+      public Builder SetFoo2(int value) {
+        result.hasFoo2 = true;
+        result.foo2_ = value;
+        return this;
+      }
+      public Builder ClearFoo2() {
+        result.hasFoo2 = false;
+        result.foo2_ = 0;
+        return this;
+      }
+      
+      public bool HasFoo3 {
+        get { return result.HasFoo3; }
+      }
+      public int Foo3 {
+        get { return result.Foo3; }
+        set { SetFoo3(value); }
+      }
+      public Builder SetFoo3(int value) {
+        result.hasFoo3 = true;
+        result.foo3_ = value;
+        return this;
+      }
+      public Builder ClearFoo3() {
+        result.hasFoo3 = false;
+        result.foo3_ = 0;
         return this;
       }
     }
