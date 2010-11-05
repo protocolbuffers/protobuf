@@ -119,8 +119,11 @@ namespace Google.ProtocolBuffers {
       get { return empty; }
     }
 
-    public override ExtensionRegistryLite AsReadOnly() {
+    public new ExtensionRegistry AsReadOnly() {
       return new ExtensionRegistry(extensionsByName, extensionsByNumber, true);
+    }
+    protected override ExtensionRegistryLite MakeReadOnly() {
+      return AsReadOnly();
     }
 
     /// <summary>
