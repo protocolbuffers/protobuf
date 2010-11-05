@@ -42,79 +42,21 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// Implementation of the non-generic IMessage interface as far as possible.
   /// </summary>
-  public abstract class AbstractBuilder<TMessage, TBuilder> : IBuilder<TMessage, TBuilder> 
+  public abstract class AbstractBuilder<TMessage, TBuilder> : AbstractBuilderLite<TMessage, TBuilder>, IBuilder<TMessage, TBuilder> 
       where TMessage : AbstractMessage<TMessage, TBuilder>
       where TBuilder : AbstractBuilder<TMessage, TBuilder> {
 
-    protected abstract TBuilder ThisBuilder { get; }
-    
     #region Unimplemented members of IBuilder
     public abstract UnknownFieldSet UnknownFields { get; set; }
-    public abstract TBuilder MergeFrom(TMessage other);
-    public abstract bool IsInitialized { get; }
     public abstract IDictionary<FieldDescriptor, object> AllFields { get; }
     public abstract object this[FieldDescriptor field] { get; set; }
     public abstract MessageDescriptor DescriptorForType { get; }
     public abstract int GetRepeatedFieldCount(FieldDescriptor field);
     public abstract object this[FieldDescriptor field, int index] { get; set; }
     public abstract bool HasField(FieldDescriptor field);
-    public abstract TMessage Build();
-    public abstract TMessage BuildPartial();
-    public abstract TBuilder Clone();
-    public abstract TMessage DefaultInstanceForType { get; }
     public abstract IBuilder CreateBuilderForField(FieldDescriptor field);
     public abstract TBuilder ClearField(FieldDescriptor field);
     public abstract TBuilder AddRepeatedField(FieldDescriptor field, object value);
-    #endregion
-
-    #region Implementation of methods which don't require type parameter information
-    public IMessage WeakBuild() {
-      return Build();
-    }
-
-    public IBuilder WeakAddRepeatedField(FieldDescriptor field, object value) {
-      return AddRepeatedField(field, value);
-    }
-
-    public IBuilder WeakClear() {
-      return Clear();
-    }
-
-    public IBuilder WeakMergeFrom(IMessage message) {
-      return MergeFrom(message);
-    }
-
-    public IBuilder WeakMergeFrom(CodedInputStream input) {
-      return MergeFrom(input);
-    }
-
-    public IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
-      return MergeFrom(input, registry);
-    }
-
-    public IBuilder WeakMergeFrom(ByteString data) {
-      return MergeFrom(data);
-    }
-
-    public IBuilder WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
-      return MergeFrom(data, registry);
-    }
-
-    public IMessage WeakBuildPartial() {
-      return BuildPartial();
-    }
-
-    public IBuilder WeakClone() {
-      return Clone();
-    }
-
-    public IMessage WeakDefaultInstanceForType {
-      get { return DefaultInstanceForType; } 
-    }
-
-    public IBuilder WeakClearField(FieldDescriptor field) {
-      return ClearField(field);
-    }
     #endregion
 
     public TBuilder SetUnknownFields(UnknownFieldSet fields) {
@@ -122,12 +64,31 @@ namespace Google.ProtocolBuffers {
       return ThisBuilder;
     }
 
-    public virtual TBuilder Clear() {
+    public override TBuilder Clear() {
       foreach(FieldDescriptor field in AllFields.Keys) {
         ClearField(field);
       }
       return ThisBuilder;
     }
+
+    public sealed override TBuilder MergeFrom(IMessageLite other) {
+      return MergeFrom((IMessage)other);
+    }
+
+    /// <summary>
+    /// Merge the specified other message into the message being
+    /// built. Merging occurs as follows. For each field:
+    /// For singular primitive fields, if the field is set in <paramref name="other"/>,
+    /// then <paramref name="other"/>'s value overwrites the value in this message.
+    /// For singular message fields, if the field is set in <paramref name="other"/>,
+    /// it is merged into the corresponding sub-message of this message using the same
+    /// merging rules.
+    /// For repeated fields, the elements in <paramref name="other"/> are concatenated
+    /// with the elements in this message.
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public abstract TBuilder MergeFrom(TMessage other);
 
     public virtual TBuilder MergeFrom(IMessage other) {
       if (other.DescriptorForType != DescriptorForType) {
@@ -168,11 +129,7 @@ namespace Google.ProtocolBuffers {
       return ThisBuilder;
     }
 
-    public virtual TBuilder MergeFrom(CodedInputStream input) {
-      return MergeFrom(input, ExtensionRegistry.Empty);
-    }
-
-    public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
+    public override TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
       UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
       unknownFields.MergeFrom(input, extensionRegistry, this);
       UnknownFields = unknownFields.Build();
@@ -186,62 +143,6 @@ namespace Google.ProtocolBuffers {
       return ThisBuilder;
     }
 
-    public virtual TBuilder MergeFrom(ByteString data) {
-      CodedInputStream input = data.CreateCodedInput();
-      MergeFrom(input);
-      input.CheckLastTagWas(0);
-      return ThisBuilder;
-    }
-
-    public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry) {
-      CodedInputStream input = data.CreateCodedInput();
-      MergeFrom(input, extensionRegistry);
-      input.CheckLastTagWas(0);
-      return ThisBuilder;
-    }
-
-    public virtual TBuilder MergeFrom(byte[] data) {
-      CodedInputStream input = CodedInputStream.CreateInstance(data);
-      MergeFrom(input);
-      input.CheckLastTagWas(0);
-      return ThisBuilder;
-    }
-
-    public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry) {
-      CodedInputStream input = CodedInputStream.CreateInstance(data);
-      MergeFrom(input, extensionRegistry);
-      input.CheckLastTagWas(0);
-      return ThisBuilder;
-    }
-
-    public virtual TBuilder MergeFrom(Stream input) {
-      CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      MergeFrom(codedInput);
-      codedInput.CheckLastTagWas(0);
-      return ThisBuilder;
-    }
-
-    public virtual TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry) {
-      CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
-      MergeFrom(codedInput, extensionRegistry);
-      codedInput.CheckLastTagWas(0);
-      return ThisBuilder;
-    }
-
-    public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry) {
-      return Lite.MergeDelimitedFrom(input, extensionRegistry);
-    }
-
-    public TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
-      int size = (int) CodedInputStream.ReadRawVarint32(input);
-      Stream limitedStream = new LimitedInputStream(input, size);
-      return MergeFrom(limitedStream, extensionRegistry);
-    }
-
-    public TBuilder MergeDelimitedFrom(Stream input) {
-      return MergeDelimitedFrom(input, ExtensionRegistry.Empty);
-    }
-
     public virtual IBuilder SetField(FieldDescriptor field, object value) {
       this[field] = value;
       return ThisBuilder;
@@ -252,142 +153,55 @@ namespace Google.ProtocolBuffers {
       return ThisBuilder;
 	  }
 
+    #region Explicit Implementations
 
-    /// <summary>
-    /// used internally to explicitly resolve lite edition methods
-    /// </summary>
-    protected IBuilderLite<TMessage, TBuilder> Lite { get { return this; } }
-
-    public virtual TBuilder MergeFrom(IMessageLite other) {
-#warning Not implemented for Lite edition
-      return MergeFrom((IMessage)other);
+    IMessage IBuilder.WeakBuild() {
+      return Build();
     }
 
-    public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry) {
-#warning Not implemented for Lite edition
-      return MergeFrom(input, (ExtensionRegistry)extensionRegistry);
+    IBuilder IBuilder.WeakAddRepeatedField(FieldDescriptor field, object value) {
+      return AddRepeatedField(field, value);
     }
 
-    public virtual TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry) {
-#warning Not implemented for Lite edition
-      return MergeFrom(data, (ExtensionRegistry)extensionRegistry);
+    IBuilder IBuilder.WeakClear() {
+      return Clear();
     }
 
-    public virtual TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry) {
-#warning Not implemented for Lite edition
-      return MergeFrom(data, (ExtensionRegistry)extensionRegistry);
-    }
-
-    public virtual TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry) {
-#warning Not implemented for Lite edition
-      return MergeFrom(input, (ExtensionRegistry)extensionRegistry);
-    }
-
-    IBuilderLite IBuilderLite.WeakClear() {
-      return WeakClear();
-    }
-
-    public IBuilderLite WeakMergeFrom(IMessageLite message) {
+    IBuilder IBuilder.WeakMergeFrom(IMessage message) {
       return MergeFrom(message);
     }
 
-    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data) {
-      return WeakMergeFrom(data); 
+    IBuilder IBuilder.WeakMergeFrom(CodedInputStream input) {
+      return MergeFrom(input);
     }
 
-    IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
-      return WeakMergeFrom(data, registry);
+    IBuilder IBuilder.WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry) {
+      return MergeFrom(input, registry);
     }
 
-    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input) {
-      return WeakMergeFrom(input);
+    IBuilder IBuilder.WeakMergeFrom(ByteString data) {
+      return MergeFrom(data);
     }
 
-    IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
-      return WeakMergeFrom(input, registry);
+    IBuilder IBuilder.WeakMergeFrom(ByteString data, ExtensionRegistry registry) {
+      return MergeFrom(data, registry);
     }
 
-    IMessageLite IBuilderLite.WeakBuild() {
-      return WeakBuild(); 
+    IMessage IBuilder.WeakBuildPartial() {
+      return BuildPartial();
     }
 
-    IMessageLite IBuilderLite.WeakBuildPartial() {
-      return WeakBuildPartial(); 
+    IBuilder IBuilder.WeakClone() {
+      return Clone();
     }
 
-    IBuilderLite IBuilderLite.WeakClone() {
-      return WeakClone(); 
+    IMessage IBuilder.WeakDefaultInstanceForType {
+      get { return DefaultInstanceForType; }
     }
 
-    IMessageLite IBuilderLite.WeakDefaultInstanceForType {
-      get { return WeakDefaultInstanceForType; }
+    IBuilder IBuilder.WeakClearField(FieldDescriptor field) {
+      return ClearField(field);
     }
-
-	#region LimitedInputStream
-	/// <summary>
-    /// Stream implementation which proxies another stream, only allowing a certain amount
-    /// of data to be read. Note that this is only used to read delimited streams, so it
-    /// doesn't attempt to implement everything.
-    /// </summary>
-    private class LimitedInputStream : Stream {
-
-      private readonly Stream proxied;
-      private int bytesLeft;
-
-      internal LimitedInputStream(Stream proxied, int size) {
-        this.proxied = proxied;
-        bytesLeft = size;
-      }
-
-      public override bool CanRead {
-        get { return true; }
-      }
-
-      public override bool CanSeek {
-        get { return false; }
-      }
-
-      public override bool CanWrite {
-        get { return false; }
-      }
-
-      public override void Flush() {
-      }
-
-      public override long Length {
-        get { throw new NotSupportedException(); }
-      }
-
-      public override long Position {
-        get {
-          throw new NotSupportedException();
-        }
-        set {
-          throw new NotSupportedException();
-        }
-      }
-
-      public override int Read(byte[] buffer, int offset, int count) {
-        if (bytesLeft > 0) {
-          int bytesRead = proxied.Read(buffer, offset, Math.Min(bytesLeft, count));
-          bytesLeft -= bytesRead;
-          return bytesRead;
-        }
-        return 0;
-      }
-
-      public override long Seek(long offset, SeekOrigin origin) {
-        throw new NotSupportedException();
-      }
-
-      public override void SetLength(long value) {
-        throw new NotSupportedException();
-      }
-
-      public override void Write(byte[] buffer, int offset, int count) {
-        throw new NotSupportedException();
-      }
-	}
-	#endregion
+    #endregion
   }
 }

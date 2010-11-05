@@ -46,10 +46,18 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractBuilder.cs" />
+    <Compile Include="AbstractBuilderLite.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AbstractMessage.cs" />
+    <Compile Include="AbstractMessageLite.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ByteString.cs" />
     <Compile Include="Collections\Enumerables.cs" />
     <Compile Include="Collections\IPopsicleList.cs" />

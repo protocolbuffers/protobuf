@@ -53,6 +53,8 @@
     <None Include="Properties\Google.ProtocolBuffers.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractBuilderLite.cs" />
+    <Compile Include="AbstractMessageLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />

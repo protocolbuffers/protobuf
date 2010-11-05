@@ -56,9 +56,9 @@ namespace Google.ProtocolBuffers {
     IBuilderLite WeakClear();
     IBuilderLite WeakMergeFrom(IMessageLite message);
     IBuilderLite WeakMergeFrom(ByteString data);
-    IBuilderLite WeakMergeFrom(ByteString data, ExtensionRegistryLite registry);
+    IBuilderLite WeakMergeFrom(ByteString data, ExtensionRegistry registry);
     IBuilderLite WeakMergeFrom(CodedInputStream input);
-    IBuilderLite WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry);
+    IBuilderLite WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry);
     IMessageLite WeakBuild();
     IMessageLite WeakBuildPartial();
     IBuilderLite WeakClone();
@@ -79,21 +79,6 @@ namespace Google.ProtocolBuffers {
     /// Resets all fields to their default values.
     /// </summary>
     TBuilder Clear();
-
-    /// <summary>
-    /// Merge the specified other message into the message being
-    /// built. Merging occurs as follows. For each field:
-    /// For singular primitive fields, if the field is set in <paramref name="other"/>,
-    /// then <paramref name="other"/>'s value overwrites the value in this message.
-    /// For singular message fields, if the field is set in <paramref name="other"/>,
-    /// it is merged into the corresponding sub-message of this message using the same
-    /// merging rules.
-    /// For repeated fields, the elements in <paramref name="other"/> are concatenated
-    /// with the elements in this message.
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    TBuilder MergeFrom(TMessage other);
 
     /// <summary>
     /// Merge the specified other message which may be a different implementation of
@@ -151,7 +136,7 @@ namespace Google.ProtocolBuffers {
     /// in <paramref name="extensionRegistry"/>. Extensions not in the registry
     /// will be treated as unknown fields.
     /// </summary>
-    TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry);
+    TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
 
     /// <summary>
     /// Get's the message's type's default instance.
@@ -171,7 +156,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Like MergeDelimitedFrom(Stream) but supporting extensions.
     /// </summary>
-    TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistryLite extensionRegistry);
+    TBuilder MergeDelimitedFrom(Stream input, ExtensionRegistry extensionRegistry);
 
     #region Convenience methods
     /// <summary>
@@ -186,7 +171,7 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    TBuilder MergeFrom(ByteString data, ExtensionRegistryLite extensionRegistry);
+    TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="data"/> as a message of this type and merge
@@ -200,7 +185,7 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    TBuilder MergeFrom(byte[] data, ExtensionRegistryLite extensionRegistry);
+    TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
 
     /// <summary>
     /// Parse <paramref name="input"/> as a message of this type and merge
@@ -219,7 +204,7 @@ namespace Google.ProtocolBuffers {
     /// it with the message being built. This is just a small wrapper around
     /// MergeFrom(CodedInputStream, ExtensionRegistry).
     /// </summary>
-    TBuilder MergeFrom(Stream input, ExtensionRegistryLite extensionRegistry);
+    TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
     #endregion
   }
 }

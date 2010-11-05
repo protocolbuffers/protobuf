@@ -37,11 +37,10 @@ using System;
 
 namespace Google.ProtocolBuffers {
 
-
   /// <summary>
   /// A table of known extensions, searchable by name or field number.  When
   /// parsing a protocol message that might have extensions, you must provide
-  /// an <see cref="ExtensionRegistryLite"/> in which you have registered any extensions
+  /// an <see cref="ExtensionRegistry"/> in which you have registered any extensions
   /// that you want to be able to parse.  Otherwise, those extensions will just
   /// be treated like unknown fields.
   /// </summary>
@@ -62,7 +61,7 @@ namespace Google.ProtocolBuffers {
   /// Then you might write code like:
   ///
   /// <code>
-  /// ExtensionRegistryLite registry = ExtensionRegistryLite.CreateInstance();
+  /// extensionRegistry registry = extensionRegistry.CreateInstance();
   /// registry.Add(MyProto.Bar);
   /// MyProto.Foo message = MyProto.Foo.ParseFrom(input, registry);
   /// </code>
@@ -89,42 +88,39 @@ namespace Google.ProtocolBuffers {
   /// could take advantage of this to inject a mutable object into a message
   /// belonging to privileged code and create mischief.</para>
   /// </remarks>
-  public class ExtensionRegistryLite {
+  public sealed partial class ExtensionRegistry {
+    private readonly IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber;
+    private readonly bool readOnly;
 
-    private static readonly ExtensionRegistryLite empty = new ExtensionRegistryLite(
-        new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(),
-        true);
-
-    protected readonly IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber;
-    protected readonly bool readOnly;
-
-    protected ExtensionRegistryLite(IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber,
+    private ExtensionRegistry(IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber,
         bool readOnly) {
       this.extensionsByNumber = extensionsByNumber;
       this.readOnly = readOnly;
     }
+
 #if LITE
+    private static readonly ExtensionRegistry empty = new ExtensionRegistry(
+        new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(),
+        true);
+
     /// <summary>
     /// Construct a new, empty instance.
     /// </summary>
-    public static ExtensionRegistryLite CreateInstance() {
-      return new ExtensionRegistryLite(
+    public static ExtensionRegistry CreateInstance() {
+      return new ExtensionRegistry(
         new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(), false);
     }
+    public ExtensionRegistry AsReadOnly() {
+      return new ExtensionRegistry(extensionsByNumber, true);
+    }
+
+#endif
 
     /// <summary>
     /// Get the unmodifiable singleton empty instance.
     /// </summary>
-    public static ExtensionRegistryLite Empty {
+    public static ExtensionRegistry Empty {
       get { return empty; }
-    }
-#endif
-    public ExtensionRegistryLite AsReadOnly() {
-      return MakeReadOnly();
-    }
-
-    protected virtual ExtensionRegistryLite MakeReadOnly() {
-      return new ExtensionRegistryLite(extensionsByNumber, true);
     }
 
     /// <summary>
@@ -142,7 +138,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Add an extension from a generated file to the registry.
     /// </summary>
-    public virtual void Add(IGeneratedExtensionLite extension) {
+    public void Add(IGeneratedExtensionLite extension) {
       if (readOnly) {
         throw new InvalidOperationException("Cannot add entries to a read-only extension registry");
       }
@@ -155,7 +151,7 @@ namespace Google.ProtocolBuffers {
     /// Nested type just used to represent a pair of MessageDescriptor and int, as
     /// the key into the "by number" map.
     /// </summary>
-    protected struct ExtensionIntPair : IEquatable<ExtensionIntPair> {
+    private struct ExtensionIntPair : IEquatable<ExtensionIntPair> {
       readonly object msgType;
       readonly int number;
 

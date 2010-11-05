@@ -261,7 +261,7 @@ namespace Google.ProtocolBuffers {
     /// Reads a group field value from the stream.
     /// </summary>    
     public void ReadGroup(int fieldNumber, IBuilderLite builder,
-                          ExtensionRegistryLite extensionRegistry) {
+                          ExtensionRegistry extensionRegistry) {
       if (recursionDepth >= recursionLimit) {
         throw InvalidProtocolBufferException.RecursionLimitExceeded();
       }
@@ -290,7 +290,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Reads an embedded message field value from the stream.
     /// </summary>   
-    public void ReadMessage(IBuilderLite builder, ExtensionRegistryLite extensionRegistry) {
+    public void ReadMessage(IBuilderLite builder, ExtensionRegistry extensionRegistry) {
       int length = (int) ReadRawVarint32();
       if (recursionDepth >= recursionLimit) {
         throw InvalidProtocolBufferException.RecursionLimitExceeded();

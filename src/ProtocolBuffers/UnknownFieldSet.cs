@@ -497,14 +497,13 @@ namespace Google.ProtocolBuffers {
         return this;
       }
 
-      internal void MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistryLite, IBuilder builder) {
+      internal void MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry, IBuilder builder) {
         while (true) {
           uint tag = input.ReadTag();
           if (tag == 0) {
             break;
           }
 
-          ExtensionRegistry extensionRegistry = (ExtensionRegistry)extensionRegistryLite;
           if (!MergeFieldFrom(input, extensionRegistry, builder, tag)) {
             // end group tag
             break;
@@ -727,7 +726,7 @@ namespace Google.ProtocolBuffers {
         return MergeFrom(data);
       }
 
-      IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistryLite registry) {
+      IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistry registry) {
         return MergeFrom(data);
       }
 
@@ -735,7 +734,7 @@ namespace Google.ProtocolBuffers {
         return MergeFrom(input);
       }
 
-      IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistryLite registry) {
+      IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry) {
         return MergeFrom(input);
       }
 

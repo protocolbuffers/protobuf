@@ -88,8 +88,8 @@ namespace Google.ProtocolBuffers {
   /// could take advantage of this to inject a mutable object into a message
   /// belonging to privileged code and create mischief.</para>
   /// </remarks>
-  public sealed class ExtensionRegistry : ExtensionRegistryLite {
-
+  public sealed partial class ExtensionRegistry {
+#if !LITE
     private static readonly ExtensionRegistry empty = new ExtensionRegistry(
         new Dictionary<string, ExtensionInfo>(),
         new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(),
@@ -100,7 +100,7 @@ namespace Google.ProtocolBuffers {
     private ExtensionRegistry(IDictionary<String, ExtensionInfo> extensionsByName,
         IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber,
         bool readOnly)
-      : base(extensionsByNumber, readOnly) {
+      : this(extensionsByNumber, readOnly) {
       this.extensionsByName = extensionsByName;
     }
 
@@ -112,19 +112,10 @@ namespace Google.ProtocolBuffers {
         new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(), false);
     }
 
-    /// <summary>
-    /// Get the unmodifiable singleton empty instance.
-    /// </summary>
-    public static ExtensionRegistry Empty {
-      get { return empty; }
-    }
-
-    public new ExtensionRegistry AsReadOnly() {
+    public ExtensionRegistry AsReadOnly() {
       return new ExtensionRegistry(extensionsByName, extensionsByNumber, true);
     }
-    protected override ExtensionRegistryLite MakeReadOnly() {
-      return AsReadOnly();
-    }
+#endif
 
     /// <summary>
     /// Finds an extension by fully-qualified field name, in the
