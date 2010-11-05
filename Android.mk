@@ -272,11 +272,13 @@ LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
 
 include $(BUILD_STATIC_LIBRARY)
 
-# Protocol buffer compiler (host executable)
+# Android Protocol buffer compiler, aprotoc (host executable)
+# used by the build systems as $(PROTOC) defined in
+# build/core/config.mk
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := protoc
+LOCAL_MODULE := aprotoc
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_MODULE_TAGS := optional
 
@@ -291,4 +293,3 @@ LOCAL_STATIC_LIBRARIES += libz
 LOCAL_LDLIBS := -lpthread
 
 include $(BUILD_HOST_EXECUTABLE)
-
