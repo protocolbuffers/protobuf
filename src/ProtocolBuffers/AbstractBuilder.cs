@@ -263,7 +263,7 @@ namespace Google.ProtocolBuffers {
       return MergeFrom((IMessage)other);
     }
 
-    public TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry) {
+    public virtual TBuilder MergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry) {
 #warning Not implemented for Lite edition
       return MergeFrom(input, (ExtensionRegistry)extensionRegistry);
     }

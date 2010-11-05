@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{1F896D5C
 		..\protos\tutorial\addressbook.proto = ..\protos\tutorial\addressbook.proto
 		..\protos\google\protobuf\csharp_options.proto = ..\protos\google\protobuf\csharp_options.proto
 		..\protos\google\protobuf\descriptor.proto = ..\protos\google\protobuf\descriptor.proto
+		..\ProtocolBuffers.build = ..\ProtocolBuffers.build
 		..\todo.txt = ..\todo.txt
 	EndProjectSection
 EndProject
