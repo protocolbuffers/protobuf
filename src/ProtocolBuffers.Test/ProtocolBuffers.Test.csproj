@@ -80,6 +80,7 @@
     <Compile Include="TestProtos\UnitTestEnormousDescriptorProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestLiteImportNonLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestNoGenericServicesProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />

@@ -51,6 +51,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       return true;
     }
 
+    /// <remarks>Copy exists in ExtensionGenerator.cs</remarks>
     protected string DefaultValue {
       get {
         string suffix = "";
@@ -84,6 +85,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
             if (!Descriptor.HasDefaultValue) {
               return "pb::ByteString.Empty";
             }
+            if (UseLiteRuntime && Descriptor.DefaultValue is ByteString) {
+              string temp = Convert.ToBase64String(((ByteString)Descriptor.DefaultValue).ToByteArray());
+              return String.Format("ByteString.FromBase64(\"{0}\")", temp);
+            }
             return string.Format("(pb::ByteString) {0}.Descriptor.Fields[{1}].DefaultValue", GetClassName(Descriptor.ContainingType), Descriptor.Index);
           case FieldType.String:
             if (AllPrintableAscii(Descriptor.Proto.DefaultValue)) {
@@ -94,6 +99,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
                   .Replace("'", "\\'")
                   .Replace("\"", "\\\"")
                   + "\"";
+            }
+            if (UseLiteRuntime && Descriptor.DefaultValue is String) {
+              string temp = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes((String)Descriptor.DefaultValue));
+              return String.Format("ByteString.FromBase64(\"{0}\").ToStringUtf8()", temp);
             }
             return string.Format("(string) {0}.Descriptor.Fields[{1}].DefaultValue", GetClassName(Descriptor.ContainingType), Descriptor.Index);
           case FieldType.Enum:

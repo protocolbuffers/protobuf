@@ -53,8 +53,6 @@ namespace Google.ProtocolBuffers {
         : base(BuildDescription(missingFields)) {
       this.missingFields = new List<string>(missingFields);
     }
-
-    
     /// <summary>
     /// Returns a read-only list of human-readable names of
     /// required fields missing from this message. Each name
@@ -88,6 +86,14 @@ namespace Google.ProtocolBuffers {
         description.Append(field);
       }
       return description.ToString();
+    }
+
+    /// <summary>
+    /// For Lite exceptions that do not known how to enumerate missing fields
+    /// </summary>
+    public UninitializedMessageException(IMessageLite message)
+      : base(String.Format("Message {0} is missing required fields", message.GetType())) {
+      missingFields = new List<string>();
     }
 
 #if !LITE

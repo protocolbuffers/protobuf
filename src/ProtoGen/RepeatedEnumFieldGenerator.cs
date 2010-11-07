@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void GenerateMembers(TextGenerator writer) {
-      if (Descriptor.IsPacked && Descriptor.File.Options.OptimizeFor == FileOptions.Types.OptimizeMode.SPEED) {
+      if (Descriptor.IsPacked && OptimizeSpeed) {
         writer.WriteLine("private int {0}MemoizedSerializedSize;", Name);
       }
       writer.WriteLine("private pbc::PopsicleList<{0}> {1}_ = new pbc::PopsicleList<{0}>();", TypeName, Name);
@@ -114,10 +114,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // TODO(jonskeet): Make a more efficient way of doing this
       writer.WriteLine("int rawValue = input.ReadEnum();");
       writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
-      writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
-      writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-      writer.WriteLine("  }");
-      writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+      if (!UseLiteRuntime) {
+        writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+        writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+        writer.WriteLine("  }");
+        writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+      }
       writer.WriteLine("} else {");
       writer.WriteLine("  Add{0}(({1}) rawValue);", PropertyName, TypeName);
       writer.WriteLine("}");

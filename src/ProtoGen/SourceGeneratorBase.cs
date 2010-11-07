@@ -43,6 +43,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     protected readonly bool OptimizeSpeed;
     protected readonly bool OptimizeSize;
     protected readonly bool UseLiteRuntime;
+    protected readonly string RuntimeSuffix;
 
     protected SourceGeneratorBase(T descriptor) {
       this.descriptor = descriptor;
@@ -50,6 +51,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
       OptimizeSize = descriptor.File.Options.OptimizeFor == Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.CODE_SIZE;
       OptimizeSpeed = descriptor.File.Options.OptimizeFor == Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
       UseLiteRuntime = descriptor.File.Options.OptimizeFor == Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.LITE_RUNTIME;
+      //Lite runtime uses OptimizeSpeed code branches
+      OptimizeSpeed |= UseLiteRuntime;
+      RuntimeSuffix = UseLiteRuntime ? "Lite" : "";
     }
 
     protected T Descriptor {

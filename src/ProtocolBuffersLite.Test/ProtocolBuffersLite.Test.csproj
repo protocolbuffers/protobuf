@@ -54,15 +54,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\tmp\UnitTestLiteProtoFile.cs">
-      <Link>UnitTestLiteProtoFile.cs</Link>
-    </Compile>
     <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Todo.cs" />
-    <None Include="TestProtos\UnittestLite.cs" />
-    <None Include="TestProtos\UnittestLiteImportsNonlite.cs" />
+    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ProtocolBuffers.Test\Properties\Google.ProtocolBuffers.Test.snk">

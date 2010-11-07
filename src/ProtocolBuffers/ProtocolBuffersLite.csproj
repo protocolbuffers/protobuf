@@ -58,11 +58,16 @@
     <Compile Include="AbstractBuilderLite.cs" />
     <Compile Include="AbstractMessageLite.cs" />
     <Compile Include="Collections\Dictionaries.cs" />
+    <Compile Include="Collections\Enumerables.cs" />
+    <Compile Include="Collections\IPopsicleList.cs" />
     <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Collections\PopsicleList.cs" />
+    <Compile Include="Collections\ReadOnlyDictionary.cs" />
     <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
     <Compile Include="Descriptors\MappedType.cs" />
     <Compile Include="EnumLite.cs" />
+    <Compile Include="ExtendableBuilderLite.cs" />
     <Compile Include="ExtendableMessageLite.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="GeneratedBuilderLite.cs" />

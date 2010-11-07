@@ -92,7 +92,9 @@
     <Compile Include="DynamicMessage.cs" />
     <Compile Include="EnumLite.cs" />
     <Compile Include="ExtendableBuilder.cs" />
+    <Compile Include="ExtendableBuilderLite.cs" />
     <Compile Include="ExtendableMessage.cs" />
+    <Compile Include="ExtendableMessageLite.cs" />
     <Compile Include="ExtensionInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -109,7 +111,9 @@
     <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="GeneratedBuilder.cs" />
+    <Compile Include="GeneratedBuilderLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
+    <Compile Include="GeneratedMessageLite.cs" />
     <Compile Include="GeneratedRepeatExtension.cs" />
     <Compile Include="GeneratedSingleExtension.cs" />
     <Compile Include="GeneratedMessage.cs" />

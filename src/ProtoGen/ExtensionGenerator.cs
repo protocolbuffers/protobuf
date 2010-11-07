@@ -32,16 +32,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
+using System.Globalization;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
-  internal class ExtensionGenerator : SourceGeneratorBase<FieldDescriptor>, ISourceGenerator {
+  internal class ExtensionGenerator : FieldGeneratorBase, ISourceGenerator {
 
+    private readonly string extends;
     private readonly string scope;
     private readonly string type;
     private readonly string name;
 
-    internal ExtensionGenerator(FieldDescriptor descriptor) : base(descriptor) {
+    internal ExtensionGenerator(FieldDescriptor descriptor)
+      : base(descriptor) {
       if (Descriptor.ExtensionScope != null) {
         scope = GetClassName(Descriptor.ExtensionScope);
       } else {
@@ -58,14 +62,20 @@ namespace Google.ProtocolBuffers.ProtoGen {
           type = DescriptorUtil.GetMappedTypeName(Descriptor.MappedType);
           break;
       }
+      extends = GetClassName(Descriptor.ContainingType);
       name = Descriptor.CSharpOptions.PropertyName;
     }
 
     public void Generate(TextGenerator writer) {
-      writer.WriteLine ("public const int {0} = {1};", GetFieldConstantName(Descriptor), Descriptor.FieldNumber);
-      if (Descriptor.IsRepeated) {
-        if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance)
-          {
+      writer.WriteLine("public const int {0} = {1};", GetFieldConstantName(Descriptor), Descriptor.FieldNumber);
+
+      if (UseLiteRuntime) {
+        if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance) {
+          writer.WriteLine("[global::System.CLSCompliant(false)]");
+        }
+        writer.WriteLine("{0} static pb::GeneratedExtensionLite<{1}, {2}> {3};", ClassAccessLevel, extends, type, name);
+      } else if (Descriptor.IsRepeated) {
+        if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance) {
           writer.WriteLine("[global::System.CLSCompliant(false)]");
         }
         writer.WriteLine("{0} static pb::GeneratedExtensionBase<scg::IList<{1}>> {2};", ClassAccessLevel, type, name);
@@ -78,7 +88,25 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     internal void GenerateStaticVariableInitializers(TextGenerator writer) {
-      if (Descriptor.IsRepeated) {
+      if (UseLiteRuntime) {
+        writer.WriteLine("{0}.{1} = ", scope, name);
+        writer.Indent();
+        writer.WriteLine("new pb::GeneratedExtensionLite<{0}, {1}>(", extends, type);
+        writer.Indent();
+        writer.WriteLine("{0}.DefaultInstance,", extends);
+        writer.WriteLine("{0},", Descriptor.HasDefaultValue ? DefaultValue : IsNullableType ? "null" : "default(" + type + ")");
+        writer.WriteLine("{0},", (Descriptor.MappedType == MappedType.Message) ? type + ".DefaultInstance" : "null");
+        writer.WriteLine("{0},", (Descriptor.MappedType == MappedType.Enum) ? "new EnumLiteMap<" + type + ">()" : "null");
+        writer.WriteLine("{0},", Descriptor.Index);
+        writer.Write("pbd::FieldType.{0}", Descriptor.FieldType);
+        if (Descriptor.IsRepeated) {
+          writer.WriteLine(",");
+          writer.Write(Descriptor.IsPacked ? "true" : "false");
+        }
+        writer.Outdent();
+        writer.WriteLine(");");
+        writer.Outdent();
+      } else if (Descriptor.IsRepeated) {
         writer.WriteLine("{0}.{1} = pb::GeneratedRepeatExtension<{2}>.CreateInstance({0}.Descriptor.Extensions[{3}]);", scope, name, type, Descriptor.Index);
       } else {
         writer.WriteLine("{0}.{1} = pb::GeneratedSingleExtension<{2}>.CreateInstance({0}.Descriptor.Extensions[{3}]);", scope, name, type, Descriptor.Index);
