@@ -76,7 +76,7 @@ namespace Google.ProtocolBuffers {
     public TBuilder SetExtension<TExtension>(GeneratedExtensionLite<TMessage, TExtension> extension, TExtension value) {
       ExtendableMessageLite<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
-      message.Extensions[extension.Descriptor] = (value);
+      message.Extensions[extension.Descriptor] = extension.ToReflectionType(value);
       return ThisBuilder;
     }
 
@@ -86,7 +86,7 @@ namespace Google.ProtocolBuffers {
     public TBuilder SetExtension<TExtension>(GeneratedExtensionLite<TMessage, IList<TExtension>> extension, int index, TExtension value) {
       ExtendableMessageLite<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
-      message.Extensions[extension.Descriptor, index] = (value);
+      message.Extensions[extension.Descriptor, index] = extension.SingularToReflectionType(value);
       return ThisBuilder;
     }
 
@@ -96,7 +96,7 @@ namespace Google.ProtocolBuffers {
     public ExtendableBuilderLite<TMessage, TBuilder> AddExtension<TExtension>(GeneratedExtensionLite<TMessage, IList<TExtension>> extension, TExtension value) {
       ExtendableMessageLite<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
-      message.Extensions.AddRepeatedField(extension.Descriptor, (value));
+      message.Extensions.AddRepeatedField(extension.Descriptor, extension.SingularToReflectionType(value));
       return this;
     }
 

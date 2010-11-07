@@ -57,6 +57,7 @@
     <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="LiteTest.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
   </ItemGroup>

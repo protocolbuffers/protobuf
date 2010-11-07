@@ -74,7 +74,7 @@ namespace Google.ProtocolBuffers {
       if (value == null) {
         return extension.DefaultValue;
       } else {
-        return (TExtension)value;
+        return (TExtension)extension.FromReflectionType(value);
       }
     }
 
@@ -83,7 +83,7 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public TExtension GetExtension<TExtension>(GeneratedExtensionLite<TMessage, IList<TExtension>> extension, int index) {
       VerifyExtensionContainingType(extension);
-      return (TExtension)extensions[extension.Descriptor, index];
+      return (TExtension)extension.SingularFromReflectionType(extensions[extension.Descriptor, index]);
     }
 
     /// <summary>

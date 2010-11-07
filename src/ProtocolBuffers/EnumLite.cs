@@ -57,11 +57,12 @@ namespace Google.ProtocolBuffers {
   ///</summary>
   public interface IEnumLiteMap<T> : IEnumLiteMap
     where T : IEnumLite {
-    T FindValueByNumber(int number);
+    new T FindValueByNumber(int number);
   }
 
   public interface IEnumLiteMap {
     bool IsValidValue(IEnumLite value);
+    IEnumLite FindValueByNumber(int number);
   }
 
   public class EnumLiteMap<TEnum> : IEnumLiteMap<IEnumLite>
@@ -88,12 +89,16 @@ namespace Google.ProtocolBuffers {
         items.Add(evalue.ToInt32(CultureInfo.InvariantCulture), new EnumValue(evalue.ToInt32(CultureInfo.InvariantCulture)));
     }
 
-    IEnumLite IEnumLiteMap<IEnumLite>.FindValueByNumber(int number) {
+    IEnumLite IEnumLiteMap.FindValueByNumber(int number) {
+      return FindValueByNumber(number);
+    }
+
+    public IEnumLite FindValueByNumber(int number) {
       IEnumLite val;
       return items.TryGetValue(number, out val) ? val : null;
     }
 
-    bool IEnumLiteMap.IsValidValue(IEnumLite value) {
+    public bool IsValidValue(IEnumLite value) {
       return items.ContainsKey(value.Number);
     }
   }

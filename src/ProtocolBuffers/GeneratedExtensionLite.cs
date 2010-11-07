@@ -33,6 +33,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
@@ -224,8 +225,78 @@ namespace Google.ProtocolBuffers {
       }
     }
 
+    /// <summary>
+    /// Converts from the type used by the native accessors to the type
+    /// used by reflection accessors. For example, the reflection accessors
+    /// for enums use EnumValueDescriptors but the native accessors use
+    /// the generated enum type.
+    /// </summary>
+    public object ToReflectionType(object value) {
+      if (descriptor.IsRepeated) {
+        if (descriptor.MappedType == MappedType.Enum) {
+          // Must convert the whole list.
+          IList<object> result = new List<object>();
+          foreach (object element in (IEnumerable)value) {
+            result.Add(SingularToReflectionType(element));
+          }
+          return result;
+        } else {
+          return value;
+        }
+      } else {
+        return SingularToReflectionType(value);
+      }
+    }
+
+    /// <summary>
+    /// Like ToReflectionType(object) but for a single element.
+    /// </summary>
+    internal Object SingularToReflectionType(object value) {
+      return descriptor.MappedType == MappedType.Enum
+          ? descriptor.EnumType.FindValueByNumber((int)value)
+          : value;
+    }
+
+    public object FromReflectionType(object value) {
+      if (descriptor.IsRepeated) {
+        if (Descriptor.MappedType == MappedType.Message ||
+            Descriptor.MappedType == MappedType.Enum) {
+          // Must convert the whole list.
+          List<TExtensionType> result = new List<TExtensionType>();
+          foreach (object element in (IEnumerable)value) {
+            result.Add((TExtensionType)SingularFromReflectionType(element));
+          }
+          return result;
+        } else {
+          return value;
+        }
+      } else {
+        return SingularFromReflectionType(value);
+      }
+    }
+
     public object SingularFromReflectionType(object value) {
-      return value;
+      switch (Descriptor.MappedType) {
+        case MappedType.Message:
+          if (value is TExtensionType) {
+            return value;
+          } else {
+            // It seems the copy of the embedded message stored inside the
+            // extended message is not of the exact type the user was
+            // expecting.  This can happen if a user defines a
+            // GeneratedExtension manually and gives it a different type.
+            // This should not happen in normal use.  But, to be nice, we'll
+            // copy the message to whatever type the caller was expecting.
+            return MessageDefaultInstance.WeakCreateBuilderForType()
+                           .WeakMergeFrom((IMessageLite)value).WeakBuild();
+          }
+        case MappedType.Enum:
+          // Just return a boxed int - that can be unboxed to the enum
+          IEnumLite enumValue = (IEnumLite)value;
+          return enumValue.Number;
+        default:
+          return value;
+      }
     }
   }
 }
