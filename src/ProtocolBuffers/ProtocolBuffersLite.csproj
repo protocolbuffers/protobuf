@@ -46,6 +46,8 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
@@ -55,7 +57,17 @@
   <ItemGroup>
     <Compile Include="AbstractBuilderLite.cs" />
     <Compile Include="AbstractMessageLite.cs" />
+    <Compile Include="Collections\Dictionaries.cs" />
+    <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Descriptors\FieldMappingAttribute.cs" />
+    <Compile Include="Descriptors\FieldType.cs" />
+    <Compile Include="Descriptors\MappedType.cs" />
+    <Compile Include="EnumLite.cs" />
+    <Compile Include="ExtendableMessageLite.cs" />
+    <Compile Include="FieldSet.cs" />
+    <Compile Include="GeneratedBuilderLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
+    <Compile Include="GeneratedMessageLite.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />
@@ -66,6 +78,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="ThrowHelper.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="WireFormat.cs" />
   </ItemGroup>

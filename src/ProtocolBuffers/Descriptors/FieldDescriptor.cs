@@ -40,7 +40,7 @@ namespace Google.ProtocolBuffers.Descriptors {
   /// <summary>
   /// Descriptor for a field or extension within a message in a .proto file.
   /// </summary>
-  public sealed class FieldDescriptor : IndexedDescriptorBase<FieldDescriptorProto, FieldOptions>, IComparable<FieldDescriptor> {
+  public sealed class FieldDescriptor : IndexedDescriptorBase<FieldDescriptorProto, FieldOptions>, IComparable<FieldDescriptor>, IFieldDescriptorLite {
 
     private readonly MessageDescriptor extensionScope;
     private EnumDescriptor enumType;
@@ -299,9 +299,26 @@ namespace Google.ProtocolBuffers.Descriptors {
       }
       return FieldNumber - other.FieldNumber;
     }
-    
 
     /// <summary>
+    /// Compares this descriptor with another one, ordering in "canonical" order
+    /// which simply means ascending order by field number. <paramref name="other"/>
+    /// must be a field of the same type, i.e. the <see cref="ContainingType"/> of
+    /// both fields must be the same.
+    /// </summary>
+    public int CompareTo(IFieldDescriptorLite other) {
+      return FieldNumber - other.FieldNumber;
+    }
+
+    IEnumLiteMap IFieldDescriptorLite.EnumType {
+      get { return EnumType; }
+    }
+
+    bool IFieldDescriptorLite.MessageSetWireFormat {
+      get { return ContainingType.Options.MessageSetWireFormat; }
+    }
+
+      /// <summary>
     /// For enum fields, returns the field's type.
     /// </summary>
     public EnumDescriptor EnumType {

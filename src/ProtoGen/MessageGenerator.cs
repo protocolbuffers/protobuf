@@ -69,12 +69,13 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       string identifier = GetUniqueFileScopeIdentifier(Descriptor);
 
-      // The descriptor for this type.
-      string access = Descriptor.File.CSharpOptions.NestClasses ? "private" : "internal";
-      writer.WriteLine("{0} static pbd::MessageDescriptor internal__{1}__Descriptor;", access, identifier);
-      writer.WriteLine("{0} static pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder> internal__{2}__FieldAccessorTable;",
-          access, FullClassName, identifier);
-
+      if (!UseLiteRuntime) {
+        // The descriptor for this type.
+        string access = Descriptor.File.CSharpOptions.NestClasses ? "private" : "internal";
+        writer.WriteLine("{0} static pbd::MessageDescriptor internal__{1}__Descriptor;", access, identifier);
+        writer.WriteLine("{0} static pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder> internal__{2}__FieldAccessorTable;",
+                         access, FullClassName, identifier);
+      }
       // Generate static members for all nested types.
       foreach (MessageDescriptor nestedMessage in Descriptor.NestedTypes) {
         new MessageGenerator(nestedMessage).GenerateStaticVariables(writer);
@@ -84,21 +85,23 @@ namespace Google.ProtocolBuffers.ProtoGen {
     internal void GenerateStaticVariableInitializers(TextGenerator writer) {
       string identifier = GetUniqueFileScopeIdentifier(Descriptor);
 
-      writer.Write("internal__{0}__Descriptor = ", identifier);
-      if (Descriptor.ContainingType == null) {
-        writer.WriteLine("Descriptor.MessageTypes[{0}];", Descriptor.Index);
-      } else {
-        writer.WriteLine("internal__{0}__Descriptor.NestedTypes[{1}];", GetUniqueFileScopeIdentifier(Descriptor.ContainingType), Descriptor.Index);
-      }
+      if (!UseLiteRuntime) {
+        writer.Write("internal__{0}__Descriptor = ", identifier);
+        if (Descriptor.ContainingType == null) {
+          writer.WriteLine("Descriptor.MessageTypes[{0}];", Descriptor.Index);
+        } else {
+          writer.WriteLine("internal__{0}__Descriptor.NestedTypes[{1}];", GetUniqueFileScopeIdentifier(Descriptor.ContainingType), Descriptor.Index);
+        }
 
-      writer.WriteLine("internal__{0}__FieldAccessorTable = ", identifier);
-      writer.WriteLine("    new pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder>(internal__{0}__Descriptor,",
-          identifier, FullClassName);
-      writer.Print("        new string[] { ");
-      foreach (FieldDescriptor field in Descriptor.Fields) {
-        writer.Write("\"{0}\", ", field.CSharpOptions.PropertyName);
+        writer.WriteLine("internal__{0}__FieldAccessorTable = ", identifier);
+        writer.WriteLine("    new pb::FieldAccess.FieldAccessorTable<{1}, {1}.Builder>(internal__{0}__Descriptor,",
+                         identifier, FullClassName);
+        writer.Print("        new string[] { ");
+        foreach (FieldDescriptor field in Descriptor.Fields) {
+          writer.Write("\"{0}\", ", field.CSharpOptions.PropertyName);
+        }
+        writer.WriteLine("});");
       }
-      writer.WriteLine("});");
 
       // Generate static member initializers for all nested types.
       foreach (MessageDescriptor nestedMessage in Descriptor.NestedTypes) {
@@ -111,8 +114,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void Generate(TextGenerator writer) {
-      writer.WriteLine("{0} sealed partial class {1} : pb::{2}Message<{1}, {1}.Builder> {{",
-          ClassAccessLevel, ClassName, Descriptor.Proto.ExtensionRangeCount > 0 ? "Extendable" : "Generated");
+      writer.WriteLine("{0} sealed partial class {1} : pb::{2}Message{3}<{1}, {1}.Builder> {{",
+          ClassAccessLevel, ClassName, 
+          Descriptor.Proto.ExtensionRangeCount > 0 ? "Extendable" : "Generated",
+          UseLiteRuntime ? "Lite" : "");
       writer.Indent();
       // Must call BuildPartial() to make sure all lists are made read-only
       writer.WriteLine("private static readonly {0} defaultInstance = new Builder().BuildPartial();", ClassName);
@@ -128,16 +133,18 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("  get { return this; }");
       writer.WriteLine("}");
       writer.WriteLine();
-      writer.WriteLine("public static pbd::MessageDescriptor Descriptor {");
-      writer.WriteLine("  get {{ return {0}.internal__{1}__Descriptor; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor),
-          GetUniqueFileScopeIdentifier(Descriptor));
-      writer.WriteLine("}");
-      writer.WriteLine();
-      writer.WriteLine("protected override pb::FieldAccess.FieldAccessorTable<{0}, {0}.Builder> InternalFieldAccessors {{", ClassName);
-      writer.WriteLine("  get {{ return {0}.internal__{1}__FieldAccessorTable; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor),
-          GetUniqueFileScopeIdentifier(Descriptor));
-      writer.WriteLine("}");
-      writer.WriteLine();
+      if (!UseLiteRuntime) {
+        writer.WriteLine("public static pbd::MessageDescriptor Descriptor {");
+        writer.WriteLine("  get {{ return {0}.internal__{1}__Descriptor; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor),
+                         GetUniqueFileScopeIdentifier(Descriptor));
+        writer.WriteLine("}");
+        writer.WriteLine();
+        writer.WriteLine("protected override pb::FieldAccess.FieldAccessorTable<{0}, {0}.Builder> InternalFieldAccessors {{", ClassName);
+        writer.WriteLine("  get {{ return {0}.internal__{1}__FieldAccessorTable; }}", DescriptorUtil.GetFullUmbrellaClassName(Descriptor),
+                         GetUniqueFileScopeIdentifier(Descriptor));
+        writer.WriteLine("}");
+        writer.WriteLine();
+      }
 
       // Extensions don't need to go in an extra nested type 
       WriteChildren(writer, null, Descriptor.Extensions);

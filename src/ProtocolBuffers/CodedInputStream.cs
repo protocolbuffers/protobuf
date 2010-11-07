@@ -36,9 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-#if !LITE
 using Google.ProtocolBuffers.Descriptors;
-#endif
 
 namespace Google.ProtocolBuffers {
 
@@ -363,7 +361,7 @@ namespace Google.ProtocolBuffers {
     public long ReadSInt64() {
       return DecodeZigZag64(ReadRawVarint64());
     }
-#if !LITE
+
     /// <summary>
     /// Reads a field of any primitive type. Enums, groups and embedded
     /// messages are not handled by this method.
@@ -397,7 +395,6 @@ namespace Google.ProtocolBuffers {
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }
     }
-#endif
     #endregion
 
     #region Underlying reading primitives

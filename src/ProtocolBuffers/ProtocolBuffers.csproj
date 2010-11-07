@@ -90,6 +90,7 @@
     <Compile Include="Descriptors\PackageDescriptor.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
     <Compile Include="DynamicMessage.cs" />
+    <Compile Include="EnumLite.cs" />
     <Compile Include="ExtendableBuilder.cs" />
     <Compile Include="ExtendableMessage.cs" />
     <Compile Include="ExtensionInfo.cs">

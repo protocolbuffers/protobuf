@@ -36,7 +36,7 @@ namespace Google.ProtocolBuffers.Descriptors {
   /// <summary>
   /// Descriptor for a single enum value within an enum in a .proto file.
   /// </summary>
-  public sealed class EnumValueDescriptor : IndexedDescriptorBase<EnumValueDescriptorProto, EnumValueOptions> {
+  public sealed class EnumValueDescriptor : IndexedDescriptorBase<EnumValueDescriptorProto, EnumValueOptions>, IEnumLite {
 
     private readonly EnumDescriptor enumDescriptor;
 
