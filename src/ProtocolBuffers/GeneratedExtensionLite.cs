@@ -126,7 +126,32 @@ namespace Google.ProtocolBuffers {
       return FieldNumber.CompareTo(other.FieldNumber);
     }
   }
-  
+
+  public class GeneratedRepeatExtensionLite<TContainingType, TExtensionType> : GeneratedExtensionLite<TContainingType, IList<TExtensionType>>
+    where TContainingType : IMessageLite {
+    public GeneratedRepeatExtensionLite(TContainingType containingTypeDefaultInstance,
+      IMessageLite messageDefaultInstance, IEnumLiteMap enumTypeMap, int number, FieldType type, bool isPacked) :
+      base(containingTypeDefaultInstance, new List<TExtensionType>(), messageDefaultInstance, enumTypeMap, number, type, isPacked) {
+    }
+
+    public override object ToReflectionType(object value) {
+        IList<TExtensionType> result = new List<TExtensionType>();
+        foreach (object element in (IEnumerable)value) {
+          result.Add((TExtensionType)SingularToReflectionType(element));
+        }
+        return result;
+    }
+
+    public override object FromReflectionType(object value) {
+      // Must convert the whole list.
+      List<TExtensionType> result = new List<TExtensionType>();
+      foreach (object element in (IEnumerable)value) {
+        result.Add((TExtensionType)SingularFromReflectionType(element));
+      }
+      return result;
+    }
+  }
+
   public class GeneratedExtensionLite<TContainingType, TExtensionType> : IGeneratedExtensionLite
     where TContainingType : IMessageLite {
 
@@ -166,8 +191,8 @@ namespace Google.ProtocolBuffers {
             false /* isRepeated */, false /* isPacked */)) {
     }
 
-    /** For use by generated code only. */
-    public GeneratedExtensionLite(
+    /** Repeating fields: For use by generated code only. */
+    protected GeneratedExtensionLite(
       TContainingType containingTypeDefaultInstance,
       TExtensionType defaultValue,
       IMessageLite messageDefaultInstance,
@@ -231,48 +256,21 @@ namespace Google.ProtocolBuffers {
     /// for enums use EnumValueDescriptors but the native accessors use
     /// the generated enum type.
     /// </summary>
-    public object ToReflectionType(object value) {
-      if (descriptor.IsRepeated) {
-        if (descriptor.MappedType == MappedType.Enum) {
-          // Must convert the whole list.
-          IList<object> result = new List<object>();
-          foreach (object element in (IEnumerable)value) {
-            result.Add(SingularToReflectionType(element));
-          }
-          return result;
-        } else {
-          return value;
-        }
-      } else {
+    public virtual object ToReflectionType(object value) {
         return SingularToReflectionType(value);
-      }
     }
 
     /// <summary>
     /// Like ToReflectionType(object) but for a single element.
     /// </summary>
-    internal Object SingularToReflectionType(object value) {
+    public object SingularToReflectionType(object value) {
       return descriptor.MappedType == MappedType.Enum
           ? descriptor.EnumType.FindValueByNumber((int)value)
           : value;
     }
 
-    public object FromReflectionType(object value) {
-      if (descriptor.IsRepeated) {
-        if (Descriptor.MappedType == MappedType.Message ||
-            Descriptor.MappedType == MappedType.Enum) {
-          // Must convert the whole list.
-          List<TExtensionType> result = new List<TExtensionType>();
-          foreach (object element in (IEnumerable)value) {
-            result.Add((TExtensionType)SingularFromReflectionType(element));
-          }
-          return result;
-        } else {
-          return value;
-        }
-      } else {
+    public virtual object FromReflectionType(object value) {
         return SingularFromReflectionType(value);
-      }
     }
 
     public object SingularFromReflectionType(object value) {

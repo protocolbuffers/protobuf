@@ -66,7 +66,7 @@ namespace Google.ProtocolBuffers {
   }
 
   public class EnumLiteMap<TEnum> : IEnumLiteMap<IEnumLite>
-    where TEnum : struct, IComparable, IFormattable, IConvertible {
+    where TEnum : struct, IComparable, IFormattable {
     
     struct EnumValue : IEnumLite, IComparable<IEnumLite> {
       int _value;
@@ -86,7 +86,7 @@ namespace Google.ProtocolBuffers {
     public EnumLiteMap() {
       items = new SortedList<int, IEnumLite>();
       foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
-        items.Add(evalue.ToInt32(CultureInfo.InvariantCulture), new EnumValue(evalue.ToInt32(CultureInfo.InvariantCulture)));
+        items.Add(Convert.ToInt32(evalue), new EnumValue(Convert.ToInt32(evalue)));
     }
 
     IEnumLite IEnumLiteMap.FindValueByNumber(int number) {

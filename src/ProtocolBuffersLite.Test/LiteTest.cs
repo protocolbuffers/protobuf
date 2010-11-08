@@ -32,6 +32,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
@@ -81,8 +83,7 @@ namespace Google.ProtocolBuffers {
       TestAllExtensionsLite message =
         TestAllExtensionsLite.CreateBuilder()
           .SetExtension(UnitTestLiteProtoFile.OptionalInt32ExtensionLite, 123)
-#warning broken
-//          .AddExtension(UnitTestLiteProtoFile.RepeatedStringExtensionLite, "hello")
+          .AddExtension(UnitTestLiteProtoFile.RepeatedStringExtensionLite, "hello")
           .SetExtension(UnitTestLiteProtoFile.OptionalNestedEnumExtensionLite,
               TestAllTypesLite.Types.NestedEnum.BAZ)
           .SetExtension(UnitTestLiteProtoFile.OptionalNestedMessageExtensionLite,
@@ -96,13 +97,12 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(123, (int)message2.GetExtension(
           UnitTestLiteProtoFile.OptionalInt32ExtensionLite));
-#warning broken type infrence
-      //Assert.AreEqual(1, message2.GetExtensionCount(
-      //    UnitTestLiteProtoFile.RepeatedStringExtensionLite));
-      //Assert.AreEqual(1, message2.GetExtension(
-      //    UnitTestLiteProtoFile.RepeatedStringExtensionLite, 0));
-      //Assert.AreEqual("hello", message2.GetExtension(
-      //    UnitTestLiteProtoFile.RepeatedStringExtensionLite, 0));
+      Assert.AreEqual(1, message2.GetExtensionCount(
+          UnitTestLiteProtoFile.RepeatedStringExtensionLite));
+      Assert.AreEqual(1, message2.GetExtension(
+          UnitTestLiteProtoFile.RepeatedStringExtensionLite).Count);
+      Assert.AreEqual("hello", message2.GetExtension(
+          UnitTestLiteProtoFile.RepeatedStringExtensionLite, 0));
       Assert.AreEqual(TestAllTypesLite.Types.NestedEnum.BAZ, message2.GetExtension(
           UnitTestLiteProtoFile.OptionalNestedEnumExtensionLite));
       Assert.AreEqual(7, message2.GetExtension(

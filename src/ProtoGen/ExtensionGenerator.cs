@@ -73,7 +73,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
         if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance) {
           writer.WriteLine("[global::System.CLSCompliant(false)]");
         }
-        writer.WriteLine("{0} static pb::GeneratedExtensionLite<{1}, {2}> {3};", ClassAccessLevel, extends, type, name);
+        writer.WriteLine("{0} static pb::{4}<{1}, {2}> {3};", ClassAccessLevel, extends, type, name,
+          Descriptor.IsRepeated ? "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite");
       } else if (Descriptor.IsRepeated) {
         if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance) {
           writer.WriteLine("[global::System.CLSCompliant(false)]");
@@ -91,10 +92,11 @@ namespace Google.ProtocolBuffers.ProtoGen {
       if (UseLiteRuntime) {
         writer.WriteLine("{0}.{1} = ", scope, name);
         writer.Indent();
-        writer.WriteLine("new pb::GeneratedExtensionLite<{0}, {1}>(", extends, type);
+        writer.WriteLine("new pb::{0}<{1}, {2}>(", Descriptor.IsRepeated ? "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite", extends, type);
         writer.Indent();
         writer.WriteLine("{0}.DefaultInstance,", extends);
-        writer.WriteLine("{0},", Descriptor.HasDefaultValue ? DefaultValue : IsNullableType ? "null" : "default(" + type + ")");
+        if(!Descriptor.IsRepeated)
+          writer.WriteLine("{0},", Descriptor.HasDefaultValue ? DefaultValue : IsNullableType ? "null" : "default(" + type + ")");
         writer.WriteLine("{0},", (Descriptor.MappedType == MappedType.Message) ? type + ".DefaultInstance" : "null");
         writer.WriteLine("{0},", (Descriptor.MappedType == MappedType.Enum) ? "new EnumLiteMap<" + type + ">()" : "null");
         writer.WriteLine("{0},", Descriptor.Index);

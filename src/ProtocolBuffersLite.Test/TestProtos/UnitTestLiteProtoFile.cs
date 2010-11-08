@@ -149,57 +149,57 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int OptionalCordExtensionLiteFieldNumber = 25;
     public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> OptionalCordExtensionLite;
     public const int RepeatedInt32ExtensionLiteFieldNumber = 31;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> RepeatedInt32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> RepeatedInt32ExtensionLite;
     public const int RepeatedInt64ExtensionLiteFieldNumber = 32;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long> RepeatedInt64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long> RepeatedInt64ExtensionLite;
     public const int RepeatedUint32ExtensionLiteFieldNumber = 33;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint> RepeatedUint32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint> RepeatedUint32ExtensionLite;
     public const int RepeatedUint64ExtensionLiteFieldNumber = 34;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong> RepeatedUint64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong> RepeatedUint64ExtensionLite;
     public const int RepeatedSint32ExtensionLiteFieldNumber = 35;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> RepeatedSint32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> RepeatedSint32ExtensionLite;
     public const int RepeatedSint64ExtensionLiteFieldNumber = 36;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long> RepeatedSint64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long> RepeatedSint64ExtensionLite;
     public const int RepeatedFixed32ExtensionLiteFieldNumber = 37;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint> RepeatedFixed32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint> RepeatedFixed32ExtensionLite;
     public const int RepeatedFixed64ExtensionLiteFieldNumber = 38;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong> RepeatedFixed64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong> RepeatedFixed64ExtensionLite;
     public const int RepeatedSfixed32ExtensionLiteFieldNumber = 39;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> RepeatedSfixed32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> RepeatedSfixed32ExtensionLite;
     public const int RepeatedSfixed64ExtensionLiteFieldNumber = 40;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long> RepeatedSfixed64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long> RepeatedSfixed64ExtensionLite;
     public const int RepeatedFloatExtensionLiteFieldNumber = 41;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float> RepeatedFloatExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float> RepeatedFloatExtensionLite;
     public const int RepeatedDoubleExtensionLiteFieldNumber = 42;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double> RepeatedDoubleExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double> RepeatedDoubleExtensionLite;
     public const int RepeatedBoolExtensionLiteFieldNumber = 43;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool> RepeatedBoolExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool> RepeatedBoolExtensionLite;
     public const int RepeatedStringExtensionLiteFieldNumber = 44;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> RepeatedStringExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> RepeatedStringExtensionLite;
     public const int RepeatedBytesExtensionLiteFieldNumber = 45;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString> RepeatedBytesExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString> RepeatedBytesExtensionLite;
     public const int RepeatedGroupExtensionLiteFieldNumber = 46;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite> RepeatedGroupExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite> RepeatedGroupExtensionLite;
     public const int RepeatedNestedMessageExtensionLiteFieldNumber = 48;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage> RepeatedNestedMessageExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage> RepeatedNestedMessageExtensionLite;
     public const int RepeatedForeignMessageExtensionLiteFieldNumber = 49;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite> RepeatedForeignMessageExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite> RepeatedForeignMessageExtensionLite;
     public const int RepeatedImportMessageExtensionLiteFieldNumber = 50;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite> RepeatedImportMessageExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite> RepeatedImportMessageExtensionLite;
     public const int RepeatedNestedEnumExtensionLiteFieldNumber = 51;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum> RepeatedNestedEnumExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum> RepeatedNestedEnumExtensionLite;
     public const int RepeatedForeignEnumExtensionLiteFieldNumber = 52;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> RepeatedForeignEnumExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> RepeatedForeignEnumExtensionLite;
     public const int RepeatedImportEnumExtensionLiteFieldNumber = 53;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite> RepeatedImportEnumExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite> RepeatedImportEnumExtensionLite;
     public const int RepeatedStringPieceExtensionLiteFieldNumber = 54;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> RepeatedStringPieceExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> RepeatedStringPieceExtensionLite;
     public const int RepeatedCordExtensionLiteFieldNumber = 55;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> RepeatedCordExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> RepeatedCordExtensionLite;
     public const int DefaultInt32ExtensionLiteFieldNumber = 61;
     public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int> DefaultInt32ExtensionLite;
     public const int DefaultInt64ExtensionLiteFieldNumber = 62;
@@ -245,37 +245,37 @@ namespace Google.ProtocolBuffers.TestProtos {
     public const int DefaultCordExtensionLiteFieldNumber = 85;
     public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string> DefaultCordExtensionLite;
     public const int PackedInt32ExtensionLiteFieldNumber = 90;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int> PackedInt32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int> PackedInt32ExtensionLite;
     public const int PackedInt64ExtensionLiteFieldNumber = 91;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long> PackedInt64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long> PackedInt64ExtensionLite;
     public const int PackedUint32ExtensionLiteFieldNumber = 92;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint> PackedUint32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint> PackedUint32ExtensionLite;
     public const int PackedUint64ExtensionLiteFieldNumber = 93;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong> PackedUint64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong> PackedUint64ExtensionLite;
     public const int PackedSint32ExtensionLiteFieldNumber = 94;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int> PackedSint32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int> PackedSint32ExtensionLite;
     public const int PackedSint64ExtensionLiteFieldNumber = 95;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long> PackedSint64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long> PackedSint64ExtensionLite;
     public const int PackedFixed32ExtensionLiteFieldNumber = 96;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint> PackedFixed32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint> PackedFixed32ExtensionLite;
     public const int PackedFixed64ExtensionLiteFieldNumber = 97;
     [global::System.CLSCompliant(false)]
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong> PackedFixed64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong> PackedFixed64ExtensionLite;
     public const int PackedSfixed32ExtensionLiteFieldNumber = 98;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int> PackedSfixed32ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int> PackedSfixed32ExtensionLite;
     public const int PackedSfixed64ExtensionLiteFieldNumber = 99;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long> PackedSfixed64ExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long> PackedSfixed64ExtensionLite;
     public const int PackedFloatExtensionLiteFieldNumber = 100;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, float> PackedFloatExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, float> PackedFloatExtensionLite;
     public const int PackedDoubleExtensionLiteFieldNumber = 101;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, double> PackedDoubleExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, double> PackedDoubleExtensionLite;
     public const int PackedBoolExtensionLiteFieldNumber = 102;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, bool> PackedBoolExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, bool> PackedBoolExtensionLite;
     public const int PackedEnumExtensionLiteFieldNumber = 103;
-    public static pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> PackedEnumExtensionLite;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> PackedEnumExtensionLite;
     #endregion
     
     #region Static variables
@@ -485,216 +485,192 @@ namespace Google.ProtocolBuffers.TestProtos {
           23,
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedInt32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(int),
           null,
           null,
           24,
           pbd::FieldType.Int32,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedInt64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(long),
           null,
           null,
           25,
           pbd::FieldType.Int64,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedUint32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(uint),
           null,
           null,
           26,
           pbd::FieldType.UInt32,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedUint64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(ulong),
           null,
           null,
           27,
           pbd::FieldType.UInt64,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSint32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(int),
           null,
           null,
           28,
           pbd::FieldType.SInt32,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSint64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(long),
           null,
           null,
           29,
           pbd::FieldType.SInt64,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedFixed32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(uint),
           null,
           null,
           30,
           pbd::FieldType.Fixed32,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedFixed64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(ulong),
           null,
           null,
           31,
           pbd::FieldType.Fixed64,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSfixed32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(int),
           null,
           null,
           32,
           pbd::FieldType.SFixed32,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSfixed64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(long),
           null,
           null,
           33,
           pbd::FieldType.SFixed64,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedFloatExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(float),
           null,
           null,
           34,
           pbd::FieldType.Float,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedDoubleExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(double),
           null,
           null,
           35,
           pbd::FieldType.Double,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedBoolExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(bool),
           null,
           null,
           36,
           pbd::FieldType.Bool,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedStringExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           null,
           null,
           37,
           pbd::FieldType.String,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedBytesExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           null,
           null,
           38,
           pbd::FieldType.Bytes,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedGroupExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite.DefaultInstance,
           null,
           39,
           pbd::FieldType.Group,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedNestedMessageExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.DefaultInstance,
           null,
           40,
           pbd::FieldType.Message,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedForeignMessageExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite.DefaultInstance,
           null,
           41,
           pbd::FieldType.Message,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedImportMessageExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.DefaultInstance,
           null,
           42,
           pbd::FieldType.Message,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedNestedEnumExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum),
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(),
           43,
           pbd::FieldType.Enum,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedForeignEnumExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite),
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(),
           44,
           pbd::FieldType.Enum,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedImportEnumExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          default(global::Google.ProtocolBuffers.TestProtos.ImportEnumLite),
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(),
           45,
           pbd::FieldType.Enum,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedStringPieceExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           null,
           null,
           46,
           pbd::FieldType.String,
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedCordExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          null,
           null,
           null,
           47,
@@ -861,126 +837,112 @@ namespace Google.ProtocolBuffers.TestProtos {
           67,
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedInt32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(int),
           null,
           null,
           68,
           pbd::FieldType.Int32,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedInt64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(long),
           null,
           null,
           69,
           pbd::FieldType.Int64,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedUint32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(uint),
           null,
           null,
           70,
           pbd::FieldType.UInt32,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedUint64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(ulong),
           null,
           null,
           71,
           pbd::FieldType.UInt64,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSint32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(int),
           null,
           null,
           72,
           pbd::FieldType.SInt32,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSint64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(long),
           null,
           null,
           73,
           pbd::FieldType.SInt64,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedFixed32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(uint),
           null,
           null,
           74,
           pbd::FieldType.Fixed32,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedFixed64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(ulong),
           null,
           null,
           75,
           pbd::FieldType.Fixed64,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSfixed32ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(int),
           null,
           null,
           76,
           pbd::FieldType.SFixed32,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSfixed64ExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(long),
           null,
           null,
           77,
           pbd::FieldType.SFixed64,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedFloatExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, float>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, float>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(float),
           null,
           null,
           78,
           pbd::FieldType.Float,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedDoubleExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, double>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, double>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(double),
           null,
           null,
           79,
           pbd::FieldType.Double,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedBoolExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, bool>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, bool>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(bool),
           null,
           null,
           80,
           pbd::FieldType.Bool,
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedEnumExtensionLite = 
-        new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
-          default(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite),
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(),
           81,
