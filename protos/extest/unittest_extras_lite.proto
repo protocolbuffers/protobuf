@@ -1,0 +1,23 @@
+// Additional options required for C# generation. File from copyright
+// line onwards is as per original distribution.
+import "google/protobuf/csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasLiteProtoFile";
+
+package protobuf_unittest_extra;
+
+option optimize_for = LITE_RUNTIME;
+
+option java_package = "com.google.protobuf";
+
+message TestRequiredLite {
+  required int32 d = 1;
+  required ExtraEnum en = 2 [default = DEFAULT];
+}
+
+enum ExtraEnum {
+  DEFAULT = 1;
+  EXLITE_FOO = 7;
+  EXLITE_BAR = 8;
+  EXLITE_BAZ = 9;
+}

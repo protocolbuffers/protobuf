@@ -150,7 +150,8 @@
       <arg file="${protos-dir}/google/protobuf/unittest_lite.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_lite_imports_nonlite.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_no_generic_services.proto" />
-           
+
+      <arg file="${protos-dir}/extest/unittest_extras_lite.proto" />
       <arg file="${protos-dir}/tutorial/addressbook.proto" />
     </exec>
     
@@ -178,7 +179,6 @@
         <include name="UnitTestEmptyProtoFile.cs" />
         <include name="UnitTestEnormousDescriptorProtoFile.cs" />
         <include name="UnitTestImportProtoFile.cs" />
-        <include name="UnitTestLiteImportNonLiteProtoFile.cs" />
         <include name="UnitTestMessageSetProtoFile.cs" />
         <include name="UnitTestNoGenericServicesProtoFile.cs" />
         <include name="UnitTestOptimizeForProtoFile.cs" />
@@ -188,8 +188,12 @@
 
     <copy todir="${src}/ProtocolBuffersLite.Test/TestProtos">
       <fileset basedir="${tmp-dir}">
+        <include name="UnitTestExtrasLiteProtoFile.cs" />
         <include name="UnitTestImportLiteProtoFile.cs" />
+        <include name="UnitTestImportProtoFile.cs" />
+        <include name="UnitTestLiteImportNonLiteProtoFile.cs" />
         <include name="UnitTestLiteProtoFile.cs" />
+        <include name="UnitTestProtoFile.cs" />
       </fileset>
     </copy>
 
@@ -273,6 +277,8 @@
     <nunit2>
       <formatter type="Plain" />
       <test assemblyname="${src}/ProtocolBuffers.Test/bin/${build-configuration}/Google.ProtocolBuffers.Test.dll" />
+      <test assemblyname="${src}/ProtocolBuffersLite.Test/bin/${build-configuration}/Google.ProtocolBuffersLite.Test.dll" />
+      <test assemblyname="${src}/ProtocolBuffersLite.Test/bin/${build-configuration}/Google.ProtocolBuffersMixedLite.Test.dll" />
       <test assemblyname="${src}/Protogen.Test/bin/${build-configuration}/Google.ProtocolBuffers.ProtoGen.Test.dll" />
     </nunit2>
   </target>

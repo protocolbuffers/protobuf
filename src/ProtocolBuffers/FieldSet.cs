@@ -486,7 +486,9 @@ namespace Google.ProtocolBuffers {
           IMessageLite messageValue = value as IMessageLite;
           isValid = messageValue != null;
 #if !LITE
-          isValid = isValid && ((IMessage)messageValue).DescriptorForType == ((Google.ProtocolBuffers.Descriptors.FieldDescriptor)field).MessageType;
+          if (isValid && messageValue is IMessage && field is FieldDescriptor) {
+            isValid = ((IMessage) messageValue).DescriptorForType == ((FieldDescriptor) field).MessageType;
+          }
 #endif
           break;
       }

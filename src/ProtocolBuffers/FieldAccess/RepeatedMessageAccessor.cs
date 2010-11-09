@@ -71,7 +71,7 @@ namespace Google.ProtocolBuffers.FieldAccess {
       }
 
       // No... so let's create a builder of the right type, and merge the value in.
-      IMessage message = (IMessage) value;
+      IMessageLite message = (IMessageLite) value;
       return CreateBuilder().WeakMergeFrom(message).WeakBuild();
     }
 

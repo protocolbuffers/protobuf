@@ -44,25 +44,10 @@ namespace Google.ProtocolBuffers {
     int Number { get; }
     object ContainingType { get; }
     IMessageLite MessageDefaultInstance { get; }
+    IFieldDescriptorLite Descriptor { get; }
   }
 
   public class ExtensionDescriptorLite : IFieldDescriptorLite {
-    /// <summary>
-    /// Immutable mapping from field type to mapped type. Built using the attributes on
-    /// FieldType values.
-    /// </summary>
-    public static readonly IDictionary<FieldType, MappedType> FieldTypeToMappedTypeMap = MapFieldTypes();
-
-    private static IDictionary<FieldType, MappedType> MapFieldTypes() {
-      var map = new Dictionary<FieldType, MappedType>();
-      foreach (System.Reflection.FieldInfo field in typeof(FieldType).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)) {
-        FieldType fieldType = (FieldType)field.GetValue(null);
-        FieldMappingAttribute mapping = (FieldMappingAttribute)field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
-        map[fieldType] = mapping.MappedType;
-      }
-      return Dictionaries.AsReadOnly(map);
-    }
-
     private readonly IEnumLiteMap enumTypeMap;
     private readonly int number;
     private readonly FieldType type;
@@ -75,7 +60,7 @@ namespace Google.ProtocolBuffers {
       this.enumTypeMap = enumTypeMap;
       this.number = number;
       this.type = type;
-      this.mapType = FieldTypeToMappedTypeMap[type];
+      this.mapType = FieldMappingAttribute.MappedTypeFromFieldType(type);
       this.isRepeated = isRepeated;
       this.isPacked = isPacked;
       this.defaultValue = defaultValue;
@@ -99,7 +84,7 @@ namespace Google.ProtocolBuffers {
 
 #warning ToDo - Discover the meaning and purpose of this durring serialization and return the correct value
     public bool MessageSetWireFormat {
-      get { return true; }
+      get { return false; }
     }
 
     public int FieldNumber {
@@ -135,11 +120,11 @@ namespace Google.ProtocolBuffers {
     }
 
     public override object ToReflectionType(object value) {
-        IList<TExtensionType> result = new List<TExtensionType>();
-        foreach (object element in (IEnumerable)value) {
-          result.Add((TExtensionType)SingularToReflectionType(element));
-        }
-        return result;
+      IList<object> result = new List<object>();
+      foreach (object element in (IEnumerable) value) {
+        result.Add(SingularToReflectionType(element));
+      }
+      return result;
     }
 
     public override object FromReflectionType(object value) {
@@ -191,6 +176,7 @@ namespace Google.ProtocolBuffers {
             false /* isRepeated */, false /* isPacked */)) {
     }
 
+    private static readonly IList<object> Empty = new object[0];
     /** Repeating fields: For use by generated code only. */
     protected GeneratedExtensionLite(
       TContainingType containingTypeDefaultInstance,
@@ -201,7 +187,7 @@ namespace Google.ProtocolBuffers {
       FieldType type,
       bool isPacked)
       : this(containingTypeDefaultInstance, defaultValue, messageDefaultInstance,
-          new ExtensionDescriptorLite(enumTypeMap, number, type, defaultValue,
+          new ExtensionDescriptorLite(enumTypeMap, number, type, Empty,
             true /* isRepeated */, isPacked)) {
     }
 

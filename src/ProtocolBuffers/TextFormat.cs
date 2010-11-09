@@ -176,7 +176,11 @@ namespace Google.ProtocolBuffers {
 
         case FieldType.Message:
         case FieldType.Group:
-          Print((IMessage) value, generator);
+          if (value is IMessage) {
+            Print((IMessage)value, generator);
+          } else {
+#warning ToDo - What do we print for IMessageLite?
+          }
           break;
       }
     }

@@ -72,7 +72,10 @@ namespace Google.ProtocolBuffers {
     }
 
     public sealed override TBuilder MergeFrom(IMessageLite other) {
-      return MergeFrom((IMessage)other);
+      if (other is IMessage) {
+        return MergeFrom((IMessage) other);
+      }
+      throw new ArgumentException("MergeFrom(Message) can only merge messages of the same type.");
     }
 
     /// <summary>
@@ -112,13 +115,13 @@ namespace Google.ProtocolBuffers {
           }
         } else if (field.MappedType == MappedType.Message) {
           // Merge singular messages
-          IMessage existingValue = (IMessage) this[field];
+          IMessageLite existingValue = (IMessageLite)this[field];
           if (existingValue == existingValue.WeakDefaultInstanceForType) {
             this[field] = entry.Value;
           } else {
             this[field] = existingValue.WeakCreateBuilderForType()
                                        .WeakMergeFrom(existingValue)
-                                       .WeakMergeFrom((IMessage) entry.Value)
+                                       .WeakMergeFrom((IMessageLite)entry.Value)
                                        .WeakBuild();
           }
         } else {

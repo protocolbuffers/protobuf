@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\google\protobuf\unittest_embed_optimize_for.proto = ..\protos\google\protobuf\unittest_embed_optimize_for.proto
 		..\protos\google\protobuf\unittest_empty.proto = ..\protos\google\protobuf\unittest_empty.proto
 		..\protos\google\protobuf\unittest_enormous_descriptor.proto = ..\protos\google\protobuf\unittest_enormous_descriptor.proto
+		..\protos\extest\unittest_extras_lite.proto = ..\protos\extest\unittest_extras_lite.proto
 		..\protos\google\protobuf\unittest_import.proto = ..\protos\google\protobuf\unittest_import.proto
 		..\protos\google\protobuf\unittest_import_lite.proto = ..\protos\google\protobuf\unittest_import_lite.proto
 		..\protos\google\protobuf\unittest_lite.proto = ..\protos\google\protobuf\unittest_lite.proto
@@ -46,6 +47,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\google\protobuf\unittest_no_generic_services.proto = ..\protos\google\protobuf\unittest_no_generic_services.proto
 		..\protos\google\protobuf\unittest_optimize_for.proto = ..\protos\google\protobuf\unittest_optimize_for.proto
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLiteMixed.Test", "ProtocolBuffersLite.Test\ProtocolBuffersLiteMixed.Test.csproj", "{EEFFED24-3750-4567-9A23-1DB676A15610}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,6 +117,12 @@ Global
 		{EE01ED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE01ED24-3750-4567-9A23-1DB676A15610}.Silverlight2|Any CPU.ActiveCfg = Silverlight2|Any CPU
 		{EE01ED24-3750-4567-9A23-1DB676A15610}.Silverlight2|Any CPU.Build.0 = Silverlight2|Any CPU
+		{EEFFED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEFFED24-3750-4567-9A23-1DB676A15610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEFFED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEFFED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEFFED24-3750-4567-9A23-1DB676A15610}.Silverlight2|Any CPU.ActiveCfg = Silverlight2|Any CPU
+		{EEFFED24-3750-4567-9A23-1DB676A15610}.Silverlight2|Any CPU.Build.0 = Silverlight2|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

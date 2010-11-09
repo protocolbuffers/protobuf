@@ -124,7 +124,7 @@ namespace Google.ProtocolBuffers {
       foreach (KeyValuePair<FieldDescriptor, object> entry in message.AllFields) {
         FieldDescriptor field = entry.Key;
         object value = entry.Value;
-
+#warning ToDo - bad assumption, could be IMessageLite
         if (field.MappedType == MappedType.Message) {
           if (field.IsRepeated) {
             int i = 0;

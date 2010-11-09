@@ -578,14 +578,14 @@ namespace Google.ProtocolBuffers {
           switch (field.FieldType) {
             case FieldType.Group:
             case FieldType.Message: {
-                IBuilder subBuilder;
+                IBuilderLite subBuilder;
                 if (defaultFieldInstance != null) {
                   subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
                 } else {
                   subBuilder = builder.CreateBuilderForField(field);
                 }
                 if (!field.IsRepeated) {
-                  subBuilder.WeakMergeFrom((IMessage)builder[field]);
+                  subBuilder.WeakMergeFrom((IMessageLite)builder[field]);
                 }
                 if (field.FieldType == FieldType.Group) {
                   input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
@@ -661,7 +661,7 @@ namespace Google.ProtocolBuffers {
               if (extension != null) {
                 field = extension.Descriptor;
                 subBuilder = extension.DefaultInstance.WeakCreateBuilderForType();
-                IMessage originalMessage = (IMessage)builder[field];
+                IMessageLite originalMessage = (IMessageLite)builder[field];
                 if (originalMessage != null) {
                   subBuilder.WeakMergeFrom(originalMessage);
                 }

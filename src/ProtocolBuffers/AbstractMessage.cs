@@ -81,13 +81,13 @@ namespace Google.ProtocolBuffers {
             if (field.IsRepeated) {
               // We know it's an IList<T>, but not the exact type - so
               // IEnumerable is the best we can do. (C# generics aren't covariant yet.)
-              foreach (IMessage element in (IEnumerable) entry.Value) {
+              foreach (IMessageLite element in (IEnumerable)entry.Value) {
                 if (!element.IsInitialized) {
                   return false;
                 }
               }
             } else {
-              if (!((IMessage)entry.Value).IsInitialized) {
+              if (!((IMessageLite)entry.Value).IsInitialized) {
                 return false;
               }
             }

@@ -34,6 +34,7 @@
 
 using System;
 using System.Collections.Generic;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
   public abstract class ExtendableBuilderLite<TMessage, TBuilder> : GeneratedBuilderLite<TMessage, TBuilder>
@@ -93,21 +94,21 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Appends a value to a repeated extension.
     /// </summary>
-    public ExtendableBuilderLite<TMessage, TBuilder> AddExtension<TExtension>(GeneratedExtensionLite<TMessage, IList<TExtension>> extension, TExtension value) {
+    public TBuilder AddExtension<TExtension>(GeneratedExtensionLite<TMessage, IList<TExtension>> extension, TExtension value) {
       ExtendableMessageLite<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
       message.Extensions.AddRepeatedField(extension.Descriptor, extension.SingularToReflectionType(value));
-      return this;
+      return ThisBuilder;
     }
 
     /// <summary>
     /// Clears an extension.
     /// </summary>
-    public ExtendableBuilderLite<TMessage, TBuilder> ClearExtension<TExtension>(GeneratedExtensionLite<TMessage, TExtension> extension) {
+    public TBuilder ClearExtension<TExtension>(GeneratedExtensionLite<TMessage, TExtension> extension) {
       ExtendableMessageLite<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
       message.Extensions.ClearField(extension.Descriptor);
-      return this;
+      return ThisBuilder;
     }
 
     /// <summary>
@@ -117,11 +118,99 @@ namespace Google.ProtocolBuffers {
     [CLSCompliant(false)]
     protected override bool ParseUnknownField(CodedInputStream input,
         ExtensionRegistry extensionRegistry, uint tag) {
-      return input.SkipField(tag);
+      FieldSet extensions = MessageBeingBuilt.Extensions;
+
+      WireFormat.WireType wireType = WireFormat.GetTagWireType(tag);
+      int fieldNumber = WireFormat.GetTagFieldNumber(tag);
+      IGeneratedExtensionLite extension = extensionRegistry[DefaultInstanceForType, fieldNumber];
+
+      bool unknown = false;
+      bool packed = false;
+      if (extension == null) {
+        unknown = true;  // Unknown field.
+      } else if (wireType == FieldMappingAttribute.WireTypeFromFieldType(extension.Descriptor.FieldType, false /* isPacked */)) {
+        packed = false;  // Normal, unpacked value.
+      } else if (extension.Descriptor.IsRepeated &&
+                 //?? just returns true ?? extension.Descriptor.type.isPackable() &&
+                 wireType == FieldMappingAttribute.WireTypeFromFieldType(extension.Descriptor.FieldType, true /* isPacked */)) {
+        packed = true;  // Packed value.
+      } else {
+        unknown = true;  // Wrong wire type.
+      }
+
+      if (unknown) {  // Unknown field or wrong wire type.  Skip.
+        return input.SkipField(tag);
+      }
+
+      if (packed) {
+        int length = (int)Math.Min(int.MaxValue, input.ReadRawVarint32());
+        int limit = input.PushLimit(length);
+        if (extension.Descriptor.FieldType == FieldType.Enum) {
+          while (!input.ReachedLimit) {
+            int rawValue = input.ReadEnum();
+            Object value =
+                extension.Descriptor.EnumType.FindValueByNumber(rawValue);
+            if (value == null) {
+              // If the number isn't recognized as a valid value for this
+              // enum, drop it (don't even add it to unknownFields).
+              return true;
+            }
+            extensions.AddRepeatedField(extension.Descriptor, value);
+          }
+        } else {
+          while (!input.ReachedLimit) {
+            Object value = input.ReadPrimitiveField(extension.Descriptor.FieldType);
+            extensions.AddRepeatedField(extension.Descriptor, value);
+          }
+        }
+        input.PopLimit(limit);
+      } else {
+        Object value;
+        switch (extension.Descriptor.MappedType) {
+          case MappedType.Message: {
+            IBuilderLite subBuilder = null;
+            if (!extension.Descriptor.IsRepeated) {
+              IMessageLite existingValue = extensions[extension.Descriptor] as IMessageLite;
+              if (existingValue != null) {
+                subBuilder = existingValue.WeakToBuilder();
+              }
+            }
+            if (subBuilder == null) {
+              subBuilder = extension.MessageDefaultInstance.WeakCreateBuilderForType();
+            }
+            if (extension.Descriptor.FieldType == FieldType.Group) {
+              input.ReadGroup(extension.Number, subBuilder, extensionRegistry);
+            } else {
+              input.ReadMessage(subBuilder, extensionRegistry);
+            }
+            value = subBuilder.WeakBuild();
+            break;
+          }
+          case MappedType.Enum:
+            int rawValue = input.ReadEnum();
+            value = extension.Descriptor.EnumType.FindValueByNumber(rawValue);
+            // If the number isn't recognized as a valid value for this enum,
+            // drop it.
+            if (value == null) {
+              return true;
+            }
+            break;
+          default:
+            value = input.ReadPrimitiveField(extension.Descriptor.FieldType);
+            break;
+        }
+
+        if (extension.Descriptor.IsRepeated) {
+          extensions.AddRepeatedField(extension.Descriptor, value);
+        } else {
+          extensions[extension.Descriptor] = value;
+        }
+      }
+
+      return true;
     }
 
-    // ---------------------------------------------------------------
-    // Reflection
+    #region Reflection
 
     public object this[IFieldDescriptorLite field, int index] {
       set {
@@ -168,5 +257,6 @@ namespace Google.ProtocolBuffers {
     protected void MergeExtensionFields(ExtendableMessageLite<TMessage, TBuilder> other) {
       MessageBeingBuilt.Extensions.MergeFrom(other.Extensions);
     }
+    #endregion
   }
 }

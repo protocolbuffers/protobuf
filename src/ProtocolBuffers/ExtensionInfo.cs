@@ -42,7 +42,9 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public FieldDescriptor Descriptor { get; private set; }
 
-    /// <summary>
+    IFieldDescriptorLite IGeneratedExtensionLite.Descriptor { get { return Descriptor; } }
+
+      /// <summary>
     /// A default instance of the extensions's type, if it has a message type,
     /// or null otherwise.
     /// </summary>

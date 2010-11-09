@@ -57,7 +57,12 @@
     <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AbstractBuilderLiteTest.cs" />
+    <Compile Include="ExtendableBuilderLiteTest.cs" />
+    <Compile Include="ExtendableMessageLiteTest.cs" />
     <Compile Include="LiteTest.cs" />
+    <Compile Include="TestLiteByApi.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
   </ItemGroup>
@@ -70,6 +75,7 @@
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffersLite.csproj">
       <Project>{6969BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
       <Name>ProtocolBuffersLite</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

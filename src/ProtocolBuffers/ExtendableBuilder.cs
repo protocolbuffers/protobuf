@@ -94,21 +94,21 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Appends a value to a repeated extension.
     /// </summary>
-    public ExtendableBuilder<TMessage, TBuilder> AddExtension<TExtension>(GeneratedExtensionBase<IList<TExtension>> extension, TExtension value) {
+    public TBuilder AddExtension<TExtension>(GeneratedExtensionBase<IList<TExtension>> extension, TExtension value) {
       ExtendableMessage<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
       message.Extensions.AddRepeatedField(extension.Descriptor, extension.SingularToReflectionType(value));
-      return this;
+      return ThisBuilder;
     }
 
     /// <summary>
     /// Clears an extension.
     /// </summary>
-    public ExtendableBuilder<TMessage, TBuilder> ClearExtension<TExtension>(GeneratedExtensionBase<TExtension> extension) {
+    public TBuilder ClearExtension<TExtension>(GeneratedExtensionBase<TExtension> extension) {
       ExtendableMessage<TMessage, TBuilder> message = MessageBeingBuilt;
       message.VerifyExtensionContainingType(extension);
       message.Extensions.ClearField(extension.Descriptor);
-      return this;
+      return ThisBuilder;
     }
 
     /// <summary>

@@ -295,7 +295,8 @@ namespace Google.ProtocolBuffers {
       }
 
       public override Builder MergeFrom(DynamicMessage other) {
-        return MergeFrom((IMessage)other);
+        IMessage downcast = other;
+        return MergeFrom(downcast);
       }
 
       public override DynamicMessage Build() {

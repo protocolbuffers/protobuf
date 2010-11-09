@@ -148,10 +148,10 @@ namespace Google.ProtocolBuffers {
           }
         } else if (field.MappedType == MappedType.Message && HasField(field)) {
           // Merge singular embedded messages
-          IMessage oldValue = (IMessage)this[field];
+          IMessageLite oldValue = (IMessageLite)this[field];
           this[field] = oldValue.WeakCreateBuilderForType()
               .WeakMergeFrom(oldValue)
-              .WeakMergeFrom((IMessage)entry.Value)
+              .WeakMergeFrom((IMessageLite)entry.Value)
               .WeakBuildPartial();
         } else {
           // Just overwrite

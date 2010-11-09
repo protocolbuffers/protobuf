@@ -68,16 +68,13 @@ namespace Google.ProtocolBuffers {
   public class EnumLiteMap<TEnum> : IEnumLiteMap<IEnumLite>
     where TEnum : struct, IComparable, IFormattable {
     
-    struct EnumValue : IEnumLite, IComparable<IEnumLite> {
-      int _value;
+    struct EnumValue : IEnumLite {
+      readonly int value;
       public EnumValue(int value) {
-        _value = value;
+        this.value = value;
       }
       int IEnumLite.Number {
-        get { return _value; }
-      }
-      int IComparable<IEnumLite>.CompareTo(IEnumLite other) {
-        return _value.CompareTo(other.Number);
+        get { return value; }
       }
     }
 

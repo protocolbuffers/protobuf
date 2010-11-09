@@ -30,6 +30,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
+using System.Collections.Generic;
+using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers.Descriptors {
 
@@ -46,5 +48,29 @@ namespace Google.ProtocolBuffers.Descriptors {
 
     internal MappedType MappedType { get; private set; }
     internal WireFormat.WireType WireType { get; private set; }
+
+
+    /// <summary>
+    /// Immutable mapping from field type to mapped type. Built using the attributes on
+    /// FieldType values.
+    /// </summary>
+    static readonly IDictionary<FieldType, FieldMappingAttribute> FieldTypeToMappedTypeMap = MapFieldTypes();
+
+    private static IDictionary<FieldType, FieldMappingAttribute> MapFieldTypes() {
+      var map = new Dictionary<FieldType, FieldMappingAttribute>();
+      foreach (System.Reflection.FieldInfo field in typeof(FieldType).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)) {
+        FieldType fieldType = (FieldType)field.GetValue(null);
+        FieldMappingAttribute mapping = (FieldMappingAttribute)field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
+        map[fieldType] = mapping;
+      }
+      return Dictionaries.AsReadOnly(map);
+    }
+
+    internal static MappedType MappedTypeFromFieldType(FieldType type) {
+      return FieldTypeToMappedTypeMap[type].MappedType;
+    }
+    internal static WireFormat.WireType WireTypeFromFieldType(FieldType type, bool packed) {
+      return packed ? WireFormat.WireType.LengthDelimited : FieldTypeToMappedTypeMap[type].WireType;
+    }
   }
 }

@@ -99,7 +99,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
           writer.WriteLine("{0},", Descriptor.HasDefaultValue ? DefaultValue : IsNullableType ? "null" : "default(" + type + ")");
         writer.WriteLine("{0},", (Descriptor.MappedType == MappedType.Message) ? type + ".DefaultInstance" : "null");
         writer.WriteLine("{0},", (Descriptor.MappedType == MappedType.Enum) ? "new EnumLiteMap<" + type + ">()" : "null");
-        writer.WriteLine("{0},", Descriptor.Index);
+        writer.WriteLine("{0}.{1}FieldNumber,", scope, name);
         writer.Write("pbd::FieldType.{0}", Descriptor.FieldType);
         if (Descriptor.IsRepeated) {
           writer.WriteLine(",");

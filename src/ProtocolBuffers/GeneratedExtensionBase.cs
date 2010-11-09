@@ -80,6 +80,7 @@ namespace Google.ProtocolBuffers {
         if (defaultInstanceProperty == null) {
           throw new ArgumentException("No public static DefaultInstance property for type " + typeof(TExtension).Name);
         }
+#warning ToDo - Invalid cast, could be IMessageLite
         messageDefaultInstance = (IMessage)defaultInstanceProperty.GetValue(null, null);
       }
     }
@@ -112,7 +113,7 @@ namespace Google.ProtocolBuffers {
             // This should not happen in normal use.  But, to be nice, we'll
             // copy the message to whatever type the caller was expecting.
             return MessageDefaultInstance.WeakCreateBuilderForType()
-                           .WeakMergeFrom((IMessage)value).WeakBuild();
+                           .WeakMergeFrom((IMessageLite)value).WeakBuild();
           }
         case MappedType.Enum:
           // Just return a boxed int - that can be unboxed to the enum
