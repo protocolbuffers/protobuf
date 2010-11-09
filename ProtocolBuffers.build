@@ -151,6 +151,7 @@
       <arg file="${protos-dir}/google/protobuf/unittest_lite_imports_nonlite.proto" />
       <arg file="${protos-dir}/google/protobuf/unittest_no_generic_services.proto" />
 
+      <arg file="${protos-dir}/extest/unittest_extras_full.proto" />
       <arg file="${protos-dir}/extest/unittest_extras_lite.proto" />
       <arg file="${protos-dir}/tutorial/addressbook.proto" />
     </exec>
@@ -188,6 +189,7 @@
 
     <copy todir="${src}/ProtocolBuffersLite.Test/TestProtos">
       <fileset basedir="${tmp-dir}">
+        <include name="UnitTestExtrasFullProtoFile.cs" />
         <include name="UnitTestExtrasLiteProtoFile.cs" />
         <include name="UnitTestImportLiteProtoFile.cs" />
         <include name="UnitTestImportProtoFile.cs" />

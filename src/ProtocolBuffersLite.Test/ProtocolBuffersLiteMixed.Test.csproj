@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EE01ED24-3750-4567-9A23-1DB676A15610}</ProjectGuid>
+    <ProjectGuid>{EEFFED24-3750-4567-9A23-1DB676A15610}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Google.ProtocolBuffers</RootNamespace>
-    <AssemblyName>Google.ProtocolBuffersLite.Test</AssemblyName>
+    <AssemblyName>Google.ProtocolBuffersMixedLite.Test</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
@@ -57,15 +57,23 @@
     <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\ProtocolBuffers.Test\TestProtos\FIXUP.cs">
+      <Link>TestProtos\FIXUP.cs</Link>
+    </Compile>
     <Compile Include="AbstractBuilderLiteTest.cs" />
     <Compile Include="AbstractMessageLiteTest.cs" />
     <Compile Include="ExtendableBuilderLiteTest.cs" />
     <Compile Include="ExtendableMessageLiteTest.cs" />
+    <Compile Include="InteropLiteTest.cs" />
     <Compile Include="LiteTest.cs" />
     <Compile Include="TestLiteByApi.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasFullProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestLiteImportNonLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ProtocolBuffers.Test\Properties\Google.ProtocolBuffers.Test.snk">
@@ -73,10 +81,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffersLite.csproj">
-      <Project>{6969BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
-      <Name>ProtocolBuffersLite</Name>
-      <Private>True</Private>
+    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
+      <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
+      <Name>ProtocolBuffers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

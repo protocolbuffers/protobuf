@@ -82,7 +82,9 @@ namespace Google.ProtocolBuffers {
       get { return true; }
     }
 
-#warning ToDo - Discover the meaning and purpose of this durring serialization and return the correct value
+    /// <summary>
+    /// This is not supported and assertions are made to ensure this does not exist on extensions of Lite types
+    /// </summary>
     public bool MessageSetWireFormat {
       get { return false; }
     }

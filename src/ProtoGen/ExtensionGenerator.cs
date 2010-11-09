@@ -70,6 +70,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine("public const int {0} = {1};", GetFieldConstantName(Descriptor), Descriptor.FieldNumber);
 
       if (UseLiteRuntime) {
+        if (Descriptor.MappedType == MappedType.Message && Descriptor.MessageType.Options.MessageSetWireFormat) {
+          throw new ArgumentException("option message_set_wire_format = true; is not supported in Lite runtime extensions.");
+        }
         if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance) {
           writer.WriteLine("[global::System.CLSCompliant(false)]");
         }

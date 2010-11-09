@@ -2,27 +2,15 @@
 // line onwards is as per original distribution.
 import "google/protobuf/csharp_options.proto";
 option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
-option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasLiteProtoFile";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasFullProtoFile";
 
 package protobuf_unittest_extra;
 
-option optimize_for = LITE_RUNTIME;
+option optimize_for = CODE_SIZE;
 
 option java_package = "com.google.protobuf";
 
-message TestRequiredLite {
-  required int32 d = 1;
-  required ExtraEnum en = 2 [default = DEFAULT];
-}
-
-enum ExtraEnum {
-  DEFAULT = 10;
-  EXLITE_FOO = 7;
-  EXLITE_BAR = 8;
-  EXLITE_BAZ = 9;
-}
-
-message TestInteropPersonLite {
+message TestInteropPerson {
   required string name = 1;
   required int32 id = 2;
   optional string email = 3;
@@ -52,10 +40,10 @@ message TestInteropPersonLite {
   extensions 100 to 199;
 }
 
-message  TestInteropEmployeeIdLite {
+message  TestInteropEmployeeId {
   required string number = 1;
 }
   
-extend TestInteropPersonLite {
-  required TestInteropEmployeeIdLite employee_id_lite = 126;
+extend TestInteropPerson {
+  required TestInteropEmployeeId employee_id = 126;
 }
