@@ -124,16 +124,24 @@ namespace Google.ProtocolBuffers {
       foreach (KeyValuePair<FieldDescriptor, object> entry in message.AllFields) {
         FieldDescriptor field = entry.Key;
         object value = entry.Value;
-#warning ToDo - bad assumption, could be IMessageLite
+
         if (field.MappedType == MappedType.Message) {
           if (field.IsRepeated) {
             int i = 0;
             foreach (object element in (IEnumerable) value) {
-              FindMissingFields((IMessage) element, SubMessagePrefix(prefix, field, i++), results);
+              if (element is IMessage) {
+                FindMissingFields((IMessage)element, SubMessagePrefix(prefix, field, i++), results);
+              } else {
+                results.Add(prefix + field.Name);
+              }
             }
           } else {
             if (message.HasField(field)) {
-              FindMissingFields((IMessage) value, SubMessagePrefix(prefix, field, -1), results);
+              if (value is IMessage) {
+                FindMissingFields((IMessage)value, SubMessagePrefix(prefix, field, -1), results);
+              } else {
+                results.Add(prefix + field.Name);
+              }
             }
           }
         }

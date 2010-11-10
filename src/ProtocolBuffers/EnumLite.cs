@@ -46,6 +46,7 @@ namespace Google.ProtocolBuffers {
   ///</summary>
   public interface IEnumLite {
     int Number { get; }
+    string Name { get; }
   }
 
   ///<summary>
@@ -69,12 +70,15 @@ namespace Google.ProtocolBuffers {
     where TEnum : struct, IComparable, IFormattable {
     
     struct EnumValue : IEnumLite {
-      readonly int value;
-      public EnumValue(int value) {
+      readonly TEnum value;
+      public EnumValue(TEnum value) {
         this.value = value;
       }
       int IEnumLite.Number {
-        get { return value; }
+        get { return Convert.ToInt32(value); }
+      }
+      string IEnumLite.Name {
+        get { return value.ToString(); }
       }
     }
 
@@ -83,7 +87,7 @@ namespace Google.ProtocolBuffers {
     public EnumLiteMap() {
       items = new SortedList<int, IEnumLite>();
       foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
-        items.Add(Convert.ToInt32(evalue), new EnumValue(Convert.ToInt32(evalue)));
+        items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
     }
 
     IEnumLite IEnumLiteMap.FindValueByNumber(int number) {

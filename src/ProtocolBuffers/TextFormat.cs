@@ -170,17 +170,19 @@ namespace Google.ProtocolBuffers {
         }
 
         case FieldType.Enum: {
-          generator.Print(((EnumValueDescriptor) value).Name);
+          if (value is IEnumLite && !(value is EnumValueDescriptor)) {
+            throw new NotSupportedException("Lite enumerations are not supported.");
+          }
+          generator.Print(((EnumValueDescriptor)value).Name);
           break;
         }
 
         case FieldType.Message:
         case FieldType.Group:
-          if (value is IMessage) {
-            Print((IMessage)value, generator);
-          } else {
-#warning ToDo - What do we print for IMessageLite?
+          if (value is IMessageLite && !(value is IMessage)) {
+            throw new NotSupportedException("Lite messages are not supported.");
           }
+          Print((IMessage)value, generator);
           break;
       }
     }
@@ -580,7 +582,9 @@ namespace Google.ProtocolBuffers {
         if (extension == null) {
           subBuilder = builder.CreateBuilderForField(field);
         } else {
-          subBuilder = extension.DefaultInstance.WeakCreateBuilderForType();
+          subBuilder = extension.DefaultInstance.WeakCreateBuilderForType() as IBuilder;
+          if (subBuilder == null)
+            throw new NotSupportedException("Lite messages are not supported.");
         }
 
         while (!tokenizer.TryConsume(endToken)) {

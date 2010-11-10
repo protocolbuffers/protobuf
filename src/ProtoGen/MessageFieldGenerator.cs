@@ -125,5 +125,18 @@ namespace Google.ProtocolBuffers.ProtoGen {
           MessageOrGroup, Number, PropertyName);
       writer.WriteLine("}");
     }
+
+    public override void WriteHash(TextGenerator writer) {
+      writer.WriteLine("if (has{0}) hash ^= {1}_.GetHashCode();", PropertyName, Name);
+    }
+
+    public override void WriteEquals(TextGenerator writer) {
+      writer.WriteLine("if (has{0} != other.has{0} || (has{0} && !{1}_.Equals(other.{1}_))) return false;", PropertyName, Name);
+    }
+
+    public override void WriteToString(TextGenerator writer) {
+      writer.WriteLine("PrintField(\"{2}\", has{0}, {1}_, writer);", PropertyName, Name,
+        Descriptor.FieldType == FieldType.Group ? Descriptor.MessageType.Name : Descriptor.Name);
+    }
   }
 }

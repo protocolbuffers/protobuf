@@ -286,6 +286,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       Descriptor = null;
       global::Google.ProtocolBuffers.TestProtos.TestNestedExtensionLite.NestedExtension = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.TestNestedExtensionLite.nested_extension",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(int),
           null,
@@ -294,6 +295,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Int32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalInt32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.optional_int32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(int),
           null,
@@ -302,6 +304,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Int32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalInt64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.optional_int64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(long),
           null,
@@ -310,6 +313,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Int64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalUint32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+          "protobuf_unittest.optional_uint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(uint),
           null,
@@ -318,6 +322,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.UInt32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalUint64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+          "protobuf_unittest.optional_uint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(ulong),
           null,
@@ -326,6 +331,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.UInt64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalSint32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.optional_sint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(int),
           null,
@@ -334,6 +340,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SInt32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalSint64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.optional_sint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(long),
           null,
@@ -342,6 +349,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SInt64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalFixed32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+          "protobuf_unittest.optional_fixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(uint),
           null,
@@ -350,6 +358,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Fixed32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalFixed64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+          "protobuf_unittest.optional_fixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(ulong),
           null,
@@ -358,6 +367,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Fixed64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalSfixed32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.optional_sfixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(int),
           null,
@@ -366,6 +376,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SFixed32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalSfixed64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.optional_sfixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(long),
           null,
@@ -374,6 +385,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SFixed64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalFloatExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float>(
+          "protobuf_unittest.optional_float_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(float),
           null,
@@ -382,6 +394,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Float);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalDoubleExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double>(
+          "protobuf_unittest.optional_double_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(double),
           null,
@@ -390,6 +403,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Double);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalBoolExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool>(
+          "protobuf_unittest.optional_bool_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(bool),
           null,
@@ -398,6 +412,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Bool);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalStringExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.optional_string_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -406,6 +421,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalBytesExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString>(
+          "protobuf_unittest.optional_bytes_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -414,6 +430,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Bytes);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalGroupExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension_lite>(
+          "protobuf_unittest.optionalgroup_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           global::Google.ProtocolBuffers.TestProtos.OptionalGroup_extension_lite.DefaultInstance,
@@ -422,6 +439,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Group);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalNestedMessageExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage>(
+          "protobuf_unittest.optional_nested_message_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.DefaultInstance,
@@ -430,6 +448,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Message);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalForeignMessageExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite>(
+          "protobuf_unittest.optional_foreign_message_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite.DefaultInstance,
@@ -438,6 +457,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Message);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalImportMessageExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite>(
+          "protobuf_unittest.optional_import_message_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.DefaultInstance,
@@ -446,6 +466,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Message);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalNestedEnumExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(
+          "protobuf_unittest.optional_nested_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum),
           null,
@@ -454,6 +475,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Enum);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalForeignEnumExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+          "protobuf_unittest.optional_foreign_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite),
           null,
@@ -462,6 +484,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Enum);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalImportEnumExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(
+          "protobuf_unittest.optional_import_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           default(global::Google.ProtocolBuffers.TestProtos.ImportEnumLite),
           null,
@@ -470,6 +493,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Enum);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalStringPieceExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.optional_string_piece_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -478,6 +502,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.OptionalCordExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.optional_cord_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -486,6 +511,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedInt32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.repeated_int32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -494,6 +520,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedInt64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.repeated_int64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -502,6 +529,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedUint32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+          "protobuf_unittest.repeated_uint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -510,6 +538,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedUint64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+          "protobuf_unittest.repeated_uint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -518,6 +547,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSint32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.repeated_sint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -526,6 +556,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSint64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.repeated_sint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -534,6 +565,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedFixed32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+          "protobuf_unittest.repeated_fixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -542,6 +574,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedFixed64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+          "protobuf_unittest.repeated_fixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -550,6 +583,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSfixed32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.repeated_sfixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -558,6 +592,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedSfixed64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.repeated_sfixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -566,6 +601,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedFloatExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float>(
+          "protobuf_unittest.repeated_float_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -574,6 +610,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedDoubleExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double>(
+          "protobuf_unittest.repeated_double_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -582,6 +619,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedBoolExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool>(
+          "protobuf_unittest.repeated_bool_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -590,6 +628,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedStringExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.repeated_string_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -598,6 +637,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedBytesExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString>(
+          "protobuf_unittest.repeated_bytes_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -606,6 +646,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedGroupExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite>(
+          "protobuf_unittest.repeatedgroup_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.RepeatedGroup_extension_lite.DefaultInstance,
           null,
@@ -614,6 +655,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedNestedMessageExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage>(
+          "protobuf_unittest.repeated_nested_message_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.DefaultInstance,
           null,
@@ -622,6 +664,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedForeignMessageExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite>(
+          "protobuf_unittest.repeated_foreign_message_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite.DefaultInstance,
           null,
@@ -630,6 +673,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedImportMessageExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite>(
+          "protobuf_unittest.repeated_import_message_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.DefaultInstance,
           null,
@@ -638,6 +682,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedNestedEnumExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(
+          "protobuf_unittest.repeated_nested_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(),
@@ -646,6 +691,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedForeignEnumExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+          "protobuf_unittest.repeated_foreign_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(),
@@ -654,6 +700,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedImportEnumExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(
+          "protobuf_unittest.repeated_import_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(),
@@ -662,6 +709,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedStringPieceExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.repeated_string_piece_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -670,6 +718,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.RepeatedCordExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.repeated_cord_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           null,
           null,
@@ -678,6 +727,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           false);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultInt32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.default_int32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           41,
           null,
@@ -686,6 +736,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Int32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultInt64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.default_int64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           42L,
           null,
@@ -694,6 +745,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Int64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultUint32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+          "protobuf_unittest.default_uint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           43,
           null,
@@ -702,6 +754,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.UInt32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultUint64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+          "protobuf_unittest.default_uint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           44UL,
           null,
@@ -710,6 +763,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.UInt64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultSint32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.default_sint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           -45,
           null,
@@ -718,6 +772,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SInt32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultSint64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.default_sint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           46,
           null,
@@ -726,6 +781,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SInt64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultFixed32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, uint>(
+          "protobuf_unittest.default_fixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           47,
           null,
@@ -734,6 +790,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Fixed32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultFixed64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, ulong>(
+          "protobuf_unittest.default_fixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           48,
           null,
@@ -742,6 +799,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Fixed64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultSfixed32ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, int>(
+          "protobuf_unittest.default_sfixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           49,
           null,
@@ -750,6 +808,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SFixed32);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultSfixed64ExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, long>(
+          "protobuf_unittest.default_sfixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           -50,
           null,
@@ -758,6 +817,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.SFixed64);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultFloatExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, float>(
+          "protobuf_unittest.default_float_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           51.5F,
           null,
@@ -766,6 +826,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Float);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultDoubleExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, double>(
+          "protobuf_unittest.default_double_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           52000D,
           null,
@@ -774,6 +835,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Double);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultBoolExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, bool>(
+          "protobuf_unittest.default_bool_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           true,
           null,
@@ -782,6 +844,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Bool);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultStringExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.default_string_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           "hello",
           null,
@@ -790,6 +853,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultBytesExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString>(
+          "protobuf_unittest.default_bytes_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           ByteString.FromBase64("d29ybGQ="),
           null,
@@ -798,6 +862,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Bytes);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultNestedEnumExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(
+          "protobuf_unittest.default_nested_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum.BAR,
           null,
@@ -806,6 +871,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Enum);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultForeignEnumExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+          "protobuf_unittest.default_foreign_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite.FOREIGN_LITE_BAR,
           null,
@@ -814,6 +880,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Enum);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultImportEnumExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(
+          "protobuf_unittest.default_import_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           global::Google.ProtocolBuffers.TestProtos.ImportEnumLite.IMPORT_LITE_BAR,
           null,
@@ -822,6 +889,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.Enum);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultStringPieceExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.default_string_piece_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           "abc",
           null,
@@ -830,6 +898,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultCordExtensionLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, string>(
+          "protobuf_unittest.default_cord_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
           "123",
           null,
@@ -838,6 +907,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           pbd::FieldType.String);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedInt32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
+          "protobuf_unittest.packed_int32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -846,6 +916,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedInt64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
+          "protobuf_unittest.packed_int64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -854,6 +925,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedUint32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint>(
+          "protobuf_unittest.packed_uint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -862,6 +934,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedUint64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong>(
+          "protobuf_unittest.packed_uint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -870,6 +943,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSint32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
+          "protobuf_unittest.packed_sint32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -878,6 +952,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSint64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
+          "protobuf_unittest.packed_sint64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -886,6 +961,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedFixed32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, uint>(
+          "protobuf_unittest.packed_fixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -894,6 +970,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedFixed64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, ulong>(
+          "protobuf_unittest.packed_fixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -902,6 +979,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSfixed32ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, int>(
+          "protobuf_unittest.packed_sfixed32_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -910,6 +988,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedSfixed64ExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, long>(
+          "protobuf_unittest.packed_sfixed64_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -918,6 +997,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedFloatExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, float>(
+          "protobuf_unittest.packed_float_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -926,6 +1006,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedDoubleExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, double>(
+          "protobuf_unittest.packed_double_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -934,6 +1015,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedBoolExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, bool>(
+          "protobuf_unittest.packed_bool_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           null,
@@ -942,6 +1024,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           true);
       global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedEnumExtensionLite = 
         new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+          "protobuf_unittest.packed_enum_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite.DefaultInstance,
           null,
           new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(),
@@ -1035,6 +1118,25 @@ namespace Google.ProtocolBuffers.TestProtos {
             return size;
           }
         }
+        
+        #region Lite runtime methods
+        public override int GetHashCode() {
+          int hash = GetType().GetHashCode();
+          if (hasBb) hash ^= bb_.GetHashCode();
+          return hash;
+        }
+        
+        public override bool Equals(object obj) {
+          NestedMessage other = obj as NestedMessage;
+          if (other == null) return false;
+          if (hasBb != other.hasBb || (hasBb && !bb_.Equals(other.bb_))) return false;
+          return true;
+        }
+        
+        public override void PrintTo(global::System.IO.TextWriter writer) {
+          PrintField("bb", hasBb, bb_, writer);
+        }
+        #endregion
         
         public static NestedMessage ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -1226,6 +1328,25 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
+        #region Lite runtime methods
+        public override int GetHashCode() {
+          int hash = GetType().GetHashCode();
+          if (hasA) hash ^= a_.GetHashCode();
+          return hash;
+        }
+        
+        public override bool Equals(object obj) {
+          OptionalGroup other = obj as OptionalGroup;
+          if (other == null) return false;
+          if (hasA != other.hasA || (hasA && !a_.Equals(other.a_))) return false;
+          return true;
+        }
+        
+        public override void PrintTo(global::System.IO.TextWriter writer) {
+          PrintField("a", hasA, a_, writer);
+        }
+        #endregion
+        
         public static OptionalGroup ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -1415,6 +1536,25 @@ namespace Google.ProtocolBuffers.TestProtos {
             return size;
           }
         }
+        
+        #region Lite runtime methods
+        public override int GetHashCode() {
+          int hash = GetType().GetHashCode();
+          if (hasA) hash ^= a_.GetHashCode();
+          return hash;
+        }
+        
+        public override bool Equals(object obj) {
+          RepeatedGroup other = obj as RepeatedGroup;
+          if (other == null) return false;
+          if (hasA != other.hasA || (hasA && !a_.Equals(other.a_))) return false;
+          return true;
+        }
+        
+        public override void PrintTo(global::System.IO.TextWriter writer) {
+          PrintField("a", hasA, a_, writer);
+        }
+        #endregion
         
         public static RepeatedGroup ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -2862,6 +3002,298 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasOptionalInt32) hash ^= optionalInt32_.GetHashCode();
+      if (hasOptionalInt64) hash ^= optionalInt64_.GetHashCode();
+      if (hasOptionalUint32) hash ^= optionalUint32_.GetHashCode();
+      if (hasOptionalUint64) hash ^= optionalUint64_.GetHashCode();
+      if (hasOptionalSint32) hash ^= optionalSint32_.GetHashCode();
+      if (hasOptionalSint64) hash ^= optionalSint64_.GetHashCode();
+      if (hasOptionalFixed32) hash ^= optionalFixed32_.GetHashCode();
+      if (hasOptionalFixed64) hash ^= optionalFixed64_.GetHashCode();
+      if (hasOptionalSfixed32) hash ^= optionalSfixed32_.GetHashCode();
+      if (hasOptionalSfixed64) hash ^= optionalSfixed64_.GetHashCode();
+      if (hasOptionalFloat) hash ^= optionalFloat_.GetHashCode();
+      if (hasOptionalDouble) hash ^= optionalDouble_.GetHashCode();
+      if (hasOptionalBool) hash ^= optionalBool_.GetHashCode();
+      if (hasOptionalString) hash ^= optionalString_.GetHashCode();
+      if (hasOptionalBytes) hash ^= optionalBytes_.GetHashCode();
+      if (hasOptionalGroup) hash ^= optionalGroup_.GetHashCode();
+      if (hasOptionalNestedMessage) hash ^= optionalNestedMessage_.GetHashCode();
+      if (hasOptionalForeignMessage) hash ^= optionalForeignMessage_.GetHashCode();
+      if (hasOptionalImportMessage) hash ^= optionalImportMessage_.GetHashCode();
+      if (hasOptionalNestedEnum) hash ^= optionalNestedEnum_.GetHashCode();
+      if (hasOptionalForeignEnum) hash ^= optionalForeignEnum_.GetHashCode();
+      if (hasOptionalImportEnum) hash ^= optionalImportEnum_.GetHashCode();
+      if (hasOptionalStringPiece) hash ^= optionalStringPiece_.GetHashCode();
+      if (hasOptionalCord) hash ^= optionalCord_.GetHashCode();
+      foreach(int i in repeatedInt32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in repeatedInt64_)
+        hash ^= i.GetHashCode();
+      foreach(uint i in repeatedUint32_)
+        hash ^= i.GetHashCode();
+      foreach(ulong i in repeatedUint64_)
+        hash ^= i.GetHashCode();
+      foreach(int i in repeatedSint32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in repeatedSint64_)
+        hash ^= i.GetHashCode();
+      foreach(uint i in repeatedFixed32_)
+        hash ^= i.GetHashCode();
+      foreach(ulong i in repeatedFixed64_)
+        hash ^= i.GetHashCode();
+      foreach(int i in repeatedSfixed32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in repeatedSfixed64_)
+        hash ^= i.GetHashCode();
+      foreach(float i in repeatedFloat_)
+        hash ^= i.GetHashCode();
+      foreach(double i in repeatedDouble_)
+        hash ^= i.GetHashCode();
+      foreach(bool i in repeatedBool_)
+        hash ^= i.GetHashCode();
+      foreach(string i in repeatedString_)
+        hash ^= i.GetHashCode();
+      foreach(pb::ByteString i in repeatedBytes_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup i in repeatedGroup_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage i in repeatedNestedMessage_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite i in repeatedForeignMessage_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.ImportMessageLite i in repeatedImportMessage_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum i in repeatedNestedEnum_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite i in repeatedForeignEnum_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.ImportEnumLite i in repeatedImportEnum_)
+        hash ^= i.GetHashCode();
+      foreach(string i in repeatedStringPiece_)
+        hash ^= i.GetHashCode();
+      foreach(string i in repeatedCord_)
+        hash ^= i.GetHashCode();
+      if (hasDefaultInt32) hash ^= defaultInt32_.GetHashCode();
+      if (hasDefaultInt64) hash ^= defaultInt64_.GetHashCode();
+      if (hasDefaultUint32) hash ^= defaultUint32_.GetHashCode();
+      if (hasDefaultUint64) hash ^= defaultUint64_.GetHashCode();
+      if (hasDefaultSint32) hash ^= defaultSint32_.GetHashCode();
+      if (hasDefaultSint64) hash ^= defaultSint64_.GetHashCode();
+      if (hasDefaultFixed32) hash ^= defaultFixed32_.GetHashCode();
+      if (hasDefaultFixed64) hash ^= defaultFixed64_.GetHashCode();
+      if (hasDefaultSfixed32) hash ^= defaultSfixed32_.GetHashCode();
+      if (hasDefaultSfixed64) hash ^= defaultSfixed64_.GetHashCode();
+      if (hasDefaultFloat) hash ^= defaultFloat_.GetHashCode();
+      if (hasDefaultDouble) hash ^= defaultDouble_.GetHashCode();
+      if (hasDefaultBool) hash ^= defaultBool_.GetHashCode();
+      if (hasDefaultString) hash ^= defaultString_.GetHashCode();
+      if (hasDefaultBytes) hash ^= defaultBytes_.GetHashCode();
+      if (hasDefaultNestedEnum) hash ^= defaultNestedEnum_.GetHashCode();
+      if (hasDefaultForeignEnum) hash ^= defaultForeignEnum_.GetHashCode();
+      if (hasDefaultImportEnum) hash ^= defaultImportEnum_.GetHashCode();
+      if (hasDefaultStringPiece) hash ^= defaultStringPiece_.GetHashCode();
+      if (hasDefaultCord) hash ^= defaultCord_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestAllTypesLite other = obj as TestAllTypesLite;
+      if (other == null) return false;
+      if (hasOptionalInt32 != other.hasOptionalInt32 || (hasOptionalInt32 && !optionalInt32_.Equals(other.optionalInt32_))) return false;
+      if (hasOptionalInt64 != other.hasOptionalInt64 || (hasOptionalInt64 && !optionalInt64_.Equals(other.optionalInt64_))) return false;
+      if (hasOptionalUint32 != other.hasOptionalUint32 || (hasOptionalUint32 && !optionalUint32_.Equals(other.optionalUint32_))) return false;
+      if (hasOptionalUint64 != other.hasOptionalUint64 || (hasOptionalUint64 && !optionalUint64_.Equals(other.optionalUint64_))) return false;
+      if (hasOptionalSint32 != other.hasOptionalSint32 || (hasOptionalSint32 && !optionalSint32_.Equals(other.optionalSint32_))) return false;
+      if (hasOptionalSint64 != other.hasOptionalSint64 || (hasOptionalSint64 && !optionalSint64_.Equals(other.optionalSint64_))) return false;
+      if (hasOptionalFixed32 != other.hasOptionalFixed32 || (hasOptionalFixed32 && !optionalFixed32_.Equals(other.optionalFixed32_))) return false;
+      if (hasOptionalFixed64 != other.hasOptionalFixed64 || (hasOptionalFixed64 && !optionalFixed64_.Equals(other.optionalFixed64_))) return false;
+      if (hasOptionalSfixed32 != other.hasOptionalSfixed32 || (hasOptionalSfixed32 && !optionalSfixed32_.Equals(other.optionalSfixed32_))) return false;
+      if (hasOptionalSfixed64 != other.hasOptionalSfixed64 || (hasOptionalSfixed64 && !optionalSfixed64_.Equals(other.optionalSfixed64_))) return false;
+      if (hasOptionalFloat != other.hasOptionalFloat || (hasOptionalFloat && !optionalFloat_.Equals(other.optionalFloat_))) return false;
+      if (hasOptionalDouble != other.hasOptionalDouble || (hasOptionalDouble && !optionalDouble_.Equals(other.optionalDouble_))) return false;
+      if (hasOptionalBool != other.hasOptionalBool || (hasOptionalBool && !optionalBool_.Equals(other.optionalBool_))) return false;
+      if (hasOptionalString != other.hasOptionalString || (hasOptionalString && !optionalString_.Equals(other.optionalString_))) return false;
+      if (hasOptionalBytes != other.hasOptionalBytes || (hasOptionalBytes && !optionalBytes_.Equals(other.optionalBytes_))) return false;
+      if (hasOptionalGroup != other.hasOptionalGroup || (hasOptionalGroup && !optionalGroup_.Equals(other.optionalGroup_))) return false;
+      if (hasOptionalNestedMessage != other.hasOptionalNestedMessage || (hasOptionalNestedMessage && !optionalNestedMessage_.Equals(other.optionalNestedMessage_))) return false;
+      if (hasOptionalForeignMessage != other.hasOptionalForeignMessage || (hasOptionalForeignMessage && !optionalForeignMessage_.Equals(other.optionalForeignMessage_))) return false;
+      if (hasOptionalImportMessage != other.hasOptionalImportMessage || (hasOptionalImportMessage && !optionalImportMessage_.Equals(other.optionalImportMessage_))) return false;
+      if (hasOptionalNestedEnum != other.hasOptionalNestedEnum || (hasOptionalNestedEnum && !optionalNestedEnum_.Equals(other.optionalNestedEnum_))) return false;
+      if (hasOptionalForeignEnum != other.hasOptionalForeignEnum || (hasOptionalForeignEnum && !optionalForeignEnum_.Equals(other.optionalForeignEnum_))) return false;
+      if (hasOptionalImportEnum != other.hasOptionalImportEnum || (hasOptionalImportEnum && !optionalImportEnum_.Equals(other.optionalImportEnum_))) return false;
+      if (hasOptionalStringPiece != other.hasOptionalStringPiece || (hasOptionalStringPiece && !optionalStringPiece_.Equals(other.optionalStringPiece_))) return false;
+      if (hasOptionalCord != other.hasOptionalCord || (hasOptionalCord && !optionalCord_.Equals(other.optionalCord_))) return false;
+      if(repeatedInt32_.Count != other.repeatedInt32_.Count) return false;
+      for(int ix=0; ix < repeatedInt32_.Count; ix++)
+        if(!repeatedInt32_[ix].Equals(other.repeatedInt32_[ix])) return false;
+      if(repeatedInt64_.Count != other.repeatedInt64_.Count) return false;
+      for(int ix=0; ix < repeatedInt64_.Count; ix++)
+        if(!repeatedInt64_[ix].Equals(other.repeatedInt64_[ix])) return false;
+      if(repeatedUint32_.Count != other.repeatedUint32_.Count) return false;
+      for(int ix=0; ix < repeatedUint32_.Count; ix++)
+        if(!repeatedUint32_[ix].Equals(other.repeatedUint32_[ix])) return false;
+      if(repeatedUint64_.Count != other.repeatedUint64_.Count) return false;
+      for(int ix=0; ix < repeatedUint64_.Count; ix++)
+        if(!repeatedUint64_[ix].Equals(other.repeatedUint64_[ix])) return false;
+      if(repeatedSint32_.Count != other.repeatedSint32_.Count) return false;
+      for(int ix=0; ix < repeatedSint32_.Count; ix++)
+        if(!repeatedSint32_[ix].Equals(other.repeatedSint32_[ix])) return false;
+      if(repeatedSint64_.Count != other.repeatedSint64_.Count) return false;
+      for(int ix=0; ix < repeatedSint64_.Count; ix++)
+        if(!repeatedSint64_[ix].Equals(other.repeatedSint64_[ix])) return false;
+      if(repeatedFixed32_.Count != other.repeatedFixed32_.Count) return false;
+      for(int ix=0; ix < repeatedFixed32_.Count; ix++)
+        if(!repeatedFixed32_[ix].Equals(other.repeatedFixed32_[ix])) return false;
+      if(repeatedFixed64_.Count != other.repeatedFixed64_.Count) return false;
+      for(int ix=0; ix < repeatedFixed64_.Count; ix++)
+        if(!repeatedFixed64_[ix].Equals(other.repeatedFixed64_[ix])) return false;
+      if(repeatedSfixed32_.Count != other.repeatedSfixed32_.Count) return false;
+      for(int ix=0; ix < repeatedSfixed32_.Count; ix++)
+        if(!repeatedSfixed32_[ix].Equals(other.repeatedSfixed32_[ix])) return false;
+      if(repeatedSfixed64_.Count != other.repeatedSfixed64_.Count) return false;
+      for(int ix=0; ix < repeatedSfixed64_.Count; ix++)
+        if(!repeatedSfixed64_[ix].Equals(other.repeatedSfixed64_[ix])) return false;
+      if(repeatedFloat_.Count != other.repeatedFloat_.Count) return false;
+      for(int ix=0; ix < repeatedFloat_.Count; ix++)
+        if(!repeatedFloat_[ix].Equals(other.repeatedFloat_[ix])) return false;
+      if(repeatedDouble_.Count != other.repeatedDouble_.Count) return false;
+      for(int ix=0; ix < repeatedDouble_.Count; ix++)
+        if(!repeatedDouble_[ix].Equals(other.repeatedDouble_[ix])) return false;
+      if(repeatedBool_.Count != other.repeatedBool_.Count) return false;
+      for(int ix=0; ix < repeatedBool_.Count; ix++)
+        if(!repeatedBool_[ix].Equals(other.repeatedBool_[ix])) return false;
+      if(repeatedString_.Count != other.repeatedString_.Count) return false;
+      for(int ix=0; ix < repeatedString_.Count; ix++)
+        if(!repeatedString_[ix].Equals(other.repeatedString_[ix])) return false;
+      if(repeatedBytes_.Count != other.repeatedBytes_.Count) return false;
+      for(int ix=0; ix < repeatedBytes_.Count; ix++)
+        if(!repeatedBytes_[ix].Equals(other.repeatedBytes_[ix])) return false;
+      if(repeatedGroup_.Count != other.repeatedGroup_.Count) return false;
+      for(int ix=0; ix < repeatedGroup_.Count; ix++)
+        if(!repeatedGroup_[ix].Equals(other.repeatedGroup_[ix])) return false;
+      if(repeatedNestedMessage_.Count != other.repeatedNestedMessage_.Count) return false;
+      for(int ix=0; ix < repeatedNestedMessage_.Count; ix++)
+        if(!repeatedNestedMessage_[ix].Equals(other.repeatedNestedMessage_[ix])) return false;
+      if(repeatedForeignMessage_.Count != other.repeatedForeignMessage_.Count) return false;
+      for(int ix=0; ix < repeatedForeignMessage_.Count; ix++)
+        if(!repeatedForeignMessage_[ix].Equals(other.repeatedForeignMessage_[ix])) return false;
+      if(repeatedImportMessage_.Count != other.repeatedImportMessage_.Count) return false;
+      for(int ix=0; ix < repeatedImportMessage_.Count; ix++)
+        if(!repeatedImportMessage_[ix].Equals(other.repeatedImportMessage_[ix])) return false;
+      if(repeatedNestedEnum_.Count != other.repeatedNestedEnum_.Count) return false;
+      for(int ix=0; ix < repeatedNestedEnum_.Count; ix++)
+        if(!repeatedNestedEnum_[ix].Equals(other.repeatedNestedEnum_[ix])) return false;
+      if(repeatedForeignEnum_.Count != other.repeatedForeignEnum_.Count) return false;
+      for(int ix=0; ix < repeatedForeignEnum_.Count; ix++)
+        if(!repeatedForeignEnum_[ix].Equals(other.repeatedForeignEnum_[ix])) return false;
+      if(repeatedImportEnum_.Count != other.repeatedImportEnum_.Count) return false;
+      for(int ix=0; ix < repeatedImportEnum_.Count; ix++)
+        if(!repeatedImportEnum_[ix].Equals(other.repeatedImportEnum_[ix])) return false;
+      if(repeatedStringPiece_.Count != other.repeatedStringPiece_.Count) return false;
+      for(int ix=0; ix < repeatedStringPiece_.Count; ix++)
+        if(!repeatedStringPiece_[ix].Equals(other.repeatedStringPiece_[ix])) return false;
+      if(repeatedCord_.Count != other.repeatedCord_.Count) return false;
+      for(int ix=0; ix < repeatedCord_.Count; ix++)
+        if(!repeatedCord_[ix].Equals(other.repeatedCord_[ix])) return false;
+      if (hasDefaultInt32 != other.hasDefaultInt32 || (hasDefaultInt32 && !defaultInt32_.Equals(other.defaultInt32_))) return false;
+      if (hasDefaultInt64 != other.hasDefaultInt64 || (hasDefaultInt64 && !defaultInt64_.Equals(other.defaultInt64_))) return false;
+      if (hasDefaultUint32 != other.hasDefaultUint32 || (hasDefaultUint32 && !defaultUint32_.Equals(other.defaultUint32_))) return false;
+      if (hasDefaultUint64 != other.hasDefaultUint64 || (hasDefaultUint64 && !defaultUint64_.Equals(other.defaultUint64_))) return false;
+      if (hasDefaultSint32 != other.hasDefaultSint32 || (hasDefaultSint32 && !defaultSint32_.Equals(other.defaultSint32_))) return false;
+      if (hasDefaultSint64 != other.hasDefaultSint64 || (hasDefaultSint64 && !defaultSint64_.Equals(other.defaultSint64_))) return false;
+      if (hasDefaultFixed32 != other.hasDefaultFixed32 || (hasDefaultFixed32 && !defaultFixed32_.Equals(other.defaultFixed32_))) return false;
+      if (hasDefaultFixed64 != other.hasDefaultFixed64 || (hasDefaultFixed64 && !defaultFixed64_.Equals(other.defaultFixed64_))) return false;
+      if (hasDefaultSfixed32 != other.hasDefaultSfixed32 || (hasDefaultSfixed32 && !defaultSfixed32_.Equals(other.defaultSfixed32_))) return false;
+      if (hasDefaultSfixed64 != other.hasDefaultSfixed64 || (hasDefaultSfixed64 && !defaultSfixed64_.Equals(other.defaultSfixed64_))) return false;
+      if (hasDefaultFloat != other.hasDefaultFloat || (hasDefaultFloat && !defaultFloat_.Equals(other.defaultFloat_))) return false;
+      if (hasDefaultDouble != other.hasDefaultDouble || (hasDefaultDouble && !defaultDouble_.Equals(other.defaultDouble_))) return false;
+      if (hasDefaultBool != other.hasDefaultBool || (hasDefaultBool && !defaultBool_.Equals(other.defaultBool_))) return false;
+      if (hasDefaultString != other.hasDefaultString || (hasDefaultString && !defaultString_.Equals(other.defaultString_))) return false;
+      if (hasDefaultBytes != other.hasDefaultBytes || (hasDefaultBytes && !defaultBytes_.Equals(other.defaultBytes_))) return false;
+      if (hasDefaultNestedEnum != other.hasDefaultNestedEnum || (hasDefaultNestedEnum && !defaultNestedEnum_.Equals(other.defaultNestedEnum_))) return false;
+      if (hasDefaultForeignEnum != other.hasDefaultForeignEnum || (hasDefaultForeignEnum && !defaultForeignEnum_.Equals(other.defaultForeignEnum_))) return false;
+      if (hasDefaultImportEnum != other.hasDefaultImportEnum || (hasDefaultImportEnum && !defaultImportEnum_.Equals(other.defaultImportEnum_))) return false;
+      if (hasDefaultStringPiece != other.hasDefaultStringPiece || (hasDefaultStringPiece && !defaultStringPiece_.Equals(other.defaultStringPiece_))) return false;
+      if (hasDefaultCord != other.hasDefaultCord || (hasDefaultCord && !defaultCord_.Equals(other.defaultCord_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("optional_int32", hasOptionalInt32, optionalInt32_, writer);
+      PrintField("optional_int64", hasOptionalInt64, optionalInt64_, writer);
+      PrintField("optional_uint32", hasOptionalUint32, optionalUint32_, writer);
+      PrintField("optional_uint64", hasOptionalUint64, optionalUint64_, writer);
+      PrintField("optional_sint32", hasOptionalSint32, optionalSint32_, writer);
+      PrintField("optional_sint64", hasOptionalSint64, optionalSint64_, writer);
+      PrintField("optional_fixed32", hasOptionalFixed32, optionalFixed32_, writer);
+      PrintField("optional_fixed64", hasOptionalFixed64, optionalFixed64_, writer);
+      PrintField("optional_sfixed32", hasOptionalSfixed32, optionalSfixed32_, writer);
+      PrintField("optional_sfixed64", hasOptionalSfixed64, optionalSfixed64_, writer);
+      PrintField("optional_float", hasOptionalFloat, optionalFloat_, writer);
+      PrintField("optional_double", hasOptionalDouble, optionalDouble_, writer);
+      PrintField("optional_bool", hasOptionalBool, optionalBool_, writer);
+      PrintField("optional_string", hasOptionalString, optionalString_, writer);
+      PrintField("optional_bytes", hasOptionalBytes, optionalBytes_, writer);
+      PrintField("OptionalGroup", hasOptionalGroup, optionalGroup_, writer);
+      PrintField("optional_nested_message", hasOptionalNestedMessage, optionalNestedMessage_, writer);
+      PrintField("optional_foreign_message", hasOptionalForeignMessage, optionalForeignMessage_, writer);
+      PrintField("optional_import_message", hasOptionalImportMessage, optionalImportMessage_, writer);
+      PrintField("optional_nested_enum", hasOptionalNestedEnum, optionalNestedEnum_, writer);
+      PrintField("optional_foreign_enum", hasOptionalForeignEnum, optionalForeignEnum_, writer);
+      PrintField("optional_import_enum", hasOptionalImportEnum, optionalImportEnum_, writer);
+      PrintField("optional_string_piece", hasOptionalStringPiece, optionalStringPiece_, writer);
+      PrintField("optional_cord", hasOptionalCord, optionalCord_, writer);
+      PrintField("repeated_int32", repeatedInt32_, writer);
+      PrintField("repeated_int64", repeatedInt64_, writer);
+      PrintField("repeated_uint32", repeatedUint32_, writer);
+      PrintField("repeated_uint64", repeatedUint64_, writer);
+      PrintField("repeated_sint32", repeatedSint32_, writer);
+      PrintField("repeated_sint64", repeatedSint64_, writer);
+      PrintField("repeated_fixed32", repeatedFixed32_, writer);
+      PrintField("repeated_fixed64", repeatedFixed64_, writer);
+      PrintField("repeated_sfixed32", repeatedSfixed32_, writer);
+      PrintField("repeated_sfixed64", repeatedSfixed64_, writer);
+      PrintField("repeated_float", repeatedFloat_, writer);
+      PrintField("repeated_double", repeatedDouble_, writer);
+      PrintField("repeated_bool", repeatedBool_, writer);
+      PrintField("repeated_string", repeatedString_, writer);
+      PrintField("repeated_bytes", repeatedBytes_, writer);
+      PrintField("RepeatedGroup", repeatedGroup_, writer);
+      PrintField("repeated_nested_message", repeatedNestedMessage_, writer);
+      PrintField("repeated_foreign_message", repeatedForeignMessage_, writer);
+      PrintField("repeated_import_message", repeatedImportMessage_, writer);
+      PrintField("repeated_nested_enum", repeatedNestedEnum_, writer);
+      PrintField("repeated_foreign_enum", repeatedForeignEnum_, writer);
+      PrintField("repeated_import_enum", repeatedImportEnum_, writer);
+      PrintField("repeated_string_piece", repeatedStringPiece_, writer);
+      PrintField("repeated_cord", repeatedCord_, writer);
+      PrintField("default_int32", hasDefaultInt32, defaultInt32_, writer);
+      PrintField("default_int64", hasDefaultInt64, defaultInt64_, writer);
+      PrintField("default_uint32", hasDefaultUint32, defaultUint32_, writer);
+      PrintField("default_uint64", hasDefaultUint64, defaultUint64_, writer);
+      PrintField("default_sint32", hasDefaultSint32, defaultSint32_, writer);
+      PrintField("default_sint64", hasDefaultSint64, defaultSint64_, writer);
+      PrintField("default_fixed32", hasDefaultFixed32, defaultFixed32_, writer);
+      PrintField("default_fixed64", hasDefaultFixed64, defaultFixed64_, writer);
+      PrintField("default_sfixed32", hasDefaultSfixed32, defaultSfixed32_, writer);
+      PrintField("default_sfixed64", hasDefaultSfixed64, defaultSfixed64_, writer);
+      PrintField("default_float", hasDefaultFloat, defaultFloat_, writer);
+      PrintField("default_double", hasDefaultDouble, defaultDouble_, writer);
+      PrintField("default_bool", hasDefaultBool, defaultBool_, writer);
+      PrintField("default_string", hasDefaultString, defaultString_, writer);
+      PrintField("default_bytes", hasDefaultBytes, defaultBytes_, writer);
+      PrintField("default_nested_enum", hasDefaultNestedEnum, defaultNestedEnum_, writer);
+      PrintField("default_foreign_enum", hasDefaultForeignEnum, defaultForeignEnum_, writer);
+      PrintField("default_import_enum", hasDefaultImportEnum, defaultImportEnum_, writer);
+      PrintField("default_string_piece", hasDefaultStringPiece, defaultStringPiece_, writer);
+      PrintField("default_cord", hasDefaultCord, defaultCord_, writer);
+    }
+    #endregion
     
     public static TestAllTypesLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -5180,6 +5612,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasC) hash ^= c_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      ForeignMessageLite other = obj as ForeignMessageLite;
+      if (other == null) return false;
+      if (hasC != other.hasC || (hasC && !c_.Equals(other.c_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("c", hasC, c_, writer);
+    }
+    #endregion
+    
     public static ForeignMessageLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -5782,6 +6233,106 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      foreach(int i in packedInt32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in packedInt64_)
+        hash ^= i.GetHashCode();
+      foreach(uint i in packedUint32_)
+        hash ^= i.GetHashCode();
+      foreach(ulong i in packedUint64_)
+        hash ^= i.GetHashCode();
+      foreach(int i in packedSint32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in packedSint64_)
+        hash ^= i.GetHashCode();
+      foreach(uint i in packedFixed32_)
+        hash ^= i.GetHashCode();
+      foreach(ulong i in packedFixed64_)
+        hash ^= i.GetHashCode();
+      foreach(int i in packedSfixed32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in packedSfixed64_)
+        hash ^= i.GetHashCode();
+      foreach(float i in packedFloat_)
+        hash ^= i.GetHashCode();
+      foreach(double i in packedDouble_)
+        hash ^= i.GetHashCode();
+      foreach(bool i in packedBool_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite i in packedEnum_)
+        hash ^= i.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestPackedTypesLite other = obj as TestPackedTypesLite;
+      if (other == null) return false;
+      if(packedInt32_.Count != other.packedInt32_.Count) return false;
+      for(int ix=0; ix < packedInt32_.Count; ix++)
+        if(!packedInt32_[ix].Equals(other.packedInt32_[ix])) return false;
+      if(packedInt64_.Count != other.packedInt64_.Count) return false;
+      for(int ix=0; ix < packedInt64_.Count; ix++)
+        if(!packedInt64_[ix].Equals(other.packedInt64_[ix])) return false;
+      if(packedUint32_.Count != other.packedUint32_.Count) return false;
+      for(int ix=0; ix < packedUint32_.Count; ix++)
+        if(!packedUint32_[ix].Equals(other.packedUint32_[ix])) return false;
+      if(packedUint64_.Count != other.packedUint64_.Count) return false;
+      for(int ix=0; ix < packedUint64_.Count; ix++)
+        if(!packedUint64_[ix].Equals(other.packedUint64_[ix])) return false;
+      if(packedSint32_.Count != other.packedSint32_.Count) return false;
+      for(int ix=0; ix < packedSint32_.Count; ix++)
+        if(!packedSint32_[ix].Equals(other.packedSint32_[ix])) return false;
+      if(packedSint64_.Count != other.packedSint64_.Count) return false;
+      for(int ix=0; ix < packedSint64_.Count; ix++)
+        if(!packedSint64_[ix].Equals(other.packedSint64_[ix])) return false;
+      if(packedFixed32_.Count != other.packedFixed32_.Count) return false;
+      for(int ix=0; ix < packedFixed32_.Count; ix++)
+        if(!packedFixed32_[ix].Equals(other.packedFixed32_[ix])) return false;
+      if(packedFixed64_.Count != other.packedFixed64_.Count) return false;
+      for(int ix=0; ix < packedFixed64_.Count; ix++)
+        if(!packedFixed64_[ix].Equals(other.packedFixed64_[ix])) return false;
+      if(packedSfixed32_.Count != other.packedSfixed32_.Count) return false;
+      for(int ix=0; ix < packedSfixed32_.Count; ix++)
+        if(!packedSfixed32_[ix].Equals(other.packedSfixed32_[ix])) return false;
+      if(packedSfixed64_.Count != other.packedSfixed64_.Count) return false;
+      for(int ix=0; ix < packedSfixed64_.Count; ix++)
+        if(!packedSfixed64_[ix].Equals(other.packedSfixed64_[ix])) return false;
+      if(packedFloat_.Count != other.packedFloat_.Count) return false;
+      for(int ix=0; ix < packedFloat_.Count; ix++)
+        if(!packedFloat_[ix].Equals(other.packedFloat_[ix])) return false;
+      if(packedDouble_.Count != other.packedDouble_.Count) return false;
+      for(int ix=0; ix < packedDouble_.Count; ix++)
+        if(!packedDouble_[ix].Equals(other.packedDouble_[ix])) return false;
+      if(packedBool_.Count != other.packedBool_.Count) return false;
+      for(int ix=0; ix < packedBool_.Count; ix++)
+        if(!packedBool_[ix].Equals(other.packedBool_[ix])) return false;
+      if(packedEnum_.Count != other.packedEnum_.Count) return false;
+      for(int ix=0; ix < packedEnum_.Count; ix++)
+        if(!packedEnum_[ix].Equals(other.packedEnum_[ix])) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("packed_int32", packedInt32_, writer);
+      PrintField("packed_int64", packedInt64_, writer);
+      PrintField("packed_uint32", packedUint32_, writer);
+      PrintField("packed_uint64", packedUint64_, writer);
+      PrintField("packed_sint32", packedSint32_, writer);
+      PrintField("packed_sint64", packedSint64_, writer);
+      PrintField("packed_fixed32", packedFixed32_, writer);
+      PrintField("packed_fixed64", packedFixed64_, writer);
+      PrintField("packed_sfixed32", packedSfixed32_, writer);
+      PrintField("packed_sfixed64", packedSfixed64_, writer);
+      PrintField("packed_float", packedFloat_, writer);
+      PrintField("packed_double", packedDouble_, writer);
+      PrintField("packed_bool", packedBool_, writer);
+      PrintField("packed_enum", packedEnum_, writer);
+    }
+    #endregion
     
     public static TestPackedTypesLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -6506,6 +7057,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      hash ^= base.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestAllExtensionsLite other = obj as TestAllExtensionsLite;
+      if (other == null) return false;
+      if (!base.Equals(other)) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      base.PrintTo(writer);
+    }
+    #endregion
+    
     public static TestAllExtensionsLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -6671,6 +7241,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasA) hash ^= a_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      OptionalGroup_extension_lite other = obj as OptionalGroup_extension_lite;
+      if (other == null) return false;
+      if (hasA != other.hasA || (hasA && !a_.Equals(other.a_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("a", hasA, a_, writer);
+    }
+    #endregion
     
     public static OptionalGroup_extension_lite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -6862,6 +7451,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasA) hash ^= a_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      RepeatedGroup_extension_lite other = obj as RepeatedGroup_extension_lite;
+      if (other == null) return false;
+      if (hasA != other.hasA || (hasA && !a_.Equals(other.a_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("a", hasA, a_, writer);
+    }
+    #endregion
+    
     public static RepeatedGroup_extension_lite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -7040,6 +7648,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      hash ^= base.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestPackedExtensionsLite other = obj as TestPackedExtensionsLite;
+      if (other == null) return false;
+      if (!base.Equals(other)) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      base.PrintTo(writer);
+    }
+    #endregion
+    
     public static TestPackedExtensionsLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -7191,6 +7818,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestNestedExtensionLite other = obj as TestNestedExtensionLite;
+      if (other == null) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+    }
+    #endregion
     
     public static TestNestedExtensionLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -7356,6 +7999,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasDeprecatedField) hash ^= deprecatedField_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestDeprecatedLite other = obj as TestDeprecatedLite;
+      if (other == null) return false;
+      if (hasDeprecatedField != other.hasDeprecatedField || (hasDeprecatedField && !deprecatedField_.Equals(other.deprecatedField_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("deprecated_field", hasDeprecatedField, deprecatedField_, writer);
+    }
+    #endregion
     
     public static TestDeprecatedLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();

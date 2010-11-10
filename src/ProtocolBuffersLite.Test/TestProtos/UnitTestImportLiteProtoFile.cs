@@ -84,6 +84,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasD) hash ^= d_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      ImportMessageLite other = obj as ImportMessageLite;
+      if (other == null) return false;
+      if (hasD != other.hasD || (hasD && !d_.Equals(other.d_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("d", hasD, d_, writer);
+    }
+    #endregion
+    
     public static ImportMessageLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

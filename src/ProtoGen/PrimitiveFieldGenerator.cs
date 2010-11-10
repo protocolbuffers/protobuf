@@ -103,5 +103,17 @@ namespace Google.ProtocolBuffers.ProtoGen {
           CapitalizedTypeName, Number, PropertyName);
       writer.WriteLine("}");
     }
+
+    public override void WriteHash(TextGenerator writer) {
+      writer.WriteLine("if (has{0}) hash ^= {1}_.GetHashCode();", PropertyName, Name);
+    }
+
+    public override void WriteEquals(TextGenerator writer) {
+      writer.WriteLine("if (has{0} != other.has{0} || (has{0} && !{1}_.Equals(other.{1}_))) return false;", PropertyName, Name);
+    }
+
+    public override void WriteToString(TextGenerator writer) {
+      writer.WriteLine("PrintField(\"{0}\", has{1}, {2}_, writer);", Descriptor.Name, PropertyName, Name);
+    }
   }
 }

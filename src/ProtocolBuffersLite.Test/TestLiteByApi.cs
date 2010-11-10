@@ -42,12 +42,44 @@ namespace Google.ProtocolBuffers {
   [TestFixture]
   public class TestLiteByApi {
 
-    [Test, Ignore("Currently broken as equality/hash is not implemented")]
+    [Test]
     public void TestAllTypesEquality() {
       TestAllTypesLite msg = TestAllTypesLite.DefaultInstance;
       TestAllTypesLite copy = msg.ToBuilder().Build();
       Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
       Assert.IsTrue(msg.Equals(copy));
+      msg = msg.ToBuilder().SetOptionalString("Hi").Build();
+      Assert.AreNotEqual(msg.GetHashCode(), copy.GetHashCode());
+      Assert.IsFalse(msg.Equals(copy));
+      copy = copy.ToBuilder().SetOptionalString("Hi").Build();
+      Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+      Assert.IsTrue(msg.Equals(copy));
+    }
+
+    [Test]
+    public void TestEqualityOnExtensions() {
+      TestAllExtensionsLite msg = TestAllExtensionsLite.DefaultInstance;
+      TestAllExtensionsLite copy = msg.ToBuilder().Build();
+      Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+      Assert.IsTrue(msg.Equals(copy));
+      msg = msg.ToBuilder().SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite, "Hi").Build();
+      Assert.AreNotEqual(msg.GetHashCode(), copy.GetHashCode());
+      Assert.IsFalse(msg.Equals(copy));
+      copy = copy.ToBuilder().SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite, "Hi").Build();
+      Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+      Assert.IsTrue(msg.Equals(copy));
+    }
+
+    [Test]
+    public void TestAllTypesToString() {
+      TestAllTypesLite msg = TestAllTypesLite.DefaultInstance;
+      TestAllTypesLite copy = msg.ToBuilder().Build();
+      Assert.AreEqual(msg.ToString(), copy.ToString());
+      Assert.IsEmpty(msg.ToString());
+      msg = msg.ToBuilder().SetOptionalInt32(-1).Build();
+      Assert.AreEqual("optional_int32: -1", msg.ToString().TrimEnd());
+      msg = msg.ToBuilder().SetOptionalString("abc123").Build();
+      Assert.AreEqual("optional_int32: -1\noptional_string: \"abc123\"", msg.ToString().Replace("\r", "").TrimEnd());
     }
 
     [Test]

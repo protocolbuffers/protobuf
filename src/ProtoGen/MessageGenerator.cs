@@ -32,6 +32,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
@@ -172,6 +173,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
         GenerateIsInitialized(writer);
         GenerateMessageSerializationMethods(writer);
       }
+      if (UseLiteRuntime) {
+        GenerateLiteRuntimeMethods(writer);
+      }
 
       GenerateParseFromMethods(writer);
       GenerateBuilder(writer);
@@ -188,6 +192,49 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
       writer.Outdent();
       writer.WriteLine("}");
+      writer.WriteLine();
+    }
+
+    private void GenerateLiteRuntimeMethods(TextGenerator writer) {
+
+      bool callbase = Descriptor.Proto.ExtensionRangeCount > 0;
+      writer.WriteLine("#region Lite runtime methods");
+      writer.WriteLine("public override int GetHashCode() {");
+      writer.Indent();
+      writer.WriteLine("int hash = GetType().GetHashCode();");
+      foreach (FieldDescriptor fieldDescriptor in Descriptor.Fields) {
+        SourceGenerators.CreateFieldGenerator(fieldDescriptor).WriteHash(writer);
+      }
+      if (callbase) writer.WriteLine("hash ^= base.GetHashCode();");
+      writer.WriteLine("return hash;");
+      writer.Outdent();
+      writer.WriteLine("}");
+      writer.WriteLine();
+
+      writer.WriteLine("public override bool Equals(object obj) {");
+      writer.Indent();
+      writer.WriteLine("{0} other = obj as {0};", ClassName);
+      writer.WriteLine("if (other == null) return false;");
+      foreach (FieldDescriptor fieldDescriptor in Descriptor.Fields) {
+        SourceGenerators.CreateFieldGenerator(fieldDescriptor).WriteEquals(writer);
+      }
+      if (callbase) writer.WriteLine("if (!base.Equals(other)) return false;");
+      writer.WriteLine("return true;");
+      writer.Outdent();
+      writer.WriteLine("}");
+      writer.WriteLine();
+      
+      writer.WriteLine("public override void PrintTo(global::System.IO.TextWriter writer) {");
+      writer.Indent();
+      List<FieldDescriptor> sorted = new List<FieldDescriptor>(Descriptor.Fields);
+      sorted.Sort(new Comparison<FieldDescriptor>(delegate(FieldDescriptor a, FieldDescriptor b) { return a.FieldNumber.CompareTo(b.FieldNumber); }));
+      foreach (FieldDescriptor fieldDescriptor in sorted) {
+        SourceGenerators.CreateFieldGenerator(fieldDescriptor).WriteToString(writer);
+      }
+      if (callbase) writer.WriteLine("base.PrintTo(writer);");
+      writer.Outdent();
+      writer.WriteLine("}");
+      writer.WriteLine("#endregion");
       writer.WriteLine();
     }
 

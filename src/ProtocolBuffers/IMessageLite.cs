@@ -104,6 +104,11 @@ namespace Google.ProtocolBuffers {
     string ToString();
 
     /// <summary>
+    /// Converts the message to a string.
+    /// </summary>
+    void PrintTo(TextWriter writer);
+
+    /// <summary>
     /// Serializes the message to a ByteString. This is a trivial wrapper
     /// around WriteTo(CodedOutputStream).
     /// </summary>

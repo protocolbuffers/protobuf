@@ -48,6 +48,7 @@ namespace Google.ProtocolBuffers {
   }
 
   public class ExtensionDescriptorLite : IFieldDescriptorLite {
+    private readonly string fullName;
     private readonly IEnumLiteMap enumTypeMap;
     private readonly int number;
     private readonly FieldType type;
@@ -56,7 +57,8 @@ namespace Google.ProtocolBuffers {
     private readonly MappedType mapType;
     private readonly object defaultValue;
 
-    public ExtensionDescriptorLite(IEnumLiteMap enumTypeMap, int number, FieldType type, object defaultValue, bool isRepeated, bool isPacked) {
+    public ExtensionDescriptorLite(string fullName, IEnumLiteMap enumTypeMap, int number, FieldType type, object defaultValue, bool isRepeated, bool isPacked) {
+      this.fullName = fullName;
       this.enumTypeMap = enumTypeMap;
       this.number = number;
       this.type = type;
@@ -65,6 +67,8 @@ namespace Google.ProtocolBuffers {
       this.isPacked = isPacked;
       this.defaultValue = defaultValue;
     }
+
+    public string FullName { get { return fullName; } }
 
     public bool IsRepeated {
       get { return isRepeated; }
@@ -116,9 +120,9 @@ namespace Google.ProtocolBuffers {
 
   public class GeneratedRepeatExtensionLite<TContainingType, TExtensionType> : GeneratedExtensionLite<TContainingType, IList<TExtensionType>>
     where TContainingType : IMessageLite {
-    public GeneratedRepeatExtensionLite(TContainingType containingTypeDefaultInstance,
+    public GeneratedRepeatExtensionLite(string fullName, TContainingType containingTypeDefaultInstance,
       IMessageLite messageDefaultInstance, IEnumLiteMap enumTypeMap, int number, FieldType type, bool isPacked) :
-      base(containingTypeDefaultInstance, new List<TExtensionType>(), messageDefaultInstance, enumTypeMap, number, type, isPacked) {
+      base(fullName, containingTypeDefaultInstance, new List<TExtensionType>(), messageDefaultInstance, enumTypeMap, number, type, isPacked) {
     }
 
     public override object ToReflectionType(object value) {
@@ -167,6 +171,7 @@ namespace Google.ProtocolBuffers {
 
     /** For use by generated code only. */
     public GeneratedExtensionLite(
+        string fullName,
         TContainingType containingTypeDefaultInstance,
         TExtensionType defaultValue,
         IMessageLite messageDefaultInstance,
@@ -174,13 +179,14 @@ namespace Google.ProtocolBuffers {
         int number,
         FieldType type)
       : this(containingTypeDefaultInstance, defaultValue, messageDefaultInstance,
-          new ExtensionDescriptorLite(enumTypeMap, number, type, defaultValue,
+          new ExtensionDescriptorLite(fullName, enumTypeMap, number, type, defaultValue,
             false /* isRepeated */, false /* isPacked */)) {
     }
 
     private static readonly IList<object> Empty = new object[0];
     /** Repeating fields: For use by generated code only. */
     protected GeneratedExtensionLite(
+      string fullName,
       TContainingType containingTypeDefaultInstance,
       TExtensionType defaultValue,
       IMessageLite messageDefaultInstance,
@@ -189,7 +195,7 @@ namespace Google.ProtocolBuffers {
       FieldType type,
       bool isPacked)
       : this(containingTypeDefaultInstance, defaultValue, messageDefaultInstance,
-          new ExtensionDescriptorLite(enumTypeMap, number, type, Empty,
+          new ExtensionDescriptorLite(fullName, enumTypeMap, number, type, Empty,
             true /* isRepeated */, isPacked)) {
     }
 

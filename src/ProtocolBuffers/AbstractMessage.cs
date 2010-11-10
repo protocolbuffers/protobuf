@@ -101,6 +101,10 @@ namespace Google.ProtocolBuffers {
       return TextFormat.PrintToString(this);
     }
 
+    public sealed override void PrintTo(TextWriter writer) {
+      TextFormat.Print(this, writer);
+    }
+
     /// <summary>
     /// Serializes the message and writes it to the given output stream.
     /// This does not flush or close the stream.

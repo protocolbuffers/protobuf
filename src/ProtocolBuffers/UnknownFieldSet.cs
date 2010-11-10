@@ -139,6 +139,14 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
+    /// Converts the set to a string in protocol buffer text format. This
+    /// is just a trivial wrapper around TextFormat.PrintToString.
+    /// </summary>
+    public void PrintTo(TextWriter writer) {
+      TextFormat.Print(this, writer);
+    }
+
+    /// <summary>
     /// Serializes the message to a ByteString and returns it. This is
     /// just a trivial wrapper around WriteTo(CodedOutputStream).
     /// </summary>
@@ -533,7 +541,7 @@ namespace Google.ProtocolBuffers {
         int fieldNumber = WireFormat.GetTagFieldNumber(tag);
 
         FieldDescriptor field;
-        IMessage defaultFieldInstance = null;
+        IMessageLite defaultFieldInstance = null;
 
         if (type.IsExtensionNumber(fieldNumber)) {
           ExtensionInfo extension = extensionRegistry[type, fieldNumber];
@@ -644,7 +652,7 @@ namespace Google.ProtocolBuffers {
 
         int typeId = 0;
         ByteString rawBytes = null;  // If we encounter "message" before "typeId"
-        IBuilder subBuilder = null;
+        IBuilderLite subBuilder = null;
         FieldDescriptor field = null;
 
         while (true) {

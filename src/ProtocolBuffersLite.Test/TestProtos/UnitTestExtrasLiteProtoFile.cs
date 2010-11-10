@@ -26,6 +26,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       Descriptor = null;
       global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasLiteProtoFile.EmployeeIdLite = 
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite, global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeIdLite>(
+          "protobuf_unittest_extra.employee_id_lite",
           global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.DefaultInstance,
           null,
           global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeIdLite.DefaultInstance,
@@ -116,6 +117,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasD) hash ^= d_.GetHashCode();
+      if (hasEn) hash ^= en_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestRequiredLite other = obj as TestRequiredLite;
+      if (other == null) return false;
+      if (hasD != other.hasD || (hasD && !d_.Equals(other.d_))) return false;
+      if (hasEn != other.hasEn || (hasEn && !en_.Equals(other.en_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("d", hasD, d_, writer);
+      PrintField("en", hasEn, en_, writer);
+    }
+    #endregion
     
     public static TestRequiredLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -374,6 +397,28 @@ namespace Google.ProtocolBuffers.TestProtos {
             return size;
           }
         }
+        
+        #region Lite runtime methods
+        public override int GetHashCode() {
+          int hash = GetType().GetHashCode();
+          if (hasNumber) hash ^= number_.GetHashCode();
+          if (hasType) hash ^= type_.GetHashCode();
+          return hash;
+        }
+        
+        public override bool Equals(object obj) {
+          PhoneNumber other = obj as PhoneNumber;
+          if (other == null) return false;
+          if (hasNumber != other.hasNumber || (hasNumber && !number_.Equals(other.number_))) return false;
+          if (hasType != other.hasType || (hasType && !type_.Equals(other.type_))) return false;
+          return true;
+        }
+        
+        public override void PrintTo(global::System.IO.TextWriter writer) {
+          PrintField("number", hasNumber, number_, writer);
+          PrintField("type", hasType, type_, writer);
+        }
+        #endregion
         
         public static PhoneNumber ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -663,6 +708,37 @@ namespace Google.ProtocolBuffers.TestProtos {
             return size;
           }
         }
+        
+        #region Lite runtime methods
+        public override int GetHashCode() {
+          int hash = GetType().GetHashCode();
+          if (hasAddress) hash ^= address_.GetHashCode();
+          if (hasAddress2) hash ^= address2_.GetHashCode();
+          if (hasCity) hash ^= city_.GetHashCode();
+          if (hasState) hash ^= state_.GetHashCode();
+          if (hasZip) hash ^= zip_.GetHashCode();
+          return hash;
+        }
+        
+        public override bool Equals(object obj) {
+          Addresses other = obj as Addresses;
+          if (other == null) return false;
+          if (hasAddress != other.hasAddress || (hasAddress && !address_.Equals(other.address_))) return false;
+          if (hasAddress2 != other.hasAddress2 || (hasAddress2 && !address2_.Equals(other.address2_))) return false;
+          if (hasCity != other.hasCity || (hasCity && !city_.Equals(other.city_))) return false;
+          if (hasState != other.hasState || (hasState && !state_.Equals(other.state_))) return false;
+          if (hasZip != other.hasZip || (hasZip && !zip_.Equals(other.zip_))) return false;
+          return true;
+        }
+        
+        public override void PrintTo(global::System.IO.TextWriter writer) {
+          PrintField("address", hasAddress, address_, writer);
+          PrintField("address2", hasAddress2, address2_, writer);
+          PrintField("city", hasCity, city_, writer);
+          PrintField("state", hasState, state_, writer);
+          PrintField("zip", hasZip, zip_, writer);
+        }
+        #endregion
         
         public static Addresses ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
@@ -1057,6 +1133,52 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasName) hash ^= name_.GetHashCode();
+      if (hasId) hash ^= id_.GetHashCode();
+      if (hasEmail) hash ^= email_.GetHashCode();
+      foreach(int i in codes_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber i in phone_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses i in addresses_)
+        hash ^= i.GetHashCode();
+      hash ^= base.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestInteropPersonLite other = obj as TestInteropPersonLite;
+      if (other == null) return false;
+      if (hasName != other.hasName || (hasName && !name_.Equals(other.name_))) return false;
+      if (hasId != other.hasId || (hasId && !id_.Equals(other.id_))) return false;
+      if (hasEmail != other.hasEmail || (hasEmail && !email_.Equals(other.email_))) return false;
+      if(codes_.Count != other.codes_.Count) return false;
+      for(int ix=0; ix < codes_.Count; ix++)
+        if(!codes_[ix].Equals(other.codes_[ix])) return false;
+      if(phone_.Count != other.phone_.Count) return false;
+      for(int ix=0; ix < phone_.Count; ix++)
+        if(!phone_[ix].Equals(other.phone_[ix])) return false;
+      if(addresses_.Count != other.addresses_.Count) return false;
+      for(int ix=0; ix < addresses_.Count; ix++)
+        if(!addresses_[ix].Equals(other.addresses_[ix])) return false;
+      if (!base.Equals(other)) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("name", hasName, name_, writer);
+      PrintField("id", hasId, id_, writer);
+      PrintField("email", hasEmail, email_, writer);
+      PrintField("phone", phone_, writer);
+      PrintField("Addresses", addresses_, writer);
+      PrintField("codes", codes_, writer);
+      base.PrintTo(writer);
+    }
+    #endregion
+    
     public static TestInteropPersonLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1435,6 +1557,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return size;
       }
     }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasNumber) hash ^= number_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestInteropEmployeeIdLite other = obj as TestInteropEmployeeIdLite;
+      if (other == null) return false;
+      if (hasNumber != other.hasNumber || (hasNumber && !number_.Equals(other.number_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("number", hasNumber, number_, writer);
+    }
+    #endregion
     
     public static TestInteropEmployeeIdLite ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();

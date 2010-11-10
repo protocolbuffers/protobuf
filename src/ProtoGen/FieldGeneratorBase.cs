@@ -42,6 +42,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
         : base(descriptor) {
     }
 
+    public abstract void WriteHash(TextGenerator writer);
+    public abstract void WriteEquals(TextGenerator writer);
+    public abstract void WriteToString(TextGenerator writer);
+
     private static bool AllPrintableAscii(string text) {
       foreach (char c in text) {
         if (c < 0x20 || c > 0x7e) {
@@ -73,11 +77,30 @@ namespace Google.ProtocolBuffers.ProtoGen {
           case FieldType.UInt32:
           case FieldType.UInt64:
           case FieldType.Fixed32:
-          case FieldType.Fixed64:
+          case FieldType.Fixed64: 
+          {
             // The simple Object.ToString converts using the current culture.
             // We want to always use the invariant culture so it's predictable.
             IConvertible value = (IConvertible) Descriptor.DefaultValue;
+            //a few things that must be handled explicitly
+            if (Descriptor.FieldType == FieldType.Double && value is double) {
+              if (double.IsNaN((double) value))
+                return "double.NaN";
+              if (double.IsPositiveInfinity((double) value))
+                return "double.PositiveInfinity";
+              if (double.IsNegativeInfinity((double) value))
+                return "double.NegativeInfinity";
+            }
+            else if (Descriptor.FieldType == FieldType.Float && value is float) {
+              if (float.IsNaN((float)value))
+                return "float.NaN";
+              if (float.IsPositiveInfinity((float)value))
+                return "float.PositiveInfinity";
+              if (float.IsNegativeInfinity((float)value))
+                return "float.NegativeInfinity";
+            }
             return value.ToString(CultureInfo.InvariantCulture) + suffix;
+          }
           case FieldType.Bool:
             return (bool) Descriptor.DefaultValue ? "true" : "false";
 

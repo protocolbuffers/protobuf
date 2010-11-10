@@ -41,5 +41,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
     void GenerateParsingCode(TextGenerator writer);
     void GenerateSerializationCode(TextGenerator writer);
     void GenerateSerializedSizeCode(TextGenerator writer);
+
+    void WriteHash(TextGenerator writer);
+    void WriteEquals(TextGenerator writer);
+    void WriteToString(TextGenerator writer);
   }
 }

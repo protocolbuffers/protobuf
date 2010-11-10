@@ -66,7 +66,7 @@ namespace Google.ProtocolBuffers {
   public abstract class GeneratedExtensionBase<TExtension> {
 
     private readonly FieldDescriptor descriptor;
-    private readonly IMessage messageDefaultInstance;
+    private readonly IMessageLite messageDefaultInstance;
 
     protected GeneratedExtensionBase(FieldDescriptor descriptor, Type singularExtensionType) {
       if (!descriptor.IsExtension) {
@@ -80,8 +80,8 @@ namespace Google.ProtocolBuffers {
         if (defaultInstanceProperty == null) {
           throw new ArgumentException("No public static DefaultInstance property for type " + typeof(TExtension).Name);
         }
-#warning ToDo - Invalid cast, could be IMessageLite
-        messageDefaultInstance = (IMessage)defaultInstanceProperty.GetValue(null, null);
+
+        messageDefaultInstance = (IMessageLite)defaultInstanceProperty.GetValue(null, null);
       }
     }
 
@@ -96,7 +96,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Returns the default message instance for extensions which are message types.
     /// </summary>
-    public IMessage MessageDefaultInstance {
+    public IMessageLite MessageDefaultInstance {
       get { return messageDefaultInstance; }
     }
 

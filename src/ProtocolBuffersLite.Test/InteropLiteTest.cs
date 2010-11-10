@@ -111,5 +111,52 @@ namespace Google.ProtocolBuffers {
 
       Assert.AreEqual(person.ToByteArray(), copy.ToByteArray());
     }
+
+    public ByteString AllBytes {
+      get {
+        byte[] bytes = new byte[256];
+        for (int i = 0; i < bytes.Length; i++)
+          bytes[i] = (byte)i;
+        return ByteString.CopyFrom(bytes);
+      }
+    }
+
+      [Test]
+    public void TestCompareStringValues() {
+      TestInteropPersonLite person = TestInteropPersonLite.CreateBuilder()
+        .SetId(123)
+        .SetName("abc")
+        .SetEmail("abc@123.com")
+        .AddRangeCodes(new[] { 1, 2, 3 })
+        .AddPhone(TestInteropPersonLite.Types.PhoneNumber.CreateBuilder().SetNumber("555-1234").Build())
+        .AddPhone(TestInteropPersonLite.Types.PhoneNumber.CreateBuilder().SetNumber(System.Text.Encoding.ASCII.GetString(AllBytes.ToByteArray())).Build())
+        .AddAddresses(TestInteropPersonLite.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland").SetState("NA").SetZip(12345).Build())
+        .SetExtension(UnitTestExtrasLiteProtoFile.EmployeeIdLite, TestInteropEmployeeIdLite.CreateBuilder().SetNumber("123").Build())
+        .Build();
+      Assert.IsTrue(person.IsInitialized);
+
+      ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
+      UnitTestExtrasFullProtoFile.RegisterAllExtensions(registry);
+
+      TestInteropPerson copy = TestInteropPerson.ParseFrom(person.ToByteArray(), registry);
+
+      Assert.AreEqual(person.ToByteArray(), copy.ToByteArray());
+
+      TestInteropPerson.Builder copyBuilder = TestInteropPerson.CreateBuilder();
+      TextFormat.Merge(person.ToString().Replace("[protobuf_unittest_extra.employee_id_lite]", "[protobuf_unittest_extra.employee_id]"), registry, copyBuilder);
+
+      copy = copyBuilder.Build();
+      Assert.AreEqual(person.ToByteArray(), copy.ToByteArray());
+
+      string liteText = person.ToString().TrimEnd().Replace("\r", "");
+      string fullText = copy.ToString().TrimEnd().Replace("\r", "");
+      //map the extension type
+      liteText = liteText.Replace("[protobuf_unittest_extra.employee_id_lite]", "[protobuf_unittest_extra.employee_id]");
+      //lite version does not indent
+      while (fullText.IndexOf("\n ") >= 0)
+        fullText = fullText.Replace("\n ", "\n");
+
+      Assert.AreEqual(fullText, liteText);
+    }
   }
 }

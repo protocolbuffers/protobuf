@@ -213,7 +213,7 @@ namespace Google.ProtocolBuffers {
         ExtensionInfo extension = extensionRegistry[field.ContainingType, field.FieldNumber];
         Assert.IsNotNull(extension);
         Assert.IsNotNull(extension.DefaultInstance);
-        return extension.DefaultInstance.WeakCreateBuilderForType();
+        return (IBuilder)extension.DefaultInstance.WeakCreateBuilderForType();
       }
     }
 

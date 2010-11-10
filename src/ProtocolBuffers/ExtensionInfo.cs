@@ -48,12 +48,12 @@ namespace Google.ProtocolBuffers
     /// A default instance of the extensions's type, if it has a message type,
     /// or null otherwise.
     /// </summary>
-    public IMessage DefaultInstance { get; private set; }
+    public IMessageLite DefaultInstance { get; private set; }
 
     internal ExtensionInfo(FieldDescriptor descriptor) : this(descriptor, null) {
     }
 
-    internal ExtensionInfo(FieldDescriptor descriptor, IMessage defaultInstance) {
+    internal ExtensionInfo(FieldDescriptor descriptor, IMessageLite defaultInstance) {
       Descriptor = descriptor;
       DefaultInstance = defaultInstance;
     }

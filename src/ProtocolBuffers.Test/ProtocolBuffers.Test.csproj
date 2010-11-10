@@ -73,7 +73,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />
     <Compile Include="ServiceTest.cs" />
-    <Compile Include="TestProtos\FIXUP.cs" />
     <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />

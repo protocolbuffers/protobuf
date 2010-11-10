@@ -63,6 +63,8 @@ namespace Google.ProtocolBuffers {
     //public override int GetHashCode() {
     //}
 
+    public abstract void PrintTo(TextWriter writer);
+
     #region IMessageLite<TMessage,TBuilder> Members
 
     /// <summary>

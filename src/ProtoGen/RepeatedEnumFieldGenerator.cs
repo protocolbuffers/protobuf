@@ -175,5 +175,20 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.Outdent();
       writer.WriteLine("}");
     }
+
+    public override void WriteHash(TextGenerator writer) {
+      writer.WriteLine("foreach({0} i in {1}_)", TypeName, Name);
+      writer.WriteLine("  hash ^= i.GetHashCode();");
+    }
+
+    public override void WriteEquals(TextGenerator writer) {
+      writer.WriteLine("if({0}_.Count != other.{0}_.Count) return false;", Name);
+      writer.WriteLine("for(int ix=0; ix < {0}_.Count; ix++)", Name);
+      writer.WriteLine("  if(!{0}_[ix].Equals(other.{0}_[ix])) return false;", Name);
+    }
+
+    public override void WriteToString(TextGenerator writer) {
+      writer.WriteLine("PrintField(\"{0}\", {1}_, writer);", Descriptor.Name, Name);
+    }
   }
 }

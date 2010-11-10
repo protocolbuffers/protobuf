@@ -33,7 +33,10 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using Google.ProtocolBuffers.Collections;
+
 namespace Google.ProtocolBuffers {
   public abstract class ExtendableMessageLite<TMessage, TBuilder> : GeneratedMessageLite<TMessage, TBuilder>
     where TMessage : GeneratedMessageLite<TMessage, TBuilder>
@@ -47,6 +50,31 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     internal FieldSet Extensions {
       get { return extensions; }
+    }
+
+    public override bool Equals(object obj) {
+      ExtendableMessageLite<TMessage, TBuilder> other = obj as ExtendableMessageLite<TMessage, TBuilder>;
+      return !ReferenceEquals(null, other) &&
+        Dictionaries.Equals(extensions.AllFields, other.extensions.AllFields);
+    }
+
+    public override int GetHashCode() {
+      return Dictionaries.GetHashCode(extensions.AllFields);
+    }
+
+    /// <summary>
+    /// writes the extensions to the text stream
+    /// </summary>
+    public override void PrintTo(System.IO.TextWriter writer) {
+      foreach (KeyValuePair<IFieldDescriptorLite, object> entry in extensions.AllFields) {
+        string fn = string.Format("[{0}]", entry.Key.FullName);
+        if (entry.Key.IsRepeated) {
+          foreach (object o in ((IEnumerable)entry.Value))
+            PrintField(fn, true, o, writer);
+        } else {
+          PrintField(fn, true, entry.Value, writer);
+        }
+      }
     }
 
     /// <summary>

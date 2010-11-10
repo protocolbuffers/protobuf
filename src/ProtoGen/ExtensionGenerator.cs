@@ -97,6 +97,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
         writer.Indent();
         writer.WriteLine("new pb::{0}<{1}, {2}>(", Descriptor.IsRepeated ? "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite", extends, type);
         writer.Indent();
+        writer.WriteLine("\"{0}\",", Descriptor.FullName);
         writer.WriteLine("{0}.DefaultInstance,", extends);
         if(!Descriptor.IsRepeated)
           writer.WriteLine("{0},", Descriptor.HasDefaultValue ? DefaultValue : IsNullableType ? "null" : "default(" + type + ")");
@@ -120,6 +121,15 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
     internal void GenerateExtensionRegistrationCode(TextGenerator writer) {
       writer.WriteLine("registry.Add({0}.{1});", scope, name);
+    }
+
+    public override void WriteHash(TextGenerator writer) {
+    }
+
+    public override void WriteEquals(TextGenerator writer) {
+    }
+
+    public override void WriteToString(TextGenerator writer) {
     }
   }
 }

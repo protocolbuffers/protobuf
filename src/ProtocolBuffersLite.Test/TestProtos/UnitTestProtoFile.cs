@@ -12852,7 +12852,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int InfDoubleFieldNumber = 14;
     private bool hasInfDouble;
-    private double infDouble_ = InfinityD;
+    private double infDouble_ = double.PositiveInfinity;
     public bool HasInfDouble {
       get { return hasInfDouble; }
     }
@@ -12862,7 +12862,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int NegInfDoubleFieldNumber = 15;
     private bool hasNegInfDouble;
-    private double negInfDouble_ = -InfinityD;
+    private double negInfDouble_ = double.NegativeInfinity;
     public bool HasNegInfDouble {
       get { return hasNegInfDouble; }
     }
@@ -12872,7 +12872,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int NanDoubleFieldNumber = 16;
     private bool hasNanDouble;
-    private double nanDouble_ = NaND;
+    private double nanDouble_ = double.NaN;
     public bool HasNanDouble {
       get { return hasNanDouble; }
     }
@@ -12882,7 +12882,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int InfFloatFieldNumber = 17;
     private bool hasInfFloat;
-    private float infFloat_ = InfinityF;
+    private float infFloat_ = float.PositiveInfinity;
     public bool HasInfFloat {
       get { return hasInfFloat; }
     }
@@ -12892,7 +12892,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int NegInfFloatFieldNumber = 18;
     private bool hasNegInfFloat;
-    private float negInfFloat_ = -InfinityF;
+    private float negInfFloat_ = float.NegativeInfinity;
     public bool HasNegInfFloat {
       get { return hasNegInfFloat; }
     }
@@ -12902,7 +12902,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int NanFloatFieldNumber = 19;
     private bool hasNanFloat;
-    private float nanFloat_ = NaNF;
+    private float nanFloat_ = float.NaN;
     public bool HasNanFloat {
       get { return hasNanFloat; }
     }
@@ -13558,7 +13558,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearInfDouble() {
         result.hasInfDouble = false;
-        result.infDouble_ = InfinityD;
+        result.infDouble_ = double.PositiveInfinity;
         return this;
       }
       
@@ -13576,7 +13576,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearNegInfDouble() {
         result.hasNegInfDouble = false;
-        result.negInfDouble_ = -InfinityD;
+        result.negInfDouble_ = double.NegativeInfinity;
         return this;
       }
       
@@ -13594,7 +13594,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearNanDouble() {
         result.hasNanDouble = false;
-        result.nanDouble_ = NaND;
+        result.nanDouble_ = double.NaN;
         return this;
       }
       
@@ -13612,7 +13612,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearInfFloat() {
         result.hasInfFloat = false;
-        result.infFloat_ = InfinityF;
+        result.infFloat_ = float.PositiveInfinity;
         return this;
       }
       
@@ -13630,7 +13630,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearNegInfFloat() {
         result.hasNegInfFloat = false;
-        result.negInfFloat_ = -InfinityF;
+        result.negInfFloat_ = float.NegativeInfinity;
         return this;
       }
       
@@ -13648,7 +13648,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearNanFloat() {
         result.hasNanFloat = false;
-        result.nanFloat_ = NaNF;
+        result.nanFloat_ = float.NaN;
         return this;
       }
     }
