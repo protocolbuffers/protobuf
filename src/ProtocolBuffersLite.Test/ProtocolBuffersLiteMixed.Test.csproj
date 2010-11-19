@@ -63,6 +63,7 @@
     <Compile Include="ExtendableMessageLiteTest.cs" />
     <Compile Include="InteropLiteTest.cs" />
     <Compile Include="LiteTest.cs" />
+    <Compile Include="MissingFieldAndExtensionTest.cs" />
     <Compile Include="TestLiteByApi.cs" />
     <Compile Include="TestProtos\UnitTestExtrasFullProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />

@@ -158,6 +158,10 @@ namespace Google.ProtocolBuffers {
           this[field] = entry.Value;
         }
       }
+
+      //Fix for unknown fields not merging, see java's AbstractMessage.Builder<T> line 236
+      MergeUnknownFields(other.UnknownFields);
+
       return ThisBuilder;
     }
 

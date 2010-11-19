@@ -47,3 +47,26 @@ message  TestInteropEmployeeId {
 extend TestInteropPerson {
   required TestInteropEmployeeId employee_id = 126;
 }
+
+message TestMissingFieldsA {
+  required string name = 1;
+  required int32 id = 2;
+  optional string email = 3;
+  
+  message SubA {
+    required int32 count = 5;
+    repeated string values = 6;
+  }
+  optional SubA testA = 11;
+}
+
+message TestMissingFieldsB {
+  required string name = 1;
+  required int32 id = 2;
+  optional string website = 4;
+  
+  message SubB {
+    repeated string values = 7;
+  }
+  optional SubB testB = 12;
+}

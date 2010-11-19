@@ -27,6 +27,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestInteropPerson.Types.Addresses, global::Google.ProtocolBuffers.TestProtos.TestInteropPerson.Types.Addresses.Builder> internal__static_protobuf_unittest_extra_TestInteropPerson_Addresses__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_extra_TestInteropEmployeeId__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeId, global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeId.Builder> internal__static_protobuf_unittest_extra_TestInteropEmployeeId__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_extra_TestMissingFieldsA__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Builder> internal__static_protobuf_unittest_extra_TestMissingFieldsA__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.Builder> internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_extra_TestMissingFieldsB__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Builder> internal__static_protobuf_unittest_extra_TestMissingFieldsB__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.Builder> internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -49,12 +57,19 @@ namespace Google.ProtocolBuffers.TestProtos {
           "ZXNzGAEgAigJEhAKCGFkZHJlc3MyGAIgASgJEgwKBGNpdHkYAyACKAkSDQoF" + 
           "c3RhdGUYBCACKAkSCwoDemlwGAUgAigHIisKCVBob25lVHlwZRIKCgZNT0JJ" + 
           "TEUQABIICgRIT01FEAESCAoEV09SSxACKgUIZBDIASInChVUZXN0SW50ZXJv" + 
-          "cEVtcGxveWVlSWQSDgoGbnVtYmVyGAEgAigJOm8KC2VtcGxveWVlX2lkEiou" + 
-          "cHJvdG9idWZfdW5pdHRlc3RfZXh0cmEuVGVzdEludGVyb3BQZXJzb24YfiAC" + 
-          "KAsyLi5wcm90b2J1Zl91bml0dGVzdF9leHRyYS5UZXN0SW50ZXJvcEVtcGxv" + 
-          "eWVlSWRCWgoTY29tLmdvb2dsZS5wcm90b2J1ZkgCwj5ACiFHb29nbGUuUHJv" + 
-          "dG9jb2xCdWZmZXJzLlRlc3RQcm90b3MSG1VuaXRUZXN0RXh0cmFzRnVsbFBy" + 
-          "b3RvRmlsZQ==");
+          "cEVtcGxveWVlSWQSDgoGbnVtYmVyGAEgAigJIqUBChJUZXN0TWlzc2luZ0Zp" + 
+          "ZWxkc0ESDAoEbmFtZRgBIAIoCRIKCgJpZBgCIAIoBRINCgVlbWFpbBgDIAEo" + 
+          "CRI/CgV0ZXN0QRgLIAEoCzIwLnByb3RvYnVmX3VuaXR0ZXN0X2V4dHJhLlRl" + 
+          "c3RNaXNzaW5nRmllbGRzQS5TdWJBGiUKBFN1YkESDQoFY291bnQYBSACKAUS" + 
+          "DgoGdmFsdWVzGAYgAygJIpgBChJUZXN0TWlzc2luZ0ZpZWxkc0ISDAoEbmFt" + 
+          "ZRgBIAIoCRIKCgJpZBgCIAIoBRIPCgd3ZWJzaXRlGAQgASgJEj8KBXRlc3RC" + 
+          "GAwgASgLMjAucHJvdG9idWZfdW5pdHRlc3RfZXh0cmEuVGVzdE1pc3NpbmdG" + 
+          "aWVsZHNCLlN1YkIaFgoEU3ViQhIOCgZ2YWx1ZXMYByADKAk6bwoLZW1wbG95" + 
+          "ZWVfaWQSKi5wcm90b2J1Zl91bml0dGVzdF9leHRyYS5UZXN0SW50ZXJvcFBl" + 
+          "cnNvbhh+IAIoCzIuLnByb3RvYnVmX3VuaXR0ZXN0X2V4dHJhLlRlc3RJbnRl" + 
+          "cm9wRW1wbG95ZWVJZEJaChNjb20uZ29vZ2xlLnByb3RvYnVmSALCPkAKIUdv" + 
+          "b2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIbVW5pdFRlc3RFeHRy" + 
+          "YXNGdWxsUHJvdG9GaWxl");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_protobuf_unittest_extra_TestInteropPerson__Descriptor = Descriptor.MessageTypes[0];
@@ -73,6 +88,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_extra_TestInteropEmployeeId__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeId, global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeId.Builder>(internal__static_protobuf_unittest_extra_TestInteropEmployeeId__Descriptor,
                 new string[] { "Number", });
+        internal__static_protobuf_unittest_extra_TestMissingFieldsA__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_protobuf_unittest_extra_TestMissingFieldsA__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Builder>(internal__static_protobuf_unittest_extra_TestMissingFieldsA__Descriptor,
+                new string[] { "Name", "Id", "Email", "TestA", });
+        internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__Descriptor = internal__static_protobuf_unittest_extra_TestMissingFieldsA__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.Builder>(internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__Descriptor,
+                new string[] { "Count", "Values", });
+        internal__static_protobuf_unittest_extra_TestMissingFieldsB__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_protobuf_unittest_extra_TestMissingFieldsB__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Builder>(internal__static_protobuf_unittest_extra_TestMissingFieldsB__Descriptor,
+                new string[] { "Name", "Id", "Website", "TestB", });
+        internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__Descriptor = internal__static_protobuf_unittest_extra_TestMissingFieldsB__Descriptor.NestedTypes[0];
+        internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB, global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.Builder>(internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__Descriptor,
+                new string[] { "Values", });
         global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.EmployeeId = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeId>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.Descriptor.Extensions[0]);
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
@@ -967,6 +998,802 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestInteropEmployeeId() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class TestMissingFieldsA : pb::GeneratedMessage<TestMissingFieldsA, TestMissingFieldsA.Builder> {
+    private static readonly TestMissingFieldsA defaultInstance = new Builder().BuildPartial();
+    public static TestMissingFieldsA DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestMissingFieldsA DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestMissingFieldsA ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsA__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestMissingFieldsA, TestMissingFieldsA.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsA__FieldAccessorTable; }
+    }
+    
+    #region Nested types
+    public static class Types {
+      public sealed partial class SubA : pb::GeneratedMessage<SubA, SubA.Builder> {
+        private static readonly SubA defaultInstance = new Builder().BuildPartial();
+        public static SubA DefaultInstance {
+          get { return defaultInstance; }
+        }
+        
+        public override SubA DefaultInstanceForType {
+          get { return defaultInstance; }
+        }
+        
+        protected override SubA ThisMessage {
+          get { return this; }
+        }
+        
+        public static pbd::MessageDescriptor Descriptor {
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__Descriptor; }
+        }
+        
+        protected override pb::FieldAccess.FieldAccessorTable<SubA, SubA.Builder> InternalFieldAccessors {
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsA_SubA__FieldAccessorTable; }
+        }
+        
+        public const int CountFieldNumber = 5;
+        private bool hasCount;
+        private int count_ = 0;
+        public bool HasCount {
+          get { return hasCount; }
+        }
+        public int Count {
+          get { return count_; }
+        }
+        
+        public const int ValuesFieldNumber = 6;
+        private pbc::PopsicleList<string> values_ = new pbc::PopsicleList<string>();
+        public scg::IList<string> ValuesList {
+          get { return pbc::Lists.AsReadOnly(values_); }
+        }
+        public int ValuesCount {
+          get { return values_.Count; }
+        }
+        public string GetValues(int index) {
+          return values_[index];
+        }
+        
+        public static SubA ParseFrom(pb::ByteString data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static SubA ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static SubA ParseFrom(byte[] data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static SubA ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static SubA ParseFrom(global::System.IO.Stream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static SubA ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static SubA ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static SubA ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
+        public static SubA ParseFrom(pb::CodedInputStream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static SubA ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
+        public override Builder CreateBuilderForType() { return new Builder(); }
+        public static Builder CreateBuilder(SubA prototype) {
+          return (Builder) new Builder().MergeFrom(prototype);
+        }
+        
+        public sealed partial class Builder : pb::GeneratedBuilder<SubA, Builder> {
+          protected override Builder ThisBuilder {
+            get { return this; }
+          }
+          public Builder() {}
+          
+          SubA result = new SubA();
+          
+          protected override SubA MessageBeingBuilt {
+            get { return result; }
+          }
+          
+          public override Builder Clear() {
+            result = new SubA();
+            return this;
+          }
+          
+          public override Builder Clone() {
+            return new Builder().MergeFrom(result);
+          }
+          
+          public override pbd::MessageDescriptor DescriptorForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.Descriptor; }
+          }
+          
+          public override SubA DefaultInstanceForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance; }
+          }
+          
+          public override SubA BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
+            result.values_.MakeReadOnly();
+            SubA returnMe = result;
+            result = null;
+            return returnMe;
+          }
+          
+          
+          public bool HasCount {
+            get { return result.HasCount; }
+          }
+          public int Count {
+            get { return result.Count; }
+            set { SetCount(value); }
+          }
+          public Builder SetCount(int value) {
+            result.hasCount = true;
+            result.count_ = value;
+            return this;
+          }
+          public Builder ClearCount() {
+            result.hasCount = false;
+            result.count_ = 0;
+            return this;
+          }
+          
+          public pbc::IPopsicleList<string> ValuesList {
+            get { return result.values_; }
+          }
+          public int ValuesCount {
+            get { return result.ValuesCount; }
+          }
+          public string GetValues(int index) {
+            return result.GetValues(index);
+          }
+          public Builder SetValues(int index, string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
+            result.values_[index] = value;
+            return this;
+          }
+          public Builder AddValues(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
+            result.values_.Add(value);
+            return this;
+          }
+          public Builder AddRangeValues(scg::IEnumerable<string> values) {
+            base.AddRange(values, result.values_);
+            return this;
+          }
+          public Builder ClearValues() {
+            result.values_.Clear();
+            return this;
+          }
+        }
+        static SubA() {
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.Descriptor, null);
+        }
+      }
+      
+    }
+    #endregion
+    
+    public const int NameFieldNumber = 1;
+    private bool hasName;
+    private string name_ = "";
+    public bool HasName {
+      get { return hasName; }
+    }
+    public string Name {
+      get { return name_; }
+    }
+    
+    public const int IdFieldNumber = 2;
+    private bool hasId;
+    private int id_ = 0;
+    public bool HasId {
+      get { return hasId; }
+    }
+    public int Id {
+      get { return id_; }
+    }
+    
+    public const int EmailFieldNumber = 3;
+    private bool hasEmail;
+    private string email_ = "";
+    public bool HasEmail {
+      get { return hasEmail; }
+    }
+    public string Email {
+      get { return email_; }
+    }
+    
+    public const int TestAFieldNumber = 11;
+    private bool hasTestA;
+    private global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA testA_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance;
+    public bool HasTestA {
+      get { return hasTestA; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA TestA {
+      get { return testA_; }
+    }
+    
+    public static TestMissingFieldsA ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestMissingFieldsA ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestMissingFieldsA prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestMissingFieldsA, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestMissingFieldsA result = new TestMissingFieldsA();
+      
+      protected override TestMissingFieldsA MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestMissingFieldsA();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Descriptor; }
+      }
+      
+      public override TestMissingFieldsA DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.DefaultInstance; }
+      }
+      
+      public override TestMissingFieldsA BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        TestMissingFieldsA returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      
+      public bool HasName {
+        get { return result.HasName; }
+      }
+      public string Name {
+        get { return result.Name; }
+        set { SetName(value); }
+      }
+      public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasName = true;
+        result.name_ = value;
+        return this;
+      }
+      public Builder ClearName() {
+        result.hasName = false;
+        result.name_ = "";
+        return this;
+      }
+      
+      public bool HasId {
+        get { return result.HasId; }
+      }
+      public int Id {
+        get { return result.Id; }
+        set { SetId(value); }
+      }
+      public Builder SetId(int value) {
+        result.hasId = true;
+        result.id_ = value;
+        return this;
+      }
+      public Builder ClearId() {
+        result.hasId = false;
+        result.id_ = 0;
+        return this;
+      }
+      
+      public bool HasEmail {
+        get { return result.HasEmail; }
+      }
+      public string Email {
+        get { return result.Email; }
+        set { SetEmail(value); }
+      }
+      public Builder SetEmail(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasEmail = true;
+        result.email_ = value;
+        return this;
+      }
+      public Builder ClearEmail() {
+        result.hasEmail = false;
+        result.email_ = "";
+        return this;
+      }
+      
+      public bool HasTestA {
+       get { return result.HasTestA; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA TestA {
+        get { return result.TestA; }
+        set { SetTestA(value); }
+      }
+      public Builder SetTestA(global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasTestA = true;
+        result.testA_ = value;
+        return this;
+      }
+      public Builder SetTestA(global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        result.hasTestA = true;
+        result.testA_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeTestA(global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        if (result.HasTestA &&
+            result.testA_ != global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance) {
+            result.testA_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.CreateBuilder(result.testA_).MergeFrom(value).BuildPartial();
+        } else {
+          result.testA_ = value;
+        }
+        result.hasTestA = true;
+        return this;
+      }
+      public Builder ClearTestA() {
+        result.hasTestA = false;
+        result.testA_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance;
+        return this;
+      }
+    }
+    static TestMissingFieldsA() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class TestMissingFieldsB : pb::GeneratedMessage<TestMissingFieldsB, TestMissingFieldsB.Builder> {
+    private static readonly TestMissingFieldsB defaultInstance = new Builder().BuildPartial();
+    public static TestMissingFieldsB DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestMissingFieldsB DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestMissingFieldsB ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsB__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<TestMissingFieldsB, TestMissingFieldsB.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsB__FieldAccessorTable; }
+    }
+    
+    #region Nested types
+    public static class Types {
+      public sealed partial class SubB : pb::GeneratedMessage<SubB, SubB.Builder> {
+        private static readonly SubB defaultInstance = new Builder().BuildPartial();
+        public static SubB DefaultInstance {
+          get { return defaultInstance; }
+        }
+        
+        public override SubB DefaultInstanceForType {
+          get { return defaultInstance; }
+        }
+        
+        protected override SubB ThisMessage {
+          get { return this; }
+        }
+        
+        public static pbd::MessageDescriptor Descriptor {
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__Descriptor; }
+        }
+        
+        protected override pb::FieldAccess.FieldAccessorTable<SubB, SubB.Builder> InternalFieldAccessors {
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.internal__static_protobuf_unittest_extra_TestMissingFieldsB_SubB__FieldAccessorTable; }
+        }
+        
+        public const int ValuesFieldNumber = 7;
+        private pbc::PopsicleList<string> values_ = new pbc::PopsicleList<string>();
+        public scg::IList<string> ValuesList {
+          get { return pbc::Lists.AsReadOnly(values_); }
+        }
+        public int ValuesCount {
+          get { return values_.Count; }
+        }
+        public string GetValues(int index) {
+          return values_[index];
+        }
+        
+        public static SubB ParseFrom(pb::ByteString data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static SubB ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static SubB ParseFrom(byte[] data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static SubB ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static SubB ParseFrom(global::System.IO.Stream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static SubB ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static SubB ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static SubB ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
+        public static SubB ParseFrom(pb::CodedInputStream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static SubB ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
+        public override Builder CreateBuilderForType() { return new Builder(); }
+        public static Builder CreateBuilder(SubB prototype) {
+          return (Builder) new Builder().MergeFrom(prototype);
+        }
+        
+        public sealed partial class Builder : pb::GeneratedBuilder<SubB, Builder> {
+          protected override Builder ThisBuilder {
+            get { return this; }
+          }
+          public Builder() {}
+          
+          SubB result = new SubB();
+          
+          protected override SubB MessageBeingBuilt {
+            get { return result; }
+          }
+          
+          public override Builder Clear() {
+            result = new SubB();
+            return this;
+          }
+          
+          public override Builder Clone() {
+            return new Builder().MergeFrom(result);
+          }
+          
+          public override pbd::MessageDescriptor DescriptorForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.Descriptor; }
+          }
+          
+          public override SubB DefaultInstanceForType {
+            get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance; }
+          }
+          
+          public override SubB BuildPartial() {
+            if (result == null) {
+              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            }
+            result.values_.MakeReadOnly();
+            SubB returnMe = result;
+            result = null;
+            return returnMe;
+          }
+          
+          
+          public pbc::IPopsicleList<string> ValuesList {
+            get { return result.values_; }
+          }
+          public int ValuesCount {
+            get { return result.ValuesCount; }
+          }
+          public string GetValues(int index) {
+            return result.GetValues(index);
+          }
+          public Builder SetValues(int index, string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
+            result.values_[index] = value;
+            return this;
+          }
+          public Builder AddValues(string value) {
+            pb::ThrowHelper.ThrowIfNull(value, "value");
+            result.values_.Add(value);
+            return this;
+          }
+          public Builder AddRangeValues(scg::IEnumerable<string> values) {
+            base.AddRange(values, result.values_);
+            return this;
+          }
+          public Builder ClearValues() {
+            result.values_.Clear();
+            return this;
+          }
+        }
+        static SubB() {
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.Descriptor, null);
+        }
+      }
+      
+    }
+    #endregion
+    
+    public const int NameFieldNumber = 1;
+    private bool hasName;
+    private string name_ = "";
+    public bool HasName {
+      get { return hasName; }
+    }
+    public string Name {
+      get { return name_; }
+    }
+    
+    public const int IdFieldNumber = 2;
+    private bool hasId;
+    private int id_ = 0;
+    public bool HasId {
+      get { return hasId; }
+    }
+    public int Id {
+      get { return id_; }
+    }
+    
+    public const int WebsiteFieldNumber = 4;
+    private bool hasWebsite;
+    private string website_ = "";
+    public bool HasWebsite {
+      get { return hasWebsite; }
+    }
+    public string Website {
+      get { return website_; }
+    }
+    
+    public const int TestBFieldNumber = 12;
+    private bool hasTestB;
+    private global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB testB_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance;
+    public bool HasTestB {
+      get { return hasTestB; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB TestB {
+      get { return testB_; }
+    }
+    
+    public static TestMissingFieldsB ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestMissingFieldsB ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestMissingFieldsB prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<TestMissingFieldsB, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestMissingFieldsB result = new TestMissingFieldsB();
+      
+      protected override TestMissingFieldsB MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestMissingFieldsB();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Descriptor; }
+      }
+      
+      public override TestMissingFieldsB DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.DefaultInstance; }
+      }
+      
+      public override TestMissingFieldsB BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        TestMissingFieldsB returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      
+      public bool HasName {
+        get { return result.HasName; }
+      }
+      public string Name {
+        get { return result.Name; }
+        set { SetName(value); }
+      }
+      public Builder SetName(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasName = true;
+        result.name_ = value;
+        return this;
+      }
+      public Builder ClearName() {
+        result.hasName = false;
+        result.name_ = "";
+        return this;
+      }
+      
+      public bool HasId {
+        get { return result.HasId; }
+      }
+      public int Id {
+        get { return result.Id; }
+        set { SetId(value); }
+      }
+      public Builder SetId(int value) {
+        result.hasId = true;
+        result.id_ = value;
+        return this;
+      }
+      public Builder ClearId() {
+        result.hasId = false;
+        result.id_ = 0;
+        return this;
+      }
+      
+      public bool HasWebsite {
+        get { return result.HasWebsite; }
+      }
+      public string Website {
+        get { return result.Website; }
+        set { SetWebsite(value); }
+      }
+      public Builder SetWebsite(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasWebsite = true;
+        result.website_ = value;
+        return this;
+      }
+      public Builder ClearWebsite() {
+        result.hasWebsite = false;
+        result.website_ = "";
+        return this;
+      }
+      
+      public bool HasTestB {
+       get { return result.HasTestB; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB TestB {
+        get { return result.TestB; }
+        set { SetTestB(value); }
+      }
+      public Builder SetTestB(global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasTestB = true;
+        result.testB_ = value;
+        return this;
+      }
+      public Builder SetTestB(global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        result.hasTestB = true;
+        result.testB_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeTestB(global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        if (result.HasTestB &&
+            result.testB_ != global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance) {
+            result.testB_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.CreateBuilder(result.testB_).MergeFrom(value).BuildPartial();
+        } else {
+          result.testB_ = value;
+        }
+        result.hasTestB = true;
+        return this;
+      }
+      public Builder ClearTestB() {
+        result.hasTestB = false;
+        result.testB_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance;
+        return this;
+      }
+    }
+    static TestMissingFieldsB() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasFullProtoFile.Descriptor, null);
     }
   }

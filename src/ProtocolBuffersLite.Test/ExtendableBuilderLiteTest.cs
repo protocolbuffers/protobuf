@@ -221,5 +221,47 @@ namespace Google.ProtocolBuffers {
       Assert.AreEqual(2, builder.GetExtensionCount(UnitTestLiteProtoFile.RepeatedInt32ExtensionLite));
       Assert.AreEqual(123, builder.GetExtension(UnitTestLiteProtoFile.RepeatedInt32ExtensionLite, 1));
     }
+
+    [Test]
+    public void TestMissingExtensionsLite()
+    {
+        const int optionalInt32 = 12345678;
+        TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
+        builder.SetExtension(UnitTestLiteProtoFile.OptionalInt32ExtensionLite, optionalInt32);
+        builder.AddExtension(UnitTestLiteProtoFile.RepeatedDoubleExtensionLite, 1.1);
+        builder.AddExtension(UnitTestLiteProtoFile.RepeatedDoubleExtensionLite, 1.2);
+        builder.AddExtension(UnitTestLiteProtoFile.RepeatedDoubleExtensionLite, 1.3);
+        TestAllExtensionsLite msg = builder.Build();
+
+        Assert.IsTrue(msg.HasExtension(UnitTestLiteProtoFile.OptionalInt32ExtensionLite));
+        Assert.AreEqual(3, msg.GetExtensionCount(UnitTestLiteProtoFile.RepeatedDoubleExtensionLite));
+
+        byte[] bits = msg.ToByteArray();
+        TestAllExtensionsLite copy = TestAllExtensionsLite.ParseFrom(bits);
+        Assert.IsFalse(copy.HasExtension(UnitTestLiteProtoFile.OptionalInt32ExtensionLite));
+        Assert.AreEqual(0, copy.GetExtensionCount(UnitTestLiteProtoFile.RepeatedDoubleExtensionLite));
+        Assert.AreNotEqual(msg, copy);
+
+        //The lite runtime removes all unknown fields and extensions
+        byte[] copybits = copy.ToByteArray();
+        Assert.AreEqual(0, copybits.Length);
+    }
+
+    [Test]
+    public void TestMissingFieldsLite()
+    {
+        TestAllTypesLite msg = TestAllTypesLite.CreateBuilder()
+            .SetOptionalInt32(123)
+            .SetOptionalString("123")
+            .Build();
+
+        byte[] bits = msg.ToByteArray();
+        TestAllExtensionsLite copy = TestAllExtensionsLite.ParseFrom(bits);
+        Assert.AreNotEqual(msg, copy);
+
+        //The lite runtime removes all unknown fields and extensions
+        byte[] copybits = copy.ToByteArray();
+        Assert.AreEqual(0, copybits.Length);
+    }
   }
 }
