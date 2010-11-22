@@ -73,10 +73,14 @@
       <HintPath>..\..\lib\Rhino.Mocks.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyResolutionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TempFile.cs" />
+    <Compile Include="TestPreprocessing.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
@@ -107,6 +111,18 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+    <None Include="..\..\lib\protoc.exe">
+      <Link>protoc.exe</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\protos\google\protobuf\csharp_options.proto">
+      <Link>google\protobuf\csharp_options.proto</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\protos\google\protobuf\descriptor.proto">
+      <Link>google\protobuf\descriptor.proto</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

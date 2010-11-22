@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -40,12 +42,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// <summary>
   /// Entry point for the Protocol Buffers generator.
   /// </summary>
-  class Program {
-    static int Main(string[] args) {
+  internal class Program {
+    internal static int Main(string[] args) {
       try {
         // Hack to make sure everything's initialized
         DescriptorProtoFile.Descriptor.ToString();
-        GeneratorOptions options = ParseCommandLineArguments(args);
+        GeneratorOptions options = new GeneratorOptions {Arguments = args};
 
         IList<string> validationFailures;
         if (!options.TryValidate(out validationFailures)) {
@@ -58,22 +60,13 @@ namespace Google.ProtocolBuffers.ProtoGen {
         Generator generator = Generator.CreateGenerator(options);
         generator.Generate();
         return 0;
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         Console.Error.WriteLine("Error: {0}", e.Message);
         Console.Error.WriteLine();
         Console.Error.WriteLine("Detailed exception information: {0}", e);
         return 1;
       }
-    }
-
-    private static GeneratorOptions ParseCommandLineArguments(string[] args) {
-      GeneratorOptions options = new GeneratorOptions();
-      //string baseDir = "c:\\Users\\Jon\\Documents\\Visual Studio 2008\\Projects\\ProtocolBuffers";
-      //options.OutputDirectory = baseDir + "\\tmp";
-      //options.InputFiles = new[] { baseDir + "\\protos\\nwind-solo.protobin" };
-      options.OutputDirectory = ".";
-      options.InputFiles = args;
-      return options;
     }
   }
 }

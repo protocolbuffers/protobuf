@@ -61,7 +61,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       writer.WriteLine();
       writer.WriteLine("{0} static pbd::ServiceDescriptor Descriptor {{", ClassAccessLevel);
       writer.WriteLine("  get {{ return {0}.Descriptor.Services[{1}]; }}",
-        Descriptor.File.CSharpOptions.UmbrellaClassname, Descriptor.Index);
+        DescriptorUtil.GetQualifiedUmbrellaClassName(Descriptor.File.CSharpOptions), Descriptor.Index);
       writer.WriteLine("}");
       writer.WriteLine("{0} pbd::ServiceDescriptor DescriptorForType {{", ClassAccessLevel);
       writer.WriteLine("  get { return Descriptor; }");

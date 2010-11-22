@@ -1,10 +1,8 @@
 Current task list (not in order)
 
-- Optionally remove dependencies to csharp options
 - Remove multifile support
 - Docs
 - Clean up protogen code
-- Add flags to protogen
 - Avoid using reflection for messages which don't need it (is this
   possible?)
 - Bring service generation into line with Java
@@ -14,7 +12,5 @@ Current task list (not in order)
 - Reformat code
 - Change generated format
 - Add regions to copyright
-- Investigate command line parsing library
-- Investigate calling protoc directly
 - Build and publish binaries
 - Work out why the Compact Framework 3.5 build fails under VS2010

@@ -273,7 +273,7 @@ namespace Google.ProtocolBuffers {
         if (extras.Count == 0) {
           return current;
         }
- 	      if (current == null) {
+           if (current == null) {
           current = new List<T>(extras);
         } else {
           current.AddRange(extras);
@@ -359,7 +359,7 @@ namespace Google.ProtocolBuffers {
       /// <returns></returns>
       private static ReadOnlyCollection<T> MakeReadOnly<T>(ref List<T> list) {
         ReadOnlyCollection<T> ret = list == null ? Lists<T>.Empty : new ReadOnlyCollection<T>(list);
- 	      list = null;
+           list = null;
         return ret;
       }
     }

@@ -335,7 +335,7 @@ namespace Google.ProtocolBuffers {
       }
 
       public override bool IsInitialized {
-      	get { return fields.IsInitializedWithRespectTo(type); }
+          get { return fields.IsInitializedWithRespectTo(type); }
       }
 
       public override Builder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry) {
