@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers", "ProtocolBuffers\ProtocolBuffers.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Test", "ProtocolBuffers.Test\ProtocolBuffers.Test.csproj", "{DD01ED24-3750-4567-9A23-1DB676A15610}"
