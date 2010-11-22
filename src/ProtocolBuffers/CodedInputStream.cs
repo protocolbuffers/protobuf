@@ -105,12 +105,21 @@ namespace Google.ProtocolBuffers {
     /// byte array.
     /// </summary>
     public static CodedInputStream CreateInstance(byte[] buf) {
-      return new CodedInputStream(buf);
+      return new CodedInputStream(buf, 0, buf.Length);
     }
 
-    private CodedInputStream(byte[] buffer) {
+    /// <summary>
+    /// Creates a new CodedInputStream that reads from the given
+    /// byte array slice.
+    /// </summary>
+    public static CodedInputStream CreateInstance(byte[] buf, int offset, int length) {
+      return new CodedInputStream(buf, offset, length);
+    }
+
+    private CodedInputStream(byte[] buffer, int offset, int length) {
       this.buffer = buffer;
-      this.bufferSize = buffer.Length;
+      this.bufferPos = offset;
+      this.bufferSize = offset + length;
       this.input = null;
     }
 
