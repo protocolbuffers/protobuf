@@ -34,10 +34,6 @@
 			<Configuration>Silverlight2</Configuration>
 			<Platform>Any CPU</Platform>
 		</Solution>
-		<!--<Solution Include="$(ProjectDirectory)\src\ProtocolBuffers/ProtocolBuffersCF.csproj">
-			<Configuration>$(BuildConfiguration)</Configuration>
-			<Platform>AnyCPU</Platform>
-		</Solution>-->
 		
 	</ItemGroup>
 
