@@ -22,18 +22,6 @@
 			<Configuration>$(BuildConfiguration)</Configuration>
 			<Platform>Any CPU</Platform>
 		</Solution>
-		<Solution Include="$(SolutionFile)">
-			<Configuration>Debug</Configuration>
-			<Platform>Any CPU</Platform>
-		</Solution>
-		<Solution Include="$(SolutionFile)">
-			<Configuration>Release</Configuration>
-			<Platform>Any CPU</Platform>
-		</Solution>
-		<Solution Include="$(SolutionFile)">
-			<Configuration>Silverlight2</Configuration>
-			<Platform>Any CPU</Platform>
-		</Solution>
 		
 	</ItemGroup>
 
