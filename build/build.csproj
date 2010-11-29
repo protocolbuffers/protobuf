@@ -20,7 +20,6 @@
 
 		<Solution Include="$(SolutionFile)">
 			<Configuration>$(BuildConfiguration)</Configuration>
-			<Platform>Any CPU</Platform>
 		</Solution>
 		
 	</ItemGroup>
