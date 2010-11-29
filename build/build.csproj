@@ -23,5 +23,6 @@
 	<!-- targets -->
 	<Target Name="Build" DependsOnTargets="_Compile" />
 	<Target Name="RunBenchmarks" DependsOnTargets="_Compile" />
+	<Target Name="GeneratePackage" />
 
 </Project>
