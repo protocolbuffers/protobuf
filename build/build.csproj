@@ -7,7 +7,7 @@
 
 		<!--Directory Paths-->
 		<ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
-		<BuildTempDirectory>$(ProjectDirectory)\_tmp</BuildTempDirectory>
+		<BuildOutputDirectory>$(ProjectDirectory)\build_output</BuildOutputDirectory>
 		
 		<!--File Paths-->
 		<SolutionFile>$(ProjectDirectory)\src\ProtocolBuffers.sln</SolutionFile>
@@ -19,7 +19,7 @@
 	<Import Project="Common.targets"/>
 
 	<ItemGroup>
-		<WorkingDirectories Include="$(BuildTempDirectory)" />
+		<WorkingDirectories Include="$(BuildOutputDirectory)" />
 		
 		<Solution Include="$(SolutionFile)" />
 		

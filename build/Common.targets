@@ -11,7 +11,7 @@
 	</Target>
 
 	<Target Name="_Test">
-		<Exec Command="&quot;E:\dotnet-protobufs\lib\NUnit 2.2.8.0\nunit-console.exe&quot; %(TestContainer.Identity)" />
+		<Exec Command="&quot;E:\dotnet-protobufs\lib\NUnit 2.2.8.0\nunit-console.exe&quot; %(TestContainer.Identity) /xml:$(BuildOutputDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 
 </Project>
