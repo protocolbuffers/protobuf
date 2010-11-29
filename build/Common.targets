@@ -10,4 +10,8 @@
 		<MSBuild Projects="@(Solution)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
 	</Target>
 
+	<Target Name="_Test">
+		<Exec Command="&quot;E:\dotnet-protobufs\lib\NUnit 2.2.8.0\nunit-console.exe&quot; %(TestContainer.Identity)" />
+	</Target>
+
 </Project>

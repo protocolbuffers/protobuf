@@ -11,18 +11,25 @@
 		
 		<!--File Paths-->
 		<SolutionFile>$(ProjectDirectory)\src\ProtocolBuffers.sln</SolutionFile>
+		
+		<!--Tool Paths-->
+		<NUnitExePath>$(ProjectDirectory)\lib\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
 	</PropertyGroup>
 
 	<Import Project="Common.targets"/>
 
 	<ItemGroup>
 		<WorkingDirectories Include="$(BuildTempDirectory)" />
+		
 		<Solution Include="$(SolutionFile)" />
+		
+		<TestContainer Include="$(ProjectDirectory)\src\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
+		<TestContainer Include="$(ProjectDirectory)\src\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
 	</ItemGroup>
 
 	<!-- targets -->
-	<Target Name="Build" DependsOnTargets="_Compile" />
+	<Target Name="Build" DependsOnTargets="_Compile;_Test" />
 	<Target Name="RunBenchmarks" DependsOnTargets="_Compile" />
-	<Target Name="GeneratePackage" />
+	<Target Name="GeneratePackage" DependsOnTargets="_Compile" />
 
 </Project>
