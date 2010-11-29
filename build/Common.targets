@@ -7,7 +7,7 @@
 	</Target>
 
 	<Target Name="_Compile" DependsOnTargets="_Clean">
-		<MSBuild Projects="%(Solution.Identity)" Properties="Configuration=%(Solution.Configuration)" BuildInParallel="true" />
+		<MSBuild Projects="@(Solution)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
 	</Target>
 
 </Project>

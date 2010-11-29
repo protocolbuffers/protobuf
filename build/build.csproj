@@ -17,11 +17,7 @@
 
 	<ItemGroup>
 		<WorkingDirectories Include="$(BuildTempDirectory)" />
-
-		<Solution Include="$(SolutionFile)">
-			<Configuration>$(BuildConfiguration)</Configuration>
-		</Solution>
-		
+		<Solution Include="$(SolutionFile)" />
 	</ItemGroup>
 
 	<!-- targets -->
