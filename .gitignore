@@ -21,9 +21,8 @@ src/ProtoMunge/obj/
 mono/bin
 mono/tmp
 mono/protoc
-_tmp
-_dist
-_benchmark
+build_output
+build_temp
 
 #
 # 	Untracked files

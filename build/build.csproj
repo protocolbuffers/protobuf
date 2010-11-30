@@ -3,25 +3,39 @@
 
 	<PropertyGroup>
 		<ProjectName>Protocol Buffers</ProjectName>
-		<BuildConfiguration>Debug</BuildConfiguration>
+		<BuildConfiguration></BuildConfiguration>
 
 		<!--Directory Paths-->
 		<ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+		<ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
+		<BuildTempDirectory>$(ProjectDirectory)\build_temp\$(BuildConfiguration)</BuildTempDirectory>
 		<BuildOutputDirectory>$(ProjectDirectory)\build_output</BuildOutputDirectory>
 		
 		<!--File Paths-->
 		<SolutionFile>$(ProjectDirectory)\src\ProtocolBuffers.sln</SolutionFile>
 		
 		<!--Tool Paths-->
+		<ProtocExePath>$(ProjectDirectory)\lib\protoc.exe</ProtocExePath>
+		<ProtogenExePath>$(ProjectDirectory)\src\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
 		<NUnitExePath>$(ProjectDirectory)\lib\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
 	</PropertyGroup>
 
 	<Import Project="Common.targets"/>
 
 	<ItemGroup>
+		<WorkingDirectories Include="$(BuildTempDirectory)" />
 		<WorkingDirectories Include="$(BuildOutputDirectory)" />
-		
-		<Solution Include="$(SolutionFile)" />
+
+		<Protos Include="$(ProtosDirectory)\google\protobuf\descriptor.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\csharp_options.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_csharp_options.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_custom_options.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_embed_optimize_for.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_import.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_mset.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_optimize_for.proto" />
+		<Protos Include="$(ProjectDirectory)\protos\tutorial\addressbook.proto" />
 		
 		<TestContainer Include="$(ProjectDirectory)\src\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
 		<TestContainer Include="$(ProjectDirectory)\src\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
@@ -30,6 +44,6 @@
 	<!-- targets -->
 	<Target Name="Build" DependsOnTargets="_Compile;_Test" />
 	<Target Name="RunBenchmarks" DependsOnTargets="_Compile" />
-	<Target Name="GeneratePackage" DependsOnTargets="_Compile" />
+	<Target Name="GeneratePackage" />
 
 </Project>
