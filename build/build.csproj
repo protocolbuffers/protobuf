@@ -28,14 +28,14 @@
 
 		<Protos Include="$(ProtosDirectory)\google\protobuf\descriptor.proto" />
 		<Protos Include="$(ProtosDirectory)\google\protobuf\csharp_options.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_csharp_options.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_custom_options.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_embed_optimize_for.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_import.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_mset.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\google\protobuf\unittest_optimize_for.proto" />
-		<Protos Include="$(ProjectDirectory)\protos\tutorial\addressbook.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_csharp_options.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_custom_options.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_embed_optimize_for.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_mset.proto" />
+		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
+		<Protos Include="$(ProtosDirectory)\tutorial\addressbook.proto" />
 		
 		<TestContainer Include="$(ProjectDirectory)\src\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
 		<TestContainer Include="$(ProjectDirectory)\src\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
