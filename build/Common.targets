@@ -21,7 +21,11 @@
 		<Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
-	<Target Name="_Test" DependsOnTargets="_GenerateSource">
+	<Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">
+		<Copy SourceFiles="%(GeneratedSource.Identity)" DestinationFiles="%(GeneratedSource.TargetDirectory)\%(GeneratedSource.Filename)%(GeneratedSource.Extension)" />
+	</Target>
+
+	<Target Name="_Test" DependsOnTargets="_CopyGeneratedSource">
 		<Exec Command="&quot;E:\dotnet-protobufs\lib\NUnit 2.2.8.0\nunit-console.exe&quot; %(TestContainer.Identity) /xml:$(BuildOutputDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 
