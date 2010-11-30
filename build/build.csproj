@@ -7,17 +7,19 @@
 
 		<!--Directory Paths-->
 		<ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+		<SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
+		<LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
 		<ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
 		<BuildTempDirectory>$(ProjectDirectory)\build_temp\$(BuildConfiguration)</BuildTempDirectory>
-		<BuildOutputDirectory>$(ProjectDirectory)\build_output</BuildOutputDirectory>
+		<BuildOutputDirectory>$(ProjectDirectory)\build_output\$(BuildConfiguration)</BuildOutputDirectory>
 		
 		<!--File Paths-->
-		<SolutionFile>$(ProjectDirectory)\src\ProtocolBuffers.sln</SolutionFile>
+		<SolutionFile>$(SourceDirectory)\ProtocolBuffers.sln</SolutionFile>
 		
 		<!--Tool Paths-->
-		<ProtocExePath>$(ProjectDirectory)\lib\protoc.exe</ProtocExePath>
-		<ProtogenExePath>$(ProjectDirectory)\src\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
-		<NUnitExePath>$(ProjectDirectory)\lib\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
+		<ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
+		<ProtogenExePath>$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
+		<NUnitExePath>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
 	</PropertyGroup>
 
 	<Import Project="Common.targets"/>
@@ -68,13 +70,30 @@
 			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
 		</GeneratedSource>
 		
-		<TestContainer Include="$(ProjectDirectory)\src\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
-		<TestContainer Include="$(ProjectDirectory)\src\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
+		<TestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
+		<TestContainer Include="$(SourceDirectory)\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
+
+		<DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffers.*" />
+		<DynamicPackageItem Include="$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\ProtoGen.*" />
+		<DynamicPackageItem Include="$(SourceDirectory)\ProtoMunge\bin\$(BuildConfiguration)\ProtoMunge.*" />
+		<DynamicPackageItem Include="$(SourceDirectory)\ProtoDump\bin\$(BuildConfiguration)\ProtoDump.*" />
+		<DynamicPackageItem Include="$(SourceDirectory)\ProtoBench\bin\$(BuildConfiguration)\ProtoBench.*" />
+
+		<StaticPackageItem Include="$(ProjectDirectory)\readme.txt" />
+		<StaticPackageItem Include="$(ProjectDirectory)\license.txt" />
+		<StaticPackageItem Include="$(ProjectDirectory)\protos\**\*.*">
+			<TargetDirectory>\protos</TargetDirectory>
+		</StaticPackageItem>
+		<StaticPackageItem Include="$(LibDirectory)\Protoc*">
+			<TargetDirectory>\Protoc</TargetDirectory>
+		</StaticPackageItem>
+		
 	</ItemGroup>
 
 	<!-- targets -->
 	<Target Name="Build" DependsOnTargets="_Compile;_Test" />
-	<Target Name="RunBenchmarks" DependsOnTargets="_Compile" />
-	<Target Name="GeneratePackage" />
+	<Target Name="PreparePackageComponent" DependsOnTargets="_PreparePackageComponent" />
+	<Target Name="GeneratePackage" DependsOnTargets="_GeneratePackage" />
+	<Target Name="RunBenchmarks" />
 
 </Project>
