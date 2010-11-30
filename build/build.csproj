@@ -19,7 +19,9 @@
 		<!--Tool Paths-->
 		<ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
 		<ProtogenExePath>$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
+		<ProtoBenchExePath>$(SourceDirectory)\ProtoBench\bin\$(BuildConfiguration)\ProtoBench.exe</ProtoBenchExePath>
 		<NUnitExePath>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
+		<ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
 	</PropertyGroup>
 
 	<Import Project="Common.targets"/>
@@ -94,6 +96,6 @@
 	<Target Name="Build" DependsOnTargets="_Compile;_Test" />
 	<Target Name="PreparePackageComponent" DependsOnTargets="_PreparePackageComponent" />
 	<Target Name="GeneratePackage" DependsOnTargets="_GeneratePackage" />
-	<Target Name="RunBenchmarks" />
+	<Target Name="RunBenchmarks" DependsOnTargets="_RunBenchmarks" />
 
 </Project>

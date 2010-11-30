@@ -30,7 +30,7 @@
 	</Target>
 
 	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
-		<Exec Command="&quot;E:\dotnet-protobufs\lib\NUnit 2.2.8.0\nunit-console.exe&quot; %(TestContainer.Identity) /xml:$(BuildOutputDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
+		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildOutputDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 
 	<Target Name="_PreparePackageComponent">
@@ -42,13 +42,17 @@
 		<Delete Files="@(ExistingArchives)" />
 
 		<Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
-		<Exec Command="&quot;E:\dotnet-protobufs\lib\7-Zip 9.20\7za.exe&quot; a -tzip $(PackageName) * -r" WorkingDirectory="$(BuildOutputDirectory)" />
+		<Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(PackageName) * -r" WorkingDirectory="$(BuildOutputDirectory)" />
 
 		<ItemGroup><DirectoriesToDelete Include="$([System.IO.Directory]::GetDirectories('$(BuildOutputDirectory)'))" /></ItemGroup>
 		<ItemGroup><FilesToDelete Include="$(BuildOutputDirectory)\**\*.*" Exclude="$(BuildOutputDirectory)\$(PackageName)" /></ItemGroup>
 		
 		<Delete Files="@(FilesToDelete)" />
 		<RemoveDir Directories="@(DirectoriesToDelete)" ContinueOnError="true" />
+	</Target>
+
+	<Target Name="_RunBenchmarks">
+		<Exec Command="&quot;$(ProtoBenchExePath)&quot; Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes $(ProjectDirectory)\benchmarks\google_message1.dat > &quot;$(BuildTempDirectory)\BenchmarkResults.txt&quot;" />
 	</Target>
 
 </Project>
