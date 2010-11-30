@@ -30,7 +30,7 @@
 	</Target>
 
 	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
-		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildOutputDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
+		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildTempDirectory)\..\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 
 	<Target Name="_PreparePackageComponent">
