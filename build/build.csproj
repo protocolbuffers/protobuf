@@ -55,7 +55,7 @@
 			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
 		</GeneratedSource>
 		<GeneratedSource Include="$(BuildTempDirectory)\AddressBookProtos.cs">
-			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+			<TargetDirectory>$(SourceDirectory)\AddressBook</TargetDirectory>
 		</GeneratedSource>
 		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestCSharpOptionsProtoFile.cs">
 			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
