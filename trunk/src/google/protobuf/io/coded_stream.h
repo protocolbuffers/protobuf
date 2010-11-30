@@ -992,12 +992,12 @@ inline int CodedOutputStream::VarintSize32SignExtended(int32 value) {
 }
 
 inline void CodedOutputStream::WriteString(const string& str) {
-  WriteRaw(str.data(), str.size());
+  WriteRaw(str.data(), static_cast<int>(str.size()));
 }
 
 inline uint8* CodedOutputStream::WriteStringToArray(
     const string& str, uint8* target) {
-  return WriteRawToArray(str.data(), str.size(), target);
+  return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
 
 inline int CodedOutputStream::ByteCount() const {
