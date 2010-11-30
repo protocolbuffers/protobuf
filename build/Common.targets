@@ -25,7 +25,11 @@
 		<Copy SourceFiles="%(GeneratedSource.Identity)" DestinationFiles="%(GeneratedSource.TargetDirectory)\%(GeneratedSource.Filename)%(GeneratedSource.Extension)" />
 	</Target>
 
-	<Target Name="_Test" DependsOnTargets="_CopyGeneratedSource">
+	<Target Name="_CompileGeneratedSource" DependsOnTargets="_CopyGeneratedSource">
+		<MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
+	</Target>
+
+	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
 		<Exec Command="&quot;E:\dotnet-protobufs\lib\NUnit 2.2.8.0\nunit-console.exe&quot; %(TestContainer.Identity) /xml:$(BuildOutputDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 
