@@ -52,7 +52,7 @@
 	</Target>
 
 	<Target Name="_RunBenchmarks">
-		<Exec Command="&quot;$(ProtoBenchExePath)&quot; Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes $(ProjectDirectory)\benchmarks\google_message1.dat > &quot;$(BuildTempDirectory)\BenchmarkResults.txt&quot;" />
+		<Exec Command="&quot;$(ProtoBenchExePath)&quot; Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes $(ProjectDirectory)\benchmarks\google_message1.dat > &quot;$(BuildTempDirectory)\..\BenchmarkResults.txt&quot;" />
 	</Target>
 
 </Project>
