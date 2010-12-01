@@ -32,7 +32,8 @@
 	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
 		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildTempDirectory)\..\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
-
+	
+	<!--## Package Generation ##-->
 	<Target Name="_PreparePackageComponent">
 		<Copy SourceFiles="@(DynamicPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(DynamicPackageItem.TargetDirectory)\%(DynamicPackageItem.RecursiveDir)" />
 	</Target>
@@ -51,8 +52,53 @@
 		<RemoveDir Directories="@(DirectoriesToDelete)" ContinueOnError="true" />
 	</Target>
 
-	<Target Name="_RunBenchmarks">
-		<Exec Command="&quot;$(ProtoBenchExePath)&quot; Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes $(ProjectDirectory)\benchmarks\google_message1.dat > &quot;$(BuildTempDirectory)\..\BenchmarkResults.txt&quot;" />
+	<!--## Benchmark ##-->
+	<Target Name="_GenerateBenchmarkSource" DependsOnTargets="_Clean">
+		<PropertyGroup>
+			<Args>$(BenchmarkProtosDirectory)\google_size.proto $(BenchmarkProtosDirectory)\google_speed.proto</Args>
+		</PropertyGroup>
+
+		<Exec Command="$(ProtocExePath) --proto_path=$(BenchmarkProtosDirectory);$(ProtosDirectory) --include_imports=compiled.pb --descriptor_set_out=compiled.pb $(Args)" WorkingDirectory="$(BuildTempDirectory)" />
+		<Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(BuildTempDirectory)" />
+	</Target>
+
+	<Target Name="_CompileBenchmarkAssembly" DependsOnTargets="_GenerateBenchmarkSource">
+		<ItemGroup>
+			<BenchmarkSources Include="$(BuildTempDirectory)\GoogleSizeProtoFile.cs" />
+			<BenchmarkSources Include="$(BuildTempDirectory)\GoogleSpeedProtoFile.cs" />
+		</ItemGroup>
+
+		<Csc TargetType="library" OutputAssembly="$(BuildTempDirectory)\BenchmarkTypes.dll" Optimize="true" Sources="@(BenchmarkSources)" References="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffers.dll" />
+	</Target>
+
+	<Target Name="_PrepareBenchmarkEnvironment" DependsOnTargets="_CompileBenchmarkAssembly">
+		<ItemGroup>
+			<BenchmarkResources Include="$(BenchmarkProtosDirectory)\google_message1.dat" />
+			<BenchmarkResources Include="$(BenchmarkProtosDirectory)\google_message2.dat" />
+			<BenchmarkResources Include="$(SourceDirectory)\ProtoBench\bin\$(BuildConfiguration)\ProtoBench.exe" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(BenchmarkResources)" DestinationFolder="$(BuildTempDirectory)" />
+	</Target>
+
+	<Target Name="_RunBenchmarks" DependsOnTargets="_PrepareBenchmarkEnvironment">
+		<ItemGroup>
+			<BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes" />
+			<BenchmarkParameter Include="google_message1.dat" />
+			<BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SpeedMessage1,BenchmarkTypes" />
+			<BenchmarkParameter Include="google_message1.dat" />
+			<BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SizeMessage2,BenchmarkTypes" />
+			<BenchmarkParameter Include="google_message2.dat" />
+			<BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SpeedMessage2,BenchmarkTypes" />
+			<BenchmarkParameter Include="google_message2.dat" />
+		</ItemGroup>
+
+		<PropertyGroup>
+			<BenchmarkParameterList>@(BenchmarkParameter)</BenchmarkParameterList>
+			<Args>$(BenchmarkParameterList.Replace(`;`,` `))</Args>
+		</PropertyGroup>
+		
+		<Exec Command="&quot;$(ProtoBenchExePath)&quot; $(Args) > &quot;$(BuildTempDirectory)\..\BenchmarkResults.txt&quot;" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
 </Project>

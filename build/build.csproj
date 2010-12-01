@@ -10,6 +10,7 @@
 		<SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
 		<LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
 		<ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
+		<BenchmarkProtosDirectory>$(ProjectDirectory)\benchmarks</BenchmarkProtosDirectory>
 		<BuildTempDirectory>$(ProjectDirectory)\build_temp\$(BuildConfiguration)</BuildTempDirectory>
 		<BuildOutputDirectory>$(ProjectDirectory)\build_output\$(BuildConfiguration)</BuildOutputDirectory>
 		
