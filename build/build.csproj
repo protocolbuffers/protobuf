@@ -20,7 +20,7 @@
 		<!--Tool Paths-->
 		<ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
 		<ProtogenExePath>$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
-		<ProtoBenchExePath>$(SourceDirectory)\ProtoBench\bin\$(BuildConfiguration)\ProtoBench.exe</ProtoBenchExePath>
+		<ProtoBenchExePath>$(BuildTempDirectory)\ProtoBench.exe</ProtoBenchExePath>
 		<NUnitExePath>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
 		<ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
 	</PropertyGroup>

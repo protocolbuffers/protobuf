@@ -75,6 +75,7 @@
 		<ItemGroup>
 			<BenchmarkResources Include="$(BenchmarkProtosDirectory)\google_message1.dat" />
 			<BenchmarkResources Include="$(BenchmarkProtosDirectory)\google_message2.dat" />
+			<BenchmarkResources Include="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffers.dll" />
 			<BenchmarkResources Include="$(SourceDirectory)\ProtoBench\bin\$(BuildConfiguration)\ProtoBench.exe" />
 		</ItemGroup>
 
