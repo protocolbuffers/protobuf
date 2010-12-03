@@ -226,6 +226,9 @@ class Message(object):
     raise NotImplementedError
 
   def HasField(self, field_name):
+    """Checks if a certain field is set for the message. Note if the
+    field_name is not defined in the message descriptor, ValueError will be
+    raised."""
     raise NotImplementedError
 
   def ClearField(self, field_name):

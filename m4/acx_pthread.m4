@@ -272,9 +272,11 @@ if test "x$acx_pthread_ok" = xyes; then
 	   AC_TRY_LINK(,, , [done=yes])
 	
 	   if test "x$done" = xyes ; then
-	      AC_MSG_RESULT([no])
-	   else
 	      AC_MSG_RESULT([yes])
+	      done="no"
+	   else
+	      AC_MSG_RESULT([no])
+	      done="yes"
 	   fi
 	fi
 	

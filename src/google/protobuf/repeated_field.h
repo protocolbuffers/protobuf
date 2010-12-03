@@ -1199,7 +1199,7 @@ template<typename T> class RepeatedFieldBackInsertIterator
   }
 
  private:
-  RepeatedField<T>* const field_;
+  RepeatedField<T>* field_;
 };
 
 // A back inserter for RepeatedPtrField objects.
@@ -1230,7 +1230,7 @@ template<typename T> class RepeatedPtrFieldBackInsertIterator
   }
 
  private:
-  RepeatedPtrField<T>* const field_;
+  RepeatedPtrField<T>* field_;
 };
 
 // A back inserter for RepeatedPtrFields that inserts by transfering ownership
@@ -1259,7 +1259,7 @@ template<typename T> class AllocatedRepeatedPtrFieldBackInsertIterator
   }
 
  private:
-  RepeatedPtrField<T>* const field_;
+  RepeatedPtrField<T>* field_;
 };
 }  // namespace internal
 

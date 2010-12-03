@@ -81,7 +81,6 @@ libprotobuf_lite_la_LDFLAGS = -version-info 6:0:0 -export-dynamic -no-undefined
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/once.cc                                \
-  google/protobuf/stubs/hash.cc                                \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/map-util.h                             \
   google/protobuf/stubs/stl_util-inl.h                         \

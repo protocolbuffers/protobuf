@@ -222,7 +222,7 @@ inline const uint8* WireFormatLite::ReadPrimitiveFromArray<
 }
 
 template <typename CType, enum WireFormatLite::FieldType DeclaredType>
-inline bool WireFormatLite::ReadRepeatedPrimitive(int tag_size,
+inline bool WireFormatLite::ReadRepeatedPrimitive(int, // tag_size, unused.
                                                uint32 tag,
                                                io::CodedInputStream* input,
                                                RepeatedField<CType>* values) {

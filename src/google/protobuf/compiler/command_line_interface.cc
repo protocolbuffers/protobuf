@@ -781,7 +781,7 @@ bool CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
 
   // If no --proto_path was given, use the current working directory.
   if (proto_path_.empty()) {
-    proto_path_.push_back(make_pair("", "."));
+    proto_path_.push_back(make_pair<string, string>("", "."));
   }
 
   // Check some errror cases.
@@ -910,7 +910,7 @@ bool CommandLineInterface::InterpretArgument(const string& name,
         cerr << disk_path << ": warning: directory does not exist." << endl;
       }
 
-      proto_path_.push_back(make_pair(virtual_path, disk_path));
+      proto_path_.push_back(make_pair<string, string>(virtual_path, disk_path));
     }
 
   } else if (name == "-o" || name == "--descriptor_set_out") {
