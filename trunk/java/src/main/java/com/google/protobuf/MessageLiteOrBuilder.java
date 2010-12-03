@@ -38,7 +38,9 @@ package com.google.protobuf;
  */
 public interface MessageLiteOrBuilder {
   /**
-   * Get an instance of the type with all fields set to their default values.
+   * Get an instance of the type with no fields set. Because no fields are set,
+   * all getters for singular fields will return default values and repeated
+   * fields will appear empty.
    * This may or may not be a singleton.  This differs from the
    * {@code getDefaultInstance()} method of generated message classes in that
    * this method is an abstract method of the {@code MessageLite} interface

@@ -71,8 +71,6 @@ namespace std {}
 namespace google {
 namespace protobuf {
 
-using namespace std;  // Don't do this at home, kids.
-
 #undef GOOGLE_DISALLOW_EVIL_CONSTRUCTORS
 #define GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeName)    \
   TypeName(const TypeName&);                           \
@@ -126,7 +124,7 @@ void LIBPROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
                                       const char* filename);
 
 // Converts a numeric version number to a string.
-string LIBPROTOBUF_EXPORT VersionString(int version);
+std::string LIBPROTOBUF_EXPORT VersionString(int version);
 
 }  // namespace internal
 
@@ -368,6 +366,7 @@ struct CompileAssert {
 #define GOOGLE_COMPILE_ASSERT(expr, msg) \
   typedef ::google::protobuf::internal::CompileAssert<(bool(expr))> \
           msg[bool(expr) ? 1 : -1]
+
 
 // Implementation details of COMPILE_ASSERT:
 //
@@ -636,7 +635,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage(LogLevel level, const char* filename, int line);
   ~LogMessage();
 
-  LogMessage& operator<<(const string& value);
+  LogMessage& operator<<(const std::string& value);
   LogMessage& operator<<(const char* value);
   LogMessage& operator<<(char value);
   LogMessage& operator<<(int value);
@@ -652,7 +651,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogLevel level_;
   const char* filename_;
   int line_;
-  string message_;
+  std::string message_;
 };
 
 // Used to make the entire "LOG(BLAH) << etc." expression have a void return
@@ -731,7 +730,7 @@ class LIBPROTOBUF_EXPORT LogFinisher {
 #endif  // !NDEBUG
 
 typedef void LogHandler(LogLevel level, const char* filename, int line,
-                        const string& message);
+                        const std::string& message);
 
 // The protobuf library sometimes writes warning and error messages to
 // stderr.  These messages are primarily useful for developers, but may
@@ -1172,6 +1171,10 @@ namespace internal {
 LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
 
 }  // namespace internal
+
+// This is at the end of the file instead of the beginning to work around a bug
+// in some versions of MSVC.
+using namespace std;  // Don't do this at home, kids.
 
 }  // namespace protobuf
 }  // namespace google
