@@ -396,7 +396,7 @@ public final class CodedOutputStream {
    * for converting the enum value to its numeric value.
    */
   public void writeEnumNoTag(final int value) throws IOException {
-    writeRawVarint32(value);
+    writeInt32NoTag(value);
   }
 
   /** Write an {@code sfixed32} field to the stream. */

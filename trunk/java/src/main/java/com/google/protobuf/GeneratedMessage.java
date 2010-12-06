@@ -56,6 +56,7 @@ import java.util.TreeMap;
  */
 public abstract class GeneratedMessage extends AbstractMessage
     implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final UnknownFieldSet unknownFields;
 

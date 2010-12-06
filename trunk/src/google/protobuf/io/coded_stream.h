@@ -567,7 +567,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 //   char text[] = "Hello world!";
 //
 //   int coded_size = sizeof(magic_number) +
-//                    CodedOutputStream::Varint32Size(strlen(text)) +
+//                    CodedOutputStream::VarintSize32(strlen(text)) +
 //                    strlen(text);
 //
 //   uint8* buffer =
