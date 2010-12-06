@@ -118,7 +118,7 @@ AM_CONDITIONAL([HAVE_ZLIB], [test $HAVE_ZLIB = 1])
 
 AS_IF([test "$with_protoc" != "no"], [
   PROTOC=$with_protoc
-  AS_IF([test "$with_protoc" == "yes"], [
+  AS_IF([test "$with_protoc" = "yes"], [
     # No argument given.  Use system protoc.
     PROTOC=protoc
   ])
