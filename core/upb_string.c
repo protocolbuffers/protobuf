@@ -29,6 +29,7 @@ upb_string *upb_string_new() {
   upb_string *str = malloc(sizeof(*str));
   str->ptr = NULL;
   str->cached_mem = NULL;
+  str->len = 0;
 #ifndef UPB_HAVE_MSIZE
   str->size = 0;
 #endif
@@ -130,6 +131,14 @@ upb_string *upb_strdup(upb_string *s) {
   upb_string *str = upb_string_new();
   upb_strcpy(str, s);
   return str;
+}
+
+void upb_strcat(upb_string *s, upb_string *append) {
+  uint32_t old_size = upb_string_len(s);
+  uint32_t append_size = upb_string_len(append);
+  uint32_t new_size = old_size + append_size;
+  char *buf = upb_string_getrwbuf(s, new_size);
+  memcpy(buf + old_size, upb_string_getrobuf(append), append_size);
 }
 
 upb_string *upb_strreadfile(const char *filename) {

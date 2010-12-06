@@ -5,58 +5,20 @@
  * interfaces.  Only components that are implementing these interfaces need
  * to worry about this file.
  *
- * This is tedious; this is the place in upb where I most wish I had a C++
- * feature.  In C++ the compiler would generate this all for me.  If there's
- * any consolation, it's that I have a bit of flexibility you don't have in
- * C++: I could, with preprocessor magic alone "de-virtualize" this interface
- * for a particular source file.  Say I had a C file that called a upb_src,
- * but didn't want to pay the virtual function overhead.  I could define:
- *
- *   #define upb_src_getdef(src) upb_decoder_getdef((upb_decoder*)src)
- *   #define upb_src_stargmsg(src) upb_decoder_startmsg(upb_decoder*)src)
- *   // etc.
- *
- * The source file is compatible with the regular upb_src interface, but here
- * we bind it to a particular upb_src (upb_decoder), which could lead to
- * improved performance at a loss of flexibility for this one upb_src client.
- *
  * Copyright (c) 2010 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_SRCSINK_VTBL_H_
 #define UPB_SRCSINK_VTBL_H_
 
-#include "upb.h"
+#include <assert.h>
+#include "upb_stream.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct upb_src;
-typedef struct upb_src upb_src;
-struct upb_sink;
-typedef struct upb_sink upb_sink;
-struct upb_bytesrc;
-typedef struct upb_bytesrc upb_bytesrc;
-struct upb_bytesink;
-typedef struct upb_bytesink upb_bytesink;
-
 // Typedefs for function pointers to all of the virtual functions.
-
-// upb_src.
-typedef struct _upb_fielddef *(*upb_src_getdef_fptr)(upb_src *src);
-typedef bool (*upb_src_getval_fptr)(upb_src *src, upb_valueptr val);
-typedef bool (*upb_src_getstr_fptr)(upb_src *src, upb_string *str);
-typedef bool (*upb_src_skipval_fptr)(upb_src *src);
-typedef bool (*upb_src_startmsg_fptr)(upb_src *src);
-typedef bool (*upb_src_endmsg_fptr)(upb_src *src);
-
-// upb_sink.
-typedef bool (*upb_sink_putdef_fptr)(upb_sink *sink, struct _upb_fielddef *def);
-typedef bool (*upb_sink_putval_fptr)(upb_sink *sink, upb_value val);
-typedef bool (*upb_sink_putstr_fptr)(upb_sink *sink, upb_string *str);
-typedef bool (*upb_sink_startmsg_fptr)(upb_sink *sink);
-typedef bool (*upb_sink_endmsg_fptr)(upb_sink *sink);
 
 // upb_bytesrc.
 typedef bool (*upb_bytesrc_get_fptr)(
@@ -69,23 +31,6 @@ typedef int32_t (*upb_bytesink_put_fptr)(upb_bytesink *sink, upb_string *str);
 
 // Vtables for the above interfaces.
 typedef struct {
-  upb_src_getdef_fptr   getdef;
-  upb_src_getval_fptr   getval;
-  upb_src_getstr_fptr   getstr;
-  upb_src_skipval_fptr  skipval;
-  upb_src_startmsg_fptr startmsg;
-  upb_src_endmsg_fptr   endmsg;
-} upb_src_vtable;
-
-typedef struct {
-  upb_sink_putdef_fptr   putdef;
-  upb_sink_putval_fptr   putval;
-  upb_sink_putstr_fptr   putstr;
-  upb_sink_startmsg_fptr startmsg;
-  upb_sink_endmsg_fptr   endmsg;
-} upb_sink_vtable;
-
-typedef struct {
   upb_bytesrc_get_fptr     get;
   upb_bytesrc_append_fptr  append;
 } upb_bytesrc_vtable;
@@ -97,41 +42,17 @@ typedef struct {
 // "Base Class" definitions; components that implement these interfaces should
 // contain one of these structures.
 
-struct upb_src {
-  upb_src_vtable *vtbl;
-  upb_status status;
-  bool eof;
-};
-
-struct upb_sink {
-  upb_sink_vtable *vtbl;
-  upb_status status;
-  bool eof;
-};
-
-struct upb_bytesrc {
+struct _upb_bytesrc {
   upb_bytesrc_vtable *vtbl;
   upb_status status;
   bool eof;
 };
 
-struct upb_bytesink {
+struct _upb_bytesink {
   upb_bytesink_vtable *vtbl;
   upb_status status;
   bool eof;
 };
-
-INLINE void upb_src_init(upb_src *s, upb_src_vtable *vtbl) {
-  s->vtbl = vtbl;
-  s->eof = false;
-  upb_status_init(&s->status);
-}
-
-INLINE void upb_sink_init(upb_sink *s, upb_sink_vtable *vtbl) {
-  s->vtbl = vtbl;
-  s->eof = false;
-  upb_status_init(&s->status);
-}
 
 INLINE void upb_bytesrc_init(upb_bytesrc *s, upb_bytesrc_vtable *vtbl) {
   s->vtbl = vtbl;
@@ -146,46 +67,6 @@ INLINE void upb_bytesink_init(upb_bytesink *s, upb_bytesink_vtable *vtbl) {
 }
 
 // Implementation of virtual function dispatch.
-INLINE struct _upb_fielddef *upb_src_getdef(upb_src *src) {
-  return src->vtbl->getdef(src);
-}
-INLINE bool upb_src_getval(upb_src *src, upb_valueptr val) {
-  return src->vtbl->getval(src, val);
-}
-INLINE bool upb_src_getstr(upb_src *src, upb_string *str) {
-  return src->vtbl->getstr(src, str);
-}
-INLINE bool upb_src_skipval(upb_src *src) { return src->vtbl->skipval(src); }
-INLINE bool upb_src_startmsg(upb_src *src) { return src->vtbl->startmsg(src); }
-INLINE bool upb_src_endmsg(upb_src *src) { return src->vtbl->endmsg(src); }
-
-// Implementation of type-specific upb_src accessors.  If we encounter a upb_src
-// where these can be implemented directly in a measurably more efficient way,
-// we can make these part of the vtable also.
-//
-// For <64-bit types we have to use a temporary to accommodate baredecoder,
-// which does not know the actual width of the type.
-INLINE bool upb_src_getbool(upb_src *src, bool *_bool) {
-  upb_value val;
-  bool ret = upb_src_getval(src, upb_value_addrof(&val));
-  *_bool = val._bool;
-  return ret;
-}
-
-INLINE bool upb_src_getint32(upb_src *src, int32_t *i32) {
-  upb_value val;
-  bool ret = upb_src_getval(src, upb_value_addrof(&val));
-  *i32 = val.int32;
-  return ret;
-}
-
-// TODO.
-bool upb_src_getint32(upb_src *src, int32_t *val);
-bool upb_src_getint64(upb_src *src, int64_t *val);
-bool upb_src_getuint32(upb_src *src, uint32_t *val);
-bool upb_src_getuint64(upb_src *src, uint64_t *val);
-bool upb_src_getfloat(upb_src *src, float *val);
-bool upb_src_getdouble(upb_src *src, double *val);
 
 // upb_bytesrc
 INLINE bool upb_bytesrc_get(
@@ -198,24 +79,108 @@ INLINE bool upb_bytesrc_append(
   return bytesrc->vtbl->append(bytesrc, str, len);
 }
 
-// upb_sink
-INLINE bool upb_sink_putdef(upb_sink *sink, struct _upb_fielddef *def) {
-  return sink->vtbl->putdef(sink, def);
+INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src) { return &src->status; }
+INLINE bool upb_bytesrc_eof(upb_bytesrc *src) { return src->eof; }
+
+// upb_handlers
+struct _upb_handlers {
+  upb_handlerset *set;
+  void *closure;
+};
+
+INLINE void upb_handlers_init(upb_handlers *h) {
+  (void)h;
 }
-INLINE bool upb_sink_putval(upb_sink *sink, upb_value val) {
-  return sink->vtbl->putval(sink, val);
-}
-INLINE bool upb_sink_putstr(upb_sink *sink, upb_string *str) {
-  return sink->vtbl->putstr(sink, str);
-}
-INLINE bool upb_sink_startmsg(upb_sink *sink) {
-  return sink->vtbl->startmsg(sink);
-}
-INLINE bool upb_sink_endmsg(upb_sink *sink) {
-  return sink->vtbl->endmsg(sink);
+INLINE void upb_handlers_uninit(upb_handlers *h) {
+  (void)h;
 }
 
-INLINE upb_status *upb_sink_status(upb_sink *sink) { return &sink->status; }
+INLINE void upb_handlers_reset(upb_handlers *h) {
+  h->set = NULL;
+  h->closure = NULL;
+}
+
+INLINE bool upb_handlers_isempty(upb_handlers *h) {
+  return !h->set && !h->closure;
+}
+
+INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set) {
+  h->set = set;
+}
+
+INLINE void upb_set_handler_closure(upb_handlers *h, void *closure) {
+  h->closure = closure;
+}
+
+// upb_dispatcher
+typedef struct {
+  upb_handlers handlers;
+  int depth;
+} upb_dispatcher_frame;
+
+struct _upb_dispatcher {
+  upb_dispatcher_frame stack[UPB_MAX_NESTING], *top, *limit;
+};
+
+INLINE void upb_dispatcher_init(upb_dispatcher *d) {
+  d->limit = d->stack + sizeof(d->stack);
+}
+
+INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h) {
+  d->top = d->stack;
+  d->top->depth = 1;  // Never want to trigger end-of-delegation.
+  d->top->handlers = *h;
+}
+
+INLINE void upb_dispatch_startmsg(upb_dispatcher *d) {
+  assert(d->stack == d->top);
+  d->top->handlers.set->startmsg(d->top->handlers.closure);
+}
+
+INLINE void upb_dispatch_endmsg(upb_dispatcher *d) {
+  assert(d->stack == d->top);
+  d->top->handlers.set->endmsg(d->top->handlers.closure);
+}
+
+INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
+                                           struct _upb_fielddef *f) {
+  upb_handlers handlers;
+  upb_handlers_init(&handlers);
+  upb_handlers_reset(&handlers);
+  upb_flow_t ret = d->top->handlers.set->startsubmsg(d->top->handlers.closure, f, &handlers);
+  assert((ret == UPB_DELEGATE) == !upb_handlers_isempty(&handlers));
+  if (ret == UPB_DELEGATE) {
+    ++d->top;
+    d->top->handlers = handlers;
+    d->top->depth = 0;
+    d->top->handlers.set->startmsg(d->top->handlers.closure);
+    ret = UPB_CONTINUE;
+  }
+  ++d->top->depth;
+  upb_handlers_uninit(&handlers);
+  return ret;
+}
+
+INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {
+  if (--d->top->depth == 0) {
+    d->top->handlers.set->endmsg(d->top->handlers.closure);
+    --d->top;
+  }
+  return d->top->handlers.set->endsubmsg(d->top->handlers.closure);
+}
+
+INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d,
+                                     struct _upb_fielddef *f,
+                                     upb_value val) {
+  return d->top->handlers.set->value(d->top->handlers.closure, f, val);
+}
+
+INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
+                                          upb_field_number_t fieldnum,
+                                          upb_value val) {
+  return d->top->handlers.set->unknownval(d->top->handlers.closure,
+                                          fieldnum, val);
+}
 
 // upb_bytesink
 INLINE int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str) {

@@ -18,6 +18,11 @@
  *   string).
  * - strings are not thread-safe by default, but can be made so by calling a
  *   function.  This is not the default because it causes extra CPU overhead.
+ *
+ * Reference-counted strings have recently fallen out of favor because of the
+ * performance impacts of doing thread-safe reference counting with atomic
+ * operations.  We side-step this issue by not performing atomic operations
+ * unless the string has been marked thread-safe.
  */
 
 #ifndef UPB_STRING_H
@@ -34,7 +39,7 @@ extern "C" {
 #endif
 
 // All members of this struct are private, and may only be read/written through
-// the associated functions.  Also, strings may *only* be allocated on the heap.
+// the associated functions.
 struct _upb_string {
   // The pointer to our currently active data.  This may be memory we own
   // or a pointer into memory we don't own.

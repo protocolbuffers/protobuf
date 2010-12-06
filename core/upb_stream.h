@@ -19,7 +19,7 @@
 #ifndef UPB_SRCSINK_H
 #define UPB_SRCSINK_H
 
-#include "upb_stream_vtbl.h"
+#include "upb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,98 +28,149 @@ extern "C" {
 // Forward-declare.  We can't include upb_def.h; it would be circular.
 struct _upb_fielddef;
 
-/* upb_sink *******************************************************************/
+/* upb_handlers ***************************************************************/
 
-// A upb_sink is a component that receives a stream of protobuf data.
-// It is an abstract interface that is implemented either by the system or
-// by users.
-//
-// TODO: unknown fields.
+// upb_handlers define the interface by which a upb_src passes data to a
+// upb_sink.
 
-// Constants that a sink returns to indicate to its caller whether it should
+// Constants that a handler returns to indicate to its caller whether it should
 // continue or not.
 typedef enum {
   // Caller should continue sending values to the sink.
-  UPB_SINK_CONTINUE,
+  UPB_CONTINUE,
 
-  // Return from upb_sink_putdef() to skip the next value (which may be a
-  // submessage).
-  UPB_SINK_SKIP,
+  // Skips to the end of the current submessage (or if we are at the top
+  // level, skips to the end of the entire message).
+  UPB_SKIP,
 
   // Caller should stop sending values; check sink status for details.
   // If processing resumes later, it should resume with the next value.
-  UPB_SINK_STOP,
-} upb_sinkret_t;
+  UPB_STOP,
 
-// Puts the given fielddef into the stream.
-upb_sinkret_t upb_sink_putdef(upb_sink *sink, struct _upb_fielddef *def);
+  // When returned from a startsubmsg handler, indicates that the submessage
+  // should be handled by a different set of handlers, which have been
+  // registered on the provided upb_handlers object.  May not be returned
+  // from any other callback.
+  UPB_DELEGATE,
+} upb_flow_t;
 
-// Puts the given value into the stream.
-upb_sinkret_t upb_sink_putval(upb_sink *sink, upb_value val);
-upb_sinkret_t upb_sink_putstr(upb_sink *sink, upb_string *str);
+// upb_handlers
+struct _upb_handlers;
+typedef struct _upb_handlers upb_handlers;
 
-// Starts/ends a submessage.  upb_sink_startmsg may seem redundant, but a
-// client could have a submessage already serialized, and therefore put it
-// as a string instead of its individual elements.
-upb_sinkret_t upb_sink_startmsg(upb_sink *sink);
-upb_sinkret_t upb_sink_endmsg(upb_sink *sink);
+typedef void (*upb_startmsg_handler_t)(void *closure);
+typedef void (*upb_endmsg_handler_t)(void *closure);
+typedef upb_flow_t (*upb_value_handler_t)(void *closure,
+                                          struct _upb_fielddef *f,
+                                          upb_value val);
+typedef upb_flow_t (*upb_startsubmsg_handler_t)(void *closure,
+                                                struct _upb_fielddef *f,
+                                                upb_handlers *delegate_to);
+typedef upb_flow_t (*upb_endsubmsg_handler_t)(void *closure);
+typedef upb_flow_t (*upb_unknownval_handler_t)(void *closure,
+                                               upb_field_number_t fieldnum,
+                                               upb_value val);
 
-// Returns the current error status for the stream.
-upb_status *upb_sink_status(upb_sink *sink);
-
-
-/* upb_src ********************************************************************/
-
-// A upb_src is a resumable push parser for protobuf data.  It works by first
-// accepting registration of a upb_sink to which it will push data, then
-// in a second phase is parses the actual data.
+// An empty set of handlers, for convenient copy/paste:
 //
+// static void startmsg(void *closure) {
+//   // Called when the top-level message begins.
+// }
+//
+// static void endmsg(void *closure) {
+//   // Called when the top-level message ends.
+// }
+//
+// static upb_flow_t value(void *closure, upb_fielddef *f, upb_value val) {
+//   // Called for every value in the stream.
+//   return UPB_CONTINUE;
+// }
+//
+// static upb_flow_t startsubmsg(void *closure, upb_fielddef *f,
+//                               upb_handlers *delegate_to) {
+//   // Called when a submessage begins; can delegate by returning UPB_DELEGATE.
+//   return UPB_CONTINUE;
+// }
+//
+// static upb_flow_t endsubmsg(void *closure) {
+//   // Called when a submessage ends.
+//   return UPB_CONTINUE;
+// }
+//
+// static upb_flow_t unknownval(void *closure, upb_field_number_t fieldnum,
+//                              upb_value val) {
+//   Called with an unknown value is encountered.
+//   return UPB_CONTINUE;
+// }
+typedef struct {
+  upb_startmsg_handler_t startmsg;
+  upb_endmsg_handler_t endmsg;
+  upb_value_handler_t value;
+  upb_startsubmsg_handler_t startsubmsg;
+  upb_endsubmsg_handler_t endsubmsg;
+  upb_unknownval_handler_t unknownval;
+} upb_handlerset;
 
-// Sets the given sink as the target of this src.  It will be called when the
-// upb_src_parse() is run.
-void upb_src_setsink(upb_src *src, upb_sink *sink);
+// Functions to register handlers on a upb_handlers object.
+INLINE void upb_handlers_init(upb_handlers *h);
+INLINE void upb_handlers_uninit(upb_handlers *h);
+INLINE void upb_handlers_reset(upb_handlers *h);
+INLINE bool upb_handlers_isempty(upb_handlers *h);
+INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set);
+INLINE void upb_set_handler_closure(upb_handlers *h, void *closure);
 
-// Pushes data from this src to the previously registered sink, returning
-// true if all data was processed.  If false is returned, check
-// upb_src_status() for details; if it is a resumable status, upb_src_run
-// may be called again to resume processing.
-bool upb_src_run(upb_src *src);
+// An object that transparently handles delegation so that the caller needs
+// only follow the protocol as if delegation did not exist.
+struct _upb_dispatcher;
+typedef struct _upb_dispatcher upb_dispatcher;
+INLINE void upb_dispatcher_init(upb_dispatcher *d);
+INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h);
+INLINE void upb_dispatch_startmsg(upb_dispatcher *d);
+INLINE void upb_dispatch_endmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d, struct _upb_fielddef *f);
+INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, struct _upb_fielddef *f,
+                                     upb_value val);
+INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
+                                   upb_field_number_t fieldnum, upb_value val);
 
 
 /* upb_bytesrc ****************************************************************/
 
+struct _upb_bytesrc;
+typedef struct _upb_bytesrc upb_bytesrc;
+
 // Returns the next string in the stream.  false is returned on error or eof.
 // The string must be at least "minlen" bytes long unless the stream is eof.
-bool upb_bytesrc_get(upb_bytesrc *src, upb_string *str, upb_strlen_t minlen);
+INLINE bool upb_bytesrc_get(upb_bytesrc *src, upb_string *str, upb_strlen_t minlen);
 
 // Appends the next "len" bytes in the stream in-place to "str".  This should
 // be used when the caller needs to build a contiguous string of the existing
 // data in "str" with more data.  The call fails if fewer than len bytes are
 // available in the stream.
-bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
+INLINE bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
 
 // Returns the current error status for the stream.
 // Note!  The "eof" flag works like feof() in C; it cannot report end-of-file
 // until a read has failed due to eof.  It cannot preemptively tell you that
 // the next call will fail due to eof.  Since these are the semantics that C
 // and UNIX provide, we're stuck with them if we want to support eg. stdio.
-INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src) { return &src->status; }
-INLINE bool upb_bytesrc_eof(upb_bytesrc *src) { return src->eof; }
+INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src);
+INLINE bool upb_bytesrc_eof(upb_bytesrc *src);
 
 /* upb_bytesink ***************************************************************/
 
+struct _upb_bytesink;
+typedef struct _upb_bytesink upb_bytesink;
+
 // Puts the given string.  Returns the number of bytes that were actually,
 // consumed, which may be fewer than were in the string, or <0 on error.
-int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str);
+INLINE int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str);
 
 // Returns the current error status for the stream.
-upb_status *upb_bytesink_status(upb_bytesink *sink);
+INLINE upb_status *upb_bytesink_status(upb_bytesink *sink);
 
-/* Utility functions **********************************************************/
-
-// Streams data from src to sink until EOF or error.
-void upb_streamdata(upb_src *src, upb_sink *sink, upb_status *status);
-
+#include "upb_stream_vtbl.h"
 
 #ifdef __cplusplus
 }  /* extern "C" */

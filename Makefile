@@ -29,7 +29,7 @@ CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Icore -Itests -Istream -I.
 CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
-LDLIBS=-lpthread
+LDLIBS=-lpthread core/libupb.a
 ifeq ($(shell uname), Darwin)
   CPPFLAGS += -I/usr/include/lua5.1
   LDFLAGS += -L/usr/local/lib -llua
@@ -47,16 +47,27 @@ clean:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
 	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.gc*)
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
-	rm -rf tests/tests tests/t.* tests/test_table
+	rm -rf $(TESTS) tests/t.*
 	rm -rf descriptor/descriptor.pb
 	rm -rf tools/upbc deps
 	cd lang_ext/python && python setup.py clean --all
 
+-include deps
+deps: gen-deps.sh Makefile $(call rwildcard,,*.c) $(call rwildcard,,*.h)
+	@./gen-deps.sh $(SRC)
+
 # The core library (core/libupb.a)
-SRC=core/upb.c stream/upb_decoder.c core/upb_table.c core/upb_def.c core/upb_string.c \
-    core/upb_stream.c stream/upb_stdio.c stream/upb_strstream.c stream/upb_textprinter.c \
-    core/upb_msg.c \
-    descriptor/descriptor.c
+SRC=core/upb.c \
+  core/upb_table.c \
+  core/upb_string.c \
+  descriptor/descriptor.c \
+#  core/upb_def.c \
+#  core/upb_msg.c \
+#  stream/upb_decoder.c \
+#  stream/upb_stdio.c \
+#  stream/upb_strstream.c \
+#  stream/upb_textprinter.c
+
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
@@ -101,15 +112,16 @@ tests/test.proto.pb: tests/test.proto
 
 TESTS=tests/test_string \
     tests/test_table \
-    tests/test_def \
-    tests/test_decoder \
-    tests/t.test_vs_proto2.googlemessage1 \
-    tests/t.test_vs_proto2.googlemessage2 \
-    tests/test.proto.pb
+    tests/test_stream \
+#    tests/test_def \
+#    tests/test_decoder \
+#    tests/t.test_vs_proto2.googlemessage1 \
+#    tests/t.test_vs_proto2.googlemessage2 \
+#    tests/test.proto.pb
 tests: $(TESTS)
 
 OTHER_TESTS=tests/tests \
-$(TESTS): core/libupb.a
+$(TESTS): $(LIBUPB)
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 
 #VALGRIND=
@@ -118,7 +130,7 @@ test: tests
 	@set -e  # Abort on error.
 #	Needs to be rewritten to separate the benchmark.
 #	valgrind --error-exitcode=1 ./tests/test_table
-	@for test in tests/*; do \
+	@for test in $(TESTS); do \
 	  if [ -x ./$$test ] ; then \
 	    echo !!! $(VALGRIND) ./$$test; \
 	    $(VALGRIND) ./$$test || exit 1; \
@@ -247,6 +259,3 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
 
--include deps
-deps: gen-deps.sh Makefile $(call rwildcard,,*.c) $(call rwildcard,,*.h)
-	@./gen-deps.sh $(SRC)
