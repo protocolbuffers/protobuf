@@ -240,10 +240,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\stubs\hash.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\message_lite.cc"
 				>
 			</File>
