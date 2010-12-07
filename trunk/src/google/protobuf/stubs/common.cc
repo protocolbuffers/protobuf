@@ -177,12 +177,6 @@ LogMessage::LogMessage(LogLevel level, const char* filename, int line)
   : level_(level), filename_(filename), line_(line) {}
 LogMessage::~LogMessage() {}
 
-#if defined(_MSC_VER) && defined(_CPPUNWIND)
-  #define PROTOBUF_USE_EXCEPTIONS
-#elif defined(__EXCEPTIONS)
-  #define PROTOBUF_USE_EXCEPTIONS
-#endif
-
 void LogMessage::Finish() {
   bool suppress = false;
 
@@ -198,14 +192,12 @@ void LogMessage::Finish() {
 
   if (level_ == LOGLEVEL_FATAL) {
 #ifdef PROTOBUF_USE_EXCEPTIONS
-    throw -1;
+    throw FatalException(filename_, line_, message_);
 #else
     abort();
 #endif
   }
 }
-
-#undef PROTOBUF_USE_EXCEPTIONS
 
 void LogFinisher::operator=(LogMessage& other) {
   other.Finish();
@@ -372,6 +364,14 @@ void ShutdownProtobufLibrary() {
   delete internal::shutdown_functions_mutex;
   internal::shutdown_functions_mutex = NULL;
 }
+
+#ifdef PROTOBUF_USE_EXCEPTIONS
+FatalException::~FatalException() throw() {}
+
+const char* FatalException::what() const throw() {
+  return message_.c_str();
+}
+#endif
 
 }  // namespace protobuf
 }  // namespace google

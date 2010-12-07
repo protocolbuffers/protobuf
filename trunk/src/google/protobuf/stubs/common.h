@@ -48,6 +48,15 @@
 #include <stdint.h>
 #endif
 
+#if defined(_MSC_VER) && defined(_CPPUNWIND)
+  #define PROTOBUF_USE_EXCEPTIONS
+#elif defined(__EXCEPTIONS)
+  #define PROTOBUF_USE_EXCEPTIONS
+#endif
+#ifdef PROTOBUF_USE_EXCEPTIONS
+#include <exception>
+#endif
+
 #if defined(_WIN32) && defined(GetMessage)
 // Allow GetMessage to be used as a valid method name in protobuf classes.
 // windows.h defines GetMessage() as a macro.  Let's re-define it as an inline
@@ -1171,6 +1180,26 @@ namespace internal {
 LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
 
 }  // namespace internal
+
+#ifdef PROTOBUF_USE_EXCEPTIONS
+class FatalException : public std::exception {
+ public:
+  FatalException(const char* filename, int line, const std::string& message)
+      : filename_(filename), line_(line), message_(message) {}
+  virtual ~FatalException() throw();
+
+  virtual const char* what() const throw();
+
+  const char* filename() const { return filename_; }
+  int line() const { return line_; }
+  const std::string& message() const { return message_; }
+
+ private:
+  const char* filename_;
+  const int line_;
+  const std::string message_;
+};
+#endif
 
 // This is at the end of the file instead of the beginning to work around a bug
 // in some versions of MSVC.

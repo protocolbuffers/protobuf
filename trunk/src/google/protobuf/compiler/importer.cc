@@ -231,7 +231,12 @@ static string CanonicalizePath(string path) {
   // The Win32 API accepts forward slashes as a path delimiter even though
   // backslashes are standard.  Let's avoid confusion and use only forward
   // slashes.
-  path = StringReplace(path, "\\", "/", true);
+  if (HasPrefixString(path, "\\\\")) {
+    // Avoid converting two leading backslashes.
+    path = "\\\\" + StringReplace(path.substr(2), "\\", "/", true);
+  } else {
+    path = StringReplace(path, "\\", "/", true);
+  }
 #endif
 
   vector<string> parts;
