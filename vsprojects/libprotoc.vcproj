@@ -264,6 +264,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_string_field.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\python\python_generator.h"
 				>
 			</File>
@@ -393,6 +397,10 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_service.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_string_filed.cc"
 				>
 			</File>
 			<File
