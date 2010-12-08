@@ -102,17 +102,22 @@ if __name__ == '__main__':
     # Generate necessary .proto file if it doesn't exist.
     # TODO(kenton):  Maybe we should hook this into a distutils command?
     generate_proto("../src/google/protobuf/descriptor.proto")
+    generate_proto("../src/google/protobuf/compiler/plugin.proto")
 
-  python_c_extension = Extension("google.protobuf.internal._net_proto2___python",
-                                 [ "google/protobuf/pyext/python_descriptor.cc",
-                                   "google/protobuf/pyext/python_protobuf.cc",
-                                   "google/protobuf/pyext/python-proto2.cc",
-                                   ],
-                                 include_dirs = [ "../src", ".", ],
-                                 libraries = [ "protobuf" ],
-                                 runtime_library_dirs = [ "../src/.libs" ],
-                                 library_dirs = [ "../src/.libs" ],
-                                 )
+  ext_module_list = []
+
+  # C++ implementation extension
+  if os.getenv("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python") == "cpp":
+    print "Using EXPERIMENTAL C++ Implmenetation."
+    ext_module_list.append(Extension(
+        "google.protobuf.internal._net_proto2___python",
+        [ "google/protobuf/pyext/python_descriptor.cc",
+          "google/protobuf/pyext/python_protobuf.cc",
+          "google/protobuf/pyext/python-proto2.cc" ],
+        include_dirs = [ "../src", ".", ],
+        libraries = [ "protobuf" ],
+        runtime_library_dirs = [ "../src/.libs" ],
+        library_dirs = [ "../src/.libs" ]))
 
   setup(name = 'protobuf',
         version = '2.4.0-pre',
@@ -132,12 +137,13 @@ if __name__ == '__main__':
           'google.protobuf.internal.wire_format',
           'google.protobuf.descriptor',
           'google.protobuf.descriptor_pb2',
+          'google.protobuf.compiler.plugin_pb2',
           'google.protobuf.message',
           'google.protobuf.reflection',
           'google.protobuf.service',
           'google.protobuf.service_reflection',
           'google.protobuf.text_format' ],
-        ext_modules = [ python_c_extension ],
+        ext_modules = ext_module_list,
         url = 'http://code.google.com/p/protobuf/',
         maintainer = maintainer_email,
         maintainer_email = 'protobuf@googlegroups.com',

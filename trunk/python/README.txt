@@ -63,6 +63,9 @@ Installation
      $ python setup.py install
 
    This step may require superuser privileges.
+   NOTE: To use C++ implementation, you need to export the environment variable
+   before this step. See the "C++ Implementation" section below for more
+   details.
 
 Usage
 =====
@@ -71,3 +74,24 @@ The complete documentation for Protocol Buffers is available via the
 web at:
 
   http://code.google.com/apis/protocolbuffers/
+
+C++ Implementation
+==================
+
+WARNING: This is EXPERIMENTAL and only available for CPython platforms.
+
+The C++ implementation for Python messages is built as a Python extension to
+improve the overall protobuf Python performance.
+
+To use the C++ implementation, export an environment variable:
+
+  $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+
+You need to export this variable before running setup.py script to build and
+install the extension.  You must also set the variable at runtime, otherwise
+the pure-Python implementation will be used. In a future release, we will
+change the default so that C++ implementation is used whenever it is available.
+It is strongly recommended to run `python setup.py test` after setting the
+variable to "cpp", so the tests will be against C++ implemented Python
+messages.
+
