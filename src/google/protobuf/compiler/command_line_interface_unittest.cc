@@ -566,7 +566,7 @@ TEST_F(CommandLineInterfaceTest, Insert) {
       "foo.proto", "Foo");
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 
 TEST_F(CommandLineInterfaceTest, WindowsOutputPath) {
   // Test that the output path can be a Windows-style path.
