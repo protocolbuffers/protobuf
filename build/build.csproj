@@ -95,6 +95,7 @@
 
 	<!-- targets -->
 	<Target Name="Build" DependsOnTargets="_Compile;_Test" />
+	<Target Name="PrepareOutputDirectory" DependsOnTargets="_CleanOutputDirectory" />
 	<Target Name="PreparePackageComponent" DependsOnTargets="_PreparePackageComponent" />
 	<Target Name="GeneratePackage" DependsOnTargets="_GeneratePackage" />
 	<Target Name="RunBenchmarks" DependsOnTargets="_RunBenchmarks" />

@@ -34,14 +34,19 @@
 	</Target>
 	
 	<!--## Package Generation ##-->
+	<Target Name="_CleanOutputDirectory">
+		<ItemGroup><DirectoriesToDelete Include="$([System.IO.Directory]::GetDirectories('$(BuildOutputDirectory)'))" /></ItemGroup>
+		<RemoveDir Directories="@(DirectoriesToDelete)" ContinueOnError="true" />
+		
+		<ItemGroup><FilesToDelete Include="$(BuildOutputDirectory)\**\*.*" /></ItemGroup>
+		<Delete Files="@(FilesToDelete)" />
+	</Target>
+	
 	<Target Name="_PreparePackageComponent">
 		<Copy SourceFiles="@(DynamicPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(DynamicPackageItem.TargetDirectory)\%(DynamicPackageItem.RecursiveDir)" />
 	</Target>
 
 	<Target Name="_GeneratePackage">
-		<ItemGroup><ExistingArchives Include="$(BuildOutputDirectory)\*.zip" /></ItemGroup>
-		<Delete Files="@(ExistingArchives)" />
-
 		<Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
 		<Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(PackageName) * -r" WorkingDirectory="$(BuildOutputDirectory)" />
 
