@@ -189,7 +189,16 @@ class TextFormatTest(unittest.TestCase):
     message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
     message.repeated_string.append(u'\u00fc\ua71f')
 
-    wire_text = text_format.MessageToString(message, as_one_line=True)
+    # Test as_utf8 = False.
+    wire_text = text_format.MessageToString(
+        message, as_one_line=True, as_utf8=False)
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(wire_text, parsed_message)
+    self.assertEquals(message, parsed_message)
+
+    # Test as_utf8 = True.
+    wire_text = text_format.MessageToString(
+        message, as_one_line=True, as_utf8=True)
     parsed_message = unittest_pb2.TestAllTypes()
     text_format.Merge(wire_text, parsed_message)
     self.assertEquals(message, parsed_message)
@@ -197,9 +206,11 @@ class TextFormatTest(unittest.TestCase):
   def testPrintRawUtf8String(self):
     message = unittest_pb2.TestAllTypes()
     message.repeated_string.append(u'\u00fc\ua71f')
-    self.CompareToGoldenText(
-        text_format.MessageToString(message, as_utf8 = True),
-        'repeated_string: "\303\274\352\234\237"\n')
+    text = text_format.MessageToString(message, as_utf8 = True)
+    self.CompareToGoldenText(text, 'repeated_string: "\303\274\352\234\237"\n')
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(text, parsed_message)
+    self.assertEquals(message, parsed_message)
 
   def testMessageToString(self):
     message = unittest_pb2.ForeignMessage()
