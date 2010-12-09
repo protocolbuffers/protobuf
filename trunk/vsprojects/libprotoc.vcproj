@@ -400,7 +400,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\compiler\java\java_string_filed.cc"
+				RelativePath="..\src\google\protobuf\compiler\java\java_string_field.cc"
 				>
 			</File>
 			<File
