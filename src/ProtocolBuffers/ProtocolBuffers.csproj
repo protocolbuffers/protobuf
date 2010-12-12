@@ -178,8 +178,10 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' != 'Silverlight2' " />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Silverlight2' " />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Debug_Silverlight2' " />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Release_Silverlight2' " />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
