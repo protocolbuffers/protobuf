@@ -1,0 +1,61 @@
+// Additional options required for C# generation. File from copyright
+// line onwards is as per original distribution.
+import "google/protobuf/csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasLiteProtoFile";
+
+package protobuf_unittest_extra;
+
+option optimize_for = LITE_RUNTIME;
+
+option java_package = "com.google.protobuf";
+
+message TestRequiredLite {
+  required int32 d = 1;
+  required ExtraEnum en = 2 [default = DEFAULT];
+}
+
+enum ExtraEnum {
+  DEFAULT = 10;
+  EXLITE_FOO = 7;
+  EXLITE_BAR = 8;
+  EXLITE_BAZ = 9;
+}
+
+message TestInteropPersonLite {
+  required string name = 1;
+  required int32 id = 2;
+  optional string email = 3;
+  repeated int32 codes = 10 [packed=true];
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    required string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+
+  repeated PhoneNumber phone = 4;
+  
+  repeated group Addresses = 5 {
+    required string address = 1;
+    optional string address2 = 2;
+    required string city = 3;
+    required string state = 4;
+    required fixed32 zip = 5;
+  }
+
+  extensions 100 to 199;
+}
+
+message  TestInteropEmployeeIdLite {
+  required string number = 1;
+}
+  
+extend TestInteropPersonLite {
+  required TestInteropEmployeeIdLite employee_id_lite = 126;
+}

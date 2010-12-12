@@ -51,7 +51,7 @@ namespace Google.ProtocolBuffers {
   /// 
   /// Most users will never need to use this class directly.
   /// </summary>
-  public sealed class UnknownFieldSet {
+  public sealed class UnknownFieldSet : IMessageLite {
 
     private static readonly UnknownFieldSet defaultInstance = new UnknownFieldSet(new Dictionary<int, UnknownField>());
 
@@ -136,6 +136,14 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     public override String ToString() {
       return TextFormat.PrintToString(this);
+    }
+
+    /// <summary>
+    /// Converts the set to a string in protocol buffer text format. This
+    /// is just a trivial wrapper around TextFormat.PrintToString.
+    /// </summary>
+    public void PrintTo(TextWriter writer) {
+      TextFormat.Print(this, writer);
     }
 
     /// <summary>
@@ -237,16 +245,43 @@ namespace Google.ProtocolBuffers {
       return CreateBuilder().MergeFrom(input).Build();
     }
 
+    #region IMessageLite Members
+
+    public bool IsInitialized {
+      get { return fields != null; }
+    }
+
+    public void WriteDelimitedTo(Stream output) {
+      CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
+      codedOutput.WriteRawVarint32((uint) SerializedSize);
+      WriteTo(codedOutput);
+      codedOutput.Flush();
+    }
+
+    public IBuilderLite WeakCreateBuilderForType() {
+      return new Builder();
+    }
+
+    public IBuilderLite WeakToBuilder() {
+      return new Builder(fields);
+    }
+
+    public IMessageLite WeakDefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+
+    #endregion
+
     /// <summary>
     /// Builder for UnknownFieldSets.
     /// </summary>
-    public sealed class Builder
+    public sealed class Builder : IBuilderLite
     {
       /// <summary>
       /// Mapping from number to field. Note that by using a SortedList we ensure
       /// that the fields will be serialized in ascending order.
       /// </summary>
-      private IDictionary<int, UnknownField> fields = new SortedList<int, UnknownField>();
+      private IDictionary<int, UnknownField> fields;
       // Optimization:  We keep around a builder for the last field that was
       // modified so that we can efficiently add to it multiple times in a
       // row (important when parsing an unknown repeated field).
@@ -254,6 +289,11 @@ namespace Google.ProtocolBuffers {
       private UnknownField.Builder lastField;
 
       internal Builder() {
+        fields = new SortedList<int, UnknownField>();
+      }
+
+      internal Builder(IDictionary<int, UnknownField> dictionary) {
+        fields = new SortedList<int, UnknownField>(dictionary); 
       }
 
       /// <summary>
@@ -356,7 +396,9 @@ namespace Google.ProtocolBuffers {
             return true;
           case WireFormat.WireType.StartGroup: {
             Builder subBuilder = CreateBuilder();
+#pragma warning disable 0612
             input.ReadUnknownGroup(number, subBuilder);
+#pragma warning restore 0612
             GetFieldBuilder(number).AddGroup(subBuilder.Build());
             return true;
           }
@@ -469,6 +511,7 @@ namespace Google.ProtocolBuffers {
           if (tag == 0) {
             break;
           }
+
           if (!MergeFieldFrom(input, extensionRegistry, builder, tag)) {
             // end group tag
             break;
@@ -485,7 +528,7 @@ namespace Google.ProtocolBuffers {
       /// <param name="builder">Builder to merge field into, if it's a known field</param>
       /// <param name="tag">The tag, which should already have been read from the input</param>
       /// <returns>true unless the tag is an end-group tag</returns>
-      internal bool MergeFieldFrom(CodedInputStream input, 
+      internal bool MergeFieldFrom(CodedInputStream input,
           ExtensionRegistry extensionRegistry, IBuilder builder, uint tag) {
 
         MessageDescriptor type = builder.DescriptorForType;
@@ -498,7 +541,7 @@ namespace Google.ProtocolBuffers {
         int fieldNumber = WireFormat.GetTagFieldNumber(tag);
 
         FieldDescriptor field;
-        IMessage defaultFieldInstance = null;
+        IMessageLite defaultFieldInstance = null;
 
         if (type.IsExtensionNumber(fieldNumber)) {
           ExtensionInfo extension = extensionRegistry[type, fieldNumber];
@@ -543,14 +586,14 @@ namespace Google.ProtocolBuffers {
           switch (field.FieldType) {
             case FieldType.Group:
             case FieldType.Message: {
-                IBuilder subBuilder;
+                IBuilderLite subBuilder;
                 if (defaultFieldInstance != null) {
                   subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
                 } else {
                   subBuilder = builder.CreateBuilderForField(field);
                 }
                 if (!field.IsRepeated) {
-                  subBuilder.WeakMergeFrom((IMessage)builder[field]);
+                  subBuilder.WeakMergeFrom((IMessageLite)builder[field]);
                 }
                 if (field.FieldType == FieldType.Group) {
                   input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
@@ -609,7 +652,7 @@ namespace Google.ProtocolBuffers {
 
         int typeId = 0;
         ByteString rawBytes = null;  // If we encounter "message" before "typeId"
-        IBuilder subBuilder = null;
+        IBuilderLite subBuilder = null;
         FieldDescriptor field = null;
 
         while (true) {
@@ -626,7 +669,7 @@ namespace Google.ProtocolBuffers {
               if (extension != null) {
                 field = extension.Descriptor;
                 subBuilder = extension.DefaultInstance.WeakCreateBuilderForType();
-                IMessage originalMessage = (IMessage)builder[field];
+                IMessageLite originalMessage = (IMessageLite)builder[field];
                 if (originalMessage != null) {
                   subBuilder.WeakMergeFrom(originalMessage);
                 }
@@ -672,6 +715,54 @@ namespace Google.ProtocolBuffers {
           builder[field] = subBuilder.WeakBuild();
         }
       }
+
+      #region IBuilderLite Members
+
+      bool IBuilderLite.IsInitialized {
+        get { return fields != null; }
+      }
+
+      IBuilderLite IBuilderLite.WeakClear() {
+        return Clear();
+      }
+
+      IBuilderLite IBuilderLite.WeakMergeFrom(IMessageLite message) {
+        return MergeFrom((UnknownFieldSet)message);
+      }
+
+      IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data) {
+        return MergeFrom(data);
+      }
+
+      IBuilderLite IBuilderLite.WeakMergeFrom(ByteString data, ExtensionRegistry registry) {
+        return MergeFrom(data);
+      }
+
+      IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input) {
+        return MergeFrom(input);
+      }
+
+      IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry) {
+        return MergeFrom(input);
+      }
+
+      IMessageLite IBuilderLite.WeakBuild() {
+        return Build();
+      }
+
+      IMessageLite IBuilderLite.WeakBuildPartial() {
+        return Build();
+      }
+
+      IBuilderLite IBuilderLite.WeakClone() {
+        return Build().WeakToBuilder();
+      }
+
+      IMessageLite IBuilderLite.WeakDefaultInstanceForType {
+        get { return DefaultInstance; }
+      }
+
+      #endregion
     }
   }
 }

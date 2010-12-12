@@ -42,7 +42,7 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// Implementation of the non-generic IMessage interface as far as possible.
   /// </summary>
-  public abstract class AbstractMessage<TMessage, TBuilder> : IMessage<TMessage, TBuilder> 
+  public abstract class AbstractMessage<TMessage, TBuilder> : AbstractMessageLite<TMessage, TBuilder>, IMessage<TMessage, TBuilder> 
       where TMessage : AbstractMessage<TMessage, TBuilder> 
       where TBuilder : AbstractBuilder<TMessage, TBuilder> {
     /// <summary>
@@ -59,24 +59,13 @@ namespace Google.ProtocolBuffers {
     public abstract int GetRepeatedFieldCount(FieldDescriptor field);
     public abstract object this[FieldDescriptor field, int index] { get; }
     public abstract UnknownFieldSet UnknownFields { get; }
-    public abstract TMessage DefaultInstanceForType { get; }
-    public abstract TBuilder CreateBuilderForType();
-    public abstract TBuilder ToBuilder();
     #endregion
-    
-    public IBuilder WeakCreateBuilderForType() {
-      return CreateBuilderForType();
-    }
 
-    public IBuilder WeakToBuilder() {
-      return ToBuilder();
-    }
-
-    public IMessage WeakDefaultInstanceForType {
-      get { return DefaultInstanceForType; }
-    }
-
-    public virtual bool IsInitialized {
+    /// <summary>
+    /// Returns true iff all required fields in the message and all embedded
+    /// messages are set.
+    /// </summary>
+    public override bool IsInitialized {
       get {
         // Check that all required fields are present.
         foreach (FieldDescriptor field in DescriptorForType.Fields) {
@@ -92,13 +81,13 @@ namespace Google.ProtocolBuffers {
             if (field.IsRepeated) {
               // We know it's an IList<T>, but not the exact type - so
               // IEnumerable is the best we can do. (C# generics aren't covariant yet.)
-              foreach (IMessage element in (IEnumerable) entry.Value) {
+              foreach (IMessageLite element in (IEnumerable)entry.Value) {
                 if (!element.IsInitialized) {
                   return false;
                 }
               }
             } else {
-              if (!((IMessage)entry.Value).IsInitialized) {
+              if (!((IMessageLite)entry.Value).IsInitialized) {
                 return false;
               }
             }
@@ -112,7 +101,23 @@ namespace Google.ProtocolBuffers {
       return TextFormat.PrintToString(this);
     }
 
-    public virtual void WriteTo(CodedOutputStream output) {
+    public sealed override void PrintTo(TextWriter writer) {
+      TextFormat.Print(this, writer);
+    }
+
+    /// <summary>
+    /// Serializes the message and writes it to the given output stream.
+    /// This does not flush or close the stream.
+    /// </summary>
+    /// <remarks>
+    /// Protocol Buffers are not self-delimiting. Therefore, if you write
+    /// any more data to the stream after the message, you must somehow ensure
+    /// that the parser on the receiving end does not interpret this as being
+    /// part of the protocol message. One way of doing this is by writing the size
+    /// of the message before the data, then making sure you limit the input to
+    /// that size when receiving the data. Alternatively, use WriteDelimitedTo(Stream).
+    /// </remarks>
+    public override void WriteTo(CodedOutputStream output) {
       foreach (KeyValuePair<FieldDescriptor, object> entry in AllFields) {
         FieldDescriptor field = entry.Key;
         if (field.IsRepeated) {
@@ -147,7 +152,11 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    public virtual int SerializedSize {
+    /// <summary>
+    /// Returns the number of bytes required to encode this message.
+    /// The result is only computed on the first call and memoized after that.
+    /// </summary>
+    public override int SerializedSize {
       get {
         if (memoizedSize != null) {
           return memoizedSize.Value;
@@ -188,33 +197,12 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    public ByteString ToByteString() {
-      ByteString.CodedBuilder output = new ByteString.CodedBuilder(SerializedSize);
-      WriteTo(output.CodedOutput);
-      return output.Build();
-    }
-
-    public byte[] ToByteArray() {
-      byte[] result = new byte[SerializedSize];
-      CodedOutputStream output = CodedOutputStream.CreateInstance(result);
-      WriteTo(output);
-      output.CheckNoSpaceLeft();
-      return result;
-    }
-
-    public void WriteTo(Stream output) {
-      CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
-      WriteTo(codedOutput);
-      codedOutput.Flush();
-    }
-
-    public void WriteDelimitedTo(Stream output) {
-      CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
-      codedOutput.WriteRawVarint32((uint) SerializedSize);
-      WriteTo(codedOutput);
-      codedOutput.Flush();
-    }
-
+    /// <summary>
+    /// Compares the specified object with this message for equality.
+    /// Returns true iff the given object is a message of the same type
+    /// (as defined by DescriptorForType) and has identical values
+    /// for all its fields.
+    /// </summary>
     public override bool Equals(object other) {
       if (other == this) {
         return true;
@@ -226,6 +214,10 @@ namespace Google.ProtocolBuffers {
       return Dictionaries.Equals(AllFields, otherMessage.AllFields) && UnknownFields.Equals(otherMessage.UnknownFields);
     }
 
+    /// <summary>
+    /// Returns the hash code value for this message.
+    /// TODO(jonskeet): Specify the hash algorithm, but better than the Java one!
+    /// </summary>
     public override int GetHashCode() {
       int hash = 41;
       hash = (19 * hash) + DescriptorForType.GetHashCode();
@@ -233,5 +225,21 @@ namespace Google.ProtocolBuffers {
       hash = (29 * hash) + UnknownFields.GetHashCode();
       return hash;
     }
+
+    #region Explicit Members
+    
+    IBuilder IMessage.WeakCreateBuilderForType() {
+      return CreateBuilderForType();
+    }
+
+    IBuilder IMessage.WeakToBuilder() {
+      return ToBuilder();
+    }
+
+    IMessage IMessage.WeakDefaultInstanceForType {
+      get { return DefaultInstanceForType; }
+    }
+
+    #endregion
   }
 }

@@ -172,7 +172,9 @@ namespace Google.ProtocolBuffers {
         output.WriteBytes(fieldNumber, value);
       }
       foreach (UnknownFieldSet value in groupList) {
+#pragma warning disable 0612
         output.WriteUnknownGroup(fieldNumber, value);
+#pragma warning restore 0612
       }
     }
 
@@ -195,7 +197,9 @@ namespace Google.ProtocolBuffers {
         result += CodedOutputStream.ComputeBytesSize(fieldNumber, value);
       }
       foreach (UnknownFieldSet value in groupList) {
+#pragma warning disable 0612
         result += CodedOutputStream.ComputeUnknownGroupSize(fieldNumber, value);
+#pragma warning restore 0612
       }
       return result;
     }

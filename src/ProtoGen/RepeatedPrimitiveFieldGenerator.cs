@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     }
 
     public void GenerateMembers(TextGenerator writer) {
-      if (Descriptor.IsPacked && Descriptor.File.Options.OptimizeFor == FileOptions.Types.OptimizeMode.SPEED) {
+      if (Descriptor.IsPacked && OptimizeSpeed) {
         writer.WriteLine("private int {0}MemoizedSerializedSize;", Name);
       }
       writer.WriteLine("private pbc::PopsicleList<{0}> {1}_ = new pbc::PopsicleList<{0}>();", TypeName, Name);
@@ -167,6 +167,21 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
       writer.Outdent();
       writer.WriteLine("}");
+    }
+
+    public override void WriteHash(TextGenerator writer) {
+      writer.WriteLine("foreach({0} i in {1}_)", TypeName, Name);
+      writer.WriteLine("  hash ^= i.GetHashCode();");
+    }
+
+    public override void WriteEquals(TextGenerator writer) {
+      writer.WriteLine("if({0}_.Count != other.{0}_.Count) return false;", Name);
+      writer.WriteLine("for(int ix=0; ix < {0}_.Count; ix++)", Name);
+      writer.WriteLine("  if(!{0}_[ix].Equals(other.{0}_[ix])) return false;", Name);
+    }
+
+    public override void WriteToString(TextGenerator writer) {
+      writer.WriteLine("PrintField(\"{0}\", {1}_, writer);", Descriptor.Name, Name);
     }
   }
 }

@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers {
   /// Non-generic interface used for all parts of the API which don't require
   /// any type knowledge.
   /// </summary>
-  public interface IMessage {
+  public interface IMessage : IMessageLite {
     /// <summary>
     /// Returns the message's type's descriptor. This differs from the
     /// Descriptor property of each generated message class in that this
@@ -110,7 +110,7 @@ namespace Google.ProtocolBuffers {
     /// Returns true iff all required fields in the message and all embedded
     /// messages are set.
     /// </summary>
-    bool IsInitialized { get; }
+    new bool IsInitialized { get; }
 
     /// <summary>
     /// Serializes the message and writes it to the given output stream.
@@ -124,7 +124,7 @@ namespace Google.ProtocolBuffers {
     /// of the message before the data, then making sure you limit the input to
     /// that size when receiving the data. Alternatively, use WriteDelimitedTo(Stream).
     /// </remarks>
-    void WriteTo(CodedOutputStream output);
+    new void WriteTo(CodedOutputStream output);
 
     /// <summary>
     /// Like WriteTo(Stream) but writes the size of the message as a varint before
@@ -134,13 +134,13 @@ namespace Google.ProtocolBuffers {
     /// YourMessageType.ParseDelimitedFrom(Stream) to parse messages written by this method.
     /// </summary>
     /// <param name="output"></param>
-    void WriteDelimitedTo(Stream output);
+    new void WriteDelimitedTo(Stream output);
 
     /// <summary>
     /// Returns the number of bytes required to encode this message.
     /// The result is only computed on the first call and memoized after that.
     /// </summary>
-    int SerializedSize { get; }
+    new int SerializedSize { get; }
 
     #region Comparison and hashing
     /// <summary>
@@ -149,13 +149,13 @@ namespace Google.ProtocolBuffers {
     /// (as defined by DescriptorForType) and has identical values
     /// for all its fields.
     /// </summary>
-    bool Equals(object other);
+    new bool Equals(object other);
 
     /// <summary>
     /// Returns the hash code value for this message.
     /// TODO(jonskeet): Specify the hash algorithm, but better than the Java one!
     /// </summary>
-    int GetHashCode();
+    new int GetHashCode();
     #endregion
 
     #region Convenience methods
@@ -163,19 +163,19 @@ namespace Google.ProtocolBuffers {
     /// Converts the message to a string in protocol buffer text format.
     /// This is just a trivial wrapper around TextFormat.PrintToString.
     /// </summary>
-    string ToString();
+    new string ToString();
 
     /// <summary>
     /// Serializes the message to a ByteString. This is a trivial wrapper
     /// around WriteTo(CodedOutputStream).
     /// </summary>
-    ByteString ToByteString();
+    new ByteString ToByteString();
 
     /// <summary>
     /// Serializes the message to a byte array. This is a trivial wrapper
     /// around WriteTo(CodedOutputStream).
     /// </summary>
-    byte[] ToByteArray();
+    new byte[] ToByteArray();
 
     /// <summary>
     /// Serializes the message and writes it to the given stream.
@@ -183,7 +183,7 @@ namespace Google.ProtocolBuffers {
     /// does not flush or close the stream.
     /// </summary>
     /// <param name="output"></param>
-    void WriteTo(Stream output);
+    new void WriteTo(Stream output);
     #endregion
 
     /// <summary>
@@ -191,19 +191,19 @@ namespace Google.ProtocolBuffers {
     /// is typically implemented by strongly typed messages by just returning
     /// the result of CreateBuilderForType.
     /// </summary>
-    IBuilder WeakCreateBuilderForType();
+    new IBuilder WeakCreateBuilderForType();
 
     /// <summary>
     /// Creates a builder with the same contents as this message. This
     /// is typically implemented by strongly typed messages by just returning
     /// the result of ToBuilder.
     /// </summary>
-    IBuilder WeakToBuilder();
+    new IBuilder WeakToBuilder();
 
-    IMessage WeakDefaultInstanceForType { get; }
+    new IMessage WeakDefaultInstanceForType { get; }
   }
 
-  public interface IMessage<TMessage> : IMessage {
+  public interface IMessage<TMessage> : IMessage, IMessageLite<TMessage> {
     /// <summary>
     /// Returns an instance of this message type with all fields set to
     /// their default values. This may or may not be a singleton. This differs
@@ -211,26 +211,26 @@ namespace Google.ProtocolBuffers {
     /// method is an abstract method of IMessage whereas DefaultInstance is
     /// a static property of a specific class. They return the same thing.
     /// </summary>
-    TMessage DefaultInstanceForType { get; }
+    new TMessage DefaultInstanceForType { get; }
   }
 
   /// <summary>
   /// Type-safe interface for all generated messages to implement.
   /// </summary>
-  public interface IMessage<TMessage, TBuilder> : IMessage<TMessage>
+  public interface IMessage<TMessage, TBuilder> : IMessage<TMessage>, IMessageLite<TMessage, TBuilder>
       where TMessage : IMessage<TMessage, TBuilder> 
       where TBuilder : IBuilder<TMessage, TBuilder> {
     #region Builders
     /// <summary>
     /// Constructs a new builder for a message of the same type as this message.
     /// </summary>
-    TBuilder CreateBuilderForType();
+    new TBuilder CreateBuilderForType();
     /// <summary>
     /// Creates a builder with the same contents as this current instance.
     /// This is typically implemented by strongly typed messages by just
     /// returning the result of ToBuilder().
     /// </summary>
-    TBuilder ToBuilder();
+    new TBuilder ToBuilder();
     #endregion
   }
 }

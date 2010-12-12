@@ -102,8 +102,8 @@ namespace Google.ProtocolBuffers {
     public override IDictionary<FieldDescriptor, object> AllFields {
       get {
         IDictionary<FieldDescriptor, object> result = GetMutableFieldMap();
-        foreach(KeyValuePair<FieldDescriptor, object> entry in extensions.AllFields) {
-          result[entry.Key] = entry.Value;
+        foreach(KeyValuePair<IFieldDescriptorLite, object> entry in extensions.AllFields) {
+          result[(FieldDescriptor)entry.Key] = entry.Value;
         }
         return Dictionaries.AsReadOnly(result);
       }
@@ -173,9 +173,9 @@ namespace Google.ProtocolBuffers {
     /// TODO(jonskeet): See if we can improve this in terms of readability.
     /// </summary>
     protected class ExtensionWriter {
-      readonly IEnumerator<KeyValuePair<FieldDescriptor, object>> iterator;
+      readonly IEnumerator<KeyValuePair<IFieldDescriptorLite, object>> iterator;
       readonly FieldSet extensions;
-      KeyValuePair<FieldDescriptor, object>? next = null;
+      KeyValuePair<IFieldDescriptorLite, object>? next = null;
 
       internal ExtensionWriter(ExtendableMessage<TMessage, TBuilder> message) {
         extensions = message.extensions;

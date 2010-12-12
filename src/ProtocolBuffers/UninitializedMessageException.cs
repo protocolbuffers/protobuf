@@ -36,8 +36,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+#if !LITE
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
+#endif
 
 namespace Google.ProtocolBuffers {
   /// <summary>
@@ -47,16 +49,10 @@ namespace Google.ProtocolBuffers {
 
     private readonly IList<string> missingFields;
 
-    public UninitializedMessageException(IMessage message)
-        : this(FindMissingFields(message)) {
-    }
-
     private UninitializedMessageException(IList<string> missingFields)
         : base(BuildDescription(missingFields)) {
-      this.missingFields = Lists.AsReadOnly(missingFields);
+      this.missingFields = new List<string>(missingFields);
     }
-
-    
     /// <summary>
     /// Returns a read-only list of human-readable names of
     /// required fields missing from this message. Each name
@@ -93,6 +89,19 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
+    /// For Lite exceptions that do not known how to enumerate missing fields
+    /// </summary>
+    public UninitializedMessageException(IMessageLite message)
+      : base(String.Format("Message {0} is missing required fields", message.GetType())) {
+      missingFields = new List<string>();
+    }
+
+#if !LITE
+    public UninitializedMessageException(IMessage message)
+        : this(FindMissingFields(message)) {
+    }
+
+    /// <summary>
     /// Returns a list of the full "paths" of missing required
     /// fields in the specified message.
     /// </summary>
@@ -120,11 +129,19 @@ namespace Google.ProtocolBuffers {
           if (field.IsRepeated) {
             int i = 0;
             foreach (object element in (IEnumerable) value) {
-              FindMissingFields((IMessage) element, SubMessagePrefix(prefix, field, i++), results);
+              if (element is IMessage) {
+                FindMissingFields((IMessage)element, SubMessagePrefix(prefix, field, i++), results);
+              } else {
+                results.Add(prefix + field.Name);
+              }
             }
           } else {
             if (message.HasField(field)) {
-              FindMissingFields((IMessage) value, SubMessagePrefix(prefix, field, -1), results);
+              if (value is IMessage) {
+                FindMissingFields((IMessage)value, SubMessagePrefix(prefix, field, -1), results);
+              } else {
+                results.Add(prefix + field.Name);
+              }
             }
           }
         }
@@ -148,5 +165,6 @@ namespace Google.ProtocolBuffers {
       result.Append('.');
       return result.ToString();
     }
+#endif
   }
 }

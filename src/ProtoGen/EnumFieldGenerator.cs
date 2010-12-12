@@ -88,10 +88,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
       // TODO(jonskeet): Make a more efficient way of doing this
       writer.WriteLine("int rawValue = input.ReadEnum();");
       writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
-      writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
-      writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-      writer.WriteLine("  }");
-      writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+      if (!UseLiteRuntime) {
+        writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+        writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+        writer.WriteLine("  }");
+        writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+      }
       writer.WriteLine("} else {");
       writer.WriteLine("  {0} = ({1}) rawValue;", PropertyName, TypeName);
       writer.WriteLine("}");
@@ -106,7 +108,19 @@ namespace Google.ProtocolBuffers.ProtoGen {
     public void GenerateSerializedSizeCode(TextGenerator writer) {
       writer.WriteLine("if (Has{0}) {{", PropertyName);
       writer.WriteLine("  size += pb::CodedOutputStream.ComputeEnumSize({0}, (int) {1});", Number, PropertyName);
-      writer.WriteLine("}");    
+      writer.WriteLine("}");
+    }
+
+    public override void WriteHash(TextGenerator writer) {
+      writer.WriteLine("if (has{0}) hash ^= {1}_.GetHashCode();", PropertyName, Name);
+    }
+
+    public override void WriteEquals(TextGenerator writer) {
+      writer.WriteLine("if (has{0} != other.has{0} || (has{0} && !{1}_.Equals(other.{1}_))) return false;", PropertyName, Name);
+    }
+
+    public override void WriteToString(TextGenerator writer) {
+      writer.WriteLine("PrintField(\"{0}\", has{1}, {2}_, writer);", Descriptor.Name, PropertyName, Name);
     }
   }
 }

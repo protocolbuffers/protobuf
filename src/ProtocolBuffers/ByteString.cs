@@ -79,6 +79,13 @@ namespace Google.ProtocolBuffers {
     }
 
     /// <summary>
+    /// Constructs a ByteString from the Base64 Encoded String.
+    /// </summary>
+    public static ByteString FromBase64(string bytes) {
+      return new ByteString(System.Convert.FromBase64String(bytes));
+    }
+
+    /// <summary>
     /// Constructs a ByteString from the given array. The contents
     /// are copied, so further modifications to the array will not
     /// be reflected in the returned ByteString.

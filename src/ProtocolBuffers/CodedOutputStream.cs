@@ -206,19 +206,20 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Writes a group field value, including tag, to the stream.
     /// </summary>
-    public void WriteGroup(int fieldNumber, IMessage value) {
+    public void WriteGroup(int fieldNumber, IMessageLite value) {
       WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
       value.WriteTo(this);
       WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
     }
 
-    public void WriteUnknownGroup(int fieldNumber, UnknownFieldSet value) {
+    [Obsolete]
+    public void WriteUnknownGroup(int fieldNumber, IMessageLite value) {
       WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
       value.WriteTo(this);
       WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
     }
 
-    public void WriteMessage(int fieldNumber, IMessage value) {
+    public void WriteMessage(int fieldNumber, IMessageLite value) {
       WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
       WriteRawVarint32((uint)value.SerializedSize);
       value.WriteTo(this);
@@ -263,7 +264,7 @@ namespace Google.ProtocolBuffers {
       WriteRawVarint64(EncodeZigZag64(value));
     }
 
-    public void WriteMessageSetExtension(int fieldNumber, IMessage value) {
+    public void WriteMessageSetExtension(int fieldNumber, IMessageLite value) {
       WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
       WriteUInt32(WireFormat.MessageSetField.TypeID, (uint)fieldNumber);
       WriteMessage(WireFormat.MessageSetField.Message, value);
@@ -288,15 +289,15 @@ namespace Google.ProtocolBuffers {
         case FieldType.Fixed32: WriteFixed32(fieldNumber, (uint)value); break;
         case FieldType.Bool: WriteBool(fieldNumber, (bool)value); break;
         case FieldType.String: WriteString(fieldNumber, (string)value); break;
-        case FieldType.Group: WriteGroup(fieldNumber, (IMessage)value); break;
-        case FieldType.Message: WriteMessage(fieldNumber, (IMessage)value); break;
+        case FieldType.Group: WriteGroup(fieldNumber, (IMessageLite)value); break;
+        case FieldType.Message: WriteMessage(fieldNumber, (IMessageLite)value); break;
         case FieldType.Bytes: WriteBytes(fieldNumber, (ByteString)value); break;
         case FieldType.UInt32: WriteUInt32(fieldNumber, (uint)value); break;
         case FieldType.SFixed32: WriteSFixed32(fieldNumber, (int)value); break;
         case FieldType.SFixed64: WriteSFixed64(fieldNumber, (long)value); break;
         case FieldType.SInt32: WriteSInt32(fieldNumber, (int)value); break;
         case FieldType.SInt64: WriteSInt64(fieldNumber, (long)value); break;
-        case FieldType.Enum: WriteEnum(fieldNumber, ((EnumValueDescriptor)value).Number);
+        case FieldType.Enum: WriteEnum(fieldNumber, ((IEnumLite)value).Number);
           break;
       }
     }
@@ -312,15 +313,15 @@ namespace Google.ProtocolBuffers {
         case FieldType.Fixed32: WriteFixed32NoTag((uint)value); break;
         case FieldType.Bool: WriteBoolNoTag((bool)value); break;
         case FieldType.String: WriteStringNoTag((string)value); break;
-        case FieldType.Group: WriteGroupNoTag((IMessage)value); break;
-        case FieldType.Message: WriteMessageNoTag((IMessage)value); break;
+        case FieldType.Group: WriteGroupNoTag((IMessageLite)value); break;
+        case FieldType.Message: WriteMessageNoTag((IMessageLite)value); break;
         case FieldType.Bytes: WriteBytesNoTag((ByteString)value); break;
         case FieldType.UInt32: WriteUInt32NoTag((uint)value); break;
         case FieldType.SFixed32: WriteSFixed32NoTag((int)value); break;
         case FieldType.SFixed64: WriteSFixed64NoTag((long)value); break;
         case FieldType.SInt32: WriteSInt32NoTag((int)value); break;
         case FieldType.SInt64: WriteSInt64NoTag((long)value); break;
-        case FieldType.Enum: WriteEnumNoTag(((EnumValueDescriptor)value).Number);
+        case FieldType.Enum: WriteEnumNoTag(((IEnumLite)value).Number);
           break;
       }
     }
@@ -420,11 +421,11 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Writes a group field value, without a tag, to the stream.
     /// </summary>
-    public void WriteGroupNoTag(IMessage value) {
+    public void WriteGroupNoTag(IMessageLite value) {
       value.WriteTo(this);
     }
 
-    public void WriteMessageNoTag(IMessage value) {
+    public void WriteMessageNoTag(IMessageLite value) {
       WriteRawVarint32((uint)value.SerializedSize);
       value.WriteTo(this);
     }
@@ -685,7 +686,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field, including the tag.
     /// </summary>
-    public static int ComputeGroupSize(int fieldNumber, IMessage value) {
+    public static int ComputeGroupSize(int fieldNumber, IMessageLite value) {
       return ComputeTagSize(fieldNumber) * 2 + value.SerializedSize;
     }
 
@@ -693,8 +694,9 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field represented by an UnknownFieldSet, including the tag.
     /// </summary>
+    [Obsolete]
     public static int ComputeUnknownGroupSize(int fieldNumber,
-                                              UnknownFieldSet value) {
+                                              IMessageLite value) {
       return ComputeTagSize(fieldNumber) * 2 + value.SerializedSize;
     }
 
@@ -702,7 +704,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode an
     /// embedded message field, including the tag.
     /// </summary>
-    public static int ComputeMessageSize(int fieldNumber, IMessage value) {
+    public static int ComputeMessageSize(int fieldNumber, IMessageLite value) {
       int size = value.SerializedSize;
       return ComputeTagSize(fieldNumber) + ComputeRawVarint32Size((uint)size) + size;
     }
@@ -853,7 +855,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field, including the tag.
     /// </summary>
-    public static int ComputeGroupSizeNoTag(IMessage value) {
+    public static int ComputeGroupSizeNoTag(IMessageLite value) {
       return value.SerializedSize;
     }
 
@@ -861,7 +863,8 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode a
     /// group field represented by an UnknownFieldSet, including the tag.
     /// </summary>
-    public static int ComputeUnknownGroupSizeNoTag(UnknownFieldSet value) {
+    [Obsolete]
+    public static int ComputeUnknownGroupSizeNoTag(IMessageLite value) {
       return value.SerializedSize;
     }
 
@@ -869,7 +872,7 @@ namespace Google.ProtocolBuffers {
     /// Compute the number of bytes that would be needed to encode an
     /// embedded message field, including the tag.
     /// </summary>
-    public static int ComputeMessageSizeNoTag(IMessage value) {
+    public static int ComputeMessageSizeNoTag(IMessageLite value) {
       int size = value.SerializedSize;
       return ComputeRawVarint32Size((uint)size) + size;
     }
@@ -943,7 +946,7 @@ namespace Google.ProtocolBuffers {
     /// MessageSet extension to the stream. For historical reasons,
     /// the wire format differs from normal fields.
     /// </summary>
-    public static int ComputeMessageSetExtensionSize(int fieldNumber, IMessage value) {
+    public static int ComputeMessageSetExtensionSize(int fieldNumber, IMessageLite value) {
       return ComputeTagSize(WireFormat.MessageSetField.Item) * 2 +
              ComputeUInt32Size(WireFormat.MessageSetField.TypeID, (uint) fieldNumber) +
              ComputeMessageSize(WireFormat.MessageSetField.Message, value);
@@ -1004,15 +1007,15 @@ namespace Google.ProtocolBuffers {
         case FieldType.Fixed32: return ComputeFixed32Size(fieldNumber, (uint)value);
         case FieldType.Bool: return ComputeBoolSize(fieldNumber, (bool)value);
         case FieldType.String: return ComputeStringSize(fieldNumber, (string)value);
-        case FieldType.Group: return ComputeGroupSize(fieldNumber, (IMessage)value);
-        case FieldType.Message: return ComputeMessageSize(fieldNumber, (IMessage)value);
+        case FieldType.Group: return ComputeGroupSize(fieldNumber, (IMessageLite)value);
+        case FieldType.Message: return ComputeMessageSize(fieldNumber, (IMessageLite)value);
         case FieldType.Bytes: return ComputeBytesSize(fieldNumber, (ByteString)value);
         case FieldType.UInt32: return ComputeUInt32Size(fieldNumber, (uint)value);
         case FieldType.SFixed32: return ComputeSFixed32Size(fieldNumber, (int)value);
         case FieldType.SFixed64: return ComputeSFixed64Size(fieldNumber, (long)value);
         case FieldType.SInt32: return ComputeSInt32Size(fieldNumber, (int)value);
         case FieldType.SInt64: return ComputeSInt64Size(fieldNumber, (long)value);
-        case FieldType.Enum: return ComputeEnumSize(fieldNumber, ((EnumValueDescriptor)value).Number);
+        case FieldType.Enum: return ComputeEnumSize(fieldNumber, ((IEnumLite)value).Number);
         default:
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }
@@ -1033,15 +1036,15 @@ namespace Google.ProtocolBuffers {
         case FieldType.Fixed32: return ComputeFixed32SizeNoTag((uint)value);
         case FieldType.Bool: return ComputeBoolSizeNoTag((bool)value);
         case FieldType.String: return ComputeStringSizeNoTag((string)value);
-        case FieldType.Group: return ComputeGroupSizeNoTag((IMessage)value);
-        case FieldType.Message: return ComputeMessageSizeNoTag((IMessage)value);
+        case FieldType.Group: return ComputeGroupSizeNoTag((IMessageLite)value);
+        case FieldType.Message: return ComputeMessageSizeNoTag((IMessageLite)value);
         case FieldType.Bytes: return ComputeBytesSizeNoTag((ByteString)value);
         case FieldType.UInt32: return ComputeUInt32SizeNoTag((uint)value);
         case FieldType.SFixed32: return ComputeSFixed32SizeNoTag((int)value);
         case FieldType.SFixed64: return ComputeSFixed64SizeNoTag((long)value);
         case FieldType.SInt32: return ComputeSInt32SizeNoTag((int)value);
         case FieldType.SInt64: return ComputeSInt64SizeNoTag((long)value);
-        case FieldType.Enum: return ComputeEnumSizeNoTag(((EnumValueDescriptor)value).Number);
+        case FieldType.Enum: return ComputeEnumSizeNoTag(((IEnumLite)value).Number);
         default:
           throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
       }

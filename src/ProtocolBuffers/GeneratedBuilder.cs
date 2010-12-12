@@ -148,16 +148,20 @@ namespace Google.ProtocolBuffers {
           }
         } else if (field.MappedType == MappedType.Message && HasField(field)) {
           // Merge singular embedded messages
-          IMessage oldValue = (IMessage)this[field];
+          IMessageLite oldValue = (IMessageLite)this[field];
           this[field] = oldValue.WeakCreateBuilderForType()
               .WeakMergeFrom(oldValue)
-              .WeakMergeFrom((IMessage)entry.Value)
+              .WeakMergeFrom((IMessageLite)entry.Value)
               .WeakBuildPartial();
         } else {
           // Just overwrite
           this[field] = entry.Value;
         }
       }
+
+      //Fix for unknown fields not merging, see java's AbstractMessage.Builder<T> line 236
+      MergeUnknownFields(other.UnknownFields);
+
       return ThisBuilder;
     }
 

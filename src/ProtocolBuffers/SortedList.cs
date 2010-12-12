@@ -50,6 +50,18 @@ namespace Google.ProtocolBuffers
     {
         private readonly IDictionary<TKey, TValue> wrapped = new Dictionary<TKey, TValue>();
 
+        public SortedList()
+        {
+        }
+
+        public SortedList(IDictionary<TKey, TValue> dictionary)
+        {
+            foreach (KeyValuePair<TKey, TValue> entry in dictionary)
+            {
+                Add(entry.Key, entry.Value);
+            }
+        }
+
         public void Add(TKey key, TValue value)
         {
             wrapped.Add(key, value);

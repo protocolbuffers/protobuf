@@ -42,6 +42,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
         : base(descriptor) {
     }
 
+    public abstract void WriteHash(TextGenerator writer);
+    public abstract void WriteEquals(TextGenerator writer);
+    public abstract void WriteToString(TextGenerator writer);
+
     private static bool AllPrintableAscii(string text) {
       foreach (char c in text) {
         if (c < 0x20 || c > 0x7e) {
@@ -51,6 +55,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       return true;
     }
 
+    /// <remarks>Copy exists in ExtensionGenerator.cs</remarks>
     protected string DefaultValue {
       get {
         string suffix = "";
@@ -72,17 +77,40 @@ namespace Google.ProtocolBuffers.ProtoGen {
           case FieldType.UInt32:
           case FieldType.UInt64:
           case FieldType.Fixed32:
-          case FieldType.Fixed64:
+          case FieldType.Fixed64: 
+          {
             // The simple Object.ToString converts using the current culture.
             // We want to always use the invariant culture so it's predictable.
             IConvertible value = (IConvertible) Descriptor.DefaultValue;
+            //a few things that must be handled explicitly
+            if (Descriptor.FieldType == FieldType.Double && value is double) {
+              if (double.IsNaN((double) value))
+                return "double.NaN";
+              if (double.IsPositiveInfinity((double) value))
+                return "double.PositiveInfinity";
+              if (double.IsNegativeInfinity((double) value))
+                return "double.NegativeInfinity";
+            }
+            else if (Descriptor.FieldType == FieldType.Float && value is float) {
+              if (float.IsNaN((float)value))
+                return "float.NaN";
+              if (float.IsPositiveInfinity((float)value))
+                return "float.PositiveInfinity";
+              if (float.IsNegativeInfinity((float)value))
+                return "float.NegativeInfinity";
+            }
             return value.ToString(CultureInfo.InvariantCulture) + suffix;
+          }
           case FieldType.Bool:
             return (bool) Descriptor.DefaultValue ? "true" : "false";
 
           case FieldType.Bytes:
             if (!Descriptor.HasDefaultValue) {
               return "pb::ByteString.Empty";
+            }
+            if (UseLiteRuntime && Descriptor.DefaultValue is ByteString) {
+              string temp = Convert.ToBase64String(((ByteString)Descriptor.DefaultValue).ToByteArray());
+              return String.Format("ByteString.FromBase64(\"{0}\")", temp);
             }
             return string.Format("(pb::ByteString) {0}.Descriptor.Fields[{1}].DefaultValue", GetClassName(Descriptor.ContainingType), Descriptor.Index);
           case FieldType.String:
@@ -94,6 +122,10 @@ namespace Google.ProtocolBuffers.ProtoGen {
                   .Replace("'", "\\'")
                   .Replace("\"", "\\\"")
                   + "\"";
+            }
+            if (UseLiteRuntime && Descriptor.DefaultValue is String) {
+              string temp = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes((String)Descriptor.DefaultValue));
+              return String.Format("ByteString.FromBase64(\"{0}\").ToStringUtf8()", temp);
             }
             return string.Format("(string) {0}.Descriptor.Fields[{1}].DefaultValue", GetClassName(Descriptor.ContainingType), Descriptor.Index);
           case FieldType.Enum:

@@ -72,7 +72,9 @@ extend google.protobuf.EnumOptions {
   optional sfixed32 enum_opt1 = 7753576;
 }
 
-// TODO(benjy): Test options on enum values when the parser supports them.
+extend google.protobuf.EnumValueOptions {
+  optional int32 enum_value_opt1 = 1560678;
+}
 
 extend google.protobuf.ServiceOptions {
   optional sint64 service_opt1 = 7887650;
@@ -101,7 +103,7 @@ message TestMessageWithCustomOptions {
     option (enum_opt1) = -789;
 
     ANENUM_VAL1 = 1;
-    ANENUM_VAL2 = 2;
+    ANENUM_VAL2 = 2 [(enum_value_opt1) = 123];
   }
 }
 
@@ -208,6 +210,8 @@ message SettingRealsFromNegativeInts {
 
 message ComplexOptionType1 {
   optional int32 foo = 1;
+  optional int32 foo2 = 2;
+  optional int32 foo3 = 3;
 
   extensions 100 to max;
 }

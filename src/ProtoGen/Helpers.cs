@@ -38,11 +38,5 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// Helpers to resolve class names etc.
   /// </summary>
   internal static class Helpers {
-    internal static void WriteNamespaces(TextGenerator writer) {
-      writer.WriteLine("using pb = global::Google.ProtocolBuffers;");
-      writer.WriteLine("using pbc = global::Google.ProtocolBuffers.Collections;");
-      writer.WriteLine("using pbd = global::Google.ProtocolBuffers.Descriptors;");
-      writer.WriteLine("using scg = global::System.Collections.Generic;");
-    }
   }
 }

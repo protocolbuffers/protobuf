@@ -39,6 +39,7 @@ using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers {
+
   /// <summary>
   /// Base type for all generated extensions.
   /// </summary>
@@ -65,7 +66,7 @@ namespace Google.ProtocolBuffers {
   public abstract class GeneratedExtensionBase<TExtension> {
 
     private readonly FieldDescriptor descriptor;
-    private readonly IMessage messageDefaultInstance;
+    private readonly IMessageLite messageDefaultInstance;
 
     protected GeneratedExtensionBase(FieldDescriptor descriptor, Type singularExtensionType) {
       if (!descriptor.IsExtension) {
@@ -79,7 +80,8 @@ namespace Google.ProtocolBuffers {
         if (defaultInstanceProperty == null) {
           throw new ArgumentException("No public static DefaultInstance property for type " + typeof(TExtension).Name);
         }
-        messageDefaultInstance = (IMessage)defaultInstanceProperty.GetValue(null, null);
+
+        messageDefaultInstance = (IMessageLite)defaultInstanceProperty.GetValue(null, null);
       }
     }
 
@@ -87,10 +89,14 @@ namespace Google.ProtocolBuffers {
       get { return descriptor; }
     }
 
+    public int Number {
+      get { return Descriptor.FieldNumber; }
+    }
+
     /// <summary>
     /// Returns the default message instance for extensions which are message types.
     /// </summary>
-    public IMessage MessageDefaultInstance {
+    public IMessageLite MessageDefaultInstance {
       get { return messageDefaultInstance; }
     }
 
@@ -107,7 +113,7 @@ namespace Google.ProtocolBuffers {
             // This should not happen in normal use.  But, to be nice, we'll
             // copy the message to whatever type the caller was expecting.
             return MessageDefaultInstance.WeakCreateBuilderForType()
-                           .WeakMergeFrom((IMessage)value).WeakBuild();
+                           .WeakMergeFrom((IMessageLite)value).WeakBuild();
           }
         case MappedType.Enum:
           // Just return a boxed int - that can be unboxed to the enum
