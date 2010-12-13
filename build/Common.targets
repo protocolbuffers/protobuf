@@ -29,7 +29,7 @@
 		<MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
 	</Target>
 
-	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
+	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource" Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'">
 		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildTempDirectory)\..\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 	
