@@ -29,19 +29,24 @@
 		<MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
 	</Target>
 
-	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource">
+	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource" Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'">
 		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildTempDirectory)\..\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 	
 	<!--## Package Generation ##-->
+	<Target Name="_CleanOutputDirectory">
+		<ItemGroup><DirectoriesToDelete Include="$([System.IO.Directory]::GetDirectories('$(BuildOutputDirectory)'))" /></ItemGroup>
+		<RemoveDir Directories="@(DirectoriesToDelete)" ContinueOnError="true" />
+		
+		<ItemGroup><FilesToDelete Include="$(BuildOutputDirectory)\**\*.*" /></ItemGroup>
+		<Delete Files="@(FilesToDelete)" />
+	</Target>
+	
 	<Target Name="_PreparePackageComponent">
 		<Copy SourceFiles="@(DynamicPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(DynamicPackageItem.TargetDirectory)\%(DynamicPackageItem.RecursiveDir)" />
 	</Target>
 
 	<Target Name="_GeneratePackage">
-		<ItemGroup><ExistingArchives Include="$(BuildOutputDirectory)\*.zip" /></ItemGroup>
-		<Delete Files="@(ExistingArchives)" />
-
 		<Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
 		<Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(PackageName) * -r" WorkingDirectory="$(BuildOutputDirectory)" />
 
