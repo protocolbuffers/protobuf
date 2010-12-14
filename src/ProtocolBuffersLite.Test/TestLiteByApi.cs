@@ -32,9 +32,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
-using System.Collections.Generic;
-using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 

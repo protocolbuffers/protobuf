@@ -68,19 +68,18 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Silverlight2|AnyCPU'">
-	  <DebugType>pdbonly</DebugType>
-	  <Optimize>true</Optimize>
-	  <OutputPath>bin\Release_Silverlight2\</OutputPath>
-	  <DefineConstants>TRACE;SILVERLIGHT2</DefineConstants>
-	  <ErrorReport>prompt</ErrorReport>
-	  <WarningLevel>4</WarningLevel>
-	  <NoStdLib>true</NoStdLib>
-	  <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release_Silverlight2\</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT2</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -199,7 +198,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Debug_Silverlight2' " />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Release_Silverlight2' " />

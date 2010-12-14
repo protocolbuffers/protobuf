@@ -35,6 +35,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 
 namespace Google.ProtocolBuffers {
@@ -86,8 +87,17 @@ namespace Google.ProtocolBuffers {
 
     public EnumLiteMap() {
       items = new SortedList<int, IEnumLite>();
+#if SILVERLIGHT2
+      // Silverlight doesn't support Enum.GetValues
+      // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
+      foreach (FieldInfo fi in typeof(TEnum).GetFields(BindingFlags.Static | BindingFlags.Public)) {
+        TEnum evalue = (TEnum) fi.GetValue(null);        
+        items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
+      }
+#else
       foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
         items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
+#endif
     }
 
     IEnumLite IEnumLiteMap.FindValueByNumber(int number) {
