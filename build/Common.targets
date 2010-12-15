@@ -7,26 +7,23 @@
 		<MakeDir Directories="@(WorkingDirectories)" />
 	</Target>
 
-	<Target Name="_Compile" DependsOnTargets="_Clean">
-		<MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
-	</Target>
+  <Target Name="_Compile" DependsOnTargets="_Clean">
+    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" Condition=" '$(BuildTools)' == '' " />
+    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration);TargetFrameworkVersion=v2.0" Condition=" '$(BuildTools)' == 'v3.5' " />
+  </Target>
 
+	<Target Name="_CompileGeneratedSource" DependsOnTargets="_CopyGeneratedSource">
+    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" Condition=" '$(BuildTools)' == '' " />
+    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration);TargetFrameworkVersion=v2.0" Condition=" '$(BuildTools)' == 'v3.5' " />
+  </Target>
+  
 	<Target Name="_GenerateSource">
-		<PropertyGroup>
-			<ProtosList>@(Protos)</ProtosList>
-			<Args>$(ProtosList.Replace(`;`,` `))</Args>
-		</PropertyGroup>
-
-		<Exec Command="$(ProtocExePath) --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb $(Args)" WorkingDirectory="$(BuildTempDirectory)" />
+    <Exec Command="$(ProtocExePath) --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb @(Protos->'%(RelativeDir)%(Filename)%(Extension)', ' ')" WorkingDirectory="$(BuildTempDirectory)" />
 		<Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
 	<Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">
 		<Copy SourceFiles="%(GeneratedSource.Identity)" DestinationFiles="%(GeneratedSource.TargetDirectory)\%(GeneratedSource.Filename)%(GeneratedSource.Extension)" />
-	</Target>
-
-	<Target Name="_CompileGeneratedSource" DependsOnTargets="_CopyGeneratedSource">
-		<MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" />
 	</Target>
 
 	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource" Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'">

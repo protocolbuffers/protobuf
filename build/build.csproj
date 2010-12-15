@@ -6,7 +6,7 @@
 		<BuildConfiguration></BuildConfiguration>
 
 		<!--Directory Paths-->
-		<ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+    <ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
 		<SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
 		<LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
 		<ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
@@ -15,9 +15,10 @@
 		<BuildOutputDirectory>$(ProjectDirectory)\build_output\$(BuildConfiguration)</BuildOutputDirectory>
 		
 		<!--File Paths-->
-		<SolutionFile>$(SourceDirectory)\ProtocolBuffers.sln</SolutionFile>
-		
-		<!--Tool Paths-->
+    <SolutionFile Condition=" '$(BuildTools)' == '' ">$(SourceDirectory)\ProtocolBuffers.sln</SolutionFile>
+    <SolutionFile Condition=" '$(BuildTools)' == 'v3.5' ">$(SourceDirectory)\ProtocolBuffers2008.sln</SolutionFile>
+
+    <!--Tool Paths-->
 		<ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
 		<ProtogenExePath>$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\protogen.exe</ProtogenExePath>
 		<ProtoBenchExePath>$(BuildTempDirectory)\ProtoBench.exe</ProtoBenchExePath>
