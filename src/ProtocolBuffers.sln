@@ -61,8 +61,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug_Silverlight2|Any CPU.ActiveCfg = Debug_Silverlight2|Any CPU
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug_Silverlight2|Any CPU.Build.0 = Debug_Silverlight2|Any CPU
-		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug|Any CPU.ActiveCfg = Release|Any CPU
-		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release_Silverlight2|Any CPU.ActiveCfg = Release_Silverlight2|Any CPU
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release_Silverlight2|Any CPU.Build.0 = Release_Silverlight2|Any CPU
 		{6908BDCE-D925-43F3-94AC-A531E6DF2591}.Release|Any CPU.ActiveCfg = Release|Any CPU

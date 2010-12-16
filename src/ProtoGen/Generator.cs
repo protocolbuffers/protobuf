@@ -93,9 +93,25 @@ namespace Google.ProtocolBuffers.ProtoGen {
     /// </summary>
     private void Generate(FileDescriptor descriptor) {
       UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
-      using (TextWriter textWriter = File.CreateText(GetOutputFile(descriptor))) {
-        TextGenerator writer = new TextGenerator(textWriter);
-        ucg.Generate(writer);
+      string tempFile = Path.GetTempFileName();
+      try {
+        using (Stream fstream = File.Open(GetOutputFile(descriptor), FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read)) {
+          using (TextWriter textWriter = File.CreateText(tempFile)) {
+            TextGenerator writer = new TextGenerator(textWriter);
+            ucg.Generate(writer);
+          }
+          fstream.SetLength(0);
+          using (TextReader input = new StreamReader(tempFile))
+          using (TextWriter output = new StreamWriter(fstream)) {
+            string line;
+            while (null != (line = input.ReadLine()))
+              output.WriteLine(line);
+          }
+        }
+      }
+      finally {
+        if (File.Exists(tempFile))
+          File.Delete(tempFile);
       }
     }
 

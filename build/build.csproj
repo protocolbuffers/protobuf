@@ -3,9 +3,11 @@
 
 	<PropertyGroup>
 		<ProjectName>Protocol Buffers</ProjectName>
-		<BuildConfiguration></BuildConfiguration>
+    <BuildConfiguration Condition=" '$(BuildConfiguration)' == '' ">Error</BuildConfiguration>
+    <BuildTools Condition=" '$(BuildTools)' == '' ">4.0</BuildTools>
+    <ForcedFrameworkVersion Condition=" '$(BuildTools)' == '3.5' ">TargetFrameworkVersion=v2.0;</ForcedFrameworkVersion>
 
-		<!--Directory Paths-->
+    <!--Directory Paths-->
     <ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
 		<SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
 		<LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
@@ -13,10 +15,12 @@
 		<BenchmarkProtosDirectory>$(ProjectDirectory)\benchmarks</BenchmarkProtosDirectory>
 		<BuildTempDirectory>$(ProjectDirectory)\build_temp\$(BuildConfiguration)</BuildTempDirectory>
 		<BuildOutputDirectory>$(ProjectDirectory)\build_output\$(BuildConfiguration)</BuildOutputDirectory>
-		
+
+    <PackageName Condition=" '$(PackageName)' == '' ">$(BuildConfiguration)</PackageName>
+    
 		<!--File Paths-->
-    <SolutionFile Condition=" '$(BuildTools)' == '' ">$(SourceDirectory)\ProtocolBuffers.sln</SolutionFile>
-    <SolutionFile Condition=" '$(BuildTools)' == 'v3.5' ">$(SourceDirectory)\ProtocolBuffers2008.sln</SolutionFile>
+    <SolutionFile Condition=" '$(BuildTools)' == '4.0' ">$(SourceDirectory)\ProtocolBuffers.sln</SolutionFile>
+    <SolutionFile Condition=" '$(BuildTools)' == '3.5' ">$(SourceDirectory)\ProtocolBuffers2008.sln</SolutionFile>
 
     <!--Tool Paths-->
 		<ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
@@ -41,9 +45,10 @@
 		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_custom_options.proto" />
 		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_embed_optimize_for.proto" />
 		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_empty.proto" />
-  		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import.proto" />
-  		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import_lite.proto" />
-  		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_lite_imports_nonlite.proto" />
+  	<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import.proto" />
+  	<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_lite_imports_nonlite.proto" />
 		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_mset.proto" />
 		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_no_generic_services.proto" />
 		<Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
@@ -61,7 +66,7 @@
 		<GeneratedSource Include="$(BuildTempDirectory)\AddressBookProtos.cs">
 			<TargetDirectory>$(SourceDirectory)\AddressBook</TargetDirectory>
 		</GeneratedSource>
-        
+    <!-- Unit test -->
 		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestCSharpOptionsProtoFile.cs">
 			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
 		</GeneratedSource>
@@ -92,6 +97,25 @@
 		<GeneratedSource Include="$(BuildTempDirectory)\UnitTestProtoFile.cs">
 			<TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
 		</GeneratedSource>
+    <!-- Lite unit test -->
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestExtrasFullProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestImportLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestImportProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestLiteImportNonLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
 	
 		<TestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
 		<TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffersLite.Test.dll" />
@@ -116,11 +140,15 @@
 		
 	</ItemGroup>
 
-	<!-- targets -->
-	<Target Name="Build" DependsOnTargets="_Compile;_Test" />
+  <!-- targets -->
+  <Target Name="Clean" DependsOnTargets="_Clean" />
+  <Target Name="Build" DependsOnTargets="_Compile;_Test" />
+  <Target Name="Test" DependsOnTargets="_RunTests" />
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+  <Target Name="BuildPackage" DependsOnTargets="PrepareOutputDirectory;PreparePackageComponent;GeneratePackage" />
 	<Target Name="PrepareOutputDirectory" DependsOnTargets="_CleanOutputDirectory" />
 	<Target Name="PreparePackageComponent" DependsOnTargets="_PreparePackageComponent" />
 	<Target Name="GeneratePackage" DependsOnTargets="_GeneratePackage" />
 	<Target Name="RunBenchmarks" DependsOnTargets="_RunBenchmarks" />
-
+  
 </Project>
