@@ -112,6 +112,9 @@ string GlobalAssignDescriptorsName(const string& filename);
 // Return the name of the ShutdownFile() function for a given file.
 string GlobalShutdownFileName(const string& filename);
 
+// Escape C++ trigraphs by escaping question marks to \?
+string EscapeTrigraphs(const string& to_escape);
+
 // Do message classes in this file keep track of unknown fields?
 inline bool HasUnknownFields(const FileDescriptor *file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;

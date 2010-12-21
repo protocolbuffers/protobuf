@@ -410,6 +410,7 @@ public class GeneratedMessageTest extends TestCase {
     assertEquals(Float.POSITIVE_INFINITY, message.getInfFloat());
     assertEquals(Float.NEGATIVE_INFINITY, message.getNegInfFloat());
     assertTrue(Float.isNaN(message.getNanFloat()));
+    assertEquals("? ? ?? ?? ??? ??/ ??-", message.getCppTrigraph());
   }
 
   public void testClear() throws Exception {

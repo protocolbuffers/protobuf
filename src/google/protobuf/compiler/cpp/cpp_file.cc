@@ -541,7 +541,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     static const int kBytesPerLine = 40;
     for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
       printer->Print("\n  \"$data$\"",
-        "data", CEscape(file_data.substr(i, kBytesPerLine)));
+        "data", EscapeTrigraphs(CEscape(file_data.substr(i, kBytesPerLine))));
     }
     printer->Print(
       ", $size$);\n",

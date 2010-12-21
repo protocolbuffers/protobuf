@@ -100,6 +100,7 @@ class GeneratorTest(unittest.TestCase):
     self.assertTrue(isinf(message.neg_inf_float))
     self.assertTrue(message.neg_inf_float < 0)
     self.assertTrue(isnan(message.nan_float))
+    self.assertEqual("? ? ?? ?? ??? ??/ ??-", message.cpp_trigraph)
 
   def testHasDefaultValues(self):
     desc = unittest_pb2.TestAllTypes.DESCRIPTOR
