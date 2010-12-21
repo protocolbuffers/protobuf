@@ -48,8 +48,7 @@ namespace {
 void SetStringVariables(const FieldDescriptor* descriptor,
                         map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, variables);
-  (*variables)["default"] =
-    "\"" + CEscape(descriptor->default_value_string()) + "\"";
+  (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["default_variable"] = descriptor->default_value_string().empty()
       ? "::google::protobuf::internal::kEmptyString"
       : "_default_" + FieldName(descriptor) + "_";

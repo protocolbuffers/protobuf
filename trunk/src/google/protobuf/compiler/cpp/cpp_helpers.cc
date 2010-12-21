@@ -292,7 +292,8 @@ string DefaultValue(const FieldDescriptor* field) {
           ClassName(field->enum_type(), true),
           field->default_value_enum()->number());
     case FieldDescriptor::CPPTYPE_STRING:
-      return "\"" + CEscape(field->default_value_string()) + "\"";
+      return "\"" + EscapeTrigraphs(CEscape(field->default_value_string())) +
+             "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return FieldMessageTypeName(field) + "::default_instance()";
   }
@@ -333,6 +334,11 @@ string GlobalAssignDescriptorsName(const string& filename) {
 // Return the name of the ShutdownFile() function for a given file.
 string GlobalShutdownFileName(const string& filename) {
   return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
+}
+
+// Escape C++ trigraphs by escaping question marks to \?
+string EscapeTrigraphs(const string& to_escape) {
+  return StringReplace(to_escape, "?", "\\?", true);
 }
 
 }  // namespace cpp

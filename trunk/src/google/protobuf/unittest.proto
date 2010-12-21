@@ -493,6 +493,13 @@ message TestExtremeDefaultValues {
   optional float inf_float = 17 [default = inf];
   optional float neg_inf_float = 18 [default = -inf];
   optional float nan_float = 19 [default = nan];
+
+  // Tests for C++ trigraphs.
+  // Trigraphs should be escaped in C++ generated files, but they should not be
+  // escaped for other languages.
+  // Note that in .proto file, "\?" is a valid way to escape ? in string
+  // literals.
+  optional string cpp_trigraph = 20 [default = "? \? ?? \?? \??? ??/ ?\?-"];
 }
 
 message SparseEnumMessage {

@@ -167,6 +167,13 @@ TEST(GeneratedMessageTest, FloatingPointDefaults) {
   EXPECT_TRUE(extreme_default.nan_float() != extreme_default.nan_float());
 }
 
+TEST(GeneratedMessageTest, Trigraph) {
+  const unittest::TestExtremeDefaultValues& extreme_default =
+      unittest::TestExtremeDefaultValues::default_instance();
+
+  EXPECT_EQ("? ? ?? ?? ??? ?\?/ ?\?-", extreme_default.cpp_trigraph());
+}
+
 TEST(GeneratedMessageTest, Accessors) {
   // Set every field to a unique value then go back and check all those
   // values.
