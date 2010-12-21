@@ -48,6 +48,7 @@
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/mock_code_generator.h>
+#include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/testing/file.h>
@@ -1140,9 +1141,8 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
       "--proto_path=$tmpdir error.proto");
 
 #ifdef _WIN32
-  ExpectErrorSubstring(
-      "--badplug_out: prefix-gen-badplug: The system cannot find the file "
-        "specified.");
+  ExpectErrorSubstring("--badplug_out: prefix-gen-badplug: " +
+      Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
 #else
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring(
