@@ -130,20 +130,45 @@ typedef uint32_t upb_strlen_t;
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
-typedef union {
-  double _double;
-  float _float;
-  int32_t int32;
-  int64_t int64;
-  uint32_t uint32;
-  uint64_t uint64;
-  bool _bool;
-  upb_string *str;
-  upb_msg *msg;
-  upb_array *arr;
-  upb_atomic_refcount_t *refcount;
-  void *_void;
+typedef struct {
+  union {
+    double _double;
+    float _float;
+    int32_t int32;
+    int64_t int64;
+    uint32_t uint32;
+    uint64_t uint64;
+    bool _bool;
+    upb_string *str;
+    upb_msg *msg;
+    upb_array *arr;
+    upb_atomic_refcount_t *refcount;
+    void *_void;
+  } val;
+
+  // In debug mode we carry the value type around also so we can check accesses
+  // to be sure the right member is being read.
+#ifndef NDEBUG
+  upb_valuetype_t type;
+#endif
 } upb_value;
+
+#define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
+  ctype upb_value_get ## name(upb_value val) { \
+    assert(val.type == UPB_TYPE(proto_type)); \
+    return val.membername; \
+  } \
+  void upb_value_ ## name(upb_value *val, ctype cval) { \
+    val.type = UPB_TYPE(proto_type); \
+    val.membername = cval; \
+  }
+UPB_VALUE_ACCESSORS(double, _double, double, DOUBLE);
+UPB_VALUE_ACCESSORS(float, _float, float, FLOAT);
+UPB_VALUE_ACCESSORS(int32, int32, int32_t, INT32);
+UPB_VALUE_ACCESSORS(int64, int64, int64_t, INT64);
+UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UINT32);
+UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UINT64);
+UPB_VALUE_ACCESSORS(bool, _bool, bool, BOOL);
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
 // knowing the type, so it knows which union member to use.

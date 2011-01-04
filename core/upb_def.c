@@ -22,33 +22,6 @@ static int upb_div_round_up(int numerator, int denominator) {
   return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
 }
 
-// A little dynamic array for storing a growing list of upb_defs.
-typedef struct {
-  upb_def **defs;
-  uint32_t len;
-  uint32_t size;
-} upb_deflist;
-
-static void upb_deflist_init(upb_deflist *l) {
-  l->size = 8;
-  l->defs = malloc(l->size * sizeof(void*));
-  l->len = 0;
-}
-
-static void upb_deflist_uninit(upb_deflist *l) {
-  for(uint32_t i = 0; i < l->len; i++)
-    if(l->defs[i]) upb_def_unref(l->defs[i]);
-  free(l->defs);
-}
-
-static void upb_deflist_push(upb_deflist *l, upb_def *d) {
-  if(l->len == l->size) {
-    l->size *= 2;
-    l->defs = realloc(l->defs, l->size * sizeof(void*));
-  }
-  l->defs[l->len++] = d;
-}
-
 /* Joins strings together, for example:
  *   join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
  *   join("", "Baz") -> "Baz"
@@ -62,14 +35,12 @@ static upb_string *upb_join(upb_string *base, upb_string *name) {
   }
 }
 
-// Qualify the defname for all defs starting with offset "start" with "str".
-static void upb_deflist_qualify(upb_deflist *l, upb_string *str, int32_t start) {
-  for(uint32_t i = start; i < l->len; i++) {
-    upb_def *def = l->defs[i];
-    upb_string *name = def->fqname;
-    def->fqname = upb_join(str, name);
-    upb_string_unref(name);
-  }
+/* Search for a character in a string, in reverse. */
+static int my_memrchr(char *data, char c, size_t len)
+{
+  int off = len-1;
+  while(off > 0 && data[off] != c) --off;
+  return off;
 }
 
 /* upb_def ********************************************************************/
@@ -256,26 +227,27 @@ static void upb_enumdef_free(upb_enumdef *e) {
 }
 
 // google.protobuf.EnumValueDescriptorProto.
-static bool upb_addenum_val(upb_src *src, upb_enumdef *e, upb_status *status)
-{
-  int32_t number = -1;
-  upb_string *name = NULL;
-  upb_fielddef *f;
-  while((f = upb_src_getdef(src)) != NULL) {
-    switch(f->number) {
-      case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME_FIELDNUM:
-        name = upb_string_tryrecycle(name);
-        CHECKSRC(upb_src_getstr(src, name));
-        break;
-      case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
-        CHECKSRC(upb_src_getint32(src, &number));
-        break;
-      default:
-        CHECKSRC(upb_src_skipval(src));
-        break;
-    }
-  }
+static void upb_enumdef_startmsg(upb_defbuilder *b) {
+  b->number = -1;
+  name = NULL;
+}
 
+static upb_flow_t upb_enumdef_value(upb_defbuilder *b, upb_fielddef *f, upb_value val) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME_FIELDNUM:
+      name = upb_string_tryrecycle(name);
+      CHECKSRC(upb_src_getstr(src, name));
+      break;
+    case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
+      CHECKSRC(upb_src_getint32(src, &number));
+      break;
+    default:
+      CHECKSRC(upb_src_skipval(src));
+      break;
+  }
+}
+
+static void upb_enumdef_endmsg(upb_defbuilder *b) {
   if(name == NULL || number == -1) {
     upb_seterr(status, UPB_STATUS_ERROR, "Enum value missing name or number.");
     goto err;
@@ -287,48 +259,7 @@ static bool upb_addenum_val(upb_src *src, upb_enumdef *e, upb_status *status)
   // We don't unref "name" because we pass our ref to the iton entry of the
   // table.  strtables can ref their keys, but the inttable doesn't know that
   // the value is a string.
-  return true;
-
-src_err:
-  upb_copyerr(status, upb_src_status(src));
-err:
-  upb_string_unref(name);
-  return false;
-}
-
-// google.protobuf.EnumDescriptorProto.
-static bool upb_addenum(upb_src *src, upb_deflist *defs, upb_status *status)
-{
-  upb_enumdef *e = malloc(sizeof(*e));
-  upb_def_init(&e->base, UPB_DEF_ENUM);
-  upb_strtable_init(&e->ntoi, 0, sizeof(upb_ntoi_ent));
-  upb_inttable_init(&e->iton, 0, sizeof(upb_iton_ent));
-  upb_fielddef *f;
-  while((f = upb_src_getdef(src)) != NULL) {
-    switch(f->number) {
-      case GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_NAME_FIELDNUM:
-        e->base.fqname = upb_string_tryrecycle(e->base.fqname);
-        CHECKSRC(upb_src_getstr(src, e->base.fqname));
-        break;
-      case GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_VALUE_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addenum_val(src, e, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      default:
-        upb_src_skipval(src);
-        break;
-    }
-  }
-  assert(e->base.fqname);
-  upb_deflist_push(defs, UPB_UPCAST(e));
-  return true;
-
-src_err:
-  upb_copyerr(status, upb_src_status(src));
-err:
-  upb_enumdef_free(e);
-  return false;
+  return UPB_CONTINUE;
 }
 
 upb_enum_iter  upb_enum_begin(upb_enumdef *e) {
@@ -358,47 +289,17 @@ static void upb_fielddef_free(upb_fielddef *f) {
   free(f);
 }
 
-static bool upb_addfield(upb_src *src, upb_msgdef *m, upb_status *status)
-{
+static void upb_fielddef_startmsg(upb_defbuilder *b) {
   upb_fielddef *f = malloc(sizeof(*f));
   f->number = -1;
   f->name = NULL;
   f->def = NULL;
   f->owned = false;
   f->msgdef = m;
-  upb_fielddef *parsed_f;
-  int32_t tmp;
-  while((parsed_f = upb_src_getdef(src))) {
-    switch(parsed_f->number) {
-      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIELDNUM:
-        CHECKSRC(upb_src_getint32(src, &tmp));
-        f->type = tmp;
-        break;
-      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_FIELDNUM:
-        CHECKSRC(upb_src_getint32(src, &tmp));
-        f->label = tmp;
-        break;
-      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER_FIELDNUM:
-        CHECKSRC(upb_src_getint32(src, &tmp));
-        f->number = tmp;
-        break;
-      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME_FIELDNUM:
-        f->name = upb_string_tryrecycle(f->name);
-        CHECKSRC(upb_src_getstr(src, f->name));
-        break;
-      case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME_FIELDNUM: {
-        upb_string *str = upb_string_new();
-        CHECKSRC(upb_src_getstr(src, str));
-        if(f->def) upb_def_unref(f->def);
-        f->def = UPB_UPCAST(upb_unresolveddef_new(str));
-        f->owned = true;
-        break;
-      }
-      default:
-        upb_src_skipval(src);
-    }
-  }
-  CHECKSRC(upb_src_eof(src));
+  b->f = f;
+}
+
+static void upb_fielddef_endmsg(upb_defbuilder *b) {
   // TODO: verify that all required fields were present.
   assert(f->number != -1 && f->name != NULL);
   assert((f->def != NULL) == upb_hasdef(f));
@@ -409,11 +310,33 @@ static bool upb_addfield(upb_src *src, upb_msgdef *m, upb_status *status)
   upb_inttable_insert(&m->itof, &itof_ent.e);
   upb_strtable_insert(&m->ntof, &ntof_ent.e);
   return true;
+}
 
-src_err:
-  upb_copyerr(status, upb_src_status(src));
-  upb_fielddef_free(f);
-  return false;
+static upb_flow_t upb_fielddef_value(upb_defbuilder *b, upb_fielddef *f, upb_value val) {
+  switch(parsed_f->number) {
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIELDNUM:
+      f->type = upb_value_getint32(val);
+      break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_FIELDNUM:
+      f->label = upb_value_getint32(val);
+      break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER_FIELDNUM:
+      f->number = upb_value_getint32(val);
+      break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME_FIELDNUM:
+      f->name = upb_string_tryrecycle(f->name);
+      CHECKSRC(upb_src_getstr(src, f->name));
+      break;
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME_FIELDNUM: {
+      upb_string *str = upb_string_new();
+      CHECKSRC(upb_src_getstr(src, str));
+      if(f->def) upb_def_unref(f->def);
+      f->def = UPB_UPCAST(upb_unresolveddef_new(str));
+      f->owned = true;
+      break;
+    }
+  }
+  return UPB_CONTINUE;
 }
 
 
@@ -433,47 +356,22 @@ static int upb_compare_fields(const void *f1, const void *f2) {
 }
 
 // Processes a google.protobuf.DescriptorProto, adding defs to "defs."
-static bool upb_addmsg(upb_src *src, upb_deflist *defs, upb_status *status)
-{
+static void upb_msgdef_startmsg(upb_defbuilder *b) {
   upb_msgdef *m = malloc(sizeof(*m));
   upb_def_init(&m->base, UPB_DEF_MSG);
   upb_atomic_refcount_init(&m->cycle_refcount, 0);
   upb_inttable_init(&m->itof, 4, sizeof(upb_itof_ent));
   upb_strtable_init(&m->ntof, 4, sizeof(upb_ntof_ent));
-  int32_t start_count = defs->len;
-  upb_fielddef *f;
-  while((f = upb_src_getdef(src)) != NULL) {
-    switch(f->number) {
-      case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME_FIELDNUM:
-        m->base.fqname = upb_string_tryrecycle(m->base.fqname);
-        CHECKSRC(upb_src_getstr(src, m->base.fqname));
-        break;
-      case GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addfield(src, m, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NESTED_TYPE_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addmsg(src, defs, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      case GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addenum(src, defs, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      default:
-        // TODO: extensions.
-        CHECKSRC(upb_src_skipval(src));
-    }
-  }
-  CHECK(upb_src_eof(src));
+  upb_deflist_push(&b->defs, UPB_UPCAST(m));
+  upb_defbuilder_startcontainer(b, UPB_UPCAST(m));
+}
+
+static void upb_msgdef_endmsg(upb_defbuilder *b) {
+  upb_msgdef *m = upb_downcast_msgdef(upb_deflist_stacktop(&m->defs));
   if(!m->base.fqname) {
     upb_seterr(status, UPB_STATUS_ERROR, "Encountered message with no name.");
-    goto err;
+    return UPB_ERROR;
   }
-
 
   // Create an ordering over the fields.
   upb_field_count_t n = upb_msgdef_numfields(m);
@@ -512,15 +410,43 @@ static bool upb_addmsg(upb_src *src, upb_deflist *defs, upb_status *status)
 
   if (max_align > 0) m->size = upb_align_up(m->size, max_align);
 
-  upb_deflist_qualify(defs, m->base.fqname, start_count);
-  upb_deflist_push(defs, UPB_UPCAST(m));
-  return true;
+  upb_defbuilder_endcontainer(b);
+  return UPB_CONTINUE;
+}
 
-src_err:
-  upb_copyerr(status, upb_src_status(src));
-err:
-  upb_msgdef_free(m);
-  return false;
+static bool upb_msgdef_value(upb_defbuilder *b, upb_fielddef *f, upb_value val) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME_FIELDNUM:
+      // XXX
+      m->base.fqname = upb_string_tryrecycle(m->base.fqname);
+      m->base.fqname = upb_value_getstr(val);
+      upb_defbuilder_setscopename(upb_value_getstr(val));
+      break;
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD_FIELDNUM:
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NESTED_TYPE_FIELDNUM:
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
+      return BEGIN_SUBMSG;
+    default:
+      // TODO: extensions.
+      return UPB_SKIP;
+  }
+}
+
+static upb_flow_t upb_msgdef_startsubmsg(upb_defbuilder *b, upb_fielddef *f, upb_handlers *h) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD_FIELDNUM:
+      upb_register_FieldDescriptorProto(b, h);
+      return UPB_DELEGATE;
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NESTED_TYPE_FIELDNUM:
+      upb_register_DescriptorProto(b, h);
+      return UPB_DELEGATE;
+    case GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
+      upb_register_EnumDescriptorProto(b, h);
+      return UPB_DELEGATE;
+      break;
+    default:
+      return UPB_SKIP;
+  }
 }
 
 static void upb_msgdef_free(upb_msgdef *m)
@@ -551,54 +477,170 @@ upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter) {
   return upb_inttable_next(&m->itof, &iter->e);
 }
 
-/* symtab internal  ***********************************************************/
+/* upb_defbuilder  ************************************************************/
 
-// Processes a google.protobuf.FileDescriptorProto, adding the defs to "defs".
-static bool upb_addfd(upb_src *src, upb_deflist *defs, upb_status *status)
-{
-  upb_string *package = NULL;
-  int32_t start_count = defs->len;
-  upb_fielddef *f;
-  while((f = upb_src_getdef(src)) != NULL) {
-    switch(f->number) {
-      case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_PACKAGE_FIELDNUM:
-        package = upb_string_tryrecycle(package);
-        CHECKSRC(upb_src_getstr(src, package));
-        break;
-      case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addmsg(src, defs, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addenum(src, defs, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      default:
-        // TODO: services and extensions.
-        CHECKSRC(upb_src_skipval(src));
-    }
+// A upb_defbuilder builds a list of defs by handling a parse of a protobuf in
+// the format defined in descriptor.proto.  The output of a upb_defbuilder is
+// a list of upb_def* that possibly contain unresolved references.
+//
+// We use a separate object (upb_defbuilder) instead of having the defs handle
+// the parse themselves because we need to store state that is only necessary
+// during the building process itself.
+
+// When we are bootstrapping descriptor.proto, we must help the bare decoder out
+// by telling it when to descend into a submessage, because with the wire format
+// alone we cannot tell the difference between a submessage and a string.
+#define BEGIN_SUBMSG 100
+
+// upb_deflist: A little dynamic array for storing a growing list of upb_defs.
+typedef struct {
+  upb_def **defs;
+  uint32_t len;
+  uint32_t size;
+} upb_deflist;
+
+static void upb_deflist_init(upb_deflist *l) {
+  l->size = 8;
+  l->defs = malloc(l->size * sizeof(void*));
+  l->len = 0;
+}
+
+static void upb_deflist_uninit(upb_deflist *l) {
+  for(uint32_t i = 0; i < l->len; i++)
+    if(l->defs[i]) upb_def_unref(l->defs[i]);
+  free(l->defs);
+}
+
+static void upb_deflist_push(upb_deflist *l, upb_def *d) {
+  if(l->len == l->size) {
+    l->size *= 2;
+    l->defs = realloc(l->defs, l->size * sizeof(void*));
   }
-  CHECK(upb_src_eof(src));
-  upb_deflist_qualify(defs, package, start_count);
-  upb_string_unref(package);
-  return true;
-
-src_err:
-  upb_copyerr(status, upb_src_status(src));
-err:
-  upb_string_unref(package);
-  return false;
+  l->defs[l->len++] = d;
 }
 
-/* Search for a character in a string, in reverse. */
-static int my_memrchr(char *data, char c, size_t len)
-{
-  int off = len-1;
-  while(off > 0 && data[off] != c) --off;
-  return off;
+// Qualify the defname for all defs starting with offset "start" with "str".
+static void upb_deflist_qualify(upb_deflist *l, upb_string *str, int32_t start) {
+  for(uint32_t i = start; i < l->len; i++) {
+    upb_def *def = l->defs[i];
+    upb_string *name = def->fqname;
+    def->fqname = upb_join(str, name);
+    upb_string_unref(name);
+  }
 }
+
+typedef struct {
+  upb_deflist defs;
+  struct {
+    upb_string *name;
+    int start;
+  } upb_defbuilder_frame;
+  upb_defbuilder_frame stack[UPB_MAX_TYPE_DEPTH];
+  int stack_len;
+} upb_defbuilder;
+
+// Start/end handlers for FileDescriptorProto and DescriptorProto (the two
+// entities that have names and can contain sub-definitions.
+upb_defbuilder_startcontainer(upb_defbuilder *b) {
+  upb_defbuilder_frame *f = b->stack[b->stack_len++];
+  f->start = b->defs.len;
+  f->name = NULL;
+}
+
+upb_defbuilder_endcontainer(upb_defbuilder *b) {
+  upb_defbuilder_frame *f = b->stack[--b->stack_len];
+  upb_deflist_qualify(&b->defs, f->name, f->start);
+  upb_string_unref(f->name);
+}
+
+upb_defbuilder_setscopename(upb_defbuilder *b, upb_string *str) {
+}
+
+// Handlers for google.protobuf.FileDescriptorProto.
+static bool upb_defbuilder_FileDescriptorProto_value(upb_defbuilder *b,
+                                                     upb_fielddef *f,
+                                                     upb_value val) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_PACKAGE_FIELDNUM:
+      upb_defbuilder_setscopename(b, val.str);
+      break;
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE_FIELDNUM:
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
+      return BEGIN_SUBMSG;
+    default:
+      return UPB_SKIP;
+  }
+}
+
+static bool upb_defbuilder_FileDescriptorProto_startsubmsg(upb_defbuilder *b,
+                                                           upb_fielddef *f,
+                                                           upb_handlers *h) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE_FIELDNUM:
+      upb_defbuilder_register_DescriptorProto(b, h);
+      return UPB_DELEGATE;
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
+      upb_defbuilder_register_EnumDescriptorProto(b, h);
+      return UPB_DELEGATE;
+    default:
+      // TODO: services and extensions.
+      return UPB_SKIP;
+  }
+}
+
+static upb_handlers upb_defbuilder_FileDescriptorProto_handlers = {
+  NULL,  // startmsg
+  NULL,  // endmsg
+  &upb_defbuilder_FileDescriptorProto_value,
+  &upb_defbuilder_FileDescriptorProto_startsubmsg,
+}
+
+upb_defbuilder_register_FileDescriptorProto(upb_defbuilder *b, upb_handlers *h) {
+  upb_register_handlerset(h, &upb_defbuilder_FileDescriptorProto_handlers);
+  upb_set_handler_closure(h, b);
+}
+
+// Handlers for google.protobuf.FileDescriptorSet.
+upb_defbuilder_FileDescriptorSet_value(upb_defbuilder *b, upb_fielddef *f,
+                                       upb_value val) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE_FIELDNUM:
+      return BEGIN_SUBMSG;
+    default:
+      return UPB_SKIP;
+  }
+}
+
+upb_defbuilder_FileDescriptorSet_startsubmsg(upb_defbuilder *b,
+                                             upb_fielddef *f, upb_handlers *h) {
+  switch(f->number) {
+    case GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE_FIELDNUM:
+      upb_defbuilder_register_FileDescriptorProto(b, h);
+      return UPB_DELEGATE;
+    default:
+      return UPB_SKIP;
+  }
+}
+
+static upb_handlers upb_defbuilder_FileDescriptorSet_handlers = {
+  NULL,  // startmsg
+  NULL,  // endmsg
+  &upb_defbuilder_FileDescriptorSet_value,
+  &upb_defbuilder_FileDescriptorSet_startsubmsg,
+}
+
+upb_defbuilder_register_FileDescriptorSet(upb_defbuilder *b, upb_handlers *h) {
+  upb_register_handlerset(h, &upb_defbuilder_FileDescriptorSet_handlers);
+  upb_set_handler_closure(h, b);
+}
+
+
+
+/* upb_symtab adding defs *****************************************************/
+
+// This is a self-contained group of functions that, given a list of upb_defs
+// whose references are not yet resolved, resolves references and adds them
+// atomically to a upb_symtab.
 
 typedef struct {
   upb_strtable_entry e;
@@ -751,8 +793,8 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
 // indicating whether the new defs can overwrite existing defs in the symtab,
 // attempts to add the given defs to the symtab.  The whole operation either
 // succeeds or fails.  Ownership of "defs" and "exts" is taken.
-bool upb_symtab_add_defs(upb_symtab *s, upb_deflist *defs, bool allow_redef,
-                         upb_status *status)
+bool upb_symtab_add_defs(upb_symtab *s, upb_defs **defs, int num_defs,
+                         bool allow_redef, upb_status *status)
 {
   upb_rwlock_wrlock(&s->lock);
 
@@ -817,7 +859,7 @@ err:
 }
 
 
-/* upb_symtab *****************************************************************/
+/* upb_symtab public interface ************************************************/
 
 upb_symtab *upb_symtab_new()
 {
@@ -893,22 +935,13 @@ upb_def *upb_symtab_resolve(upb_symtab *s, upb_string *base, upb_string *symbol)
 
 void upb_symtab_addfds(upb_symtab *s, upb_src *src, upb_status *status)
 {
-  upb_deflist defs;
-  upb_deflist_init(&defs);
-  upb_fielddef *f;
-  while((f = upb_src_getdef(src)) != NULL) {
-    switch(f->number) {
-      case GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE_FIELDNUM:
-        CHECKSRC(upb_src_startmsg(src));
-        CHECK(upb_addfd(src, &defs, status));
-        CHECKSRC(upb_src_endmsg(src));
-        break;
-      default:
-        CHECKSRC(upb_src_skipval(src));
-    }
+  upb_defbuilder *b = upb_defbuilder_new();
+  upb_defbuilder_register_handlers(b, upb_src_gethandlers(src));
+  if(!upb_src_run(src)) {
+    upb_copyerr(status, upb_src_status(src));
+    return;
   }
-  CHECKSRC(upb_src_eof(src));
-  CHECK(upb_symtab_add_defs(s, &defs, false, status));
+  upb_symtab_add_defs(s, b->defs, b->defs_len, false, status);
   upb_deflist_uninit(&defs);
   return;
 
@@ -937,17 +970,21 @@ err:
 // * groups.
 // * zig-zag-encoded types like sint32 and sint64.
 //
-// If descriptor.proto ever changed to use any of these features, this decoder
-// would need to be extended to support them.
+// Since it cannot tell the difference between submessages and strings, it
+// always reports them as strings first, but if the value callback returns
+// UPB_TREAT_AS_SUBMSG this signals to the baredecoder that it should be
+// treated like a submessage instead.
+//
+// TODO: for bootstrapping we should define a slightly different wire format
+// that includes enough information to know the precise integer types and
+// that distinguishes between strings and submessages.  This will allow
+// us to get rid of the UPB_TREAT_AS_SUBMSG hack.  It will also allow us
+// to get rid of the upb_value_setraw() scheme, which would be more
+// complicated to support on big-endian machines.
 
 typedef struct {
-  upb_src src;
   upb_string *input;
   upb_strlen_t offset;
-  upb_fielddef field;
-  upb_wire_type_t wire_type;
-  upb_strlen_t delimited_len;
-  upb_strlen_t stack[UPB_MAX_NESTING], *top;
 } upb_baredecoder;
 
 static uint64_t upb_baredecoder_readv64(upb_baredecoder *d)
@@ -983,75 +1020,62 @@ static uint32_t upb_baredecoder_readf32(upb_baredecoder *d)
   return val;
 }
 
-static upb_fielddef *upb_baredecoder_getdef(upb_baredecoder *d)
-{
-  // Detect end-of-submessage.
-  if(d->offset >= *d->top) {
-    d->src.eof = true;
-    return NULL;
+bool upb_baredecoder_run(upb_baredecoder *d) {
+  upb_string *str = NULL;
+  upb_strlen_t stack[UPB_MAX_NESTING];
+  upb_strlen_t *top = &stack[0];
+  *top = upb_string_len(d->input);
+  d->offset = 0;
+
+  upb_dispatch_startmsg(&d->dispatcher);
+  while(d->offset < upb_string_len(d->input)) {
+    // Detect end-of-submessage.
+    while(d->offset >= *d->top) {
+      upb_dispatch_endsubmsg(&d->dispatcher);
+      d->offset = *(d->top--);
+    }
+
+    uint32_t key = upb_baredecoder_readv64(d);
+    upb_fielddef f;
+    f.number = key >> 3;
+    upb_wire_type_t wt = key & 0x7;
+    if(wt == UPB_WIRE_TYPE_DELIMITED) {
+      uint32_t delim_len = upb_baredecoder_readv32(d);
+      // We don't know if it's a string or a submessage; deliver first as
+      // string.
+      str = upb_string_tryrecycle(str);
+      upb_string_substr(str, d->input, d->offset, d->delimited_len);
+      upb_value v;
+      upb_value_setstr(&v, str);
+      if(upb_dispatch_value(&d->dispatcher, &f, v) == UPB_TREAT_AS_SUBMSG) {
+        // Should deliver as a submessage instead.
+        upb_dispatch_startsubmsg(&d->dispatcher, &f);
+        *(++d->top) = d->offset + delimited_len;
+      } else {
+        d->offset += delimited_len;
+      }
+    } else {
+      upb_value v;
+      switch(wt) {
+        case UPB_WIRE_TYPE_VARINT:
+          upb_value_setraw(&v, upb_baredecoder_readv64(d));
+          upb_dispatch_value(&d->dispatcher, &f, v);
+          break;
+        case UPB_WIRE_TYPE_64BIT:
+          upb_value_setraw(&v, upb_baredecoder_readf64(d));
+          upb_dispatch_value(&d->dispatcher, &f, v);
+          break;
+        case UPB_WIRE_TYPE_32BIT:
+          upb_value_setraw(&v, upb_baredecoder_readf32(d));
+          break;
+        default:
+          assert(false);
+          abort();
+      }
+      upb_dispatch_value(&d->dispatcher, &f, v);
+    }
   }
-
-  uint32_t key;
-  key = upb_baredecoder_readv32(d);
-  d->wire_type = key & 0x7;
-  d->field.number = key >> 3;
-  if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
-    // For delimited wire values we parse the length now, since we need it in
-    // all cases.
-    d->delimited_len = upb_baredecoder_readv32(d);
-  }
-  return &d->field;
-}
-
-static bool upb_baredecoder_getstr(upb_baredecoder *d, upb_string *str) {
-  upb_string_substr(str, d->input, d->offset, d->delimited_len);
-  d->offset += d->delimited_len;
-  return true;
-}
-
-static bool upb_baredecoder_getval(upb_baredecoder *d, upb_valueptr val)
-{
-  switch(d->wire_type) {
-    case UPB_WIRE_TYPE_VARINT:
-      *val.uint64 = upb_baredecoder_readv64(d);
-      break;
-    case UPB_WIRE_TYPE_32BIT_VARINT:
-      *val.uint32 = upb_baredecoder_readv32(d);
-      break;
-    case UPB_WIRE_TYPE_64BIT:
-      *val.uint64 = upb_baredecoder_readf64(d);
-      break;
-    case UPB_WIRE_TYPE_32BIT:
-      *val.uint32 = upb_baredecoder_readf32(d);
-      break;
-    default:
-      *(char*)0 = 0;
-      assert(false);
-  }
-  return true;
-}
-
-static bool upb_baredecoder_skipval(upb_baredecoder *d)
-{
-  if(d->wire_type == UPB_WIRE_TYPE_DELIMITED) {
-    d->offset += d->delimited_len;
-    return true;
-  } else {
-    upb_value val;
-    return upb_baredecoder_getval(d, upb_value_addrof(&val));
-  }
-}
-
-static bool upb_baredecoder_startmsg(upb_baredecoder *d)
-{
-  *(++d->top) = d->offset + d->delimited_len;
-  return true;
-}
-
-static bool upb_baredecoder_endmsg(upb_baredecoder *d)
-{
-  d->offset = *(d->top--);
-  return true;
+  upb_dispatch_endmsg(&d->dispatcher);
 }
 
 static upb_src_vtable upb_baredecoder_src_vtbl = {
@@ -1068,8 +1092,6 @@ static upb_baredecoder *upb_baredecoder_new(upb_string *str)
   upb_baredecoder *d = malloc(sizeof(*d));
   d->input = upb_string_getref(str);
   d->offset = 0;
-  d->top = &d->stack[0];
-  *(d->top) = upb_string_len(d->input);
   upb_src_init(&d->src, &upb_baredecoder_src_vtbl);
   return d;
 }
