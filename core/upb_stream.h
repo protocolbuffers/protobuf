@@ -135,6 +135,12 @@ INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
                                    upb_field_number_t fieldnum, upb_value val);
 
 
+/* upb_src ********************************************************************/
+
+struct _upb_src;
+typedef struct _upb_src upb_src;
+
+
 /* upb_bytesrc ****************************************************************/
 
 struct _upb_bytesrc;

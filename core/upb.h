@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>  // only for size_t.
+#include <assert.h>
 #include "descriptor_const.h"
 #include "upb_atomic.h"
 
@@ -128,6 +129,11 @@ typedef struct _upb_msg upb_msg;
 
 typedef uint32_t upb_strlen_t;
 
+// The type of a upb_value.  This is like a upb_fieldtype_t, but adds the
+// constant UPB_VALUETYPE_ARRAY to represent an array.
+typedef uint8_t upb_valuetype_t;
+#define UPB_VALUETYPE_ARRAY 32
+
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
 typedef struct {
@@ -153,14 +159,20 @@ typedef struct {
 #endif
 } upb_value;
 
+#ifdef NDEBUG
+#define SET_TYPE(dest, val)
+#else
+#define SET_TYPE(dest, val) dest = val
+#endif
+
 #define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
   ctype upb_value_get ## name(upb_value val) { \
     assert(val.type == UPB_TYPE(proto_type)); \
-    return val.membername; \
+    return val.val.membername; \
   } \
   void upb_value_ ## name(upb_value *val, ctype cval) { \
-    val.type = UPB_TYPE(proto_type); \
-    val.membername = cval; \
+    SET_TYPE(val->type, UPB_TYPE(proto_type)); \
+    val->val.membername = cval; \
   }
 UPB_VALUE_ACCESSORS(double, _double, double, DOUBLE);
 UPB_VALUE_ACCESSORS(float, _float, float, FLOAT);
@@ -169,6 +181,7 @@ UPB_VALUE_ACCESSORS(int64, int64, int64_t, INT64);
 UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UINT32);
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UINT64);
 UPB_VALUE_ACCESSORS(bool, _bool, bool, BOOL);
+UPB_VALUE_ACCESSORS(str, str, upb_string*, STRING);
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
 // knowing the type, so it knows which union member to use.
@@ -187,24 +200,23 @@ typedef union {
   void *_void;
 } upb_valueptr;
 
-// The type of a upb_value.  This is like a upb_fieldtype_t, but adds the
-// constant UPB_VALUETYPE_ARRAY to represent an array.
-typedef uint8_t upb_valuetype_t;
-#define UPB_VALUETYPE_ARRAY 32
-
 INLINE upb_valueptr upb_value_addrof(upb_value *val) {
-  upb_valueptr ptr = {&val->_double};
+  upb_valueptr ptr = {&val->val._double};
   return ptr;
 }
 
-// Converts upb_value_ptr -> upb_value by reading from the pointer.  We need to
-// know the value type to perform this operation, because we need to know how
-// much memory to copy.
+// Reads or writes a upb_value from an address represented by a upb_value_ptr.
+// We need to know the value type to perform this operation, because we need to
+// know how much memory to copy (and for big-endian machines, we need to know
+// where in the upb_value the data goes).
+//
+// For little endian-machines where we didn't mind overreading, we could make
+// upb_value_read simply use memcpy().
 INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
   upb_value val;
 
 #define CASE(t, member_name) \
-  case UPB_TYPE(t): val.member_name = *ptr.member_name; break;
+  case UPB_TYPE(t): val.val.member_name = *ptr.member_name; break;
 
   switch(ft) {
     CASE(DOUBLE,   _double)
@@ -232,13 +244,10 @@ INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
 #undef CASE
 }
 
-// Writes a upb_value to a upb_value_ptr location. We need to know the value
-// type to perform this operation, because we need to know how much memory to
-// copy.
 INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
                             upb_fieldtype_t ft) {
 #define CASE(t, member_name) \
-  case UPB_TYPE(t): *ptr.member_name = val.member_name; break;
+  case UPB_TYPE(t): *ptr.member_name = val.val.member_name; break;
 
   switch(ft) {
     CASE(DOUBLE,   _double)

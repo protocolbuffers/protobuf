@@ -28,7 +28,7 @@ CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Idescriptor -Icore -Itests -Istream -I.
-CPPFLAGS=-Wall -Wextra -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+CPPFLAGS=-Wall -Wextra -Wno-missing-field-initializers -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 LDLIBS=-lpthread core/libupb.a
 ifeq ($(shell uname), Darwin)
   CPPFLAGS += -I/usr/include/lua5.1
@@ -61,7 +61,7 @@ SRC=core/upb.c \
   core/upb_table.c \
   core/upb_string.c \
   descriptor/descriptor.c \
-#  core/upb_def.c \
+  core/upb_def.c \
 #  core/upb_msg.c \
 #  stream/upb_decoder.c \
 #  stream/upb_stdio.c \
