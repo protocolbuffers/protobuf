@@ -73,7 +73,7 @@ upb_string *upb_string_tryrecycle(upb_string *str) {
 
 char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len) {
   // assert(str->ptr == NULL);
-  uint32_t size = upb_string_size(str);
+  upb_strlen_t size = upb_string_size(str);
   if (size < len) {
     size = upb_round_up_pow2(len);
     str->cached_mem = realloc(str->cached_mem, size);

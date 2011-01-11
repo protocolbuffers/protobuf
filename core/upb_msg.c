@@ -7,6 +7,8 @@
  */
 
 #include "upb_msg.h"
+#include "upb_decoder.h"
+#include "upb_strstream.h"
 
 void _upb_elem_free(upb_value v, upb_fielddef *f) {
   switch(f->type) {
@@ -108,10 +110,13 @@ upb_value upb_field_tryrecycle(upb_valueptr p, upb_value val, upb_fielddef *f,
 
 void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_string *str,
                        upb_status *status) {
-  (void)msg;
-  (void)md;
-  (void)str;
-  (void)status;
+  upb_stringsrc *ssrc = upb_stringsrc_new();
+  upb_stringsrc_reset(ssrc, str);
+  upb_decoder *d = upb_decoder_new(md);
+  upb_decoder_reset(d, upb_stringsrc_bytesrc(ssrc));
+
+  upb_decoder_free(d);
+  upb_stringsrc_free(ssrc);
 }
 
 void upb_msg_encodestr(upb_msg *msg, upb_msgdef *md, upb_string *str,

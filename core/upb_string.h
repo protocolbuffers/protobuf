@@ -119,20 +119,21 @@ INLINE const char *upb_string_getrobuf(upb_string *str) { return str->ptr; }
 INLINE void upb_string_endread(upb_string *str) { (void)str; }
 
 // Attempts to recycle the string "str" so it may be reused and have different
-// data written to it.  The returned string is either "str" if it could be
-// recycled or a newly created string if "str" has other references.
+// data written to it.  After the function returns, "str" points to a writable
+// string, which is either the original string if it had no other references
+// or a newly created string if it did have other references.
 //
-// As a special case, passing NULL will allocate a new string.  This is
-// convenient for the pattern:
+// As a special case, passing a pointer to NULL will allocate a new string.
+// This is convenient for the pattern:
 //
 //   upb_string *str = NULL;
 //   while (x) {
 //     if (y) {
-//       str = upb_string_tryrecycle(str);
+//       upb_string_recycle(&str);
 //       upb_src_getstr(str);
 //     }
 //   }
-upb_string *upb_string_tryrecycle(upb_string *str);
+upb_string *upb_string_recycle(upb_string **str);
 
 // The options for setting the contents of a string.  These may only be called
 // when a string is first created or recycled; once other functions have been

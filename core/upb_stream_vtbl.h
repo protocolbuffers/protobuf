@@ -20,23 +20,33 @@ extern "C" {
 
 // Typedefs for function pointers to all of the virtual functions.
 
+// upb_src
+struct _upb_src {
+};
+typedef struct {
+} upb_src_vtbl;
+
 // upb_bytesrc.
-typedef bool (*upb_bytesrc_get_fptr)(
-    upb_bytesrc *src, upb_string *str, upb_strlen_t minlen);
-typedef bool (*upb_bytesrc_append_fptr)(
-    upb_bytesrc *src, upb_string *str, upb_strlen_t len);
+typedef upb_strlen_t (*upb_bytesrc_read_fptr)(
+    upb_bytesrc *src, void *buf, upb_strlen_t count);
+typedef bool (*upb_bytesrc_getstr_fptr)(
+    upb_bytesrc *src, upb_string *str, upb_strlen_t count);
 
 // upb_bytesink.
-typedef int32_t (*upb_bytesink_put_fptr)(upb_bytesink *sink, upb_string *str);
+typedef upb_strlen_t (*upb_bytesink_write_fptr)(
+    upb_bytesink *bytesink, void *buf, upb_strlen_t count);
+typedef upb_strlen_t (*upb_bytesink_putstr_fptr)(
+    upb_bytesink *bytesink, upb_string *str);
 
 // Vtables for the above interfaces.
 typedef struct {
-  upb_bytesrc_get_fptr     get;
-  upb_bytesrc_append_fptr  append;
+  upb_bytesrc_read_fptr   read;
+  upb_bytesrc_getstr_fptr getstr;
 } upb_bytesrc_vtable;
 
 typedef struct {
-  upb_bytesink_put_fptr  put;
+  upb_bytesink_write_fptr  write;
+  upb_bytesink_putstr_fptr putstr;
 } upb_bytesink_vtable;
 
 // "Base Class" definitions; components that implement these interfaces should
@@ -69,18 +79,55 @@ INLINE void upb_bytesink_init(upb_bytesink *s, upb_bytesink_vtable *vtbl) {
 // Implementation of virtual function dispatch.
 
 // upb_bytesrc
-INLINE bool upb_bytesrc_get(
-    upb_bytesrc *bytesrc, upb_string *str, upb_strlen_t minlen) {
-  return bytesrc->vtbl->get(bytesrc, str, minlen);
+INLINE upb_strlen_t upb_bytesrc_read(upb_bytesrc *src, void *buf,
+                                     upb_strlen_t count) {
+  return src->vtbl->read(src, buf, count);
 }
 
-INLINE bool upb_bytesrc_append(
-    upb_bytesrc *bytesrc, upb_string *str, upb_strlen_t len) {
-  return bytesrc->vtbl->append(bytesrc, str, len);
+INLINE bool upb_bytesrc_getstr(upb_bytesrc *src, upb_string *str,
+                               upb_strlen_t count) {
+  return src->vtbl->getstr(src, str, count);
+}
+
+INLINE bool upb_bytesrc_getfullstr(upb_bytesrc *src, upb_string *str,
+                                   upb_status *status) {
+  // We start with a getstr, because that could possibly alias data instead of
+  // copying.
+  if (!upb_bytesrc_getstr(src, str, UPB_STRLEN_MAX)) goto error;
+  // Trade-off between number of read calls and amount of overallocation.
+  const size_t bufsize = 4096;
+  while (!upb_bytesrc_eof(src)) {
+    upb_strlen_t len = upb_string_len(str);
+    char *buf = upb_string_getrwbuf(str, len + bufsize);
+    upb_strlen_t read = upb_bytesrc_read(src, buf + len, bufsize);
+    if (read < 0) goto error;
+    // Resize to proper size.
+    upb_string_getrwbuf(str, len + read);
+  }
+  return true;
+
+error:
+  upb_copyerr(status, upb_bytesrc_status(src));
+  return false;
 }
 
 INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src) { return &src->status; }
 INLINE bool upb_bytesrc_eof(upb_bytesrc *src) { return src->eof; }
+
+
+// upb_bytesink
+INLINE upb_strlen_t upb_bytesink_write(upb_bytesink *sink, void *buf,
+                                       upb_strlen_t count) {
+  return sink->vtbl->write(sink, buf, count);
+}
+
+INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str) {
+  return sink->vtbl->putstr(sink, str);
+}
+
+INLINE upb_status *upb_bytesink_status(upb_bytesink *sink) {
+  return &sink->status;
+}
 
 // upb_handlers
 struct _upb_handlers {
@@ -181,17 +228,6 @@ INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
   return d->top->handlers.set->unknownval(d->top->handlers.closure,
                                           fieldnum, val);
 }
-
-// upb_bytesink
-INLINE int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str) {
-  return sink->vtbl->put(sink, str);
-}
-INLINE upb_status *upb_bytesink_status(upb_bytesink *sink) {
-  return &sink->status;
-}
-
-// upb_bytesink
-
 
 #ifdef __cplusplus
 }  /* extern "C" */

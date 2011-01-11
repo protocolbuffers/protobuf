@@ -126,13 +126,19 @@ struct _upb_array;
 typedef struct _upb_array upb_array;
 struct _upb_msg;
 typedef struct _upb_msg upb_msg;
+struct _upb_bytesrc;
+typedef struct _upb_bytesrc upb_bytesrc;
 
-typedef uint32_t upb_strlen_t;
+typedef int32_t upb_strlen_t;
+#define UPB_STRLEN_MAX INT32_MAX
 
 // The type of a upb_value.  This is like a upb_fieldtype_t, but adds the
 // constant UPB_VALUETYPE_ARRAY to represent an array.
 typedef uint8_t upb_valuetype_t;
 #define UPB_VALUETYPE_ARRAY 32
+
+#define UPB_VALUETYPE_BYTESRC 32
+#define UPB_VALUETYPE_RAW 33
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -146,6 +152,7 @@ typedef struct {
     uint64_t uint64;
     bool _bool;
     upb_string *str;
+    upb_bytesrc *bytesrc;
     upb_msg *msg;
     upb_array *arr;
     upb_atomic_refcount_t *refcount;
@@ -167,21 +174,27 @@ typedef struct {
 
 #define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
   ctype upb_value_get ## name(upb_value val) { \
-    assert(val.type == UPB_TYPE(proto_type)); \
+    assert(val.type == proto_type || val.type == UPB_VALUETYPE_RAW); \
     return val.val.membername; \
   } \
-  void upb_value_ ## name(upb_value *val, ctype cval) { \
-    SET_TYPE(val->type, UPB_TYPE(proto_type)); \
+  void upb_value_set ## name(upb_value *val, ctype cval) { \
+    SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
   }
-UPB_VALUE_ACCESSORS(double, _double, double, DOUBLE);
-UPB_VALUE_ACCESSORS(float, _float, float, FLOAT);
-UPB_VALUE_ACCESSORS(int32, int32, int32_t, INT32);
-UPB_VALUE_ACCESSORS(int64, int64, int64_t, INT64);
-UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UINT32);
-UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UINT64);
-UPB_VALUE_ACCESSORS(bool, _bool, bool, BOOL);
-UPB_VALUE_ACCESSORS(str, str, upb_string*, STRING);
+UPB_VALUE_ACCESSORS(double, _double, double, UPB_TYPE(DOUBLE));
+UPB_VALUE_ACCESSORS(float, _float, float, UPB_TYPE(FLOAT));
+UPB_VALUE_ACCESSORS(int32, int32, int32_t, UPB_TYPE(INT32));
+UPB_VALUE_ACCESSORS(int64, int64, int64_t, UPB_TYPE(INT64));
+UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
+UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
+UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
+UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));
+UPB_VALUE_ACCESSORS(bytesrc, bytesrc, upb_bytesrc*, UPB_VALUETYPE_BYTESRC);
+
+void upb_value_setraw(upb_value *val, uint64_t cval) {
+  SET_TYPE(val->type, UPB_VALUETYPE_RAW);
+  val->val.uint64 = cval;
+}
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of
 // knowing the type, so it knows which union member to use.

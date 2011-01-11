@@ -45,7 +45,7 @@ void upb_seterr(upb_status *status, enum upb_status_code code,
 {
   if(upb_ok(status)) {  // The first error is the most interesting.
     status->code = code;
-    status->str = upb_string_tryrecycle(status->str);
+    upb_string_recycle(&status->str);
     va_list args;
     va_start(args, msg);
     upb_string_vprintf(status->str, msg, args);

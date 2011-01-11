@@ -39,13 +39,16 @@ typedef enum {
   // Caller should continue sending values to the sink.
   UPB_CONTINUE,
 
+  // An error occurred; check status for details.
+  UPB_ERROR,
+
+  // Processing should stop for now, but could be resumed later.
+  // If processing resumes later, it should resume with the next value.
+  UPB_SUSPEND,
+
   // Skips to the end of the current submessage (or if we are at the top
   // level, skips to the end of the entire message).
-  UPB_SKIP,
-
-  // Caller should stop sending values; check sink status for details.
-  // If processing resumes later, it should resume with the next value.
-  UPB_STOP,
+  UPB_SKIPSUBMSG,
 
   // When returned from a startsubmsg handler, indicates that the submessage
   // should be handled by a different set of handlers, which have been
@@ -117,6 +120,9 @@ INLINE void upb_handlers_uninit(upb_handlers *h);
 INLINE void upb_handlers_reset(upb_handlers *h);
 INLINE bool upb_handlers_isempty(upb_handlers *h);
 INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set);
+// TODO: for clients that want to increase efficiency by preventing bytesrcs
+// from automatically being converted to strings in the value callback.
+// INLINE void upb_handlers_use_bytesrcs(bool use_bytesrcs);
 INLINE void upb_set_handler_closure(upb_handlers *h, void *closure);
 
 // An object that transparently handles delegation so that the caller needs
@@ -140,21 +146,30 @@ INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
 struct _upb_src;
 typedef struct _upb_src upb_src;
 
+bool upb_src_run(upb_src *src);
+upb_status *upb_src_status(upb_src *src);
+
 
 /* upb_bytesrc ****************************************************************/
 
-struct _upb_bytesrc;
-typedef struct _upb_bytesrc upb_bytesrc;
+// Reads up to "count" bytes into "buf", returning the total number of bytes
+// read.  If <0, indicates error (check upb_bytesrc_status for details).
+INLINE upb_strlen_t upb_bytesrc_read(upb_bytesrc *src, void *buf,
+                                     upb_strlen_t count);
 
-// Returns the next string in the stream.  false is returned on error or eof.
-// The string must be at least "minlen" bytes long unless the stream is eof.
-INLINE bool upb_bytesrc_get(upb_bytesrc *src, upb_string *str, upb_strlen_t minlen);
+// Like upb_bytesrc_read(), but modifies "str" in-place, possibly aliasing
+// existing string data (which avoids a copy).
+INLINE bool upb_bytesrc_getstr(upb_bytesrc *src, upb_string *str,
+                               upb_strlen_t count);
 
-// Appends the next "len" bytes in the stream in-place to "str".  This should
-// be used when the caller needs to build a contiguous string of the existing
-// data in "str" with more data.  The call fails if fewer than len bytes are
-// available in the stream.
-INLINE bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len);
+// A convenience function for getting all the remaining data in a upb_bytesrc
+// as a upb_string.  Returns false and sets "status" if the operation fails.
+INLINE bool upb_bytesrc_getfullstr(upb_bytesrc *src, upb_string *str,
+                                   upb_status *status);
+INLINE bool upb_value_getfullstr(upb_value val, upb_string *str,
+                                 upb_status *status) {
+  return upb_bytesrc_getfullstr(upb_value_getbytesrc(val), str, status);
+}
 
 // Returns the current error status for the stream.
 // Note!  The "eof" flag works like feof() in C; it cannot report end-of-file
@@ -164,14 +179,21 @@ INLINE bool upb_bytesrc_append(upb_bytesrc *src, upb_string *str, upb_strlen_t l
 INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src);
 INLINE bool upb_bytesrc_eof(upb_bytesrc *src);
 
+
 /* upb_bytesink ***************************************************************/
 
 struct _upb_bytesink;
 typedef struct _upb_bytesink upb_bytesink;
 
-// Puts the given string.  Returns the number of bytes that were actually,
-// consumed, which may be fewer than were in the string, or <0 on error.
-INLINE int32_t upb_bytesink_put(upb_bytesink *sink, upb_string *str);
+// Writes up to "count" bytes from "buf", returning the total number of bytes
+// written.  If <0, indicates error (check upb_bytesink_status() for details).
+INLINE upb_strlen_t upb_bytesink_write(upb_bytesink *sink, void *buf,
+                                       upb_strlen_t count);
+
+// Puts the given string, which may alias the string data (which avoids a
+// copy).  Returns the number of bytes that were actually, consumed, which may
+// be fewer than were in the string, or <0 on error.
+INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str);
 
 // Returns the current error status for the stream.
 INLINE upb_status *upb_bytesink_status(upb_bytesink *sink);
