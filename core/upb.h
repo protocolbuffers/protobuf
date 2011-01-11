@@ -173,11 +173,11 @@ typedef struct {
 #endif
 
 #define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
-  ctype upb_value_get ## name(upb_value val) { \
+  INLINE ctype upb_value_get ## name(upb_value val) { \
     assert(val.type == proto_type || val.type == UPB_VALUETYPE_RAW); \
     return val.val.membername; \
   } \
-  void upb_value_set ## name(upb_value *val, ctype cval) { \
+  INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
     SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
   }
@@ -191,7 +191,7 @@ UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
 UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));
 UPB_VALUE_ACCESSORS(bytesrc, bytesrc, upb_bytesrc*, UPB_VALUETYPE_BYTESRC);
 
-void upb_value_setraw(upb_value *val, uint64_t cval) {
+INLINE void upb_value_setraw(upb_value *val, uint64_t cval) {
   SET_TYPE(val->type, UPB_VALUETYPE_RAW);
   val->val.uint64 = cval;
 }
