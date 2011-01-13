@@ -340,6 +340,40 @@ if test "x$acx_pthread_ok" = xyes; then
 	   acx_pthread_ok=no
 	fi
 	
+	AC_MSG_CHECKING([whether what we have so far is sufficient with -nostdlib])
+	CFLAGS="-nostdlib $CFLAGS"
+	# we need c with nostdlib
+	LIBS="$LIBS -lc"
+	AC_TRY_LINK([#include <pthread.h>],
+	      [pthread_t th; pthread_join(th, 0);
+	       pthread_attr_init(0); pthread_cleanup_push(0, 0);
+	       pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
+	      [done=yes],[done=no])
+
+	if test "x$done" = xyes; then
+	   AC_MSG_RESULT([yes])
+	else
+	   AC_MSG_RESULT([no])
+	fi
+	
+	if test x"$done" = xno; then
+	   AC_MSG_CHECKING([whether -lpthread saves the day])
+	   LIBS="-lpthread $LIBS"
+	   AC_TRY_LINK([#include <pthread.h>],
+	      [pthread_t th; pthread_join(th, 0);
+	       pthread_attr_init(0); pthread_cleanup_push(0, 0);
+	       pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
+	      [done=yes],[done=no])
+
+	   if test "x$done" = xyes; then
+	      AC_MSG_RESULT([yes])
+	      PTHREAD_LIBS="$PTHREAD_LIBS -lpthread"
+	   else
+	      AC_MSG_RESULT([no])
+	      AC_MSG_WARN([Impossible to determine how to use pthreads with shared libraries and -nostdlib])
+	   fi
+	fi
+
 	CFLAGS="$save_CFLAGS"
 	LIBS="$save_LIBS"
 	CC="$save_CC"
