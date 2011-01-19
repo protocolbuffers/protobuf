@@ -73,3 +73,7 @@ void upb_printerr(upb_status *status) {
     fprintf(stderr, "code: %d, no msg\n", status->code);
   }
 }
+
+void upb_status_uninit(upb_status *status) {
+  upb_string_unref(status->str);
+}

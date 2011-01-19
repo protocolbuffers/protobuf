@@ -39,12 +39,8 @@ typedef enum {
   // Caller should continue sending values to the sink.
   UPB_CONTINUE,
 
-  // An error occurred; check status for details.
-  UPB_ERROR,
-
-  // Processing should stop for now, but could be resumed later.
-  // If processing resumes later, it should resume with the next value.
-  UPB_SUSPEND,
+  // Stop processing for now; check status for details.
+  UPB_STOP,
 
   // Skips to the end of the current submessage (or if we are at the top
   // level, skips to the end of the entire message).
@@ -61,8 +57,8 @@ typedef enum {
 struct _upb_handlers;
 typedef struct _upb_handlers upb_handlers;
 
-typedef void (*upb_startmsg_handler_t)(void *closure);
-typedef void (*upb_endmsg_handler_t)(void *closure);
+typedef upb_flow_t (*upb_startmsg_handler_t)(void *closure);
+typedef upb_flow_t (*upb_endmsg_handler_t)(void *closure);
 typedef upb_flow_t (*upb_value_handler_t)(void *closure,
                                           struct _upb_fielddef *f,
                                           upb_value val);
@@ -76,12 +72,14 @@ typedef upb_flow_t (*upb_unknownval_handler_t)(void *closure,
 
 // An empty set of handlers, for convenient copy/paste:
 //
-// static void startmsg(void *closure) {
+// static upb_flow_t startmsg(void *closure) {
 //   // Called when the top-level message begins.
+//   return UPB_CONTINUE;
 // }
 //
-// static void endmsg(void *closure) {
+// static upb_flow_t endmsg(void *closure) {
 //   // Called when the top-level message ends.
+//   return UPB_CONTINUE;
 // }
 //
 // static upb_flow_t value(void *closure, upb_fielddef *f, upb_value val) {
@@ -120,10 +118,15 @@ INLINE void upb_handlers_uninit(upb_handlers *h);
 INLINE void upb_handlers_reset(upb_handlers *h);
 INLINE bool upb_handlers_isempty(upb_handlers *h);
 INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set);
+
 // TODO: for clients that want to increase efficiency by preventing bytesrcs
 // from automatically being converted to strings in the value callback.
 // INLINE void upb_handlers_use_bytesrcs(bool use_bytesrcs);
-INLINE void upb_set_handler_closure(upb_handlers *h, void *closure);
+
+// The closure will be passed to every handler.  The status will be used
+// only immediately after a handler has returned UPB_STOP.
+INLINE void upb_set_handler_closure(upb_handlers *h, void *closure,
+                                    upb_status *status);
 
 // An object that transparently handles delegation so that the caller needs
 // only follow the protocol as if delegation did not exist.
@@ -146,8 +149,8 @@ INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
 struct _upb_src;
 typedef struct _upb_src upb_src;
 
-bool upb_src_run(upb_src *src);
-upb_status *upb_src_status(upb_src *src);
+void upb_src_sethandlers(upb_src *src, upb_handlers *handlers);
+void upb_src_run(upb_src *src, upb_status *status);
 
 
 /* upb_bytesrc ****************************************************************/

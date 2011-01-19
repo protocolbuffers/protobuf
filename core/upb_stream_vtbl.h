@@ -133,6 +133,7 @@ INLINE upb_status *upb_bytesink_status(upb_bytesink *sink) {
 struct _upb_handlers {
   upb_handlerset *set;
   void *closure;
+  upb_status *status;  // We don't own this.
 };
 
 INLINE void upb_handlers_init(upb_handlers *h) {
@@ -155,8 +156,10 @@ INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set) {
   h->set = set;
 }
 
-INLINE void upb_set_handler_closure(upb_handlers *h, void *closure) {
+INLINE void upb_set_handler_closure(upb_handlers *h, void *closure,
+                                    upb_status *status) {
   h->closure = closure;
+  h->status = status;
 }
 
 // upb_dispatcher

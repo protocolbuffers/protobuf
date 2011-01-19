@@ -290,30 +290,27 @@ INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
 // Status codes used as a return value.  Codes >0 are not fatal and can be
 // resumed.
 enum upb_status_code {
+  // The operation completed successfully.
   UPB_STATUS_OK = 0,
 
-  // A read or write from a streaming src/sink could not be completed right now.
-  UPB_STATUS_TRYAGAIN = 1,
+  // The bytesrc is at EOF and all data was read successfully.
+  UPB_STATUS_EOF = 1,
 
-  // A value had an incorrect wire type and will be skipped.
-  UPB_STATUS_BADWIRETYPE = 2,
+  // A read or write from a streaming src/sink could not be completed right now.
+  UPB_STATUS_TRYAGAIN = 2,
 
   // An unrecoverable error occurred.
   UPB_STATUS_ERROR = -1,
 
-  // A varint went for 10 bytes without terminating.
-  UPB_ERROR_UNTERMINATED_VARINT = -2,
-
-  // The max nesting level (UPB_MAX_NESTING) was exceeded.
-  UPB_ERROR_MAX_NESTING_EXCEEDED = -3
+  // A recoverable error occurred (for example, data of the wrong type was
+  // encountered which we can skip over).
+  // UPB_STATUS_RECOVERABLE_ERROR = -2
 };
 
-// TODO: consider making this a single word: a upb_string* where we use the low
-// bits as flags indicating whether there is an error and whether it is
-// resumable.  This would improve efficiency, because the code would not need
-// to be loaded after a call to a function returning a status.
+// TODO: consider adding error space and code, to let ie. errno be stored
+// as a proper code.
 typedef struct {
-  enum upb_status_code code;
+  char code;
   upb_string *str;
 } upb_status;
 
@@ -328,6 +325,8 @@ INLINE void upb_status_init(upb_status *status) {
   status->code = UPB_STATUS_OK;
   status->str = NULL;
 }
+
+void upb_status_uninit(upb_status *status);
 
 void upb_printerr(upb_status *status);
 void upb_clearerr(upb_status *status);
