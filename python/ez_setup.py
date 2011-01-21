@@ -2,7 +2,7 @@
 
 # This file was obtained from:
 #   http://peak.telecommunity.com/dist/ez_setup.py
-# on 2009/4/17.
+# on 2011/1/21.
 
 """Bootstrap setuptools installation
 
@@ -19,7 +19,7 @@ the appropriate options to ``use_setuptools()``.
 This file can also be run as a script to install or upgrade setuptools.
 """
 import sys
-DEFAULT_VERSION = "0.6c9"
+DEFAULT_VERSION = "0.6c11"
 DEFAULT_URL     = "http://pypi.python.org/packages/%s/s/setuptools/" % sys.version[:3]
 
 md5_data = {
@@ -33,6 +33,14 @@ md5_data = {
     'setuptools-0.6b4-py2.4.egg': '4cb2a185d228dacffb2d17f103b3b1c4',
     'setuptools-0.6c1-py2.3.egg': 'b3f2b5539d65cb7f74ad79127f1a908c',
     'setuptools-0.6c1-py2.4.egg': 'b45adeda0667d2d2ffe14009364f2a4b',
+    'setuptools-0.6c10-py2.3.egg': 'ce1e2ab5d3a0256456d9fc13800a7090',
+    'setuptools-0.6c10-py2.4.egg': '57d6d9d6e9b80772c59a53a8433a5dd4',
+    'setuptools-0.6c10-py2.5.egg': 'de46ac8b1c97c895572e5e8596aeb8c7',
+    'setuptools-0.6c10-py2.6.egg': '58ea40aef06da02ce641495523a0b7f5',
+    'setuptools-0.6c11-py2.3.egg': '2baeac6e13d414a9d28e7ba5b5a596de',
+    'setuptools-0.6c11-py2.4.egg': 'bd639f9b0eac4c42497034dec2ec0c2b',
+    'setuptools-0.6c11-py2.5.egg': '64c94f3bf7a72a13ec83e0b24f2749b2',
+    'setuptools-0.6c11-py2.6.egg': 'bfa92100bd772d5a213eedd356d64086',
     'setuptools-0.6c2-py2.3.egg': 'f0064bf6aa2b7d0f3ba0b43f20817c27',
     'setuptools-0.6c2-py2.4.egg': '616192eec35f47e8ea16cd6a122b7277',
     'setuptools-0.6c3-py2.3.egg': 'f181fa125dfe85a259c9cd6f1d7b78fa',
@@ -109,11 +117,11 @@ def use_setuptools(
             "\n\n(Currently using %r)"
             ) % (version, e.args[0])
             sys.exit(2)
-        else:
-            del pkg_resources, sys.modules['pkg_resources']    # reload ok
-            return do_download()
     except pkg_resources.DistributionNotFound:
-        return do_download()
+        pass
+
+    del pkg_resources, sys.modules['pkg_resources']    # reload ok
+    return do_download()
 
 def download_setuptools(
     version=DEFAULT_VERSION, download_base=DEFAULT_URL, to_dir=os.curdir,
@@ -273,9 +281,3 @@ if __name__=='__main__':
         update_md5(sys.argv[2:])
     else:
         main(sys.argv[1:])
-
-
-
-
-
-
