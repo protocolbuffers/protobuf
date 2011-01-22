@@ -67,6 +67,7 @@ void upb_string_recycle(upb_string **_str) {
     str->ptr = NULL;
     upb_string_release(str);
   } else {
+    upb_string_unref(str);
     *_str = upb_string_new();
   }
 }

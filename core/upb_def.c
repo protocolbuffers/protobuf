@@ -429,7 +429,7 @@ typedef struct _upb_unresolveddef {
 static upb_unresolveddef *upb_unresolveddef_new(upb_string *str) {
   upb_unresolveddef *def = malloc(sizeof(*def));
   upb_def_init(&def->base, UPB_DEF_UNRESOLVED);
-  def->name = str;
+  def->name = upb_string_getref(str);
   return def;
 }
 
@@ -445,6 +445,7 @@ static void upb_unresolveddef_free(struct _upb_unresolveddef *def) {
 static void upb_enumdef_free(upb_enumdef *e) {
   upb_enum_iter i;
   for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
+    // Frees the ref taken when the string was parsed.
     upb_string_unref(upb_enum_iter_name(i));
   }
   upb_strtable_free(&e->ntoi);
@@ -468,7 +469,7 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_value(void *_b,
   switch(f->number) {
     case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME_FIELDNUM:
       upb_string_unref(b->name);
-      upb_string_getref(upb_value_getstr(val));
+      b->name = upb_string_getref(upb_value_getstr(val));
       b->saw_name = true;
       break;
     case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
@@ -495,6 +496,7 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_endmsg(void *_b) {
   // We don't unref "name" because we pass our ref to the iton entry of the
   // table.  strtables can ref their keys, but the inttable doesn't know that
   // the value is a string.
+  b->name = NULL;
   return UPB_CONTINUE;
 }
 
@@ -641,7 +643,7 @@ static upb_flow_t upb_fielddef_value(void *_b, upb_fielddef *f, upb_value val) {
       b->f->name = upb_string_getref(upb_value_getstr(val));
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME_FIELDNUM: {
-      if(b->f->def) upb_def_unref(b->f->def);
+      upb_def_unref(b->f->def);
       b->f->def = UPB_UPCAST(upb_unresolveddef_new(upb_value_getstr(val)));
       b->f->owned = true;
       break;
@@ -847,6 +849,7 @@ static upb_symtab_ent *upb_resolve(upb_strtable *t,
     return e;
   } else {
     // Remove components from base until we find an entry or run out.
+    // TODO: This branch is totally broken, but currently not used.
     upb_string *sym_str = upb_string_new();
     int baselen = upb_string_len(base);
     while(1) {
@@ -1212,21 +1215,14 @@ static void upb_baredecoder_run(upb_src *src, upb_status *status) {
   upb_baredecoder *d = (upb_baredecoder*)src;
   assert(!upb_handlers_isempty(&d->dispatcher.top->handlers));
   upb_string *str = NULL;
-  upb_strlen_t stack[UPB_MAX_NESTING];
+  upb_strlen_t stack[UPB_MAX_NESTING] = {UPB_STRLEN_MAX};
   upb_strlen_t *top = &stack[0];
-  *top = upb_string_len(d->input);
   d->offset = 0;
 
 #define CHECK(x) if (x != UPB_CONTINUE && x != BEGIN_SUBMSG) goto err;
 
   CHECK(upb_dispatch_startmsg(&d->dispatcher));
   while(d->offset < upb_string_len(d->input)) {
-    // Detect end-of-submessage.
-    while(d->offset >= *top) {
-      CHECK(upb_dispatch_endsubmsg(&d->dispatcher));
-      d->offset = *(top--);
-    }
-
     uint32_t key = upb_baredecoder_readv64(d);
     upb_fielddef f;
     f.number = key >> 3;
@@ -1266,22 +1262,22 @@ static void upb_baredecoder_run(upb_src *src, upb_status *status) {
       }
       CHECK(upb_dispatch_value(&d->dispatcher, &f, v));
     }
+    // Detect end-of-submessage.
+    while(d->offset >= *top) {
+      CHECK(upb_dispatch_endsubmsg(&d->dispatcher));
+      d->offset = *(top--);
+    }
   }
   CHECK(upb_dispatch_endmsg(&d->dispatcher));
-  printf("SUCCESS!!\n");
   upb_string_unref(str);
   return;
 
 err:
   upb_copyerr(status, d->dispatcher.top->handlers.status);
-  upb_printerr(d->dispatcher.top->handlers.status);
-  upb_printerr(status);
   upb_string_unref(str);
-  printf("ERROR!!\n");
 }
 
-static upb_baredecoder *upb_baredecoder_new(upb_string *str)
-{
+static upb_baredecoder *upb_baredecoder_new(upb_string *str) {
   static upb_src_vtbl vtbl = {
     &upb_baredecoder_sethandlers,
     &upb_baredecoder_run,
@@ -1294,19 +1290,16 @@ static upb_baredecoder *upb_baredecoder_new(upb_string *str)
   return d;
 }
 
-static void upb_baredecoder_free(upb_baredecoder *d)
-{
+static void upb_baredecoder_free(upb_baredecoder *d) {
   upb_string_unref(d->input);
   free(d);
 }
 
-static upb_src *upb_baredecoder_src(upb_baredecoder *d)
-{
+static upb_src *upb_baredecoder_src(upb_baredecoder *d) {
   return &d->src;
 }
 
-void upb_symtab_add_descriptorproto(upb_symtab *symtab)
-{
+void upb_symtab_add_descriptorproto(upb_symtab *symtab) {
   // For the moment we silently decline to perform the operation if the symbols
   // already exist in the symtab.  Revisit this when we have a better story
   // about whether syms in a table can be replaced.
@@ -1329,4 +1322,5 @@ void upb_symtab_add_descriptorproto(upb_symtab *symtab)
     upb_symtab_unref(symtab);
     abort();
   }
+  upb_status_uninit(&status);
 }

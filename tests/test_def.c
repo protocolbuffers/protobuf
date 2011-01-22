@@ -10,12 +10,9 @@ int main() {
   int count;
   upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
   for (int i = 0; i < count; i++) {
-    printf("Def with name: " UPB_STRFMT "\n", UPB_STRARG(defs[i]->fqname));
     upb_def_unref(defs[i]);
   }
   free(defs);
-
-  printf("Size: %zd\n", sizeof(upb_ntof_ent));
 
   upb_string *str = upb_strdupc("google.protobuf.FileDescriptorSet");
   upb_def *fds = upb_symtab_lookup(s, str);
@@ -24,4 +21,5 @@ int main() {
   upb_def_unref(fds);
   upb_string_unref(str);
   upb_symtab_unref(s);
+  return 0;
 }

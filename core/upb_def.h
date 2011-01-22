@@ -77,7 +77,7 @@ INLINE void upb_def_ref(upb_def *def) {
   if(upb_atomic_ref(&def->refcount) && def->is_cyclic) _upb_def_cyclic_ref(def);
 }
 INLINE void upb_def_unref(upb_def *def) {
-  if(upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
+  if(def && upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
 }
 
 /* upb_fielddef ***************************************************************/

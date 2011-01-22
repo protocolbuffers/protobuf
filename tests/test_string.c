@@ -40,6 +40,17 @@ static void test_dynamic() {
   upb_string_recycle(&str);
   assert(str != NULL);
 
+  // Take a ref and recycle; should create a new string and release a ref
+  // on the old one.
+  upb_string *strcp = upb_string_getref(str);
+  assert(strcp == str);
+  assert(upb_atomic_read(&str->refcount) == 2);
+  upb_string_recycle(&str);
+  assert(strcp != str);
+  assert(upb_atomic_read(&str->refcount) == 1);
+  assert(upb_atomic_read(&strcp->refcount) == 1);
+  upb_string_unref(strcp);
+
   upb_strcpyc(str, static_str);
   assert(upb_string_len(str) == (sizeof(static_str) - 1));
   const char *robuf = upb_string_getrobuf(str);
