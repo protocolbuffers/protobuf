@@ -113,7 +113,7 @@ tests/test.proto.pb: tests/test.proto
 TESTS=tests/test_string \
     tests/test_table \
     tests/test_def \
-#    tests/test_stream \
+    tests/test_stream \
 #    tests/test_decoder \
 #    tests/t.test_vs_proto2.googlemessage1 \
 #    tests/t.test_vs_proto2.googlemessage2 \
