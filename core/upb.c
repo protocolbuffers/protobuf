@@ -60,9 +60,8 @@ void upb_copyerr(upb_status *to, upb_status *from)
 }
 
 void upb_clearerr(upb_status *status) {
-  status->code = UPB_STATUS_OK;
-  upb_string_unref(status->str);
-  status->str = NULL;
+  status->code = UPB_OK;
+  upb_string_recycle(&status->str);
 }
 
 void upb_printerr(upb_status *status) {

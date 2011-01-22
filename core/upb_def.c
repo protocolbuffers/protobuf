@@ -470,9 +470,8 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_value(void *_b,
 static upb_flow_t upb_enumdef_EnumValueDescriptorProto_endmsg(void *_b) {
   upb_defbuilder *b = _b;
   if(!b->saw_number || !b->saw_name) {
-    upb_seterr(&b->status, UPB_STATUS_ERROR,
-               "Enum value missing name or number.");
-    return UPB_STOP;
+    upb_seterr(&b->status, UPB_ERROR, "Enum value missing name or number.");
+    return UPB_BREAK;
   }
   upb_ntoi_ent ntoi_ent = {{b->name, 0}, b->number};
   upb_iton_ent iton_ent = {{b->number, 0}, b->name};
@@ -629,7 +628,7 @@ static upb_flow_t upb_fielddef_value(void *_b, upb_fielddef *f, upb_value val) {
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME_FIELDNUM: {
       upb_string *str = upb_string_new();
-      if (!upb_value_getfullstr(val, str, NULL)) return UPB_STOP;
+      if (!upb_value_getfullstr(val, str, NULL)) return UPB_BREAK;
       if(b->f->def) upb_def_unref(b->f->def);
       b->f->def = UPB_UPCAST(upb_unresolveddef_new(str));
       b->f->owned = true;
@@ -683,9 +682,8 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
   upb_defbuilder *b = _b;
   upb_msgdef *m = upb_defbuilder_top(b);
   if(!m->base.fqname) {
-    upb_seterr(&b->status, UPB_STATUS_ERROR,
-               "Encountered message with no name.");
-    return UPB_STOP;
+    upb_seterr(&b->status, UPB_ERROR, "Encountered message with no name.");
+    return UPB_BREAK;
   }
 
   // Create an ordering over the fields.
@@ -864,7 +862,7 @@ static bool upb_symtab_findcycles(upb_msgdef *m, int depth, upb_status *status)
     // where we recurse over the type tree (like for example, right now) and an
     // absurdly deep tree could cause us to stack overflow on systems with very
     // limited stacks.
-    upb_seterr(status, UPB_STATUS_ERROR, "Type " UPB_STRFMT " was found at "
+    upb_seterr(status, UPB_ERROR, "Type " UPB_STRFMT " was found at "
                "depth %d in the type graph, which exceeds the maximum type "
                "depth of %d.", UPB_UPCAST(m)->fqname, depth,
                UPB_MAX_TYPE_DEPTH);
@@ -873,7 +871,7 @@ static bool upb_symtab_findcycles(upb_msgdef *m, int depth, upb_status *status)
     // Cycle!
     int cycle_len = depth - 1;
     if(cycle_len > UPB_MAX_TYPE_CYCLE_LEN) {
-      upb_seterr(status, UPB_STATUS_ERROR, "Type " UPB_STRFMT " was involved "
+      upb_seterr(status, UPB_ERROR, "Type " UPB_STRFMT " was involved "
                  "in a cycle of length %d, which exceeds the maximum type "
                  "cycle length of %d.", UPB_UPCAST(m)->fqname, cycle_len,
                  UPB_MAX_TYPE_CYCLE_LEN);
@@ -931,7 +929,7 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
       upb_symtab_ent *found;
       if(!(found = upb_resolve(tmptab, base, name)) &&
          !(found = upb_resolve(symtab, base, name))) {
-        upb_seterr(status, UPB_STATUS_ERROR,
+        upb_seterr(status, UPB_ERROR,
                    "could not resolve symbol '" UPB_STRFMT "'"
                    " in context '" UPB_STRFMT "'",
                    UPB_STRARG(name), UPB_STRARG(base));
@@ -941,7 +939,7 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
       // Check the type of the found def.
       upb_fieldtype_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
       if(found->def->type != expected) {
-        upb_seterr(status, UPB_STATUS_ERROR, "Unexpected type");
+        upb_seterr(status, UPB_ERROR, "Unexpected type");
         return false;
       }
       upb_msgdef_resolve(m, f, found->def);
@@ -983,7 +981,7 @@ bool upb_symtab_add_defs(upb_symtab *s, upb_def **defs, int num_defs,
     // allow_redef is set.
     if (upb_strtable_lookup(&tmptab, def->fqname) ||
         (!allow_redef && upb_strtable_lookup(&s->symtab, def->fqname))) {
-      upb_seterr(status, UPB_STATUS_ERROR, "Redefinition of symbol " UPB_STRFMT,
+      upb_seterr(status, UPB_ERROR, "Redefinition of symbol " UPB_STRFMT,
                  UPB_STRARG(def->fqname));
       goto err;
     }

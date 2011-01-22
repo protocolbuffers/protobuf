@@ -291,16 +291,16 @@ INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
 // resumed.
 enum upb_status_code {
   // The operation completed successfully.
-  UPB_STATUS_OK = 0,
+  UPB_OK = 0,
 
   // The bytesrc is at EOF and all data was read successfully.
-  UPB_STATUS_EOF = 1,
+  UPB_EOF = 1,
 
   // A read or write from a streaming src/sink could not be completed right now.
-  UPB_STATUS_TRYAGAIN = 2,
+  UPB_TRYAGAIN = 2,
 
   // An unrecoverable error occurred.
-  UPB_STATUS_ERROR = -1,
+  UPB_ERROR = -1,
 
   // A recoverable error occurred (for example, data of the wrong type was
   // encountered which we can skip over).
@@ -308,21 +308,21 @@ enum upb_status_code {
 };
 
 // TODO: consider adding error space and code, to let ie. errno be stored
-// as a proper code.
+// as a proper code, or application-specific error codes.
 typedef struct {
   char code;
   upb_string *str;
 } upb_status;
 
-#define UPB_STATUS_INIT {UPB_STATUS_OK, NULL}
+#define UPB_STATUS_INIT {UPB_OK, NULL}
 #define UPB_ERRORMSG_MAXLEN 256
 
 INLINE bool upb_ok(upb_status *status) {
-  return status->code == UPB_STATUS_OK;
+  return status->code == UPB_OK;
 }
 
 INLINE void upb_status_init(upb_status *status) {
-  status->code = UPB_STATUS_OK;
+  status->code = UPB_OK;
   status->str = NULL;
 }
 

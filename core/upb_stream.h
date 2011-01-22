@@ -39,8 +39,10 @@ typedef enum {
   // Caller should continue sending values to the sink.
   UPB_CONTINUE,
 
-  // Stop processing for now; check status for details.
-  UPB_STOP,
+  // Stop processing for now; check status for details.  If no status was set,
+  // a generic error will be returned.  If the error is resumable, processing
+  // will resume by delivering this callback again.
+  UPB_BREAK,
 
   // Skips to the end of the current submessage (or if we are at the top
   // level, skips to the end of the entire message).
