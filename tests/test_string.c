@@ -23,7 +23,8 @@ static void test_static() {
   upb_string_unref(&static_upbstr);
 
   // Recycling a static string returns a new string (that can be modified).
-  upb_string *str = upb_string_tryrecycle(&static_upbstr);
+  upb_string *str = &static_upbstr;
+  upb_string_recycle(&str);
   assert(str != &static_upbstr);
 
   upb_string_unref(str);
@@ -34,8 +35,9 @@ static void test_dynamic() {
   assert(str != NULL);
   upb_string_unref(str);
 
-  // Can also create a string by tryrecycle(NULL).
-  str = upb_string_tryrecycle(NULL);
+  // Can also create a string by recycle(NULL).
+  str = NULL;
+  upb_string_recycle(&str);
   assert(str != NULL);
 
   upb_strcpyc(str, static_str);
@@ -45,7 +47,8 @@ static void test_dynamic() {
   assert(upb_streqlc(str, static_str));
   upb_string_endread(str);
 
-  upb_string *str2 = upb_string_tryrecycle(str);
+  upb_string *str2 = str;
+  upb_string_recycle(&str2);
   // No other referents, so should return the same string.
   assert(str2 == str);
 
@@ -58,7 +61,7 @@ static void test_dynamic() {
 
   // Make string alias part of another string.
   str2 = upb_strdupc("WXYZ");
-  str = upb_string_tryrecycle(str);
+  upb_string_recycle(&str);
   upb_string_substr(str, str2, 1, 2);
   assert(upb_string_len(str) == 2);
   assert(upb_string_len(str2) == 4);
@@ -70,7 +73,7 @@ static void test_dynamic() {
   assert(upb_atomic_read(&str2->refcount) == 2);
 
   // Recycling str should eliminate the extra ref.
-  str = upb_string_tryrecycle(str);
+  upb_string_recycle(&str);
   assert(upb_atomic_read(&str2->refcount) == 1);
 
   // Resetting str should reuse its old data.
@@ -80,7 +83,7 @@ static void test_dynamic() {
 
   // Resetting str to something very long should require new data to be
   // allocated.
-  str = upb_string_tryrecycle(str);
+  upb_string_recycle(&str);
   const char longstring[] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
   upb_strcpyc(str, longstring);
   const char *robuf6 = upb_string_getrobuf(str);
@@ -88,7 +91,7 @@ static void test_dynamic() {
   assert(upb_streqlc(str, longstring));
 
   // Test printf.
-  str = upb_string_tryrecycle(str);
+  upb_string_recycle(&str);
   upb_string_printf(str, "Number: %d, String: %s", 5, "YO!");
   assert(upb_streqlc(str, "Number: 5, String: YO!"));
 

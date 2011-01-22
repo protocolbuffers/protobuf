@@ -74,9 +74,9 @@ OTHERSRC=src/upb_encoder.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 core/upb_def.o: core/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
 core/upb_def.lo: core/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+	$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
 
 lang_ext/lua/upb.so: lang_ext/lua/upb.lo
 	$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< core/libupb_pic.a
@@ -112,13 +112,13 @@ tests/test.proto.pb: tests/test.proto
 
 TESTS=tests/test_string \
     tests/test_table \
-    tests/test_stream \
-#    tests/test_def \
+    tests/test_def \
+#    tests/test_stream \
 #    tests/test_decoder \
 #    tests/t.test_vs_proto2.googlemessage1 \
 #    tests/t.test_vs_proto2.googlemessage2 \
 #    tests/test.proto.pb
-tests: $(TESTS)
+tests: $(LIBUPB) $(TESTS)
 
 OTHER_TESTS=tests/tests \
 $(TESTS): $(LIBUPB)

@@ -10,6 +10,7 @@ int main() {
   int count;
   upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
   for (int i = 0; i < count; i++) {
+    printf("Def with name: " UPB_STRFMT "\n", UPB_STRARG(defs[i]->fqname));
     upb_def_unref(defs[i]);
   }
   free(defs);

@@ -61,13 +61,13 @@ void _upb_string_free(upb_string *str) {
   free(str);
 }
 
-upb_string *upb_string_tryrecycle(upb_string *str) {
+void upb_string_recycle(upb_string **_str) {
+  upb_string *str = *_str;
   if(str && upb_atomic_read(&str->refcount) == 1) {
     str->ptr = NULL;
     upb_string_release(str);
-    return str;
   } else {
-    return upb_string_new();
+    *_str = upb_string_new();
   }
 }
 
@@ -111,7 +111,7 @@ void upb_string_vprintf(upb_string *str, const char *format, va_list args) {
     // We don't care about the terminating NULL, but snprintf might
     // bail out of printing even other characters if it doesn't have
     // enough space to write the NULL also.
-    str = upb_string_tryrecycle(str);
+    upb_string_recycle(&str);
     buf = upb_string_getrwbuf(str, true_size + 1);
     vsnprintf(buf, true_size + 1, format, args);
   }

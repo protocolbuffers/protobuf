@@ -319,6 +319,18 @@ void upb_defbuilder_setscopename(upb_defbuilder *b, upb_string *str) {
 }
 
 // Handlers for google.protobuf.FileDescriptorProto.
+static upb_flow_t upb_defbuilder_FileDescriptorProto_startmsg(void *_b) {
+  upb_defbuilder *b = _b;
+  upb_defbuilder_startcontainer(b);
+  return UPB_CONTINUE;
+}
+
+static upb_flow_t upb_defbuilder_FileDescriptorProto_endmsg(void *_b) {
+  upb_defbuilder *b = _b;
+  upb_defbuilder_endcontainer(b);
+  return UPB_CONTINUE;
+}
+
 static upb_flow_t upb_defbuilder_FileDescriptorProto_value(void *_b,
                                                            upb_fielddef *f,
                                                            upb_value val) {
@@ -353,8 +365,8 @@ static upb_flow_t upb_defbuilder_FileDescriptorProto_startsubmsg(
 static void upb_defbuilder_register_FileDescriptorProto(upb_defbuilder *b,
                                                         upb_handlers *h) {
   static upb_handlerset handlers = {
-    NULL,  // startmsg
-    NULL,  // endmsg
+    &upb_defbuilder_FileDescriptorProto_startmsg,
+    &upb_defbuilder_FileDescriptorProto_endmsg,
     &upb_defbuilder_FileDescriptorProto_value,
     &upb_defbuilder_FileDescriptorProto_startsubmsg,
   };
@@ -457,9 +469,11 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_value(void *_b,
     case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME_FIELDNUM:
       upb_string_unref(b->name);
       upb_string_getref(upb_value_getstr(val));
+      b->saw_name = true;
       break;
     case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
       b->number = upb_value_getint32(val);
+      b->saw_number = true;
       break;
     default:
       break;
@@ -507,8 +521,8 @@ static upb_flow_t upb_enumdef_EnumDescriptorProto_startmsg(void *_b) {
 }
 
 static upb_flow_t upb_enumdef_EnumDescriptorProto_endmsg(void *_b) {
-  upb_defbuilder *b = _b;
-  assert(upb_defbuilder_last(b)->fqname != NULL);
+  (void)_b;
+  assert(upb_defbuilder_last((upb_defbuilder*)_b)->fqname != NULL);
   return UPB_CONTINUE;
 }
 
@@ -627,10 +641,8 @@ static upb_flow_t upb_fielddef_value(void *_b, upb_fielddef *f, upb_value val) {
       b->f->name = upb_string_getref(upb_value_getstr(val));
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME_FIELDNUM: {
-      upb_string *str = upb_string_new();
-      if (!upb_value_getfullstr(val, str, NULL)) return UPB_BREAK;
       if(b->f->def) upb_def_unref(b->f->def);
-      b->f->def = UPB_UPCAST(upb_unresolveddef_new(str));
+      b->f->def = UPB_UPCAST(upb_unresolveddef_new(upb_value_getstr(val)));
       b->f->owned = true;
       break;
     }
@@ -720,6 +732,7 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
     m->size = offset + type_info->size;
     max_align = UPB_MAX(max_align, type_info->align);
   }
+  free(sorted_fields);
 
   if (max_align > 0) m->size = upb_align_up(m->size, max_align);
 
@@ -1131,6 +1144,7 @@ void upb_symtab_addfds(upb_symtab *s, upb_src *src, upb_status *status)
 // * keeping a pointer to the upb_fielddef* and reading it later (the same
 //   upb_fielddef is reused over and over).
 // * detecting errors in the input (we trust that our input is known-good).
+// * skipping the rest of the submessage (UPB_SKIPSUBMSG).
 //
 // It also does not support any of the follow protobuf features:
 // * packed fields.
@@ -1189,18 +1203,27 @@ static uint32_t upb_baredecoder_readf32(upb_baredecoder *d)
   return val;
 }
 
-bool upb_baredecoder_run(upb_baredecoder *d) {
+static void upb_baredecoder_sethandlers(upb_src *src, upb_handlers *handlers) {
+  upb_baredecoder *d = (upb_baredecoder*)src;
+  upb_dispatcher_reset(&d->dispatcher, handlers);
+}
+
+static void upb_baredecoder_run(upb_src *src, upb_status *status) {
+  upb_baredecoder *d = (upb_baredecoder*)src;
+  assert(!upb_handlers_isempty(&d->dispatcher.top->handlers));
   upb_string *str = NULL;
   upb_strlen_t stack[UPB_MAX_NESTING];
   upb_strlen_t *top = &stack[0];
   *top = upb_string_len(d->input);
   d->offset = 0;
 
-  upb_dispatch_startmsg(&d->dispatcher);
+#define CHECK(x) if (x != UPB_CONTINUE && x != BEGIN_SUBMSG) goto err;
+
+  CHECK(upb_dispatch_startmsg(&d->dispatcher));
   while(d->offset < upb_string_len(d->input)) {
     // Detect end-of-submessage.
     while(d->offset >= *top) {
-      upb_dispatch_endsubmsg(&d->dispatcher);
+      CHECK(upb_dispatch_endsubmsg(&d->dispatcher));
       d->offset = *(top--);
     }
 
@@ -1216,9 +1239,11 @@ bool upb_baredecoder_run(upb_baredecoder *d) {
       upb_string_substr(str, d->input, d->offset, delim_len);
       upb_value v;
       upb_value_setstr(&v, str);
-      if(upb_dispatch_value(&d->dispatcher, &f, v) == BEGIN_SUBMSG) {
+      upb_flow_t ret = upb_dispatch_value(&d->dispatcher, &f, v);
+      CHECK(ret);
+      if(ret == BEGIN_SUBMSG) {
         // Should deliver as a submessage instead.
-        upb_dispatch_startsubmsg(&d->dispatcher, &f);
+        CHECK(upb_dispatch_startsubmsg(&d->dispatcher, &f));
         *(++top) = d->offset + delim_len;
       } else {
         d->offset += delim_len;
@@ -1228,11 +1253,9 @@ bool upb_baredecoder_run(upb_baredecoder *d) {
       switch(wt) {
         case UPB_WIRE_TYPE_VARINT:
           upb_value_setraw(&v, upb_baredecoder_readv64(d));
-          upb_dispatch_value(&d->dispatcher, &f, v);
           break;
         case UPB_WIRE_TYPE_64BIT:
           upb_value_setraw(&v, upb_baredecoder_readf64(d));
-          upb_dispatch_value(&d->dispatcher, &f, v);
           break;
         case UPB_WIRE_TYPE_32BIT:
           upb_value_setraw(&v, upb_baredecoder_readf32(d));
@@ -1241,28 +1264,33 @@ bool upb_baredecoder_run(upb_baredecoder *d) {
           assert(false);
           abort();
       }
-      upb_dispatch_value(&d->dispatcher, &f, v);
+      CHECK(upb_dispatch_value(&d->dispatcher, &f, v));
     }
   }
-  upb_dispatch_endmsg(&d->dispatcher);
-  return true;
+  CHECK(upb_dispatch_endmsg(&d->dispatcher));
+  printf("SUCCESS!!\n");
+  upb_string_unref(str);
+  return;
+
+err:
+  upb_copyerr(status, d->dispatcher.top->handlers.status);
+  upb_printerr(d->dispatcher.top->handlers.status);
+  upb_printerr(status);
+  upb_string_unref(str);
+  printf("ERROR!!\n");
 }
 
 static upb_baredecoder *upb_baredecoder_new(upb_string *str)
 {
-  //static upb_src_vtable vtbl = {
-  //  (upb_src_getdef_fptr)&upb_baredecoder_getdef,
-  //  (upb_src_getval_fptr)&upb_baredecoder_getval,
-  //  (upb_src_getstr_fptr)&upb_baredecoder_getstr,
-  //  (upb_src_skipval_fptr)&upb_baredecoder_skipval,
-  //  (upb_src_startmsg_fptr)&upb_baredecoder_startmsg,
-  //  (upb_src_endmsg_fptr)&upb_baredecoder_endmsg,
-  //};
+  static upb_src_vtbl vtbl = {
+    &upb_baredecoder_sethandlers,
+    &upb_baredecoder_run,
+  };
   upb_baredecoder *d = malloc(sizeof(*d));
+  upb_src_init(&d->src, &vtbl);
   d->input = upb_string_getref(str);
   d->offset = 0;
   upb_dispatcher_init(&d->dispatcher);
-  //upb_src_init(&d->src, &vtbl);
   return d;
 }
 

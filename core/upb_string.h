@@ -133,7 +133,7 @@ INLINE void upb_string_endread(upb_string *str) { (void)str; }
 //       upb_src_getstr(str);
 //     }
 //   }
-upb_string *upb_string_recycle(upb_string **str);
+void upb_string_recycle(upb_string **str);
 
 // The options for setting the contents of a string.  These may only be called
 // when a string is first created or recycled; once other functions have been

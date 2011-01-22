@@ -136,8 +136,8 @@ struct _upb_dispatcher;
 typedef struct _upb_dispatcher upb_dispatcher;
 INLINE void upb_dispatcher_init(upb_dispatcher *d);
 INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h);
-INLINE void upb_dispatch_startmsg(upb_dispatcher *d);
-INLINE void upb_dispatch_endmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_endmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d, struct _upb_fielddef *f);
 INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, struct _upb_fielddef *f,
@@ -151,8 +151,21 @@ INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
 struct _upb_src;
 typedef struct _upb_src upb_src;
 
-void upb_src_sethandlers(upb_src *src, upb_handlers *handlers);
-void upb_src_run(upb_src *src, upb_status *status);
+// upb_src_sethandlers() must be called once and only once before upb_src_run()
+// is called.  This sets up the callbacks that will handle the parse.  A
+// upb_src that is fully initialized except for the call to
+// upb_src_sethandlers() is called "prepared" -- this is useful for library
+// functions that want to consume the output of a generic upb_src.
+// Calling sethandlers() multiple times is an error and will trigger an abort().
+INLINE void upb_src_sethandlers(upb_src *src, upb_handlers *handlers);
+
+// Runs the src, calling the callbacks that were registered with
+// upb_src_sethandlers(), and returning the status of the operation in
+// "status." The status might indicate UPB_TRYAGAIN (indicating EAGAIN on a
+// non-blocking socket) or a resumable error; in both cases upb_src_run can be
+// called again later.  TRYAGAIN could come from either the src (input buffers
+// are empty) or the handlers (output buffers are full).
+INLINE void upb_src_run(upb_src *src, upb_status *status);
 
 
 /* upb_bytesrc ****************************************************************/
