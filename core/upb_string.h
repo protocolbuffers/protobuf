@@ -3,26 +3,39 @@
  *
  * Copyright (c) 2010 Joshua Haberman.  See LICENSE for details.
  *
- * This file defines a simple string type.  The overriding goal of upb_string
- * is to avoid memcpy(), malloc(), and free() wheverever possible, while
- * keeping both CPU and memory overhead low.  Throughout upb there are
- * situations where one wants to reference all or part of another string
- * without copying.  upb_string provides APIs for doing this.
+ * This file defines a simple string type which is length-delimited instead
+ * of NULL-terminated, and which has useful sharing semantics.
+ *
+ * The overriding goal of upb_string is to avoid memcpy(), malloc(), and free()
+ * wheverever possible, while keeping both CPU and memory overhead low.
+ * Throughout upb there are situations where one wants to reference all or part
+ * of another string without copying.  upb_string provides APIs for doing this.
  *
  * Characteristics of upb_string:
  * - strings are reference-counted.
- * - strings are logically immutable.
+ * - strings are immutable (can be mutated only when first created or recycled).
  * - if a string has no other referents, it can be "recycled" into a new string
  *   without having to reallocate the upb_string.
  * - strings can be substrings of other strings (owning a ref on the source
  *   string).
- * - strings are not thread-safe by default, but can be made so by calling a
- *   function.  This is not the default because it causes extra CPU overhead.
  *
  * Reference-counted strings have recently fallen out of favor because of the
  * performance impacts of doing thread-safe reference counting with atomic
  * operations.  We side-step this issue by not performing atomic operations
  * unless the string has been marked thread-safe.
+ *
+ * Strings are expected to be 8-bit-clean, but "char*" is such an entrenched
+ * idiom that we go with it instead of making our pointers uint8_t*.
+ *
+ * WARNING: THE GETREF, UNREF, AND RECYCLE OPERATIONS ARE NOT THREAD_SAFE
+ * UNLESS THE STRING HAS BEEN MARKED SYNCHRONIZED!  What this means is that if
+ * you are logically passing a reference to a upb_string to another thread
+ * (which implies that the other thread must eventually call unref of recycle),
+ * you have two options:
+ *
+ * - create a copy of the string that will be used in the other thread only.
+ * - call upb_string_get_synchronized_ref(), which will make getref, unref, and
+ *   recycle thread-safe for this upb_string.
  */
 
 #ifndef UPB_STRING_H
@@ -83,10 +96,12 @@ struct _upb_string {
 // longer needed, it should be unref'd, never freed directly.
 upb_string *upb_string_new();
 
+// Internal-only; clients should call upb_string_unref().
 void _upb_string_free(upb_string *str);
 
 // Releases a ref on the given string, which may free the memory.  "str"
-// can be NULL, in which case this is a no-op.
+// can be NULL, in which case this is a no-op.  WARNING: NOT THREAD_SAFE
+// UNLESS THE STRING IS SYNCHRONIZED.
 INLINE void upb_string_unref(upb_string *str) {
   if (str && upb_atomic_read(&str->refcount) > 0 &&
       upb_atomic_unref(&str->refcount)) {
@@ -98,6 +113,7 @@ upb_string *upb_strdup(upb_string *s);  // Forward-declare.
 
 // Returns a string with the same contents as "str".  The caller owns a ref on
 // the returned string, which may or may not be the same object as "str.
+// WARNING: NOT THREAD-SAFE UNLESS THE STRING IS SYNCHRONIZED!
 INLINE upb_string *upb_string_getref(upb_string *str) {
   int refcount = upb_atomic_read(&str->refcount);
   if (refcount == _UPB_STRING_REFCOUNT_STACK) return upb_strdup(str);
@@ -163,8 +179,11 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
 // data.  Waiting for a clear use case before actually implementing it.
 //
 // Makes the string "str" a reference to the given string data.  The caller
-// guarantees that the given string data will not change or be deleted until
-// a matching call to upb_string_detach().
+// guarantees that the given string data will not change or be deleted until a
+// matching call to upb_string_detach(), which may block until any concurrent
+// readers have finished reading.  upb_string_detach() preserves the contents
+// of the string by copying the referenced data if there are any other
+// referents.
 // void upb_string_attach(upb_string *str, char *ptr, upb_strlen_t len);
 // void upb_string_detach(upb_string *str);
 
@@ -207,6 +226,22 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
     _UPB_STRING_INIT(str, sizeof(str)-1, _UPB_STRING_REFCOUNT_STACK)
 #define UPB_STACK_STRING_LEN(str, len) \
     _UPB_STRING_INIT(str, len, _UPB_STRING_REFCOUNT_STACK)
+
+// A convenient way of specifying upb_strings as literals, like:
+//
+//   upb_streql(UPB_STRLIT("expected"), other_str);
+//
+// However, this requires either C99 compound initializers or C++.
+// Must ONLY be called with a string literal as its argument!
+//#ifdef __cplusplus
+//namespace upb {
+//class String : public upb_string {
+//  // This constructor must ONLY be called with a string literal.
+//  String(const char *str) : upb_string(UPB_STATIC_STRING(str)) {}
+//};
+//}
+//#define UPB_STRLIT(str) upb::String(str)
+//#endif
 #define UPB_STRLIT(str) &(upb_string)UPB_STATIC_STRING(str)
 
 /* upb_string library functions ***********************************************/

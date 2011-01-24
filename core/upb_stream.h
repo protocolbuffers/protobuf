@@ -171,14 +171,18 @@ INLINE void upb_src_run(upb_src *src, upb_status *status);
 /* upb_bytesrc ****************************************************************/
 
 // Reads up to "count" bytes into "buf", returning the total number of bytes
-// read.  If <0, indicates error (check upb_bytesrc_status for details).
+// read.  If 0, indicates error and puts details in "status".
 INLINE upb_strlen_t upb_bytesrc_read(upb_bytesrc *src, void *buf,
-                                     upb_strlen_t count);
+                                     upb_strlen_t count, upb_status *status);
 
 // Like upb_bytesrc_read(), but modifies "str" in-place, possibly aliasing
-// existing string data (which avoids a copy).
+// existing string data (which avoids a copy).  On the other hand, if
+// the data was *not* already in an existing string, this copies it into
+// a upb_string, and if the data needs to be put in a specific range of
+// memory (because eg. you need to put it into a different kind of string
+// object) then upb_bytesrc_get() could be better.
 INLINE bool upb_bytesrc_getstr(upb_bytesrc *src, upb_string *str,
-                               upb_strlen_t count);
+                               upb_status *status);
 
 // A convenience function for getting all the remaining data in a upb_bytesrc
 // as a upb_string.  Returns false and sets "status" if the operation fails.
@@ -188,14 +192,6 @@ INLINE bool upb_value_getfullstr(upb_value val, upb_string *str,
                                  upb_status *status) {
   return upb_bytesrc_getfullstr(upb_value_getbytesrc(val), str, status);
 }
-
-// Returns the current error status for the stream.
-// Note!  The "eof" flag works like feof() in C; it cannot report end-of-file
-// until a read has failed due to eof.  It cannot preemptively tell you that
-// the next call will fail due to eof.  Since these are the semantics that C
-// and UNIX provide, we're stuck with them if we want to support eg. stdio.
-INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src);
-INLINE bool upb_bytesrc_eof(upb_bytesrc *src);
 
 
 /* upb_bytesink ***************************************************************/
