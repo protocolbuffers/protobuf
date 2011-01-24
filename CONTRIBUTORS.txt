@@ -86,3 +86,5 @@ Patch contributors:
     * Fix bug with permanent callbacks that delete themselves when run.
   Michael Kucharski <m.kucharski@gmail.com>
     * Added CodedInputStream.getTotalBytesRead().
+  Kacper Kowalik <xarthisius.kk@gmail.com>
+    * Fixed m4/acx_pthread.m4 problem for some Linux distributions.
