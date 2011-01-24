@@ -134,6 +134,12 @@ INLINE upb_strlen_t upb_string_len(upb_string *str) { return str->len; }
 INLINE const char *upb_string_getrobuf(upb_string *str) { return str->ptr; }
 INLINE void upb_string_endread(upb_string *str) { (void)str; }
 
+// Convenience method for getting the end of the string.  Calls
+// upb_string_getrobuf() so inherits the caveats of calling that function.
+INLINE const char *upb_string_getbufend(upb_string *str) {
+  return upb_string_getrobuf(str) + upb_string_len(str);
+}
+
 // Attempts to recycle the string "str" so it may be reused and have different
 // data written to it.  After the function returns, "str" points to a writable
 // string, which is either the original string if it had no other references

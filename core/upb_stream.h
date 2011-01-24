@@ -40,8 +40,11 @@ typedef enum {
   UPB_CONTINUE,
 
   // Stop processing for now; check status for details.  If no status was set,
-  // a generic error will be returned.  If the error is resumable, processing
-  // will resume by delivering this callback again.
+  // a generic error will be returned.  If the error is resumable, it is not
+  // (yet) defined where processing will resume -- waiting for real-world
+  // examples of resumable decoders and resume-requiring clients.  upb_src
+  // implementations that are not capable of resuming will override the return
+  // status to be non-resumable if a resumable status was set by the handlers.
   UPB_BREAK,
 
   // Skips to the end of the current submessage (or if we are at the top
