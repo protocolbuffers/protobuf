@@ -41,16 +41,13 @@ const upb_type_info upb_types[] = {
 };
 
 void upb_seterr(upb_status *status, enum upb_status_code code,
-                const char *msg, ...)
-{
-  if(upb_ok(status)) {  // The first error is the most interesting.
-    status->code = code;
-    upb_string_recycle(&status->str);
-    va_list args;
-    va_start(args, msg);
-    upb_string_vprintf(status->str, msg, args);
-    va_end(args);
-  }
+                const char *msg, ...) {
+  status->code = code;
+  upb_string_recycle(&status->str);
+  va_list args;
+  va_start(args, msg);
+  upb_string_vprintf(status->str, msg, args);
+  va_end(args);
 }
 
 void upb_copyerr(upb_status *to, upb_status *from)

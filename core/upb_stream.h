@@ -178,12 +178,16 @@ INLINE void upb_src_run(upb_src *src, upb_status *status);
 INLINE upb_strlen_t upb_bytesrc_read(upb_bytesrc *src, void *buf,
                                      upb_strlen_t count, upb_status *status);
 
-// Like upb_bytesrc_read(), but modifies "str" in-place, possibly aliasing
-// existing string data (which avoids a copy).  On the other hand, if
-// the data was *not* already in an existing string, this copies it into
-// a upb_string, and if the data needs to be put in a specific range of
-// memory (because eg. you need to put it into a different kind of string
-// object) then upb_bytesrc_get() could be better.
+// Like upb_bytesrc_read(), but modifies "str" in-place.  "str" MUST be newly
+// created or just recycled.  Returns "false" if no data was returned, either
+// due to error or EOF (check status for details).
+//
+// In comparison to upb_bytesrc_read(), this call can possibly alias existing
+// string data (which avoids a copy).  On the other hand, if the data was *not*
+// already in an existing string, this copies it into a upb_string, and if the
+// data needs to be put in a specific range of memory (because eg. you need to
+// put it into a different kind of string object) then upb_bytesrc_get() could
+// be better.
 INLINE bool upb_bytesrc_getstr(upb_bytesrc *src, upb_string *str,
                                upb_status *status);
 

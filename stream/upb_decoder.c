@@ -126,6 +126,7 @@ static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted,
     } else {
       // End-of-buffer.
       if (d->buf) d->buf_stream_offset += upb_string_len(d->buf);
+      upb_string_recycle(&d->buf);
       if (!upb_bytesrc_getstr(d->bytesrc, d->buf, d->status)) return false;
       s->ptr = upb_string_getrobuf(d->buf);
     }
@@ -295,7 +296,15 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   while(1) {
     // Parse/handle tag.
     upb_tag tag;
-    CHECK(upb_decode_tag(d, &state, &tag));
+    if (!upb_decode_tag(d, &state, &tag)) {
+      if (status->code == UPB_EOF && d->top == d->stack) {
+        // Normal end-of-file.
+        CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
+        return;
+      } else {
+        goto err;
+      }
+    }
 
     // Decode wire data.  Hopefully this branch will predict pretty well
     // since most types will read a varint here.
@@ -360,9 +369,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     }
     CHECK_FLOW(upb_dispatch_value(&d->dispatcher, f, val));
   }
-
-  CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
-  return;
 
 err:
   if (upb_ok(status)) {

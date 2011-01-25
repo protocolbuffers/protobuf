@@ -12,7 +12,6 @@
 #include "upb_string.h"
 
 struct _upb_textprinter {
-  upb_sink sink;
   upb_bytesink *bytesink;
   upb_string *str;
   int indent_depth;

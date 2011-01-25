@@ -23,44 +23,42 @@ void upb_stdio_reset(upb_stdio *stdio, FILE* file) {
   stdio->file = file;
 }
 
-static bool upb_stdio_read(upb_stdio *stdio, upb_string *str,
-                           int offset, size_t bytes_to_read) {
-  char *buf = upb_string_getrwbuf(str, offset + bytes_to_read) + offset;
-  size_t read = fread(buf, 1, bytes_to_read, stdio->file);
-  if(read < bytes_to_read) {
+static upb_strlen_t upb_stdio_read(upb_bytesrc *src, void *buf,
+                                   upb_strlen_t count, upb_status *status) {
+  upb_stdio *stdio = (upb_stdio*)src;
+  assert(count > 0);
+  size_t read = fread(buf, 1, count, stdio->file);
+  if(read < (size_t)count) {
     // Error or EOF.
-    stdio->bytesrc.eof = feof(stdio->file);
-    if(ferror(stdio->file)) {
-      upb_seterr(&stdio->bytesrc.status, UPB_STATUS_ERROR,
-                 "Error reading from stdio stream.");
-      return false;
+    if(feof(stdio->file)) {
+      upb_seterr(status, UPB_EOF, "");
+      return read;
+    } else if(ferror(stdio->file)) {
+      upb_seterr(status, UPB_ERROR, "Error reading from stdio stream.");
+      return -1;
     }
-    // Resize to actual read size.
-    upb_string_getrwbuf(str, offset + read);
   }
+  return read;
+}
+
+static bool upb_stdio_getstr(upb_bytesrc *src, upb_string *str,
+                             upb_status *status) {
+  upb_strlen_t read = upb_stdio_read(
+      src, upb_string_getrwbuf(str, BLOCK_SIZE), BLOCK_SIZE, status);
+  if (read <= 0) return false;
+  upb_string_getrwbuf(str, read);
   return true;
-}
-
-bool upb_stdio_get(upb_bytesrc *src, upb_string *str, upb_strlen_t minlen) {
-  // We ignore "minlen" since the stdio interfaces always return a full read
-  // unless they are at EOF.
-  (void)minlen;
-  return upb_stdio_read((upb_stdio*)src, str, 0, BLOCK_SIZE);
-}
-
-bool upb_stdio_append(upb_bytesrc *src, upb_string *str, upb_strlen_t len) {
-  return upb_stdio_read((upb_stdio*)src, str, upb_string_len(str), len);
 }
 
 int32_t upb_stdio_put(upb_bytesink *sink, upb_string *str) {
   upb_stdio *stdio = (upb_stdio*)((char*)sink - offsetof(upb_stdio, bytesink));
   upb_strlen_t len = upb_string_len(str);
-  size_t written = fwrite(upb_string_getrobuf(str), 1, len, stdio->file);
+  upb_strlen_t written = fwrite(upb_string_getrobuf(str), 1, len, stdio->file);
   if(written < len) {
     // Error or EOF.
     stdio->bytesink.eof = feof(stdio->file);
     if(ferror(stdio->file)) {
-      upb_seterr(&stdio->bytesink.status, UPB_STATUS_ERROR,
+      upb_seterr(&stdio->bytesink.status, UPB_ERROR,
                  "Error writing to stdio stream.");
       return 0;
     }
@@ -68,19 +66,19 @@ int32_t upb_stdio_put(upb_bytesink *sink, upb_string *str) {
   return written;
 }
 
-static upb_bytesrc_vtable upb_stdio_bytesrc_vtbl = {
-  (upb_bytesrc_get_fptr)upb_stdio_get,
-  (upb_bytesrc_append_fptr)upb_stdio_append,
-};
-
-static upb_bytesink_vtable upb_stdio_bytesink_vtbl = {
-  upb_stdio_put
-};
-
 upb_stdio *upb_stdio_new() {
+  static upb_bytesrc_vtbl bytesrc_vtbl = {
+    upb_stdio_read,
+    upb_stdio_getstr,
+  };
+
+  //static upb_bytesink_vtbl bytesink_vtbl = {
+  //  upb_stdio_put
+  //};
+
   upb_stdio *stdio = malloc(sizeof(*stdio));
-  upb_bytesrc_init(&stdio->bytesrc, &upb_stdio_bytesrc_vtbl);
-  upb_bytesink_init(&stdio->bytesink, &upb_stdio_bytesink_vtbl);
+  upb_bytesrc_init(&stdio->bytesrc, &bytesrc_vtbl);
+  //upb_bytesink_init(&stdio->bytesink, &bytesink_vtbl);
   return stdio;
 }
 
