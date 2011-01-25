@@ -27,9 +27,9 @@ typedef void (*upb_src_run_fptr)(upb_src *src, upb_status *status);
 
 // upb_bytesrc.
 typedef upb_strlen_t (*upb_bytesrc_read_fptr)(
-    upb_bytesrc *src, void *buf, upb_strlen_t count);
+    upb_bytesrc *src, void *buf, upb_strlen_t count, upb_status *status);
 typedef bool (*upb_bytesrc_getstr_fptr)(
-    upb_bytesrc *src, upb_string *str, upb_strlen_t count);
+    upb_bytesrc *src, upb_string *str, upb_status *status);
 
 // upb_bytesink.
 typedef upb_strlen_t (*upb_bytesink_write_fptr)(
@@ -102,35 +102,31 @@ INLINE void upb_src_run(upb_src *src, upb_status *status) {
 
 // upb_bytesrc
 INLINE upb_strlen_t upb_bytesrc_read(upb_bytesrc *src, void *buf,
-                                     upb_strlen_t count) {
-  return src->vtbl->read(src, buf, count);
+                                     upb_strlen_t count, upb_status *status) {
+  return src->vtbl->read(src, buf, count, status);
 }
 
 INLINE bool upb_bytesrc_getstr(upb_bytesrc *src, upb_string *str,
-                               upb_strlen_t count) {
-  return src->vtbl->getstr(src, str, count);
+                               upb_status *status) {
+  return src->vtbl->getstr(src, str, status);
 }
 
 INLINE bool upb_bytesrc_getfullstr(upb_bytesrc *src, upb_string *str,
                                    upb_status *status) {
   // We start with a getstr, because that could possibly alias data instead of
   // copying.
-  if (!upb_bytesrc_getstr(src, str, UPB_STRLEN_MAX)) goto error;
+  if (!upb_bytesrc_getstr(src, str, status)) return false;
   // Trade-off between number of read calls and amount of overallocation.
   const size_t bufsize = 4096;
-  while (!upb_bytesrc_eof(src)) {
+  do {
     upb_strlen_t len = upb_string_len(str);
     char *buf = upb_string_getrwbuf(str, len + bufsize);
-    upb_strlen_t read = upb_bytesrc_read(src, buf + len, bufsize);
-    if (read < 0) goto error;
+    upb_strlen_t read = upb_bytesrc_read(src, buf + len, bufsize, status);
+    if (read < 0) return false;
     // Resize to proper size.
     upb_string_getrwbuf(str, len + read);
-  }
+  } while (!status->code != UPB_EOF);
   return true;
-
-error:
-  upb_copyerr(status, upb_bytesrc_status(src));
-  return false;
 }
 
 INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src) { return &src->status; }

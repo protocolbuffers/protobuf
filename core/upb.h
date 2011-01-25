@@ -101,7 +101,7 @@ typedef struct {
 } upb_type_info;
 
 // A static array of info about all of the field types, indexed by type number.
-extern upb_type_info upb_types[];
+extern const upb_type_info upb_types[];
 
 // The number of a field, eg. "optional string foo = 3".
 typedef int32_t upb_field_number_t;

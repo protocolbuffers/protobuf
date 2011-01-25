@@ -717,7 +717,7 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
   size_t max_align = 0;
   for (int i = 0; i < n; i++) {
     upb_fielddef *f = sorted_fields[i];
-    upb_type_info *type_info = &upb_types[f->type];
+    const upb_type_info *type_info = &upb_types[f->type];
 
     // This identifies the set bit.  When we implement is_initialized (a
     // general check about whether all required bits are set) we will probably

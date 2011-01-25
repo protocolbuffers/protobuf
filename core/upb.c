@@ -18,7 +18,7 @@
      (1 << wire_type) | (allows_delimited << UPB_WIRE_TYPE_DELIMITED), \
      #ctype},
 
-upb_type_info upb_types[] = {
+const upb_type_info upb_types[] = {
   {0, 0, 0, 0, ""}, // There is no type 0.
   TYPE_INFO(UPB_WIRE_TYPE_64BIT,       double,    1)    // DOUBLE
   TYPE_INFO(UPB_WIRE_TYPE_32BIT,       float,     1)    // FLOAT

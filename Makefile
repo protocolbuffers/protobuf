@@ -62,8 +62,8 @@ SRC=core/upb.c \
   core/upb_string.c \
   descriptor/descriptor.c \
   core/upb_def.c \
+  stream/upb_decoder.c \
 #  core/upb_msg.c \
-#  stream/upb_decoder.c \
 #  stream/upb_stdio.c \
 #  stream/upb_strstream.c \
 #  stream/upb_textprinter.c
@@ -74,9 +74,9 @@ OTHERSRC=src/upb_encoder.c src/upb_text.c
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 core/upb_def.o: core/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
 core/upb_def.lo: core/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
+	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
 
 lang_ext/lua/upb.so: lang_ext/lua/upb.lo
 	$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< core/libupb_pic.a
