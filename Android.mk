@@ -127,6 +127,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libprotobuf-java-2.3.0-micro
 LOCAL_MODULE_TAGS := optional
+LOCAL_SDK_VERSION := 8
 
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/micro)
 
@@ -149,6 +150,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libprotobuf-java-2.3.0-lite
 LOCAL_MODULE_TAGS := optional
+LOCAL_SDK_VERSION := 8
 
 LOCAL_SRC_FILES := $(JAVA_LITE_SRC_FILES)
 
