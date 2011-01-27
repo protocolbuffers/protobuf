@@ -148,10 +148,15 @@
                 <include>**/ExtensionRegistryLite.java</include>
                 <include>**/FieldSet.java</include>
                 <include>**/GeneratedMessageLite.java</include>
-                <include>**/InvalidProtocolBufferException.java</include>
                 <include>**/Internal.java</include>
+                <include>**/InvalidProtocolBufferException.java</include>
+                <include>**/LazyStringArrayList.java</include>
+                <include>**/LazyStringList.java</include>
                 <include>**/MessageLite.java</include>
+                <include>**/MessageLiteOrBuilder.java</include>
+                <include>**/SmallSortedMap.java</include>
                 <include>**/UninitializedMessageException.java</include>
+                <include>**/UnmodifiableLazyStringList.java</include>
                 <include>**/WireFormat.java</include>
               </includes>
               <testIncludes>
