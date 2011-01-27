@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// </summary>
   public sealed class Generator {
 
-    readonly GeneratorOptions options;
+    private readonly GeneratorOptions options;
 
     private Generator(GeneratorOptions options) {
       options.Validate();
@@ -59,8 +59,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       return new Generator(options);
     }
 
-    public void Generate() {
-        
+    public void Generate() {        
       List<FileDescriptorSet> descriptorProtos = new List<FileDescriptorSet>();
       foreach (string inputFile in options.InputFiles) {
         ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
@@ -94,7 +93,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     private void Generate(FileDescriptor descriptor) {
       UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
       using (TextWriter textWriter = File.CreateText(GetOutputFile(descriptor))) {
-        TextGenerator writer = new TextGenerator(textWriter);
+        TextGenerator writer = new TextGenerator(textWriter, options.LineBreak);
         ucg.Generate(writer);
       }
     }

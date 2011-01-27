@@ -43,7 +43,8 @@ using System.Collections;
 namespace Google.ProtocolBuffers {
   /// <summary>
   /// Provides ASCII text formatting support for messages.
-  /// TODO(jonskeet): Parsing support.
+  /// TODO(jonskeet): Support for alternative line endings.
+  /// (Easy to print, via TextGenerator. Not sure about parsing.)
   /// </summary>
   public static class TextFormat {
 
@@ -52,7 +53,7 @@ namespace Google.ProtocolBuffers {
     /// the parameter output.
     /// </summary>
     public static void Print(IMessage message, TextWriter output) {
-      TextGenerator generator = new TextGenerator(output);
+      TextGenerator generator = new TextGenerator(output, "\n");
       Print(message, generator);
     }
 
@@ -60,7 +61,7 @@ namespace Google.ProtocolBuffers {
     /// Outputs a textual representation of <paramref name="fields" /> to <paramref name="output"/>.
     /// </summary>
     public static void Print(UnknownFieldSet fields, TextWriter output) {
-      TextGenerator generator = new TextGenerator(output);
+      TextGenerator generator = new TextGenerator(output, "\n");
       PrintUnknownFields(fields, generator);
     }
 

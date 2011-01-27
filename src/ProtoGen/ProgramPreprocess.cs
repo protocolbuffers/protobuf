@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
           }
           Console.WriteLine();
           Console.WriteLine();
-          Console.WriteLine("PRTOGEN.exe: The following options are used to specify defaults for code generation.");
+          Console.WriteLine("PROTOGEN.exe: The following options are used to specify defaults for code generation.");
           Console.WriteLine();
           Program.Main(new string[0]);
           return 0;

@@ -44,6 +44,13 @@ namespace Google.ProtocolBuffers {
   public sealed class TextGenerator {
 
     /// <summary>
+    /// The string to use at the end of each line. We assume that "Print" is only called using \n
+    /// to indicate a line break; that's what we use to detect when we need to indent etc, and
+    /// *just* the \n is replaced with the contents of lineBreak.
+    /// </summary>
+    private readonly string lineBreak;
+
+    /// <summary>
     /// Writer to write formatted text to.
     /// </summary>
     private readonly TextWriter writer;
@@ -62,8 +69,9 @@ namespace Google.ProtocolBuffers {
     /// Creates a generator writing to the given writer. The writer
     /// is not closed by this class.
     /// </summary>
-    public TextGenerator(TextWriter writer) {
+    public TextGenerator(TextWriter writer, string lineBreak) {
       this.writer = writer;
+      this.lineBreak = lineBreak;
     }
 
     /// <summary>
@@ -107,8 +115,9 @@ namespace Google.ProtocolBuffers {
 
       for (int i = 0; i < text.Length; i++) {
         if (text[i] == '\n') {
-          // TODO(jonskeet): Use Environment.NewLine?
-          Write(text.Substring(pos, i - pos + 1));
+          // Strip off the \n from what we write
+          Write(text.Substring(pos, i - pos));
+          Write(lineBreak);
           pos = i + 1;
           atStartOfLine = true;
         }

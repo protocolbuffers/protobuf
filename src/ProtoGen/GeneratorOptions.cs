@@ -49,9 +49,20 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// the generator.
   /// </summary>
   public sealed class GeneratorOptions {
+
+    private static Dictionary<string, string> LineBreaks = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase) {
+      { "Windows", "\r\n" },
+      { "Unix", "\n" },
+      { "Default", Environment.NewLine }
+    };
+
     public IList<string> InputFiles { get; set; }
 
-    /// <summary>
+    public GeneratorOptions() {
+      LineBreak = Environment.NewLine;
+    }
+
+      /// <summary>
     /// Attempts to validate the options, but doesn't throw an exception if they're invalid.
     /// Instead, when this method returns false, the output variable will contain a collection
     /// of reasons for the validation failure.
@@ -128,6 +139,8 @@ namespace Google.ProtocolBuffers.ProtoGen {
       set { fileOptions = value; }
     }
 
+    public string LineBreak { get; set; }
+
     private void ParseArguments(IList<string> tmpReasons) {
       bool doHelp = Arguments.Count == 0;
 
@@ -159,12 +172,17 @@ namespace Google.ProtocolBuffers.ProtoGen {
             if (TryCoerceType(value, fld, out obj, tmpReasons)) {
               builder[fld] = obj;
             }
-          }
-          else if (!File.Exists(argument)) {
+          } else if (name == "lineBreak") {
+            string tmp;
+            if (LineBreaks.TryGetValue(value, out tmp)) {
+              LineBreak = tmp;
+            } else {
+              tmpReasons.Add("Invalid value for 'lineBreak': " + value + ".");
+            }
+          } else if (!File.Exists(argument)) {
             doHelp = true;
             tmpReasons.Add("Unknown argument '" + name + "'.");
-          }
-          else {
+          } else {
             InputFiles.Add(argument);
           }
         }
@@ -178,6 +196,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
         foreach (KeyValuePair<string, FieldDescriptor> field in fields) {
           tmpReasons.Add(String.Format("-{0}=[{1}]", field.Key, field.Value.FieldType));
         }
+        tmpReasons.Add("-lineBreak=[" + string.Join("|", new List<string>(LineBreaks.Keys).ToArray()) + "]");
         tmpReasons.Add("followed by one or more file paths.");
       }
       else {
