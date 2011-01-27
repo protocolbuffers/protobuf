@@ -2,19 +2,26 @@
 
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Target Name="_Clean">
-		<RemoveDir Directories="@(WorkingDirectories)" Condition="Exists(%(WorkingDirectories.Identity))" />
-		<MakeDir Directories="@(WorkingDirectories)" />
-	</Target>
-
-  <Target Name="_Compile" DependsOnTargets="_Clean">
-    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" Condition=" '$(BuildTools)' == '' " />
-    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration);TargetFrameworkVersion=v2.0" Condition=" '$(BuildTools)' == 'v3.5' " />
+  <Target Name="_BuildSolution">
+    <Message Text="Running $(SolutionTarget) $(BuildConfiguration) with $(BuildTools) on $(SolutionFile)" Importance="normal" />
+    <MSBuild Targets="$(SolutionTarget)" Projects="$(SolutionFile)" ToolsVersion="$(BuildTools)"
+             Properties="Configuration=$(BuildConfiguration);$(ForcedFrameworkVersion)TreatWarningsAsErrors=true;"
+             />
   </Target>
 
-	<Target Name="_CompileGeneratedSource" DependsOnTargets="_CopyGeneratedSource">
-    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration)" BuildInParallel="true" Condition=" '$(BuildTools)' == '' " />
-    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(BuildConfiguration);TargetFrameworkVersion=v2.0" Condition=" '$(BuildTools)' == 'v3.5' " />
+  <Target Name="_Clean">
+		<RemoveDir Directories="@(WorkingDirectories)" Condition="Exists(%(WorkingDirectories.Identity))" />
+		<MakeDir Directories="@(WorkingDirectories)" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Clean;BuildConfiguration=$(BuildConfiguration)" Targets="_BuildSolution" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="_Compile">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;BuildConfiguration=$(BuildConfiguration)" Targets="_BuildSolution" />
+  </Target>
+
+  <Target Name="_CompileGeneratedSource" DependsOnTargets="_CopyGeneratedSource">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Step=Two;SolutionTarget=Build;BuildConfiguration=$(BuildConfiguration)" Targets="_BuildSolution" />
   </Target>
   
 	<Target Name="_GenerateSource">
@@ -24,19 +31,20 @@
 
 	<Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">
 		<Copy SourceFiles="%(GeneratedSource.Identity)" DestinationFiles="%(GeneratedSource.TargetDirectory)\%(GeneratedSource.Filename)%(GeneratedSource.Extension)" />
-	</Target>
+  </Target>
 
-	<Target Name="_Test" DependsOnTargets="_CompileGeneratedSource" Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'">
-		<Exec Command="&quot;$(NUnitExePath)&quot; %(TestContainer.Identity) /xml:$(BuildTempDirectory)\..\%(TestContainer.Filename).$(BuildConfiguration).xml" />
+  <Target Name="_Test" DependsOnTargets="_CompileGeneratedSource" Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'">
+    <CallTarget Targets="_RunTests" />
+  </Target>
+
+  <Target Name="_RunTests">
+		<Exec Command="&quot;$(NUnitExePath)&quot; /noshadow %(TestContainer.Identity) /xml:$(BuildTempDirectory)\..\%(TestContainer.Filename).$(BuildConfiguration).xml" />
 	</Target>
 	
 	<!--## Package Generation ##-->
 	<Target Name="_CleanOutputDirectory">
-		<ItemGroup><DirectoriesToDelete Include="$([System.IO.Directory]::GetDirectories('$(BuildOutputDirectory)'))" /></ItemGroup>
-		<RemoveDir Directories="@(DirectoriesToDelete)" ContinueOnError="true" />
-		
-		<ItemGroup><FilesToDelete Include="$(BuildOutputDirectory)\**\*.*" /></ItemGroup>
-		<Delete Files="@(FilesToDelete)" />
+		<RemoveDir Directories="$(BuildOutputDirectory)" ContinueOnError="true" />
+    <MakeDir Directories="$(BuildOutputDirectory)" ContinueOnError="true" />
 	</Target>
 	
 	<Target Name="_PreparePackageComponent">
@@ -47,11 +55,6 @@
 		<Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputDirectory)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
 		<Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(PackageName) * -r" WorkingDirectory="$(BuildOutputDirectory)" />
 
-		<ItemGroup><DirectoriesToDelete Include="$([System.IO.Directory]::GetDirectories('$(BuildOutputDirectory)'))" /></ItemGroup>
-		<ItemGroup><FilesToDelete Include="$(BuildOutputDirectory)\**\*.*" Exclude="$(BuildOutputDirectory)\$(PackageName)" /></ItemGroup>
-		
-		<Delete Files="@(FilesToDelete)" />
-		<RemoveDir Directories="@(DirectoriesToDelete)" ContinueOnError="true" />
 	</Target>
 
 	<!--## Benchmark ##-->
@@ -67,7 +70,8 @@
 	<Target Name="_CompileBenchmarkAssembly" DependsOnTargets="_GenerateBenchmarkSource">
 		<ItemGroup>
 			<BenchmarkSources Include="$(BuildTempDirectory)\GoogleSizeProtoFile.cs" />
-			<BenchmarkSources Include="$(BuildTempDirectory)\GoogleSpeedProtoFile.cs" />
+      <BenchmarkSources Include="$(BuildTempDirectory)\GoogleSpeedProtoFile.cs" />
+      <BenchmarkSources Include="$(SourceDirectory)\ProtoBench\Properties\AssemblyInfo.cs" />
 		</ItemGroup>
 
 		<Csc TargetType="library" OutputAssembly="$(BuildTempDirectory)\BenchmarkTypes.dll" Optimize="true" Sources="@(BenchmarkSources)" References="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffers.dll" />
@@ -101,7 +105,7 @@
 			<Args>$(BenchmarkParameterList.Replace(`;`,` `))</Args>
 		</PropertyGroup>
 		
-		<Exec Command="&quot;$(ProtoBenchExePath)&quot; $(Args) > &quot;$(BuildTempDirectory)\..\BenchmarkResults.txt&quot;" WorkingDirectory="$(BuildTempDirectory)" />
+		<Exec Command="&quot;$(ProtoBenchExePath)&quot; @(BenchmarkParameter->'%(Identity)', ' ') > &quot;$(BuildTempDirectory)\..\BenchmarkResults.txt&quot;" WorkingDirectory="$(BuildTempDirectory)" />
 	</Target>
 
 </Project>

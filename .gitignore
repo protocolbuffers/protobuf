@@ -25,6 +25,7 @@ mono/tmp
 mono/protoc
 build_output
 build_temp
+build/msbuild*.log
 
 #
 # 	Untracked files
