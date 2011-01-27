@@ -172,12 +172,12 @@ namespace Google.ProtocolBuffers.ProtoGen {
             if (TryCoerceType(value, fld, out obj, tmpReasons)) {
               builder[fld] = obj;
             }
-          } else if (name == "lineBreak") {
+          } else if (name == "line_break") {
             string tmp;
             if (LineBreaks.TryGetValue(value, out tmp)) {
               LineBreak = tmp;
             } else {
-              tmpReasons.Add("Invalid value for 'lineBreak': " + value + ".");
+              tmpReasons.Add("Invalid value for 'line_break': " + value + ".");
             }
           } else if (!File.Exists(argument)) {
             doHelp = true;
@@ -196,7 +196,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
         foreach (KeyValuePair<string, FieldDescriptor> field in fields) {
           tmpReasons.Add(String.Format("-{0}=[{1}]", field.Key, field.Value.FieldType));
         }
-        tmpReasons.Add("-lineBreak=[" + string.Join("|", new List<string>(LineBreaks.Keys).ToArray()) + "]");
+        tmpReasons.Add("-line_break=[" + string.Join("|", new List<string>(LineBreaks.Keys).ToArray()) + "]");
         tmpReasons.Add("followed by one or more file paths.");
       }
       else {
