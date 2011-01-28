@@ -1,23 +1,46 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * This file defines four general-purpose streaming interfaces for protobuf
- * data or bytes:
+ * This file defines four general-purpose streaming data interfaces.
  *
- * - upb_src: pull interface for protobuf data.
- * - upb_sink: push interface for protobuf data.
- * - upb_bytesrc: pull interface for bytes.
- * - upb_bytesink: push interface for bytes.
+ * - upb_handlers: represents a set of callbacks, very much like in XML's SAX
+ *   API, that a client can register to do a streaming tree traversal over a
+ *   stream of structured protobuf data, without knowing where that data is
+ *   coming from.  There is only one upb_handlers type (it is not a virtual
+ *   base class), but the object lets you register any set of handlers.
  *
- * These interfaces are used as general-purpose glue in upb.  For example, the
- * decoder interface works by implementing a upb_src and calling a upb_bytesrc.
+ *   The upb_handlers interface supports delegation: when entering a submessage,
+ *   you can delegate to another set of upb_handlers instead of handling the
+ *   submessage yourself.  This allows upb_handlers objects to *compose* -- you
+ *   can implement a set of upb_handlers without knowing or caring whether this
+ *   is the top-level message or not.
  *
- * Copyright (c) 2010 Joshua Haberman.  See LICENSE for details.
+ * The other interfaces are the C equivalent of "virtual base classes" that
+ * anyone can implement:
+ *
+ * - upb_src: an interface that represents a source of streaming protobuf data.
+ *   It lets you register a set of upb_handlers, and then call upb_src_run(),
+ *   which pulls the protobuf data from somewhere and then calls the handlers.
+ *
+ * - upb_bytesrc: a pull interface for streams of bytes, basically an
+ *   abstraction of read()/fread(), but it avoids copies where possible.
+ *
+ * - upb_bytesink: push interface for streams of bytes, basically an
+ *   abstraction of write()/fwrite(), but it avoids copies where possible.
+ *
+ * All of the encoders and decoders are based on these generic interfaces,
+ * which lets you write streaming algorithms that do not depend on a specific
+ * serialization format; for example, you can write a pretty printer that works
+ * with input that came from protobuf binary format, protobuf text format, or
+ * even an in-memory upb_msg -- the pretty printer will not know the
+ * difference.
+ *
+ * Copyright (c) 2010-2011 Joshua Haberman.  See LICENSE for details.
  *
  */
 
-#ifndef UPB_SRCSINK_H
-#define UPB_SRCSINK_H
+#ifndef UPB_STREAM_H
+#define UPB_STREAM_H
 
 #include "upb.h"
 
@@ -53,8 +76,10 @@ typedef enum {
 
   // When returned from a startsubmsg handler, indicates that the submessage
   // should be handled by a different set of handlers, which have been
-  // registered on the provided upb_handlers object.  May not be returned
-  // from any other callback.
+  // registered on the provided upb_handlers object.  This allows upb_handlers
+  // objects to compose; a set of upb_handlers need not know whether it is the
+  // top-level message or a sub-message.  May not be returned from any other
+  // callback.
   UPB_DELEGATE,
 } upb_flow_t;
 
@@ -105,9 +130,19 @@ typedef upb_flow_t (*upb_unknownval_handler_t)(void *closure,
 //
 // static upb_flow_t unknownval(void *closure, upb_field_number_t fieldnum,
 //                              upb_value val) {
-//   Called with an unknown value is encountered.
+//   // Called with an unknown value is encountered.
 //   return UPB_CONTINUE;
 // }
+//
+// // Any handlers you don't need can be set to NULL.
+// static upb_handlerset handlers = {
+//   startmsg,
+//   endmsg,
+//   value,
+//   startsubmsg,
+//   endsubmsg,
+//   unknownval,
+// };
 typedef struct {
   upb_startmsg_handler_t startmsg;
   upb_endmsg_handler_t endmsg;
@@ -128,25 +163,11 @@ INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set);
 // from automatically being converted to strings in the value callback.
 // INLINE void upb_handlers_use_bytesrcs(bool use_bytesrcs);
 
-// The closure will be passed to every handler.  The status will be used
-// only immediately after a handler has returned UPB_STOP.
+// The closure will be passed to every handler.  The status will be read by the
+// upb_src immediately after a handler has returned UPB_BREAK and used as the
+// overall upb_src status; it will not be referenced at any other time.
 INLINE void upb_set_handler_closure(upb_handlers *h, void *closure,
                                     upb_status *status);
-
-// An object that transparently handles delegation so that the caller needs
-// only follow the protocol as if delegation did not exist.
-struct _upb_dispatcher;
-typedef struct _upb_dispatcher upb_dispatcher;
-INLINE void upb_dispatcher_init(upb_dispatcher *d);
-INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h);
-INLINE upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
-INLINE upb_flow_t upb_dispatch_endmsg(upb_dispatcher *d);
-INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d, struct _upb_fielddef *f);
-INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
-INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, struct _upb_fielddef *f,
-                                     upb_value val);
-INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
-                                   upb_field_number_t fieldnum, upb_value val);
 
 
 /* upb_src ********************************************************************/
@@ -171,6 +192,24 @@ INLINE void upb_src_sethandlers(upb_src *src, upb_handlers *handlers);
 INLINE void upb_src_run(upb_src *src, upb_status *status);
 
 
+// A convenience object that a upb_src can use to invoke handlers.  It
+// transparently handles delegation so that the upb_src needs only follow the
+// protocol as if delegation did not exist.
+struct _upb_dispatcher;
+typedef struct _upb_dispatcher upb_dispatcher;
+INLINE void upb_dispatcher_init(upb_dispatcher *d);
+INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h);
+INLINE upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_endmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
+                                           struct _upb_fielddef *f);
+INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, struct _upb_fielddef *f,
+                                     upb_value val);
+INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,
+                                          upb_field_number_t fieldnum,
+                                          upb_value val);
+
 /* upb_bytesrc ****************************************************************/
 
 // Reads up to "count" bytes into "buf", returning the total number of bytes
@@ -178,16 +217,16 @@ INLINE void upb_src_run(upb_src *src, upb_status *status);
 INLINE upb_strlen_t upb_bytesrc_read(upb_bytesrc *src, void *buf,
                                      upb_strlen_t count, upb_status *status);
 
-// Like upb_bytesrc_read(), but modifies "str" in-place.  "str" MUST be newly
-// created or just recycled.  Returns "false" if no data was returned, either
-// due to error or EOF (check status for details).
+// Like upb_bytesrc_read(), but modifies "str" in-place.  Caller must ensure
+// that "str" is created or just recycled.  Returns "false" if no data was
+// returned, either due to error or EOF (check status for details).
 //
 // In comparison to upb_bytesrc_read(), this call can possibly alias existing
 // string data (which avoids a copy).  On the other hand, if the data was *not*
 // already in an existing string, this copies it into a upb_string, and if the
 // data needs to be put in a specific range of memory (because eg. you need to
 // put it into a different kind of string object) then upb_bytesrc_get() could
-// be better.
+// save you a copy.
 INLINE bool upb_bytesrc_getstr(upb_bytesrc *src, upb_string *str,
                                upb_status *status);
 
@@ -206,15 +245,13 @@ INLINE bool upb_value_getfullstr(upb_value val, upb_string *str,
 struct _upb_bytesink;
 typedef struct _upb_bytesink upb_bytesink;
 
-// Writes up to "count" bytes from "buf", returning the total number of bytes
-// written.  If <0, indicates error (check upb_bytesink_status() for details).
-INLINE upb_strlen_t upb_bytesink_write(upb_bytesink *sink, void *buf,
-                                       upb_strlen_t count);
+INLINE bool upb_bytesink_printf(upb_bytesink *sink, const char *fmt, ...);
 
-// Puts the given string, which may alias the string data (which avoids a
-// copy).  Returns the number of bytes that were actually, consumed, which may
-// be fewer than were in the string, or <0 on error.
-INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str);
+// Puts the given string, returning true if the operation was successful, otherwise
+// check "status" for details.  Ownership of the string is *not* passed; if
+// the callee wants a reference he must call upb_string_getref() on it.
+INLINE bool upb_bytesink_putstr(upb_bytesink *sink, upb_string *str,
+                                upb_status *status);
 
 // Returns the current error status for the stream.
 INLINE upb_status *upb_bytesink_status(upb_bytesink *sink);

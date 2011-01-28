@@ -9,7 +9,9 @@
  * The overriding goal of upb_string is to avoid memcpy(), malloc(), and free()
  * wheverever possible, while keeping both CPU and memory overhead low.
  * Throughout upb there are situations where one wants to reference all or part
- * of another string without copying.  upb_string provides APIs for doing this.
+ * of another string without copying.  upb_string provides APIs for doing this,
+ * and allows the referenced string to be kept alive for as long as anyone is
+ * referencing it.
  *
  * Characteristics of upb_string:
  * - strings are reference-counted.
@@ -22,7 +24,8 @@
  * Reference-counted strings have recently fallen out of favor because of the
  * performance impacts of doing thread-safe reference counting with atomic
  * operations.  We side-step this issue by not performing atomic operations
- * unless the string has been marked thread-safe.
+ * unless the string has been marked thread-safe.  Time will tell whether this
+ * scheme is easy and convenient enough to be practical.
  *
  * Strings are expected to be 8-bit-clean, but "char*" is such an entrenched
  * idiom that we go with it instead of making our pointers uint8_t*.

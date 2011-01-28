@@ -139,7 +139,7 @@ INLINE upb_strlen_t upb_bytesink_write(upb_bytesink *sink, void *buf,
   return sink->vtbl->write(sink, buf, count);
 }
 
-INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str) {
+INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str, upb_status *status) {
   return sink->vtbl->putstr(sink, str);
 }
 

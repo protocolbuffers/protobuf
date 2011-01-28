@@ -1,17 +1,18 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2009-2011 Joshua Haberman.  See LICENSE for details.
  *
- * Provides definitions of .proto constructs:
+ * Provides a mechanism for loading proto definitions from descriptors, and
+ * data structures to represent those definitions.  These form the protobuf
+ * schema, and are used extensively throughout upb:
  * - upb_msgdef: describes a "message" construct.
  * - upb_fielddef: describes a message field.
  * - upb_enumdef: describes an enum.
  * (TODO: definitions of extensions and services).
  *
  * Defs are obtained from a upb_symtab object.  A upb_symtab is empty when
- * constructed, and definitions can be added by supplying serialized
- * descriptors.
+ * constructed, and definitions can be added by supplying descriptors.
  *
  * Defs are immutable and reference-counted.  Symbol tables reference any defs
  * that are the "current" definitions.  If an extension is loaded that adds a
