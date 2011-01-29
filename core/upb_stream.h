@@ -245,16 +245,26 @@ INLINE bool upb_value_getfullstr(upb_value val, upb_string *str,
 struct _upb_bytesink;
 typedef struct _upb_bytesink upb_bytesink;
 
-INLINE bool upb_bytesink_printf(upb_bytesink *sink, const char *fmt, ...);
+// TODO: Figure out how buffering should be handled.  Should the caller buffer
+// data and only call these functions when a buffer is full?  Seems most
+// efficient, but then buffering has to be configured in the caller, which
+// could be anything, which makes it hard to have a standard interface for
+// controlling buffering.
+//
+// The downside of having the bytesink buffer is efficiency: the caller is
+// making more (virtual) function calls, and the caller can't arrange to have
+// a big contiguous buffer.  The bytesink can do this, but will have to copy
+// to make the data contiguous.
+
+// Returns the number of bytes written.
+INLINE upb_strlen_t upb_bytesink_printf(upb_bytesink *sink, upb_status *status,
+                                        const char *fmt, ...);
 
 // Puts the given string, returning true if the operation was successful, otherwise
 // check "status" for details.  Ownership of the string is *not* passed; if
 // the callee wants a reference he must call upb_string_getref() on it.
-INLINE bool upb_bytesink_putstr(upb_bytesink *sink, upb_string *str,
-                                upb_status *status);
-
-// Returns the current error status for the stream.
-INLINE upb_status *upb_bytesink_status(upb_bytesink *sink);
+INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str,
+                                        upb_status *status);
 
 #include "upb_stream_vtbl.h"
 
