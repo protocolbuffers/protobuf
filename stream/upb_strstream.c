@@ -12,6 +12,7 @@
 struct upb_stringsrc {
   upb_bytesrc bytesrc;
   upb_string *str;
+  upb_strlen_t offset;
 };
 
 void upb_stringsrc_reset(upb_stringsrc *s, upb_string *str) {
@@ -27,34 +28,41 @@ void upb_stringsrc_free(upb_stringsrc *s) {
   free(s);
 }
 
-static bool upb_stringsrc_get(upb_stringsrc *src, upb_string *str,
-                              upb_strlen_t minlen) {
-  // We ignore "minlen" since we always return the entire string.
-  (void)minlen;
-  upb_string_substr(str, src->str, 0, upb_string_len(src->str));
-  src->bytesrc.eof = true;
-  return true;
+static upb_strlen_t upb_stringsrc_read(upb_bytesrc *_src, void *buf,
+                                       upb_strlen_t count, upb_status *status) {
+  upb_stringsrc *src = (upb_stringsrc*)_src;
+  if (src->offset == upb_string_len(src->str)) {
+    upb_seterr(status, UPB_EOF, "");
+    return -1;
+  } else {
+    upb_strlen_t to_read = UPB_MIN(count, upb_string_len(src->str) - src->offset);
+    memcpy(buf, upb_string_getrobuf(src->str) + src->offset, to_read);
+    src->offset += to_read;
+    return to_read;
+  }
 }
 
-static bool upb_stringsrc_append(upb_stringsrc *src, upb_string *str,
-                                 upb_strlen_t len) {
-  // Unimplemented; since we return the string via "get" all in one go,
-  // this method probably isn't very useful.
-  (void)src;
-  (void)str;
-  (void)len;
-  return false;
+static bool upb_stringsrc_getstr(upb_bytesrc *_src, upb_string *str,
+                                 upb_status *status) {
+  upb_stringsrc *src = (upb_stringsrc*)_src;
+  if (src->offset == upb_string_len(str)) {
+    upb_seterr(status, UPB_EOF, "");
+    return false;
+  } else {
+    upb_string_substr(str, src->str, 0, upb_string_len(src->str));
+    return true;
+  }
 }
-
-static upb_bytesrc_vtable upb_stringsrc_vtbl = {
-  (upb_bytesrc_get_fptr)upb_stringsrc_get,
-  (upb_bytesrc_append_fptr)upb_stringsrc_append,
-};
 
 upb_stringsrc *upb_stringsrc_new() {
+  static upb_bytesrc_vtbl bytesrc_vtbl = {
+    upb_stringsrc_read,
+    upb_stringsrc_getstr,
+  };
+
   upb_stringsrc *s = malloc(sizeof(*s));
   s->str = NULL;
-  upb_bytesrc_init(&s->bytesrc, &upb_stringsrc_vtbl);
+  upb_bytesrc_init(&s->bytesrc, &bytesrc_vtbl);
   return s;
 }
 

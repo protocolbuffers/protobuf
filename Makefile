@@ -64,9 +64,9 @@ SRC=core/upb.c \
   core/upb_def.c \
   stream/upb_decoder.c \
   stream/upb_stdio.c \
-  stream/upb_textprinter.c
+  stream/upb_textprinter.c \
+  stream/upb_strstream.c \
 #  core/upb_msg.c \
-#  stream/upb_strstream.c \
 
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
