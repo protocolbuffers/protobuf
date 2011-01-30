@@ -18,22 +18,24 @@
 // possibilities for optimization/experimentation here.
 INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val,
                                    upb_status *status) {
+  const char *p = *ptr;
   uint32_t low, high = 0;
   uint32_t b;
-  b = *(*ptr++); low   = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); low  |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); low  |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); low  |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); low  |= (b & 0x7f) << 28;
-                 high  = (b & 0x7f) >>  3; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); high |= (b & 0x7f) <<  4; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); high |= (b & 0x7f) << 11; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); high |= (b & 0x7f) << 18; if(!(b & 0x80)) goto done;
-  b = *(*ptr++); high |= (b & 0x7f) << 25; if(!(b & 0x80)) goto done;
+  b = *(p++); low   = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
+  b = *(p++); low  |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
+  b = *(p++); low  |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
+  b = *(p++); low  |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
+  b = *(p++); low  |= (b & 0x7f) << 28;
+              high  = (b & 0x7f) >>  3; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) <<  4; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 11; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 18; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 25; if(!(b & 0x80)) goto done;
 
   upb_seterr(status, UPB_ERROR, "Unterminated varint");
   return false;
 done:
+  *ptr = p;
   *val = ((uint64_t)high << 32) | low;
   return true;
 }
@@ -50,7 +52,7 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 typedef struct {
   upb_msgdef *msgdef;
   upb_fielddef *field;
-  ssize_t end_offset;  // For groups, 0.
+  size_t end_offset;  // For groups, 0.
 } upb_decoder_frame;
 
 struct upb_decoder {
@@ -73,7 +75,7 @@ struct upb_decoder {
   upb_string *buf;
 
   // The offset within the overall stream represented by the *beginning* of buf.
-  upb_strlen_t buf_stream_offset;
+  size_t buf_stream_offset;
 };
 
 typedef struct {
@@ -98,7 +100,7 @@ static upb_flow_t upb_pop(upb_decoder *d);
 // Constant used to signal that the submessage is a group and therefore we
 // don't know its end offset.  This cannot be the offset of a real submessage
 // end because it takes at least one byte to begin a submessage.
-#define UPB_GROUP_END_OFFSET -1
+#define UPB_GROUP_END_OFFSET 0
 #define UPB_MAX_VARINT_ENCODED_SIZE 10
 
 // Called only from the slow path, this function copies the next "len" bytes
@@ -132,12 +134,12 @@ static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted,
     }
 
     // Wait for end-of-submessage or end-of-buffer, whichever comes first.
-    ssize_t offset_in_buf = s->ptr - upb_string_getrobuf(d->buf);
-    ssize_t buf_remaining = upb_string_getbufend(d->buf) - s->ptr;
-    ssize_t submsg_remaining =
+    size_t offset_in_buf = s->ptr - upb_string_getrobuf(d->buf);
+    size_t buf_remaining = upb_string_getbufend(d->buf) - s->ptr;
+    size_t submsg_remaining =
         d->top->end_offset - d->buf_stream_offset - offset_in_buf;
     if (d->top->end_offset == UPB_GROUP_END_OFFSET ||
-        buf_remaining > submsg_remaining) {
+        buf_remaining < submsg_remaining) {
       s->len = buf_remaining;
     } else {
       // Check that non of our subtraction overflowed.
@@ -165,13 +167,16 @@ static bool upb_decode_varint_slow(upb_decoder *d, upb_dstate *s,
     upb_seterr(d->status, UPB_ERROR,
                "Varint was unterminated after 10 bytes.\n");
     return false;
+  } else if (d->status->code == UPB_EOF && bitpos == 0) {
+    // Regular EOF.
+    return false;
   } else if (d->status->code == UPB_EOF  && (byte & 0x80)) {
     upb_seterr(d->status, UPB_ERROR,
                "Provided data ended in the middle of a varint.\n");
     return false;
   } else {
     // Success.
-    upb_value_setint64(val, val64);
+    upb_value_setraw(val, val64);
     return true;
   }
 }
@@ -210,7 +215,7 @@ INLINE bool upb_decode_varint(upb_decoder *d, upb_dstate *s, upb_value *val) {
     const char *p = s->ptr;
     if (!upb_decode_varint_fast(&p, &val64, d->status)) return false;
     upb_dstate_advance(s, p - s->ptr);
-    upb_value_setint64(val, val64);
+    upb_value_setraw(val, val64);
     return true;
   } else {
     return upb_decode_varint_slow(d, s, val);
@@ -245,6 +250,7 @@ INLINE bool upb_decode_string(upb_decoder *d, upb_value *val, upb_string **str,
     if (!upb_getbuf(d, upb_string_getrwbuf(*str, strlen), strlen, s))
       return false;
   }
+  upb_value_setstr(val, *str);
   return true;
 }
 
@@ -259,7 +265,7 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_fieldtype_t ft) {
 }
 
 static upb_flow_t upb_push(upb_decoder *d, upb_dstate *s, upb_fielddef *f,
-                           upb_strlen_t submsg_len, upb_fieldtype_t type) {
+                           upb_value submsg_len, upb_fieldtype_t type) {
   d->top->field = f;
   d->top++;
   if(d->top >= d->limit) {
@@ -268,7 +274,7 @@ static upb_flow_t upb_push(upb_decoder *d, upb_dstate *s, upb_fielddef *f,
   }
   d->top->end_offset = (type == UPB_TYPE(GROUP)) ?
       UPB_GROUP_END_OFFSET :
-      d->buf_stream_offset + (s->ptr - upb_string_getrobuf(d->buf)) + submsg_len;
+      d->buf_stream_offset + (s->ptr - upb_string_getrobuf(d->buf)) + upb_value_getint32(submsg_len);
   d->top->msgdef = upb_downcast_msgdef(f->def);
   return upb_dispatch_startsubmsg(&d->dispatcher, f);
 }
@@ -280,6 +286,7 @@ static upb_flow_t upb_pop(upb_decoder *d) {
 
 void upb_decoder_run(upb_src *src, upb_status *status) {
   upb_decoder *d = (upb_decoder*)src;
+  d->status = status;
   // We put our dstate on the stack so the compiler knows they can't be changed
   // by external code (like when we dispatch a callback).  We must be sure not
   // to let its address escape this source file.
@@ -299,9 +306,14 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     if (!upb_decode_tag(d, &state, &tag)) {
       if (status->code == UPB_EOF && d->top == d->stack) {
         // Normal end-of-file.
+        upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
         return;
       } else {
+        if (status->code == UPB_EOF) {
+          upb_seterr(status, UPB_ERROR,
+                     "Input ended in the middle of a submessage.");
+        }
         goto err;
       }
     }
@@ -352,7 +364,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     switch (f->type) {
       case UPB_TYPE(MESSAGE):
       case UPB_TYPE(GROUP):
-        CHECK_FLOW(upb_push(d, &state, f, upb_value_getint32(val), f->type));
+        CHECK_FLOW(upb_push(d, &state, f, val, f->type));
         continue;  // We have no value to dispatch.
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES):
@@ -397,9 +409,21 @@ upb_decoder *upb_decoder_new(upb_msgdef *msgdef) {
   upb_dispatcher_init(&d->dispatcher);
   d->toplevel_msgdef = msgdef;
   d->limit = &d->stack[UPB_MAX_NESTING];
+  d->buf = NULL;
   return d;
+}
+
+void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
+  d->bytesrc = bytesrc;
+  d->top = &d->stack[0];
+  d->top->msgdef = d->toplevel_msgdef;
+  d->top->end_offset = SIZE_MAX;  // never want to end top-level message.
+  upb_string_unref(d->buf);
+  d->buf = NULL;
 }
 
 void upb_decoder_free(upb_decoder *d) {
   free(d);
 }
+
+upb_src *upb_decoder_src(upb_decoder *d) { return &d->src; }

@@ -23,6 +23,9 @@ void upb_stdio_reset(upb_stdio *stdio, FILE* file) {
   stdio->file = file;
 }
 
+
+/* upb_bytesrc methods ********************************************************/
+
 static upb_strlen_t upb_stdio_read(upb_bytesrc *src, void *buf,
                                    upb_strlen_t count, upb_status *status) {
   upb_stdio *stdio = (upb_stdio*)src;
@@ -50,18 +53,27 @@ static bool upb_stdio_getstr(upb_bytesrc *src, upb_string *str,
   return true;
 }
 
-int32_t upb_stdio_put(upb_bytesink *sink, upb_string *str) {
+
+/* upb_bytesink methods *******************************************************/
+
+upb_strlen_t upb_stdio_putstr(upb_bytesink *sink, upb_string *str, upb_status *status) {
   upb_stdio *stdio = (upb_stdio*)((char*)sink - offsetof(upb_stdio, bytesink));
   upb_strlen_t len = upb_string_len(str);
   upb_strlen_t written = fwrite(upb_string_getrobuf(str), 1, len, stdio->file);
   if(written < len) {
-    // Error or EOF.
-    stdio->bytesink.eof = feof(stdio->file);
-    if(ferror(stdio->file)) {
-      upb_seterr(&stdio->bytesink.status, UPB_ERROR,
-                 "Error writing to stdio stream.");
-      return 0;
-    }
+    upb_seterr(status, UPB_ERROR, "Error writing to stdio stream.");
+    return -1;
+  }
+  return written;
+}
+
+upb_strlen_t upb_stdio_vprintf(upb_bytesink *sink, upb_status *status,
+                               const char *fmt, va_list args) {
+  upb_stdio *stdio = (upb_stdio*)((char*)sink - offsetof(upb_stdio, bytesink));
+  upb_strlen_t written = vfprintf(stdio->file, fmt, args);
+  if (written < 0) {
+    upb_seterr(status, UPB_ERROR, "Error writing to stdio stream.");
+    return -1;
   }
   return written;
 }
@@ -72,13 +84,15 @@ upb_stdio *upb_stdio_new() {
     upb_stdio_getstr,
   };
 
-  //static upb_bytesink_vtbl bytesink_vtbl = {
-  //  upb_stdio_put
-  //};
+  static upb_bytesink_vtbl bytesink_vtbl = {
+    NULL,
+    upb_stdio_putstr,
+    upb_stdio_vprintf
+  };
 
   upb_stdio *stdio = malloc(sizeof(*stdio));
   upb_bytesrc_init(&stdio->bytesrc, &bytesrc_vtbl);
-  //upb_bytesink_init(&stdio->bytesink, &bytesink_vtbl);
+  upb_bytesink_init(&stdio->bytesink, &bytesink_vtbl);
   return stdio;
 }
 

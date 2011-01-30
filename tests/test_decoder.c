@@ -16,12 +16,18 @@ int main() {
   upb_decoder *d = upb_decoder_new(upb_downcast_msgdef(fds));
   upb_decoder_reset(d, upb_stdio_bytesrc(in));
   upb_textprinter *p = upb_textprinter_new();
-  upb_textprinter_reset(p, upb_stdio_bytesink(out), false);
+  upb_handlers handlers;
+  upb_handlers_init(&handlers);
+  upb_textprinter_reset(p, &handlers, upb_stdio_bytesink(out), false);
+  upb_src *src = upb_decoder_src(d);
+  upb_src_sethandlers(src, &handlers);
 
   upb_status status = UPB_STATUS_INIT;
-  upb_streamdata(upb_decoder_src(d), upb_textprinter_sink(p), &status);
+  upb_src_run(src, &status);
 
+  upb_printerr(&status);
   assert(upb_ok(&status));
+
 
   upb_stdio_free(in);
   upb_stdio_free(out);

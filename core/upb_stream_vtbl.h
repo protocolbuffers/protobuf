@@ -34,10 +34,10 @@ typedef bool (*upb_bytesrc_getstr_fptr)(
 // upb_bytesink.
 typedef upb_strlen_t (*upb_bytesink_write_fptr)(
     upb_bytesink *bytesink, void *buf, upb_strlen_t count);
-typedef bool (*upb_bytesink_putstr_fptr)(
+typedef upb_strlen_t (*upb_bytesink_putstr_fptr)(
     upb_bytesink *bytesink, upb_string *str, upb_status *status);
 typedef upb_strlen_t (*upb_bytesink_vprintf_fptr)(
-    upb_status *status, const char *fmt, va_list args);
+    upb_bytesink *bytesink, upb_status *status, const char *fmt, va_list args);
 
 // Vtables for the above interfaces.
 typedef struct {
@@ -153,7 +153,7 @@ INLINE upb_status *upb_bytesink_status(upb_bytesink *sink) {
 INLINE upb_strlen_t upb_bytesink_printf(upb_bytesink *sink, upb_status *status, const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  upb_strlen_t ret = sink->vtbl->vprintf(status, fmt, args);
+  upb_strlen_t ret = sink->vtbl->vprintf(sink, status, fmt, args);
   va_end(args);
   return ret;
 }

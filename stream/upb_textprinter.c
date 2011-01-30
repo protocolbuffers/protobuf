@@ -90,7 +90,7 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_fielddef *f,
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES):
       // TODO: escaping.
-      CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT(": \""), &p->status));
+      CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\""), &p->status));
       CHECK(upb_bytesink_putstr(p->bytesink, upb_value_getstr(val), &p->status))
       CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\""), &p->status));
       break;
@@ -107,7 +107,7 @@ static upb_flow_t upb_textprinter_startsubmsg(void *_p, upb_fielddef *f,
   upb_textprinter *p = _p;
   upb_textprinter_startfield(p, f);
   p->indent_depth++;
-  upb_bytesink_putstr(p->bytesink, UPB_STRLIT(" {"), &p->status);
+  upb_bytesink_putstr(p->bytesink, UPB_STRLIT("{"), &p->status);
   if(!p->single_line) upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status);
   return UPB_CONTINUE;
 }
