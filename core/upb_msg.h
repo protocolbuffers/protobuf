@@ -45,22 +45,22 @@ struct _upb_array {
   upb_valueptr elements;
 };
 
-upb_array *upb_array_new(void);
-
-INLINE uint32_t upb_array_len(upb_array *a) {
-  return a->len;
-}
-
 void _upb_array_free(upb_array *a, upb_fielddef *f);
-INLINE void upb_array_unref(upb_array *a, upb_fielddef *f) {
-  if (upb_atomic_unref(&a->refcount)) _upb_array_free(a, f);
-}
-
 INLINE upb_valueptr _upb_array_getptr(upb_array *a, upb_fielddef *f,
                                       uint32_t elem) {
   upb_valueptr p;
   p._void = &a->elements.uint8[elem * upb_types[f->type].size];
   return p;
+}
+
+upb_array *upb_array_new(void);
+
+INLINE void upb_array_unref(upb_array *a, upb_fielddef *f) {
+  if (upb_atomic_unref(&a->refcount)) _upb_array_free(a, f);
+}
+
+INLINE uint32_t upb_array_len(upb_array *a) {
+  return a->len;
 }
 
 INLINE upb_value upb_array_get(upb_array *a, upb_fielddef *f, uint32_t elem) {
@@ -93,6 +93,7 @@ INLINE void upb_array_resize(upb_array *a, upb_fielddef *f) {
 // Append an element to an array of string or submsg with the default value,
 // returning it.  This will try to reuse previously allocated memory.
 INLINE upb_value upb_array_appendmutable(upb_array *a, upb_fielddef *f) {
+
   assert(upb_elem_ismm(f));
   upb_array_resize(a, f);
   upb_valueptr p = _upb_array_getptr(a, f, a->len++);
@@ -110,8 +111,9 @@ struct _upb_msg {
   uint8_t data[4];  // We allocate the appropriate amount per message.
 };
 
-// Creates a new msg of the given type.
-upb_msg *upb_msg_new(upb_msgdef *md);
+// INTERNAL-ONLY FUNCTIONS.
+
+void _upb_msg_free(upb_msg *msg, upb_msgdef *md);
 
 // Returns a pointer to the given field.
 INLINE upb_valueptr _upb_msg_getptr(upb_msg *msg, upb_fielddef *f) {
@@ -120,9 +122,14 @@ INLINE upb_valueptr _upb_msg_getptr(upb_msg *msg, upb_fielddef *f) {
   return p;
 }
 
-void _upb_msg_free(upb_msg *msg, upb_msgdef *md);
+// PUBLIC FUNCTIONS.
+
+// Creates a new msg of the given type.
+upb_msg *upb_msg_new(upb_msgdef *md);
+
+// Unrefs the given message.
 INLINE void upb_msg_unref(upb_msg *msg, upb_msgdef *md) {
-  if (upb_atomic_unref(&msg->refcount)) _upb_msg_free(msg, md);
+  if (msg && upb_atomic_unref(&msg->refcount)) _upb_msg_free(msg, md);
 }
 
 // Tests whether the given field is explicitly set, or whether it will return a
@@ -131,12 +138,26 @@ INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
   return (msg->data[f->field_index/8] & (1 << (f->field_index % 8))) != 0;
 }
 
-INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
-  msg->data[f->field_index/8] |= (1 << (f->field_index % 8));
+// Unsets all field values back to their defaults.
+INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
+  memset(msg->data, 0, md->set_flags_bytes);
 }
 
+// Used to obtain an empty message of the given type, attempting to reuse the
+// memory pointed to by msg if it has no other referents.
+void upb_msg_recycle(upb_msg **_msg, upb_msgdef *md);
+
+// For a repeated field, appends the given scalar value (ie. not a message or
+// array) to the field's array; for non-repeated fields, overwrites the
+// existing value with this one.
+// REQUIRES: !upb_issubmsg(f)
+void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val);
+
+upb_msg *upb_msg_append_emptymsg(upb_msg *msg, upb_fielddef *f);
+
 // Returns the current value of the given field if set, or the default value if
-// not set.
+// not set.  The returned value is not mutable!  (In practice this only matters
+// for submessages and arrays).
 INLINE upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
   if (upb_msg_has(msg, f)) {
     return upb_value_read(_upb_msg_getptr(msg, f), f->type);
@@ -148,47 +169,12 @@ INLINE upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
 // If the given string, submessage, or array is already set, returns it.
 // Otherwise sets it and returns an empty instance, attempting to reuse any
 // previously allocated memory.
-INLINE upb_value upb_msg_getmutable(upb_msg *msg, upb_fielddef *f) {
-  assert(upb_field_ismm(f));
-  upb_valueptr p = _upb_msg_getptr(msg, f);
-  upb_valuetype_t type = upb_field_valuetype(f);
-  upb_value val = upb_value_read(p, type);
-  if (!upb_msg_has(msg, f)) {
-    upb_msg_sethas(msg, f);
-    val = upb_field_tryrecycle(p, val, f, type);
-  }
-  return val;
-}
+INLINE upb_value upb_msg_getmutable(upb_msg *msg, upb_fielddef *f);
 
 // Sets the current value of the field.  If this is a string, array, or
 // submessage field, releases a ref on the value (if any) that was previously
 // set.
-INLINE void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
-  upb_valueptr p = _upb_msg_getptr(msg, f);
-  upb_valuetype_t type = upb_field_valuetype(f);
-  if (upb_field_ismm(f)) {
-    _upb_field_unref(upb_value_read(p, type), f);
-    _upb_value_ref(val);
-  }
-  upb_msg_sethas(msg, f);
-  upb_value_write(p, val, upb_field_valuetype(f));
-}
-
-// Unsets all field values back to their defaults.
-INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
-  memset(msg->data, 0, md->set_flags_bytes);
-}
-
-// A convenience function for decoding an entire protobuf all at once, without
-// having to worry about setting up the appropriate objects.
-void upb_msg_decodestr(upb_msg *msg, upb_msgdef *md, upb_string *str,
-                       upb_status *status);
-
-// A convenience function for encoding an entire protobuf all at once.  If an
-// error occurs, the null string is returned and the status object contains
-// the error.
-void upb_msg_encodestr(upb_msg *msg, upb_msgdef *md, upb_string *str,
-                       upb_status *status);
+INLINE void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val);
 
 #ifdef __cplusplus
 }  /* extern "C" */

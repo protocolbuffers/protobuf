@@ -53,6 +53,50 @@ void _upb_msg_free(upb_msg *msg, upb_msgdef *md) {
   free(msg);
 }
 
+void upb_msg_recycle(upb_msg **_msg, upb_msgdef *md);
+  upb_msg *msg = *_msg;
+  if(msg && upb_atomic_only(&msg->refcount)) {
+    upb_msg_clear(msg);
+  } else {
+    upb_msg_unref(msg);
+    *_msg = upb_msg_new();
+  }
+}
+
+void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val) {
+  upb_valueptr ptr;
+  if (upb_isarray(f)) {
+  }
+}
+
+INLINE upb_value upb_msg_getmutable(upb_msg *msg, upb_fielddef *f);
+  assert(upb_field_ismm(f));
+  upb_valueptr p = _upb_msg_getptr(msg, f);
+  upb_valuetype_t type = upb_field_valuetype(f);
+  upb_value val = upb_value_read(p, type);
+  if (!upb_msg_has(msg, f)) {
+    upb_msg_sethas(msg, f);
+    val = upb_field_tryrecycle(p, val, f, type);
+  }
+  return val;
+}
+
+INLINE void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
+  upb_valueptr p = _upb_msg_getptr(msg, f);
+  upb_valuetype_t type = upb_field_valuetype(f);
+  if (upb_field_ismm(f)) {
+    _upb_field_unref(upb_value_read(p, type), f);
+    _upb_value_ref(val);
+  }
+  upb_msg_sethas(msg, f);
+  upb_value_write(p, val, upb_field_valuetype(f));
+}
+
+INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
+  msg->data[f->field_index/8] |= (1 << (f->field_index % 8));
+}
+
+
 upb_array *upb_array_new(void) {
   upb_array *arr = malloc(sizeof(*arr));
   upb_atomic_refcount_init(&arr->refcount, 1);
