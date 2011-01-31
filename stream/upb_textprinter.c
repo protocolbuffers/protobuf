@@ -30,14 +30,6 @@ err:
   return -1;
 }
 
-static int upb_textprinter_startfield(upb_textprinter *p, upb_fielddef *f) {
-  upb_textprinter_indent(p);
-  CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT ": ", UPB_STRARG(f->name)));
-  return 0;
-err:
-  return -1;
-}
-
 static int upb_textprinter_endfield(upb_textprinter *p) {
   if(p->single_line) {
     CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT(" "), &p->status));
@@ -52,7 +44,8 @@ err:
 static upb_flow_t upb_textprinter_value(void *_p, upb_fielddef *f,
                                         upb_value val) {
   upb_textprinter *p = _p;
-  upb_textprinter_startfield(p, f);
+  upb_textprinter_indent(p);
+  CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT ": ", UPB_STRARG(f->name)));
 #define CASE(fmtstr, member) \
     CHECK(upb_bytesink_printf(p->bytesink, &p->status, fmtstr, upb_value_get ## member(val))); break;
   switch(f->type) {
@@ -105,11 +98,13 @@ static upb_flow_t upb_textprinter_startsubmsg(void *_p, upb_fielddef *f,
                                               upb_handlers *delegate_to) {
   (void)delegate_to;
   upb_textprinter *p = _p;
-  upb_textprinter_startfield(p, f);
-  p->indent_depth++;
-  upb_bytesink_putstr(p->bytesink, UPB_STRLIT("{"), &p->status);
+  upb_textprinter_indent(p);
+  CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT " {", UPB_STRARG(f->name)));
   if(!p->single_line) upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status);
+  p->indent_depth++;
   return UPB_CONTINUE;
+err:
+  return UPB_BREAK;
 }
 
 static upb_flow_t upb_textprinter_endsubmsg(void *_p)

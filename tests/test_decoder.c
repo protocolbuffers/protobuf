@@ -25,14 +25,18 @@ int main() {
   upb_status status = UPB_STATUS_INIT;
   upb_src_run(src, &status);
 
-  upb_printerr(&status);
   assert(upb_ok(&status));
 
-
+  upb_status_uninit(&status);
   upb_stdio_free(in);
   upb_stdio_free(out);
   upb_decoder_free(d);
   upb_textprinter_free(p);
   upb_def_unref(fds);
   upb_symtab_unref(symtab);
+
+  // Prevent C library from holding buffers open, so Valgrind doesn't see
+  // memory leaks.
+  fclose(stdin);
+  fclose(stdout);
 }

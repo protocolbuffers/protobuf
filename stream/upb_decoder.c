@@ -51,7 +51,6 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 // upb_decoder_frame is one frame of that stack.
 typedef struct {
   upb_msgdef *msgdef;
-  upb_fielddef *field;
   size_t end_offset;  // For groups, 0.
 } upb_decoder_frame;
 
@@ -82,20 +81,15 @@ typedef struct {
   // Our current position in the data buffer.
   const char *ptr;
 
-  // Number of bytes available at ptr, until either end-of-buf or
-  // end-of-submessage (whichever is smaller).
+  // End of this submessage, relative to *ptr.
+  const char *submsg_end;
+
+  // Number of bytes available at ptr.
   size_t len;
 
   // Msgdef for the current level.
   upb_msgdef *msgdef;
 } upb_dstate;
-
-INLINE void upb_dstate_advance(upb_dstate *s, size_t len) {
-  s->ptr += len;
-  s->len -= len;
-}
-
-static upb_flow_t upb_pop(upb_decoder *d);
 
 // Constant used to signal that the submessage is a group and therefore we
 // don't know its end offset.  This cannot be the offset of a real submessage
@@ -103,8 +97,21 @@ static upb_flow_t upb_pop(upb_decoder *d);
 #define UPB_GROUP_END_OFFSET 0
 #define UPB_MAX_VARINT_ENCODED_SIZE 10
 
+INLINE void upb_dstate_advance(upb_dstate *s, size_t len) {
+  s->ptr += len;
+  s->len -= len;
+}
+
+INLINE void upb_dstate_setmsgend(upb_decoder *d, upb_dstate *s) {
+  s->submsg_end = (d->top->end_offset == UPB_GROUP_END_OFFSET) ?
+      (void*)UINTPTR_MAX :
+      upb_string_getrobuf(d->buf) + (d->top->end_offset - d->buf_stream_offset);
+}
+
+static upb_flow_t upb_pop(upb_decoder *d, upb_dstate *s);
+
 // Called only from the slow path, this function copies the next "len" bytes
-// from the stream to "data", adjusting "buf" and "len" appropriately.
+// from the stream to "data", adjusting the dstate appropriately.
 static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted,
                        upb_dstate *s) {
   while (1) {
@@ -112,41 +119,17 @@ static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted,
     memcpy(data, s->ptr, to_copy);
     upb_dstate_advance(s, to_copy);
     bytes_wanted -= to_copy;
-    if (bytes_wanted == 0) return true;
-
-    // Did "len" indicate end-of-submessage or end-of-buffer?
-    ssize_t buf_offset =
-        d->buf ? ((const char*)s->ptr - upb_string_getrobuf(d->buf)) : 0;
-    if (d->top->end_offset > 0 &&
-        d->top->end_offset == d->buf_stream_offset + buf_offset) {
-      // End-of-submessage.
-      if (bytes_wanted > 0) {
-        upb_seterr(d->status, UPB_ERROR, "Bad submessage end.");
-        return false;
-      }
-      if (upb_pop(d) != UPB_CONTINUE) return false;
-    } else {
-      // End-of-buffer.
-      if (d->buf) d->buf_stream_offset += upb_string_len(d->buf);
-      upb_string_recycle(&d->buf);
-      if (!upb_bytesrc_getstr(d->bytesrc, d->buf, d->status)) return false;
-      s->ptr = upb_string_getrobuf(d->buf);
+    if (bytes_wanted == 0) {
+      upb_dstate_setmsgend(d, s);
+      return true;
     }
 
-    // Wait for end-of-submessage or end-of-buffer, whichever comes first.
-    size_t offset_in_buf = s->ptr - upb_string_getrobuf(d->buf);
-    size_t buf_remaining = upb_string_getbufend(d->buf) - s->ptr;
-    size_t submsg_remaining =
-        d->top->end_offset - d->buf_stream_offset - offset_in_buf;
-    if (d->top->end_offset == UPB_GROUP_END_OFFSET ||
-        buf_remaining < submsg_remaining) {
-      s->len = buf_remaining;
-    } else {
-      // Check that non of our subtraction overflowed.
-      assert(d->top->end_offset > d->buf_stream_offset);
-      assert(d->top->end_offset - d->buf_stream_offset > offset_in_buf);
-      s->len = submsg_remaining;
-    }
+    // Get next buffer.
+    if (d->buf) d->buf_stream_offset += upb_string_len(d->buf);
+    upb_string_recycle(&d->buf);
+    if (!upb_bytesrc_getstr(d->bytesrc, d->buf, d->status)) return false;
+    s->ptr = upb_string_getrobuf(d->buf);
+    s->len = upb_string_len(d->buf);
   }
 }
 
@@ -266,7 +249,6 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_fieldtype_t ft) {
 
 static upb_flow_t upb_push(upb_decoder *d, upb_dstate *s, upb_fielddef *f,
                            upb_value submsg_len, upb_fieldtype_t type) {
-  d->top->field = f;
   d->top++;
   if(d->top >= d->limit) {
     upb_seterr(d->status, UPB_ERROR, "Nesting too deep.");
@@ -274,13 +256,16 @@ static upb_flow_t upb_push(upb_decoder *d, upb_dstate *s, upb_fielddef *f,
   }
   d->top->end_offset = (type == UPB_TYPE(GROUP)) ?
       UPB_GROUP_END_OFFSET :
-      d->buf_stream_offset + (s->ptr - upb_string_getrobuf(d->buf)) + upb_value_getint32(submsg_len);
+      d->buf_stream_offset + (s->ptr - upb_string_getrobuf(d->buf)) +
+          upb_value_getint32(submsg_len);
   d->top->msgdef = upb_downcast_msgdef(f->def);
+  upb_dstate_setmsgend(d, s);
   return upb_dispatch_startsubmsg(&d->dispatcher, f);
 }
 
-static upb_flow_t upb_pop(upb_decoder *d) {
+static upb_flow_t upb_pop(upb_decoder *d, upb_dstate *s) {
   d->top--;
+  upb_dstate_setmsgend(d, s);
   return upb_dispatch_endsubmsg(&d->dispatcher);
 }
 
@@ -290,7 +275,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   // We put our dstate on the stack so the compiler knows they can't be changed
   // by external code (like when we dispatch a callback).  We must be sure not
   // to let its address escape this source file.
-  upb_dstate state = {NULL, 0, d->top->msgdef};
+  upb_dstate state = {NULL, (void*)0x1, 0, d->top->msgdef};
   upb_string *str = NULL;
 
 // TODO: handle UPB_SKIPSUBMSG
@@ -301,6 +286,15 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
 
   // Main loop: executed once per tag/field pair.
   while(1) {
+    // Check for end-of-submessage.
+    while (state.ptr >= state.submsg_end) {
+      if (state.ptr > state.submsg_end) {
+        upb_seterr(d->status, UPB_ERROR, "Bad submessage end.");
+        goto err;
+      }
+      CHECK_FLOW(upb_pop(d, &state));
+    }
+
     // Parse/handle tag.
     upb_tag tag;
     if (!upb_decode_tag(d, &state, &tag)) {
@@ -308,6 +302,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
         // Normal end-of-file.
         upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
+        upb_string_unref(str);
         return;
       } else {
         if (status->code == UPB_EOF) {
@@ -322,12 +317,14 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     // since most types will read a varint here.
     upb_value val;
     switch (tag.wire_type) {
+      case UPB_WIRE_TYPE_START_GROUP:
+        break;  // Nothing to do now, below we will push appropriately.
       case UPB_WIRE_TYPE_END_GROUP:
         if(d->top->end_offset != UPB_GROUP_END_OFFSET) {
           upb_seterr(status, UPB_ERROR, "Unexpected END_GROUP tag.");
           goto err;
         }
-        CHECK_FLOW(upb_pop(d));
+        CHECK_FLOW(upb_pop(d, &state));
         continue;  // We have no value to dispatch.
       case UPB_WIRE_TYPE_VARINT:
       case UPB_WIRE_TYPE_DELIMITED:
@@ -383,6 +380,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   }
 
 err:
+  upb_string_unref(str);
   if (upb_ok(status)) {
     upb_seterr(status, UPB_ERROR, "Callback returned UPB_BREAK");
   }
@@ -417,12 +415,14 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
   d->bytesrc = bytesrc;
   d->top = &d->stack[0];
   d->top->msgdef = d->toplevel_msgdef;
-  d->top->end_offset = SIZE_MAX;  // never want to end top-level message.
+  // Never want to end top-level message, so treat it like a group.
+  d->top->end_offset = UPB_GROUP_END_OFFSET;
   upb_string_unref(d->buf);
   d->buf = NULL;
 }
 
 void upb_decoder_free(upb_decoder *d) {
+  upb_string_unref(d->buf);
   free(d);
 }
 
