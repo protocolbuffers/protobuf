@@ -120,7 +120,7 @@ if __name__ == '__main__':
         library_dirs = [ "../src/.libs" ]))
 
   setup(name = 'protobuf',
-        version = '2.4.0-pre',
+        version = '2.4.1-pre',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         test_suite = 'setup.MakeTestSuite',
