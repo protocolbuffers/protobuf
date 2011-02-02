@@ -136,7 +136,6 @@ typedef int32_t upb_strlen_t;
 // constant UPB_VALUETYPE_ARRAY to represent an array.
 typedef uint8_t upb_valuetype_t;
 #define UPB_VALUETYPE_ARRAY 32
-
 #define UPB_VALUETYPE_BYTESRC 32
 #define UPB_VALUETYPE_RAW 33
 
@@ -189,11 +188,20 @@ UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
 UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
 UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));
+UPB_VALUE_ACCESSORS(msg, msg, upb_msg*, UPB_TYPE(MESSAGE));
+UPB_VALUE_ACCESSORS(arr, arr, upb_array*, UPB_VALUETYPE_ARRAY);
 UPB_VALUE_ACCESSORS(bytesrc, bytesrc, upb_bytesrc*, UPB_VALUETYPE_BYTESRC);
 
 INLINE void upb_value_setraw(upb_value *val, uint64_t cval) {
   SET_TYPE(val->type, UPB_VALUETYPE_RAW);
   val->val.uint64 = cval;
+}
+
+INLINE upb_atomic_refcount_t *upb_value_getrefcount(upb_value val) {
+  assert(val.type == UPB_TYPE(MESSAGE) ||
+         val.type == UPB_TYPE(STRING) ||
+         val.type == UPB_VALUETYPE_ARRAY);
+  return val.val.refcount;
 }
 
 // A pointer to a .proto value.  The owner must have an out-of-band way of

@@ -56,17 +56,24 @@ clean:
 deps: gen-deps.sh Makefile $(call rwildcard,,*.c) $(call rwildcard,,*.h)
 	@./gen-deps.sh $(SRC)
 
-# The core library (core/libupb.a)
-SRC=core/upb.c \
+# The core library -- the absolute minimum you must compile in to successfully
+# bootstrap.
+CORE= \
+  core/upb.c \
   core/upb_table.c \
   core/upb_string.c \
-  descriptor/descriptor.c \
   core/upb_def.c \
+  descriptor/descriptor.c
+
+# Common encoders/decoders and upb_msg -- you're almost certain to want these.
+STREAM= \
   stream/upb_decoder.c \
   stream/upb_stdio.c \
   stream/upb_textprinter.c \
   stream/upb_strstream.c \
-#  core/upb_msg.c \
+  core/upb_msg.c \
+
+SRC=$(CORE) $(STREAM)
 
 $(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
