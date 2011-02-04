@@ -13,6 +13,7 @@
 #include <iostream>
 
 bool benchmark = false;
+#define CPU_TIME_PER_TEST 0.5
 
 using std::string;
 using std::vector;
@@ -84,7 +85,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
 }
 
 /* num_entries must be a power of 2. */
-void test_inttable(int32_t *keys, size_t num_entries)
+void test_inttable(int32_t *keys, uint16_t num_entries)
 {
   /* Initialize structures. */
   upb_inttable table;
@@ -124,97 +125,90 @@ void test_inttable(int32_t *keys, size_t num_entries)
   }
 
   /* Test performance. We only test lookups for keys that are known to exist. */
+  uint16_t rand_order[num_entries];
+  for(uint16_t i = 0; i < num_entries; i++) {
+    rand_order[i] = i;
+  }
+  for(uint16_t i = num_entries - 1; i >= 1; i--) {
+    uint16_t rand_i = (random() / (double)RAND_MAX) * i;
+    assert(rand_i <= i);
+    uint16_t tmp = rand_order[rand_i];
+    rand_order[rand_i] = rand_order[i];
+    rand_order[i] = tmp;
+  }
+
   uintptr_t x = 0;
-  const unsigned int iterations = 0xFFFFFF;
-  const int32_t mask = num_entries - 1;
-  printf("Measuring sequential loop overhead...");
+  const int mask = num_entries - 1;
+  int time_mask = 0xffff;
+
+  printf("upb_inttable(seq): ");
   fflush(stdout);
   double before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
-    int32_t key = keys[i & mask];
-    x += key;
-  }
-  double seq_overhead = get_usertime() - before;
-  printf("%0.3f seconds for %d iterations\n", seq_overhead, iterations);
-
-  printf("Measuring random loop overhead...");
-  rand();
-  fflush(stdout);
-  before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
-    int32_t key = keys[rand() & mask];
-    x += key;
-  }
-  double rand_overhead = get_usertime() - before;
-  printf("%0.3f seconds for %d iterations\n", rand_overhead, iterations);
-
-  printf("upb_table(seq): ");
-  fflush(stdout);
-  before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
+  unsigned int i;
+  for(i = 0; true; i++) {
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
     int32_t key = keys[i & mask];
     inttable_entry *e = (inttable_entry*)upb_inttable_lookup(&table, key);
     x += (uintptr_t)e;
   }
   double total = get_usertime() - before;
-  double without_overhead = total - seq_overhead;
-  printf("%0.3f seconds (%0.3f - %0.3f overhead) for %d iterations.  %s/s\n", without_overhead, total, seq_overhead, iterations, eng(iterations/without_overhead, 3, false));
+  printf("%s/s\n", eng(i/total, 3, false));
 
-  printf("upb_table(rand): ");
+  printf("upb_inttable(rand): ");
   fflush(stdout);
   before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
-    int32_t key = keys[rand() & mask];
+  for(i = 0; true; i++) {
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    int32_t key = keys[rand_order[i & mask]];
     inttable_entry *e = (inttable_entry*)upb_inttable_lookup(&table, key);
     x += (uintptr_t)e;
   }
   total = get_usertime() - before;
-  without_overhead = total - rand_overhead;
-  printf("%0.3f seconds (%0.3f - %0.3f overhead) for %d iterations.  %s/s\n", without_overhead, total, rand_overhead, iterations, eng(iterations/without_overhead, 3, false));
+  printf("%s/s\n", eng(i/total, 3, false));
 
-  printf("map(seq): ");
+  printf("std::map<int32_t, int32_t>(seq): ");
   fflush(stdout);
   before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
+  for(i = 0; true; i++) {
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
     int32_t key = keys[i & mask];
     x += m[key];
   }
   total = get_usertime() - before;
-  without_overhead = total - seq_overhead;
-  printf("%0.3f seconds (%0.3f - %0.3f overhead) for %d iterations.  %s/s\n", without_overhead, total, seq_overhead, iterations, eng(iterations/without_overhead, 3, false));
+  printf("%s/s\n", eng(i/total, 3, false));
 
-  printf("map(rand): ");
+  printf("std::map<int32_t, int32_t>(rand): ");
   fflush(stdout);
   before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
-    int32_t key = keys[rand() & mask];
+  for(i = 0; true; i++) {
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    int32_t key = keys[rand_order[i & mask]];
     x += m[key];
   }
   total = get_usertime() - before;
-  without_overhead = total - rand_overhead;
-  printf("%0.3f seconds (%0.3f - %0.3f overhead) for %d iterations.  %s/s\n", without_overhead, total, rand_overhead, iterations, eng(iterations/without_overhead, 3, false));
+  printf("%s/s\n", eng(i/total, 3, false));
 
-  printf("hash_map(seq): ");
+  printf("__gnu_cxx::hash_map<uint32_t, uint32_t>(seq): ");
   fflush(stdout);
   before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
-    int32_t key = keys[i & mask];
+  for(i = 0; true; i++) {
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    int32_t key = keys[rand_order[i & mask]];
     x += hm[key];
   }
   total = get_usertime() - before;
-  without_overhead = total - seq_overhead;
-  printf("%0.3f seconds (%0.3f - %0.3f overhead) for %d iterations.  %s/s\n", without_overhead, total, seq_overhead, iterations, eng(iterations/without_overhead, 3, false));
+  printf("%s/s\n", eng(i/total, 3, false));
 
-  printf("hash_map(rand): ");
+  printf("__gnu_cxx::hash_map<uint32_t, uint32_t>(rand): ");
   fflush(stdout);
   before = get_usertime();
-  for(unsigned int i = 0; i < iterations; i++) {
-    int32_t key = keys[rand() & mask];
+  for(i = 0; true; i++) {
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    int32_t key = keys[rand_order[i & mask]];
     x += hm[key];
   }
   total = get_usertime() - before;
-  without_overhead = total - rand_overhead;
-  printf("%0.3f seconds (%0.3f - %0.3f overhead) for %d iterations.  %s/s\n\n", without_overhead, total, rand_overhead, iterations, eng(iterations/without_overhead, 3, false));
+  printf("%s/s\n\n", eng(i/total, 3, false));
   upb_inttable_free(&table);
 }
 
@@ -254,18 +248,20 @@ int main(int argc, char *argv[])
 
   test_strtable(keys, 18);
 
+  printf("Benchmarking hash lookups in an integer-keyed hash table.\n");
+  printf("\n");
   int32_t *keys1 = get_contiguous_keys(8);
-  printf("Contiguous 1-8 ====\n");
+  printf("Table size: 8, keys: 1-8 ====\n");
   test_inttable(keys1, 8);
   delete[] keys1;
 
   int32_t *keys2 = get_contiguous_keys(64);
-  printf("Contiguous 1-64 ====\n");
+  printf("Table size: 64, keys: 1-64 ====\n");
   test_inttable(keys2, 64);
   delete[] keys2;
 
   int32_t *keys3 = get_contiguous_keys(512);
-  printf("Contiguous 1-512 ====\n");
+  printf("Table size: 512, keys: 1-512 ====\n");
   test_inttable(keys3, 512);
   delete[] keys3;
 
@@ -276,7 +272,7 @@ int main(int argc, char *argv[])
     else
       keys4[i] = 10101+i;
   }
-  printf("1-32 and 10133-10164 ====\n");
+  printf("Table size: 64, keys: 1-32 and 10133-10164 ====\n");
   test_inttable(keys4, 64);
   delete[] keys4;
 }
