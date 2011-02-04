@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
-#include "upb_data.h"
+#include "upb_msg.h"
 #include "upb_def.h"
 #include "upb_decoder.h"
+#include "upb_strstream.h"
 
 int num_assertions = 0;
 #define ASSERT(expr) do { \
@@ -25,7 +26,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
                     upb_msg *upb_msg, upb_fielddef *upb_f)
 {
   ASSERT(upb_msg_has(upb_msg, upb_f));
-  upb_arrayptr arr = upb_msg_get(upb_msg, upb_f).arr;
+  upb_array *arr = upb_msg_get(upb_msg, upb_f).arr;
   ASSERT(upb_array_len(arr) == (upb_arraylen_t)r->FieldSize(proto2_msg, proto2_f));
   for(upb_arraylen_t i = 0; i < upb_array_len(arr); i++) {
     upb_value v = upb_array_get(arr, upb_f, i);
@@ -63,7 +64,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES): {
         std::string str = r->GetRepeatedString(proto2_msg, proto2_f, i);
-        std::string str2(upb_string_getrobuf(v.str), upb_strlen(v.str));
+        std::string str2(upb_string_getrobuf(v.str), upb_string_len(v.str));
         ASSERT(str == str2);
         break;
       }
@@ -116,7 +117,7 @@ void compare_values(const google::protobuf::Reflection *r,
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES): {
       std::string str = r->GetString(proto2_msg, proto2_f);
-      std::string str2(upb_string_getrobuf(v.str), upb_strlen(v.str));
+      std::string str2(upb_string_getrobuf(v.str), upb_string_len(v.str));
       ASSERT(str == str2);
       break;
     }
@@ -133,9 +134,10 @@ void compare(const google::protobuf::Message& proto2_msg,
   const google::protobuf::Reflection *r = proto2_msg.GetReflection();
   const google::protobuf::Descriptor *d = proto2_msg.GetDescriptor();
 
-  ASSERT((upb_field_count_t)d->field_count() == upb_md->num_fields);
-  for(upb_field_count_t i = 0; i < upb_md->num_fields; i++) {
-    upb_fielddef *upb_f = &upb_md->fields[i];
+  ASSERT((upb_field_count_t)d->field_count() == upb_msgdef_numfields(upb_md));
+  upb_msg_iter i;
+  for(i = upb_msg_begin(upb_md); !upb_msg_done(i); i = upb_msg_next(upb_md, i)) {
+    upb_fielddef *upb_f = upb_msg_iter_field(i);
     const google::protobuf::FieldDescriptor *proto2_f =
         d->FindFieldByNumber(upb_f->number);
     // Make sure the definitions are equal.
@@ -143,7 +145,7 @@ void compare(const google::protobuf::Message& proto2_msg,
     ASSERT(proto2_f);
     ASSERT(upb_f->number == proto2_f->number());
     ASSERT(std::string(upb_string_getrobuf(upb_f->name),
-                       upb_strlen(upb_f->name)) ==
+                       upb_string_len(upb_f->name)) ==
            proto2_f->name());
     ASSERT(upb_f->type == proto2_f->type());
     ASSERT(upb_isarray(upb_f) == proto2_f->is_repeated());
@@ -166,10 +168,10 @@ void compare(const google::protobuf::Message& proto2_msg,
 
 void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
                        upb_msg *upb_msg, upb_msgdef *upb_md,
-                       upb_strptr str)
+                       upb_string *str)
 {
   // Parse to both proto2 and upb.
-  ASSERT(proto2_msg->ParseFromArray(upb_string_getrobuf(str), upb_strlen(str)));
+  ASSERT(proto2_msg->ParseFromArray(upb_string_getrobuf(str), upb_string_len(str)));
   upb_status status = UPB_STATUS_INIT;
   upb_msg_decodestr(upb_msg, upb_md, str, &status);
   ASSERT(upb_ok(&status));
@@ -194,22 +196,32 @@ int main(int argc, char *argv[])
 
   // Initialize upb state, parse descriptor.
   upb_status status = UPB_STATUS_INIT;
-  upb_symtab *c = upb_symtab_new();
-  upb_strptr fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
-  if(upb_string_isnull(fds)) {
+  upb_symtab *symtab = upb_symtab_new();
+  upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
+  if(fds == NULL) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
     return 1;
   }
-  upb_symtab_add_desc(c, fds, &status);
+  upb_symtab_add_descriptorproto(symtab);
+  upb_def *fds_msgdef = upb_symtab_lookup(
+      symtab, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
+
+  upb_stringsrc *ssrc = upb_stringsrc_new();
+  upb_stringsrc_reset(ssrc, fds);
+  upb_decoder *decoder = upb_decoder_new(upb_downcast_msgdef(fds_msgdef));
+  upb_decoder_reset(decoder, upb_stringsrc_bytesrc(ssrc));
+  upb_symtab_addfds(symtab, upb_decoder_src(decoder), &status);
   if(!upb_ok(&status)) {
-    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s.\n",
-            status.msg);
+    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": ");
+    upb_printerr(&status);
     return 1;
   }
   upb_string_unref(fds);
+  upb_decoder_free(decoder);
+  upb_stringsrc_free(ssrc);
 
-  upb_strptr proto_name = upb_strdupc(MESSAGE_NAME);
-  upb_msgdef *def = upb_downcast_msgdef(upb_symtab_lookup(c, proto_name));
+  upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
+  upb_msgdef *def = upb_downcast_msgdef(upb_symtab_lookup(symtab, proto_name));
   if(!def) {
     fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
             UPB_STRARG(proto_name));
@@ -218,8 +230,8 @@ int main(int argc, char *argv[])
   upb_string_unref(proto_name);
 
   // Read the message data itself.
-  upb_strptr str = upb_strreadfile(MESSAGE_FILE);
-  if(upb_string_isnull(str)) {
+  upb_string *str = upb_strreadfile(MESSAGE_FILE);
+  if(str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return 1;
   }
@@ -234,7 +246,7 @@ int main(int argc, char *argv[])
   upb_msg_unref(upb_msg, def);
   upb_def_unref(UPB_UPCAST(def));
   upb_string_unref(str);
-  upb_symtab_unref(c);
+  upb_symtab_unref(symtab);
 
   return 0;
 }

@@ -29,7 +29,6 @@ extern "C" {
 #define INLINE static inline
 #endif
 
-#define UPB_THREAD_UNSAFE
 #ifdef UPB_THREAD_UNSAFE
 
 /* Non-thread-safe implementations. ******************************************/
@@ -64,15 +63,6 @@ INLINE int upb_atomic_fetch_and_add(upb_atomic_refcount_t *a, int val) {
   a->v += val;
   return ret;
 }
-
-typedef struct {
-} upb_rwlock_t;
-
-INLINE void upb_rwlock_init(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_destroy(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_rdlock(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_wrlock(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_unlock(upb_rwlock_t *l) { (void)l; }
 
 #endif
 
@@ -111,10 +101,6 @@ INLINE bool upb_atomic_read(upb_atomic_refcount_t *a) {
   return __sync_fetch_and_add(&a->v, 0);
 }
 
-INLINE bool upb_atomic_write(upb_atomic_refcount_t *a, int val) {
-  a->v = val;
-}
-
 #elif defined(WIN32)
 
 /* Windows defines atomic increment/decrement. */
@@ -141,11 +127,22 @@ INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
        Implement them or compile with UPB_THREAD_UNSAFE.
 #endif
 
+INLINE bool upb_atomic_only(upb_atomic_refcount_t *a) {
+  return upb_atomic_read(a) == 1;
+}
+
 /* Reader/Writer lock. ********************************************************/
 
 #ifdef UPB_THREAD_UNSAFE
 
-/* Already defined. */
+typedef struct {
+} upb_rwlock_t;
+
+INLINE void upb_rwlock_init(upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_destroy(upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_rdlock(upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_wrlock(upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_unlock(upb_rwlock_t *l) { (void)l; }
 
 #elif defined(UPB_USE_PTHREADS)
 

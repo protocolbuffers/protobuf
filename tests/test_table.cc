@@ -1,7 +1,7 @@
 
 #undef NDEBUG  /* ensure tests always assert. */
 #include "upb_table.h"
-#include "upb_data.h"
+#include "upb_string.h"
 #include "test_util.h"
 #include <assert.h>
 #include <map>
@@ -11,6 +11,8 @@
 #include <ext/hash_map>
 #include <sys/resource.h>
 #include <iostream>
+
+bool benchmark = false;
 
 using std::string;
 using std::vector;
@@ -45,7 +47,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
     all.insert(key);
     strtable_entry e;
     e.value = key[0];
-    upb_strptr str = upb_strduplen(key.c_str(), key.size());
+    upb_string *str = upb_strduplen(key.c_str(), key.size());
     e.e.key = str;
     upb_strtable_insert(&table, &e.e);
     upb_string_unref(str);  // The table still owns a ref.
@@ -55,7 +57,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   /* Test correctness. */
   for(uint32_t i = 0; i < keys.size(); i++) {
     const string& key = keys[i];
-    upb_strptr str = upb_strduplen(key.c_str(), key.size());
+    upb_string *str = upb_strduplen(key.c_str(), key.size());
     strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, str);
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
@@ -71,7 +73,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   strtable_entry *e;
   for(e = (strtable_entry*)upb_strtable_begin(&table); e;
       e = (strtable_entry*)upb_strtable_next(&table, &e->e)) {
-    string tmp(upb_string_getrobuf(e->e.key), upb_strlen(e->e.key));
+    string tmp(upb_string_getrobuf(e->e.key), upb_string_len(e->e.key));
     std::set<string>::iterator i = all.find(tmp);
     assert(i != all.end());
     all.erase(i);
@@ -114,6 +116,11 @@ void test_inttable(int32_t *keys, size_t num_entries)
     } else {
       assert(e == NULL);
     }
+  }
+
+  if(!benchmark) {
+    upb_inttable_free(&table);
+    return;
   }
 
   /* Test performance. We only test lookups for keys that are known to exist. */
@@ -219,8 +226,12 @@ int32_t *get_contiguous_keys(int32_t num)
   return buf;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--benchmark") == 0) benchmark = true;
+  }
+
   vector<string> keys;
   keys.push_back("google.protobuf.FileDescriptorSet");
   keys.push_back("google.protobuf.FileDescriptorProto");

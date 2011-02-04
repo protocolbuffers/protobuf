@@ -1,17 +1,18 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2009-2011 Joshua Haberman.  See LICENSE for details.
  *
- * Provides definitions of .proto constructs:
+ * Provides a mechanism for loading proto definitions from descriptors, and
+ * data structures to represent those definitions.  These form the protobuf
+ * schema, and are used extensively throughout upb:
  * - upb_msgdef: describes a "message" construct.
  * - upb_fielddef: describes a message field.
  * - upb_enumdef: describes an enum.
  * (TODO: definitions of extensions and services).
  *
  * Defs are obtained from a upb_symtab object.  A upb_symtab is empty when
- * constructed, and definitions can be added by supplying serialized
- * descriptors.
+ * constructed, and definitions can be added by supplying descriptors.
  *
  * Defs are immutable and reference-counted.  Symbol tables reference any defs
  * that are the "current" definitions.  If an extension is loaded that adds a
@@ -27,6 +28,7 @@
 #define UPB_DEF_H_
 
 #include "upb_atomic.h"
+#include "upb_stream.h"
 #include "upb_table.h"
 
 #ifdef __cplusplus
@@ -37,7 +39,7 @@ extern "C" {
 
 // All the different kind of defs we support.  These correspond 1:1 with
 // declarations in a .proto file.
-enum upb_def_type {
+typedef enum {
   UPB_DEF_MSG = 0,
   UPB_DEF_ENUM,
   UPB_DEF_SVC,
@@ -47,15 +49,15 @@ enum upb_def_type {
 
   // For specifying that defs of any type are requsted from getdefs.
   UPB_DEF_ANY = -1
-};
+} upb_deftype;
 
 // This typedef is more space-efficient than declaring an enum var directly.
-typedef int8_t upb_def_type_t;
+typedef int8_t upb_deftype_t;
 
 typedef struct {
-  upb_strptr fqname;  // Fully qualified.
+  upb_string *fqname;  // Fully qualified.
   upb_atomic_refcount_t refcount;
-  upb_def_type_t type;
+  upb_deftype_t type;
 
   // The is_cyclic flag could go in upb_msgdef instead of here, because only
   // messages can be involved in cycles.  However, putting them here is free
@@ -76,7 +78,7 @@ INLINE void upb_def_ref(upb_def *def) {
   if(upb_atomic_ref(&def->refcount) && def->is_cyclic) _upb_def_cyclic_ref(def);
 }
 INLINE void upb_def_unref(upb_def *def) {
-  if(upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
+  if(def && upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
 }
 
 /* upb_fielddef ***************************************************************/
@@ -86,29 +88,35 @@ INLINE void upb_def_unref(upb_def *def) {
 // is either a field of a upb_msgdef or contained inside a upb_extensiondef.
 // It is also reference-counted.
 typedef struct _upb_fielddef {
-  upb_atomic_refcount_t refcount;
-  upb_field_type_t type;
-  upb_label_t label;
-  upb_field_number_t number;
-  upb_strptr name;
   upb_value default_value;
 
-  // These are set only when this fielddef is part of a msgdef.
-  uint32_t byte_offset;           // Where in a upb_msg to find the data.
-  upb_field_count_t field_index;  // Indicates set bit.
+  upb_string *name;
+
+  struct _upb_msgdef *msgdef;
 
   // For the case of an enum or a submessage, points to the def for that type.
-  // We own a ref on this def.
-  bool owned;
   upb_def *def;
+
+  upb_atomic_refcount_t refcount;
+  uint32_t byte_offset;           // Where in a upb_msg to find the data.
+
+  // These are set only when this fielddef is part of a msgdef.
+  upb_field_count_t field_index;  // Indicates set bit.
+
+  upb_field_number_t number;
+  upb_fieldtype_t type;
+  upb_label_t label;
+  // True if we own a ref on "def" (above).  This is true unless this edge is
+  // part of a cycle.
+  bool owned;
 } upb_fielddef;
 
 // A variety of tests about the type of a field.
 INLINE bool upb_issubmsg(upb_fielddef *f) {
-  return upb_issubmsgtype(f->type);
+  return f->type == UPB_TYPE(GROUP) || f->type == UPB_TYPE(MESSAGE);
 }
 INLINE bool upb_isstring(upb_fielddef *f) {
-  return upb_isstringtype(f->type);
+  return f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES);
 }
 INLINE bool upb_isarray(upb_fielddef *f) {
   return f->label == UPB_LABEL(REPEATED);
@@ -116,6 +124,19 @@ INLINE bool upb_isarray(upb_fielddef *f) {
 // Does the type of this field imply that it should contain an associated def?
 INLINE bool upb_hasdef(upb_fielddef *f) {
   return upb_issubmsg(f) || f->type == UPB_TYPE(ENUM);
+}
+
+INLINE upb_valuetype_t upb_field_valuetype(upb_fielddef *f) {
+  if (upb_isarray(f)) {
+    return UPB_VALUETYPE_ARRAY;
+  } else {
+    return f->type;
+  }
+}
+
+INLINE upb_valuetype_t upb_elem_valuetype(upb_fielddef *f) {
+  assert(upb_isarray(f));
+  return f->type;
 }
 
 INLINE bool upb_field_ismm(upb_fielddef *f) {
@@ -126,28 +147,14 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
   return upb_isstring(f) || upb_issubmsg(f);
 }
 
-// Internal-only interface for the upb compiler.
-// Sorts the given fielddefs in-place, according to what we think is an optimal
-// ordering of fields.  This can change from upb release to upb release.
-struct google_protobuf_FieldDescriptorProto;
-void upb_fielddef_sortfds(struct google_protobuf_FieldDescriptorProto **fds,
-                          size_t num);
-
 /* upb_msgdef *****************************************************************/
-
-struct google_protobuf_EnumDescriptorProto;
-struct google_protobuf_DescriptorProto;
 
 // Structure that describes a single .proto message type.
 typedef struct _upb_msgdef {
   upb_def base;
   upb_atomic_refcount_t cycle_refcount;
-  upb_msg *default_msg;   // Message with all default values set.
-  size_t size;
-  upb_field_count_t num_fields;
+  uint32_t size;
   uint32_t set_flags_bytes;
-  uint32_t num_required_fields;  // Required fields have the lowest set bytemasks.
-  upb_fielddef *fields;   // We have exclusive ownership of these.
 
   // Tables for looking up fields by number and name.
   upb_inttable itof;  // int to field
@@ -167,15 +174,35 @@ typedef struct {
 // Looks up a field by name or number.  While these are written to be as fast
 // as possible, it will still be faster to cache the results of this lookup if
 // possible.  These return NULL if no such field is found.
-INLINE upb_fielddef *upb_msg_itof(upb_msgdef *m, uint32_t num) {
+INLINE upb_fielddef *upb_msgdef_itof(upb_msgdef *m, uint32_t num) {
   upb_itof_ent *e =
       (upb_itof_ent*)upb_inttable_fastlookup(&m->itof, num, sizeof(*e));
   return e ? e->f : NULL;
 }
 
-INLINE upb_fielddef *upb_msg_ntof(upb_msgdef *m, upb_strptr name) {
+INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, upb_string *name) {
   upb_ntof_ent *e = (upb_ntof_ent*)upb_strtable_lookup(&m->ntof, name);
   return e ? e->f : NULL;
+}
+
+INLINE upb_field_count_t upb_msgdef_numfields(upb_msgdef *m) {
+  return upb_strtable_count(&m->ntof);
+}
+
+// Iteration over fields.  The order is undefined.
+//   upb_msg_iter i;
+//   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
+//     upb_fielddef *f = upb_msg_iter_field(i);
+//     // ...
+//   }
+typedef upb_itof_ent *upb_msg_iter;
+
+upb_msg_iter upb_msg_begin(upb_msgdef *m);
+upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter);
+INLINE bool upb_msg_done(upb_msg_iter iter) { return iter == NULL; }
+
+INLINE upb_fielddef *upb_msg_iter_field(upb_msg_iter iter) {
+  return iter->f;
 }
 
 /* upb_enumdef ****************************************************************/
@@ -186,26 +213,41 @@ typedef struct _upb_enumdef {
   upb_inttable iton;
 } upb_enumdef;
 
+typedef struct {
+  upb_strtable_entry e;
+  uint32_t value;
+} upb_ntoi_ent;
+
+typedef struct {
+  upb_inttable_entry e;
+  upb_string *string;
+} upb_iton_ent;
+
 typedef int32_t upb_enumval_t;
 
 // Lookups from name to integer and vice-versa.
-bool upb_enumdef_ntoi(upb_enumdef *e, upb_strptr name, upb_enumval_t *num);
-upb_strptr upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
+bool upb_enumdef_ntoi(upb_enumdef *e, upb_string *name, upb_enumval_t *num);
+// Caller does not own a ref on the returned string.
+upb_string *upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
 
 // Iteration over name/value pairs.  The order is undefined.
 //   upb_enum_iter i;
-//   for(upb_enum_begin(&i, e); !upb_enum_done(&i); upb_enum_next(&i)) {
+//   for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
 //     // ...
 //   }
-typedef struct {
-  upb_enumdef *e;
-  void *state;   // Internal iteration state.
-  upb_strptr name;
-  upb_enumval_t val;
-} upb_enum_iter;
-void upb_enum_begin(upb_enum_iter *iter, upb_enumdef *e);
-void upb_enum_next(upb_enum_iter *iter);
-bool upb_enum_done(upb_enum_iter *iter);
+typedef upb_iton_ent *upb_enum_iter;
+
+upb_enum_iter upb_enum_begin(upb_enumdef *e);
+upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter);
+INLINE bool upb_enum_done(upb_enum_iter iter) { return iter == NULL; }
+
+INLINE upb_string *upb_enum_iter_name(upb_enum_iter iter) {
+  return iter->string;
+}
+INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
+  return iter->e.key;
+}
+
 
 /* upb_symtab *****************************************************************/
 
@@ -215,11 +257,7 @@ bool upb_enum_done(upb_enum_iter *iter);
 typedef struct {
   upb_atomic_refcount_t refcount;
   upb_rwlock_t lock;       // Protects all members except the refcount.
-  upb_msgdef *fds_msgdef;  // In psymtab, ptr here for convenience.
-
-  // Our symbol tables; we own refs to the defs therein.
-  upb_strtable symtab;     // The main symbol table.
-  upb_strtable psymtab;    // Private symbols, for internal use.
+  upb_strtable symtab;     // The symbol table.
 } upb_symtab;
 
 // Initializes a upb_symtab.  Contexts are not freed explicitly, but unref'd
@@ -242,24 +280,32 @@ INLINE void upb_symtab_unref(upb_symtab *s) {
 //
 // If a def is found, the caller owns one ref on the returned def.  Otherwise
 // returns NULL.
-upb_def *upb_symtab_resolve(upb_symtab *s, upb_strptr base, upb_strptr symbol);
+upb_def *upb_symtab_resolve(upb_symtab *s, upb_string *base, upb_string *sym);
 
 // Find an entry in the symbol table with this exact name.  If a def is found,
 // the caller owns one ref on the returned def.  Otherwise returns NULL.
-upb_def *upb_symtab_lookup(upb_symtab *s, upb_strptr sym);
+upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 
 // Gets an array of pointers to all currently active defs in this symtab.  The
 // caller owns the returned array (which is of length *count) as well as a ref
 // to each symbol inside.  If type is UPB_DEF_ANY then defs of all types are
 // returned, otherwise only defs of the required type are returned.
-upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_def_type_t type);
+upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type);
 
-// Adds the definitions in the given serialized descriptor to this symtab.  All
-// types that are referenced from desc must have previously been defined (or be
-// defined in desc).  desc may not attempt to define any names that are already
-// defined in this symtab.  Caller retains ownership of desc.  status indicates
-// whether the operation was successful or not, and the error message (if any).
-void upb_symtab_add_desc(upb_symtab *s, upb_strptr desc, upb_status *status);
+// "fds" is a upb_src that will yield data from the
+// google.protobuf.FileDescriptorSet message type.  upb_symtab_addfds() adds
+// all the definitions from the given FileDescriptorSet and adds them to the
+// symtab.  status indicates whether the operation was successful or not, and
+// the error message (if any).
+//
+// TODO: should this allow redefinition?  Either is possible, but which is
+// more useful?  Maybe it should be an option.
+void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
+
+// Adds defs for google.protobuf.FileDescriptorSet and friends to this symtab.
+// This is necessary for bootstrapping, since these are the upb_defs that
+// specify other defs and allow them to be loaded.
+void upb_symtab_add_descriptorproto(upb_symtab *s);
 
 
 /* upb_def casts **************************************************************/
