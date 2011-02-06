@@ -36,3 +36,19 @@ void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
   upb_msgpopulator_uninit(&p);
   upb_handlers_uninit(&h);
 }
+
+void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
+  upb_stringsrc strsrc;
+  upb_stringsrc_init(&strsrc);
+  upb_stringsrc_reset(&strsrc, str);
+
+  upb_decoder d;
+  upb_msgdef *fds_msgdef = upb_symtab_fds_def(symtab);
+  upb_decoder_init(&d, fds_msgdef);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc));
+
+  upb_symtab_addfds(symtab, upb_decoder_src(&d), status);
+  upb_stringsrc_uninit(&strsrc);
+  upb_decoder_uninit(&d);
+  upb_def_unref(UPB_UPCAST(fds_msgdef));
+}

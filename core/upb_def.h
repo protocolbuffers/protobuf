@@ -254,11 +254,13 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
 // A SymbolTable is where upb_defs live.  It is empty when first constructed.
 // Clients add definitions to the symtab by supplying unserialized or
 // serialized descriptors (as defined in descriptor.proto).
-typedef struct {
+struct _upb_symtab {
   upb_atomic_refcount_t refcount;
   upb_rwlock_t lock;       // Protects all members except the refcount.
   upb_strtable symtab;     // The symbol table.
-} upb_symtab;
+  upb_msgdef *fds_msgdef;  // Msgdef for google.protobuf.FileDescriptorSet.
+};
+typedef struct _upb_symtab upb_symtab;
 
 // Initializes a upb_symtab.  Contexts are not freed explicitly, but unref'd
 // when the caller is done with them.
@@ -293,10 +295,13 @@ upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type);
 
 // "fds" is a upb_src that will yield data from the
-// google.protobuf.FileDescriptorSet message type.  upb_symtab_addfds() adds
-// all the definitions from the given FileDescriptorSet and adds them to the
-// symtab.  status indicates whether the operation was successful or not, and
-// the error message (if any).
+// google.protobuf.FileDescriptorSet message type.  It is not necessary that
+// the upb_def for FileDescriptorSet came from this symtab, but it must be
+// compatible with the official descriptor.proto, as published by Google.
+//
+// upb_symtab_addfds() adds all the definitions from the given
+// FileDescriptorSet and adds them to the symtab.  status indicates whether the
+// operation was successful or not, and the error message (if any).
 //
 // TODO: should this allow redefinition?  Either is possible, but which is
 // more useful?  Maybe it should be an option.
@@ -306,6 +311,13 @@ void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
 // This is necessary for bootstrapping, since these are the upb_defs that
 // specify other defs and allow them to be loaded.
 void upb_symtab_add_descriptorproto(upb_symtab *s);
+
+// Returns the upb_msgdef for google.protobuf.FileDescriptorSet, which the
+// caller owns a ref on.  This is a convenience method that is equivalent to
+// looking up the symbol called "google.protobuf.FileDescriptorSet" yourself,
+// except that it only will return a def that was added by
+// upb_symtab_add_descriptorproto().
+upb_msgdef *upb_symtab_fds_def(upb_symtab *s);
 
 
 /* upb_def casts **************************************************************/

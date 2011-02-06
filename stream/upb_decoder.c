@@ -26,11 +26,12 @@ INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val,
   b = *(p++); low  |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
   b = *(p++); low  |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
   b = *(p++); low  |= (b & 0x7f) << 28;
-              high  = (b & 0x7f) >>  3; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) <<  4; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 11; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 18; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 25; if(!(b & 0x80)) goto done;
+              high  = (b & 0x7f) >>  4; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) <<  3; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 10; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 17; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 24; if(!(b & 0x80)) goto done;
+  b = *(p++); high |= (b & 0x7f) << 31; if(!(b & 0x80)) goto done;
 
   upb_seterr(status, UPB_ERROR, "Unterminated varint");
   return false;

@@ -27,6 +27,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
                     upb_msg *upb_msg, upb_fielddef *upb_f)
 {
   ASSERT(upb_msg_has(upb_msg, upb_f));
+  ASSERT(upb_isarray(upb_f));
   upb_array *arr = upb_value_getarr(upb_msg_get(upb_msg, upb_f));
   ASSERT(upb_array_len(arr) == (upb_arraylen_t)r->FieldSize(proto2_msg, proto2_f));
   for(upb_arraylen_t i = 0; i < upb_array_len(arr); i++) {

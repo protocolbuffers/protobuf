@@ -25,15 +25,19 @@ extern "C" {
 
 // Forward-declares so we don't have to include everything in this .h file.
 // Clients should use the regular, typedef'd names (eg. upb_string).
-struct _upb_string;
 struct _upb_msg;
 struct _upb_msgdef;
 struct _upb_status;
+struct _upb_string;
+struct _upb_symtab;
 
 // Decodes the given string, which must be in protobuf binary format, to the
 // given upb_msg with msgdef "md", storing the status of the operation in "s".
 void upb_strtomsg(struct _upb_string *str, struct _upb_msg *msg,
                   struct _upb_msgdef *md, struct _upb_status *s);
+
+void upb_parsedesc(struct _upb_symtab *symtab, struct _upb_string *str,
+                   struct _upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */

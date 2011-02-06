@@ -5,9 +5,12 @@
  */
 
 #include <stdlib.h>
+#include <stddef.h>
 #include "descriptor_const.h"
 #include "descriptor.h"
 #include "upb_def.h"
+
+#define alignof(t) offsetof(struct { char c; t x; }, x)
 
 /* Rounds p up to the next multiple of t. */
 static size_t upb_align_up(size_t val, size_t align) {
@@ -24,7 +27,7 @@ static int upb_div_round_up(int numerator, int denominator) {
  *   join("", "Baz") -> "Baz"
  * Caller owns a ref on the returned string. */
 static upb_string *upb_join(upb_string *base, upb_string *name) {
-  if (upb_string_len(base) == 0) {
+  if (!base || upb_string_len(base) == 0) {
     return upb_string_getref(name);
   } else {
     return upb_string_asprintf(UPB_STRFMT "." UPB_STRFMT,
@@ -725,14 +728,22 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
     // together.
     f->field_index = i;
 
+    size_t size, align;
+    if (upb_isarray(f)) {
+      size = sizeof(void*);
+      align = alignof(void*);
+    } else {
+      size = type_info->size;
+      align = type_info->align;
+    }
     // General alignment rules are: each member must be at an address that is a
     // multiple of that type's alignment.  Also, the size of the structure as a
     // whole must be a multiple of the greatest alignment of any member.
-    size_t offset = upb_align_up(m->size, type_info->align);
+    size_t offset = upb_align_up(m->size, align);
     // Offsets are relative to the end of the refcount.
     f->byte_offset = offset - sizeof(upb_atomic_refcount_t);
-    m->size = offset + type_info->size;
-    max_align = UPB_MAX(max_align, type_info->align);
+    m->size = offset + size;
+    max_align = UPB_MAX(max_align, align);
   }
   free(sorted_fields);
 
@@ -1054,6 +1065,7 @@ upb_symtab *upb_symtab_new()
   upb_atomic_refcount_init(&s->refcount, 1);
   upb_rwlock_init(&s->lock);
   upb_strtable_init(&s->symtab, 16, sizeof(upb_symtab_ent));
+  s->fds_msgdef = NULL;
   return s;
 }
 
@@ -1304,12 +1316,7 @@ void upb_symtab_add_descriptorproto(upb_symtab *symtab) {
   // For the moment we silently decline to perform the operation if the symbols
   // already exist in the symtab.  Revisit this when we have a better story
   // about whether syms in a table can be replaced.
-  upb_def *def = upb_symtab_lookup(
-      symtab, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
-  if(def) {
-    upb_def_unref(def);
-    return;
-  }
+  if(symtab->fds_msgdef) upb_def_unref(UPB_UPCAST(symtab->fds_msgdef));
 
   upb_baredecoder *decoder = upb_baredecoder_new(&descriptor_str);
   upb_status status = UPB_STATUS_INIT;
@@ -1323,5 +1330,18 @@ void upb_symtab_add_descriptorproto(upb_symtab *symtab) {
     upb_symtab_unref(symtab);
     abort();
   }
+  upb_def *def = upb_symtab_lookup(
+      symtab, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
+  if (!def || (symtab->fds_msgdef = upb_dyncast_msgdef(def)) == NULL) {
+    // upb itself is corrupt.
+    abort();
+  }
+  upb_def_unref(def);  // The symtab already holds a ref on it.
   upb_status_uninit(&status);
+}
+
+upb_msgdef *upb_symtab_fds_def(upb_symtab *s) {
+  assert(s->fds_msgdef != NULL);
+  upb_def_ref(UPB_UPCAST(s->fds_msgdef));
+  return s->fds_msgdef;
 }

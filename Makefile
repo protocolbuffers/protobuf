@@ -118,17 +118,20 @@ tests/test.proto.pb: tests/test.proto
 	# TODO: replace with upbc
 	protoc tests/test.proto -otests/test.proto.pb
 
-TESTS=tests/test_string \
-    tests/test_table \
-    tests/test_def \
-    tests/test_stream \
-    tests/t.test_vs_proto2.googlemessage1 \
-    tests/t.test_vs_proto2.googlemessage2 \
+TESTS= \
+  tests/test_string \
+  tests/test_table \
+  tests/test_def \
+  tests/test_stream \
+  tests/t.test_vs_proto2.googlemessage1 \
+  tests/t.test_vs_proto2.googlemessage2 \
+  tests/test.proto.pb \
+  tests/tests
+
 #    tests/test_decoder \
-#    tests/test.proto.pb
+
 tests: $(LIBUPB) $(TESTS)
 
-OTHER_TESTS=tests/tests \
 $(TESTS): $(LIBUPB)
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 

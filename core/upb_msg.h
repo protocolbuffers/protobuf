@@ -88,7 +88,7 @@ INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
       val.type = UPB_VALUETYPE_ARRAY;
 #endif
       break;
-    default: printf("type: %d\n", ft); assert(false);
+    default: assert(false);
   }
   return val;
 
@@ -202,7 +202,7 @@ INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
 }
 
 INLINE upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
-  return upb_value_read(_upb_msg_getptr(msg, f), f->type);
+  return upb_value_read(_upb_msg_getptr(msg, f), upb_field_valuetype(f));
 }
 
 // Unsets all field values back to their defaults.
