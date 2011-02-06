@@ -48,28 +48,10 @@ uint32_t upb_string_size(upb_string *str) {
 #endif
 }
 
-static void upb_string_release(upb_string *str) {
-  if(str->src) {
-    upb_string_unref(str->src);
-    str->src = NULL;
-  }
-}
-
 void _upb_string_free(upb_string *str) {
   free(str->cached_mem);
-  upb_string_release(str);
+  _upb_string_release(str);
   free(str);
-}
-
-void upb_string_recycle(upb_string **_str) {
-  upb_string *str = *_str;
-  if(str && upb_atomic_only(&str->refcount)) {
-    str->ptr = NULL;
-    upb_string_release(str);
-  } else {
-    upb_string_unref(str);
-    *_str = upb_string_new();
-  }
 }
 
 char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len) {

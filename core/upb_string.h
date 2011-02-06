@@ -112,6 +112,13 @@ INLINE void upb_string_unref(upb_string *str) {
   }
 }
 
+static void _upb_string_release(upb_string *str) {
+  if(str->src) {
+    upb_string_unref(str->src);
+    str->src = NULL;
+  }
+}
+
 upb_string *upb_strdup(upb_string *s);  // Forward-declare.
 
 // Returns a string with the same contents as "str".  The caller owns a ref on
@@ -158,7 +165,18 @@ INLINE const char *upb_string_getbufend(upb_string *str) {
 //       upb_src_getstr(str);
 //     }
 //   }
-void upb_string_recycle(upb_string **str);
+INLINE void upb_string_recycle(upb_string **_str) {
+  upb_string *str = *_str;
+  if(str && upb_atomic_only(&str->refcount)) {
+    str->ptr = NULL;
+    str->len = 0;
+    _upb_string_release(str);
+  } else {
+    upb_string_unref(str);
+    *_str = upb_string_new();
+  }
+}
+
 
 // The options for setting the contents of a string.  These may only be called
 // when a string is first created or recycled; once other functions have been

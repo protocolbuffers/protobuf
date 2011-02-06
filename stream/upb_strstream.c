@@ -13,7 +13,7 @@ static upb_strlen_t upb_stringsrc_read(upb_bytesrc *_src, void *buf,
                                        upb_strlen_t count, upb_status *status) {
   upb_stringsrc *src = (upb_stringsrc*)_src;
   if (src->offset == upb_string_len(src->str)) {
-    upb_seterr(status, UPB_EOF, "");
+    status->code = UPB_EOF;
     return -1;
   } else {
     upb_strlen_t to_read = UPB_MIN(count, upb_string_len(src->str) - src->offset);
@@ -27,7 +27,7 @@ static bool upb_stringsrc_getstr(upb_bytesrc *_src, upb_string *str,
                                  upb_status *status) {
   upb_stringsrc *src = (upb_stringsrc*)_src;
   if (src->offset == upb_string_len(src->str)) {
-    upb_seterr(status, UPB_EOF, "");
+    status->code = UPB_EOF;
     return false;
   } else {
     upb_strlen_t len = upb_string_len(src->str) - src->offset;

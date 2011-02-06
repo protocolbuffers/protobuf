@@ -389,8 +389,7 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
   d->top->msgdef = d->toplevel_msgdef;
   // Never want to end top-level message, so treat it like a group.
   d->top->end_offset = UPB_GROUP_END_OFFSET;
-  upb_string_unref(d->buf);
-  d->buf = NULL;
+  upb_string_recycle(&d->buf);
 }
 
 void upb_decoder_uninit(upb_decoder *d) {
