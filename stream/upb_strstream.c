@@ -9,25 +9,6 @@
 #include <stdlib.h>
 #include "upb_string.h"
 
-struct upb_stringsrc {
-  upb_bytesrc bytesrc;
-  upb_string *str;
-  upb_strlen_t offset;
-};
-
-void upb_stringsrc_reset(upb_stringsrc *s, upb_string *str) {
-  if (str != s->str) {
-    if (s->str) upb_string_unref(s->str);
-    s->str = upb_string_getref(str);
-  }
-  s->bytesrc.eof = false;
-}
-
-void upb_stringsrc_free(upb_stringsrc *s) {
-  if (s->str) upb_string_unref(s->str);
-  free(s);
-}
-
 static upb_strlen_t upb_stringsrc_read(upb_bytesrc *_src, void *buf,
                                        upb_strlen_t count, upb_status *status) {
   upb_stringsrc *src = (upb_stringsrc*)_src;
@@ -45,26 +26,39 @@ static upb_strlen_t upb_stringsrc_read(upb_bytesrc *_src, void *buf,
 static bool upb_stringsrc_getstr(upb_bytesrc *_src, upb_string *str,
                                  upb_status *status) {
   upb_stringsrc *src = (upb_stringsrc*)_src;
-  if (src->offset == upb_string_len(str)) {
+  if (src->offset == upb_string_len(src->str)) {
     upb_seterr(status, UPB_EOF, "");
     return false;
   } else {
-    upb_string_substr(str, src->str, 0, upb_string_len(src->str));
+    upb_strlen_t len = upb_string_len(src->str) - src->offset;
+    upb_string_substr(str, src->str, src->offset, len);
+    src->offset += len;
+    assert(src->offset == upb_string_len(src->str));
     return true;
   }
 }
 
-upb_stringsrc *upb_stringsrc_new() {
+void upb_stringsrc_init(upb_stringsrc *s) {
   static upb_bytesrc_vtbl bytesrc_vtbl = {
     upb_stringsrc_read,
     upb_stringsrc_getstr,
   };
-
-  upb_stringsrc *s = malloc(sizeof(*s));
   s->str = NULL;
   upb_bytesrc_init(&s->bytesrc, &bytesrc_vtbl);
-  return s;
 }
+
+void upb_stringsrc_reset(upb_stringsrc *s, upb_string *str) {
+  if (str != s->str) {
+    upb_string_unref(s->str);
+    s->str = upb_string_getref(str);
+  }
+  s->offset = 0;
+}
+
+void upb_stringsrc_uninit(upb_stringsrc *s) {
+  upb_string_unref(s->str);
+}
+
 
 upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s) {
   return &s->bytesrc;

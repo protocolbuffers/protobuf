@@ -18,12 +18,16 @@ extern "C" {
 
 /* upb_stringsrc **************************************************************/
 
-struct upb_stringsrc;
-typedef struct upb_stringsrc upb_stringsrc;
+struct _upb_stringsrc {
+  upb_bytesrc bytesrc;
+  upb_string *str;
+  upb_strlen_t offset;
+};
+typedef struct _upb_stringsrc upb_stringsrc;
 
 // Create/free a stringsrc.
-upb_stringsrc *upb_stringsrc_new();
-void upb_stringsrc_free(upb_stringsrc *s);
+void upb_stringsrc_init(upb_stringsrc *s);
+void upb_stringsrc_uninit(upb_stringsrc *s);
 
 // Resets the stringsrc to a state where it will vend the given string.  The
 // stringsrc will take a reference on the string, so the caller need not ensure

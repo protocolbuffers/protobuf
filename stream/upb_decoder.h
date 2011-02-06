@@ -27,14 +27,44 @@ extern "C" {
 
 /* upb_decoder *****************************************************************/
 
+// The decoder keeps a stack with one entry per level of recursion.
+// upb_decoder_frame is one frame of that stack.
+typedef struct {
+  upb_msgdef *msgdef;
+  size_t end_offset;  // For groups, 0.
+} upb_decoder_frame;
+
+struct _upb_decoder {
+  // Immutable state of the decoder.
+  upb_src src;
+  upb_dispatcher dispatcher;
+  upb_bytesrc *bytesrc;
+  upb_msgdef *toplevel_msgdef;
+  upb_decoder_frame stack[UPB_MAX_NESTING];
+
+  // Mutable state of the decoder.
+
+  // Where we will store any errors that occur.
+  upb_status *status;
+
+  // Stack entries store the offset where the submsg ends (for groups, 0).
+  upb_decoder_frame *top, *limit;
+
+  // Current input buffer.
+  upb_string *buf;
+
+  // The offset within the overall stream represented by the *beginning* of buf.
+  size_t buf_stream_offset;
+};
+
 // A upb_decoder decodes the binary protocol buffer format, writing the data it
 // decodes to a upb_sink.
-struct upb_decoder;
-typedef struct upb_decoder upb_decoder;
+struct _upb_decoder;
+typedef struct _upb_decoder upb_decoder;
 
 // Allocates and frees a upb_decoder, respectively.
-upb_decoder *upb_decoder_new(upb_msgdef *md);
-void upb_decoder_free(upb_decoder *d);
+void upb_decoder_init(upb_decoder *d, upb_msgdef *md);
+void upb_decoder_uninit(upb_decoder *d);
 
 // Resets the internal state of an already-allocated decoder.  This puts it in a
 // state where it has not seen any data, and expects the next data to be from

@@ -13,13 +13,14 @@ int main() {
   upb_stdio_reset(in, stdin);
   upb_stdio *out = upb_stdio_new();
   upb_stdio_reset(out, stdout);
-  upb_decoder *d = upb_decoder_new(upb_downcast_msgdef(fds));
-  upb_decoder_reset(d, upb_stdio_bytesrc(in));
+  upb_decoder d;
+  upb_decoder_init(&d, upb_downcast_msgdef(fds));
+  upb_decoder_reset(&d, upb_stdio_bytesrc(in));
   upb_textprinter *p = upb_textprinter_new();
   upb_handlers handlers;
   upb_handlers_init(&handlers);
   upb_textprinter_reset(p, &handlers, upb_stdio_bytesink(out), false);
-  upb_src *src = upb_decoder_src(d);
+  upb_src *src = upb_decoder_src(&d);
   upb_src_sethandlers(src, &handlers);
 
   upb_status status = UPB_STATUS_INIT;
@@ -30,7 +31,7 @@ int main() {
   upb_status_uninit(&status);
   upb_stdio_free(in);
   upb_stdio_free(out);
-  upb_decoder_free(d);
+  upb_decoder_uninit(&d);
   upb_textprinter_free(p);
   upb_def_unref(fds);
   upb_symtab_unref(symtab);

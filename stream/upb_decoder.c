@@ -47,36 +47,6 @@ done:
 INLINE int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
 INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
-// The decoder keeps a stack with one entry per level of recursion.
-// upb_decoder_frame is one frame of that stack.
-typedef struct {
-  upb_msgdef *msgdef;
-  size_t end_offset;  // For groups, 0.
-} upb_decoder_frame;
-
-struct upb_decoder {
-  // Immutable state of the decoder.
-  upb_src src;
-  upb_dispatcher dispatcher;
-  upb_bytesrc *bytesrc;
-  upb_msgdef *toplevel_msgdef;
-  upb_decoder_frame stack[UPB_MAX_NESTING];
-
-  // Mutable state of the decoder.
-
-  // Where we will store any errors that occur.
-  upb_status *status;
-
-  // Stack entries store the offset where the submsg ends (for groups, 0).
-  upb_decoder_frame *top, *limit;
-
-  // Current input buffer.
-  upb_string *buf;
-
-  // The offset within the overall stream represented by the *beginning* of buf.
-  size_t buf_stream_offset;
-};
-
 typedef struct {
   // Our current position in the data buffer.
   const char *ptr;
@@ -279,8 +249,8 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   upb_string *str = NULL;
 
 // TODO: handle UPB_SKIPSUBMSG
-#define CHECK_FLOW(expr) if ((expr) != UPB_CONTINUE) goto err
-#define CHECK(expr) if (!expr) goto err;
+#define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { assert(!upb_ok(status)); goto err; }
+#define CHECK(expr) if (!expr) { assert(!upb_ok(status)); goto err; }
 
   CHECK_FLOW(upb_dispatch_startmsg(&d->dispatcher));
 
@@ -300,6 +270,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     if (!upb_decode_tag(d, &state, &tag)) {
       if (status->code == UPB_EOF && d->top == d->stack) {
         // Normal end-of-file.
+        printf("Normal end-of-file!\n");
         upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
         upb_string_unref(str);
@@ -397,18 +368,16 @@ void upb_decoder_sethandlers(upb_src *src, upb_handlers *handlers) {
   d->top->end_offset = 0;
 }
 
-upb_decoder *upb_decoder_new(upb_msgdef *msgdef) {
+void upb_decoder_init(upb_decoder *d, upb_msgdef *msgdef) {
   static upb_src_vtbl vtbl = {
     &upb_decoder_sethandlers,
     &upb_decoder_run,
   };
-  upb_decoder *d = malloc(sizeof(*d));
   upb_src_init(&d->src, &vtbl);
   upb_dispatcher_init(&d->dispatcher);
   d->toplevel_msgdef = msgdef;
   d->limit = &d->stack[UPB_MAX_NESTING];
   d->buf = NULL;
-  return d;
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
@@ -421,9 +390,8 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
   d->buf = NULL;
 }
 
-void upb_decoder_free(upb_decoder *d) {
+void upb_decoder_uninit(upb_decoder *d) {
   upb_string_unref(d->buf);
-  free(d);
 }
 
 upb_src *upb_decoder_src(upb_decoder *d) { return &d->src; }

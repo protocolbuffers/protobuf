@@ -72,6 +72,7 @@ STREAM= \
   stream/upb_textprinter.c \
   stream/upb_strstream.c \
   core/upb_msg.c \
+  core/upb_glue.c \
 
 SRC=$(CORE) $(STREAM)
 
@@ -121,9 +122,9 @@ TESTS=tests/test_string \
     tests/test_table \
     tests/test_def \
     tests/test_stream \
-    tests/test_decoder \
-#    tests/t.test_vs_proto2.googlemessage1 \
-#    tests/t.test_vs_proto2.googlemessage2 \
+    tests/t.test_vs_proto2.googlemessage1 \
+    tests/t.test_vs_proto2.googlemessage2 \
+#    tests/test_decoder \
 #    tests/test.proto.pb
 tests: $(LIBUPB) $(TESTS)
 

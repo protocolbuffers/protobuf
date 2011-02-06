@@ -10,6 +10,18 @@
 #include "upb_decoder.h"
 #include "upb_strstream.h"
 
+static uint32_t upb_round_up_pow2(uint32_t v) {
+  // http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+  v--;
+  v |= v >> 1;
+  v |= v >> 2;
+  v |= v >> 4;
+  v |= v >> 8;
+  v |= v >> 16;
+  v++;
+  return v;
+}
+
 static void upb_elem_free(upb_value v, upb_fielddef *f) {
   switch(f->type) {
     case UPB_TYPE(MESSAGE):
@@ -47,6 +59,58 @@ static void upb_field_unref(upb_value v, upb_fielddef *f) {
     upb_field_free(v, f);
 }
 
+
+/* upb_array ******************************************************************/
+
+upb_array *upb_array_new(void) {
+  upb_array *arr = malloc(sizeof(*arr));
+  upb_atomic_refcount_init(&arr->refcount, 1);
+  arr->size = 0;
+  arr->len = 0;
+  arr->ptr = NULL;
+  return arr;
+}
+
+void upb_array_recycle(upb_array **_arr, upb_fielddef *f) {
+  upb_array *arr = *_arr;
+  if(arr && upb_atomic_read(&arr->refcount) == 1) {
+    arr->len = 0;
+  } else {
+    upb_array_unref(arr, f);
+    *_arr = upb_array_new();
+  }
+}
+
+void _upb_array_free(upb_array *arr, upb_fielddef *f) {
+  if (upb_elem_ismm(f)) {
+    // Need to release refs on sub-objects.
+    upb_valuetype_t type = upb_elem_valuetype(f);
+    for (upb_arraylen_t i = 0; i < arr->size; i++) {
+      upb_valueptr p = _upb_array_getptr(arr, f, i);
+      upb_elem_unref(upb_value_read(p, type), f);
+    }
+  }
+  free(arr->ptr);
+  free(arr);
+}
+
+void upb_array_resize(upb_array *arr, upb_fielddef *f, upb_arraylen_t len) {
+  size_t type_size = upb_types[f->type].size;
+  upb_arraylen_t old_size = arr->size;
+  if (old_size < len) {
+    // Need to resize.
+    size_t new_size = upb_round_up_pow2(len);
+    arr->ptr = realloc(arr->ptr, new_size * type_size);
+    arr->size = new_size;
+    memset(arr->ptr + (old_size * type_size), 0,
+           (new_size - old_size) * type_size);
+  }
+  arr->len = len;
+}
+
+
+/* upb_msg ********************************************************************/
+
 upb_msg *upb_msg_new(upb_msgdef *md) {
   upb_msg *msg = malloc(md->size);
   // Clear all set bits and cached pointers.
@@ -67,35 +131,123 @@ void _upb_msg_free(upb_msg *msg, upb_msgdef *md) {
   free(msg);
 }
 
+void upb_msg_recycle(upb_msg **_msg, upb_msgdef *msgdef) {
+  upb_msg *msg = *_msg;
+  if(msg && upb_atomic_read(&msg->refcount) == 1) {
+    upb_msg_clear(msg, msgdef);
+  } else {
+    upb_msg_unref(msg, msgdef);
+    *_msg = upb_msg_new(msgdef);
+  }
+}
+
 INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
   msg->data[f->field_index/8] |= (1 << (f->field_index % 8));
 }
 
-
-upb_array *upb_array_new(void) {
-  upb_array *arr = malloc(sizeof(*arr));
-  upb_atomic_refcount_init(&arr->refcount, 1);
-  arr->size = 0;
-  arr->len = 0;
-  arr->elements._void = NULL;
-  return arr;
-}
-
-void _upb_array_free(upb_array *arr, upb_fielddef *f) {
-  if (upb_elem_ismm(f)) {
-    // Need to release refs on sub-objects.
-    upb_valuetype_t type = upb_elem_valuetype(f);
-    for (upb_arraylen_t i = 0; i < arr->size; i++) {
-      upb_valueptr p = _upb_array_getptr(arr, f, i);
-      upb_elem_unref(upb_value_read(p, type), f);
+static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {
+  upb_valueptr p = _upb_msg_getptr(msg, f);
+  if (upb_isarray(f)) {
+    // Create/recycle/resize the array if necessary, and find a pointer to
+    // a newly-appended element.
+    if (!upb_msg_has(msg, f)) {
+      upb_array_recycle(p.arr, f);
+      upb_msg_sethas(msg, f);
     }
+    assert(*p.arr != NULL);
+    upb_arraylen_t oldlen = upb_array_len(*p.arr);
+    upb_array_resize(*p.arr, f, oldlen + 1);
+    p = _upb_array_getptr(*p.arr, f, oldlen);
   }
-  if (arr->elements._void) free(arr->elements._void);
-  free(arr);
+  return p;
 }
 
-void upb_msg_register_handlers(upb_msg *msg, upb_msgdef *md,
-                               upb_handlers *handlers, bool merge) {
-  static upb_handlerset handlerset = {
+static void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val) {
+  upb_valueptr p = upb_msg_getappendptr(msg, f);
+  if (upb_isstring(f)) {
+    // We do:
+    //  - upb_string_recycle(), upb_string_substr() instead of
+    //  - upb_string_unref(), upb_string_getref()
+    // because we have a convenient place of caching these string objects for
+    // reuse, where as the upb_src who is sending us these strings may not.
+    // This saves the upb_src from allocating new upb_strings all the time to
+    // give us.
+    //
+    // If you were using this to copy one upb_msg to another this would
+    // allocate string objects whereas a upb_string_getref could have avoided
+    // those allocations completely; if this is an issue, we could make it an
+    // option of the upb_msgpopulator which behavior is desired.
+    upb_string *src = upb_value_getstr(val);
+    upb_string_recycle(p.str);
+    upb_string_substr(*p.str, src, 0, upb_string_len(src));
+  } else {
+    upb_value_write(p, val, f->type);
   }
+}
+
+upb_msg *upb_msg_appendmsg(upb_msg *msg, upb_fielddef *f, upb_msgdef *msgdef) {
+  upb_valueptr p = upb_msg_getappendptr(msg, f);
+  if (upb_isarray(f) || !upb_msg_has(msg, f)) {
+    upb_msg_recycle(p.msg, msgdef);
+    upb_msg_clear(*p.msg, msgdef);
+    upb_msg_sethas(msg, f);
+  }
+  return *p.msg;
+}
+
+
+/* upb_msgpopulator ***********************************************************/
+
+void upb_msgpopulator_init(upb_msgpopulator *p) {
+  upb_status_init(&p->status);
+}
+
+void upb_msgpopulator_reset(upb_msgpopulator *p, upb_msg *m, upb_msgdef *md) {
+  p->top = p->stack;
+  p->limit = p->stack + sizeof(p->stack);
+  p->top->msg = m;
+  p->top->msgdef = md;
+}
+
+void upb_msgpopulator_uninit(upb_msgpopulator *p) {
+  upb_status_uninit(&p->status);
+}
+
+static upb_flow_t upb_msgpopulator_value(void *_p, upb_fielddef *f, upb_value val) {
+  upb_msgpopulator *p = _p;
+  upb_msg_appendval(p->top->msg, f, val);
+  return UPB_CONTINUE;
+}
+
+static upb_flow_t upb_msgpopulator_startsubmsg(void *_p, upb_fielddef *f,
+                                               upb_handlers *delegate_to) {
+  upb_msgpopulator *p = _p;
+  (void)delegate_to;
+  upb_msg *oldmsg = p->top->msg;
+  if (++p->top == p->limit) {
+    upb_seterr(&p->status, UPB_ERROR, "Exceeded maximum nesting");
+    return UPB_BREAK;
+  }
+  upb_msgdef *msgdef = upb_downcast_msgdef(f->def);
+  p->top->msgdef = msgdef;
+  p->top->msg = upb_msg_appendmsg(oldmsg, f, msgdef);
+  return UPB_CONTINUE;
+}
+
+static upb_flow_t upb_msgpopulator_endsubmsg(void *_p) {
+  upb_msgpopulator *p = _p;
+  --p->top;
+  return UPB_CONTINUE;
+}
+
+void upb_msgpopulator_register_handlers(upb_msgpopulator *p, upb_handlers *h) {
+  static upb_handlerset handlerset = {
+    NULL,   // startmsg
+    NULL,   // endmsg
+    &upb_msgpopulator_value,
+    &upb_msgpopulator_startsubmsg,
+    &upb_msgpopulator_endsubmsg,
+  };
+  upb_register_handlerset(h, &handlerset);
+  upb_set_handler_closure(h, p, &p->status);
 }

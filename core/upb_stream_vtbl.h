@@ -62,14 +62,10 @@ typedef struct {
 
 struct _upb_bytesrc {
   upb_bytesrc_vtbl *vtbl;
-  upb_status status;
-  bool eof;
 };
 
 struct _upb_bytesink {
   upb_bytesink_vtbl *vtbl;
-  upb_status status;
-  bool eof;
 };
 
 struct _upb_src {
@@ -78,14 +74,10 @@ struct _upb_src {
 
 INLINE void upb_bytesrc_init(upb_bytesrc *s, upb_bytesrc_vtbl *vtbl) {
   s->vtbl = vtbl;
-  s->eof = false;
-  upb_status_init(&s->status);
 }
 
 INLINE void upb_bytesink_init(upb_bytesink *s, upb_bytesink_vtbl *vtbl) {
   s->vtbl = vtbl;
-  s->eof = false;
-  upb_status_init(&s->status);
 }
 
 INLINE void upb_src_init(upb_src *s, upb_src_vtbl *vtbl) {
@@ -132,9 +124,6 @@ INLINE bool upb_bytesrc_getfullstr(upb_bytesrc *src, upb_string *str,
   return true;
 }
 
-INLINE upb_status *upb_bytesrc_status(upb_bytesrc *src) { return &src->status; }
-INLINE bool upb_bytesrc_eof(upb_bytesrc *src) { return src->eof; }
-
 
 // upb_bytesink
 INLINE upb_strlen_t upb_bytesink_write(upb_bytesink *sink, void *buf,
@@ -144,10 +133,6 @@ INLINE upb_strlen_t upb_bytesink_write(upb_bytesink *sink, void *buf,
 
 INLINE upb_strlen_t upb_bytesink_putstr(upb_bytesink *sink, upb_string *str, upb_status *status) {
   return sink->vtbl->putstr(sink, str, status);
-}
-
-INLINE upb_status *upb_bytesink_status(upb_bytesink *sink) {
-  return &sink->status;
 }
 
 INLINE upb_strlen_t upb_bytesink_printf(upb_bytesink *sink, upb_status *status, const char *fmt, ...) {

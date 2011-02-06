@@ -1019,6 +1019,7 @@ bool upb_symtab_add_defs(upb_symtab *s, upb_def **defs, int num_defs,
   upb_symtab_ent *tmptab_e;
   for(tmptab_e = upb_strtable_begin(&tmptab); tmptab_e;
       tmptab_e = upb_strtable_next(&tmptab, &tmptab_e->e)) {
+    printf("Inserting def for " UPB_STRFMT "\n", UPB_STRARG(tmptab_e->def->fqname));
     upb_symtab_ent *symtab_e =
         upb_strtable_lookup(&s->symtab, tmptab_e->def->fqname);
     if(symtab_e) {
@@ -1132,6 +1133,7 @@ void upb_symtab_addfds(upb_symtab *s, upb_src *src, upb_status *status)
   if (upb_ok(status))
     upb_symtab_add_defs(s, b.defs.defs, b.defs.len, false, status);
   upb_defbuilder_uninit(&b);
+  upb_handlers_uninit(&handlers);
 }
 
 

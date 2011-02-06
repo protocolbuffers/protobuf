@@ -56,7 +56,7 @@ static void upb_string_release(upb_string *str) {
 }
 
 void _upb_string_free(upb_string *str) {
-  if(str->cached_mem) free(str->cached_mem);
+  free(str->cached_mem);
   upb_string_release(str);
   free(str);
 }
