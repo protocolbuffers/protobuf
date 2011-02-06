@@ -79,6 +79,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
   }
 }
 
+#include <inttypes.h>
 void compare_values(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
                     const google::protobuf::FieldDescriptor *proto2_f,
@@ -176,9 +177,15 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
   // Parse to both proto2 and upb.
   ASSERT(proto2_msg->ParseFromArray(upb_string_getrobuf(str), upb_string_len(str)));
   upb_status status = UPB_STATUS_INIT;
+  upb_msg_clear(upb_msg, upb_md);
   upb_strtomsg(str, upb_msg, upb_md, &status);
-  ASSERT(upb_ok(&status));
+  if (!upb_ok(&status)) {
+    fprintf(stderr, "Error parsing test protobuf: ");
+    upb_printerr(&status);
+    exit(1);
+  }
   compare(*proto2_msg, upb_msg, upb_md);
+  upb_status_uninit(&status);
 }
 
 int main(int argc, char *argv[])
@@ -252,8 +259,11 @@ int main(int argc, char *argv[])
 
   upb_msg_unref(upb_msg, msgdef);
   upb_def_unref(UPB_UPCAST(msgdef));
+  upb_def_unref(fds_msgdef);
   upb_string_unref(str);
   upb_symtab_unref(symtab);
+  upb_status_uninit(&status);
+  google::protobuf::ShutdownProtobufLibrary();
 
   return 0;
 }

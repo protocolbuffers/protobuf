@@ -168,10 +168,10 @@ static void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val) {
     // We do:
     //  - upb_string_recycle(), upb_string_substr() instead of
     //  - upb_string_unref(), upb_string_getref()
-    // because we have a convenient place of caching these string objects for
-    // reuse, where as the upb_src who is sending us these strings may not.
-    // This saves the upb_src from allocating new upb_strings all the time to
-    // give us.
+    // because we can conveniently caching these upb_string objects in the
+    // upb_msg, whereas the upb_src who is sending us these strings may not
+    // have a good way of caching them.  This saves the upb_src from allocating
+    // new upb_strings all the time to give us.
     //
     // If you were using this to copy one upb_msg to another this would
     // allocate string objects whereas a upb_string_getref could have avoided
@@ -183,6 +183,7 @@ static void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val) {
   } else {
     upb_value_write(p, val, f->type);
   }
+  upb_msg_sethas(msg, f);
 }
 
 upb_msg *upb_msg_appendmsg(upb_msg *msg, upb_fielddef *f, upb_msgdef *msgdef) {

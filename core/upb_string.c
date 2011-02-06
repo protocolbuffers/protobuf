@@ -63,7 +63,7 @@ void _upb_string_free(upb_string *str) {
 
 void upb_string_recycle(upb_string **_str) {
   upb_string *str = *_str;
-  if(str && upb_atomic_read(&str->refcount) == 1) {
+  if(str && upb_atomic_only(&str->refcount)) {
     str->ptr = NULL;
     upb_string_release(str);
   } else {

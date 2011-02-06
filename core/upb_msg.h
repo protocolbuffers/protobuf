@@ -60,7 +60,7 @@ INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
   case UPB_TYPE(t): val.val.member_name = *ptr.member_name; break;
 #else
 #define CASE(t, member_name) \
-  case UPB_TYPE(t): val.val.member_name = *ptr.member_name; val.type = ft; break;
+  case UPB_TYPE(t): val.val.member_name = *ptr.member_name; val.type = upb_types[ft].inmemory_type; break;
 #endif
 
   switch(ft) {
@@ -82,7 +82,13 @@ INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
     CASE(BYTES,    str)
     CASE(MESSAGE,  msg)
     CASE(GROUP,    msg)
-    default: assert(false);
+    case UPB_VALUETYPE_ARRAY:
+      val.val.arr = *ptr.arr;
+#ifndef NDEBUG
+      val.type = UPB_VALUETYPE_ARRAY;
+#endif
+      break;
+    default: printf("type: %d\n", ft); assert(false);
   }
   return val;
 
@@ -91,7 +97,11 @@ INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
 
 INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
                             upb_fieldtype_t ft) {
-  assert(val.type == ft);
+  if (ft == UPB_VALUETYPE_ARRAY) {
+    assert(val.type == UPB_VALUETYPE_ARRAY);
+  } else {
+    assert(val.type == upb_types[ft].inmemory_type);
+  }
 #define CASE(t, member_name) \
   case UPB_TYPE(t): *ptr.member_name = val.val.member_name; break;
 
@@ -114,6 +124,9 @@ INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
     CASE(BYTES,    str)
     CASE(MESSAGE,  msg)
     CASE(GROUP,    msg)
+    case UPB_VALUETYPE_ARRAY:
+      *ptr.arr = val.val.arr;
+      break;
     default: assert(false);
   }
 
@@ -142,7 +155,7 @@ INLINE upb_valueptr _upb_array_getptr(upb_array *a, upb_fielddef *f,
 upb_array *upb_array_new(void);
 
 INLINE void upb_array_unref(upb_array *a, upb_fielddef *f) {
-  if (upb_atomic_unref(&a->refcount)) _upb_array_free(a, f);
+  if (a && upb_atomic_unref(&a->refcount)) _upb_array_free(a, f);
 }
 
 void upb_array_recycle(upb_array **arr, upb_fielddef *f);

@@ -181,10 +181,10 @@ INLINE bool upb_decode_fixed(upb_decoder *d, upb_wire_type_t wt,
   size_t bytes = table[wt];
   if (s->len >= bytes) {
     // Common (fast) case.
-    memcpy(&val, s->ptr, bytes);
+    memcpy(val, s->ptr, bytes);
     upb_dstate_advance(s, bytes);
   } else {
-    if (!upb_getbuf(d, &val, bytes, s)) return false;
+    if (!upb_getbuf(d, val, bytes, s)) return false;
   }
   return true;
 }
@@ -270,7 +270,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     if (!upb_decode_tag(d, &state, &tag)) {
       if (status->code == UPB_EOF && d->top == d->stack) {
         // Normal end-of-file.
-        printf("Normal end-of-file!\n");
         upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
         upb_string_unref(str);
@@ -345,6 +344,9 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
         upb_value_setint64(&val, upb_zzdec_64(upb_value_getint64(val)));
         break;
       default:
+#ifndef NDEBUG
+        val.type = upb_types[f->type].inmemory_type;
+#endif
         break;  // Other types need no further processing at this point.
     }
     CHECK_FLOW(upb_dispatch_value(&d->dispatcher, f, val));
@@ -359,7 +361,7 @@ err:
 
 void upb_decoder_sethandlers(upb_src *src, upb_handlers *handlers) {
   upb_decoder *d = (upb_decoder*)src;
-  upb_dispatcher_reset(&d->dispatcher, handlers);
+  upb_dispatcher_reset(&d->dispatcher, handlers, false);
   d->top = d->stack;
   d->buf_stream_offset = 0;
   d->top->msgdef = d->toplevel_msgdef;

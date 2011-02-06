@@ -57,6 +57,9 @@ extern "C" {
 // All members of this struct are private, and may only be read/written through
 // the associated functions.
 struct _upb_string {
+  // The string's refcount.
+  upb_atomic_refcount_t refcount;
+
   // The pointer to our currently active data.  This may be memory we own
   // or a pointer into memory we don't own.
   const char *ptr;
@@ -76,9 +79,6 @@ struct _upb_string {
   uint32_t size;
 #endif
 
-  // The string's refcount.
-  upb_atomic_refcount_t refcount;
-
   // Used if this is a slice of another string, NULL otherwise.  We own a ref
   // on src.
   struct _upb_string *src;
@@ -86,9 +86,9 @@ struct _upb_string {
 
 // Internal-only initializer for upb_string instances.
 #ifdef UPB_HAVE_MSIZE
-#define _UPB_STRING_INIT(str, len, refcount) {(char*)str, NULL, len, {refcount}, NULL}
+#define _UPB_STRING_INIT(str, len, refcount) {{refcount}, (char*)str, NULL, len, NULL}
 #else
-#define _UPB_STRING_INIT(str, len, refcount) {(char*)str, NULL, len, 0, {refcount}, NULL}
+#define _UPB_STRING_INIT(str, len, refcount) {{refcount}, (char*)str, NULL, len, 0, NULL}
 #endif
 
 // Special pseudo-refcounts for static/stack-allocated strings, respectively.

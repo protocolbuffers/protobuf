@@ -630,10 +630,10 @@ static upb_flow_t upb_fielddef_value(void *_b, upb_fielddef *f, upb_value val) {
   upb_defbuilder *b = _b;
   switch(f->number) {
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIELDNUM:
-      b->f->type = upb_value_getint32(val);
+      b->f->type = upb_value_getenumval(val);
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_FIELDNUM:
-      b->f->label = upb_value_getint32(val);
+      b->f->label = upb_value_getenumval(val);
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER_FIELDNUM:
       b->f->number = upb_value_getint32(val);
@@ -1019,7 +1019,6 @@ bool upb_symtab_add_defs(upb_symtab *s, upb_def **defs, int num_defs,
   upb_symtab_ent *tmptab_e;
   for(tmptab_e = upb_strtable_begin(&tmptab); tmptab_e;
       tmptab_e = upb_strtable_next(&tmptab, &tmptab_e->e)) {
-    printf("Inserting def for " UPB_STRFMT "\n", UPB_STRARG(tmptab_e->def->fqname));
     upb_symtab_ent *symtab_e =
         upb_strtable_lookup(&s->symtab, tmptab_e->def->fqname);
     if(symtab_e) {
@@ -1210,7 +1209,7 @@ static uint32_t upb_baredecoder_readf32(upb_baredecoder *d)
 
 static void upb_baredecoder_sethandlers(upb_src *src, upb_handlers *handlers) {
   upb_baredecoder *d = (upb_baredecoder*)src;
-  upb_dispatcher_reset(&d->dispatcher, handlers);
+  upb_dispatcher_reset(&d->dispatcher, handlers, false);
 }
 
 static void upb_baredecoder_run(upb_src *src, upb_status *status) {

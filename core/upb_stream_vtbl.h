@@ -218,16 +218,19 @@ typedef struct {
 
 struct _upb_dispatcher {
   upb_dispatcher_frame stack[UPB_MAX_NESTING], *top, *limit;
+  bool supports_skip;
 };
 
 INLINE void upb_dispatcher_init(upb_dispatcher *d) {
   d->limit = d->stack + sizeof(d->stack);
 }
 
-INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h) {
+INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h,
+                                 bool supports_skip) {
   d->top = d->stack;
   d->top->depth = 1;  // Never want to trigger end-of-delegation.
   d->top->handlers = *h;
+  d->supports_skip = supports_skip;
 }
 
 INLINE upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d) {
@@ -256,7 +259,7 @@ INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
     d->top->depth = 0;
     ret = d->top->handlers.set->startmsg(d->top->handlers.closure);
   }
-  if (ret == UPB_CONTINUE) ++d->top->depth;
+  if (ret == UPB_CONTINUE || !d->supports_skip) ++d->top->depth;
   upb_handlers_uninit(&handlers);
   return ret;
 }

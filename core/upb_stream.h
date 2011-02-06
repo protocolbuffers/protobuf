@@ -198,7 +198,8 @@ INLINE void upb_src_run(upb_src *src, upb_status *status);
 struct _upb_dispatcher;
 typedef struct _upb_dispatcher upb_dispatcher;
 INLINE void upb_dispatcher_init(upb_dispatcher *d);
-INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h);
+INLINE void upb_dispatcher_reset(upb_dispatcher *d, upb_handlers *h,
+                                 bool supports_skip);
 INLINE upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_endmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,

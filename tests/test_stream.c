@@ -87,7 +87,7 @@ static void test_dispatcher() {
   upb_set_handler_closure(&h, &data, NULL);
   upb_dispatcher d;
   upb_dispatcher_init(&d);
-  upb_dispatcher_reset(&d, &h);
+  upb_dispatcher_reset(&d, &h, false);
 
   upb_dispatch_startmsg(&d);
   upb_value val;
