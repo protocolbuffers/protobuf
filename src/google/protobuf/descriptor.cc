@@ -2160,6 +2160,11 @@ class DescriptorBuilder {
   static inline bool get_is_placeholder(const Descriptor* descriptor) {
     return descriptor->is_placeholder_;
   }
+  static inline void assert_mutex_held(const DescriptorPool* pool) {
+    if (pool->mutex_ != NULL) {
+      pool->mutex_->AssertHeld();
+    }
+  }
 
   // Must be run only after options have been interpreted.
   //
@@ -4338,9 +4343,7 @@ class DescriptorBuilder::OptionInterpreter::AggregateOptionFinder
 
   virtual const FieldDescriptor* FindExtension(
       Message* message, const string& name) const {
-    if (builder_->pool_->mutex_ != NULL) {
-      builder_->pool_->mutex_->AssertHeld();
-    }
+    assert_mutex_held(builder_->pool_);
     Symbol result = builder_->LookupSymbolNoPlaceholder(
         name, message->GetDescriptor()->full_name());
     if (result.type == Symbol::FIELD &&
