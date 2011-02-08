@@ -73,7 +73,7 @@ upb_array *upb_array_new(void) {
 
 void upb_array_recycle(upb_array **_arr, upb_fielddef *f) {
   upb_array *arr = *_arr;
-  if(arr && upb_atomic_read(&arr->refcount) == 1) {
+  if(arr && upb_atomic_only(&arr->refcount)) {
     arr->len = 0;
   } else {
     upb_array_unref(arr, f);
@@ -133,7 +133,7 @@ void _upb_msg_free(upb_msg *msg, upb_msgdef *md) {
 
 void upb_msg_recycle(upb_msg **_msg, upb_msgdef *msgdef) {
   upb_msg *msg = *_msg;
-  if(msg && upb_atomic_read(&msg->refcount) == 1) {
+  if(msg && upb_atomic_only(&msg->refcount)) {
     upb_msg_clear(msg, msgdef);
   } else {
     upb_msg_unref(msg, msgdef);
@@ -168,7 +168,7 @@ static void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val) {
     // We do:
     //  - upb_string_recycle(), upb_string_substr() instead of
     //  - upb_string_unref(), upb_string_getref()
-    // because we can conveniently caching these upb_string objects in the
+    // because we can conveniently cache these upb_string objects in the
     // upb_msg, whereas the upb_src who is sending us these strings may not
     // have a good way of caching them.  This saves the upb_src from allocating
     // new upb_strings all the time to give us.
@@ -190,7 +190,6 @@ upb_msg *upb_msg_appendmsg(upb_msg *msg, upb_fielddef *f, upb_msgdef *msgdef) {
   upb_valueptr p = upb_msg_getappendptr(msg, f);
   if (upb_isarray(f) || !upb_msg_has(msg, f)) {
     upb_msg_recycle(p.msg, msgdef);
-    upb_msg_clear(*p.msg, msgdef);
     upb_msg_sethas(msg, f);
   }
   return *p.msg;

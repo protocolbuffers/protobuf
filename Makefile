@@ -180,7 +180,9 @@ tools/upbc: core/libupb.a
 #UPB_BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table \
 #               benchmarks/b.parsetostruct_googlemessage2.upb_table
 UPB_BENCHMARKS=benchmarks/b.parsestream_googlemessage1.upb_table \
-               benchmarks/b.parsestream_googlemessage2.upb_table
+               benchmarks/b.parsestream_googlemessage2.upb_table \
+               benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
+               benchmarks/b.parsetostruct_googlemessage2.upb_table_byref
 
 BENCHMARKS=$(UPB_BENCHMARKS) \
            benchmarks/b.parsetostruct_googlemessage1.proto2_table \
