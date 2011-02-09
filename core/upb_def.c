@@ -727,6 +727,8 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
     // want to use a different ordering that puts all the required bits
     // together.
     f->field_index = i;
+    f->set_bit_mask = 1 << (i % 8);
+    f->set_bit_offset = i / 8;
 
     size_t size, align;
     if (upb_isarray(f)) {

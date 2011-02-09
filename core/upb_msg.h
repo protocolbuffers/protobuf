@@ -198,7 +198,7 @@ void upb_msg_recycle(upb_msg **msg, upb_msgdef *msgdef);
 // Tests whether the given field is explicitly set, or whether it will return a
 // default.
 INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
-  return (msg->data[f->field_index/8] & (1 << (f->field_index % 8))) != 0;
+  return (msg->data[f->set_bit_offset] & f->set_bit_mask) != 0;
 }
 
 INLINE upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {

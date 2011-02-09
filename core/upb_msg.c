@@ -142,7 +142,7 @@ void upb_msg_recycle(upb_msg **_msg, upb_msgdef *msgdef) {
 }
 
 INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
-  msg->data[f->field_index/8] |= (1 << (f->field_index % 8));
+  msg->data[f->set_bit_offset] |= f->set_bit_mask;
 }
 
 static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {

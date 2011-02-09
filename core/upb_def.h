@@ -101,14 +101,16 @@ typedef struct _upb_fielddef {
   uint32_t byte_offset;           // Where in a upb_msg to find the data.
 
   // These are set only when this fielddef is part of a msgdef.
+  upb_field_number_t number;
   upb_field_count_t field_index;  // Indicates set bit.
 
-  upb_field_number_t number;
   upb_fieldtype_t type;
   upb_label_t label;
   // True if we own a ref on "def" (above).  This is true unless this edge is
   // part of a cycle.
   bool owned;
+  uint8_t set_bit_mask;
+  uint16_t set_bit_offset;
 } upb_fielddef;
 
 // A variety of tests about the type of a field.

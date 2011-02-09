@@ -10,7 +10,7 @@ set -v
 # Generate numbers for baseline.
 rm -rf perf-tmp
 git clone . perf-tmp
-(cd perf-tmp && ./perf-tests.sh upb)
+(cd perf-tmp && ../perf-tests.sh upb)
 cp perf-tmp/perf-tests.out perf-tests.baseline
 
 # Generate numbers for working directory.
@@ -22,6 +22,7 @@ for line in baseline_file:
   test, speed = line.split(":")
   baseline[test] = int(speed)
 
+print("\n\n=== PERFORMANCE REGRESSION TEST RESULTS:\n")
 wd_file = open("perf-tests.out")
 for line in wd_file:
   test, speed = line.split(":")
