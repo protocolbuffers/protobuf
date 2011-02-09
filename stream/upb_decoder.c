@@ -247,7 +247,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   // by external code (like when we dispatch a callback).  We must be sure not
   // to let its address escape this source file.
   upb_dstate state = {NULL, (void*)0x1, 0, d->top->msgdef};
-  upb_string *str = NULL;
 
 // TODO: handle UPB_SKIPSUBMSG
 #define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { assert(!upb_ok(status)); goto err; }
@@ -273,7 +272,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
         // Normal end-of-file.
         upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
-        upb_string_unref(str);
         return;
       } else {
         if (status->code == UPB_EOF) {
@@ -313,7 +311,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
 
     if (!f) {
       if (tag.wire_type == UPB_WIRE_TYPE_DELIMITED)
-        CHECK(upb_decode_string(d, &val, &str, &state));
+        CHECK(upb_decode_string(d, &val, &d->tmp, &state));
       CHECK_FLOW(upb_dispatch_unknownval(&d->dispatcher, tag.field_number, val));
     } else if (!upb_check_type(tag.wire_type, f->type)) {
       // TODO: put more details in this error msg.
@@ -336,7 +334,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
         continue;  // We have no value to dispatch.
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES):
-        CHECK(upb_decode_string(d, &val, &str, &state));
+        CHECK(upb_decode_string(d, &val, &d->tmp, &state));
         break;
       case UPB_TYPE(SINT32):
         upb_value_setint32(&val, upb_zzdec_32(upb_value_getint32(val)));
@@ -354,7 +352,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   }
 
 err:
-  upb_string_unref(str);
   if (upb_ok(status)) {
     upb_seterr(status, UPB_ERROR, "Callback returned UPB_BREAK");
   }
@@ -381,6 +378,7 @@ void upb_decoder_init(upb_decoder *d, upb_msgdef *msgdef) {
   d->toplevel_msgdef = msgdef;
   d->limit = &d->stack[UPB_MAX_NESTING];
   d->buf = NULL;
+  d->tmp = NULL;
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
@@ -389,11 +387,11 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
   d->top->msgdef = d->toplevel_msgdef;
   // Never want to end top-level message, so treat it like a group.
   d->top->end_offset = UPB_GROUP_END_OFFSET;
-  upb_string_recycle(&d->buf);
 }
 
 void upb_decoder_uninit(upb_decoder *d) {
   upb_string_unref(d->buf);
+  upb_string_unref(d->tmp);
 }
 
 upb_src *upb_decoder_src(upb_decoder *d) { return &d->src; }

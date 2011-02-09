@@ -53,6 +53,9 @@ struct _upb_decoder {
   // Current input buffer.
   upb_string *buf;
 
+  // Temporary string for passing to callbacks.
+  upb_string *tmp;
+
   // The offset within the overall stream represented by the *beginning* of buf.
   size_t buf_stream_offset;
 };
