@@ -16,8 +16,47 @@
 // The key fast-path varint-decoding routine.  Here we can assume we have at
 // least UPB_MAX_VARINT_ENCODED_SIZE bytes available.  There are a lot of
 // possibilities for optimization/experimentation here.
-INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val,
-                                   upb_status *status) {
+
+#ifdef USE_SSE_VARINT_DECODING
+#include <emmintrin.h>
+
+// This works, but is empirically slower than the branchy version below.  Why?
+// Most varints are very short.  Next step: use branches for 1/2-byte varints,
+// but use the SSE version for 3-10 byte varints.
+INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val, upb_status *s) {
+  const char *p = *ptr;
+  __m128i val128 = _mm_loadu_si128((void*)p);
+  unsigned int continuation_bits = _mm_movemask_epi8(val128);
+  unsigned int bsr_val = ~continuation_bits;
+  int varint_length = __builtin_ffs(bsr_val);
+  if (varint_length > 10) {
+    upb_seterr(s, UPB_ERROR, "Unterminated varint");
+    return false;
+  }
+
+  uint16_t twob;
+  memcpy(&twob, p, 2);
+  twob &= 0x7f7f;
+  twob = ((twob & 0xff00) >> 1) | (twob & 0xff);
+
+  uint64_t eightb;
+  memcpy(&eightb, p + 2, 8);
+  eightb &= 0x7f7f7f7f7f7f7f7f;
+  eightb = ((eightb & 0xff00ff00ff00ff00) >> 1) | (eightb & 0x00ff00ff00ff00ff);
+  eightb = ((eightb & 0xffff0000ffff0000) >> 2) | (eightb & 0x0000ffff0000ffff);
+  eightb = ((eightb & 0xffffffff00000000) >> 4) | (eightb & 0x00000000ffffffff);
+
+  uint64_t all_bits = twob | (eightb << 14);
+  int varint_bits = varint_length * 7;
+  uint64_t mask = varint_bits == 70 ? (uint64_t)-1 : (1ULL << (varint_bits)) - 1;
+  *val = all_bits & mask;
+  *ptr = p + varint_length;
+  return true;
+}
+
+#else
+
+INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val, upb_status *s) {
   const char *p = *ptr;
   uint32_t low, high = 0;
   uint32_t b;
@@ -33,13 +72,16 @@ INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val,
   b = *(p++); high |= (b & 0x7f) << 24; if(!(b & 0x80)) goto done;
   b = *(p++); high |= (b & 0x7f) << 31; if(!(b & 0x80)) goto done;
 
-  upb_seterr(status, UPB_ERROR, "Unterminated varint");
+  upb_seterr(s, UPB_ERROR, "Unterminated varint");
   return false;
+
 done:
-  *ptr = p;
   *val = ((uint64_t)high << 32) | low;
+  *ptr = p;
   return true;
 }
+
+#endif
 
 
 /* Decoding/Buffering of individual values ************************************/
@@ -163,7 +205,7 @@ done:
 }
 
 INLINE bool upb_decode_varint(upb_decoder *d, upb_dstate *s, upb_value *val) {
-  if (s->len >= UPB_MAX_VARINT_ENCODED_SIZE) {
+  if (s->len >= 16) {
     // Common (fast) case.
     uint64_t val64;
     const char *p = s->ptr;
@@ -315,7 +357,9 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
       CHECK_FLOW(upb_dispatch_unknownval(&d->dispatcher, tag.field_number, val));
     } else if (!upb_check_type(tag.wire_type, f->type)) {
       // TODO: put more details in this error msg.
-      upb_seterr(status, UPB_ERROR, "Field had incorrect type.");
+      upb_seterr(status, UPB_ERROR, "Field had incorrect type, name: " UPB_STRFMT, UPB_STRARG(f->name));
+      upb_printerr(status);
+      *(int*)0 = 0;
       goto err;
     }
 

@@ -17,17 +17,18 @@ static void test_get_v_uint64_t()
 {
 #define TEST(name, bytes, val) {\
     upb_status status = UPB_STATUS_INIT; \
-    const char name[] = bytes; \
+    const char name[] = bytes "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" ; \
     const char *name ## _buf = name; \
     uint64_t name ## _val = 0; \
     upb_decode_varint_fast(&name ## _buf, &name ## _val, &status); \
     ASSERT(upb_ok(&status)); \
     ASSERT(name ## _val == val); \
-    ASSERT(name ## _buf == name + sizeof(name) - 1);  /* - 1 for NULL */ \
+    ASSERT(name ## _buf == name + sizeof(name) - 16);  /* - 1 for NULL */ \
   }
 
   TEST(zero,   "\x00",                                                      0ULL);
   TEST(one,    "\x01",                                                      1ULL);
+  TEST(twob,   "\x81\x14",                                              0xa01ULL);
   TEST(twob,   "\x81\x03",                                              0x181ULL);
   TEST(threeb, "\x81\x83\x07",                                        0x1c181ULL);
   TEST(fourb,  "\x81\x83\x87\x0f",                                  0x1e1c181ULL);
@@ -39,7 +40,7 @@ static void test_get_v_uint64_t()
   TEST(tenb,   "\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07", 0x8303fdf9f1e1c181ULL);
 #undef TEST
 
-  char twelvebyte[] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
+  char twelvebyte[16] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01, 0x01};
   const char *twelvebyte_buf = twelvebyte;
   uint64_t twelvebyte_val = 0;
   upb_status status = UPB_STATUS_INIT;
@@ -214,6 +215,7 @@ static void test_upb_symtab() {
   }
   upb_status status = UPB_STATUS_INIT;
   upb_parsedesc(s, descriptor, &status);
+  upb_printerr(&status);
   ASSERT(upb_ok(&status));
   upb_status_uninit(&status);
   upb_string_unref(descriptor);
