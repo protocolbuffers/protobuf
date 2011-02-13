@@ -2,9 +2,8 @@
 # This Makefile builds the upb library as well as associated tests, tools, and
 # language extensions.
 #
-# It does not use autoconf/automake/libtool because I can't stomach all the
-# cruft.  If you're not compiling for gcc, you may have to change some of the
-# options.
+# It does not use autoconf/automake/libtool in order to stay lightweight and
+# avoid the need for running ./configure.
 #
 # Summary of compiler flags you may want to use:
 #
@@ -20,50 +19,45 @@
 # Other:
 # * -DUPB_UNALIGNED_READS_OK: makes code smaller, but not standard compliant
 
-# Function to expand a wildcard pattern recursively.
-rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
+.PHONY: all clean tests test benchmarks benchmark descriptorgen
 
-.PHONY: all clean test benchmarks benchmark descriptorgen tests
+# Default rule: just build libupb.
+all: lib
+
+# Basic compiler/flag setup.
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
-INCLUDE=-Idescriptor -Isrc -Itests -I.
-CPPFLAGS=-Wall -Wextra -Wno-missing-field-initializers -g $(INCLUDE) $(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+INCLUDE=-Isrc -Itests -I.
+USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-missing-field-initializers $(USER_CFLAGS)
 LDLIBS=-lpthread src/libupb.a
-ifeq ($(shell uname), Darwin)
-  CPPFLAGS += -I/usr/include/lua5.1
-  LDFLAGS += -L/usr/local/lib -llua
-else
-  CFLAGS += $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
-  LDFLAGS += $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
-endif
 
-LIBUPB=src/libupb.a
-LIBUPB_PIC=src/libupb_pic.a
-LIBUPB_SHARED=src/libupb.so
-ALL=deps $(OBJ) $(LIBUPB) $(LIBUPB_PIC)
-all: $(ALL)
-clean:
-	rm -rf $(LIBUPB) $(LIBUPB_PIC)
-	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.gcno) $(call rwildcard,,*.dSYM)
-	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
-	rm -rf $(TESTS) tests/t.*
-	rm -rf descriptor/descriptor.pb
-	rm -rf tools/upbc deps
-	cd lang_ext/python && python setup.py clean --all
+# Dependency generating. #######################################################
 
 -include deps
-deps: gen-deps.sh Makefile $(call rwildcard,,*.c) $(call rwildcard,,*.h)
-	@./gen-deps.sh $(SRC)
+# Unfortuantely we can't easily generate deps for benchmarks or tests because
+# of the scheme we use that compiles the same source file multiple times with
+# different -D options, which can include different header files.
+deps: gen-deps.sh Makefile $(CORE) $(STREAM)
+	@CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
+	@echo Regenerating dependencies for src/...
+
+$(ALLSRC): perf-cppflags
+
+
+# Source files. ###############################################################
+
+# Every source file used in upb should appear here.
 
 # The core library -- the absolute minimum you must compile in to successfully
 # bootstrap.
 CORE= \
+  src/descriptor.c \
   src/upb.c \
   src/upb_table.c \
   src/upb_string.c \
   src/upb_def.c \
-  descriptor/descriptor.c
 
 # Common encoders/decoders and upb_msg -- you're almost certain to want these.
 STREAM= \
@@ -74,46 +68,102 @@ STREAM= \
   src/upb_msg.c \
   src/upb_glue.c \
 
-SRC=$(CORE) $(STREAM)
-
-$(SRC): perf-cppflags
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
+
+BENCHMARKS_SRC= \
+  benchmarks/main.c \
+  benchmarks/parsestream.upb_table.c \
+  benchmarks/parsetostruct.upb_table.c
+
+TESTS_SRC= \
+  tests/test_decoder.c \
+  tests/test_def.c \
+  tests/test_stream.c \
+  tests/test_string.c \
+  tests/tests.c \
+  tests/test_vs_proto2.cc
+
+ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
+
+
+# Rules. #######################################################################
+
+clean:
+	rm -rf $(LIBUPB) $(LIBUPB_PIC)
+	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.gcno) $(call rwildcard,,*.dSYM)
+	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -rf $(TESTS) tests/t.*
+	rm -rf src/descriptor.pb
+	rm -rf tools/upbc deps
+	cd lang_ext/python && python setup.py clean --all
+
+# Core library (libupb.a).
+SRC=$(CORE) $(STREAM)
+LIBUPB=src/libupb.a
+LIBUPB_PIC=src/libupb_pic.a
+lib: $(LIBUPB)
+
+OBJ=$(patsubst %.c,%.o,$(SRC))
+PICOBJ=$(patsubst %.c,%.lo,$(SRC))
+$(LIBUPB): $(OBJ)
+	@echo AR $(LIBUPB)
+	@ar rcs $(LIBUPB) $(OBJ)
+$(LIBUPB_PIC): $(PICOBJ)
+	@echo AR $(LIBUPB_PIC)
+	@ar rcs $(LIBUPB_PIC) $(PICOBJ)
+
+%.o : %.c
+	@echo CC $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+%.lo : %.c
+	@echo 'CC -fPIC' $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
+
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
+	@echo CC $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
+
 src/upb_def.lo: src/upb_def.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+	@echo 'CC -fPIC' $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+
+
+# Function to expand a wildcard pattern recursively.
+rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
+
+
+ifeq ($(shell uname), Darwin)
+  CPPFLAGS += -I/usr/include/lua5.1
+  LDFLAGS += -L/usr/local/lib -llua
+else
+  CFLAGS += $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
+  LDFLAGS += $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
+endif
+
+
 
 lang_ext/lua/upb.so: lang_ext/lua/upb.lo
 	$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< src/libupb_pic.a
 
 
-STATICOBJ=$(patsubst %.c,%.o,$(SRC))
-SHAREDOBJ=$(patsubst %.c,%.lo,$(SRC))
-# building shared objects is like building static ones, except -fPIC is added.
-%.lo : %.c ; $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
-$(LIBUPB): $(STATICOBJ)
-	ar rcs $(LIBUPB) $(STATICOBJ)
-$(LIBUPB_PIC): $(SHAREDOBJ)
-	ar rcs $(LIBUPB_PIC) $(SHAREDOBJ)
-$(LIBUPB_SHARED): $(SHAREDOBJ)
-	$(CC) -shared -o $(LIBUPB_SHARED) $(SHAREDOBJ)
-
-# Regenerating the auto-generated files in descriptor/.
-descriptor/descriptor.pb: descriptor/descriptor.proto
+# Regenerating the auto-generated files in src/.
+src/descriptor.pb: src/descriptor.proto
 	# TODO: replace with upbc
-	protoc descriptor/descriptor.proto -odescriptor/descriptor.pb
+	protoc src/descriptor.proto -osrc/descriptor.pb
 
-descriptorgen: descriptor/descriptor.pb
-	cd descriptor && xxd -i descriptor.pb > descriptor.c
+descriptorgen: src/descriptor.pb
+	cd src && xxd -i descriptor.pb > descriptor.c
 
 # Language extensions.
 python: $(LIBUPB_PIC)
 	cd lang_ext/python && python setup.py build
 
-# Tests
+# Tests. #######################################################################
+
 tests/test.proto.pb: tests/test.proto
 	# TODO: replace with upbc
 	protoc tests/test.proto -otests/test.proto.pb
@@ -130,17 +180,12 @@ TESTS= \
 
 #    tests/test_decoder \
 
-tests: $(LIBUPB) $(TESTS)
-
 $(TESTS): $(LIBUPB)
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 
-#VALGRIND=
 test: tests
 	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.
-#	Needs to be rewritten to separate the benchmark.
-#	valgrind --error-exitcode=1 ./tests/test_table
 	@for test in $(TESTS); do \
 	  if [ -x ./$$test ] ; then \
 	    echo !!! $(VALGRIND) ./$$test; \
@@ -153,13 +198,15 @@ tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \
     tests/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
     benchmarks/google_messages.pb.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage1 $< \
+	@echo CXX <$ (benchmarks::SpeedMessage1)
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage1 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message1.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
+	@echo CXX <$ (benchmarks::SpeedMessage2)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
@@ -168,17 +215,19 @@ tests/t.test_vs_proto2.googlemessage2: \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
 tests/test_table: tests/test_table.cc
-	# Includes <hash_set> which is a deprecated header.
+	@# Includes <hash_set> which is a deprecated header.
+	@echo CXX $<
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
 
 tests/tests: src/libupb.a
 
 # Tools
-tools/upbc: src/libupb.a
+tools: tools/upbc
+tools/upbc: $(LIBUPB)
+
+# Benchmarks. ##################################################################
 
 # Benchmarks
-#UPB_BENCHMARKS=benchmarks/b.parsetostruct_googlemessage1.upb_table \
-#               benchmarks/b.parsetostruct_googlemessage2.upb_table
 UPB_BENCHMARKS=benchmarks/b.parsestream_googlemessage1.upb_table \
                benchmarks/b.parsestream_googlemessage2.upb_table \
                benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
@@ -197,7 +246,7 @@ benchmark:
 	@for test in benchmarks/b.* ; do ./$$test ; done
 
 benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
-	# TODO: replace with upbc.
+	@# TODO: replace with upbc.
 	protoc benchmarks/google_messages.proto -obenchmarks/google_messages.proto.pb
 
 benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
