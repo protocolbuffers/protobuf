@@ -23,15 +23,14 @@
 extern "C" {
 #endif
 
-/* Note: the key cannot be zero!  Zero is used by the implementation. */
 typedef uint32_t upb_inttable_key_t;
 
 #define UPB_END_OF_CHAIN (uint32_t)0
-#define UPB_EMPTY_ENTRY (uint32_t)0
 
 typedef struct {
   upb_inttable_key_t key;
-  uint32_t next;  /* Internal chaining. */
+  bool has_entry:1;
+  uint32_t next:31;  // Internal chaining.
 } upb_inttable_entry;
 
 // TODO: consider storing the hash in the entry.  This would avoid the need to

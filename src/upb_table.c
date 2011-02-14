@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const upb_inttable_key_t EMPTYENT = 0;
 static const double MAX_LOAD = 0.85;
 
 static uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
@@ -79,7 +78,7 @@ static uint32_t empty_intbucket(upb_inttable *table)
   /* TODO: does it matter that this is biased towards the front of the table? */
   for(uint32_t i = 1; i <= upb_inttable_size(table); i++) {
     upb_inttable_entry *e = intent(table, i);
-    if(e->key == EMPTYENT) return i;
+    if(!e->has_entry) return i;
   }
   assert(false);
   return 0;
@@ -94,7 +93,7 @@ static void intinsert(upb_inttable *t, upb_inttable_entry *e)
   t->t.count++;
   uint32_t bucket = upb_inttable_bucket(t, e->key);
   upb_inttable_entry *table_e = intent(t, bucket);
-  if(table_e->key != EMPTYENT) {  /* Collision. */
+  if(table_e->has_entry) {  /* Collision. */
     if(bucket == upb_inttable_bucket(t, table_e->key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
        * place our new element and append it to this key's chain. */
@@ -111,7 +110,7 @@ static void intinsert(upb_inttable *t, upb_inttable_entry *e)
       memcpy(intent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
       upb_inttable_entry *evictee_e = intent(t, evictee_bucket);
       while(1) {
-        assert(evictee_e->key != UPB_EMPTY_ENTRY);
+        assert(evictee_e->has_entry);
         assert(evictee_e->next != UPB_END_OF_CHAIN);
         if(evictee_e->next == bucket) {
           evictee_e->next = empty_bucket;
@@ -124,6 +123,7 @@ static void intinsert(upb_inttable *t, upb_inttable_entry *e)
   }
   memcpy(table_e, e, t->t.entry_size);
   table_e->next = UPB_END_OF_CHAIN;
+  table_e->has_entry = true;
   assert(upb_inttable_lookup(t, e->key) == table_e);
 }
 
@@ -219,7 +219,7 @@ void *upb_inttable_next(upb_inttable *t, upb_inttable_entry *cur) {
   do {
     cur = (void*)((char*)cur + t->t.entry_size);
     if(cur == end) return NULL;
-  } while(cur->key == UPB_EMPTY_ENTRY);
+  } while(!cur->has_entry);
   return cur;
 }
 
