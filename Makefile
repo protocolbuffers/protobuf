@@ -40,7 +40,7 @@ LDLIBS=-lpthread src/libupb.a
 # of the scheme we use that compiles the same source file multiple times with
 # different -D options, which can include different header files.
 deps: gen-deps.sh Makefile $(CORE) $(STREAM)
-	@CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM) $(TOOLS)
+	@CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
 	@echo Regenerating dependencies for src/...
 
 $(ALLSRC): perf-cppflags
@@ -67,9 +67,6 @@ STREAM= \
   src/upb_strstream.c \
   src/upb_msg.c \
   src/upb_glue.c \
-
-TOOLS= \
-  src/upbc.c
 
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c

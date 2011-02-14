@@ -125,6 +125,7 @@ static void write_const_h(upb_def *defs[], int num_entries, char *outfile_name,
       upb_string_unref(preproc_field_name);
     }
     upb_string_unref(msg_val_prefix);
+    upb_string_unref(msg_name);
   }
 
   /* Epilogue. */
