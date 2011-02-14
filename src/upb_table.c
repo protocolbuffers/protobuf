@@ -129,7 +129,6 @@ static void intinsert(upb_inttable *t, upb_inttable_entry *e)
 
 void upb_inttable_insert(upb_inttable *t, upb_inttable_entry *e)
 {
-  assert(e->key != 0);
   if((double)(t->t.count + 1) / upb_inttable_size(t) > MAX_LOAD) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     upb_inttable new_table;

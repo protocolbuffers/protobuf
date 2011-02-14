@@ -231,6 +231,7 @@ int main(int argc, char *argv[])
   free(defs);
   upb_string_unref(descriptor);
   upb_symtab_unref(s);
+  upb_symtab_unref(s2);
   fclose(h_const_file);
 
   return 0;

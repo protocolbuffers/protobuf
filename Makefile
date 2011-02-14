@@ -40,7 +40,7 @@ LDLIBS=-lpthread src/libupb.a
 # of the scheme we use that compiles the same source file multiple times with
 # different -D options, which can include different header files.
 deps: gen-deps.sh Makefile $(CORE) $(STREAM)
-	@CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
+	@CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM) $(TOOLS)
 	@echo Regenerating dependencies for src/...
 
 $(ALLSRC): perf-cppflags
@@ -67,6 +67,9 @@ STREAM= \
   src/upb_strstream.c \
   src/upb_msg.c \
   src/upb_glue.c \
+
+TOOLS= \
+  src/upbc.c
 
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
@@ -222,13 +225,13 @@ tests/t.test_vs_proto2.googlemessage2: \
 tests/test_table: tests/test_table.cc
 	@# Includes <hash_set> which is a deprecated header.
 	@echo CXX $<
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
 
 tests/tests: src/libupb.a
 
 # Tools
 tools: src/upbc
-tools/upbc: $(LIBUPB)
+src/upbc: $(LIBUPB)
 
 # Benchmarks. ##################################################################
 

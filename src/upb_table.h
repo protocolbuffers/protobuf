@@ -100,12 +100,11 @@ INLINE uint32_t upb_inttable_bucket(upb_inttable *t, upb_inttable_key_t k) {
  * ability to optimize. */
 INLINE void *upb_inttable_fastlookup(upb_inttable *t, uint32_t key,
                                      uint32_t entry_size) {
-  assert(key != 0);
   uint32_t bucket = upb_inttable_bucket(t, key);
   upb_inttable_entry *e;
   do {
     e = (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket-1, entry_size);
-    if(e->key == key) return e;
+    if(e->key == key && e->has_entry) return e;
   } while((bucket = e->next) != UPB_END_OF_CHAIN);
   return NULL;  /* Not found. */
 }
