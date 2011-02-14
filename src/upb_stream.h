@@ -80,6 +80,9 @@ typedef enum {
   // objects to compose; a set of upb_handlers need not know whether it is the
   // top-level message or a sub-message.  May not be returned from any other
   // callback.
+  //
+  // WARNING!  The delegation API is slated for some significant changes.
+  // See: http://code.google.com/p/upb/issues/detail?id=6
   UPB_DELEGATE,
 } upb_flow_t;
 
