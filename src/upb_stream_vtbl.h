@@ -268,6 +268,7 @@ INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {
   upb_flow_t ret;
   if (--d->top->depth == 0) {
     ret = d->top->handlers.set->endmsg(d->top->handlers.closure);
+    //assert(ret != UPB_BREAK);
     if (ret != UPB_CONTINUE) return ret;
     --d->top;
     assert(d->top >= d->stack);

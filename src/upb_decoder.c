@@ -262,7 +262,7 @@ INLINE bool upb_check_type(upb_wire_type_t wt, upb_fieldtype_t ft) {
 
 static upb_flow_t upb_push(upb_decoder *d, upb_dstate *s, upb_fielddef *f,
                            upb_value submsg_len, upb_fieldtype_t type) {
-  d->top++;
+  ++d->top;
   if(d->top >= d->limit) {
     upb_seterr(d->status, UPB_ERROR, "Nesting too deep.");
     return UPB_ERROR;
@@ -273,11 +273,22 @@ static upb_flow_t upb_push(upb_decoder *d, upb_dstate *s, upb_fielddef *f,
           upb_value_getint32(submsg_len);
   d->top->msgdef = upb_downcast_msgdef(f->def);
   upb_dstate_setmsgend(d, s);
-  return upb_dispatch_startsubmsg(&d->dispatcher, f);
+  upb_flow_t ret = upb_dispatch_startsubmsg(&d->dispatcher, f);
+  if (ret == UPB_SKIPSUBMSG) {
+    if (type == UPB_TYPE(GROUP)) {
+      fprintf(stderr, "upb_decoder: Can't skip groups yet.\n");
+      abort();
+    }
+    upb_dstate_advance(s, upb_value_getint32(submsg_len));
+    --d->top;
+    upb_dstate_setmsgend(d, s);
+    ret = UPB_CONTINUE;
+  }
+  return ret;
 }
 
 static upb_flow_t upb_pop(upb_decoder *d, upb_dstate *s) {
-  d->top--;
+  --d->top;
   upb_dstate_setmsgend(d, s);
   return upb_dispatch_endsubmsg(&d->dispatcher);
 }
@@ -291,7 +302,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   upb_dstate state = {NULL, (void*)0x1, 0, d->top->msgdef};
 
 // TODO: handle UPB_SKIPSUBMSG
-#define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { assert(!upb_ok(status)); goto err; }
+#define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { /*assert(!upb_ok(status));*/ goto err; }
 #define CHECK(expr) if (!expr) { assert(!upb_ok(status)); goto err; }
 
   CHECK_FLOW(upb_dispatch_startmsg(&d->dispatcher));
@@ -355,11 +366,14 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
       if (tag.wire_type == UPB_WIRE_TYPE_DELIMITED)
         CHECK(upb_decode_string(d, &val, &d->tmp, &state));
       CHECK_FLOW(upb_dispatch_unknownval(&d->dispatcher, tag.field_number, val));
+      continue;
     } else if (!upb_check_type(tag.wire_type, f->type)) {
       // TODO: put more details in this error msg.
-      upb_seterr(status, UPB_ERROR, "Field had incorrect type, name: " UPB_STRFMT, UPB_STRARG(f->name));
+      upb_seterr(status, UPB_ERROR, "Field had incorrect type, name: " UPB_STRFMT
+                 ", field type: %d, expected wire type %d, actual wire type: %d",
+                 UPB_STRARG(f->name), f->type, upb_types[f->type].native_wire_type,
+                 tag.wire_type);
       upb_printerr(status);
-      *(int*)0 = 0;
       goto err;
     }
 
@@ -396,6 +410,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   }
 
 err:
+  upb_copyerr(status, d->dispatcher.top->handlers.status);
   if (upb_ok(status)) {
     upb_seterr(status, UPB_ERROR, "Callback returned UPB_BREAK");
   }
@@ -403,7 +418,7 @@ err:
 
 void upb_decoder_sethandlers(upb_src *src, upb_handlers *handlers) {
   upb_decoder *d = (upb_decoder*)src;
-  upb_dispatcher_reset(&d->dispatcher, handlers, false);
+  upb_dispatcher_reset(&d->dispatcher, handlers, true);
   d->top = d->stack;
   d->buf_stream_offset = 0;
   d->top->msgdef = d->toplevel_msgdef;

@@ -38,6 +38,7 @@ void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
 }
 
 void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
+  upb_symtab_add_descriptorproto(symtab);
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str);

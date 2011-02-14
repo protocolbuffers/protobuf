@@ -125,11 +125,11 @@ $(LIBUPB_PIC): $(PICOBJ)
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
 	@echo CC $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
 
 src/upb_def.lo: src/upb_def.c
 	@echo 'CC -fPIC' $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
 
 
 # Function to expand a wildcard pattern recursively.
@@ -155,7 +155,9 @@ src/descriptor.pb: src/descriptor.proto
 	# TODO: replace with upbc
 	protoc src/descriptor.proto -osrc/descriptor.pb
 
-descriptorgen: src/descriptor.pb
+descriptorgen: src/descriptor.pb tools/upbc
+	@# Regenerate descriptor_const.h
+	./tools/upbc -o src/descriptor src/descriptor.pb
 	cd src && xxd -i descriptor.pb > descriptor.c
 
 # Language extensions.
@@ -180,6 +182,7 @@ TESTS= \
 
 #    tests/test_decoder \
 
+tests: $(TESTS)
 $(TESTS): $(LIBUPB)
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 
@@ -198,7 +201,7 @@ tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \
     tests/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
     benchmarks/google_messages.pb.cc
-	@echo CXX <$ (benchmarks::SpeedMessage1)
+	@echo CXX $< '(benchmarks::SpeedMessage1)'
 	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage1 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
@@ -206,8 +209,8 @@ tests/t.test_vs_proto2.googlemessage2: \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
-	@echo CXX <$ (benchmarks::SpeedMessage2)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
+	@echo CXX $< '(benchmarks::SpeedMessage2)'
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message2.dat\" \

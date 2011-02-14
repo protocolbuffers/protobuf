@@ -6,8 +6,8 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include "descriptor.c"
 #include "descriptor_const.h"
-#include "descriptor.h"
 #include "upb_def.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
@@ -218,8 +218,7 @@ static void upb_deflist_init(upb_deflist *l) {
 }
 
 static void upb_deflist_uninit(upb_deflist *l) {
-  for(uint32_t i = 0; i < l->len; i++)
-    if(l->defs[i]) upb_def_unref(l->defs[i]);
+  for(uint32_t i = 0; i < l->len; i++) upb_def_unref(l->defs[i]);
   free(l->defs);
 }
 
@@ -759,6 +758,7 @@ static upb_flow_t upb_msgdef_value(void *_b, upb_fielddef *f, upb_value val) {
   upb_defbuilder *b = _b;
   switch(f->number) {
     case GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME_FIELDNUM: {
+      assert(val.type == UPB_TYPE(STRING));
       upb_msgdef *m = upb_defbuilder_top(b);
       upb_string_unref(m->base.fqname);
       m->base.fqname = upb_string_getref(upb_value_getstr(val));
@@ -788,7 +788,6 @@ static upb_flow_t upb_msgdef_startsubmsg(void *_b, upb_fielddef *f,
     case GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE_FIELDNUM:
       upb_enumdef_register_EnumDescriptorProto(b, h);
       return UPB_DELEGATE;
-      break;
     default:
       return UPB_SKIPSUBMSG;
   }
@@ -1054,7 +1053,6 @@ err:
     upb_def_unref(e->def);
   }
   upb_strtable_free(&tmptab);
-  for (int i = 0; i < num_defs; i++) upb_def_unref(defs[i]);
   return false;
 }
 
@@ -1318,8 +1316,10 @@ void upb_symtab_add_descriptorproto(upb_symtab *symtab) {
   // For the moment we silently decline to perform the operation if the symbols
   // already exist in the symtab.  Revisit this when we have a better story
   // about whether syms in a table can be replaced.
-  if(symtab->fds_msgdef) upb_def_unref(UPB_UPCAST(symtab->fds_msgdef));
+  if(symtab->fds_msgdef) return;
 
+  static upb_string descriptor_str =
+      UPB_STATIC_STRING_ARRAY(descriptor_pb);
   upb_baredecoder *decoder = upb_baredecoder_new(&descriptor_str);
   upb_status status = UPB_STATUS_INIT;
   upb_symtab_addfds(symtab, upb_baredecoder_src(decoder), &status);
