@@ -19,7 +19,7 @@
 # Other:
 # * -DUPB_UNALIGNED_READS_OK: makes code smaller, but not standard compliant
 
-.PHONY: all clean tests test benchmarks benchmark descriptorgen
+.PHONY: all lib clean tests test benchmarks benchmark descriptorgen
 
 # Default rule: just build libupb.
 all: lib
@@ -95,7 +95,7 @@ clean:
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf $(TESTS) tests/t.*
 	rm -rf src/descriptor.pb
-	rm -rf tools/upbc deps
+	rm -rf src/upbc deps
 	cd lang_ext/python && python setup.py clean --all
 
 # Core library (libupb.a).
@@ -155,10 +155,12 @@ src/descriptor.pb: src/descriptor.proto
 	# TODO: replace with upbc
 	protoc src/descriptor.proto -osrc/descriptor.pb
 
-descriptorgen: src/descriptor.pb tools/upbc
+descriptorgen: src/descriptor.pb src/upbc
 	@# Regenerate descriptor_const.h
 	./tools/upbc -o src/descriptor src/descriptor.pb
 	cd src && xxd -i descriptor.pb > descriptor.c
+
+src/upbc: src/upbc.c $(LIBUPB)
 
 # Language extensions.
 python: $(LIBUPB_PIC)
@@ -225,7 +227,7 @@ tests/test_table: tests/test_table.cc
 tests/tests: src/libupb.a
 
 # Tools
-tools: tools/upbc
+tools: src/upbc
 tools/upbc: $(LIBUPB)
 
 # Benchmarks. ##################################################################
