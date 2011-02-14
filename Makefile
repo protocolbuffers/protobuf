@@ -157,7 +157,7 @@ src/descriptor.pb: src/descriptor.proto
 
 descriptorgen: src/descriptor.pb src/upbc
 	@# Regenerate descriptor_const.h
-	./tools/upbc -o src/descriptor src/descriptor.pb
+	./src/upbc -o src/descriptor src/descriptor.pb
 	cd src && xxd -i descriptor.pb > descriptor.c
 
 src/upbc: src/upbc.c $(LIBUPB)

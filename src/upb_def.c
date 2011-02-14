@@ -476,6 +476,12 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_value(void *_b,
       break;
     case GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER_FIELDNUM:
       b->number = upb_value_getint32(val);
+      if (b->number == 0) {
+        upb_seterr(&b->status, UPB_ERROR,
+                   "Enums with a value of 0 are currently broken; see "
+                   "http://code.google.com/p/upb/issues/detail?id=1.");
+        return UPB_BREAK;
+      }
       b->saw_number = true;
       break;
     default:
