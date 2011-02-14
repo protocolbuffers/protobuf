@@ -1,40 +1,40 @@
 
 upb - a minimalist implementation of protocol buffers.
 
-- For API documentation, see the header files.
-- To build type "make".
+For API documentation, see the header files.
 
+To build:
+$ make
 
-ROADMAP OF THE SOURCE
-=====================
+Other useful targets:
+$ make test
+$ make benchmark
 
-benchmark/
-  Benchmarks of upb and other protocol buffer implementations.
-core/
-  The core source directory.  builds into core/libupb.a.  Contains only the
-  very core library, which is capable of loading descriptors given the
-  appropriate decoder.  Does not even contain decoders for the standard
-  formats like the protobuf text and binary formats.
-descriptor/
-  Files that describe the format of Protocol Buffer "descriptors", which are
-  protocol buffers that describe the format of other protocol buffers.  These
-  are used extensively inside upb.
-labs/
-  Code that is not part of upb, but contains efficiency-related experiments
-  about alternate ways of implementing things.  When possible, these are
-  benchmarked by the tests in benchmark/.  We also test these with the tests
-  in tests/, to ensure that the alternate implementations are actually correct.
-stream/
-  Implementations of streaming protobuf encoders and decoders.
-tests/
-  Unit tests.
-tools/
-  Command-line tools like the upb compiler.
+Issue tracking is on Google Code:
+  http://code.google.com/p/upb/issues/list
+
+A manual is forthcoming, for now see wiki docs at:
+  https://github.com/haberman/upb/wiki
+
+API and ABI are both subject to change!  Please do not distribute as a shared
+library for this reason (for now at least).
+
+TODO
+====
+
+The issue tracker contains small-to-medium tasks that need doing; but here are
+the major things that are broken or not yet implemented yet:
+
+- serialization isn't written yet (only deserialization)
+
+- the language extensions that exist so far (Python and Lua) are totally
+  incomplete/broken.  They are not usable for anything yet.  This will
+  be remedied very soon.
 
 
 CONTACT
 =======
 
-Author: Joshua Haberman (joshua@reverberate.org, haberman@google.com)
+Author: Joshua Haberman (jhaberman@gmail.com, haberman@google.com)
 See LICENSE for copyright information.
 
