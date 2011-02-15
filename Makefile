@@ -350,6 +350,6 @@ endif
 
 LUAEXT=lang_ext/lua/upb.so
 lua: $(LUAEXT)
-lang_ext/lua/upb.so: lang_ext/lua/upb.lo $(LIBUPB_PIC)
+lang_ext/lua/upb.so: lang_ext/lua/upb.c $(LIBUPB_PIC)
 	@echo CC lang_ext/lua/upb.c
 	@$(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< src/libupb_pic.a $(LUA_LDFLAGS)
