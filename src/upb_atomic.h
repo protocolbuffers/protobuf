@@ -29,6 +29,9 @@ extern "C" {
 #define INLINE static inline
 #endif
 
+// Until this stuff is actually working, make thread-unsafe the default.
+#define UPB_THREAD_UNSAFE
+
 #ifdef UPB_THREAD_UNSAFE
 
 /* Non-thread-safe implementations. ******************************************/
