@@ -121,7 +121,7 @@ $(LIBUPB): $(OBJ)
 	$(Q) ar rcs $(LIBUPB) $(OBJ)
 $(LIBUPB_PIC): $(PICOBJ)
 	$(E) AR $(LIBUPB_PIC)
-	$(Q) rcs $(LIBUPB_PIC) $(PICOBJ)
+	$(Q) ar rcs $(LIBUPB_PIC) $(PICOBJ)
 
 %.o : %.c
 	$(E) CC $<
