@@ -58,6 +58,18 @@ struct _upb_decoder {
 
   // The offset within the overall stream represented by the *beginning* of buf.
   size_t buf_stream_offset;
+
+  // Our current position in the data buffer.
+  const char *ptr;
+
+  // End of this submessage, relative to *ptr.
+  const char *submsg_end;
+
+  // Number of bytes available at ptr.
+  size_t len;
+
+  // Msgdef for the current level.
+  upb_msgdef *msgdef;
 };
 
 // A upb_decoder decodes the binary protocol buffer format, writing the data it
