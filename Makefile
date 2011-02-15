@@ -33,6 +33,15 @@ USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-missing-field-initializers $(USER_CFLAGS)
 LDLIBS=-lpthread src/libupb.a
 
+# Build with "make Q=" to see all commands that are being executed.
+Q=@
+
+ifeq ($(Q), @)
+  E=@echo
+else
+  E=@:
+endif
+
 # Dependency generating. #######################################################
 
 -include deps
@@ -40,8 +49,8 @@ LDLIBS=-lpthread src/libupb.a
 # of the scheme we use that compiles the same source file multiple times with
 # different -D options, which can include different header files.
 deps: gen-deps.sh Makefile $(CORE) $(STREAM)
-	@CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
-	@echo Regenerating dependencies for src/...
+	$(Q) CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
+	$(E) Regenerating dependencies for src/...
 
 $(ALLSRC): perf-cppflags
 
@@ -108,29 +117,29 @@ lib: $(LIBUPB)
 OBJ=$(patsubst %.c,%.o,$(SRC))
 PICOBJ=$(patsubst %.c,%.lo,$(SRC))
 $(LIBUPB): $(OBJ)
-	@echo AR $(LIBUPB)
-	@ar rcs $(LIBUPB) $(OBJ)
+	$(E) AR $(LIBUPB)
+	$(Q) ar rcs $(LIBUPB) $(OBJ)
 $(LIBUPB_PIC): $(PICOBJ)
-	@echo AR $(LIBUPB_PIC)
-	@ar rcs $(LIBUPB_PIC) $(PICOBJ)
+	$(E) AR $(LIBUPB_PIC)
+	$(Q) rcs $(LIBUPB_PIC) $(PICOBJ)
 
 %.o : %.c
-	@echo CC $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(E) CC $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 %.lo : %.c
-	@echo 'CC -fPIC' $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
+	$(E) 'CC -fPIC' $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
 
 # Override the optimization level for upb_def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
-	@echo CC $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
+	$(E) CC $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
 
 src/upb_def.lo: src/upb_def.c
-	@echo 'CC -fPIC' $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
+	$(E) 'CC -fPIC' $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
 
 
 # Function to expand a wildcard pattern recursively.
@@ -140,7 +149,7 @@ rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $
 
 # Regenerating the auto-generated files in src/.
 src/descriptor.pb: src/descriptor.proto
-	# TODO: replace with upbc
+	@# TODO: replace with upbc
 	protoc src/descriptor.proto -osrc/descriptor.pb
 
 descriptorgen: src/descriptor.pb src/upbc
@@ -157,7 +166,7 @@ python: $(LIBUPB_PIC)
 # Tests. #######################################################################
 
 tests/test.proto.pb: tests/test.proto
-	# TODO: replace with upbc
+	@# TODO: replace with upbc
 	protoc tests/test.proto -otests/test.proto.pb
 
 TESTS= \
@@ -175,6 +184,10 @@ TESTS= \
 tests: $(TESTS)
 $(TESTS): $(LIBUPB)
 
+% : %.c
+	$(E) CC $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 
 test: tests
 	@echo Running all tests under valgrind.
@@ -191,16 +204,16 @@ tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \
     tests/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
     benchmarks/google_messages.pb.cc
-	@echo CXX $< '(benchmarks::SpeedMessage1)'
-	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage1 $< \
+	$(E) CXX $< '(benchmarks::SpeedMessage1)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage1 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message1.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
-	@echo CXX $< '(benchmarks::SpeedMessage2)'
-	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
+	$(E) CXX $< '(benchmarks::SpeedMessage2)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message2.dat\" \
@@ -209,8 +222,8 @@ tests/t.test_vs_proto2.googlemessage2: \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
 tests/test_table: tests/test_table.cc
 	@# Includes <hash_set> which is a deprecated header.
-	@echo CXX $<
-	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
+	$(E) CXX $<
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
 
 tests/tests: src/libupb.a
 
@@ -250,22 +263,26 @@ benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
 benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
 benchmarks/b.parsetostruct_googlemessage2.upb_table_byref: \
     benchmarks/parsetostruct.upb_table.c $(LIBUPB) benchmarks/google_messages.proto.pb
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byval $< \
+	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage1, byval)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byval $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
 	  -DBYREF=false $(LIBUPB)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byref $< \
+	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage1, byref)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byref $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
 	  -DBYREF=true $(LIBUPB)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byval $< \
+	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage2, byval)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byval $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
 	  -DBYREF=false $(LIBUPB)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byref $< \
+	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage2, byref)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byref $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
@@ -274,12 +291,14 @@ benchmarks/b.parsetostruct_googlemessage2.upb_table_byref: \
 benchmarks/b.parsestream_googlemessage1.upb_table \
 benchmarks/b.parsestream_googlemessage2.upb_table: \
     benchmarks/parsestream.upb_table.c $(LIBUPB) benchmarks/google_messages.proto.pb
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage1.upb_table $< \
+	$(E) 'CC benchmarks/parsestream.upb_table.c (benchmarks.SpeedMessage1)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage1.upb_table $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
 	  $(LIBUPB)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage2.upb_table $< \
+	$(E) 'CC benchmarks/parsestream.upb_table.c (benchmarks.SpeedMessage2)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage2.upb_table $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
@@ -288,12 +307,14 @@ benchmarks/b.parsestream_googlemessage2.upb_table: \
 benchmarks/b.parsetostruct_googlemessage1.proto2_table \
 benchmarks/b.parsetostruct_googlemessage2.proto2_table: \
     benchmarks/parsetostruct.proto2_table.cc benchmarks/google_messages.pb.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_table $< \
+	$(E) 'CXX benchmarks/parsetostruct.proto2_table.cc (benchmarks.SpeedMessage1)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_table $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.proto2_table $< \
+	$(E) 'CXX benchmarks/parsetostruct.proto2_table.cc (benchmarks.SpeedMessage2)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.proto2_table $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
@@ -303,12 +324,14 @@ benchmarks/b.parsetostruct_googlemessage1.proto2_compiled \
 benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
     benchmarks/parsetostruct.proto2_compiled.cc \
     benchmarks/parsetostruct.proto2_table.cc benchmarks/google_messages.pb.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_compiled $< \
+	$(E) 'CXX benchmarks/parsetostruct.proto2_compiled.cc (benchmarks.SpeedMessage1)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_compiled $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.proto2_compiled $< \
+	$(E) 'CXX benchmarks/parsetostruct.proto2_compiled.cc (benchmarks.SpeedMessage2)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.proto2_compiled $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
