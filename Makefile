@@ -136,19 +136,6 @@ src/upb_def.lo: src/upb_def.c
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
 
 
-ifeq ($(shell uname), Darwin)
-  CPPFLAGS += -I/usr/include/lua5.1
-  LDFLAGS += -L/usr/local/lib -llua
-else
-  CFLAGS += $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
-  LDFLAGS += $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
-endif
-
-
-
-lang_ext/lua/upb.so: lang_ext/lua/upb.lo
-	$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< src/libupb_pic.a
-
 
 # Regenerating the auto-generated files in src/.
 src/descriptor.pb: src/descriptor.proto
@@ -326,3 +313,19 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
 
+
+# Lua extension ##################################################################
+
+ifeq ($(shell uname), Darwin)
+  CPPFLAGS += -I/usr/include/lua5.1
+  LDFLAGS += -L/usr/local/lib -llua
+else
+  CFLAGS += $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
+  LDFLAGS += $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
+endif
+
+LUAEXT=lang_ext/lua/upb.so
+lua: $(LUAEXT)
+lang_ext/lua/upb.so: lang_ext/lua/upb.lo $(LIBUPB_PIC)
+	@echo CC lang_ext/lua/upb.c
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< src/libupb_pic.a

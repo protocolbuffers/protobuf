@@ -101,6 +101,12 @@ static int lupb_msgdef_gc(lua_State *L) {
 
 static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f);
 
+static int lupb_msgdef_name(lua_State *L) {
+  upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lupb_pushstring(L, m->base.fqname);
+  return 1;
+}
+
 static int lupb_msgdef_fieldbyname(lua_State *L) {
   upb_msgdef *m = lupb_msgdef_check(L, 1);
   size_t len;
@@ -135,19 +141,27 @@ static const struct luaL_Reg lupb_msgdef_mm[] = {
 static const struct luaL_Reg lupb_msgdef_m[] = {
   {"fieldbyname", lupb_msgdef_fieldbyname},
   {"fieldbynum", lupb_msgdef_fieldbynum},
+  {"name", lupb_msgdef_name},
   {NULL, NULL}
 };
 
 // enumdef
 
-static lupb_def *lupb_enumdef_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, "upb.enumdef");
+static upb_enumdef *lupb_enumdef_check(lua_State *L, int narg) {
+  lupb_def *ldef = luaL_checkudata(L, narg, "upb.enumdef");
+  return upb_downcast_enumdef(ldef->def);
 }
 
 static int lupb_enumdef_gc(lua_State *L) {
-  lupb_def *ldef = lupb_enumdef_check(L, 1);
-  upb_def_unref(ldef->def);
+  upb_enumdef *e = lupb_enumdef_check(L, 1);
+  upb_def_unref(UPB_UPCAST(e));
   return 0;
+}
+
+static int lupb_enumdef_name(lua_State *L) {
+  upb_enumdef *e = lupb_enumdef_check(L, 1);
+  lupb_pushstring(L, e->base.fqname);
+  return 1;
 }
 
 static const struct luaL_Reg lupb_enumdef_mm[] = {
@@ -156,6 +170,7 @@ static const struct luaL_Reg lupb_enumdef_mm[] = {
 };
 
 static const struct luaL_Reg lupb_enumdef_m[] = {
+  {"name", lupb_enumdef_name},
   {NULL, NULL}
 };
 
@@ -258,11 +273,10 @@ static int lupb_symtab_getdefs(lua_State *L) {
   upb_def **defs = upb_symtab_getdefs(s->symtab, &count, type);
 
   // Create the table in which we will return the defs.
-  lua_createtable(L, 0, count);
+  lua_createtable(L, count, 0);
   for (int i = 0; i < count; i++) {
     upb_def *def = defs[i];
-    upb_string *name = def->fqname;
-    lupb_pushstring(L, name);
+    lua_pushnumber(L, i + 1);  // 1-based array.
     lupb_def_getorcreate(L, def);
     // Add it to our return table.
     lua_settable(L, -3);
@@ -309,11 +323,13 @@ static const struct luaL_Reg lupb_toplevel_m[] = {
 static void lupb_register_type(lua_State *L, const char *name,
                                const luaL_Reg *m, const luaL_Reg *mm) {
   luaL_newmetatable(L, name);
-  luaL_register(L, NULL, mm);
+  luaL_register(L, NULL, mm);  // Register all mm in the metatable.
   lua_createtable(L, 0, 0);
   if (m) {
+    // Methods go in the mt's __index method.  This implies that you can't
+    // implement __index and also set methods yourself.
     luaL_register(L, NULL, m);
-    lua_setfield(L, -2, "__index");
+    lua_setfield(L, -2, "__index");  
   }
   lua_pop(L, 1);  // The mt.
 }

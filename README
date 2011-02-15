@@ -9,6 +9,7 @@ $ make
 Other useful targets:
 $ make test
 $ make benchmark
+$ make lua (requires lua libraries to be installed)
 
 Issue tracking is on Google Code:
   http://code.google.com/p/upb/issues/list
