@@ -96,6 +96,7 @@ clean:
 	rm -rf $(TESTS) tests/t.*
 	rm -rf src/descriptor.pb
 	rm -rf src/upbc deps
+	rm -rf lang_ext/lua/upb.so
 	cd lang_ext/python && python setup.py clean --all
 
 # Core library (libupb.a).
@@ -317,15 +318,15 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 # Lua extension ##################################################################
 
 ifeq ($(shell uname), Darwin)
-  CPPFLAGS += -I/usr/include/lua5.1
-  LDFLAGS += -L/usr/local/lib -llua
+  LUA_CPPFLAGS = -I/usr/include/lua5.1
+  LUA_LDFLAGS = -L/usr/local/lib -llua
 else
-  CFLAGS += $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
-  LDFLAGS += $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
+  LUA_CPPFLAGS = $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
+  LUA_LDFLAGS = $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
 endif
 
 LUAEXT=lang_ext/lua/upb.so
 lua: $(LUAEXT)
 lang_ext/lua/upb.so: lang_ext/lua/upb.lo $(LIBUPB_PIC)
 	@echo CC lang_ext/lua/upb.c
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -shared -o $@ $< src/libupb_pic.a
+	@$(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< src/libupb_pic.a $(LUA_LDFLAGS)
