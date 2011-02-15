@@ -58,11 +58,23 @@ static bool initialize()
   upb_decoder_init(&d, def);
   upb_msgpopulator_init(&p);
   upb_handlers_init(&h);
+
+  if (!BYREF) {
+    // Pretend the input string is stack-allocated, which will force its data
+    // to be copied instead of referenced.  There is no good reason to do this,
+    // except to benchmark against proto2 more fairly, which in its open-source
+    // release does not support referencing the input string.
+    input_str->refcount.v = _UPB_STRING_REFCOUNT_STACK;
+  }
   return true;
 }
 
 static void cleanup()
 {
+  if (!BYREF) {
+    // Undo our fabrication from before.
+    input_str->refcount.v = 1;
+  }
   upb_string_unref(input_str);
   upb_msg_unref(msg, def);
   upb_def_unref(UPB_UPCAST(def));
