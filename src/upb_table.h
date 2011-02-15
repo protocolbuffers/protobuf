@@ -101,12 +101,21 @@ INLINE uint32_t upb_inttable_bucket(upb_inttable *t, upb_inttable_key_t k) {
 INLINE void *upb_inttable_fastlookup(upb_inttable *t, uint32_t key,
                                      uint32_t entry_size) {
   uint32_t bucket = upb_inttable_bucket(t, key);
-  upb_inttable_entry *e;
-  do {
-    e = (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket-1, entry_size);
-    if(e->key == key && e->has_entry) return e;
-  } while((bucket = e->next) != UPB_END_OF_CHAIN);
-  return NULL;  /* Not found. */
+  upb_inttable_entry *e =
+      (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket-1, entry_size);
+  if (key == 0) {
+    while (1) {
+      if (e->key == 0 && e->has_entry) return e;
+      if ((bucket = e->next) == UPB_END_OF_CHAIN) return NULL;
+      e = (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket-1, entry_size);
+    }
+  } else {
+    while (1) {
+      if (e->key == key) return e;
+      if ((bucket = e->next) == UPB_END_OF_CHAIN) return NULL;
+      e = (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket-1, entry_size);
+    }
+  }
 }
 
 INLINE void *upb_inttable_lookup(upb_inttable *t, uint32_t key) {
