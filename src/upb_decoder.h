@@ -62,11 +62,11 @@ struct _upb_decoder {
   // Our current position in the data buffer.
   const char *ptr;
 
+  // End of this buffer, relative to *ptr.
+  const char *end;
+
   // End of this submessage, relative to *ptr.
   const char *submsg_end;
-
-  // Number of bytes available at ptr.
-  size_t len;
 
   // Msgdef for the current level.
   upb_msgdef *msgdef;

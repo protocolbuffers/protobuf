@@ -81,6 +81,33 @@ done:
   return true;
 }
 
+typedef struct {
+  const char *newbuf;
+  uint64_t val;
+} retval;
+
+retval upb_decode_varint_fast64(const char *p) {
+  uint64_t ret;
+  uint64_t b;
+  retval r = {(void*)0, 0};
+  b = *(p++); ret  = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 28; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 35; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 42; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 49; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 56; if(!(b & 0x80)) goto done;
+  b = *(p++); ret |= (b & 0x7f) << 63; if(!(b & 0x80)) goto done;
+  return r;
+
+done:
+  r.val = ret;
+  r.newbuf = p;
+  return r;
+}
+
 #endif
 
 
@@ -98,7 +125,10 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
 INLINE void upb_decoder_advance(upb_decoder *d, size_t len) {
   d->ptr += len;
-  d->len -= len;
+}
+
+INLINE size_t upb_decoder_bufleft(upb_decoder *d) {
+  return d->end - d->ptr;
 }
 
 INLINE void upb_dstate_setmsgend(upb_decoder *d) {
@@ -113,7 +143,7 @@ static upb_flow_t upb_pop(upb_decoder *d);
 // from the stream to "data", adjusting the dstate appropriately.
 static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted) {
   while (1) {
-    size_t to_copy = UPB_MIN(bytes_wanted, d->len);
+    size_t to_copy = UPB_MIN(bytes_wanted, upb_decoder_bufleft(d));
     memcpy(data, d->ptr, to_copy);
     upb_decoder_advance(d, to_copy);
     bytes_wanted -= to_copy;
@@ -127,7 +157,7 @@ static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted) {
     upb_string_recycle(&d->buf);
     if (!upb_bytesrc_getstr(d->bytesrc, d->buf, d->status)) return false;
     d->ptr = upb_string_getrobuf(d->buf);
-    d->len = upb_string_len(d->buf);
+    d->end = d->ptr + upb_string_len(d->buf);
   }
 }
 
@@ -171,7 +201,7 @@ INLINE bool upb_decode_tag(upb_decoder *d, upb_tag *tag) {
   uint32_t tag_int;
   upb_value val;
   // Nearly all tag varints will be either 1 byte (1-16) or 2 bytes (17-2048).
-  if (d->len < 2) goto slow;  // unlikely.
+  if (upb_decoder_bufleft(d) < 2) goto slow;  // unlikely.
   tag_int = *p & 0x7f;
   if ((*(p++) & 0x80) == 0) goto done;  // predictable if fields are in order
   tag_int |= (*p & 0x7f) << 7;
@@ -189,7 +219,7 @@ done:
 }
 
 INLINE bool upb_decode_varint(upb_decoder *d, upb_value *val) {
-  if (d->len >= 16) {
+  if (upb_decoder_bufleft(d) >= 16) {
     // Common (fast) case.
     uint64_t val64;
     const char *p = d->ptr;
@@ -203,7 +233,7 @@ INLINE bool upb_decode_varint(upb_decoder *d, upb_value *val) {
 }
 
 INLINE bool upb_decode_fixed(upb_decoder *d, size_t bytes, upb_value *val) {
-  if (d->len >= bytes) {
+  if (upb_decoder_bufleft(d) >= bytes) {
     // Common (fast) case.
     memcpy(val, d->ptr, bytes);
     upb_decoder_advance(d, bytes);
@@ -219,7 +249,7 @@ INLINE bool upb_decode_string(upb_decoder *d, upb_value *val,
                               upb_string **str) {
   upb_string_recycle(str);
   uint32_t strlen = upb_value_getint32(*val);
-  if (d->len >= strlen) {
+  if (upb_decoder_bufleft(d) >= strlen) {
     // Common (fast) case.
     upb_string_substr(*str, d->buf, d->ptr - upb_string_getrobuf(d->buf), strlen);
     upb_decoder_advance(d, strlen);
@@ -278,7 +308,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   upb_decoder *d = (upb_decoder*)src;
   d->status = status;
   d->ptr = NULL;
-  d->len = 0;  // Force a buffer pull.
+  d->end = NULL;  // Force a buffer pull.
   d->submsg_end = (void*)0x1;  // But don't let end-of-message get triggered.
   d->msgdef = d->top->msgdef;
 

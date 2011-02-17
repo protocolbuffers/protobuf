@@ -60,7 +60,7 @@ struct _upb_fielddef;
 // continue or not.
 typedef enum {
   // Caller should continue sending values to the sink.
-  UPB_CONTINUE,
+  UPB_CONTINUE = 0,
 
   // Stop processing for now; check status for details.  If no status was set,
   // a generic error will be returned.  If the error is resumable, it is not
