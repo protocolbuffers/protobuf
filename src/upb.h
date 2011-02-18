@@ -29,6 +29,12 @@ extern "C" {
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
+// Rounds val up to the next multiple of align.
+INLINE size_t upb_align_up(size_t val, size_t align) {
+  return val % align == 0 ? val : val + align - (val % align);
+}
+
+
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 #define UPB_MAX_NESTING 64
 

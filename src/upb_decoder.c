@@ -11,6 +11,12 @@
 #include <stdlib.h>
 #include "upb_def.h"
 
+// If the return value is other than UPB_CONTINUE, that is what the last
+// callback returned.
+extern upb_flow_t upb_fastdecode(const char **p, const char *end,
+                                 upb_value_handler_t *value_cb, void *closure,
+                                 void *table, int table_size);
+
 /* Pure Decoding **************************************************************/
 
 // The key fast-path varint-decoding routine.  Here we can assume we have at
@@ -329,6 +335,12 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
       CHECK_FLOW(upb_pop(d));
     }
 
+    // Decodes as many fields as possible, updating d->ptr appropriately,
+    // before falling through to the slow(er) path.
+    //CHECK_FLOW(upb_fastdecode(&d->ptr, d->end,
+    //                          d->dispatcher->top->handlers.set->value,
+    //                          d->top->handlers.closure));
+
     // Parse/handle tag.
     upb_tag tag;
     if (!upb_decode_tag(d, &tag)) {
@@ -373,15 +385,19 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     }
 
     // Look up field by tag number.
-    upb_fielddef *f = upb_msgdef_itof(d->top->msgdef, tag.field_number);
+    upb_itof_ent *e = upb_msgdef_itofent(d->top->msgdef, tag.field_number);
 
-    if (!f) {
+    if (!e) {
       if (tag.wire_type == UPB_WIRE_TYPE_DELIMITED)
         CHECK(upb_decode_string(d, &val, &d->tmp));
       CHECK_FLOW(upb_dispatch_unknownval(&d->dispatcher, tag.field_number, val));
       continue;
-    } else if (!upb_check_type(tag.wire_type, f->type)) {
-      // TODO: put more details in this error msg.
+    }
+
+    upb_fielddef *f = e->f;
+
+    if (tag.wire_type != e->native_wire_type) {
+      // TODO: Support packed fields.
       upb_seterr(status, UPB_ERROR, "Field had incorrect type, name: " UPB_STRFMT
                  ", field type: %d, expected wire type %d, actual wire type: %d",
                  UPB_STRARG(f->name), f->type, upb_types[f->type].native_wire_type,
@@ -398,10 +414,10 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     // that the top 32 bits all match the highest bit of the low 32 bits.
     // If this is not true we are losing data.  But the main protobuf library
     // doesn't check this, and it would slow us down, so pass for now.
-    switch (f->type) {
+    switch (e->field_type) {
       case UPB_TYPE(MESSAGE):
       case UPB_TYPE(GROUP):
-        CHECK_FLOW(upb_push(d, f, val, f->type));
+        CHECK_FLOW(upb_push(d, f, val, e->field_type));
         continue;  // We have no value to dispatch.
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES):

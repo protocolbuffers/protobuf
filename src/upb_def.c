@@ -12,11 +12,6 @@
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
 
-/* Rounds p up to the next multiple of t. */
-static size_t upb_align_up(size_t val, size_t align) {
-  return val % align == 0 ? val : val + align - (val % align);
-}
-
 static int upb_div_round_up(int numerator, int denominator) {
   /* cf. http://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division */
   return numerator > 0 ? (numerator - 1) / denominator + 1 : 0;
@@ -491,10 +486,10 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_endmsg(void *_b) {
     return UPB_BREAK;
   }
   upb_ntoi_ent ntoi_ent = {{b->name, 0}, b->number};
-  upb_iton_ent iton_ent = {{b->number, 0}, b->name};
+  upb_iton_ent iton_ent = {0, b->name};
   upb_enumdef *e = upb_downcast_enumdef(upb_defbuilder_last(b));
   upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
-  upb_inttable_insert(&e->iton, &iton_ent.e);
+  upb_inttable_insert(&e->iton, b->number, &iton_ent);
   // We don't unref "name" because we pass our ref to the iton entry of the
   // table.  strtables can ref their keys, but the inttable doesn't know that
   // the value is a string.
@@ -579,8 +574,7 @@ upb_enum_iter upb_enum_begin(upb_enumdef *e) {
 }
 
 upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter) {
-  assert(iter);
-  return upb_inttable_next(&e->iton, &iter->e);
+  return upb_inttable_next(&e->iton, iter);
 }
 
 upb_string *upb_enumdef_iton(upb_enumdef *def, upb_enumval_t num) {
@@ -621,9 +615,9 @@ static upb_flow_t upb_fielddef_endmsg(void *_b) {
 
   // Field was successfully read, add it as a field of the msgdef.
   upb_msgdef *m = upb_defbuilder_top(b);
-  upb_itof_ent itof_ent = {{f->number, 0}, f};
+  upb_itof_ent itof_ent = {0, upb_types[f->type].native_wire_type, f->type, f};
   upb_ntof_ent ntof_ent = {{f->name, 0}, f};
-  upb_inttable_insert(&m->itof, &itof_ent.e);
+  upb_inttable_insert(&m->itof, f->number, &itof_ent);
   upb_strtable_insert(&m->ntof, &ntof_ent.e);
   return UPB_CONTINUE;
 }
@@ -702,6 +696,7 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
     return UPB_BREAK;
   }
 
+  upb_inttable_compact(&m->itof);
   // Create an ordering over the fields.
   upb_field_count_t n = upb_msgdef_numfields(m);
   upb_fielddef **sorted_fields = malloc(sizeof(upb_fielddef*) * n);
@@ -830,7 +825,7 @@ upb_msg_iter upb_msg_begin(upb_msgdef *m) {
 }
 
 upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter) {
-  return upb_inttable_next(&m->itof, &iter->e);
+  return upb_inttable_next(&m->itof, iter);
 }
 
 /* upb_symtab adding defs *****************************************************/

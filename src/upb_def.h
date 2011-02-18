@@ -162,7 +162,9 @@ typedef struct _upb_msgdef {
 
 // Hash table entries for looking up fields by name or number.
 typedef struct {
-  upb_inttable_entry e;
+  bool junk;
+  upb_wire_type_t native_wire_type;
+  upb_fieldtype_t field_type;
   upb_fielddef *f;
 } upb_itof_ent;
 typedef struct {
@@ -173,9 +175,13 @@ typedef struct {
 // Looks up a field by name or number.  While these are written to be as fast
 // as possible, it will still be faster to cache the results of this lookup if
 // possible.  These return NULL if no such field is found.
+INLINE upb_itof_ent *upb_msgdef_itofent(upb_msgdef *m, uint32_t num) {
+  return (upb_itof_ent*)upb_inttable_fastlookup(
+      &m->itof, num, sizeof(upb_itof_ent));
+}
+
 INLINE upb_fielddef *upb_msgdef_itof(upb_msgdef *m, uint32_t num) {
-  upb_itof_ent *e =
-      (upb_itof_ent*)upb_inttable_fastlookup(&m->itof, num, sizeof(*e));
+  upb_itof_ent *e = upb_msgdef_itofent(m, num);
   return e ? e->f : NULL;
 }
 
@@ -194,14 +200,15 @@ INLINE upb_field_count_t upb_msgdef_numfields(upb_msgdef *m) {
 //     upb_fielddef *f = upb_msg_iter_field(i);
 //     // ...
 //   }
-typedef upb_itof_ent *upb_msg_iter;
+typedef upb_inttable_iter upb_msg_iter;
 
 upb_msg_iter upb_msg_begin(upb_msgdef *m);
 upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter);
-INLINE bool upb_msg_done(upb_msg_iter iter) { return iter == NULL; }
+INLINE bool upb_msg_done(upb_msg_iter iter) { return upb_inttable_done(iter); }
 
 INLINE upb_fielddef *upb_msg_iter_field(upb_msg_iter iter) {
-  return iter->f;
+  upb_itof_ent *ent = (upb_itof_ent*)upb_inttable_iter_value(iter);
+  return ent->f;
 }
 
 /* upb_enumdef ****************************************************************/
@@ -218,7 +225,7 @@ typedef struct {
 } upb_ntoi_ent;
 
 typedef struct {
-  upb_inttable_entry e;
+  bool junk;
   upb_string *string;
 } upb_iton_ent;
 
@@ -234,17 +241,18 @@ upb_string *upb_enumdef_iton(upb_enumdef *e, upb_enumval_t num);
 //   for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
 //     // ...
 //   }
-typedef upb_iton_ent *upb_enum_iter;
+typedef upb_inttable_iter upb_enum_iter;
 
 upb_enum_iter upb_enum_begin(upb_enumdef *e);
 upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter);
-INLINE bool upb_enum_done(upb_enum_iter iter) { return iter == NULL; }
+INLINE bool upb_enum_done(upb_enum_iter iter) { return upb_inttable_done(iter); }
 
 INLINE upb_string *upb_enum_iter_name(upb_enum_iter iter) {
-  return iter->string;
+  upb_iton_ent *e = (upb_iton_ent*)upb_inttable_iter_value(iter);
+  return e->string;
 }
 INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
-  return iter->e.key;
+  return upb_inttable_iter_key(iter);
 }
 
 

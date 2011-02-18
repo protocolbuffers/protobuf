@@ -19,7 +19,6 @@ using std::string;
 using std::vector;
 
 typedef struct {
-  upb_inttable_entry e;
   uint32_t value;  /* key*2 */
 } inttable_entry;
 
@@ -60,6 +59,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
     const string& key = keys[i];
     upb_string *str = upb_strduplen(key.c_str(), key.size());
     strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, str);
+    printf("Looking up " UPB_STRFMT "...\n", UPB_STRARG(str));
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
       assert(upb_streql(e->e.key, str));
@@ -97,21 +97,36 @@ void test_inttable(int32_t *keys, uint16_t num_entries)
     int32_t key = keys[i];
     largest_key = UPB_MAX((int32_t)largest_key, key);
     inttable_entry e;
-    e.e.key = key;
-    e.value = key*2;
-    upb_inttable_insert(&table, &e.e);
+    e.value = (key*2) << 1;
+    upb_inttable_insert(&table, key, &e);
     m[key] = key*2;
     hm[key] = key*2;
   }
 
   /* Test correctness. */
-  for(uint32_t i = 1; i <= largest_key; i++) {
+  for(uint32_t i = 0; i <= largest_key; i++) {
     inttable_entry *e = (inttable_entry*)upb_inttable_lookup(
         &table, i);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
-      assert(e->e.key == i);
-      assert(e->value == i*2);
+      //printf("addr: %p, expected: %d, actual: %d\n", e, i*2, e->value);
+      assert(((e->value) >> 1) == i*2);
+      assert(m[i] == i*2);
+      assert(hm[i] == i*2);
+    } else {
+      assert(e == NULL);
+    }
+  }
+
+  // Compact and test correctness again.
+  upb_inttable_compact(&table);
+  for(uint32_t i = 0; i <= largest_key; i++) {
+    inttable_entry *e = (inttable_entry*)upb_inttable_lookup(
+        &table, i);
+    if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
+      assert(e);
+      //printf("addr: %p, expected: %d, actual: %d\n", e, i*2, e->value);
+      assert(((e->value) >> 1) == i*2);
       assert(m[i] == i*2);
       assert(hm[i] == i*2);
     } else {
