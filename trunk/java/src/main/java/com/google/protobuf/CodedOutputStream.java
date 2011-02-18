@@ -751,7 +751,7 @@ public final class CodedOutputStream {
    * Caller is responsible for converting the enum value to its numeric value.
    */
   public static int computeEnumSizeNoTag(final int value) {
-    return computeRawVarint32Size(value);
+    return computeInt32SizeNoTag(value);
   }
 
   /**
