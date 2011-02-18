@@ -615,7 +615,7 @@ static upb_flow_t upb_fielddef_endmsg(void *_b) {
 
   // Field was successfully read, add it as a field of the msgdef.
   upb_msgdef *m = upb_defbuilder_top(b);
-  upb_itof_ent itof_ent = {0, upb_types[f->type].native_wire_type, f->type, f};
+  upb_itof_ent itof_ent = {0, f->type, upb_types[f->type].native_wire_type, f};
   upb_ntof_ent ntof_ent = {{f->name, 0}, f};
   upb_inttable_insert(&m->itof, f->number, &itof_ent);
   upb_strtable_insert(&m->ntof, &ntof_ent.e);

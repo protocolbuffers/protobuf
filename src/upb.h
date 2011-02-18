@@ -29,6 +29,16 @@ extern "C" {
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
+INLINE void nop_printf(const char *fmt, ...) {
+  (void)fmt;
+}
+
+#ifdef NDEBUG
+#define DEBUGPRINTF nop_printf
+#else
+#define DEBUGPRINTF printf
+#endif
+
 // Rounds val up to the next multiple of align.
 INLINE size_t upb_align_up(size_t val, size_t align) {
   return val % align == 0 ? val : val + align - (val % align);

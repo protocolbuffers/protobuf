@@ -123,18 +123,21 @@ INLINE void *_upb_inttable_fastlookup(upb_inttable *t, uint32_t key,
   upb_inttable_value *arrval =
       (upb_inttable_value*)UPB_INDEX(t->array, key, value_size);
   if (_upb_inttable_isarrkey(t, key)) {
-    //printf("array lookup for key %d, &val=%p, has_entry=%d\n", key, val, val->has_entry);
+    //DEBUGPRINTF("array lookup for key %d, &val=%p, has_entry=%d\n", key, val, val->has_entry);
     return (arrval->has_entry) ? arrval : NULL;
   }
   uint32_t bucket = _upb_inttable_bucket(t, key);
   upb_inttable_entry *e =
       (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket, entry_size);
-  //printf("looking in first bucket %d, entry size=%zd, addr=%p\n", bucket, entry_size, e);
+  //DEBUGPRINTF("looking in first bucket %d, entry size=%zd, addr=%p\n", bucket, entry_size, e);
   while (1) {
-    //printf("%d, %d, %d\n", e->val.has_entry, e->hdr.key, key);
-    if (e->hdr.key == key) return &e->val;
+    //DEBUGPRINTF("%d, %d, %d\n", e->val.has_entry, e->hdr.key, key);
+    if (e->hdr.key == key) {
+      DEBUGPRINTF("returning val from hash part\n");
+      return &e->val;
+    }
     if ((bucket = e->hdr.next) == UPB_END_OF_CHAIN) return NULL;
-    //printf("looking in bucket %d\n", bucket);
+    //DEBUGPRINTF("looking in bucket %d\n", bucket);
     e = (upb_inttable_entry*)UPB_INDEX(t->t.entries, bucket, entry_size);
   }
 }

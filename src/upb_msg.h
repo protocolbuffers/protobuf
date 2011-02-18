@@ -97,11 +97,13 @@ INLINE upb_value upb_value_read(upb_valueptr ptr, upb_fieldtype_t ft) {
 
 INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
                             upb_fieldtype_t ft) {
+#ifndef NDEBUG
   if (ft == UPB_VALUETYPE_ARRAY) {
     assert(val.type == UPB_VALUETYPE_ARRAY);
-  } else {
+  } else if (val.type != UPB_VALUETYPE_RAW) {
     assert(val.type == upb_types[ft].inmemory_type);
   }
+#endif
 #define CASE(t, member_name) \
   case UPB_TYPE(t): *ptr.member_name = val.val.member_name; break;
 

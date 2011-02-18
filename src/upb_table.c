@@ -188,7 +188,7 @@ void upb_inttable_compact(upb_inttable *t) {
   while ((1UL << lg2_array) < largest_key) ++lg2_array;
   ++lg2_array;  // Undo the first iteration.
   size_t array_size;
-  int array_count;
+  int array_count = 0;
   while (lg2_array > 0) {
     array_size = (1 << --lg2_array);
     //printf("Considering size %d (btw, our table has %d things total)\n", array_size, upb_inttable_count(t));

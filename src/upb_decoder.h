@@ -70,6 +70,8 @@ struct _upb_decoder {
 
   // Msgdef for the current level.
   upb_msgdef *msgdef;
+
+  size_t bytes_parsed_fast, bytes_parsed_slow;
 };
 
 // A upb_decoder decodes the binary protocol buffer format, writing the data it

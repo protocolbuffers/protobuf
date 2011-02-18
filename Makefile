@@ -77,6 +77,9 @@ STREAM= \
   src/upb_msg.c \
   src/upb_glue.c \
 
+ASMCORE= \
+  src/upb_decoder_x64.asm
+
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c src/upb_text.c
 
@@ -114,8 +117,8 @@ LIBUPB=src/libupb.a
 LIBUPB_PIC=src/libupb_pic.a
 lib: $(LIBUPB)
 
-OBJ=$(patsubst %.c,%.o,$(SRC))
-PICOBJ=$(patsubst %.c,%.lo,$(SRC))
+OBJ=$(patsubst %.c,%.o,$(SRC)) src/upb_decoder_x64.o
+PICOBJ=$(patsubst %.c,%.lo,$(SRC)) src/upb_decoder_x64.lo
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)
 	$(Q) ar rcs $(LIBUPB) $(OBJ)
@@ -135,12 +138,19 @@ $(LIBUPB_PIC): $(PICOBJ)
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
 	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
 
 src/upb_def.lo: src/upb_def.c
 	$(E) 'CC -fPIC' $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
 
+src/upb_decoder_x64.o: src/upb_decoder_x64.asm
+	$(E) NASM $<
+	$(Q) nasm -Ox src/upb_decoder_x64.asm -o src/upb_decoder_x64.o -f macho64
+
+src/upb_decoder_x64.lo: src/upb_decoder_x64.asm
+	$(E) NASM $<
+	$(Q) nasm -Ox src/upb_decoder_x64.asm -o src/upb_decoder_x64.o -f macho64
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))

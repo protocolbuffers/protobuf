@@ -14,7 +14,7 @@
 // If the return value is other than UPB_CONTINUE, that is what the last
 // callback returned.
 extern upb_flow_t upb_fastdecode(const char **p, const char *end,
-                                 upb_value_handler_t *value_cb, void *closure,
+                                 upb_value_handler_t value_cb, void *closure,
                                  void *table, int table_size);
 
 /* Pure Decoding **************************************************************/
@@ -131,6 +131,7 @@ INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
 INLINE void upb_decoder_advance(upb_decoder *d, size_t len) {
   d->ptr += len;
+  //d->bytes_parsed_slow += len;
 }
 
 INLINE size_t upb_decoder_bufleft(upb_decoder *d) {
@@ -214,6 +215,7 @@ INLINE bool upb_decode_tag(upb_decoder *d, upb_tag *tag) {
   if ((*(p++) & 0x80) == 0) goto done;  // likely
 slow:
   // Decode a full varint starting over from ptr.
+  DEBUGPRINTF("tag was >2 bytes.\n");
   if (!upb_decode_varint_slow(d, &val)) return false;
   tag_int = upb_value_getint64(val);
   p = d->ptr;  // Trick the next line into not overwriting us.
@@ -317,6 +319,8 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   d->end = NULL;  // Force a buffer pull.
   d->submsg_end = (void*)0x1;  // But don't let end-of-message get triggered.
   d->msgdef = d->top->msgdef;
+  //d->bytes_parsed_fast = 0;
+  //d->bytes_parsed_slow = 0;
 
 // TODO: handle UPB_SKIPSUBMSG
 #define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { /*assert(!upb_ok(status));*/ goto err; }
@@ -335,11 +339,25 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
       CHECK_FLOW(upb_pop(d));
     }
 
+    //const char *ptr = d->ptr;
     // Decodes as many fields as possible, updating d->ptr appropriately,
     // before falling through to the slow(er) path.
-    //CHECK_FLOW(upb_fastdecode(&d->ptr, d->end,
-    //                          d->dispatcher->top->handlers.set->value,
-    //                          d->top->handlers.closure));
+    const char *end = UPB_MIN(d->end, d->submsg_end);
+#ifdef USE_ASSEMBLY_FASTPATH
+    CHECK_FLOW(upb_fastdecode(&d->ptr, end,
+                              d->dispatcher.top->handlers.set->value,
+                              d->dispatcher.top->handlers.closure,
+                              d->top->msgdef->itof.array,
+                              d->top->msgdef->itof.array_size));
+    if (end - d->ptr < 12) {
+      DEBUGPRINTF("Off the fast path because <12 bytes of data\n");
+    } else {
+      DEBUGPRINTF("Off the fast path for some other reason.\n");
+    }
+#endif
+    //if (d->ptr > ptr) {
+    //  d->bytes_parsed_fast += (d->ptr - ptr);
+    //}
 
     // Parse/handle tag.
     upb_tag tag;
@@ -348,6 +366,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
         // Normal end-of-file.
         upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
+        //DEBUGPRINTF("bytes parsed fast: %d, bytes parsed slow; %d\n", d->bytes_parsed_fast, d->bytes_parsed_slow);
         return;
       } else {
         if (status->code == UPB_EOF) {
@@ -363,8 +382,10 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     upb_value val;
     switch (tag.wire_type) {
       case UPB_WIRE_TYPE_START_GROUP:
+        DEBUGPRINTF("parsing start group\n");
         break;  // Nothing to do now, below we will push appropriately.
       case UPB_WIRE_TYPE_END_GROUP:
+        DEBUGPRINTF("parsing end group\n");
         if(d->top->end_offset != UPB_GROUP_END_OFFSET) {
           upb_seterr(status, UPB_ERROR, "Unexpected END_GROUP tag.");
           goto err;
@@ -395,6 +416,8 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     }
 
     upb_fielddef *f = e->f;
+    assert(e->field_type == f->type);
+    assert(e->native_wire_type == upb_types[f->type].native_wire_type);
 
     if (tag.wire_type != e->native_wire_type) {
       // TODO: Support packed fields.
@@ -416,11 +439,13 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     // doesn't check this, and it would slow us down, so pass for now.
     switch (e->field_type) {
       case UPB_TYPE(MESSAGE):
+        DEBUGPRINTF("parsing submessage\n");
       case UPB_TYPE(GROUP):
         CHECK_FLOW(upb_push(d, f, val, e->field_type));
         continue;  // We have no value to dispatch.
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES):
+        DEBUGPRINTF("parsing string\n");
         CHECK(upb_decode_string(d, &val, &d->tmp));
         break;
       case UPB_TYPE(SINT32):
