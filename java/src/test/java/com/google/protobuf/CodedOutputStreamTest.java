@@ -300,4 +300,19 @@ public class CodedOutputStreamTest extends TestCase {
     assertEqualBytes(TestUtil.getGoldenPackedFieldsMessage().toByteArray(),
                      rawBytes);
   }
+
+  /** Test writing a message containing a negative enum value. This used to
+   * fail because the size was not properly computed as a sign-extended varint. */
+  public void testWriteMessageWithNegativeEnumValue() throws Exception {
+    protobuf_unittest.UnittestProto.SparseEnumMessage message =
+        protobuf_unittest.UnittestProto.SparseEnumMessage.newBuilder()
+        .setSparseEnum(protobuf_unittest.UnittestProto.TestSparseEnum.SPARSE_E)
+        .build();
+    assertTrue(message.getSparseEnum().getNumber() < 0);
+    byte[] rawBytes = message.toByteArray();
+    protobuf_unittest.UnittestProto.SparseEnumMessage message2 =
+        protobuf_unittest.UnittestProto.SparseEnumMessage.parseFrom(rawBytes);
+    assertEquals(protobuf_unittest.UnittestProto.TestSparseEnum.SPARSE_E,
+                 message2.getSparseEnum());
+  }
 }
