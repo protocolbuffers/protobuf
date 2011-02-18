@@ -16,10 +16,10 @@ dispatch_table:
   dq _upb_fastdecode.fixed64  ; fixed64
   dq _upb_fastdecode.fixed32  ; fixed32
   dq _upb_fastdecode.varint   ; bool
-  dq _upb_fastdecode.cant_fast_path  ; string (TODO)
+  dq _upb_fastdecode.string   ; string
   dq _upb_fastdecode.cant_fast_path  ; group (check_6)
   dq _upb_fastdecode.cant_fast_path  ; message
-  dq _upb_fastdecode.cant_fast_path  ; bytes (TODO)
+  dq _upb_fastdecode.string   ; bytes
   dq _upb_fastdecode.varint   ; uint32
   dq _upb_fastdecode.varint   ; enum
   dq _upb_fastdecode.fixed32  ; sfixed32
@@ -33,7 +33,7 @@ SECTION .text
 ; Register allocation.
 %define BUF rbx       ; const char *p, current buf position.
 %define END rbp       ; const char *end, where the buf ends (either submsg end or buf end)
-%define BUF_ADDR r12  ; upb_decoder *d.
+%define FREE r12      ; unused
 %define FIELDDEF r13  ; upb_fielddef *f, needs to be preserved across varint decoding call.
 %define CALLBACK r14
 %define CLOSURE r15
@@ -41,7 +41,8 @@ SECTION .text
 ; Stack layout: *tableptr, uint32_t maxfield_times_8
 %define STACK_SPACE 24      ; this value + 8 must be a multiple of 16.
 %define TABLE_SPILL [rsp]   ; our lookup table, indexed by field number.
-%define MAXFIELD_TIMES_8_SPILL [rsp+8]
+%define COMMITTED_BUF_SPILL [rsp+8]
+%define MAXFIELD_TIMES_8_SPILL [rsp+16]
 
 
 ; Executing the fast path requires the following conditions:
@@ -57,7 +58,9 @@ SECTION .text
 ; - check_6: the field is not a group or a message (or string, TODO)
 ;   (this could be relaxed, but due to delegation it's a bit tricky).
 ; - if the value is a string, the entire string is available in
-;   the buffer, and our cached string object can be recycled.
+;   the buffer, and our cached string object can be recycled, and
+;   our string object already references the source buffer, so
+;   absolutely no refcount twiddling is required.  (check_7)
 
 
 %macro decode_and_dispatch_ 0
@@ -113,7 +116,7 @@ align 16
   mov rsi, FIELDDEF
   mov rcx, 33      ; RAW; we could pass the correct type, or only do this in non-debug modes.
   call CALLBACK
-  mov [BUF_ADDR], BUF
+  mov COMMITTED_BUF_SPILL, BUF
   cmp eax, 0
   jne .done    ; Caller requested BREAK or SKIPSUBMSG.
 %endmacro
@@ -139,8 +142,7 @@ _upb_fastdecode:
   sub rsp, STACK_SPACE
 
   ; Parse arguments into reg vals and stack.
-  mov BUF_ADDR, rdi
-  mov BUF, [rdi]
+  mov BUF, rdi
   mov END, rsi
   mov CALLBACK, rdx
   mov CLOSURE, rcx
@@ -205,10 +207,17 @@ align 16
   call_callback
   decode_and_dispatch
 
+align 16
+.string:
+
+
 .cant_fast_path:
   mov rax, 0   ; UPB_CONTINUE -- continue as before.
 .done:
   ; If coming via done, preserve the user callback's return in rax.
+
+  ; Return committed buf pointer as second parameter.
+  mov rdx, COMMITTED_BUF_SPILL
   add rsp, STACK_SPACE
   pop r15
   pop r14

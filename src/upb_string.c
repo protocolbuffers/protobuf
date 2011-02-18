@@ -141,3 +141,5 @@ error:
   fclose(f);
   return NULL;
 }
+
+void upb_string_noninlinerecycle(upb_string **_str) { return upb_string_recycle(_str); }

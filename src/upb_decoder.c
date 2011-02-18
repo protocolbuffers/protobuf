@@ -13,9 +13,13 @@
 
 // If the return value is other than UPB_CONTINUE, that is what the last
 // callback returned.
-extern upb_flow_t upb_fastdecode(const char **p, const char *end,
-                                 upb_value_handler_t value_cb, void *closure,
-                                 void *table, int table_size);
+typedef struct {
+  upb_flow_t flow;
+  const char *ptr;
+} fastdecode_ret;
+extern fastdecode_ret upb_fastdecode(const char *p, const char *end,
+                                     upb_value_handler_t value_cb, void *closure,
+                                     void *table, int table_size);
 
 /* Pure Decoding **************************************************************/
 
@@ -344,11 +348,13 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     // before falling through to the slow(er) path.
     const char *end = UPB_MIN(d->end, d->submsg_end);
 #ifdef USE_ASSEMBLY_FASTPATH
-    CHECK_FLOW(upb_fastdecode(&d->ptr, end,
-                              d->dispatcher.top->handlers.set->value,
-                              d->dispatcher.top->handlers.closure,
-                              d->top->msgdef->itof.array,
-                              d->top->msgdef->itof.array_size));
+    fastdecode_ret ret = upb_fastdecode(d->ptr, end,
+                                        d->dispatcher.top->handlers.set->value,
+                                        d->dispatcher.top->handlers.closure,
+                                        d->top->msgdef->itof.array,
+                                        d->top->msgdef->itof.array_size);
+    CHECK_FLOW(ret.flow);
+    d->ptr = ret.ptr;
     if (end - d->ptr < 12) {
       DEBUGPRINTF("Off the fast path because <12 bytes of data\n");
     } else {
