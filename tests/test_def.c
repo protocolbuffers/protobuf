@@ -5,8 +5,8 @@
 
 int main() {
   upb_symtab *s = upb_symtab_new();
-  upb_symtab_add_descriptorproto(s);
 
+  // Will be empty atm since we haven't added anything to the symtab.
   int count;
   upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
   for (int i = 0; i < count; i++) {
@@ -14,12 +14,9 @@ int main() {
   }
   free(defs);
 
-  upb_string *str = upb_strdupc("google.protobuf.FileDescriptorSet");
-  upb_def *fds = upb_symtab_lookup(s, str);
+  upb_msgdef *fds = upb_getfdsdef();
   assert(fds != NULL);
-  assert(upb_dyncast_msgdef(fds) != NULL);
-  upb_def_unref(fds);
-  upb_string_unref(str);
+  upb_def_unref(UPB_UPCAST(fds));
   upb_symtab_unref(s);
   return 0;
 }

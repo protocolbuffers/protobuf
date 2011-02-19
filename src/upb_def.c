@@ -859,6 +859,7 @@ static upb_symtab_ent *upb_resolve(upb_strtable *t,
     // TODO: This branch is totally broken, but currently not used.
     upb_string *sym_str = upb_string_new();
     int baselen = upb_string_len(base);
+    upb_symtab_ent *ret = NULL;
     while(1) {
       // sym_str = base[0...base_len] + UPB_SYMBOL_SEPARATOR + sym
       upb_strlen_t len = baselen + upb_string_len(sym) + 1;
@@ -868,11 +869,18 @@ static upb_symtab_ent *upb_resolve(upb_strtable *t,
       memcpy(buf + baselen + 1, upb_string_getrobuf(sym), upb_string_len(sym));
 
       upb_symtab_ent *e = upb_strtable_lookup(t, sym_str);
-      if (e) return e;
-      else if(baselen == 0) return NULL;  // No more scopes to try.
-
+      if (e) {
+        ret = e;
+        break;
+      } else if(baselen == 0) {
+        // No more scopes to try.
+        ret = NULL;
+        break;
+      }
       baselen = my_memrchr(buf, UPB_SYMBOL_SEPARATOR, baselen);
     }
+    upb_string_unref(sym_str);
+    return ret;
   }
 }
 
@@ -1307,38 +1315,51 @@ static upb_src *upb_baredecoder_src(upb_baredecoder *d) {
   return &d->src;
 }
 
-void upb_symtab_add_descriptorproto(upb_symtab *symtab) {
-  // For the moment we silently decline to perform the operation if the symbols
-  // already exist in the symtab.  Revisit this when we have a better story
-  // about whether syms in a table can be replaced.
-  if(symtab->fds_msgdef) return;
+static upb_symtab *descriptor_symtab = NULL;
 
-  static upb_string descriptor_str =
-      UPB_STATIC_STRING_ARRAY(descriptor_pb);
-  upb_baredecoder *decoder = upb_baredecoder_new(&descriptor_str);
-  upb_status status = UPB_STATUS_INIT;
-  upb_symtab_addfds(symtab, upb_baredecoder_src(decoder), &status);
-  upb_baredecoder_free(decoder);
-
-  if(!upb_ok(&status)) {
-    // upb itself is corrupt.
-    upb_printerr(&status);
-    upb_clearerr(&status);
-    upb_symtab_unref(symtab);
-    abort();
+static void upb_free_descriptor_symtab() {
+  if (descriptor_symtab) {
+    // There should be no way for anyone to acquire a ref on this symtab.
+    assert(upb_atomic_only(&descriptor_symtab->refcount));
+    _upb_symtab_free(descriptor_symtab);
+    descriptor_symtab = NULL;
   }
-  upb_def *def = upb_symtab_lookup(
-      symtab, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
-  if (!def || (symtab->fds_msgdef = upb_dyncast_msgdef(def)) == NULL) {
-    // upb itself is corrupt.
-    abort();
-  }
-  upb_def_unref(def);  // The symtab already holds a ref on it.
-  upb_status_uninit(&status);
 }
 
-upb_msgdef *upb_symtab_fds_def(upb_symtab *s) {
-  assert(s->fds_msgdef != NULL);
-  upb_def_ref(UPB_UPCAST(s->fds_msgdef));
-  return s->fds_msgdef;
+upb_def *upb_getdescriptordef(upb_string *str) {
+  // TODO: add locking.
+  if (descriptor_symtab == NULL) {
+    descriptor_symtab = upb_symtab_new();
+
+    static upb_string descriptor_str =
+        UPB_STATIC_STRING_ARRAY(descriptor_pb);
+    upb_baredecoder *decoder = upb_baredecoder_new(&descriptor_str);
+    upb_status status = UPB_STATUS_INIT;
+    upb_symtab_addfds(descriptor_symtab, upb_baredecoder_src(decoder), &status);
+    upb_baredecoder_free(decoder);
+
+    if(!upb_ok(&status)) {
+      // upb itself is corrupt.
+      upb_printerr(&status);
+      upb_clearerr(&status);
+      abort();
+    }
+    upb_status_uninit(&status);
+
+    // As a sanity check, make sure that FileDescriptorSet was loaded.
+    upb_msgdef *def = upb_getfdsdef();
+    if (!def) {
+      // upb itself is corrupt.
+      abort();
+    }
+    upb_def_unref(UPB_UPCAST(def));  // The symtab already holds a ref on it.
+    atexit(upb_free_descriptor_symtab);
+  }
+  return upb_symtab_resolve(
+      descriptor_symtab, UPB_STRLIT("google.protobuf"), str);
+}
+
+upb_msgdef *upb_getfdsdef() {
+  return upb_downcast_msgdef(
+      upb_getdescriptordef(UPB_STRLIT("FileDescriptorSet")));
 }

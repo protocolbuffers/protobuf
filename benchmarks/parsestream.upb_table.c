@@ -17,12 +17,6 @@ static bool initialize()
   // Initialize upb state, decode descriptor.
   upb_status status = UPB_STATUS_INIT;
   upb_symtab *s = upb_symtab_new();
-  upb_symtab_add_descriptorproto(s);
-  upb_def *fds_def = upb_symtab_lookup(
-      s, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
-  if (!fds_def) {
-    fprintf(stderr, "Couldn't load FileDescriptorSet def");
-  }
 
   upb_string *fds_str = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
   if(fds_str == NULL) {

@@ -346,8 +346,8 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     //const char *ptr = d->ptr;
     // Decodes as many fields as possible, updating d->ptr appropriately,
     // before falling through to the slow(er) path.
-    const char *end = UPB_MIN(d->end, d->submsg_end);
 #ifdef USE_ASSEMBLY_FASTPATH
+    const char *end = UPB_MIN(d->end, d->submsg_end);
     fastdecode_ret ret = upb_fastdecode(d->ptr, end,
                                         d->dispatcher.top->handlers.set->value,
                                         d->dispatcher.top->handlers.closure,

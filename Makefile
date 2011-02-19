@@ -179,22 +179,28 @@ tests/test.proto.pb: tests/test.proto
 	@# TODO: replace with upbc
 	protoc tests/test.proto -otests/test.proto.pb
 
-TESTS= \
+SIMPLE_TESTS= \
   tests/test_string \
-  tests/test_table \
   tests/test_def \
   tests/test_stream \
+  tests/tests
+#    tests/test_decoder \
+
+SIMPLE_CXX_TESTS= \
+  tests/test_table
+
+VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \
   tests/t.test_vs_proto2.googlemessage2 \
-  tests/test.proto.pb \
-  tests/tests
 
-#    tests/test_decoder \
+TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS)
+
 
 tests: $(TESTS)
 $(TESTS): $(LIBUPB)
+tests/tests: tests/test.proto.pb
 
-% : %.c
+$(SIMPLE_TESTS): % : %.c
 	$(E) CC $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -237,9 +243,6 @@ tests/test_table: tests/test_table.cc
 
 tests/tests: src/libupb.a
 
-# Tools
-tools: src/upbc
-src/upbc: $(LIBUPB)
 
 # Benchmarks. ##################################################################
 

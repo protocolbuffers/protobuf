@@ -213,26 +213,13 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
     return 1;
   }
-  upb_symtab_add_descriptorproto(symtab);
-  upb_def *fds_msgdef = upb_symtab_lookup(
-      symtab, UPB_STRLIT("google.protobuf.FileDescriptorSet"));
-  assert(fds_msgdef);
-
-  upb_stringsrc ssrc;
-  upb_stringsrc_init(&ssrc);
-  upb_stringsrc_reset(&ssrc, fds);
-  upb_decoder decoder;
-  upb_decoder_init(&decoder, upb_downcast_msgdef(fds_msgdef));
-  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&ssrc));
-  upb_symtab_addfds(symtab, upb_decoder_src(&decoder), &status);
+  upb_parsedesc(symtab, fds, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": ");
     upb_printerr(&status);
     return 1;
   }
   upb_string_unref(fds);
-  upb_decoder_uninit(&decoder);
-  upb_stringsrc_uninit(&ssrc);
 
   upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
   upb_def *def = upb_symtab_lookup(symtab, proto_name);
@@ -260,7 +247,6 @@ int main(int argc, char *argv[])
 
   upb_msg_unref(upb_msg, msgdef);
   upb_def_unref(UPB_UPCAST(msgdef));
-  upb_def_unref(fds_msgdef);
   upb_string_unref(str);
   upb_symtab_unref(symtab);
   upb_status_uninit(&status);

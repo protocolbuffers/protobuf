@@ -276,7 +276,7 @@ void _upb_symtab_free(upb_symtab *s);  // Must not be called directly!
 
 INLINE void upb_symtab_ref(upb_symtab *s) { upb_atomic_ref(&s->refcount); }
 INLINE void upb_symtab_unref(upb_symtab *s) {
-  if(upb_atomic_unref(&s->refcount)) _upb_symtab_free(s);
+  if(s && upb_atomic_unref(&s->refcount)) _upb_symtab_free(s);
 }
 
 // Resolves the given symbol using the rules described in descriptor.proto,
@@ -314,17 +314,20 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type);
 // more useful?  Maybe it should be an option.
 void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
 
-// Adds defs for google.protobuf.FileDescriptorSet and friends to this symtab.
-// This is necessary for bootstrapping, since these are the upb_defs that
-// specify other defs and allow them to be loaded.
-void upb_symtab_add_descriptorproto(upb_symtab *s);
+// Returns a def corresponding to the given name, from descriptor.proto.
+// upb internally bootstraps the defs in descriptor.proto, since they are
+// necessary for loading other descriptors.  The caller owns a ref on the
+// returned def (which is NULL if no such def exists in descriptor.proto).
+//
+// The name should *not* be qualified by the package, to promote
+// interoperability between the internal and external releases of Protocol
+// Buffers (inside Google, these are in the "proto2" package, externally they
+// are in "google.protobuf".
+upb_def *upb_getdescriptordef(upb_string *str);
 
-// Returns the upb_msgdef for google.protobuf.FileDescriptorSet, which the
-// caller owns a ref on.  This is a convenience method that is equivalent to
-// looking up the symbol called "google.protobuf.FileDescriptorSet" yourself,
-// except that it only will return a def that was added by
-// upb_symtab_add_descriptorproto().
-upb_msgdef *upb_symtab_fds_def(upb_symtab *s);
+// A convenience method for getting the upb_def for FileDescriptorProto.
+// Return should never be NULL.
+upb_msgdef *upb_getfdsdef();
 
 
 /* upb_def casts **************************************************************/

@@ -191,29 +191,12 @@ int main(int argc, char *argv[])
   // TODO: make upb_parsedesc use a separate symtab, so we can use it here when
   // importing descriptor.proto.
   upb_symtab *s = upb_symtab_new();
-  upb_symtab_add_descriptorproto(s);
-  upb_symtab *s2 = upb_symtab_new();
   upb_status status = UPB_STATUS_INIT;
-
-  upb_stringsrc strsrc;
-  upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, descriptor);
-
-  upb_decoder d;
-  upb_msgdef *fds_msgdef = upb_symtab_fds_def(s);
-  upb_decoder_init(&d, fds_msgdef);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc));
-
-  upb_symtab_addfds(s2, upb_decoder_src(&d), &status);
-  upb_stringsrc_uninit(&strsrc);
-  upb_decoder_uninit(&d);
-  upb_def_unref(UPB_UPCAST(fds_msgdef));
-
+  upb_parsedesc(s, descriptor, &status);
   if(!upb_ok(&status)) {
     upb_printerr(&status);
     error("Failed to parse input file descriptor\n");
   }
-
   upb_status_uninit(&status);
 
   /* Emit output files. */
@@ -232,7 +215,6 @@ int main(int argc, char *argv[])
   free(defs);
   upb_string_unref(descriptor);
   upb_symtab_unref(s);
-  upb_symtab_unref(s2);
   fclose(h_const_file);
 
   return 0;
