@@ -327,7 +327,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   //d->bytes_parsed_slow = 0;
 
 // TODO: handle UPB_SKIPSUBMSG
-#define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { /*assert(!upb_ok(status));*/ goto err; }
+#define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { /*assert(!upb_ok(status));*/ goto callback_err; }
 #define CHECK(expr) if (!expr) { assert(!upb_ok(status)); goto err; }
 
   CHECK_FLOW(upb_dispatch_startmsg(&d->dispatcher));
@@ -469,11 +469,13 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     CHECK_FLOW(upb_dispatch_value(&d->dispatcher, f, val));
   }
 
-err:
+callback_err:
   upb_copyerr(status, d->dispatcher.top->handlers.status);
   if (upb_ok(status)) {
     upb_seterr(status, UPB_ERROR, "Callback returned UPB_BREAK");
   }
+err:
+  assert(!upb_ok(status));
 }
 
 void upb_decoder_sethandlers(upb_src *src, upb_handlers *handlers) {

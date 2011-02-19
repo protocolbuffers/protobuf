@@ -265,6 +265,8 @@ INLINE void upb_status_init(upb_status *status) {
 
 void upb_status_uninit(upb_status *status);
 
+// Caller owns a ref on the returned string.
+upb_string *upb_status_tostring(upb_status *status);
 void upb_printerr(upb_status *status);
 void upb_clearerr(upb_status *status);
 void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,

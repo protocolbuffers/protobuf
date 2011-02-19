@@ -9,9 +9,25 @@
 #include <stdlib.h>
 #include "lauxlib.h"
 #include "upb_def.h"
+#include "upb_glue.h"
 
 void lupb_pushstring(lua_State *L, upb_string *str) {
   lua_pushlstring(L, upb_string_getrobuf(str), upb_string_len(str));
+}
+
+void lupb_checkstatus(lua_State *L, upb_status *s) {
+  if (!upb_ok(s)) {
+    upb_printerr(s);
+    // Need to copy the string to the stack, so we can free it and not leak
+    // it (since luaL_error() does not return).
+    size_t len = upb_string_len(s->str);
+    char buf[len+1];
+    memcpy(buf, upb_string_getrobuf(s->str), len);
+    buf[len] = '\0';
+    upb_status_uninit(s);
+    luaL_error(L, "%s", buf);
+  }
+  upb_status_uninit(s);
 }
 
 /* object cache ***************************************************************/
@@ -83,7 +99,7 @@ static void lupb_def_getorcreate(lua_State *L, upb_def *def) {
       luaL_error(L, "unknown deftype %d", def->type);
       type_name = NULL;  // Placate the compiler.
   }
-  return lupb_cache_getorcreate(L, def, type_name, lupb_nop, lupb_def_unref);
+  lupb_cache_getorcreate(L, def, type_name, lupb_nop, lupb_def_unref);
 }
 
 // msgdef
@@ -285,17 +301,22 @@ static int lupb_symtab_getdefs(lua_State *L) {
   return 1;
 }
 
-static int lupb_symtab_add_descriptorproto(lua_State *L) {
+static int lupb_symtab_parsedesc(lua_State *L) {
   lupb_symtab *s = lupb_symtab_check(L, 1);
-  upb_symtab_add_descriptorproto(s->symtab);
-  return 0;  // No args to return.
+  size_t len;
+  const char *str = luaL_checklstring(L, 2, &len);
+  upb_status status = UPB_STATUS_INIT;
+  upb_string desc_str = UPB_STACK_STRING_LEN(str, len);
+  upb_parsedesc(s->symtab, &desc_str, &status);
+  lupb_checkstatus(L, &status);
+  return 0;
 }
 
 static const struct luaL_Reg lupb_symtab_m[] = {
-  {"add_descriptorproto", lupb_symtab_add_descriptorproto},
   //{"addfds", lupb_symtab_addfds},
   {"getdefs", lupb_symtab_getdefs},
   {"lookup", lupb_symtab_lookup},
+  {"parsedesc", lupb_symtab_parsedesc},
   //{"resolve", lupb_symtab_resolve},
   {NULL, NULL}
 };
@@ -314,8 +335,15 @@ static int lupb_symtab_new(lua_State *L) {
   return 1;
 }
 
+static int lupb_getfdsdef(lua_State *L) {
+  lupb_cache_getorcreate(
+      L, upb_getfdsdef(), "upb.msgdef", lupb_nop, lupb_def_unref);
+  return 1;
+}
+
 static const struct luaL_Reg lupb_toplevel_m[] = {
   {"symtab", lupb_symtab_new},
+  {"fdsdef", lupb_getfdsdef},
   {NULL, NULL}
 };
 

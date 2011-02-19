@@ -150,7 +150,7 @@ src/upb_decoder_x64.o: src/upb_decoder_x64.asm
 
 src/upb_decoder_x64.lo: src/upb_decoder_x64.asm
 	$(E) NASM $<
-	$(Q) nasm -Ox src/upb_decoder_x64.asm -o src/upb_decoder_x64.o -f macho64
+	$(Q) nasm -Ox src/upb_decoder_x64.asm -o src/upb_decoder_x64.lo -f macho64
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
