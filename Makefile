@@ -353,12 +353,11 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 
 # Lua extension ##################################################################
 
+LUA_CPPFLAGS = $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --silence-errors --cflags lua5.1 || echo '-I/usr/local/include'))
 ifeq ($(shell uname), Darwin)
-  LUA_CPPFLAGS = -I/usr/include/lua5.1
-  LUA_LDFLAGS = -L/usr/local/lib -llua
+  LUA_LDFLAGS = -undefined dynamic_lookup
 else
-  LUA_CPPFLAGS = $(strip $(shell pkg-config --silence-errors --cflags lua || pkg-config --cflags lua5.1))
-  LUA_LDFLAGS = $(strip $(shell pkg-config --silence-errors --libs lua || pkg-config --libs lua5.1))
+  LUA_LDFLAGS =
 endif
 
 LUAEXT=lang_ext/lua/upb.so
