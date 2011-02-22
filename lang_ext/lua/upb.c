@@ -170,7 +170,7 @@ static void lupb_pushvalue(lua_State *L, upb_value val, upb_fielddef *f) {
 
 static upb_value lupb_getvalue(lua_State *L, int narg, upb_fielddef *f) {
   upb_value val;
-  lua_Number num;
+  lua_Number num = 0;
   if (!upb_issubmsg(f) && !upb_isstring(f) && f->type != UPB_TYPE(BOOL)) {
     num = luaL_checknumber(L, narg);
     if (f->type != UPB_TYPE(DOUBLE) && f->type != UPB_TYPE(FLOAT) &&

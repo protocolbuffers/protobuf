@@ -161,6 +161,26 @@ void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
   return upb_value_write(ptr, val, upb_field_valuetype(f));
 }
 
+upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
+  if (!upb_msg_has(msg, f)) {
+    upb_value val = f->default_value;
+    if (upb_issubmsg(f)) {
+      // TODO: handle arrays also, which must be treated similarly.
+      upb_msgdef *md = upb_downcast_msgdef(f->def);
+      upb_msg *m = upb_msg_new(md);
+      // Copy all set bits and values, except the refcount.
+      memcpy(m , upb_value_getmsg(val), md->size);
+      upb_atomic_refcount_init(&m->refcount, 0); // The msg will take a ref.
+      upb_value_setmsg(&val, m);
+    }
+    upb_msg_set(msg, f, val);
+    return val;
+  } else {
+    return upb_value_read(_upb_msg_getptr(msg, f), upb_field_valuetype(f));
+  }
+}
+
+
 static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {
   upb_valueptr p = _upb_msg_getptr(msg, f);
   if (upb_isarray(f)) {

@@ -51,7 +51,7 @@ message SpeedMessage1SubMessage {
   optional int32 field1 = 1 [default=0];
   optional int32 field2 = 2 [default=0];
   optional int32 field3 = 3 [default=0];
-  optional string field15 = 15;
+  optional string field15 = 15 [default="FOOBAR!"];
   optional bool field12 = 12 [default=true];
   optional int64 field13 = 13;
   optional int64 field14 = 14;

@@ -23,15 +23,17 @@ SpeedMessage1 = symtab:lookup("benchmarks.SpeedMessage1")
 print(SpeedMessage1:name())
 
 msg = SpeedMessage1()
--- print(msg.field1)
+--print(msg.field1)
 -- print(msg.field129)
 -- print(msg.field271)
--- print(msg.field15.field15)
+print(msg.field15.field15)
+msg.field15.field15 = "my override"
+print(msg.field15.field15)
 -- print(msg.field1)
 -- print(msg.field1)
 -- msg.field1 = "YEAH BABY!"
 -- print(msg.field1)
-print(msg.field129)
-msg.field129 = 5
-print(msg.field129)
+-- print(msg.field129)
+-- msg.field129 = 5
+-- print(msg.field129)
 
