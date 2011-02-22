@@ -81,6 +81,9 @@ INLINE void upb_def_unref(upb_def *def) {
   if(def && upb_atomic_unref(&def->refcount)) _upb_def_reftozero(def);
 }
 
+#define UPB_UPCAST(ptr) (&(ptr)->base)
+
+
 /* upb_fielddef ***************************************************************/
 
 // A upb_fielddef describes a single field in a message.  It isn't a full def
@@ -158,6 +161,10 @@ typedef struct _upb_msgdef {
   // Tables for looking up fields by number and name.
   upb_inttable itof;  // int to field
   upb_strtable ntof;  // name to field
+
+  // Immutable msg instance that has all default values set.
+  // TODO: need a way of making this immutable!
+  struct _upb_msg *default_message;
 } upb_msgdef;
 
 // Hash table entries for looking up fields by name or number.
@@ -171,6 +178,13 @@ typedef struct {
   upb_strtable_entry e;
   upb_fielddef *f;
 } upb_ntof_ent;
+
+INLINE void upb_msgdef_unref(upb_msgdef *md) {
+  upb_def_unref(UPB_UPCAST(md));
+}
+INLINE void upb_msgdef_ref(upb_msgdef *md) {
+  upb_def_ref(UPB_UPCAST(md));
+}
 
 // Looks up a field by name or number.  While these are written to be as fast
 // as possible, it will still be faster to cache the results of this lookup if
@@ -360,8 +374,6 @@ UPB_DOWNCAST_DEF(svcdef, SVC);
 UPB_DOWNCAST_DEF(extdef, EXT);
 UPB_DOWNCAST_DEF(unresolveddef, UNRESOLVED);
 #undef UPB_DOWNCAST_DEF
-
-#define UPB_UPCAST(ptr) (&(ptr)->base)
 
 #ifdef __cplusplus
 }  /* extern "C" */

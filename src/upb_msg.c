@@ -145,6 +145,22 @@ INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
   msg->data[f->set_bit_offset] |= f->set_bit_mask;
 }
 
+void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
+  assert(val.type == upb_field_valuetype(f));
+  upb_valueptr ptr = _upb_msg_getptr(msg, f);
+  if (upb_field_ismm(f)) {
+    // Unref any previous value we may have had there.
+    upb_value oldval = upb_value_read(ptr, upb_field_valuetype(f));
+    upb_field_unref(oldval, f);
+
+    // Ref the new value.
+    upb_atomic_refcount_t *refcount = upb_value_getrefcount(val);
+    if (refcount) upb_atomic_ref(refcount);
+  }
+  upb_msg_sethas(msg, f);
+  return upb_value_write(ptr, val, upb_field_valuetype(f));
+}
+
 static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {
   upb_valueptr p = _upb_msg_getptr(msg, f);
   if (upb_isarray(f)) {

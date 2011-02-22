@@ -1,20 +1,20 @@
+/*
+ * upb - a minimalist implementation of protocol buffers.
+ *
+ * A test that verifies that our results are identical to proto2 for a
+ * given proto type and input protobuf.
+ *
+ * Copyright (c) 2011 Joshua Haberman.  See LICENSE for details.
+ */
 
-#undef NDEBUG  /* ensure tests always assert. */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
-#include "upb_decoder.h"
+#include "upb_test.h"
 #include "upb_def.h"
 #include "upb_glue.h"
 #include "upb_msg.h"
-#include "upb_strstream.h"
-
-int num_assertions = 0;
-#define ASSERT(expr) do { \
-  ++num_assertions; \
-  assert(expr); \
-  } while(0)
 
 #include MESSAGE_HFILE
 

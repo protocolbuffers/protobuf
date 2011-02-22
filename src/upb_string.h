@@ -134,6 +134,9 @@ INLINE upb_string *upb_string_getref(upb_string *str) {
 
 // Returns the length of the string.
 INLINE upb_strlen_t upb_string_len(upb_string *str) { return str->len; }
+INLINE bool upb_string_isempty(upb_string *str) {
+  return !str || upb_string_len(str) == 0;
+}
 
 // Use to read the bytes of the string.  The caller *must* call
 // upb_string_endread() after the data has been read.  The window between
@@ -273,6 +276,10 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
 //#endif
 #define UPB_STRLIT(str) &(upb_string)UPB_STATIC_STRING(str)
 
+// Returns a singleton empty string.
+upb_string *upb_emptystring();
+
+
 /* upb_string library functions ***********************************************/
 
 // Named like their <string.h> counterparts, these are all safe against buffer
@@ -338,6 +345,9 @@ INLINE upb_string *upb_strduplen(const void *src, upb_strlen_t len) {
 INLINE upb_string *upb_strdupc(const char *src) {
   return upb_strduplen(src, strlen(src));
 }
+
+// Returns a newly-allocated NULL-terminated copy of str.
+char *upb_string_newcstr(upb_string *str);
 
 // Appends 'append' to 's' in-place, resizing s if necessary.
 void upb_strcat(upb_string *s, upb_string *append);

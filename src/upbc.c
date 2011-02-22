@@ -12,7 +12,6 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "descriptor.h"
 #include "upb_def.h"
 #include "upb_msg.h"
 #include "upb_glue.h"

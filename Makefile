@@ -94,6 +94,7 @@ TESTS_SRC= \
   tests/test_stream.c \
   tests/test_string.c \
   tests/tests.c \
+  tests/tests_varint.c \
   tests/test_vs_proto2.cc
 
 ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
@@ -138,11 +139,11 @@ $(LIBUPB_PIC): $(PICOBJ)
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
 	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
 
 src/upb_def.lo: src/upb_def.c
 	$(E) 'CC -fPIC' $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -Os -c -o $@ $< -fPIC
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
 
 src/upb_decoder_x64.o: src/upb_decoder_x64.asm
 	$(E) NASM $<
@@ -183,6 +184,7 @@ SIMPLE_TESTS= \
   tests/test_string \
   tests/test_def \
   tests/test_stream \
+  tests/test_varint \
   tests/tests
 #    tests/test_decoder \
 
@@ -202,7 +204,7 @@ tests/tests: tests/test.proto.pb
 
 $(SIMPLE_TESTS): % : %.c
 	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1 
 test: tests

@@ -1,10 +1,11 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2008-2009 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2008-2011 Joshua Haberman.  See LICENSE for details.
  */
 
 #include "upb_decoder.h"
+#include "upb_varint_decoder.h"
 
 #include <inttypes.h>
 #include <stddef.h>
@@ -20,105 +21,6 @@ typedef struct {
 extern fastdecode_ret upb_fastdecode(const char *p, const char *end,
                                      upb_value_handler_t value_cb, void *closure,
                                      void *table, int table_size);
-
-/* Pure Decoding **************************************************************/
-
-// The key fast-path varint-decoding routine.  Here we can assume we have at
-// least UPB_MAX_VARINT_ENCODED_SIZE bytes available.  There are a lot of
-// possibilities for optimization/experimentation here.
-
-#ifdef USE_SSE_VARINT_DECODING
-#include <emmintrin.h>
-
-// This works, but is empirically slower than the branchy version below.  Why?
-// Most varints are very short.  Next step: use branches for 1/2-byte varints,
-// but use the SSE version for 3-10 byte varints.
-INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val, upb_status *s) {
-  const char *p = *ptr;
-  __m128i val128 = _mm_loadu_si128((void*)p);
-  unsigned int continuation_bits = _mm_movemask_epi8(val128);
-  unsigned int bsr_val = ~continuation_bits;
-  int varint_length = __builtin_ffs(bsr_val);
-  if (varint_length > 10) {
-    upb_seterr(s, UPB_ERROR, "Unterminated varint");
-    return false;
-  }
-
-  uint16_t twob;
-  memcpy(&twob, p, 2);
-  twob &= 0x7f7f;
-  twob = ((twob & 0xff00) >> 1) | (twob & 0xff);
-
-  uint64_t eightb;
-  memcpy(&eightb, p + 2, 8);
-  eightb &= 0x7f7f7f7f7f7f7f7f;
-  eightb = ((eightb & 0xff00ff00ff00ff00) >> 1) | (eightb & 0x00ff00ff00ff00ff);
-  eightb = ((eightb & 0xffff0000ffff0000) >> 2) | (eightb & 0x0000ffff0000ffff);
-  eightb = ((eightb & 0xffffffff00000000) >> 4) | (eightb & 0x00000000ffffffff);
-
-  uint64_t all_bits = twob | (eightb << 14);
-  int varint_bits = varint_length * 7;
-  uint64_t mask = varint_bits == 70 ? (uint64_t)-1 : (1ULL << (varint_bits)) - 1;
-  *val = all_bits & mask;
-  *ptr = p + varint_length;
-  return true;
-}
-
-#else
-
-INLINE bool upb_decode_varint_fast(const char **ptr, uint64_t *val, upb_status *s) {
-  const char *p = *ptr;
-  uint32_t low, high = 0;
-  uint32_t b;
-  b = *(p++); low   = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
-  b = *(p++); low  |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
-  b = *(p++); low  |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
-  b = *(p++); low  |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
-  b = *(p++); low  |= (b & 0x7f) << 28;
-              high  = (b & 0x7f) >>  4; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) <<  3; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 10; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 17; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 24; if(!(b & 0x80)) goto done;
-  b = *(p++); high |= (b & 0x7f) << 31; if(!(b & 0x80)) goto done;
-
-  upb_seterr(s, UPB_ERROR, "Unterminated varint");
-  return false;
-
-done:
-  *val = ((uint64_t)high << 32) | low;
-  *ptr = p;
-  return true;
-}
-
-typedef struct {
-  const char *newbuf;
-  uint64_t val;
-} retval;
-
-retval upb_decode_varint_fast64(const char *p) {
-  uint64_t ret;
-  uint64_t b;
-  retval r = {(void*)0, 0};
-  b = *(p++); ret  = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 21; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 28; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 35; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 42; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 49; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 56; if(!(b & 0x80)) goto done;
-  b = *(p++); ret |= (b & 0x7f) << 63; if(!(b & 0x80)) goto done;
-  return r;
-
-done:
-  r.val = ret;
-  r.newbuf = p;
-  return r;
-}
-
-#endif
 
 
 /* Decoding/Buffering of individual values ************************************/
@@ -233,11 +135,13 @@ done:
 INLINE bool upb_decode_varint(upb_decoder *d, upb_value *val) {
   if (upb_decoder_bufleft(d) >= 16) {
     // Common (fast) case.
-    uint64_t val64;
-    const char *p = d->ptr;
-    if (!upb_decode_varint_fast(&p, &val64, d->status)) return false;
-    upb_decoder_advance(d, p - d->ptr);
-    upb_value_setraw(val, val64);
+    upb_decoderet r = upb_decode_varint_fast(d->ptr);
+    if (r.p == NULL) {
+      upb_seterr(d->status, UPB_ERROR, "Unterminated varint.\n");
+      return false;
+    }
+    upb_value_setraw(val, r.val);
+    upb_decoder_advance(d, r.p - d->ptr);
     return true;
   } else {
     return upb_decode_varint_slow(d, val);
@@ -352,11 +256,19 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
                                         d->dispatcher.top->handlers.set->value,
                                         d->dispatcher.top->handlers.closure,
                                         d->top->msgdef->itof.array,
-                                        d->top->msgdef->itof.array_size);
+                                        d->top->msgdef->itof.array_size,
+                                        d->tmp);
     CHECK_FLOW(ret.flow);
+    if (ret.ptr - d->ptr > 0) {
+      DEBUGPRINTF("Fast path parsed %d bytes of data!\n", ret.ptr - d->ptr);
+    }
     d->ptr = ret.ptr;
     if (end - d->ptr < 12) {
-      DEBUGPRINTF("Off the fast path because <12 bytes of data\n");
+      if (end == d->submsg_end && end != d->end) {
+        DEBUGPRINTF("Off the fast path because <12 bytes of data, but ONLY because of submsg end.\n");
+      } else {
+        DEBUGPRINTF("Off the fast path because <12 bytes of data, NOT because of submsg end.\n");
+      }
     } else {
       DEBUGPRINTF("Off the fast path for some other reason.\n");
     }

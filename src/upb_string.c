@@ -147,4 +147,15 @@ error:
   return NULL;
 }
 
-void upb_string_noninlinerecycle(upb_string **_str) { return upb_string_recycle(_str); }
+upb_string *upb_emptystring() {
+  static upb_string empty = UPB_STATIC_STRING("");
+  return &empty;
+}
+
+char *upb_string_newcstr(upb_string *str) {
+  upb_strlen_t len = upb_string_len(str);
+  char *ret = malloc(len+1);
+  memcpy(ret, upb_string_getrobuf(str), len);
+  ret[len] = '\0';
+  return ret;
+}

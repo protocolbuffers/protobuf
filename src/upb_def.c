@@ -6,9 +6,11 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <errno.h>
 #include "descriptor.c"
 #include "descriptor_const.h"
 #include "upb_def.h"
+#include "upb_msg.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
 
@@ -261,6 +263,8 @@ struct _upb_defbuilder {
   bool saw_number;
   bool saw_name;
 
+  upb_string *default_string;
+
   upb_fielddef *f;
 };
 typedef struct _upb_defbuilder upb_defbuilder;
@@ -276,12 +280,18 @@ static void upb_defbuilder_init(upb_defbuilder *b) {
   upb_status_init(&b->status);
   b->stack_len = 0;
   b->name = NULL;
+  b->default_string = NULL;
 }
 
 static void upb_defbuilder_uninit(upb_defbuilder *b) {
   upb_string_unref(b->name);
   upb_status_uninit(&b->status);
   upb_deflist_uninit(&b->defs);
+  upb_string_unref(b->default_string);
+  while (b->stack_len > 0) {
+    upb_defbuilder_frame *f = &b->stack[--b->stack_len];
+    upb_string_unref(f->name);
+  }
 }
 
 static upb_msgdef *upb_defbuilder_top(upb_defbuilder *b) {
@@ -587,6 +597,19 @@ upb_string *upb_enumdef_iton(upb_enumdef *def, upb_enumval_t num) {
 /* upb_fielddef ***************************************************************/
 
 static void upb_fielddef_free(upb_fielddef *f) {
+  if (upb_isstring(f) || f->type == UPB_TYPE(ENUM)) {
+    upb_string_unref(upb_value_getstr(f->default_value));
+  } else if (upb_issubmsg(f)) {
+    upb_msg *m = upb_value_getmsg(f->default_value);
+    assert(m);
+    // We cheat a bit here.  We need to unref msg, but we don't have a reliable
+    // way of accessing the msgdef (which is required by upb_msg_unref()),
+    // because f->def may have already been collected as part of a cycle if
+    // this is an unowned ref.  But we know that default messages never contain
+    // references to other messages, and their only string references are to
+    // the singleton empty string, so we can safely unref+free msg directly.
+    if (upb_atomic_unref(&m->refcount)) free(m);
+  }
   upb_string_unref(f->name);
   if(f->owned) {
     upb_def_unref(f->def);
@@ -606,6 +629,109 @@ static upb_flow_t upb_fielddef_startmsg(void *_b) {
   return UPB_CONTINUE;
 }
 
+// Converts the default value in string "dstr" into "d".  Passes a ref on dstr.
+// Returns true on success.
+static bool upb_fielddef_setdefault(upb_string *dstr, upb_value *d, int type) {
+  bool success = true;
+  if (type == UPB_TYPE(STRING) || type == UPB_TYPE(BYTES) || type == UPB_TYPE(ENUM)) {
+    // We'll keep the ref we had on it.  We include enums in this case because
+    // we need the enumdef to resolve the name, but we may not have it yet.
+    // We'll resolve it later.
+    if (dstr) {
+      upb_value_setstr(d, dstr);
+    } else {
+      upb_value_setstr(d, upb_emptystring());
+    }
+  } else if (type == UPB_TYPE(MESSAGE) || type == UPB_TYPE(GROUP)) {
+    // We don't expect to get a default value.
+    upb_string_unref(dstr);
+    if (dstr != NULL) {
+      printf("Returning false because I got a default string for a message!\n");
+      success = false;
+    }
+  } else {
+    // The strto* functions need the string to be NULL-terminated.
+    char *strz = upb_string_isempty(dstr) ? NULL : upb_string_newcstr(dstr);
+    char *end;
+    upb_string_unref(dstr);
+    switch (type) {
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(SINT32):
+      case UPB_TYPE(SFIXED32):
+        if (strz) {
+          long val = strtol(strz, &end, 0);
+          if (val > INT32_MAX || val < INT32_MIN || errno == ERANGE || *end)
+            success = false;
+          else
+            upb_value_setint32(d, val);
+        } else {
+          upb_value_setint32(d, 0);
+        }
+        break;
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SINT64):
+      case UPB_TYPE(SFIXED64):
+        if (strz) {
+          upb_value_setint64(d, strtoll(strz, &end, 0));
+          if (errno == ERANGE || *end) success = false;
+        } else {
+          upb_value_setint64(d, 0);
+        }
+        break;
+      case UPB_TYPE(UINT32):
+      case UPB_TYPE(FIXED32):
+        if (strz) {
+          long val = strtoul(strz, &end, 0);
+          if (val > UINT32_MAX || errno == ERANGE || *end)
+            success = false;
+          else
+            upb_value_setuint32(d, val);
+        } else {
+          upb_value_setuint32(d, 0);
+        }
+        break;
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64):
+        if (strz) {
+          upb_value_setuint64(d, strtoull(strz, &end, 0));
+          if (errno == ERANGE || *end) success = false;
+        } else {
+          upb_value_setuint64(d, 0);
+        }
+        break;
+      case UPB_TYPE(DOUBLE):
+        if (strz) {
+          upb_value_setdouble(d, strtod(strz, &end));
+          if (errno == ERANGE || *end) success = false;
+        } else {
+          upb_value_setdouble(d, 0.0);
+        }
+        break;
+      case UPB_TYPE(FLOAT):
+        if (strz) {
+          upb_value_setfloat(d, strtof(strz, &end));
+          if (errno == ERANGE || *end) success = false;
+        } else {
+          upb_value_setfloat(d, 0.0);
+        }
+        break;
+      case UPB_TYPE(BOOL):
+        if (!strz || strcmp(strz, "false") == 0)
+          upb_value_setbool(d, false);
+        else if (strcmp(strz, "true") == 0)
+          upb_value_setbool(d, true);
+        else
+          success = false;
+        break;
+    }
+    if (!success) {
+      printf("Returning false on the int conversion path, was trying to convert: %s, type=%d\n", strz, type);
+    }
+    free(strz);
+  }
+  return success;
+}
+
 static upb_flow_t upb_fielddef_endmsg(void *_b) {
   upb_defbuilder *b = _b;
   upb_fielddef *f = b->f;
@@ -619,6 +745,15 @@ static upb_flow_t upb_fielddef_endmsg(void *_b) {
   upb_ntof_ent ntof_ent = {{f->name, 0}, f};
   upb_inttable_insert(&m->itof, f->number, &itof_ent);
   upb_strtable_insert(&m->ntof, &ntof_ent.e);
+
+  upb_string *dstr = b->default_string;
+  b->default_string = NULL;
+  if (!upb_fielddef_setdefault(dstr, &f->default_value, f->type)) {
+    // We don't worry too much about giving a great error message since the
+    // compiler should have ensured this was correct.
+    upb_seterr(&b->status, UPB_ERROR, "Error converting default value.");
+    return UPB_BREAK;
+  }
   return UPB_CONTINUE;
 }
 
@@ -644,6 +779,12 @@ static upb_flow_t upb_fielddef_value(void *_b, upb_fielddef *f, upb_value val) {
       b->f->owned = true;
       break;
     }
+    case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_DEFAULT_VALUE_FIELDNUM:
+      // Have to convert from string to the correct type, but we might not know
+      // the type yet.
+      upb_string_unref(b->default_string);
+      b->default_string = upb_string_getref(upb_value_getstr(val));
+      break;
   }
   return UPB_CONTINUE;
 }
@@ -683,6 +824,7 @@ static upb_flow_t upb_msgdef_startmsg(void *_b) {
   upb_atomic_refcount_init(&m->cycle_refcount, 0);
   upb_inttable_init(&m->itof, 4, sizeof(upb_itof_ent));
   upb_strtable_init(&m->ntof, 4, sizeof(upb_ntof_ent));
+  m->default_message = NULL;
   upb_deflist_push(&b->defs, UPB_UPCAST(m));
   upb_defbuilder_startcontainer(b);
   return UPB_CONTINUE;
@@ -703,7 +845,7 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
   upb_field_count_t field = 0;
   upb_msg_iter i;
   for (i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
-    sorted_fields[field++]= upb_msg_iter_field(i);
+    sorted_fields[field++] = upb_msg_iter_field(i);
   }
   qsort(sorted_fields, n, sizeof(*sorted_fields), upb_compare_fields);
 
@@ -744,6 +886,18 @@ static upb_flow_t upb_msgdef_endmsg(void *_b) {
   free(sorted_fields);
 
   if (max_align > 0) m->size = upb_align_up(m->size, max_align);
+
+  // Create default message instance, an immutable message with all default
+  // values set (except submessages, which are simply marked as unset).  We
+  // could alternatively leave all set bits unset, but this would make
+  // upb_msg_get() take its unexpected branch more often for no good reason.
+  m->default_message = upb_msg_new(m);
+  for (i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
+    upb_fielddef *f = upb_msg_iter_field(i);
+    if (!upb_issubmsg(f) && !f->type == UPB_TYPE(ENUM)) {
+      upb_msg_set(m->default_message, f, f->default_value);
+    }
+  }
 
   upb_defbuilder_endcontainer(b);
   return UPB_CONTINUE;
@@ -802,6 +956,7 @@ static void upb_msgdef_register_DescriptorProto(upb_defbuilder *b,
 
 static void upb_msgdef_free(upb_msgdef *m)
 {
+  upb_msg_unref(m->default_message, m);
   upb_msg_iter i;
   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i))
     upb_fielddef_free(upb_msg_iter_field(i));
@@ -818,6 +973,10 @@ static void upb_msgdef_resolve(upb_msgdef *m, upb_fielddef *f, upb_def *def) {
   // We will later make the ref unowned if it is a part of a cycle.
   f->owned = true;
   upb_def_ref(def);
+  if (upb_issubmsg(f)) {
+    upb_msgdef *md = upb_downcast_msgdef(def);
+    upb_value_setmsg(&f->default_value, upb_msg_getref(md->default_message));
+  }
 }
 
 upb_msg_iter upb_msg_begin(upb_msgdef *m) {
@@ -937,7 +1096,8 @@ static bool upb_symtab_findcycles(upb_msgdef *m, int depth, upb_status *status)
 }
 
 // Given a table of pending defs "tmptab" and a table of existing defs "symtab",
-// resolves all of the unresolved refs for the defs in tmptab.
+// resolves all of the unresolved refs for the defs in tmptab.  Also resolves
+// default values for enumerations and submessages.
 bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
                      upb_status *status)
 {
@@ -1352,7 +1512,7 @@ upb_def *upb_getdescriptordef(upb_string *str) {
       // upb itself is corrupt.
       abort();
     }
-    upb_def_unref(UPB_UPCAST(def));  // The symtab already holds a ref on it.
+    upb_msgdef_unref(def);  // The symtab already holds a ref on it.
     atexit(upb_free_descriptor_symtab);
   }
   return upb_symtab_resolve(

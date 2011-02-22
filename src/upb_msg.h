@@ -135,6 +135,7 @@ INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
 #undef CASE
 }
 
+
 /* upb_array ******************************************************************/
 
 typedef uint32_t upb_arraylen_t;
@@ -172,8 +173,17 @@ INLINE upb_value upb_array_get(upb_array *arr, upb_fielddef *f,
   return upb_value_read(_upb_array_getptr(arr, f, i), f->type);
 }
 
+
 /* upb_msg ********************************************************************/
 
+// upb_msg is not self-describing; the upb_msg does not contain a pointer to the
+// upb_msgdef.  While this makes the API a bit more cumbersome to use, this
+// choice was made for a few important reasons:
+//
+// 1. it would make every message 8 bytes larger on 64-bit platforms.  This is
+//    a high overhead for small messages.
+// 2. you would want the msg to own a ref on its msgdef, but this would require
+//    an atomic operation for every message create or destroy!
 struct _upb_msg {
   upb_atomic_refcount_t refcount;
   uint8_t data[4];  // We allocate the appropriate amount per message.
@@ -194,6 +204,11 @@ upb_msg *upb_msg_new(upb_msgdef *md);
 INLINE void upb_msg_unref(upb_msg *msg, upb_msgdef *md) {
   if (msg && upb_atomic_unref(&msg->refcount)) _upb_msg_free(msg, md);
 }
+INLINE upb_msg *upb_msg_getref(upb_msg *msg) {
+  assert(msg);
+  upb_atomic_ref(&msg->refcount);
+  return msg;
+}
 
 void upb_msg_recycle(upb_msg **msg, upb_msgdef *msgdef);
 
@@ -203,9 +218,39 @@ INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
   return (msg->data[f->set_bit_offset] & f->set_bit_mask) != 0;
 }
 
+// We have several options for handling default values:
+// 1. inside upb_msg_clear(), overwrite all values to be their defaults,
+//    overwriting submessage pointers to point to the default instance again.
+// 2. inside upb_msg_get(), test upb_msg_has() and return md->default_value
+//    if it is not set.  upb_msg_clear() only clears the set bits.
+//    We lazily clear objects if/when we reuse them.
+// 3. inside upb_msg_clear(), overwrite all values to be their default,
+//    and recurse into submessages to set all their values to defaults also.
+// 4. as a hybrid of (1) and (3), make each "set bit" tri-state, where it
+//    can have a value of "unset, but cached sub-message needs to be cleared."
+//    Like (2) we can cache sub-messages and lazily clear, but primitive values
+//    can always be returned straight from the message.
+//
+// (1) is undesirable, because it prevents us from caching sub-objects.
+// (2) makes clear() cheaper, but makes get() branchier.
+// (3) makes get() less branchy, but makes clear() have worse cache behavior.
+// (4) makes get() differently branchy (only returns default from msgdef if
+//     NON-primitive value is unset), but uses more set bits.  It's questionable
+//     whether it would be a performance improvement.
+//
+// For the moment we go with (2).  Google's protobuf does (3), which is likely
+// part of the reason we beat it in some benchmarks.
+
+// For submessages and strings, the returned value is not owned.
 INLINE upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
-  return upb_value_read(_upb_msg_getptr(msg, f), upb_field_valuetype(f));
+  if (upb_msg_has(msg, f)) {
+    return upb_value_read(_upb_msg_getptr(msg, f), upb_field_valuetype(f));
+  } else {
+    return f->default_value;
+  }
 }
+
+void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val);
 
 // Unsets all field values back to their defaults.
 INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {

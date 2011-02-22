@@ -33,7 +33,7 @@ SECTION .text
 ; Register allocation.
 %define BUF rbx       ; const char *p, current buf position.
 %define END rbp       ; const char *end, where the buf ends (either submsg end or buf end)
-%define FREE r12      ; unused
+%define STRING r12    ; unused
 %define FIELDDEF r13  ; upb_fielddef *f, needs to be preserved across varint decoding call.
 %define CALLBACK r14
 %define CLOSURE r15
@@ -143,6 +143,7 @@ _upb_fastdecode:
 
   ; Parse arguments into reg vals and stack.
   mov BUF, rdi
+  mov COMMITTED_BUF_SPILL, rdi
   mov END, rsi
   mov CALLBACK, rdx
   mov CLOSURE, rcx
@@ -209,7 +210,6 @@ align 16
 
 align 16
 .string:
-
 
 .cant_fast_path:
   mov rax, 0   ; UPB_CONTINUE -- continue as before.
