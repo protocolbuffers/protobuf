@@ -200,7 +200,6 @@ typedef struct {
 UPB_VALUE_ACCESSORS(double, _double, double, UPB_TYPE(DOUBLE));
 UPB_VALUE_ACCESSORS(float, _float, float, UPB_TYPE(FLOAT));
 UPB_VALUE_ACCESSORS(int32, int32, int32_t, UPB_TYPE(INT32));
-UPB_VALUE_ACCESSORS(enumval, int32, int32_t, UPB_TYPE(ENUM));
 UPB_VALUE_ACCESSORS(int64, int64, int64_t, UPB_TYPE(INT64));
 UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));

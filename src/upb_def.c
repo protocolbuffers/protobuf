@@ -495,9 +495,14 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_endmsg(void *_b) {
     upb_seterr(&b->status, UPB_ERROR, "Enum value missing name or number.");
     return UPB_BREAK;
   }
+  upb_enumdef *e = upb_downcast_enumdef(upb_defbuilder_last(b));
+  if (upb_inttable_count(&e->iton) == 0) {
+    // The default value of an enum (in the absence of an explicit default) is
+    // its first listed value.
+    e->default_value = b->number;
+  }
   upb_ntoi_ent ntoi_ent = {{b->name, 0}, b->number};
   upb_iton_ent iton_ent = {0, b->name};
-  upb_enumdef *e = upb_downcast_enumdef(upb_defbuilder_last(b));
   upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
   upb_inttable_insert(&e->iton, b->number, &iton_ent);
   // We don't unref "name" because we pass our ref to the iton entry of the
@@ -530,8 +535,16 @@ static upb_flow_t upb_enumdef_EnumDescriptorProto_startmsg(void *_b) {
 }
 
 static upb_flow_t upb_enumdef_EnumDescriptorProto_endmsg(void *_b) {
-  (void)_b;
-  assert(upb_defbuilder_last((upb_defbuilder*)_b)->fqname != NULL);
+  upb_defbuilder *b = _b;
+  upb_enumdef *e = upb_downcast_enumdef(upb_defbuilder_last(b));
+  if (upb_defbuilder_last((upb_defbuilder*)_b)->fqname == NULL) {
+    upb_seterr(&b->status, UPB_ERROR, "Enum had no name.");
+    return UPB_BREAK;
+  }
+  if (upb_inttable_count(&e->iton) == 0) {
+    upb_seterr(&b->status, UPB_ERROR, "Enum had no values.");
+    return UPB_BREAK;
+  }
   return UPB_CONTINUE;
 }
 
@@ -593,11 +606,18 @@ upb_string *upb_enumdef_iton(upb_enumdef *def, upb_enumval_t num) {
   return e ? e->string : NULL;
 }
 
+bool upb_enumdef_ntoi(upb_enumdef *def, upb_string *name, upb_enumval_t *num) {
+  upb_ntoi_ent *e = (upb_ntoi_ent*)upb_strtable_lookup(&def->ntoi, name);
+  if (!e) return false;
+  *num = e->value;
+  return true;
+}
+
 
 /* upb_fielddef ***************************************************************/
 
 static void upb_fielddef_free(upb_fielddef *f) {
-  if (upb_isstring(f) || f->type == UPB_TYPE(ENUM)) {
+  if (upb_isstring(f)) {
     upb_string_unref(upb_value_getstr(f->default_value));
   } else if (upb_issubmsg(f)) {
     upb_msg *m = upb_value_getmsg(f->default_value);
@@ -615,6 +635,36 @@ static void upb_fielddef_free(upb_fielddef *f) {
     upb_def_unref(f->def);
   }
   free(f);
+}
+
+static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
+  if(f->owned) upb_def_unref(f->def);
+  f->def = def;
+  // We will later make the ref unowned if it is a part of a cycle.
+  f->owned = true;
+  upb_def_ref(def);
+  if (upb_issubmsg(f)) {
+    upb_msgdef *md = upb_downcast_msgdef(def);
+    upb_value_setmsg(&f->default_value, upb_msg_getref(md->default_message));
+  } else if (f->type == UPB_TYPE(ENUM)) {
+    upb_string *str = upb_value_getstr(f->default_value);
+    assert(str);  // Should point to either a real default or the empty string.
+    upb_enumdef *e = upb_downcast_enumdef(f->def);
+    upb_enumval_t val;
+    if (str == upb_emptystring()) {
+      upb_value_setint32(&f->default_value, e->default_value);
+    } else {
+      bool success = upb_enumdef_ntoi(e, str, &val);
+      upb_string_unref(str);
+      if (!success) {
+        upb_seterr(s, UPB_ERROR, "Default enum value (" UPB_STRFMT ") is not a "
+                   "member of the enum", UPB_STRARG(str));
+        return false;
+      }
+      upb_value_setint32(&f->default_value, val);
+    }
+  }
+  return true;
 }
 
 static upb_flow_t upb_fielddef_startmsg(void *_b) {
@@ -645,10 +695,7 @@ static bool upb_fielddef_setdefault(upb_string *dstr, upb_value *d, int type) {
   } else if (type == UPB_TYPE(MESSAGE) || type == UPB_TYPE(GROUP)) {
     // We don't expect to get a default value.
     upb_string_unref(dstr);
-    if (dstr != NULL) {
-      printf("Returning false because I got a default string for a message!\n");
-      success = false;
-    }
+    if (dstr != NULL) success = false;
   } else {
     // The strto* functions need the string to be NULL-terminated.
     char *strz = upb_string_isempty(dstr) ? NULL : upb_string_newcstr(dstr);
@@ -724,9 +771,6 @@ static bool upb_fielddef_setdefault(upb_string *dstr, upb_value *d, int type) {
           success = false;
         break;
     }
-    if (!success) {
-      printf("Returning false on the int conversion path, was trying to convert: %s, type=%d\n", strz, type);
-    }
     free(strz);
   }
   return success;
@@ -761,10 +805,10 @@ static upb_flow_t upb_fielddef_value(void *_b, upb_fielddef *f, upb_value val) {
   upb_defbuilder *b = _b;
   switch(f->number) {
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_FIELDNUM:
-      b->f->type = upb_value_getenumval(val);
+      b->f->type = upb_value_getint32(val);
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_FIELDNUM:
-      b->f->label = upb_value_getenumval(val);
+      b->f->label = upb_value_getint32(val);
       break;
     case GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER_FIELDNUM:
       b->f->number = upb_value_getint32(val);
@@ -966,19 +1010,6 @@ static void upb_msgdef_free(upb_msgdef *m)
   free(m);
 }
 
-static void upb_msgdef_resolve(upb_msgdef *m, upb_fielddef *f, upb_def *def) {
-  (void)m;
-  if(f->owned) upb_def_unref(f->def);
-  f->def = def;
-  // We will later make the ref unowned if it is a part of a cycle.
-  f->owned = true;
-  upb_def_ref(def);
-  if (upb_issubmsg(f)) {
-    upb_msgdef *md = upb_downcast_msgdef(def);
-    upb_value_setmsg(&f->default_value, upb_msg_getref(md->default_message));
-  }
-}
-
 upb_msg_iter upb_msg_begin(upb_msgdef *m) {
   return upb_inttable_begin(&m->itof);
 }
@@ -1133,7 +1164,7 @@ bool upb_resolverefs(upb_strtable *tmptab, upb_strtable *symtab,
         upb_seterr(status, UPB_ERROR, "Unexpected type");
         return false;
       }
-      upb_msgdef_resolve(m, f, found->def);
+      if (!upb_fielddef_resolve(f, found->def, status)) return false;
     }
   }
 

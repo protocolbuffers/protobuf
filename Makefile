@@ -62,7 +62,6 @@ $(ALLSRC): perf-cppflags
 # The core library -- the absolute minimum you must compile in to successfully
 # bootstrap.
 CORE= \
-  src/descriptor.c \
   src/upb.c \
   src/upb_table.c \
   src/upb_string.c \

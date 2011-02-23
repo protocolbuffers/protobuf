@@ -33,7 +33,7 @@ const upb_type_info upb_types[] = {
   TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1, MESSAGE)   // MESSAGE
   TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     1, STRING)    // BYTES
   TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1, UINT32)    // UINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1, ENUM)      // ENUM
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  1, INT32)     // ENUM
   TYPE_INFO(UPB_WIRE_TYPE_32BIT,       int32_t,   1, INT32)     // SFIXED32
   TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   1, INT64)     // SFIXED64
   TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   1, INT32)     // SINT32

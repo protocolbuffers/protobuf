@@ -227,10 +227,13 @@ INLINE upb_fielddef *upb_msg_iter_field(upb_msg_iter iter) {
 
 /* upb_enumdef ****************************************************************/
 
+typedef int32_t upb_enumval_t;
+
 typedef struct _upb_enumdef {
   upb_def base;
   upb_strtable ntoi;
   upb_inttable iton;
+  upb_enumval_t default_value;  // The first value listed in the enum.
 } upb_enumdef;
 
 typedef struct {
@@ -242,8 +245,6 @@ typedef struct {
   bool junk;
   upb_string *string;
 } upb_iton_ent;
-
-typedef int32_t upb_enumval_t;
 
 // Lookups from name to integer and vice-versa.
 bool upb_enumdef_ntoi(upb_enumdef *e, upb_string *name, upb_enumval_t *num);

@@ -146,7 +146,7 @@ INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
 }
 
 void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
-  assert(val.type == upb_field_valuetype(f));
+  assert(val.type == upb_types[upb_field_valuetype(f)].inmemory_type);
   upb_valueptr ptr = _upb_msg_getptr(msg, f);
   if (upb_field_ismm(f)) {
     // Unref any previous value we may have had there.
