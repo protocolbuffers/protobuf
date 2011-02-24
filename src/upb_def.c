@@ -1471,7 +1471,7 @@ static void upb_baredecoder_run(upb_src *src, upb_status *status) {
     }
     // Detect end-of-submessage.
     while(d->offset >= *top) {
-      CHECK(upb_dispatch_endsubmsg(&d->dispatcher));
+      CHECK(upb_dispatch_endsubmsg(&d->dispatcher, &f));
       d->offset = *(top--);
     }
   }

@@ -197,9 +197,8 @@ static upb_flow_t upb_push(upb_decoder *d, upb_fielddef *f,
       UPB_GROUP_END_OFFSET :
       d->buf_stream_offset + (d->ptr - upb_string_getrobuf(d->buf)) +
           upb_value_getint32(submsg_len);
-  upb_msgdef *md = upb_downcast_msgdef(f->def);
-  d->top->msgdef = md;
-  d->msgdef = md;
+  d->top->f = f;
+  d->msgdef = upb_downcast_msgdef(f->def);
   upb_dstate_setmsgend(d);
   upb_flow_t ret = upb_dispatch_startsubmsg(&d->dispatcher, f);
   if (ret == UPB_SKIPSUBMSG) {
@@ -217,9 +216,9 @@ static upb_flow_t upb_push(upb_decoder *d, upb_fielddef *f,
 
 static upb_flow_t upb_pop(upb_decoder *d) {
   --d->top;
+  d->msgdef = upb_downcast_msgdef(d->top->f->def);
   upb_dstate_setmsgend(d);
-  d->msgdef = d->top->msgdef;
-  return upb_dispatch_endsubmsg(&d->dispatcher);
+  return upb_dispatch_endsubmsg(&d->dispatcher, d->top->f);
 }
 
 void upb_decoder_run(upb_src *src, upb_status *status) {
@@ -228,7 +227,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   d->ptr = NULL;
   d->end = NULL;  // Force a buffer pull.
   d->submsg_end = (void*)0x1;  // But don't let end-of-message get triggered.
-  d->msgdef = d->top->msgdef;
+  d->msgdef = upb_downcast_msgdef(d->top->f->def);
 
 // TODO: handle UPB_SKIPSUBMSG
 #define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { /*assert(!upb_ok(status));*/ goto callback_err; }
@@ -373,9 +372,6 @@ void upb_decoder_sethandlers(upb_src *src, upb_handlers *handlers) {
   upb_dispatcher_reset(&d->dispatcher, handlers, true);
   d->top = d->stack;
   d->buf_stream_offset = 0;
-  // The top-level message is not delimited (we can keep receiving data for it
-  // indefinitely), so we treat it like a group.
-  d->top->end_offset = 0;
 }
 
 void upb_decoder_init(upb_decoder *d, upb_msgdef *msgdef) {
@@ -385,7 +381,9 @@ void upb_decoder_init(upb_decoder *d, upb_msgdef *msgdef) {
   };
   upb_src_init(&d->src, &vtbl);
   upb_dispatcher_init(&d->dispatcher);
-  d->stack[0].msgdef = msgdef;
+  d->f.def = UPB_UPCAST(msgdef);
+  d->stack[0].f = &d->f;
+  // Never want to end top-level message, so treat it like a group.
   d->stack[0].end_offset = UPB_GROUP_END_OFFSET;
   d->limit = &d->stack[UPB_MAX_NESTING];
   d->buf = NULL;

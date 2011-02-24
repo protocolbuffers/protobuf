@@ -186,6 +186,12 @@ INLINE upb_flow_t upb_startsubmsg_nop(void *closure, struct _upb_fielddef *f,
   return UPB_CONTINUE;
 }
 
+INLINE upb_flow_t upb_endsubmsg_nop(void *closure, struct _upb_fielddef *f) {
+  (void)closure;
+  (void)f;
+  return UPB_CONTINUE;
+}
+
 INLINE upb_flow_t upb_unknownval_nop(void *closure, upb_field_number_t fieldnum,
                                      upb_value val) {
   (void)closure;
@@ -199,7 +205,7 @@ INLINE void upb_register_handlerset(upb_handlers *h, upb_handlerset *set) {
   if (!set->endmsg) set->endmsg = &upb_nop;
   if (!set->value) set->value = &upb_value_nop;
   if (!set->startsubmsg) set->startsubmsg = &upb_startsubmsg_nop;
-  if (!set->endsubmsg) set->endsubmsg = &upb_nop;
+  if (!set->endsubmsg) set->endsubmsg = &upb_endsubmsg_nop;
   if (!set->unknownval) set->unknownval = &upb_unknownval_nop;
   h->set = set;
 }
@@ -264,7 +270,8 @@ INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
   return ret;
 }
 
-INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {
+INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d,
+                                         struct _upb_fielddef *f) {
   upb_flow_t ret;
   if (--d->top->depth == 0) {
     ret = d->top->handlers.set->endmsg(d->top->handlers.closure);
@@ -273,7 +280,7 @@ INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {
     --d->top;
     assert(d->top >= d->stack);
   }
-  return d->top->handlers.set->endsubmsg(d->top->handlers.closure);
+  return d->top->handlers.set->endsubmsg(d->top->handlers.closure, f);
 }
 
 INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d,

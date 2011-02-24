@@ -270,7 +270,8 @@ static upb_flow_t upb_msgpopulator_startsubmsg(void *_p, upb_fielddef *f,
   return UPB_CONTINUE;
 }
 
-static upb_flow_t upb_msgpopulator_endsubmsg(void *_p) {
+static upb_flow_t upb_msgpopulator_endsubmsg(void *_p, upb_fielddef *f) {
+  (void)f;
   upb_msgpopulator *p = _p;
   --p->top;
   return UPB_CONTINUE;

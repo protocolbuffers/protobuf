@@ -53,7 +53,8 @@ static upb_flow_t startsubmsg(void *closure, struct _upb_fielddef *f,
   }
 }
 
-static upb_flow_t endsubmsg(void *closure) {
+static upb_flow_t endsubmsg(void *closure, struct _upb_fielddef *f) {
+  (void)f;
   test_data *d = closure;
   strappendf(d->str, "endsubmsg\n");
   return UPB_CONTINUE;
@@ -99,9 +100,9 @@ static void test_dispatcher() {
   data.should_delegate = false;
   upb_dispatch_startsubmsg(&d, NULL);
   upb_dispatch_value(&d, NULL, val);
-  upb_dispatch_endsubmsg(&d);
-  upb_dispatch_endsubmsg(&d);
-  upb_dispatch_endsubmsg(&d);
+  upb_dispatch_endsubmsg(&d, NULL);
+  upb_dispatch_endsubmsg(&d, NULL);
+  upb_dispatch_endsubmsg(&d, NULL);
   upb_dispatch_endmsg(&d);
 
   upb_string expected = UPB_STACK_STRING(

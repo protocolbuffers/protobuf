@@ -30,7 +30,7 @@ extern "C" {
 // The decoder keeps a stack with one entry per level of recursion.
 // upb_decoder_frame is one frame of that stack.
 typedef struct {
-  upb_msgdef *msgdef;
+  upb_fielddef *f;
   size_t end_offset;  // For groups, 0.
 } upb_decoder_frame;
 
@@ -69,6 +69,8 @@ struct _upb_decoder {
   // Where we will store any errors that occur.
   upb_status *status;
 
+  // A fake fielddef for storing the msgdef for the top-level message.
+  upb_fielddef f;
   upb_decoder_frame stack[UPB_MAX_NESTING];
 };
 

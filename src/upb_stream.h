@@ -98,7 +98,8 @@ typedef upb_flow_t (*upb_value_handler_t)(void *closure,
 typedef upb_flow_t (*upb_startsubmsg_handler_t)(void *closure,
                                                 struct _upb_fielddef *f,
                                                 upb_handlers *delegate_to);
-typedef upb_flow_t (*upb_endsubmsg_handler_t)(void *closure);
+typedef upb_flow_t (*upb_endsubmsg_handler_t)(void *closure,
+                                              struct _upb_fielddef *f);
 typedef upb_flow_t (*upb_unknownval_handler_t)(void *closure,
                                                upb_field_number_t fieldnum,
                                                upb_value val);
@@ -126,7 +127,7 @@ typedef upb_flow_t (*upb_unknownval_handler_t)(void *closure,
 //   return UPB_CONTINUE;
 // }
 //
-// static upb_flow_t endsubmsg(void *closure) {
+// static upb_flow_t endsubmsg(void *closure, upb_fielddef *f) {
 //   // Called when a submessage ends.
 //   return UPB_CONTINUE;
 // }
@@ -207,7 +208,8 @@ INLINE upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_endmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
                                            struct _upb_fielddef *f);
-INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
+INLINE upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d,
+                                         struct _upb_fielddef *f);
 INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, struct _upb_fielddef *f,
                                      upb_value val);
 INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d,

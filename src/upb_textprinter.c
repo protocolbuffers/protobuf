@@ -107,8 +107,9 @@ err:
   return UPB_BREAK;
 }
 
-static upb_flow_t upb_textprinter_endsubmsg(void *_p)
+static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_fielddef *f)
 {
+  (void)f;
   upb_textprinter *p = _p;
   p->indent_depth--;
   upb_textprinter_indent(p);
