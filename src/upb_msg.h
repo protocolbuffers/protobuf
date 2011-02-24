@@ -280,8 +280,9 @@ typedef struct {
 } upb_msgpopulator_frame;
 
 typedef struct {
-  upb_msgpopulator_frame stack[UPB_MAX_NESTING], *top, *limit;
+  upb_msgpopulator_frame *top, *limit;
   upb_status status;
+  upb_msgpopulator_frame stack[UPB_MAX_NESTING];
 } upb_msgpopulator;
 
 void upb_msgpopulator_init(upb_msgpopulator *p);

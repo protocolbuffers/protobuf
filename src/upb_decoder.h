@@ -39,13 +39,11 @@ struct _upb_decoder {
   upb_src src;
   upb_dispatcher dispatcher;
   upb_bytesrc *bytesrc;
-  upb_msgdef *toplevel_msgdef;
-  upb_decoder_frame stack[UPB_MAX_NESTING];
 
   // Mutable state of the decoder.
 
-  // Where we will store any errors that occur.
-  upb_status *status;
+  // Msgdef for the current level.
+  upb_msgdef *msgdef;
 
   // Stack entries store the offset where the submsg ends (for groups, 0).
   upb_decoder_frame *top, *limit;
@@ -68,10 +66,10 @@ struct _upb_decoder {
   // End of this submessage, relative to *ptr.
   const char *submsg_end;
 
-  // Msgdef for the current level.
-  upb_msgdef *msgdef;
+  // Where we will store any errors that occur.
+  upb_status *status;
 
-  size_t bytes_parsed_fast, bytes_parsed_slow;
+  upb_decoder_frame stack[UPB_MAX_NESTING];
 };
 
 // A upb_decoder decodes the binary protocol buffer format, writing the data it

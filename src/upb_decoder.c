@@ -121,7 +121,6 @@ INLINE bool upb_decode_tag(upb_decoder *d, upb_tag *tag) {
   if ((*(p++) & 0x80) == 0) goto done;  // likely
 slow:
   // Decode a full varint starting over from ptr.
-  DEBUGPRINTF("tag was >2 bytes.\n");
   if (!upb_decode_varint_slow(d, &val)) return false;
   tag_int = upb_value_getint64(val);
   p = d->ptr;  // Trick the next line into not overwriting us.
@@ -198,7 +197,9 @@ static upb_flow_t upb_push(upb_decoder *d, upb_fielddef *f,
       UPB_GROUP_END_OFFSET :
       d->buf_stream_offset + (d->ptr - upb_string_getrobuf(d->buf)) +
           upb_value_getint32(submsg_len);
-  d->top->msgdef = upb_downcast_msgdef(f->def);
+  upb_msgdef *md = upb_downcast_msgdef(f->def);
+  d->top->msgdef = md;
+  d->msgdef = md;
   upb_dstate_setmsgend(d);
   upb_flow_t ret = upb_dispatch_startsubmsg(&d->dispatcher, f);
   if (ret == UPB_SKIPSUBMSG) {
@@ -217,6 +218,7 @@ static upb_flow_t upb_push(upb_decoder *d, upb_fielddef *f,
 static upb_flow_t upb_pop(upb_decoder *d) {
   --d->top;
   upb_dstate_setmsgend(d);
+  d->msgdef = d->top->msgdef;
   return upb_dispatch_endsubmsg(&d->dispatcher);
 }
 
@@ -227,8 +229,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
   d->end = NULL;  // Force a buffer pull.
   d->submsg_end = (void*)0x1;  // But don't let end-of-message get triggered.
   d->msgdef = d->top->msgdef;
-  //d->bytes_parsed_fast = 0;
-  //d->bytes_parsed_slow = 0;
 
 // TODO: handle UPB_SKIPSUBMSG
 #define CHECK_FLOW(expr) if ((expr) == UPB_BREAK) { /*assert(!upb_ok(status));*/ goto callback_err; }
@@ -247,7 +247,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
       CHECK_FLOW(upb_pop(d));
     }
 
-    //const char *ptr = d->ptr;
     // Decodes as many fields as possible, updating d->ptr appropriately,
     // before falling through to the slow(er) path.
 #ifdef USE_ASSEMBLY_FASTPATH
@@ -255,27 +254,11 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     fastdecode_ret ret = upb_fastdecode(d->ptr, end,
                                         d->dispatcher.top->handlers.set->value,
                                         d->dispatcher.top->handlers.closure,
-                                        d->top->msgdef->itof.array,
-                                        d->top->msgdef->itof.array_size,
+                                        d->msgdef->itof.array,
+                                        d->msgdef->itof.array_size,
                                         d->tmp);
     CHECK_FLOW(ret.flow);
-    if (ret.ptr - d->ptr > 0) {
-      DEBUGPRINTF("Fast path parsed %d bytes of data!\n", ret.ptr - d->ptr);
-    }
-    d->ptr = ret.ptr;
-    if (end - d->ptr < 12) {
-      if (end == d->submsg_end && end != d->end) {
-        DEBUGPRINTF("Off the fast path because <12 bytes of data, but ONLY because of submsg end.\n");
-      } else {
-        DEBUGPRINTF("Off the fast path because <12 bytes of data, NOT because of submsg end.\n");
-      }
-    } else {
-      DEBUGPRINTF("Off the fast path for some other reason.\n");
-    }
 #endif
-    //if (d->ptr > ptr) {
-    //  d->bytes_parsed_fast += (d->ptr - ptr);
-    //}
 
     // Parse/handle tag.
     upb_tag tag;
@@ -284,7 +267,6 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
         // Normal end-of-file.
         upb_clearerr(status);
         CHECK_FLOW(upb_dispatch_endmsg(&d->dispatcher));
-        //DEBUGPRINTF("bytes parsed fast: %d, bytes parsed slow; %d\n", d->bytes_parsed_fast, d->bytes_parsed_slow);
         return;
       } else {
         if (status->code == UPB_EOF) {
@@ -300,10 +282,8 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     upb_value val;
     switch (tag.wire_type) {
       case UPB_WIRE_TYPE_START_GROUP:
-        DEBUGPRINTF("parsing start group\n");
         break;  // Nothing to do now, below we will push appropriately.
       case UPB_WIRE_TYPE_END_GROUP:
-        DEBUGPRINTF("parsing end group\n");
         if(d->top->end_offset != UPB_GROUP_END_OFFSET) {
           upb_seterr(status, UPB_ERROR, "Unexpected END_GROUP tag.");
           goto err;
@@ -324,7 +304,7 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     }
 
     // Look up field by tag number.
-    upb_itof_ent *e = upb_msgdef_itofent(d->top->msgdef, tag.field_number);
+    upb_itof_ent *e = upb_msgdef_itofent(d->msgdef, tag.field_number);
 
     if (!e) {
       if (tag.wire_type == UPB_WIRE_TYPE_DELIMITED)
@@ -357,13 +337,11 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
     // doesn't check this, and it would slow us down, so pass for now.
     switch (e->field_type) {
       case UPB_TYPE(MESSAGE):
-        DEBUGPRINTF("parsing submessage\n");
       case UPB_TYPE(GROUP):
         CHECK_FLOW(upb_push(d, f, val, e->field_type));
         continue;  // We have no value to dispatch.
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES):
-        DEBUGPRINTF("parsing string\n");
         CHECK(upb_decode_string(d, &val, &d->tmp));
         break;
       case UPB_TYPE(SINT32):
@@ -395,7 +373,6 @@ void upb_decoder_sethandlers(upb_src *src, upb_handlers *handlers) {
   upb_dispatcher_reset(&d->dispatcher, handlers, true);
   d->top = d->stack;
   d->buf_stream_offset = 0;
-  d->top->msgdef = d->toplevel_msgdef;
   // The top-level message is not delimited (we can keep receiving data for it
   // indefinitely), so we treat it like a group.
   d->top->end_offset = 0;
@@ -408,7 +385,8 @@ void upb_decoder_init(upb_decoder *d, upb_msgdef *msgdef) {
   };
   upb_src_init(&d->src, &vtbl);
   upb_dispatcher_init(&d->dispatcher);
-  d->toplevel_msgdef = msgdef;
+  d->stack[0].msgdef = msgdef;
+  d->stack[0].end_offset = UPB_GROUP_END_OFFSET;
   d->limit = &d->stack[UPB_MAX_NESTING];
   d->buf = NULL;
   d->tmp = NULL;
@@ -417,9 +395,6 @@ void upb_decoder_init(upb_decoder *d, upb_msgdef *msgdef) {
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc) {
   d->bytesrc = bytesrc;
   d->top = &d->stack[0];
-  d->top->msgdef = d->toplevel_msgdef;
-  // Never want to end top-level message, so treat it like a group.
-  d->top->end_offset = UPB_GROUP_END_OFFSET;
 }
 
 void upb_decoder_uninit(upb_decoder *d) {
