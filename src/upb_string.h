@@ -192,12 +192,18 @@ INLINE void upb_string_recycle(upb_string **_str) {
 char *upb_string_getrwbuf(upb_string *str, upb_strlen_t len);
 
 // Replaces the contents of str with the contents of the given printf.
-void upb_string_vprintf(upb_string *str, const char *format, va_list args);
-INLINE void upb_string_printf(upb_string *str, const char *format, ...) {
+size_t upb_string_vprintf_at(upb_string *str, size_t offset, const char *format,
+                             va_list args);
+INLINE size_t upb_string_vprintf(upb_string *str, const char *format,
+                                 va_list args) {
+  return upb_string_vprintf_at(str, 0, format, args);
+}
+INLINE size_t upb_string_printf(upb_string *str, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  upb_string_vprintf(str, format, args);
+  size_t written = upb_string_vprintf(str, format, args);
   va_end(args);
+  return written;
 }
 
 // Sets the contents of "str" to be the given substring of "target_str", to

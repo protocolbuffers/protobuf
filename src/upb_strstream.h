@@ -40,22 +40,24 @@ upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s);
 
 /* upb_stringsink *************************************************************/
 
-struct upb_stringsink;
-typedef struct upb_stringsink upb_stringsink;
+struct _upb_stringsink {
+  upb_bytesink bytesink;
+  upb_string *str;
+};
+typedef struct _upb_stringsink upb_stringsink;
 
 // Create/free a stringsrc.
-upb_stringsink *upb_stringsink_new();
-void upb_stringsink_free(upb_stringsink *s);
+void upb_stringsink_init(upb_stringsink *s);
+void upb_stringsink_uninit(upb_stringsink *s);
 
-// Gets a string containing the data that has been written to this stringsink.
-// The caller does *not* own any references to this string.
-upb_string *upb_stringsink_getstring(upb_stringsink *s);
+// Resets the stringsink to a state where it will append to the given string.
+// The string must be newly created or recycled.  The stringsink will take a
+// reference on the string, so the caller need not ensure that it outlives the
+// stringsink.  A stringsink can be reset multiple times.
+void upb_stringsink_reset(upb_stringsink *s, upb_string *str);
 
-// Clears the internal string of accumulated data, resetting it to empty.
-void upb_stringsink_reset(upb_stringsink *s);
-
-// Returns the upb_bytesrc* for this stringsrc.  Invalidated by reset above.
-upb_bytesink *upb_stringsrc_bytesink();
+// Returns the upb_bytesink* for this stringsrc.  Invalidated by reset above.
+upb_bytesink *upb_stringsink_bytesink();
 
 
 #ifdef __cplusplus

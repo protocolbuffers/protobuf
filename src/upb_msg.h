@@ -274,6 +274,11 @@ INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
   memset(msg->data, 0, md->set_flags_bytes);
 }
 
+// A non-resumable upb_src that pushes the current contents of the message to
+// the given handlers.
+void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
+                         upb_status *status);
+
 typedef struct {
   upb_msg *msg;
   upb_msgdef *msgdef;

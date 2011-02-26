@@ -23,6 +23,7 @@ typedef struct {
 } lupb_def;
 
 void lupb_pushstring(lua_State *L, upb_string *str) {
+  assert(str);
   lua_pushlstring(L, upb_string_getrobuf(str), upb_string_len(str));
 }
 
@@ -155,9 +156,7 @@ static void lupb_pushvalue(lua_State *L, upb_value val, upb_fielddef *f) {
       lua_pushboolean(L, upb_value_getbool(val)); break;
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES): {
-      upb_string *str = upb_value_getstr(val);
-      assert(str);
-      lua_pushlstring(L, upb_string_getrobuf(str), upb_string_len(str)); break;
+      lupb_pushstring(L, upb_value_getstr(val)); break;
     }
     case UPB_TYPE(MESSAGE):
     case UPB_TYPE(GROUP): {
@@ -252,6 +251,9 @@ static int lupb_msg_index(lua_State *L) {
   upb_string namestr = UPB_STACK_STRING_LEN(name, len);
   upb_fielddef *f = upb_msgdef_ntof(m->msgdef, &namestr);
   if (f) {
+    if (upb_isarray(f)) {
+      luaL_error(L, "Access of repeated fields not yet implemented.");
+    }
     lupb_pushvalue(L, upb_msg_get(m->msg, f), f);
   } else {
     // It wasn't a field, perhaps it's a method?
@@ -290,12 +292,34 @@ static int lupb_msg_clear(lua_State *L) {
   return 0;
 }
 
+static int lupb_msg_parse(lua_State *L) {
+  lupb_msg *m = lupb_msg_check(L, 1);
+  size_t len;
+  const char *strbuf = luaL_checklstring(L, 2, &len);
+  upb_string str = UPB_STACK_STRING_LEN(strbuf, len);
+  upb_status status = UPB_STATUS_INIT;
+  upb_strtomsg(&str, m->msg, m->msgdef, &status);
+  lupb_checkstatus(L, &status);
+  return 0;
+}
+
+static int lupb_msg_totext(lua_State *L) {
+  lupb_msg *m = lupb_msg_check(L, 1);
+  upb_string *str = upb_string_new();
+  upb_msgtotext(str, m->msg, m->msgdef, false);
+  lupb_pushstring(L, str);
+  upb_string_unref(str);
+  return 1;
+}
+
 static const struct luaL_Reg lupb_msg_mm[] = {
   {"__gc", lupb_msg_gc},
   {"__index", lupb_msg_index},
   {"__newindex", lupb_msg_newindex},
   // Our __index mm will look up methods if the index isn't a field name.
   {"Clear", lupb_msg_clear},
+  {"Parse", lupb_msg_parse},
+  {"ToText", lupb_msg_totext},
   {NULL, NULL}
 };
 

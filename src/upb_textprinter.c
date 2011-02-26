@@ -20,8 +20,7 @@ struct _upb_textprinter {
 
 #define CHECK(x) if ((x) < 0) goto err;
 
-static int upb_textprinter_indent(upb_textprinter *p)
-{
+static int upb_textprinter_indent(upb_textprinter *p) {
   if(!p->single_line)
     for(int i = 0; i < p->indent_depth; i++)
       CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("  "), &p->status));
@@ -107,8 +106,7 @@ err:
   return UPB_BREAK;
 }
 
-static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_fielddef *f)
-{
+static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_fielddef *f) {
   (void)f;
   upb_textprinter *p = _p;
   p->indent_depth--;

@@ -83,27 +83,30 @@ void upb_string_substr(upb_string *str, upb_string *target_str,
   str->len = len;
 }
 
-void upb_string_vprintf(upb_string *str, const char *format, va_list args) {
+size_t upb_string_vprintf_at(upb_string *str, size_t offset, const char *format,
+                             va_list args) {
   // Try once without reallocating.  We have to va_copy because we might have
   // to call vsnprintf again.
-  uint32_t size = UPB_MAX(upb_string_size(str), 16);
-  char *buf = upb_string_getrwbuf(str, size);
+  uint32_t size = UPB_MAX(upb_string_size(str) - offset, 16);
+  char *buf = upb_string_getrwbuf(str, offset + size) + offset;
   va_list args_copy;
   va_copy(args_copy, args);
   uint32_t true_size = vsnprintf(buf, size, format, args_copy);
   va_end(args_copy);
 
+  // Resize to be the correct size.
   if (true_size >= size) {
-    // Need to reallocate.  We reallocate even if the sizes were equal,
-    // because snprintf excludes the terminating NULL from its count.
-    // We don't care about the terminating NULL, but snprintf might
-    // bail out of printing even other characters if it doesn't have
-    // enough space to write the NULL also.
-    upb_string_recycle(&str);
-    buf = upb_string_getrwbuf(str, true_size + 1);
+    // Need to print again, because some characters were truncated.  vsnprintf
+    // has weird behavior (and contrary IMO to what the standard says): it will
+    // not write the entire string unless you give it space to store the NULL
+    // terminator also.  So we can't give it space for the string itself and
+    // let NULL get truncated (after all, we don't care about it): we *must*
+    // give it space for NULL.
+    buf = upb_string_getrwbuf(str, offset + true_size + 1) + offset;
     vsnprintf(buf, true_size + 1, format, args);
   }
-  str->len = true_size;
+  str->len = offset + true_size;
+  return true_size;
 }
 
 upb_string *upb_string_asprintf(const char *format, ...) {

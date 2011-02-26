@@ -20,10 +20,22 @@ for _, def in ipairs(symtab:getdefs(-1)) do
 end
 
 SpeedMessage1 = symtab:lookup("benchmarks.SpeedMessage1")
+SpeedMessage2 = symtab:lookup("benchmarks.SpeedMessage2")
 print(SpeedMessage1:name())
 
 msg = SpeedMessage1()
-print(msg.foo)
+f = assert(io.open("../../benchmarks/google_message1.dat"))
+msg:Parse(f:read("*all"))
+print(msg:ToText())
+
+msg = SpeedMessage2()
+f = assert(io.open("../../benchmarks/google_message2.dat"))
+msg:Parse(f:read("*all"))
+msg.field2 = ""
+print(msg.field2)
+print(msg:ToText())
+--msg:Serialize()
+--msg:FromText(str)
 -- print(msg.field129)
 -- print(msg.field271)
 --print(msg.field15.field15)

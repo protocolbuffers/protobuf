@@ -8,6 +8,7 @@
 #include "upb_msg.h"
 #include "upb_decoder.h"
 #include "upb_strstream.h"
+#include "upb_textprinter.h"
 
 void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
                   upb_status *status) {
@@ -34,6 +35,29 @@ void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
   upb_msgpopulator_uninit(&p);
+  upb_handlers_uninit(&h);
+}
+
+void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
+                   bool single_line) {
+  upb_stringsink strsink;
+  upb_stringsink_init(&strsink);
+  upb_stringsink_reset(&strsink, str);
+
+  upb_textprinter *p = upb_textprinter_new();
+  upb_handlers h;
+  upb_handlers_init(&h);
+  upb_textprinter_reset(p, &h, upb_stringsink_bytesink(&strsink), single_line);
+
+  upb_status status = UPB_STATUS_INIT;
+  upb_msg_runhandlers(msg, md, &h, &status);
+  // None of {upb_msg_runhandlers, upb_textprinter, upb_stringsink} should be
+  // capable of returning an error.
+  assert(upb_ok(&status));
+  upb_status_uninit(&status);
+
+  upb_stringsink_uninit(&strsink);
+  upb_textprinter_free(p);
   upb_handlers_uninit(&h);
 }
 

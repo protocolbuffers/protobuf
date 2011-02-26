@@ -133,7 +133,7 @@ INLINE void *_upb_inttable_fastlookup(upb_inttable *t, uint32_t key,
   while (1) {
     //DEBUGPRINTF("%d, %d, %d\n", e->val.has_entry, e->hdr.key, key);
     if (e->hdr.key == key) {
-      DEBUGPRINTF("returning val from hash part\n");
+      //DEBUGPRINTF("returning val from hash part\n");
       return &e->val;
     }
     if ((bucket = e->hdr.next) == UPB_END_OF_CHAIN) return NULL;

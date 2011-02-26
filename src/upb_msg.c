@@ -180,6 +180,77 @@ upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
   }
 }
 
+static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
+                                   upb_dispatcher *d, upb_status *s);
+
+static upb_flow_t upb_msg_pushval(upb_value val, upb_fielddef *f,
+                                  upb_dispatcher *d, upb_status *s) {
+#define CHECK_FLOW(x) do { \
+  flow = x; if (flow != UPB_CONTINUE) return flow; \
+  } while(0)
+
+// For when a SKIP can be implemented just through an early return.
+#define CHECK_FLOW_LOCAL(x) do { \
+  flow = x; \
+  if (flow != UPB_CONTINUE) { \
+    if (flow == UPB_SKIPSUBMSG) flow = UPB_CONTINUE; \
+    goto end; \
+  } \
+} while (0)
+  upb_flow_t flow;
+  if (upb_issubmsg(f)) {
+    upb_msg *msg = upb_value_getmsg(val);
+    CHECK_FLOW_LOCAL(upb_dispatch_startsubmsg(d, f));
+    CHECK_FLOW_LOCAL(upb_msg_dispatch(msg, upb_downcast_msgdef(f->def), d, s));
+    CHECK_FLOW(upb_dispatch_endsubmsg(d, f));
+  } else {
+    CHECK_FLOW(upb_dispatch_value(d, f, val));
+  }
+
+end:
+  return flow;
+}
+
+static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
+                                   upb_dispatcher *d, upb_status *s) {
+  upb_msg_iter i;
+  upb_flow_t flow;
+  for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
+    upb_fielddef *f = upb_msg_iter_field(i);
+    if (!upb_msg_has(msg, f)) continue;
+    upb_value val = upb_msg_get(msg, f);
+    if (upb_isarray(f)) {
+      upb_array *arr = upb_value_getarr(val);
+      for (uint32_t j = 0; j < upb_array_len(arr); ++j) {
+        CHECK_FLOW_LOCAL(upb_msg_pushval(upb_array_get(arr, f, j), f, d, s));
+      }
+    } else {
+      CHECK_FLOW_LOCAL(upb_msg_pushval(val, f, d, s));
+    }
+  }
+  return UPB_CONTINUE;
+
+end:
+  // Need to copy/massage the error.
+  upb_copyerr(s, d->top->handlers.status);
+  if (upb_ok(s)) {
+    upb_seterr(s, UPB_ERROR, "Callback returned UPB_BREAK");
+  }
+  return flow;
+#undef CHECK_FLOW
+#undef CHECK_FLOW_LOCAL
+}
+
+void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
+                         upb_status *status) {
+  upb_dispatcher d;
+  upb_dispatcher_init(&d);
+  upb_dispatcher_reset(&d, h, true);
+
+  if (upb_dispatch_startmsg(&d) != UPB_CONTINUE) return;
+  if (upb_msg_dispatch(msg, md, &d, status) != UPB_CONTINUE) return;
+  if (upb_dispatch_endmsg(&d) != UPB_CONTINUE) return;
+}
 
 static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {
   upb_valueptr p = _upb_msg_getptr(msg, f);
