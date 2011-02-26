@@ -8,6 +8,7 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "upb_def.h"
 #include "upb_string.h"
 
@@ -19,6 +20,56 @@ struct _upb_textprinter {
 };
 
 #define CHECK(x) if ((x) < 0) goto err;
+
+static int upb_textprinter_putescaped(upb_textprinter *p, upb_string *str,
+                                      bool preserve_utf8) {
+  // Based on CEscapeInternal() from Google's protobuf release.
+  // TODO; we could write directly into a bytesink's buffer instead.
+  char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
+  const char *src = upb_string_getrobuf(str), *end = src + upb_string_len(str);
+
+  // I think hex is prettier and more useful, but proto2 uses octal; should
+  // investigate whether it can parse hex also.
+  bool use_hex = false;
+  bool last_hex_escape = false; // true if last output char was \xNN
+
+  for (; src < end; src++) {
+    if (dstend - dst < 4) {
+      upb_string str = UPB_STACK_STRING_LEN(dstbuf, dst - dstbuf);
+      CHECK(upb_bytesink_putstr(p->bytesink, &str, &p->status));
+      dst = dstbuf;
+    }
+
+    bool is_hex_escape = false;
+    switch (*src) {
+      case '\n': *(dst++) = '\\'; *(dst++) = 'n';  break;
+      case '\r': *(dst++) = '\\'; *(dst++) = 'r';  break;
+      case '\t': *(dst++) = '\\'; *(dst++) = 't';  break;
+      case '\"': *(dst++) = '\\'; *(dst++) = '\"'; break;
+      case '\'': *(dst++) = '\\'; *(dst++) = '\''; break;
+      case '\\': *(dst++) = '\\'; *(dst++) = '\\'; break;
+      default:
+        // Note that if we emit \xNN and the src character after that is a hex
+        // digit then that digit must be escaped too to prevent it being
+        // interpreted as part of the character code by C.
+        if ((!preserve_utf8 || (uint8_t)*src < 0x80) &&
+            (!isprint(*src) || (last_hex_escape && isxdigit(*src)))) {
+          sprintf(dst, (use_hex ? "\\x%02x" : "\\%03o"), (uint8_t)*src);
+          is_hex_escape = use_hex;
+          dst += 4;
+        } else {
+          *(dst++) = *src; break;
+        }
+    }
+    last_hex_escape = is_hex_escape;
+  }
+  // Flush remaining data.
+  upb_string outstr = UPB_STACK_STRING_LEN(dstbuf, dst - dstbuf);
+  CHECK(upb_bytesink_putstr(p->bytesink, &outstr, &p->status));
+  return 0;
+err:
+  return -1;
+}
 
 static int upb_textprinter_indent(upb_textprinter *p) {
   if(!p->single_line)
@@ -81,9 +132,9 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_fielddef *f,
       CASE("%hhu", bool);
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES):
-      // TODO: escaping.
       CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\""), &p->status));
-      CHECK(upb_bytesink_putstr(p->bytesink, upb_value_getstr(val), &p->status))
+      CHECK(upb_textprinter_putescaped(p, upb_value_getstr(val),
+                                       f->type == UPB_TYPE(STRING)));
       CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\""), &p->status));
       break;
   }

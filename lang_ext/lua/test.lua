@@ -31,8 +31,6 @@ print(msg:ToText())
 msg = SpeedMessage2()
 f = assert(io.open("../../benchmarks/google_message2.dat"))
 msg:Parse(f:read("*all"))
-msg.field2 = ""
-print(msg.field2)
 print(msg:ToText())
 --msg:Serialize()
 --msg:FromText(str)
