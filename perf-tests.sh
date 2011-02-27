@@ -11,24 +11,25 @@ fi
 
 rm -f perf-tests.out
 
-if [ x`uname -m` = xx86_64 ]; then
-  make clean
-  echo "-DNDEBUG -m32" > perf-cppflags
-  make upb_benchmarks
-  make benchmark | sed -e 's/^/plain32./g' | tee -a perf-tests.out
+run_with_flags () {
+  FLAGS=$1
+  NAME=$2
 
   make clean
-  echo "-DNDEBUG -fomit-frame-pointer -m32" > perf-cppflags
+  echo "$FLAGS -fprofile-generate" > perf-cppflags
   make upb_benchmarks
-  make benchmark | sed -e 's/^/omitfp32./g' | tee -a perf-tests.out
+  make benchmark
+
+  make clean_leave_profile
+  echo "$FLAGS -fprofile-use" > perf-cppflags
+  make upb_benchmarks
+  make benchmark | sed -e "s/^/$NAME./g" | tee -a perf-tests.out
+}
+
+if [ x`uname -m` = xx86_64 ]; then
+  run_with_flags "-DNDEBUG -m32" "plain32"
+  run_with_flags "-DNDEBUG -fomit-frame-pointer -m32" "omitfp32"
 fi
 
-make clean
-echo "-DNDEBUG" > perf-cppflags
-make $MAKETARGET
-make benchmark | sed -e 's/^/plain./g' | tee -a perf-tests.out
-
-make clean
-echo "-DNDEBUG -fomit-frame-pointer" > perf-cppflags
-make $MAKETARGET
-make benchmark | sed -e 's/^/omitfp./g' | tee -a perf-tests.out
+run_with_flags "-DNDEBUG " "plain"
+run_with_flags "-DNDEBUG -fomit-frame-pointer" "omitfp"

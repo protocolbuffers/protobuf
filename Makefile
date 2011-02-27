@@ -20,6 +20,7 @@
 # * -DUPB_UNALIGNED_READS_OK: makes code smaller, but not standard compliant
 
 .PHONY: all lib clean tests test benchmarks benchmark descriptorgen
+.PHONY: clean_leave_profile
 
 # Default rule: just build libupb.
 all: lib
@@ -110,15 +111,18 @@ ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
 
 # Rules. #######################################################################
 
-clean:
+clean_leave_profile:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
-	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.gcno) $(call rwildcard,,*.dSYM)
+	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.dSYM)
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf $(TESTS) tests/t.*
 	rm -rf src/descriptor.pb
 	rm -rf src/upbc deps
 	rm -rf lang_ext/lua/upb.so
 	cd lang_ext/python && python setup.py clean --all
+
+clean: clean_leave_profile
+	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
 
 # Core library (libupb.a).
 SRC=$(CORE) $(STREAM)
