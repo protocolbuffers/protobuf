@@ -248,14 +248,13 @@ void upb_decoder_run(upb_src *src, upb_status *status) {
 
     // Decodes as many fields as possible, updating d->ptr appropriately,
     // before falling through to the slow(er) path.
-#ifdef USE_ASSEMBLY_FASTPATH
+#ifdef USE_X64_FASTPATH
     const char *end = UPB_MIN(d->end, d->submsg_end);
     fastdecode_ret ret = upb_fastdecode(d->ptr, end,
                                         d->dispatcher.top->handlers.set->value,
                                         d->dispatcher.top->handlers.closure,
                                         d->msgdef->itof.array,
-                                        d->msgdef->itof.array_size,
-                                        d->tmp);
+                                        d->msgdef->itof.array_size);
     CHECK_FLOW(ret.flow);
 #endif
 

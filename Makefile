@@ -24,12 +24,14 @@
 # Default rule: just build libupb.
 all: lib
 
+# User-specified CFLAGS.
+USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+
 # Basic compiler/flag setup.
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Isrc -Itests -I.
-USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-missing-field-initializers $(USER_CFLAGS)
 LDLIBS=-lpthread src/libupb.a
 
@@ -117,8 +119,14 @@ LIBUPB=src/libupb.a
 LIBUPB_PIC=src/libupb_pic.a
 lib: $(LIBUPB)
 
-OBJ=$(patsubst %.c,%.o,$(SRC)) src/upb_decoder_x64.o
-PICOBJ=$(patsubst %.c,%.lo,$(SRC)) src/upb_decoder_x64.lo
+
+OBJ=$(patsubst %.c,%.o,$(SRC))
+PICOBJ=$(patsubst %.c,%.lo,$(SRC))
+
+ifneq (, $(findstring DUSE_X64_FASTPATH, $(USER_CFLAGS)))
+  OBJ += src/upb_decoder_x64.o
+  PICOBJ += src/upb_decoder_x64.o
+endif
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)
 	$(Q) ar rcs $(LIBUPB) $(OBJ)
