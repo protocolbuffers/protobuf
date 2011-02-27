@@ -10,7 +10,7 @@ set -v
 # Generate numbers for baseline.
 rm -rf perf-tmp
 git clone . perf-tmp
-(cd perf-tmp && ../perf-tests.sh upb)
+(cd perf-tmp && ./perf-tests.sh upb)
 cp perf-tmp/perf-tests.out perf-tests.baseline
 
 # Generate numbers for working directory.

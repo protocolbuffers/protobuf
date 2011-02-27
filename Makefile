@@ -27,6 +27,13 @@ all: lib
 # User-specified CFLAGS.
 USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 
+# If the user doesn't specify an -O setting, we default to -O3, except
+# for upb_def which gets -Os.
+ifeq (, $(findstring -O, $(USER_CFLAGS)))
+  USER_CFLAGS += -O3
+  DEF_OPT = -Os
+endif
+
 # Basic compiler/flag setup.
 CC=gcc
 CXX=g++
@@ -146,11 +153,11 @@ $(LIBUPB_PIC): $(PICOBJ)
 # critical path but gets very large when -O3 is used.
 src/upb_def.o: src/upb_def.c
 	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $<
 
 src/upb_def.lo: src/upb_def.c
 	$(E) 'CC -fPIC' $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -O0 -c -o $@ $< -fPIC
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $< -fPIC
 
 src/upb_decoder_x64.o: src/upb_decoder_x64.asm
 	$(E) NASM $<

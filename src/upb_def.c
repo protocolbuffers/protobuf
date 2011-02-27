@@ -728,7 +728,7 @@ static bool upb_fielddef_setdefault(upb_string *dstr, upb_value *d, int type) {
       case UPB_TYPE(UINT32):
       case UPB_TYPE(FIXED32):
         if (strz) {
-          long val = strtoul(strz, &end, 0);
+          unsigned long val = strtoul(strz, &end, 0);
           if (val > UINT32_MAX || errno == ERANGE || *end)
             success = false;
           else
