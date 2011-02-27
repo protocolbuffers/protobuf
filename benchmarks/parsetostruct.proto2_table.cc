@@ -38,7 +38,7 @@ static void cleanup()
 
 static size_t run(int i)
 {
-  if(!msg[i%NUM_MESSAGES]->ParseFromString(str)) {
+  if(!msg[i%NUM_MESSAGES]->ParsePartialFromString(str)) {
     fprintf(stderr, "Error parsing with proto2.\n");
     return 0;
   }
