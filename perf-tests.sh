@@ -5,13 +5,13 @@
 
 set -e
 MAKETARGET=benchmarks
-if [ x$1 == xupb ]; then
+if [ x$1 = xupb ]; then
   MAKETARGET=upb_benchmarks
 fi
 
 rm -f perf-tests.out
 
-if [ x`uname -m` == xx86_64 ]; then
+if [ x`uname -m` = xx86_64 ]; then
   make clean
   echo "-O3 -DNDEBUG -msse3 -m32" > perf-cppflags
   make upb_benchmarks
