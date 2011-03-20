@@ -14,9 +14,6 @@ int main() {
   }
   free(defs);
 
-  upb_msgdef *fds = upb_getfdsdef();
-  assert(fds != NULL);
-  upb_def_unref(UPB_UPCAST(fds));
   upb_symtab_unref(s);
   return 0;
 }

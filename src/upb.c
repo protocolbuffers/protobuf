@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
-
+#include "descriptor_const.h"
 #include "upb.h"
 #include "upb_string.h"
 
@@ -39,6 +39,12 @@ const upb_type_info upb_types[] = {
   TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   1, INT32)     // SINT32
   TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   1, INT64)     // SINT64
 };
+
+#ifdef NDEBUG
+upb_value UPB_NO_VALUE = {{0}};
+#else
+upb_value UPB_NO_VALUE = {{0}, UPB_VALUETYPE_RAW};
+#endif
 
 void upb_seterr(upb_status *status, enum upb_status_code code,
                 const char *msg, ...) {

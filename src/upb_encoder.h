@@ -14,7 +14,7 @@
 #define UPB_ENCODER_H_
 
 #include "upb.h"
-#include "upb_srcsink.h"
+#include "upb_stream.h"
 
 #ifdef __cplusplus
 extern "C" {

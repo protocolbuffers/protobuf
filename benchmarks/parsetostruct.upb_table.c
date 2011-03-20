@@ -13,7 +13,6 @@ static upb_msg *msg;
 static upb_stringsrc strsrc;
 static upb_decoder d;
 static upb_handlers h;
-static upb_msgpopulator p;
 
 static bool initialize()
 {
@@ -54,9 +53,9 @@ static bool initialize()
   msg = upb_msg_new(def);
 
   upb_stringsrc_init(&strsrc);
-  upb_decoder_init(&d, def);
-  upb_msgpopulator_init(&p);
-  upb_handlers_init(&h);
+  upb_handlers_init(&h, def);
+  upb_msg_regdhandlers(&h);
+  upb_decoder_init(&d, &h);
 
   if (!BYREF) {
     // Pretend the input string is stack-allocated, which will force its data
@@ -79,7 +78,6 @@ static void cleanup()
   upb_def_unref(UPB_UPCAST(def));
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
-  upb_msgpopulator_uninit(&p);
   upb_handlers_uninit(&h);
 }
 
@@ -89,16 +87,9 @@ static size_t run(int i)
   upb_status status = UPB_STATUS_INIT;
   upb_msg_clear(msg, def);
   upb_stringsrc_reset(&strsrc, input_str);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc));
-  upb_msgpopulator_reset(&p, msg, def);
-  upb_handlers_init(&h);
-  upb_msgpopulator_register_handlers(&p, &h);
-  upb_src *src = upb_decoder_src(&d);
-  upb_src_sethandlers(src, &h);
-
-  upb_src_run(src, &status);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), msg);
+  upb_decoder_decode(&d, &status);
   if(!upb_ok(&status)) goto err;
-  upb_status_uninit(&status);
   return upb_string_len(input_str);
 
 err:

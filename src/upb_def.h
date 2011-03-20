@@ -28,7 +28,6 @@
 #define UPB_DEF_H_
 
 #include "upb_atomic.h"
-#include "upb_stream.h"
 #include "upb_table.h"
 
 #ifdef __cplusplus
@@ -90,7 +89,7 @@ INLINE void upb_def_unref(upb_def *def) {
 // in the sense that it derives from upb_def.  It cannot stand on its own; it
 // is either a field of a upb_msgdef or contained inside a upb_extensiondef.
 // It is also reference-counted.
-typedef struct _upb_fielddef {
+struct _upb_fielddef {
   uint8_t type;
   uint8_t label;
   // True if we own a ref on "def" (above).  This is true unless this edge is
@@ -111,11 +110,14 @@ typedef struct _upb_fielddef {
   // For the case of an enum or a submessage, points to the def for that type.
   upb_def *def;
   upb_atomic_refcount_t refcount;
-} upb_fielddef;
+};
 
 // A variety of tests about the type of a field.
+INLINE bool upb_issubmsgtype(upb_fieldtype_t type) {
+  return type == UPB_TYPE(GROUP) || type == UPB_TYPE(MESSAGE);
+}
 INLINE bool upb_issubmsg(upb_fielddef *f) {
-  return f->type == UPB_TYPE(GROUP) || f->type == UPB_TYPE(MESSAGE);
+  return upb_issubmsgtype(f->type);
 }
 INLINE bool upb_isstring(upb_fielddef *f) {
   return f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES);
@@ -225,6 +227,7 @@ INLINE upb_fielddef *upb_msg_iter_field(upb_msg_iter iter) {
   return ent->f;
 }
 
+
 /* upb_enumdef ****************************************************************/
 
 typedef int32_t upb_enumval_t;
@@ -274,8 +277,8 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
 /* upb_symtab *****************************************************************/
 
 // A SymbolTable is where upb_defs live.  It is empty when first constructed.
-// Clients add definitions to the symtab by supplying unserialized or
-// serialized descriptors (as defined in descriptor.proto).
+// Clients add definitions to the symtab by supplying descriptors (as defined
+// in descriptor.proto) via the upb_stream interface.
 struct _upb_symtab {
   upb_atomic_refcount_t refcount;
   upb_rwlock_t lock;       // Protects all members except the refcount.
@@ -284,7 +287,7 @@ struct _upb_symtab {
 };
 typedef struct _upb_symtab upb_symtab;
 
-// Initializes a upb_symtab.  Contexts are not freed explicitly, but unref'd
+// Initializes a upb_symtab.  Symtabs are not freed explicitly, but unref'd
 // when the caller is done with them.
 upb_symtab *upb_symtab_new(void);
 void _upb_symtab_free(upb_symtab *s);  // Must not be called directly!
@@ -316,33 +319,22 @@ upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym);
 // returned, otherwise only defs of the required type are returned.
 upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type);
 
-// "fds" is a upb_src that will yield data from the
-// google.protobuf.FileDescriptorSet message type.  It is not necessary that
-// the upb_def for FileDescriptorSet came from this symtab, but it must be
-// compatible with the official descriptor.proto, as published by Google.
-//
-// upb_symtab_addfds() adds all the definitions from the given
-// FileDescriptorSet and adds them to the symtab.  status indicates whether the
-// operation was successful or not, and the error message (if any).
+// upb_defbuilder: For adding defs to the symtab.
+// You allocate the defbuilder, which can handle a single descriptor.
+// It will be freed automatically when the parse completes.
+struct _upb_defbuilder;
+typedef struct _upb_defbuilder upb_defbuilder;
+struct _upb_handlers;
+
+// Allocates a new defbuilder that will add defs to the given symtab.
+upb_defbuilder *upb_defbuilder_new(upb_symtab *s);
+
+// Registers handlers that will operate on a defbuilder to add the defs
+// to the defbuilder's symtab.  Will free itself when the parse finishes.
 //
 // TODO: should this allow redefinition?  Either is possible, but which is
 // more useful?  Maybe it should be an option.
-void upb_symtab_addfds(upb_symtab *s, upb_src *desc, upb_status *status);
-
-// Returns a def corresponding to the given name, from descriptor.proto.
-// upb internally bootstraps the defs in descriptor.proto, since they are
-// necessary for loading other descriptors.  The caller owns a ref on the
-// returned def (which is NULL if no such def exists in descriptor.proto).
-//
-// The name should *not* be qualified by the package, to promote
-// interoperability between the internal and external releases of Protocol
-// Buffers (inside Google, these are in the "proto2" package, externally they
-// are in "google.protobuf".
-upb_def *upb_getdescriptordef(upb_string *str);
-
-// A convenience method for getting the upb_def for FileDescriptorProto.
-// Return should never be NULL.
-upb_msgdef *upb_getfdsdef();
+void upb_defbuilder_reghandlers(struct _upb_handlers *h);
 
 
 /* upb_def casts **************************************************************/

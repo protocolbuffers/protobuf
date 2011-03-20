@@ -47,11 +47,12 @@ static bool initialize()
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
   }
-  upb_decoder_init(&decoder, def);
+
+  upb_handlers_init(&handlers, def);
+  // Cause all messages to be read, but do nothing when they are.
+  upb_register_all(&handlers, NULL, NULL, NULL, NULL, NULL, NULL);
+  upb_decoder_init(&decoder, &handlers);
   upb_stringsrc_init(&stringsrc);
-  upb_handlers_init(&handlers);
-  static upb_handlerset handlerset = {};  // Empty handlers.
-  upb_register_handlerset(&handlers, &handlerset);
   return true;
 }
 
@@ -61,6 +62,7 @@ static void cleanup()
   upb_def_unref(UPB_UPCAST(def));
   upb_decoder_uninit(&decoder);
   upb_stringsrc_uninit(&stringsrc);
+  upb_handlers_uninit(&handlers);
 }
 
 static size_t run(int i)
@@ -68,10 +70,8 @@ static size_t run(int i)
   (void)i;
   upb_status status = UPB_STATUS_INIT;
   upb_stringsrc_reset(&stringsrc, input_str);
-  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&stringsrc));
-  upb_src *src = upb_decoder_src(&decoder);
-  upb_src_sethandlers(src, &handlers);
-  upb_src_run(src, &status);
+  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&stringsrc), NULL);
+  upb_decoder_decode(&decoder, &status);
   if(!upb_ok(&status)) goto err;
   return upb_string_len(input_str);
 

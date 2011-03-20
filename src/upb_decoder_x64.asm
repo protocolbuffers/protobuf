@@ -34,8 +34,8 @@ SECTION .text
 %define BUF rbx       ; const char *p, current buf position.
 %define END rbp       ; const char *end, where the buf ends (either submsg end or buf end)
 %define STRING r12    ; unused
-%define FIELDDEF r13  ; upb_fielddef *f, needs to be preserved across varint decoding call.
-%define CALLBACK r14
+%define FVAL r13      ; upb_value fval, needs to be preserved across varint decoding call.
+%define UNUSED r14
 %define CLOSURE r15
 
 ; Stack layout: *tableptr, uint32_t maxfield_times_8
@@ -57,10 +57,10 @@ SECTION .text
 ;    path that goes into a tight loop if the encoding was packed).
 ; - check_6: the field is not a group or a message (or string, TODO)
 ;   (this could be relaxed, but due to delegation it's a bit tricky).
-; - if the value is a string, the entire string is available in
+; - check_7: if the value is a string, the entire string is available in
 ;   the buffer, and our cached string object can be recycled, and
 ;   our string object already references the source buffer, so
-;   absolutely no refcount twiddling is required.  (check_7)
+;   absolutely no refcount twiddling is required.
 
 
 %macro decode_and_dispatch_ 0
@@ -78,7 +78,7 @@ align 16
   ; Decode a 1 or 2-byte varint -> eax.
   mov cl, byte [BUF]
   lea rdi, [BUF+1]
-  movzx rax, cl    ; Need all of rax since we're doing a 64-bit lea later.
+  movzx eax, cl
   and eax, 0x7f
   test cl, cl
   jns .one_byte_tag ; Should be predictable if fields are in order.

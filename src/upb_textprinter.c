@@ -9,8 +9,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "upb_def.h"
-#include "upb_string.h"
 
 struct _upb_textprinter {
   upb_bytesink *bytesink;
@@ -91,9 +89,10 @@ err:
   return -1;
 }
 
-static upb_flow_t upb_textprinter_value(void *_p, upb_fielddef *f,
+static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
                                         upb_value val) {
   upb_textprinter *p = _p;
+  upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
   CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT ": ", UPB_STRARG(f->name)));
 #define CASE(fmtstr, member) \
@@ -144,21 +143,20 @@ err:
   return UPB_BREAK;
 }
 
-static upb_flow_t upb_textprinter_startsubmsg(void *_p, upb_fielddef *f,
-                                              upb_handlers *delegate_to) {
-  (void)delegate_to;
+static upb_sflow_t upb_textprinter_startsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
+  upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
   CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT " {", UPB_STRARG(f->name)));
   if(!p->single_line) upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status);
   p->indent_depth++;
-  return UPB_CONTINUE;
+  return UPB_CONTINUE_WITH(_p);
 err:
-  return UPB_BREAK;
+  return UPB_S_BREAK;
 }
 
-static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_fielddef *f) {
-  (void)f;
+static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_value fval) {
+  (void)fval;
   upb_textprinter *p = _p;
   p->indent_depth--;
   upb_textprinter_indent(p);
@@ -176,18 +174,20 @@ void upb_textprinter_free(upb_textprinter *p) {
   free(p);
 }
 
-void upb_textprinter_reset(upb_textprinter *p, upb_handlers *handlers,
-                           upb_bytesink *sink, bool single_line) {
-  static upb_handlerset handlerset = {
+void upb_textprinter_reset(upb_textprinter *p, upb_bytesink *sink,
+                           bool single_line) {
+  p->bytesink = sink;
+  p->single_line = single_line;
+  p->indent_depth = 0;
+}
+
+void upb_textprinter_reghandlers(upb_handlers *h) {
+  upb_register_all(h,
     NULL,  // startmsg
     NULL,  // endmsg
     upb_textprinter_value,
     upb_textprinter_startsubmsg,
     upb_textprinter_endsubmsg,
-  };
-  p->bytesink = sink;
-  p->single_line = single_line;
-  p->indent_depth = 0;
-  upb_register_handlerset(handlers, &handlerset);
-  upb_set_handler_closure(handlers, p, &p->status);
+    NULL   // Unknown
+  );
 }

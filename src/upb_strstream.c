@@ -7,7 +7,6 @@
 #include "upb_strstream.h"
 
 #include <stdlib.h>
-#include "upb_string.h"
 
 
 /* upb_stringsrc **************************************************************/
@@ -108,7 +107,6 @@ static upb_strlen_t upb_stringsink_putstr(upb_bytesink *_sink, upb_string *str,
 
 void upb_stringsink_init(upb_stringsink *s) {
   static upb_bytesink_vtbl vtbl = {
-    NULL,
     upb_stringsink_putstr,
     upb_stringsink_vprintf
   };

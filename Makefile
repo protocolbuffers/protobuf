@@ -40,7 +40,7 @@ CC=gcc
 CXX=g++
 CFLAGS=-std=c99
 INCLUDE=-Isrc -Itests -I.
-CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-missing-field-initializers $(USER_CFLAGS)
+CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
 LDLIBS=-lpthread src/libupb.a
 
 # Build with "make Q=" to see all commands that are being executed.
@@ -69,28 +69,28 @@ $(ALLSRC): perf-cppflags
 
 # Every source file used in upb should appear here.
 
-# The core library -- the absolute minimum you must compile in to successfully
-# bootstrap.
+# The core library.
 CORE= \
   src/upb.c \
+  src/upb_stream.c \
   src/upb_table.c \
   src/upb_string.c \
   src/upb_def.c \
+  src/upb_msg.c \
 
-# Common encoders/decoders and upb_msg -- you're almost certain to want these.
+# Common encoders/decoders -- you're almost certain to want these.
 STREAM= \
   src/upb_decoder.c \
   src/upb_stdio.c \
   src/upb_textprinter.c \
   src/upb_strstream.c \
-  src/upb_msg.c \
   src/upb_glue.c \
 
 ASMCORE= \
   src/upb_decoder_x64.asm
 
 # Parts of core that are yet to be converted.
-OTHERSRC=src/upb_encoder.c src/upb_text.c
+OTHERSRC=src/upb_encoder.c
 
 BENCHMARKS_SRC= \
   benchmarks/main.c \
@@ -100,11 +100,12 @@ BENCHMARKS_SRC= \
 TESTS_SRC= \
   tests/test_decoder.c \
   tests/test_def.c \
-  tests/test_stream.c \
   tests/test_string.c \
   tests/tests.c \
   tests/tests_varint.c \
   tests/test_vs_proto2.cc
+
+  #tests/test_stream.c \
 
 ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
 
@@ -184,7 +185,6 @@ src/descriptor.pb: src/descriptor.proto
 descriptorgen: src/descriptor.pb src/upbc
 	@# Regenerate descriptor_const.h
 	./src/upbc -o src/descriptor src/descriptor.pb
-	cd src && xxd -i descriptor.pb > descriptor.c
 
 src/upbc: src/upbc.c $(LIBUPB)
 
@@ -201,10 +201,10 @@ tests/test.proto.pb: tests/test.proto
 SIMPLE_TESTS= \
   tests/test_string \
   tests/test_def \
-  tests/test_stream \
   tests/test_varint \
   tests/tests
 #    tests/test_decoder \
+  tests/test_stream \
 
 SIMPLE_CXX_TESTS= \
   tests/test_table

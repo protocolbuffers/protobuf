@@ -46,11 +46,15 @@ INLINE size_t upb_align_up(size_t val, size_t align) {
 
 
 // The maximum that any submessages can be nested.  Matches proto2's limit.
+// At the moment this specifies the size of several statically-sized arrays
+// and therefore setting it high will cause more memory to be used.  Will
+// be replaced by a runtime-configurable limit and dynamically-resizing arrays.
 #define UPB_MAX_NESTING 64
 
 // The maximum number of fields that any one .proto type can have.  Note that
 // this is very different than the max field number.  It is hard to imagine a
-// scenario where more than 32k fields makes sense.
+// scenario where more than 32k fields (each with its own name and field number)
+// makes sense.
 #define UPB_MAX_FIELDS (1<<15)
 typedef int16_t upb_field_count_t;
 
@@ -72,7 +76,9 @@ typedef int16_t upb_field_count_t;
 
 // The maximum depth that the type graph can have.  Note that this setting does
 // not automatically constrain UPB_MAX_NESTING, because type cycles allow for
-// unlimited nesting if we do not limit it.
+// unlimited nesting if we do not limit it.  Many algorithms in upb call
+// recursive functions that traverse the type graph, so we must limit this to
+// avoid blowing the C stack.
 #define UPB_MAX_TYPE_DEPTH 64
 
 // The biggest possible single value is a 10-byte varint.
@@ -145,6 +151,8 @@ struct _upb_msg;
 typedef struct _upb_msg upb_msg;
 struct _upb_bytesrc;
 typedef struct _upb_bytesrc upb_bytesrc;
+struct _upb_fielddef;
+typedef struct _upb_fielddef upb_fielddef;
 
 typedef int32_t upb_strlen_t;
 #define UPB_STRLEN_MAX INT32_MAX
@@ -155,23 +163,25 @@ typedef uint8_t upb_valuetype_t;
 #define UPB_VALUETYPE_ARRAY 32
 #define UPB_VALUETYPE_BYTESRC 32
 #define UPB_VALUETYPE_RAW 33
+#define UPB_VALUETYPE_FIELDDEF 34
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
 typedef struct {
   union {
+    uint64_t uint64;
     double _double;
     float _float;
     int32_t int32;
     int64_t int64;
     uint32_t uint32;
-    uint64_t uint64;
     bool _bool;
     upb_string *str;
     upb_bytesrc *bytesrc;
     upb_msg *msg;
     upb_array *arr;
     upb_atomic_refcount_t *refcount;
+    upb_fielddef *fielddef;
     void *_void;
   } val;
 
@@ -208,6 +218,9 @@ UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));
 UPB_VALUE_ACCESSORS(msg, msg, upb_msg*, UPB_TYPE(MESSAGE));
 UPB_VALUE_ACCESSORS(arr, arr, upb_array*, UPB_VALUETYPE_ARRAY);
 UPB_VALUE_ACCESSORS(bytesrc, bytesrc, upb_bytesrc*, UPB_VALUETYPE_BYTESRC);
+UPB_VALUE_ACCESSORS(fielddef, fielddef, upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
+
+extern upb_value UPB_NO_VALUE;
 
 INLINE void upb_value_setraw(upb_value *val, uint64_t cval) {
   SET_TYPE(val->type, UPB_VALUETYPE_RAW);

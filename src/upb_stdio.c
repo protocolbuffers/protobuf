@@ -85,7 +85,6 @@ upb_stdio *upb_stdio_new() {
   };
 
   static upb_bytesink_vtbl bytesink_vtbl = {
-    NULL,
     upb_stdio_putstr,
     upb_stdio_vprintf
   };

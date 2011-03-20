@@ -17,8 +17,7 @@
 #ifndef UPB_MSG_H
 #define UPB_MSG_H
 
-#include "upb.h"
-#include "upb_def.h"
+#include "upb_stream.h"
 #include <stdlib.h>
 
 #ifdef __cplusplus
@@ -274,26 +273,16 @@ INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
   memset(msg->data, 0, md->set_flags_bytes);
 }
 
-// A non-resumable upb_src that pushes the current contents of the message to
-// the given handlers.
+// Registers handlers for populating a msg for the given upb_msgdef.
+// The upb_msg itself must be passed as the param to the src.
+void upb_msg_reghandlers(upb_handlers *h, upb_msgdef *md);
+
+// Registers handlers that are suitable for populating a msg of *any*
+// upb_msgdef ("dynamic" handlers).  May be slower than upb_msg_reghandlers().
+void upb_msg_regdhandlers(upb_handlers *h);
+
 void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
-                         upb_status *status);
-
-typedef struct {
-  upb_msg *msg;
-  upb_msgdef *msgdef;
-} upb_msgpopulator_frame;
-
-typedef struct {
-  upb_msgpopulator_frame *top, *limit;
-  upb_status status;
-  upb_msgpopulator_frame stack[UPB_MAX_NESTING];
-} upb_msgpopulator;
-
-void upb_msgpopulator_init(upb_msgpopulator *p);
-void upb_msgpopulator_uninit(upb_msgpopulator *p);
-void upb_msgpopulator_reset(upb_msgpopulator *p, upb_msg *m, upb_msgdef *md);
-void upb_msgpopulator_register_handlers(upb_msgpopulator *p, upb_handlers *h);
+                         void *closure, upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */

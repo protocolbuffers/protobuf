@@ -7,7 +7,6 @@
  */
 
 #include "upb_table.h"
-#include "upb_string.h"
 
 #include <assert.h>
 #include <stdlib.h>

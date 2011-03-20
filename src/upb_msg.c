@@ -7,8 +7,6 @@
  */
 
 #include "upb_msg.h"
-#include "upb_decoder.h"
-#include "upb_strstream.h"
 
 static uint32_t upb_round_up_pow2(uint32_t v) {
   // http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -181,75 +179,66 @@ upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
 }
 
 static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
-                                   upb_dispatcher *d, upb_status *s);
+                                   upb_dispatcher *d);
 
 static upb_flow_t upb_msg_pushval(upb_value val, upb_fielddef *f,
-                                  upb_dispatcher *d, upb_status *s) {
+                                  upb_dispatcher *d, upb_handlers_fieldent *hf) {
 #define CHECK_FLOW(x) do { \
-  flow = x; if (flow != UPB_CONTINUE) return flow; \
+  upb_flow_t flow = x; if (flow != UPB_CONTINUE) return flow; \
   } while(0)
 
 // For when a SKIP can be implemented just through an early return.
 #define CHECK_FLOW_LOCAL(x) do { \
-  flow = x; \
+  upb_flow_t flow = x; \
   if (flow != UPB_CONTINUE) { \
     if (flow == UPB_SKIPSUBMSG) flow = UPB_CONTINUE; \
-    goto end; \
+    return flow; \
   } \
 } while (0)
-  upb_flow_t flow;
   if (upb_issubmsg(f)) {
     upb_msg *msg = upb_value_getmsg(val);
-    CHECK_FLOW_LOCAL(upb_dispatch_startsubmsg(d, f));
-    CHECK_FLOW_LOCAL(upb_msg_dispatch(msg, upb_downcast_msgdef(f->def), d, s));
-    CHECK_FLOW(upb_dispatch_endsubmsg(d, f));
+    CHECK_FLOW_LOCAL(upb_dispatch_startsubmsg(d, hf, 0));
+    CHECK_FLOW_LOCAL(upb_msg_dispatch(msg, upb_downcast_msgdef(f->def), d));
+    CHECK_FLOW(upb_dispatch_endsubmsg(d));
   } else {
-    CHECK_FLOW(upb_dispatch_value(d, f, val));
+    CHECK_FLOW(upb_dispatch_value(d, hf, val));
   }
-
-end:
-  return flow;
+  return UPB_CONTINUE;
 }
 
 static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
-                                   upb_dispatcher *d, upb_status *s) {
+                                   upb_dispatcher *d) {
   upb_msg_iter i;
-  upb_flow_t flow;
   for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
     upb_fielddef *f = upb_msg_iter_field(i);
     if (!upb_msg_has(msg, f)) continue;
+    upb_handlers_fieldent *hf = upb_dispatcher_lookup(d, f->number);
+    if (!hf) continue;
     upb_value val = upb_msg_get(msg, f);
     if (upb_isarray(f)) {
       upb_array *arr = upb_value_getarr(val);
       for (uint32_t j = 0; j < upb_array_len(arr); ++j) {
-        CHECK_FLOW_LOCAL(upb_msg_pushval(upb_array_get(arr, f, j), f, d, s));
+        CHECK_FLOW_LOCAL(upb_msg_pushval(upb_array_get(arr, f, j), f, d, hf));
       }
     } else {
-      CHECK_FLOW_LOCAL(upb_msg_pushval(val, f, d, s));
+      CHECK_FLOW_LOCAL(upb_msg_pushval(val, f, d, hf));
     }
   }
   return UPB_CONTINUE;
-
-end:
-  // Need to copy/massage the error.
-  upb_copyerr(s, d->top->handlers.status);
-  if (upb_ok(s)) {
-    upb_seterr(s, UPB_ERROR, "Callback returned UPB_BREAK");
-  }
-  return flow;
 #undef CHECK_FLOW
 #undef CHECK_FLOW_LOCAL
 }
 
 void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
-                         upb_status *status) {
+                         void *closure, upb_status *status) {
   upb_dispatcher d;
-  upb_dispatcher_init(&d);
-  upb_dispatcher_reset(&d, h, true);
+  upb_dispatcher_init(&d, h, 0);
 
-  if (upb_dispatch_startmsg(&d) != UPB_CONTINUE) return;
-  if (upb_msg_dispatch(msg, md, &d, status) != UPB_CONTINUE) return;
-  if (upb_dispatch_endmsg(&d) != UPB_CONTINUE) return;
+  upb_dispatch_startmsg(&d, closure);
+  upb_msg_dispatch(msg, md, &d);
+  upb_dispatch_endmsg(&d, status);
+
+  upb_dispatcher_uninit(&d);
 }
 
 static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {
@@ -283,7 +272,7 @@ static void upb_msg_appendval(upb_msg *msg, upb_fielddef *f, upb_value val) {
     // If you were using this to copy one upb_msg to another this would
     // allocate string objects whereas a upb_string_getref could have avoided
     // those allocations completely; if this is an issue, we could make it an
-    // option of the upb_msgpopulator which behavior is desired.
+    // option of the upb_msgsink which behavior is desired.
     upb_string *src = upb_value_getstr(val);
     upb_string_recycle(p.str);
     upb_string_substr(*p.str, src, 0, upb_string_len(src));
@@ -303,59 +292,28 @@ upb_msg *upb_msg_appendmsg(upb_msg *msg, upb_fielddef *f, upb_msgdef *msgdef) {
 }
 
 
-/* upb_msgpopulator ***********************************************************/
+/* upb_msg dynhandlers  *******************************************************/
 
-void upb_msgpopulator_init(upb_msgpopulator *p) {
-  upb_status_init(&p->status);
-}
-
-void upb_msgpopulator_reset(upb_msgpopulator *p, upb_msg *m, upb_msgdef *md) {
-  p->top = p->stack;
-  p->limit = p->stack + sizeof(p->stack);
-  p->top->msg = m;
-  p->top->msgdef = md;
-}
-
-void upb_msgpopulator_uninit(upb_msgpopulator *p) {
-  upb_status_uninit(&p->status);
-}
-
-static upb_flow_t upb_msgpopulator_value(void *_p, upb_fielddef *f, upb_value val) {
-  upb_msgpopulator *p = _p;
-  upb_msg_appendval(p->top->msg, f, val);
+static upb_flow_t upb_dmsgsink_value(void *_m, upb_value fval, upb_value val) {
+  upb_msg *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  upb_msg_appendval(m, f, val);
   return UPB_CONTINUE;
 }
 
-static upb_flow_t upb_msgpopulator_startsubmsg(void *_p, upb_fielddef *f,
-                                               upb_handlers *delegate_to) {
-  upb_msgpopulator *p = _p;
-  (void)delegate_to;
-  upb_msg *oldmsg = p->top->msg;
-  if (++p->top == p->limit) {
-    upb_seterr(&p->status, UPB_ERROR, "Exceeded maximum nesting");
-    return UPB_BREAK;
-  }
+static upb_sflow_t upb_dmsgsink_startsubmsg(void *_m, upb_value fval) {
+  upb_msg *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
   upb_msgdef *msgdef = upb_downcast_msgdef(f->def);
-  p->top->msgdef = msgdef;
-  p->top->msg = upb_msg_appendmsg(oldmsg, f, msgdef);
-  return UPB_CONTINUE;
+  return UPB_CONTINUE_WITH(upb_msg_appendmsg(m, f, msgdef));
 }
 
-static upb_flow_t upb_msgpopulator_endsubmsg(void *_p, upb_fielddef *f) {
-  (void)f;
-  upb_msgpopulator *p = _p;
-  --p->top;
-  return UPB_CONTINUE;
-}
-
-void upb_msgpopulator_register_handlers(upb_msgpopulator *p, upb_handlers *h) {
-  static upb_handlerset handlerset = {
-    NULL,   // startmsg
-    NULL,   // endmsg
-    &upb_msgpopulator_value,
-    &upb_msgpopulator_startsubmsg,
-    &upb_msgpopulator_endsubmsg,
-  };
-  upb_register_handlerset(h, &handlerset);
-  upb_set_handler_closure(h, p, &p->status);
+void upb_msg_regdhandlers(upb_handlers *h) {
+  upb_register_all(h,
+      NULL,  // startmsg
+      NULL,  // endmsg
+      &upb_dmsgsink_value,
+      &upb_dmsgsink_startsubmsg,
+      NULL,  // endsubmsg
+      NULL); // unknown
 }

@@ -18,7 +18,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "upb_def.h"
 #include "upb_stream.h"
 
 #ifdef __cplusplus
@@ -27,31 +26,17 @@ extern "C" {
 
 /* upb_decoder *****************************************************************/
 
-// The decoder keeps a stack with one entry per level of recursion.
-// upb_decoder_frame is one frame of that stack.
-typedef struct {
-  upb_fielddef *f;
-  size_t end_offset;  // For groups, 0.
-} upb_decoder_frame;
-
 struct _upb_decoder {
-  // Immutable state of the decoder.
-  upb_src src;
-  upb_dispatcher dispatcher;
+  // Bytesrc from which we pull serialized data.
   upb_bytesrc *bytesrc;
 
-  // Mutable state of the decoder.
-
-  // Msgdef for the current level.
-  upb_msgdef *msgdef;
-
-  // Stack entries store the offset where the submsg ends (for groups, 0).
-  upb_decoder_frame *top, *limit;
+  // Dispatcher to which we push parsed data.
+  upb_dispatcher dispatcher;
 
   // Current input buffer.
   upb_string *buf;
 
-  // Temporary string for passing to callbacks.
+  // Temporary string for passing string data to callbacks.
   upb_string *tmp;
 
   // The offset within the overall stream represented by the *beginning* of buf.
@@ -66,12 +51,11 @@ struct _upb_decoder {
   // End of this submessage, relative to *ptr.
   const char *submsg_end;
 
+  // The closure that was passed by the caller for the top-level message.
+  void *closure;
+
   // Where we will store any errors that occur.
   upb_status *status;
-
-  // A fake fielddef for storing the msgdef for the top-level message.
-  upb_fielddef f;
-  upb_decoder_frame stack[UPB_MAX_NESTING];
 };
 
 // A upb_decoder decodes the binary protocol buffer format, writing the data it
@@ -80,18 +64,16 @@ struct _upb_decoder;
 typedef struct _upb_decoder upb_decoder;
 
 // Allocates and frees a upb_decoder, respectively.
-void upb_decoder_init(upb_decoder *d, upb_msgdef *md);
+void upb_decoder_init(upb_decoder *d, upb_handlers *handlers);
 void upb_decoder_uninit(upb_decoder *d);
 
 // Resets the internal state of an already-allocated decoder.  This puts it in a
 // state where it has not seen any data, and expects the next data to be from
 // the beginning of a new protobuf.  Parsers must be reset before they can be
 // used.  A decoder can be reset multiple times.
-void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc);
+void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure);
 
-// Returns a upb_src pointer by which the decoder can be used.  The returned
-// upb_src is invalidated by upb_decoder_reset() or upb_decoder_free().
-upb_src *upb_decoder_src(upb_decoder *d);
+void upb_decoder_decode(upb_decoder *d, upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */
