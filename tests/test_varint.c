@@ -1,7 +1,7 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2011 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  */
 
 #include "upb_varint_decoder.h"

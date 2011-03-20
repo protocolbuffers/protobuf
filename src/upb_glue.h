@@ -1,6 +1,9 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2011 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * upb's core components like upb_decoder and upb_msg are carefully designed to
  * avoid depending on each other for maximum orthogonality.  In other words,
  * you can use a upb_decoder to decode into *any* kind of structure; upb_msg is
@@ -18,8 +21,6 @@
  * time these functions are called.  For this reason, if you are parsing lots
  * of data and efficiency is an issue, these may not be the best functions to
  * use (though they are useful for prototyping, before optimizing).
- *
- * Copyright (c) 2011 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_GLUE_H

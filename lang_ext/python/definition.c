@@ -1,7 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2009 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * This file defines the Python module upb.definition.  This module
  * defines the following Python classes, which wrap upb's internal

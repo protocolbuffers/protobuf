@@ -2,7 +2,7 @@
  * upb - a minimalist implementation of protocol buffers.
  *
  * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
- *
+ * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
 #ifndef UPB_PYTHON_CEXT_H_

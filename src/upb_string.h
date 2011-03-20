@@ -1,7 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2010 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2010 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * This file defines a simple string type which is length-delimited instead
  * of NULL-terminated, and which has useful sharing semantics.

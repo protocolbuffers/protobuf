@@ -1,13 +1,14 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2011 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * A number of routines for varint decoding (we keep them all around to have
  * multiple approaches available for benchmarking).  All of these functions
  * require the buffer to have at least 10 bytes available; if we don't know
  * for sure that there are 10 bytes, then there is only one viable option
  * (branching on every byte).
- *
- * Copyright (c) 2011 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_VARINT_DECODER_H_

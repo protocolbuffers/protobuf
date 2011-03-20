@@ -1,10 +1,11 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2010 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * This file provides upb_bytesrc and upb_bytesink implementations for
  * ANSI C stdio.
- *
- * Copyright (c) 2010 Joshua Haberman.  See LICENSE for details.
  */
 
 #include <stdio.h>

@@ -1,7 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2009 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * See def.h for a general description.  These definitions
  * must be shared so that specific Python message types (for the

@@ -1,10 +1,11 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2009-2010 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * This file contains upb_bytesrc and upb_bytesink implementations for
  * upb_string.
- *
- * Copyright (c) 2009-2010 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_STRSTREAM_H

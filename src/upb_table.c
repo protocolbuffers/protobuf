@@ -1,9 +1,11 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2009 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * There are a few printf's strewn throughout this file, uncommenting them
  * can be useful for debugging.
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
  */
 
 #include "upb_table.h"

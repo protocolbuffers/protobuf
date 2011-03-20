@@ -1,6 +1,9 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2010-2011 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * This file defines general-purpose streaming data interfaces:
  *
  * - upb_handlers: represents a set of callbacks, very much like in XML's SAX
@@ -20,9 +23,6 @@
  * with input that came from protobuf binary format, protobuf text format, or
  * even an in-memory upb_msg -- the pretty printer will not know the
  * difference.
- *
- * Copyright (c) 2010-2011 Joshua Haberman.  See LICENSE for details.
- *
  */
 
 #ifndef UPB_STREAM_H

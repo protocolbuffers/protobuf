@@ -1,6 +1,9 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2009-2010 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
  * upb_decoder implements a high performance, streaming decoder for protobuf
  * data that works by implementing upb_src and getting its data from a
  * upb_bytesrc.
@@ -9,8 +12,6 @@
  * if the bytesrc returns UPB_STATUS_TRYAGAIN it is not possible to resume the
  * decoder when data becomes available again.  Support for this could be added,
  * but it would add complexity and perhaps cost efficiency also.
- *
- * Copyright (c) 2009-2010 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_DECODER_H_

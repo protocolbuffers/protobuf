@@ -1,7 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009-2011 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2009-2011 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * Provides a mechanism for loading proto definitions from descriptors, and
  * data structures to represent those definitions.  These form the protobuf

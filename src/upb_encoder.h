@@ -1,13 +1,15 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Implements a upb_sink that writes protobuf data to the binary wire format.
+ * Copyright (c) 2009-2010 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ *
+ * Implements a set of upb_handlers that write protobuf data to the binary wire
+ * format.
  *
  * For messages that have any submessages, the encoder needs a buffer
  * containing the submessage sizes, so they can be properly written at the
  * front of each message.  Note that groups do *not* have this requirement.
- *
- * Copyright (c) 2009-2010 Joshua Haberman.  See LICENSE for details.
  */
 
 #ifndef UPB_ENCODER_H_

@@ -1,7 +1,8 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2010-2011 Joshua Haberman.  See LICENSE for details.
+ * Copyright (c) 2010-2011 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * Data structure for storing a message of protobuf data.  Unlike Google's
  * protobuf, upb_msg and upb_array are reference counted instead of having

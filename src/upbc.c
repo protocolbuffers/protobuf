@@ -1,11 +1,12 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * upbc is the upb compiler.  This is some deep code that I wish could be
- * easier to understand, but by its nature it is doing some very "meta"
- * kinds of things.
+ * Copyright (c) 2009 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
  *
- * Copyright (c) 2009 Joshua Haberman.  See LICENSE for details.
+ * upbc is the upb compiler, which at the moment simply takes a
+ * protocol descriptor and outputs a header file containing the
+ * names and types of the fields.
  */
 
 #include <ctype.h>
