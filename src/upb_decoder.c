@@ -111,25 +111,22 @@ typedef struct {
   upb_field_number_t field_number;
 } upb_tag;
 
-INLINE bool upb_decode_tag(upb_decoder *d, upb_tag *tag) {
+INLINE bool upb_decode_tag(upb_decoder *d, uint32_t *tag) {
   const char *p = d->ptr;
-  uint32_t tag_int;
   upb_value val;
   // Nearly all tag varints will be either 1 byte (1-16) or 2 bytes (17-2048).
   if (upb_decoder_bufleft(d) < 2) goto slow;  // unlikely.
-  tag_int = *p & 0x7f;
+  *tag = *p & 0x7f;
   if ((*(p++) & 0x80) == 0) goto done;  // predictable if fields are in order
-  tag_int |= (*p & 0x7f) << 7;
+  *tag |= (*p & 0x7f) << 7;
   if ((*(p++) & 0x80) == 0) goto done;  // likely
 slow:
   // Decode a full varint starting over from ptr.
   if (!upb_decode_varint_slow(d, &val)) return false;
-  tag_int = upb_value_getint64(val);
+  *tag = upb_value_getint64(val);
   p = d->ptr;  // Trick the next line into not overwriting us.
 done:
   upb_decoder_advance(d, p - d->ptr);
-  tag->wire_type = (upb_wire_type_t)(tag_int & 0x07);
-  tag->field_number = tag_int >> 3;
   return true;
 }
 
@@ -251,7 +248,7 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
 #endif
 
     // Parse/handle tag.
-    upb_tag tag;
+    uint32_t tag;
     if (!upb_decode_tag(d, &tag)) {
       if (status->code == UPB_EOF && upb_dispatcher_stackempty(&d->dispatcher)) {
         // Normal end-of-file.
@@ -270,7 +267,8 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     // Decode wire data.  Hopefully this branch will predict pretty well
     // since most types will read a varint here.
     upb_value val;
-    switch (tag.wire_type) {
+    uint8_t wire_type = tag & 0x7;
+    switch (wire_type) {
       case UPB_WIRE_TYPE_START_GROUP:
         break;  // Nothing to do now, below we will push appropriately.
       case UPB_WIRE_TYPE_END_GROUP:
@@ -294,24 +292,14 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     }
 
     // Look up field by tag number.
-    upb_dispatcher_field *f =
-        upb_dispatcher_lookup(&d->dispatcher, tag.field_number);
+    upb_dispatcher_field *f = upb_dispatcher_lookup(&d->dispatcher, tag);
 
     if (!f) {
-      if (tag.wire_type == UPB_WIRE_TYPE_DELIMITED)
+      if (wire_type == UPB_WIRE_TYPE_DELIMITED)
         CHECK(upb_decode_string(d, &val, &d->tmp));
-      CHECK_FLOW(upb_dispatch_unknownval(&d->dispatcher, tag.field_number, val));
+      // TODO.
+      CHECK_FLOW(upb_dispatch_unknownval(&d->dispatcher, 0, UPB_NO_VALUE));
       continue;
-    }
-
-    if (tag.wire_type != f->native_wire_type) {
-      // TODO: Support packed fields.
-      upb_seterr(status, UPB_ERROR, "Field had incorrect type, field number: %d"
-                 ", field type: %d, expected wire type: %d, "
-                 "actual wire type: %d, offset: %d",
-                 tag.field_number, f->type, upb_types[f->type].native_wire_type,
-                 tag.wire_type, upb_decoder_offset(d));
-      goto err;
     }
 
     // Perform any further massaging of the data now that we have the field's

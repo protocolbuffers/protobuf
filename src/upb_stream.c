@@ -77,17 +77,16 @@ void upb_handlers_uninit(upb_handlers *h) {
 
 static upb_handlers_fieldent *upb_handlers_getorcreate_without_fval(
     upb_handlers *h, upb_field_number_t fieldnum, upb_fieldtype_t type) {
+  uint32_t tag = fieldnum << 3 | upb_types[type].native_wire_type;
   upb_handlers_fieldent *f =
-      upb_inttable_lookup(&h->msgent->fieldtab, fieldnum);
+      upb_inttable_lookup(&h->msgent->fieldtab, tag);
   if (!f) {
-    upb_wire_type_t native_wire_type = upb_types[type].native_wire_type;
-    upb_handlers_fieldent new_f = {
-        false, type, native_wire_type, -1, UPB_NO_VALUE,
+    upb_handlers_fieldent new_f = {false, type, -1, UPB_NO_VALUE,
         {&upb_value_nop}, &upb_endsubmsg_nop};
     if (upb_issubmsgtype(type)) new_f.cb.startsubmsg = &upb_startsubmsg_nop;
-    upb_inttable_insert(&h->msgent->fieldtab, fieldnum, &new_f);
+    upb_inttable_insert(&h->msgent->fieldtab, tag, &new_f);
 
-    f = upb_inttable_lookup(&h->msgent->fieldtab, fieldnum);
+    f = upb_inttable_lookup(&h->msgent->fieldtab, tag);
     assert(f);
   }
   assert(f->type == type);
@@ -223,7 +222,7 @@ void upb_handlers_pop(upb_handlers *h, upb_fielddef *f) {
 /* upb_dispatcher *************************************************************/
 
 static upb_handlers_fieldent toplevel_f = {
-  false, 0, 0, 0, // The one value that is actually read
+  false, 0, 0, // The one value that is actually read
 #ifdef NDEBUG
   {{0}},
 #else

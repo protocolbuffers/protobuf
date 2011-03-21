@@ -84,7 +84,6 @@ typedef upb_flow_t (*upb_unknownval_handler_t)(
 typedef struct {
   bool junk;
   upb_fieldtype_t type;
-  upb_wire_type_t native_wire_type;
   // For upb_issubmsg(f) only, the index into the msgdef array of the submsg.
   // -1 if unset (indicates that submsg should be skipped).
   int32_t msgent_index;
