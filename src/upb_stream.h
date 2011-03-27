@@ -280,7 +280,9 @@ upb_handlers_fieldent *upb_handlers_lookup(upb_inttable *dispatch_table, upb_fie
 typedef struct {
   upb_handlers_fieldent *f;
   void *closure;
-  size_t end_offset;  // For groups, 0.
+  // Relative to the beginning of this buffer.
+  // For groups and the top-level: UINT32_MAX.
+  uint32_t end_offset;
 } upb_dispatcher_frame;
 
 typedef struct {
@@ -322,11 +324,11 @@ INLINE bool upb_dispatcher_noframe(upb_dispatcher *d) {
 
 typedef upb_handlers_fieldent upb_dispatcher_field;
 
-void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h, size_t top_end_offset);
-void upb_dispatcher_reset(upb_dispatcher *d);
+void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h);
+void upb_dispatcher_reset(upb_dispatcher *d, void *top_closure, uint32_t top_end_offset);
 void upb_dispatcher_uninit(upb_dispatcher *d);
 
-upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d, void *closure);
+upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
 void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
 
 // Looks up a field by number for the current message.

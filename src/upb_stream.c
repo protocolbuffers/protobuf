@@ -222,7 +222,8 @@ void upb_handlers_pop(upb_handlers *h, upb_fielddef *f) {
 /* upb_dispatcher *************************************************************/
 
 static upb_handlers_fieldent toplevel_f = {
-  false, 0, 0, // The one value that is actually read
+  false, UPB_TYPE(GROUP),
+  0, // msgent_index
 #ifdef NDEBUG
   {{0}},
 #else
@@ -230,17 +231,15 @@ static upb_handlers_fieldent toplevel_f = {
 #endif
   {NULL}, NULL};
 
-void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
-                         size_t top_end_offset) {
+void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h) {
   d->handlers = h;
   for (int i = 0; i < h->msgs_len; i++)
     upb_inttable_compact(&h->msgs[i].fieldtab);
-  d->stack[0].end_offset = top_end_offset;
   d->stack[0].f = &toplevel_f;
   upb_status_init(&d->status);
 }
 
-void upb_dispatcher_reset(upb_dispatcher *d) {
+void upb_dispatcher_reset(upb_dispatcher *d, void *top_closure, uint32_t top_end_offset) {
   d->msgent = &d->handlers->msgs[0];
   d->dispatch_table = &d->msgent->fieldtab;
   d->current_depth = 0;
@@ -248,6 +247,8 @@ void upb_dispatcher_reset(upb_dispatcher *d) {
   d->noframe_depth = INT_MAX;
   d->delegated_depth = 0;
   d->top = d->stack;
+  d->top->closure = top_closure;
+  d->top->end_offset = top_end_offset;
   d->limit = &d->stack[UPB_MAX_NESTING];
 }
 
@@ -261,9 +262,8 @@ void upb_dispatcher_break(upb_dispatcher *d) {
   d->noframe_depth = d->current_depth;
 }
 
-upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d, void *closure) {
-  d->top->closure = closure;
-  upb_flow_t flow = d->msgent->startmsg(closure);
+upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d) {
+  upb_flow_t flow = d->msgent->startmsg(d->top->closure);
   if (flow != UPB_CONTINUE) {
     d->noframe_depth = d->current_depth + 1;
     d->skip_depth = (flow == UPB_BREAK) ? d->delegated_depth : d->current_depth;
@@ -304,7 +304,7 @@ upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
   d->top->closure = sflow.closure;
   d->msgent = upb_handlers_getmsgent(d->handlers, f);
   d->dispatch_table = &d->msgent->fieldtab;
-  return upb_dispatch_startmsg(d, d->top->closure);
+  return upb_dispatch_startmsg(d);
 }
 
 upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {

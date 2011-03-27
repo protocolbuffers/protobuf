@@ -40,7 +40,7 @@ INLINE void upb_decoder_advance(upb_decoder *d, size_t len) {
 
 INLINE size_t upb_decoder_offset(upb_decoder *d) {
   size_t offset = d->buf_stream_offset;
-  if (d->buf) offset += (d->ptr - upb_string_getrobuf(d->buf));
+  if (d->buf) offset += (d->ptr - d->buf);
   return offset;
 }
 
@@ -49,9 +49,9 @@ INLINE size_t upb_decoder_bufleft(upb_decoder *d) {
 }
 
 INLINE void upb_dstate_setmsgend(upb_decoder *d) {
-  size_t end_offset = d->dispatcher.top->end_offset;
-  d->submsg_end = (end_offset == UPB_GROUP_END_OFFSET) ?  (void*)UINTPTR_MAX :
-      d->ptr + (end_offset - upb_decoder_offset(d));
+  uint32_t end_offset = d->dispatcher.top->end_offset;
+  d->submsg_end = (end_offset == UINT32_MAX) ?
+      (void*)UINTPTR_MAX : d->buf + end_offset;
 }
 
 // Called only from the slow path, this function copies the next "len" bytes
@@ -68,11 +68,21 @@ static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted) {
     }
 
     // Get next buffer.
-    if (d->buf) d->buf_stream_offset += upb_string_len(d->buf);
-    upb_string_recycle(&d->buf);
-    if (!upb_bytesrc_getstr(d->bytesrc, d->buf, d->status)) return false;
-    d->ptr = upb_string_getrobuf(d->buf);
-    d->end = d->ptr + upb_string_len(d->buf);
+    int32_t last_buf_len = d->buf ? upb_string_len(d->bufstr) : -1;
+    upb_string_recycle(&d->bufstr);
+    if (!upb_bytesrc_getstr(d->bytesrc, d->bufstr, d->status)) {
+      d->buf = NULL;
+      return false;
+    }
+    if (last_buf_len != -1) {
+      d->buf_stream_offset += last_buf_len;
+      for (upb_dispatcher_frame *f = d->dispatcher.stack; f <= d->dispatcher.top; ++f)
+        if (f->end_offset != UINT32_MAX)
+          f->end_offset -= last_buf_len;
+    }
+    d->buf = upb_string_getrobuf(d->bufstr);
+    d->ptr = upb_string_getrobuf(d->bufstr);
+    d->end = d->buf + upb_string_len(d->bufstr);
   }
 }
 
@@ -165,7 +175,7 @@ INLINE bool upb_decode_string(upb_decoder *d, upb_value *val,
   uint32_t strlen = upb_value_getint32(*val);
   if (upb_decoder_bufleft(d) >= strlen) {
     // Common (fast) case.
-    upb_string_substr(*str, d->buf, d->ptr - upb_string_getrobuf(d->buf), strlen);
+    upb_string_substr(*str, d->bufstr, d->ptr - d->buf, strlen);
     upb_decoder_advance(d, strlen);
   } else {
     if (!upb_getbuf(d, upb_string_getrwbuf(*str, strlen), strlen))
@@ -196,17 +206,14 @@ static upb_flow_t upb_decoder_skipsubmsg(upb_decoder *d) {
     fprintf(stderr, "upb_decoder: Can't skip groups yet.\n");
     abort();
   }
-  upb_decoder_advance(d, d->dispatcher.top->end_offset - d->buf_stream_offset -
-                      (d->ptr - upb_string_getrobuf(d->buf)));
+  upb_decoder_advance(d, d->dispatcher.top->end_offset - (d->ptr - d->buf));
   upb_pop(d);
   return UPB_CONTINUE;
 }
 
 static upb_flow_t upb_push(upb_decoder *d, upb_handlers_fieldent *f,
-                           upb_value submsg_len) {
-  upb_flow_t flow = upb_dispatch_startsubmsg(&d->dispatcher, f,
-      (f->type == UPB_TYPE(GROUP)) ?  UPB_GROUP_END_OFFSET :
-        upb_decoder_offset(d) + upb_value_getint32(submsg_len));
+                           uint32_t end_offset) {
+  upb_flow_t flow = upb_dispatch_startsubmsg(&d->dispatcher, f, end_offset);
   upb_dstate_setmsgend(d);
   return flow;
 }
@@ -222,7 +229,7 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     }
 #define CHECK(expr) if (!expr) { assert(!upb_ok(status)); goto err; }
 
-  if (upb_dispatch_startmsg(&d->dispatcher, d->closure) != UPB_CONTINUE) goto err;
+  if (upb_dispatch_startmsg(&d->dispatcher) != UPB_CONTINUE) goto err;
 
   // Main loop: executed once per tag/field pair.
   while(1) {
@@ -272,7 +279,8 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
       case UPB_WIRE_TYPE_START_GROUP:
         break;  // Nothing to do now, below we will push appropriately.
       case UPB_WIRE_TYPE_END_GROUP:
-        if(d->dispatcher.top->end_offset != UPB_GROUP_END_OFFSET) {
+        // Strictly speaking we should also check the field number here.
+        if(d->dispatcher.top->f->type != UPB_TYPE(GROUP)) {
           upb_seterr(status, UPB_ERROR, "Unexpected END_GROUP tag.");
           goto err;
         }
@@ -311,9 +319,11 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     // If this is not true we are losing data.  But the main protobuf library
     // doesn't check this, and it would slow us down, so pass for now.
     switch (f->type) {
-      case UPB_TYPE(MESSAGE):
       case UPB_TYPE(GROUP):
-        CHECK_FLOW(upb_push(d, f, val));
+        CHECK_FLOW(upb_push(d, f, UINT32_MAX));
+        continue;  // We have no value to dispatch.
+      case UPB_TYPE(MESSAGE):
+        CHECK_FLOW(upb_push(d, f, upb_value_getuint32(val) + (d->ptr - d->buf)));
         continue;  // We have no value to dispatch.
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES):
@@ -343,15 +353,16 @@ err:
 }
 
 void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
-  upb_dispatcher_init(&d->dispatcher, handlers, UPB_GROUP_END_OFFSET);
+  upb_dispatcher_init(&d->dispatcher, handlers);
+  d->bufstr = NULL;
   d->buf = NULL;
   d->tmp = NULL;
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure) {
+  upb_dispatcher_reset(&d->dispatcher, closure, UINT32_MAX);
   d->bytesrc = bytesrc;
-  d->closure = closure;
-  upb_dispatcher_reset(&d->dispatcher);
+  d->buf = NULL;
   d->ptr = NULL;
   d->end = NULL;  // Force a buffer pull.
   d->submsg_end = (void*)0x1;  // But don't let end-of-message get triggered.
@@ -360,6 +371,6 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure) {
 
 void upb_decoder_uninit(upb_decoder *d) {
   upb_dispatcher_uninit(&d->dispatcher);
-  upb_string_unref(d->buf);
+  upb_string_unref(d->bufstr);
   upb_string_unref(d->tmp);
 }

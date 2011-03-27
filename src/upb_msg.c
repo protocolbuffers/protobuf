@@ -233,9 +233,10 @@ static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
 void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
                          void *closure, upb_status *status) {
   upb_dispatcher d;
-  upb_dispatcher_init(&d, h, 0);
+  upb_dispatcher_init(&d, h);
+  upb_dispatcher_reset(&d, closure, 0);
 
-  upb_dispatch_startmsg(&d, closure);
+  upb_dispatch_startmsg(&d);
   upb_msg_dispatch(msg, md, &d);
   upb_dispatch_endmsg(&d, status);
 

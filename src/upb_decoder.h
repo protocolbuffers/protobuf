@@ -34,8 +34,8 @@ struct _upb_decoder {
   // Dispatcher to which we push parsed data.
   upb_dispatcher dispatcher;
 
-  // Current input buffer.
-  upb_string *buf;
+  // String to hold our input buffer; is only active if d->buf != NULL.
+  upb_string *bufstr;
 
   // Temporary string for passing string data to callbacks.
   upb_string *tmp;
@@ -43,17 +43,19 @@ struct _upb_decoder {
   // The offset within the overall stream represented by the *beginning* of buf.
   size_t buf_stream_offset;
 
-  // Our current position in the data buffer.
-  const char *ptr;
+  // Pointer to the beginning of our current data buffer, or NULL if none.
+  const char *buf;
 
   // End of this buffer, relative to *ptr.
   const char *end;
 
+  // Members which may also be written by the JIT:
+
+  // Our current position in the data buffer.
+  const char *ptr;
+
   // End of this submessage, relative to *ptr.
   const char *submsg_end;
-
-  // The closure that was passed by the caller for the top-level message.
-  void *closure;
 
   // Where we will store any errors that occur.
   upb_status *status;
