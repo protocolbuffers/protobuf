@@ -7,6 +7,8 @@
 #ifndef UPB_TEST_H_
 #define UPB_TEST_H_
 
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -76,43 +76,69 @@ done:
   return r;
 }
 
-#ifdef __SSE__
+// Avoids branches for values >2-bytes.
+INLINE upb_decoderet upb_decode_varint_nobranch1(const char *p) {
+  uint64_t b = 0;
+  upb_decoderet r = {p, 0};
+  memcpy(&b, r.p, 2);
+  if ((b & 0x80) == 0) { r.val = (b & 0x7f); r.p = p + 1; return r; }
+  r.val = (b & 0x7f) | ((b & 0x7f00) >> 1);
+  r.p = p + 2;
+  if ((b & 0x8000) == 0) return r;
 
-#include <xmmintrin.h>
-
-// Avoids branches (this can very likely be improved).  Requires SSE.
-INLINE upb_decoderet upb_decode_varint_nobranch(const char *p) {
-  upb_decoderet r = {(void*)0, 0};
-  __m128i val128 = _mm_loadu_si128((void*)p);
-  unsigned int continuation_bits = _mm_movemask_epi8(val128);
-  unsigned int bsr_val = ~continuation_bits;
-  int varint_length = __builtin_ffs(bsr_val);
-  if (varint_length > 10) return r;
-
-  uint16_t twob;
-  memcpy(&twob, p, 2);
-  twob &= 0x7f7f;
-  twob = ((twob & 0xff00) >> 1) | (twob & 0xff);
-
-  uint64_t eightb;
-  memcpy(&eightb, p + 2, 8);
-  eightb &= 0x7f7f7f7f7f7f7f7f;
-  eightb = ((eightb & 0xff00ff00ff00ff00) >> 1) | (eightb & 0x00ff00ff00ff00ff);
-  eightb = ((eightb & 0xffff0000ffff0000) >> 2) | (eightb & 0x0000ffff0000ffff);
-  eightb = ((eightb & 0xffffffff00000000) >> 4) | (eightb & 0x00000000ffffffff);
-
-  uint64_t all_bits = twob | (eightb << 14);
-  int varint_bits = varint_length * 7;
-  uint64_t mask = varint_bits == 70 ? (uint64_t)-1 : (1ULL << (varint_bits)) - 1;
-  r.val = all_bits & mask;
-  r.p = p + varint_length;
+  // >2-byte varint.
+  memcpy(&b, r.p, sizeof(b));
+  uint64_t cbits = b | 0x7f7f7f7f7f7f7f7fULL;
+  uint64_t stop_bit = ~cbits & (cbits+1);
+  b &= (stop_bit - 1);
+  b = ((b & 0x7f007f007f007f00) >> 1) | (b & 0x007f007f007f007f);
+  b = ((b & 0xffff0000ffff0000) >> 2) | (b & 0x0000ffff0000ffff);
+  b = ((b & 0xffffffff00000000) >> 4) | (b & 0x00000000ffffffff);
+  r.val |= b << 14;
+  r.p += (__builtin_ctzll(stop_bit) + 1) / 8;
+  if (stop_bit == 0) {
+    // Error: unterminated varint.
+    upb_decoderet err_r = {(void*)0, 0};
+    return err_r;
+  }
   return r;
 }
 
-#endif
+// Avoids branches for values >2-bytes.
+INLINE upb_decoderet upb_decode_varint_nobranch2(const char *p) {
+  uint64_t b = 0;
+  upb_decoderet r = {p, 0};
+  memcpy(&b, r.p, 2);
+  if ((b & 0x80) == 0) { r.val = (b & 0x7f); r.p = p + 1; return r; }
+  r.val = (b & 0x7f) | ((b & 0x7f00) >> 1);
+  r.p = p + 2;
+  if ((b & 0x8000) == 0) return r;
 
-// For now, always use the branch32 decoder.
-#define upb_decode_varint_fast upb_decode_varint_branch32
+  // >2-byte varint.
+  memcpy(&b, r.p, sizeof(b));
+  uint64_t cbits = b | 0x7f7f7f7f7f7f7f7fULL;
+  uint64_t stop_bit = ~cbits & (cbits + 1);
+  b =  (b & 0x7f7f7f7f7f7f7f7fULL) & (stop_bit - 1);
+  b +=       b & 0x007f007f007f007fULL;
+  b +=  3 * (b & 0x0000ffff0000ffffULL);
+  b += 15 * (b & 0x00000000ffffffffULL);
+  r.val |= b << 7;
+  r.p += (__builtin_ctzll(stop_bit) + 1) / 8;
+  if (stop_bit == 0) {
+    // Error: unterminated varint.
+    upb_decoderet err_r = {(void*)0, 0};
+    return err_r;
+  }
+  return r;
+}
+
+INLINE upb_decoderet upb_decode_varint_fast(const char *p) {
+  // Use nobranch2 on 64-bit, branch32 on 32-bit.
+  if (sizeof(long) == 8)
+    return upb_decode_varint_nobranch2(p);
+  else
+    return upb_decode_varint_branch32(p);
+}
 
 #ifdef __cplusplus
 }  /* extern "C" */

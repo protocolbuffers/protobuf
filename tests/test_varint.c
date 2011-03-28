@@ -50,16 +50,14 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
 
 TEST_VARINT_DECODER(branch32);
 TEST_VARINT_DECODER(branch64);
-#ifdef __SSE__
-TEST_VARINT_DECODER(nobranch);
-#endif
+TEST_VARINT_DECODER(nobranch1);
+TEST_VARINT_DECODER(nobranch2);
 
 int main() {
   test_branch32();
   test_branch64();
-#ifdef __SSE__
-  test_nobranch();
-#endif
+  test_nobranch1();
+  test_nobranch2();
 }
 
 #if 0
