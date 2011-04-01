@@ -30,7 +30,7 @@ typedef struct {
 
 // A basic branch-based decoder, uses 32-bit values to get good performance
 // on 32-bit architectures (but performs well on 64-bits also).
-INLINE upb_decoderet upb_decode_varint_branch32(const char *p) {
+INLINE upb_decoderet upb_vdecode_branch32(const char *p) {
   upb_decoderet r = {NULL, 0};
   uint32_t low, high = 0;
   uint32_t b;
@@ -54,7 +54,7 @@ done:
 }
 
 // Like the previous, but uses 64-bit values.
-INLINE upb_decoderet upb_decode_varint_branch64(const char *p) {
+INLINE upb_decoderet upb_vdecode_branch64(const char *p) {
   uint64_t val;
   uint64_t b;
   upb_decoderet r = {(void*)0, 0};
@@ -76,17 +76,9 @@ done:
   return r;
 }
 
-// Avoids branches for values >2-bytes.
-INLINE upb_decoderet upb_decode_varint_nobranch1(const char *p) {
-  uint64_t b = 0;
-  upb_decoderet r = {p, 0};
-  memcpy(&b, r.p, 2);
-  if ((b & 0x80) == 0) { r.val = (b & 0x7f); r.p = p + 1; return r; }
-  r.val = (b & 0x7f) | ((b & 0x7f00) >> 1);
-  r.p = p + 2;
-  if ((b & 0x8000) == 0) return r;
-
-  // >2-byte varint.
+// Decodes a varint of at most 8 bytes without branching (except for error).
+INLINE upb_decoderet upb_vdecode_max8_wright(upb_decoderet r) {
+  uint64_t b;
   memcpy(&b, r.p, sizeof(b));
   uint64_t cbits = b | 0x7f7f7f7f7f7f7f7fULL;
   uint64_t stop_bit = ~cbits & (cbits+1);
@@ -94,27 +86,19 @@ INLINE upb_decoderet upb_decode_varint_nobranch1(const char *p) {
   b = ((b & 0x7f007f007f007f00) >> 1) | (b & 0x007f007f007f007f);
   b = ((b & 0xffff0000ffff0000) >> 2) | (b & 0x0000ffff0000ffff);
   b = ((b & 0xffffffff00000000) >> 4) | (b & 0x00000000ffffffff);
-  r.val |= b << 14;
-  r.p += (__builtin_ctzll(stop_bit) + 1) / 8;
   if (stop_bit == 0) {
     // Error: unterminated varint.
     upb_decoderet err_r = {(void*)0, 0};
     return err_r;
   }
-  return r;
+  upb_decoderet my_r = {r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
+                        r.val | (b << 14)};
+  return my_r;
 }
 
-// Avoids branches for values >2-bytes.
-INLINE upb_decoderet upb_decode_varint_nobranch2(const char *p) {
-  uint64_t b = 0;
-  upb_decoderet r = {p, 0};
-  memcpy(&b, r.p, 2);
-  if ((b & 0x80) == 0) { r.val = (b & 0x7f); r.p = p + 1; return r; }
-  r.val = (b & 0x7f) | ((b & 0x7f00) >> 1);
-  r.p = p + 2;
-  if ((b & 0x8000) == 0) return r;
-
-  // >2-byte varint.
+// Another implementation of the previous.
+INLINE upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r) {
+  uint64_t b;
   memcpy(&b, r.p, sizeof(b));
   uint64_t cbits = b | 0x7f7f7f7f7f7f7f7fULL;
   uint64_t stop_bit = ~cbits & (cbits + 1);
@@ -122,22 +106,46 @@ INLINE upb_decoderet upb_decode_varint_nobranch2(const char *p) {
   b +=       b & 0x007f007f007f007fULL;
   b +=  3 * (b & 0x0000ffff0000ffffULL);
   b += 15 * (b & 0x00000000ffffffffULL);
-  r.val |= b << 7;
-  r.p += (__builtin_ctzll(stop_bit) + 1) / 8;
   if (stop_bit == 0) {
     // Error: unterminated varint.
     upb_decoderet err_r = {(void*)0, 0};
     return err_r;
   }
-  return r;
+  upb_decoderet my_r = {r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
+                        r.val | (b << 7)};
+  return my_r;
 }
 
-INLINE upb_decoderet upb_decode_varint_fast(const char *p) {
+// Template for a function that checks the first two bytes with branching
+// and dispatches 2-10 bytes with a separate function.
+#define UPB_VARINT_DECODER_CHECK2(name, decode_max8_function)            \
+INLINE upb_decoderet upb_vdecode_check2_ ## name(const char *p) {        \
+  uint64_t b = 0;                                                        \
+  upb_decoderet r = {p, 0};                                              \
+  memcpy(&b, r.p, 2);                                                    \
+  if ((b & 0x80) == 0) { r.val = (b & 0x7f); r.p = p + 1; return r; }    \
+  r.val = (b & 0x7f) | ((b & 0x7f00) >> 1);                              \
+  r.p = p + 2;                                                           \
+  if ((b & 0x8000) == 0) return r;                                       \
+  return decode_max8_function(r);                                        \
+}
+
+UPB_VARINT_DECODER_CHECK2(wright, upb_vdecode_max8_wright);
+UPB_VARINT_DECODER_CHECK2(massimino, upb_vdecode_max8_massimino);
+#undef UPB_VARINT_DECODER_CHECK2
+
+// Our canonical functions for decoding varints, based on the currently
+// favored best-performing implementations.
+INLINE upb_decoderet upb_vdecode_fast(const char *p) {
   // Use nobranch2 on 64-bit, branch32 on 32-bit.
   if (sizeof(long) == 8)
-    return upb_decode_varint_nobranch2(p);
+    return upb_vdecode_check2_massimino(p);
   else
-    return upb_decode_varint_branch32(p);
+    return upb_vdecode_branch32(p);
+}
+
+INLINE upb_decoderet upb_vdecode_max8_fast(upb_decoderet r) {
+  return upb_vdecode_max8_massimino(r);
 }
 
 #ifdef __cplusplus

@@ -29,7 +29,6 @@ void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
 
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
-  upb_handlers_uninit(&h);
 }
 
 void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
@@ -53,7 +52,6 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 
   upb_stringsink_uninit(&strsink);
   upb_textprinter_free(p);
-  upb_handlers_uninit(&h);
 }
 
 void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
@@ -72,7 +70,6 @@ void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
 
   upb_decoder_decode(&d, status);
 
-  upb_handlers_uninit(&h);
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
 }

@@ -165,6 +165,7 @@ typedef uint8_t upb_valuetype_t;
 #define UPB_VALUETYPE_BYTESRC 32
 #define UPB_VALUETYPE_RAW 33
 #define UPB_VALUETYPE_FIELDDEF 34
+#define UPB_TYPE_ENDGROUP 35
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.

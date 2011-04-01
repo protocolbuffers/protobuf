@@ -349,18 +349,18 @@ static void upb_defbuilder_register_FileDescriptorProto(upb_handlers *h) {
       upb_defbuilder_FileDescriptorProto_endmsg);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_PACKAGE__FIELDNUM,
-      GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_PACKAGE__FIELDTYPE,
+      GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_PACKAGE__FIELDTYPE, false,
       &upb_defbuilder_FileDescriptorProto_package, UPB_NO_VALUE);
 
   upb_handlers_typed_push(h,
       GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE__FIELDNUM,
-      GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE__FIELDTYPE);
+      GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_MESSAGE_TYPE__FIELDTYPE, true);
   upb_msgdef_register_DescriptorProto(h);
   upb_handlers_typed_pop(h);
 
   upb_handlers_typed_push(h,
       GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_ENUM_TYPE__FIELDNUM,
-      GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_ENUM_TYPE__FIELDTYPE);
+      GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO_ENUM_TYPE__FIELDTYPE, true);
   upb_enumdef_register_EnumDescriptorProto(h);
   upb_handlers_typed_pop(h);
 
@@ -383,12 +383,13 @@ static void upb_defbuilder_register_FileDescriptorSet(upb_handlers *h) {
   upb_register_startend(h, NULL, upb_defbuilder_FileDescriptorSet_onendmsg);
   upb_handlers_typed_push(h,
       GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE__FIELDNUM,
-      GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE__FIELDTYPE);
+      GOOGLE_PROTOBUF_FILEDESCRIPTORSET_FILE__FIELDTYPE, true);
   upb_defbuilder_register_FileDescriptorProto(h);
   upb_handlers_typed_pop(h);
 }
 void upb_defbuilder_reghandlers(upb_handlers *h) {
   upb_defbuilder_register_FileDescriptorSet(h);
+  h->should_jit = false;
 }
 
 
@@ -492,11 +493,11 @@ static void upb_enumdef_register_EnumValueDescriptorProto(upb_handlers *h) {
       upb_enumdef_EnumValueDescriptorProto_endmsg);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME__FIELDNUM,
-      GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME__FIELDTYPE,
+      GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NAME__FIELDTYPE, false,
       &upb_enumdef_EnumValueDescriptorProto_name, UPB_NO_VALUE);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER__FIELDNUM,
-      GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER__FIELDTYPE,
+      GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO_NUMBER__FIELDTYPE, false,
       &upb_enumdef_EnumValueDescriptorProto_number, UPB_NO_VALUE);
 }
 
@@ -540,12 +541,12 @@ static void upb_enumdef_register_EnumDescriptorProto(upb_handlers *h) {
     &upb_enumdef_EnumDescriptorProto_endmsg);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_NAME__FIELDNUM,
-      GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_NAME__FIELDTYPE,
+      GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_NAME__FIELDTYPE, false,
       &upb_enumdef_EnumDescriptorProto_name, UPB_NO_VALUE);
 
   upb_handlers_typed_push(h,
       GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_VALUE__FIELDNUM,
-      GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_VALUE__FIELDTYPE);
+      GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO_VALUE__FIELDTYPE, true);
   upb_enumdef_register_EnumValueDescriptorProto(h);
   upb_handlers_typed_pop(h);
 }
@@ -813,27 +814,27 @@ static void upb_fielddef_register_FieldDescriptorProto(upb_handlers *h) {
   upb_register_startend(h, upb_fielddef_startmsg, upb_fielddef_endmsg);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE__FIELDNUM,
-      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE__FIELDTYPE,
+      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE__FIELDTYPE, false,
       &upb_fielddef_ontype, UPB_NO_VALUE);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL__FIELDNUM,
-      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL__FIELDTYPE,
+      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL__FIELDTYPE, false,
       &upb_fielddef_onlabel, UPB_NO_VALUE);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER__FIELDNUM,
-      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER__FIELDTYPE,
+      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NUMBER__FIELDTYPE, false,
       &upb_fielddef_onnumber, UPB_NO_VALUE);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME__FIELDNUM,
-      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME__FIELDTYPE,
+      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_NAME__FIELDTYPE, false,
       &upb_fielddef_onname, UPB_NO_VALUE);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME__FIELDNUM,
-      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME__FIELDTYPE,
+      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_NAME__FIELDTYPE, false,
       &upb_fielddef_ontypename, UPB_NO_VALUE);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_DEFAULT_VALUE__FIELDNUM,
-      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_DEFAULT_VALUE__FIELDTYPE,
+      GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_DEFAULT_VALUE__FIELDTYPE, false,
       &upb_fielddef_ondefaultval, UPB_NO_VALUE);
 }
 
@@ -954,23 +955,23 @@ static void upb_msgdef_register_DescriptorProto(upb_handlers *h) {
   upb_register_startend(h, &upb_msgdef_startmsg, &upb_msgdef_endmsg);
   upb_register_typed_value(h,
       GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME__FIELDNUM,
-      GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME__FIELDTYPE,
+      GOOGLE_PROTOBUF_DESCRIPTORPROTO_NAME__FIELDTYPE, false,
       &upb_msgdef_onname, UPB_NO_VALUE);
 
   upb_handlers_typed_push(h,
       GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD__FIELDNUM,
-      GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD__FIELDTYPE);
+      GOOGLE_PROTOBUF_DESCRIPTORPROTO_FIELD__FIELDTYPE, true);
   upb_fielddef_register_FieldDescriptorProto(h);
   upb_handlers_typed_pop(h);
 
   // DescriptorProto is self-recursive, so we must link the definition.
   upb_handlers_typed_link(h,
       GOOGLE_PROTOBUF_DESCRIPTORPROTO_NESTED_TYPE__FIELDNUM,
-      GOOGLE_PROTOBUF_DESCRIPTORPROTO_NESTED_TYPE__FIELDTYPE, 0);
+      GOOGLE_PROTOBUF_DESCRIPTORPROTO_NESTED_TYPE__FIELDTYPE, true, 0);
 
   upb_handlers_typed_push(h,
       GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE__FIELDNUM,
-      GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE__FIELDTYPE);
+      GOOGLE_PROTOBUF_DESCRIPTORPROTO_ENUM_TYPE__FIELDTYPE, true);
   upb_enumdef_register_EnumDescriptorProto(h);
   upb_handlers_typed_pop(h);
 

@@ -78,7 +78,6 @@ static void cleanup()
   upb_def_unref(UPB_UPCAST(def));
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
-  upb_handlers_uninit(&h);
 }
 
 static size_t run(int i)

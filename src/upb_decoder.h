@@ -27,12 +27,11 @@ extern "C" {
 
 /* upb_decoder *****************************************************************/
 
+struct dasm_State;
+
 struct _upb_decoder {
   // Bytesrc from which we pull serialized data.
   upb_bytesrc *bytesrc;
-
-  // Dispatcher to which we push parsed data.
-  upb_dispatcher dispatcher;
 
   // String to hold our input buffer; is only active if d->buf != NULL.
   upb_string *bufstr;
@@ -48,6 +47,7 @@ struct _upb_decoder {
 
   // End of this buffer, relative to *ptr.
   const char *end;
+  const char *jit_end;
 
   // Members which may also be written by the JIT:
 
@@ -57,8 +57,21 @@ struct _upb_decoder {
   // End of this submessage, relative to *ptr.
   const char *submsg_end;
 
+  // MIN(end, submsg_end)
+  const char *effective_end;
+
   // Where we will store any errors that occur.
   upb_status *status;
+
+  // Dispatcher to which we push parsed data.
+  upb_dispatcher dispatcher;
+
+  // JIT-generated machine code (else NULL).
+  char *jit_code;
+  size_t jit_size;
+  char *debug_info;
+
+  struct dasm_State *dynasm;
 };
 
 // A upb_decoder decodes the binary protocol buffer format, writing the data it

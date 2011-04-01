@@ -38,7 +38,7 @@ endif
 # Basic compiler/flag setup.
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99
+CFLAGS=-std=gnu99
 INCLUDE=-Isrc -Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
 LDLIBS=-lpthread src/libupb.a
@@ -86,9 +86,6 @@ STREAM= \
   src/upb_strstream.c \
   src/upb_glue.c \
 
-ASMCORE= \
-  src/upb_decoder_x64.asm
-
 # Parts of core that are yet to be converted.
 OTHERSRC=src/upb_encoder.c
 
@@ -115,7 +112,10 @@ ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
 clean_leave_profile:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
 	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.dSYM)
+	rm -rf src/upb_decoder_x86.h
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	rm -rf src/jit_debug_elf_file.o
+	rm -rf src/jit_debug_elf_file.h
 	rm -rf $(TESTS) tests/t.*
 	rm -rf src/descriptor.pb
 	rm -rf src/upbc deps
@@ -135,9 +135,11 @@ lib: $(LIBUPB)
 OBJ=$(patsubst %.c,%.o,$(SRC))
 PICOBJ=$(patsubst %.c,%.lo,$(SRC))
 
-ifneq (, $(findstring DUSE_X64_FASTPATH, $(USER_CFLAGS)))
-  OBJ += src/upb_decoder_x64.o
-  PICOBJ += src/upb_decoder_x64.o
+ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
+src/upb_decoder.o: src/upb_decoder_x86.h
+  ifeq (, $(findstring DNDEBUG, $(USER_CFLAGS)))
+  $(error "JIT only works with -DNDEBUG enabled!")
+  endif
 endif
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)
@@ -164,13 +166,18 @@ src/upb_def.lo: src/upb_def.c
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $< -fPIC
 
-src/upb_decoder_x64.o: src/upb_decoder_x64.asm
-	$(E) NASM $<
-	$(Q) nasm -Ox src/upb_decoder_x64.asm -o src/upb_decoder_x64.o -f macho64
+src/upb_decoder_x86.h: src/jit_debug_elf_file.h
+src/upb_decoder_x86.h: src/upb_decoder_x86.dasc
+	$(E) DYNASM $<
+	$(Q) lua dynasm/dynasm.lua src/upb_decoder_x86.dasc > src/upb_decoder_x86.h
 
-src/upb_decoder_x64.lo: src/upb_decoder_x64.asm
-	$(E) NASM $<
-	$(Q) nasm -Ox src/upb_decoder_x64.asm -o src/upb_decoder_x64.lo -f macho64
+src/jit_debug_elf_file.o: src/jit_debug_elf_file.s
+	$(E) GAS $<
+	$(Q) gcc -c src/jit_debug_elf_file.s -o src/jit_debug_elf_file.o
+
+src/jit_debug_elf_file.h: src/jit_debug_elf_file.o
+	$(E) XXD $<
+	$(Q) xxd -i src/jit_debug_elf_file.o > src/jit_debug_elf_file.h
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))

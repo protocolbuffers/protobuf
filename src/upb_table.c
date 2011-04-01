@@ -102,6 +102,7 @@ static void intinsert(upb_inttable *t, upb_inttable_key_t key, void *val) {
   upb_inttable_value *table_val;
   if (_upb_inttable_isarrkey(t, key)) {
     table_val = UPB_INDEX(t->array, key, upb_table_valuesize(&t->t));
+    t->array_count++;
     //printf("Inserting key %d to Array part! %p\n", key, table_val);
   } else {
     t->t.count++;
@@ -152,8 +153,8 @@ static void intinsert(upb_inttable *t, upb_inttable_key_t key, void *val) {
 static void upb_inttable_insertall(upb_inttable *dst, upb_inttable *src) {
   for(upb_inttable_iter i = upb_inttable_begin(src); !upb_inttable_done(i);
       i = upb_inttable_next(src, i)) {
-    //printf("load check: %d %d\n", upb_inttable_count(dst), upb_inttable_hashtablesize(dst));
-    assert((double)(upb_inttable_count(dst)) /
+    //printf("load check: %d %d\n", upb_table_count(&dst->t), upb_inttable_hashtablesize(dst));
+    assert((double)(upb_table_count(&dst->t)) /
                     upb_inttable_hashtablesize(dst) <= MAX_LOAD);
     intinsert(dst, upb_inttable_iter_key(i), upb_inttable_iter_value(i));
   }
@@ -209,6 +210,7 @@ void upb_inttable_compact(upb_inttable *t) {
   }
   upb_inttable new_table;
   int hash_size = (upb_inttable_count(t) - array_count + 1) / MAX_LOAD;
+  //printf("array_count: %d, array_size: %d, hash_size: %d, table size: %d\n", array_count, array_size, hash_size, upb_inttable_count(t));
   upb_inttable_sizedinit(&new_table, array_size, hash_size,
                          upb_table_valuesize(&t->t));
   //printf("For %d things, using array size=%d, hash_size = %d\n", upb_inttable_count(t), array_size, hash_size);

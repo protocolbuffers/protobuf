@@ -12,6 +12,19 @@ static upb_decoder decoder;
 static upb_stringsrc stringsrc;
 upb_handlers handlers;
 
+static upb_sflow_t startsubmsg(void *_m, upb_value fval) {
+  (void)_m;
+  (void)fval;
+  return UPB_CONTINUE_WITH(NULL);
+}
+
+static upb_flow_t value(void *closure, upb_value fval, upb_value val) {
+  (void)closure;
+  (void)fval;
+  (void)val;
+  return UPB_CONTINUE;
+}
+
 static bool initialize()
 {
   // Initialize upb state, decode descriptor.
@@ -50,7 +63,7 @@ static bool initialize()
 
   upb_handlers_init(&handlers, def);
   // Cause all messages to be read, but do nothing when they are.
-  upb_register_all(&handlers, NULL, NULL, NULL, NULL, NULL, NULL);
+  upb_register_all(&handlers, NULL, NULL, value, startsubmsg, NULL, NULL);
   upb_decoder_init(&decoder, &handlers);
   upb_stringsrc_init(&stringsrc);
   return true;
@@ -62,7 +75,6 @@ static void cleanup()
   upb_def_unref(UPB_UPCAST(def));
   upb_decoder_uninit(&decoder);
   upb_stringsrc_uninit(&stringsrc);
-  upb_handlers_uninit(&handlers);
 }
 
 static size_t run(int i)

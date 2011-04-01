@@ -33,7 +33,7 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
   const char *twelvebyte_buf = twelvebyte;
   // A varint that terminates before hitting the end of the provided buffer,
   // but in too many bytes (11 instead of 10).
-  upb_decoderet r = upb_decode_varint_fast(twelvebyte_buf);
+  upb_decoderet r = decoder(twelvebyte_buf);
   ASSERT(r.p == NULL);
 }
 
@@ -41,23 +41,26 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
 #define TEST_VARINT_DECODER(decoder) \
   /* Create non-inline versions for convenient inspection of assembly language \
    * output. */ \
-  upb_decoderet _upb_decode_varint_ ## decoder(const char *p) { \
-    return upb_decode_varint_ ## decoder(p); \
+  upb_decoderet _upb_vdecode_ ## decoder(const char *p) { \
+    return upb_vdecode_ ## decoder(p); \
   } \
   void test_ ## decoder() { \
-    test_varint_decoder(&_upb_decode_varint_ ## decoder); \
+    printf("Testing varint decoder: " #decoder "..."); \
+    fflush(stdout); \
+    test_varint_decoder(&_upb_vdecode_ ## decoder); \
+    printf("ok.\n"); \
   } \
 
 TEST_VARINT_DECODER(branch32);
 TEST_VARINT_DECODER(branch64);
-TEST_VARINT_DECODER(nobranch1);
-TEST_VARINT_DECODER(nobranch2);
+TEST_VARINT_DECODER(check2_wright);
+TEST_VARINT_DECODER(check2_massimino);
 
 int main() {
   test_branch32();
   test_branch64();
-  test_nobranch1();
-  test_nobranch2();
+  test_check2_wright();
+  test_check2_massimino();
 }
 
 #if 0

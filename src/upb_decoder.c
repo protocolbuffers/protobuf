@@ -11,16 +11,13 @@
 #include "upb_decoder.h"
 #include "upb_varint_decoder.h"
 
-// If the return value is other than UPB_CONTINUE, that is what the last
-// callback returned.
-typedef struct {
-  upb_flow_t flow;
-  const char *ptr;
-} fastdecode_ret;
-extern fastdecode_ret upb_fastdecode(const char *p, const char *end,
-                                     upb_value_handler_t value_cb, void *closure,
-                                     void *table, int table_size);
-
+#ifdef UPB_USE_JIT_X64
+#define Dst_DECL upb_decoder *d
+#define Dst_REF (d->dynasm)
+#define Dst (d)
+#include "dynasm/dasm_proto.h"
+#include "upb_decoder_x86.h"
+#endif
 
 /* Decoding/Buffering of individual values ************************************/
 
@@ -28,10 +25,6 @@ extern fastdecode_ret upb_fastdecode(const char *p, const char *end,
 INLINE int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
 INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
-// Constant used to signal that the submessage is a group and therefore we
-// don't know its end offset.  This cannot be the offset of a real submessage
-// end because it takes at least one byte to begin a submessage.
-#define UPB_GROUP_END_OFFSET 0
 #define UPB_MAX_VARINT_ENCODED_SIZE 10
 
 INLINE void upb_decoder_advance(upb_decoder *d, size_t len) {
@@ -54,6 +47,32 @@ INLINE void upb_dstate_setmsgend(upb_decoder *d) {
       (void*)UINTPTR_MAX : d->buf + end_offset;
 }
 
+// Pulls the next buffer from the bytesrc.  Should be called only when the
+// current buffer is completely empty.
+static bool upb_pullbuf(upb_decoder *d) {
+  assert(upb_decoder_bufleft(d) == 0);
+  int32_t last_buf_len = d->buf ? upb_string_len(d->bufstr) : -1;
+  upb_string_recycle(&d->bufstr);
+  if (!upb_bytesrc_getstr(d->bytesrc, d->bufstr, d->status)) {
+    d->buf = NULL;
+    d->end = NULL;
+    return false;
+  }
+  if (last_buf_len != -1) {
+    d->buf_stream_offset += last_buf_len;
+    for (upb_dispatcher_frame *f = d->dispatcher.stack; f <= d->dispatcher.top; ++f)
+      if (f->end_offset != UINT32_MAX)
+        f->end_offset -= last_buf_len;
+  }
+  d->buf = upb_string_getrobuf(d->bufstr);
+  d->ptr = upb_string_getrobuf(d->bufstr);
+  d->end = d->buf + upb_string_len(d->bufstr);
+  d->jit_end = d->end; //d->end - 12;
+  upb_string_substr(d->tmp, d->bufstr, 0, 0);
+  upb_dstate_setmsgend(d);
+  return true;
+}
+
 // Called only from the slow path, this function copies the next "len" bytes
 // from the stream to "data", adjusting the dstate appropriately.
 static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted) {
@@ -62,27 +81,8 @@ static bool upb_getbuf(upb_decoder *d, void *data, size_t bytes_wanted) {
     memcpy(data, d->ptr, to_copy);
     upb_decoder_advance(d, to_copy);
     bytes_wanted -= to_copy;
-    if (bytes_wanted == 0) {
-      upb_dstate_setmsgend(d);
-      return true;
-    }
-
-    // Get next buffer.
-    int32_t last_buf_len = d->buf ? upb_string_len(d->bufstr) : -1;
-    upb_string_recycle(&d->bufstr);
-    if (!upb_bytesrc_getstr(d->bytesrc, d->bufstr, d->status)) {
-      d->buf = NULL;
-      return false;
-    }
-    if (last_buf_len != -1) {
-      d->buf_stream_offset += last_buf_len;
-      for (upb_dispatcher_frame *f = d->dispatcher.stack; f <= d->dispatcher.top; ++f)
-        if (f->end_offset != UINT32_MAX)
-          f->end_offset -= last_buf_len;
-    }
-    d->buf = upb_string_getrobuf(d->bufstr);
-    d->ptr = upb_string_getrobuf(d->bufstr);
-    d->end = d->buf + upb_string_len(d->bufstr);
+    if (bytes_wanted == 0) return true;
+    if (!upb_pullbuf(d)) return false;
   }
 }
 
@@ -143,7 +143,7 @@ done:
 INLINE bool upb_decode_varint(upb_decoder *d, upb_value *val) {
   if (upb_decoder_bufleft(d) >= 16) {
     // Common (fast) case.
-    upb_decoderet r = upb_decode_varint_fast(d->ptr);
+    upb_decoderet r = upb_vdecode_fast(d->ptr);
     if (r.p == NULL) {
       upb_seterr(d->status, UPB_ERROR, "Unterminated varint.\n");
       return false;
@@ -229,6 +229,7 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     }
 #define CHECK(expr) if (!expr) { assert(!upb_ok(status)); goto err; }
 
+  CHECK(upb_pullbuf(d));
   if (upb_dispatch_startmsg(&d->dispatcher) != UPB_CONTINUE) goto err;
 
   // Main loop: executed once per tag/field pair.
@@ -244,14 +245,13 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
 
     // Decodes as many fields as possible, updating d->ptr appropriately,
     // before falling through to the slow(er) path.
-#ifdef USE_X64_FASTPATH
-    const char *end = UPB_MIN(d->end, d->submsg_end);
-    fastdecode_ret ret = upb_fastdecode(d->ptr, end,
-                                        d->dispatcher.top->handlers.set->value,
-                                        d->dispatcher.top->handlers.closure,
-                                        d->msgdef->itof.array,
-                                        d->msgdef->itof.array_size);
-    CHECK_FLOW(ret.flow);
+#ifdef UPB_USE_JIT_X64
+    void (*upb_jit_decode)(upb_decoder *d) = (void*)d->jit_code;
+    if (d->dispatcher.handlers->should_jit && d->buf) {
+      //fprintf(stderr, "Entering JIT, ptr: %p\n", d->ptr);
+      upb_jit_decode(d);
+      //fprintf(stderr, "Exiting JIT, ptr: %p\n", d->ptr);
+    }
 #endif
 
     // Parse/handle tag.
@@ -354,9 +354,13 @@ err:
 
 void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
   upb_dispatcher_init(&d->dispatcher, handlers);
+#ifdef UPB_USE_JIT_X64
+  upb_decoder_makejit(d);
+#endif
   d->bufstr = NULL;
   d->buf = NULL;
   d->tmp = NULL;
+  upb_string_recycle(&d->tmp);
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure) {
@@ -373,4 +377,7 @@ void upb_decoder_uninit(upb_decoder *d) {
   upb_dispatcher_uninit(&d->dispatcher);
   upb_string_unref(d->bufstr);
   upb_string_unref(d->tmp);
+#ifdef UPB_USE_JIT_X64
+  upb_decoder_freejit(d);
+#endif
 }

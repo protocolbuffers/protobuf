@@ -81,6 +81,14 @@ typedef upb_flow_t (*upb_endsubmsg_handler_t)(void *closure, upb_value fval);
 typedef upb_flow_t (*upb_unknownval_handler_t)(
     void *closure, upb_field_number_t fieldnum, upb_value val);
 
+upb_flow_t upb_startmsg_nop(void *closure);
+void upb_endmsg_nop(void *closure, upb_status *status);
+upb_flow_t upb_value_nop(void *closure, upb_value fval, upb_value val);
+upb_sflow_t upb_startsubmsg_nop(void *closure, upb_value fval);
+upb_flow_t upb_endsubmsg_nop(void *closure, upb_value fval);
+upb_flow_t upb_unknownval_nop(void *closure, upb_field_number_t fieldnum,
+                                     upb_value val);
+
 typedef struct {
   bool junk;
   upb_fieldtype_t type;
@@ -93,14 +101,27 @@ typedef struct {
     upb_startsubmsg_handler_t startsubmsg;
   } cb;
   upb_endsubmsg_handler_t endsubmsg;
+  uint32_t jit_pclabel;
+  uint32_t jit_pclabel_notypecheck;
+  uint32_t jit_submsg_done_pclabel;
+  bool repeated;
 } upb_handlers_fieldent;
 
-typedef struct {
+typedef struct _upb_handlers_msgent {
   upb_startmsg_handler_t startmsg;
   upb_endmsg_handler_t endmsg;
   upb_unknownval_handler_t unknownval;
   // Maps field number -> upb_handlers_fieldent.
   upb_inttable fieldtab;
+  uint32_t jit_startmsg_pclabel;
+  uint32_t jit_endofbuf_pclabel;
+  uint32_t jit_endofmsg_pclabel;
+  uint32_t jit_unknownfield_pclabel;
+  uint32_t groupnum;
+  bool is_group;
+  int32_t jit_parent_field_done_pclabel;
+  uint32_t max_field_number;
+  void **tablearray;
 } upb_handlers_msgent;
 
 typedef struct {
@@ -115,6 +136,7 @@ struct _upb_handlers {
   upb_msgdef *toplevel_msgdef;  // We own a ref.
   upb_handlers_msgent *msgent;
   upb_handlers_frame stack[UPB_MAX_TYPE_DEPTH], *top, *limit;
+  bool should_jit;
 };
 typedef struct _upb_handlers upb_handlers;
 
@@ -237,19 +259,17 @@ void upb_register_all(upb_handlers *h, upb_startmsg_handler_t start,
 
 // Low-level functions -- internal-only.
 void upb_register_typed_value(upb_handlers *h, upb_field_number_t fieldnum,
-                              upb_fieldtype_t type, upb_value_handler_t value,
-                              upb_value fval);
+                              upb_fieldtype_t type, bool repeated,
+                              upb_value_handler_t value, upb_value fval);
 void upb_register_typed_submsg(upb_handlers *h, upb_field_number_t fieldnum,
-                               upb_fieldtype_t type,
+                               upb_fieldtype_t type, bool repeated,
                                upb_startsubmsg_handler_t start,
                                upb_endsubmsg_handler_t end,
                                upb_value fval);
-void upb_handlers_typed_link(upb_handlers *h,
-                             upb_field_number_t fieldnum,
-                             upb_fieldtype_t type,
-                             int frames);
+void upb_handlers_typed_link(upb_handlers *h, upb_field_number_t fieldnum,
+                             upb_fieldtype_t type, bool repeated, int frames);
 void upb_handlers_typed_push(upb_handlers *h, upb_field_number_t fieldnum,
-                             upb_fieldtype_t type);
+                             upb_fieldtype_t type, bool repeated);
 void upb_handlers_typed_pop(upb_handlers *h);
 
 INLINE upb_handlers_msgent *upb_handlers_getmsgent(upb_handlers *h,
@@ -308,8 +328,8 @@ typedef struct {
   int delegated_depth;
 
   // Stack.
-  upb_dispatcher_frame stack[UPB_MAX_NESTING];
   upb_status status;
+  upb_dispatcher_frame stack[UPB_MAX_NESTING];
 } upb_dispatcher;
 
 INLINE bool upb_dispatcher_skipping(upb_dispatcher *d) {

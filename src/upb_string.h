@@ -155,9 +155,13 @@ INLINE const char *upb_string_getbufend(upb_string *str) {
 }
 
 // Attempts to recycle the string "str" so it may be reused and have different
-// data written to it.  After the function returns, "str" points to a writable
-// string, which is either the original string if it had no other references
-// or a newly created string if it did have other references.
+// data written to it.  The caller MUST own a reference on the given string
+// prior to making this call (ie. the caller must have either created the
+// string or obtained a reference with upb_string_getref()).
+//
+// After the function returns, "str" points to a writable string, which is
+// either the original string if it had no other references or a newly created
+// string if it did have other references.
 //
 // As a special case, passing a pointer to NULL will allocate a new string.
 // This is convenient for the pattern:
@@ -171,7 +175,9 @@ INLINE const char *upb_string_getbufend(upb_string *str) {
 //   }
 INLINE void upb_string_recycle(upb_string **_str) {
   upb_string *str = *_str;
-  if(str && upb_atomic_only(&str->refcount)) {
+  int r;
+  if(str && ((r = upb_atomic_read(&str->refcount)) == 1 ||
+             (r == _UPB_STRING_REFCOUNT_STACK))) {
     str->ptr = NULL;
     str->len = 0;
     _upb_string_release(str);

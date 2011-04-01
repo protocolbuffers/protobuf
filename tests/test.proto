@@ -29,3 +29,13 @@ message D {
   optional A a = 1;
   optional D d = 2;
 }
+
+// A proto with a bunch of simple primitives.
+message SimplePrimitives {
+  optional fixed64 a = 1;
+  optional fixed32 b = 2;
+  optional double c = 3;
+  optional float d = 5;
+  //optional sint64 e = 6;
+  //optional sint32 f = 7;
+}
