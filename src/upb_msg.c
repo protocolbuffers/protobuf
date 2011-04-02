@@ -300,11 +300,11 @@ static upb_flow_t upb_dmsgsink_value(void *_m, upb_value fval, upb_value val) {
   upb_msg *m = _m;
   upb_fielddef *f = upb_value_getfielddef(fval);
   if (upb_isstring(f)) {
-    //fprintf(stderr, "dmsg_value!  this=%p f=%p name=" UPB_STRFMT ",
-    //        " UPB_STRFMT "  %p\n", m, f, UPB_STRARG(f->name), UPB_STRARG(val.val.str));
+    //fprintf(stderr, "dmsg_value!  this=%p f=%p name=" UPB_STRFMT ", "
+    //        UPB_STRFMT "\n", m, f, UPB_STRARG(f->name), UPB_STRARG(val.val.str));
   } else {
-    //fprintf(stderr, "dmsg_value!  this=%p f=%p name=" UPB_STRFMT ",
-    //        %llu\n", m, f, UPB_STRARG(f->name), val.val.uint64);
+    //fprintf(stderr, "dmsg_value!  this=%p f=%p name=" UPB_STRFMT ", %llu\n",
+    //        m, f, UPB_STRARG(f->name), val.val.uint64);
   }
   upb_msg_appendval(m, f, val);
   return UPB_CONTINUE;
@@ -320,12 +320,18 @@ static upb_sflow_t upb_dmsgsink_startsubmsg(void *_m, upb_value fval) {
   return UPB_CONTINUE_WITH(p);
 }
 
+static upb_flow_t endsubmsg(void *closure, upb_value fval) {
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  //fprintf(stderr, "dmsg_endsubmsg!  " UPB_STRFMT " %p\n", UPB_STRARG(f->name), f);
+  return UPB_CONTINUE;
+}
+
 void upb_msg_regdhandlers(upb_handlers *h) {
   upb_register_all(h,
       NULL,  // startmsg
       NULL,  // endmsg
       &upb_dmsgsink_value,
       &upb_dmsgsink_startsubmsg,
-      NULL,  // endsubmsg
+      endsubmsg,  // endsubmsg
       NULL); // unknown
 }

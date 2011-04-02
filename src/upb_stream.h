@@ -92,6 +92,8 @@ upb_flow_t upb_unknownval_nop(void *closure, upb_field_number_t fieldnum,
 typedef struct {
   bool junk;
   upb_fieldtype_t type;
+  bool repeated;
+  uint32_t number;
   // For upb_issubmsg(f) only, the index into the msgdef array of the submsg.
   // -1 if unset (indicates that submsg should be skipped).
   int32_t msgent_index;
@@ -104,7 +106,6 @@ typedef struct {
   uint32_t jit_pclabel;
   uint32_t jit_pclabel_notypecheck;
   uint32_t jit_submsg_done_pclabel;
-  bool repeated;
 } upb_handlers_fieldent;
 
 typedef struct _upb_handlers_msgent {
@@ -117,8 +118,7 @@ typedef struct _upb_handlers_msgent {
   uint32_t jit_endofbuf_pclabel;
   uint32_t jit_endofmsg_pclabel;
   uint32_t jit_unknownfield_pclabel;
-  uint32_t groupnum;
-  bool is_group;
+  upb_handlers_fieldent *endgroup_f;  // NULL if not a group.
   int32_t jit_parent_field_done_pclabel;
   uint32_t max_field_number;
   void **tablearray;

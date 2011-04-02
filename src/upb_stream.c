@@ -52,7 +52,7 @@ static void upb_msgent_init(upb_handlers_msgent *e) {
   e->startmsg = &upb_startmsg_nop;
   e->endmsg = &upb_endmsg_nop;
   e->unknownval = &upb_unknownval_nop;
-  e->is_group = false;
+  e->endgroup_f = NULL;
   e->tablearray = NULL;
 }
 
@@ -76,6 +76,7 @@ void upb_handlers_uninit(upb_handlers *h) {
   for (int i = 0; i < h->msgs_len; i++) {
     upb_inttable_free(&h->msgs[i].fieldtab);
     free(h->msgs[i].tablearray);
+    free(h->msgs[i].endgroup_f);
   }
   free(h->msgs);
   upb_msgdef_unref(h->toplevel_msgdef);
@@ -87,8 +88,8 @@ static upb_handlers_fieldent *upb_handlers_getorcreate_without_fval(
   upb_handlers_fieldent *f =
       upb_inttable_lookup(&h->msgent->fieldtab, tag);
   if (!f) {
-    upb_handlers_fieldent new_f = {false, type, -1, UPB_NO_VALUE,
-        {&upb_value_nop}, &upb_endsubmsg_nop, 0, 0, 0, repeated};
+    upb_handlers_fieldent new_f = {false, type, repeated, fieldnum, -1, UPB_NO_VALUE,
+        {&upb_value_nop}, &upb_endsubmsg_nop, 0, 0, 0};
     if (upb_issubmsgtype(type)) new_f.cb.startsubmsg = &upb_startsubmsg_nop;
     upb_inttable_insert(&h->msgent->fieldtab, tag, &new_f);
 
@@ -226,14 +227,14 @@ void upb_handlers_pop(upb_handlers *h, upb_fielddef *f) {
 /* upb_dispatcher *************************************************************/
 
 static upb_handlers_fieldent toplevel_f = {
-  false, UPB_TYPE(GROUP),
+  false, UPB_TYPE(GROUP), false, 0,
   0, // msgent_index
 #ifdef NDEBUG
   {{0}},
 #else
   {{0}, UPB_VALUETYPE_RAW},
 #endif
-  {NULL}, NULL, 0, 0, 0, false};
+  {NULL}, NULL, 0, 0, 0};
 
 void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h) {
   d->handlers = h;

@@ -67,7 +67,7 @@ static bool upb_pullbuf(upb_decoder *d) {
   d->buf = upb_string_getrobuf(d->bufstr);
   d->ptr = upb_string_getrobuf(d->bufstr);
   d->end = d->buf + upb_string_len(d->bufstr);
-  d->jit_end = d->end; //d->end - 12;
+  d->jit_end = d->end - 20;
   upb_string_substr(d->tmp, d->bufstr, 0, 0);
   upb_dstate_setmsgend(d);
   return true;
@@ -247,10 +247,13 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     // before falling through to the slow(er) path.
 #ifdef UPB_USE_JIT_X64
     void (*upb_jit_decode)(upb_decoder *d) = (void*)d->jit_code;
-    if (d->dispatcher.handlers->should_jit && d->buf) {
-      //fprintf(stderr, "Entering JIT, ptr: %p\n", d->ptr);
+    if (d->jit_code && d->dispatcher.top == d->dispatcher.stack && d->ptr < d->jit_end) {
+      const char *before = d->ptr;
+      //fprintf(stderr, "Entering JIT, JIT bytes left: %zd\n", d->jit_end - d->ptr);
       upb_jit_decode(d);
-      //fprintf(stderr, "Exiting JIT, ptr: %p\n", d->ptr);
+      //fprintf(stderr, "Exiting JIT, parsed %zd bytes\n", d->ptr - before);
+      //fprintf(stderr, "ptr: %p, effective_end: %p, jit_end: %p, effective_end-ptr=%d\n",
+      //        d->ptr, d->effective_end, d->jit_end, d->effective_end - d->ptr);
     }
 #endif
 
@@ -355,7 +358,8 @@ err:
 void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
   upb_dispatcher_init(&d->dispatcher, handlers);
 #ifdef UPB_USE_JIT_X64
-  upb_decoder_makejit(d);
+  d->jit_code = NULL;
+  if (d->dispatcher.handlers->should_jit) upb_decoder_makejit(d);
 #endif
   d->bufstr = NULL;
   d->buf = NULL;
@@ -378,6 +382,6 @@ void upb_decoder_uninit(upb_decoder *d) {
   upb_string_unref(d->bufstr);
   upb_string_unref(d->tmp);
 #ifdef UPB_USE_JIT_X64
-  upb_decoder_freejit(d);
+  if (d->dispatcher.handlers->should_jit) upb_decoder_freejit(d);
 #endif
 }

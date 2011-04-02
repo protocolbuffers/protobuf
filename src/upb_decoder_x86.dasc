@@ -88,7 +88,7 @@ void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile_
 |// Checks PTR for end-of-buffer.
 |.macro check_eob, m
 |  cmp   PTR, DECODER->effective_end
-|| if (m->is_group) {
+|| if (m->endgroup_f) {
      |  jae  ->exit_jit
 || } else {
      |  jae  =>m->jit_endofbuf_pclabel
@@ -136,13 +136,13 @@ void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile_
 |  and  edx, 0x7
 |  cmp  ecx, m->max_field_number  // Bounds-check the field.
 |  ja   ->exit_jit                // In the future; could be unknown label
-|  mov  rcx, qword [rcx*8 + m->tablearray]  // TODO: support hybrid array/hash tables.
-|  jmp  rcx  // Dispatch: unpredictable jump.
+|  mov  rax, qword [rcx*8 + m->tablearray]  // TODO: support hybrid array/hash tables.
+|  jmp  rax  // Dispatch: unpredictable jump.
 |.endmacro
 |
 |.macro setmsgend, m
 |    mov    rsi, DECODER->jit_end
-|| if (m->is_group) {
+|| if (m->endgroup_f) {
 |    mov64  rax, 0xffffffffffffffff
 |    mov    qword DECODER->submsg_end, rax
 |    mov    DECODER->effective_end, rsi
@@ -153,9 +153,9 @@ void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile_
 |    add    rax, qword DECODER->buf
 |    mov    DECODER->submsg_end, rax  // submsg_end = d->buf + f->end_offset
 |    cmp    rax, rsi
-|    jb     >1
+|    jb     >8
 |    mov    rax, rsi                  // effective_end = min(d->submsg_end, d->jit_end)
-|1:
+|8:
 |    mov    DECODER->effective_end, rax
 || }
 |.endmacro
@@ -228,8 +228,8 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   // We check the wire type (which must be loaded in edx) because the
   // table is keyed on field number, not type.
   |=>f->jit_pclabel:
-  |  cmp  edx, upb_types[f->type].native_wire_type
-  |  jne  ->exit_jit     // In the future: could be an unknown field.
+  |  cmp  edx, (tag & 0x7)
+  |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
   |=>f->jit_pclabel_notypecheck:
   |1:  // Label for repeating this field.
 
@@ -305,10 +305,12 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
       |  jmp  =>m->jit_endofmsg_pclabel
       return;
 
+    // Will dispatch callbacks and call submessage in a second.
     case UPB_TYPE(MESSAGE):
       |  decode_varint  tag_size
+      break;
     case UPB_TYPE(GROUP):
-      // Will dispatch callbacks and call submessage in a second.
+      |  add  PTR, tag_size
       break;
 
     default: abort();
@@ -340,10 +342,15 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |   jae   ->exit_jit  // Frame stack overflow.
     |   mov   qword FRAME:rax->f, f
     |   mov   qword FRAME:rax->closure, rdx
-    |   mov   rsi, PTR
-    |   sub   rsi, DECODER->buf
-    |   add   r12d, esi
-    |   mov   dword FRAME:rax->end_offset, r12d   // = (d->ptr - d->buf) + delim_len
+    if (f->type == UPB_TYPE(MESSAGE)) {
+      |   mov   rsi, PTR
+      |   sub   rsi, DECODER->buf
+      |   add   r12d, esi
+      |   mov   dword FRAME:rax->end_offset, r12d   // = (d->ptr - d->buf) + delim_len
+    } else {
+      assert(f->type == UPB_TYPE(GROUP));
+      |   mov   dword FRAME:rax->end_offset, -1U
+    }
     |   mov   CLOSURE, rdx
     |   mov   DECODER->dispatcher.top, rax
     |   mov   FRAME, rax
@@ -440,11 +447,10 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_handlers_msgent *m) {
 
   free(keys);
 
-  if (m->is_group) {
-    // Create a fake fieldent for handling "end group."
-    upb_handlers_fieldent f = {0, UPB_TYPE_ENDGROUP, 0, UPB_NO_VALUE, {NULL}, NULL, 0, 0, 0, false};
-    upb_decoder_jit_field(d, last_tag, m->groupnum, m, last_f, &f);
-    upb_decoder_jit_field(d, m->groupnum, 0, m, &f, NULL);
+  if (m->endgroup_f) {
+    uint32_t tag = m->endgroup_f->number << 3 | UPB_WIRE_TYPE_END_GROUP;
+    upb_decoder_jit_field(d, last_tag, tag, m, last_f, m->endgroup_f);
+    upb_decoder_jit_field(d, tag, 0, m, m->endgroup_f, NULL);
   } else {
     upb_decoder_jit_field(d, last_tag, 0, m, last_f, NULL);
   }
@@ -452,7 +458,7 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_handlers_msgent *m) {
   // --------- New code section (does not fall through) ------------------------
 
   // End-of-buf / end-of-message.
-  if (!m->is_group) {
+  if (!m->endgroup_f) {
     // This case doesn't exist for groups, because there eob really means
     // eob, so that case just exits the jit directly.
     |=>m->jit_endofbuf_pclabel:
@@ -478,6 +484,9 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_handlers_msgent *m) {
   }
 
 }
+
+static const char *dbgfmt =
+    "JIT encountered unknown field!  wt=%d, fn=%d\n";
 
 static void upb_decoder_jit(upb_decoder *d) {
   |  push  rbp
@@ -512,7 +521,10 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  leave
   |  ret
   |=>0:
-  |  callp &abort
+  |  mov rdi, stderr
+  |  mov rsi, dbgfmt
+  |  callp  fprintf
+  |  callp  abort
 }
 
 void upb_decoder_jit_assignfieldlabs(upb_handlers_fieldent *f,
@@ -522,7 +534,8 @@ void upb_decoder_jit_assignfieldlabs(upb_handlers_fieldent *f,
   f->jit_submsg_done_pclabel = (*pclabel_count)++;
 }
 
-void upb_decoder_jit_assignmsglabs(upb_handlers_msgent *m,
+void upb_decoder_jit_assignmsglabs(upb_handlers *h,
+                                   upb_handlers_msgent *m,
                                    uint32_t *pclabel_count) {
   m->jit_startmsg_pclabel = (*pclabel_count)++;
   m->jit_endofbuf_pclabel = (*pclabel_count)++;
@@ -537,9 +550,17 @@ void upb_decoder_jit_assignmsglabs(upb_handlers_msgent *m,
     m->max_field_number = UPB_MAX(m->max_field_number, key);
     upb_handlers_fieldent *f = upb_inttable_iter_value(i);
     upb_decoder_jit_assignfieldlabs(f, pclabel_count);
+    if (f->type == UPB_TYPE(GROUP)) {
+      upb_handlers_msgent *sub_m = upb_handlers_getmsgent(h, f);
+      sub_m->endgroup_f = malloc(sizeof(*sub_m->endgroup_f));
+      memcpy(sub_m->endgroup_f, f, sizeof(*f));
+      sub_m->endgroup_f->type = UPB_TYPE_ENDGROUP;
+      upb_decoder_jit_assignfieldlabs(sub_m->endgroup_f, pclabel_count);
+    }
   }
   // XXX: Won't work for large field numbers; will need to use a upb_table.
-  m->tablearray = malloc((m->max_field_number + 1) * sizeof(void*));
+  // +2 to cover group case, in case group number is larger than all tags.
+  m->tablearray = malloc((m->max_field_number + 2) * sizeof(void*));
 }
 
 // Second pass: for messages that have only one parent, link them to the field
@@ -551,10 +572,6 @@ void upb_decoder_jit_assignmsglabs2(upb_handlers *h, upb_handlers_msgent *m) {
     upb_handlers_fieldent *f = upb_inttable_iter_value(i);
     if (upb_issubmsgtype(f->type)) {
       upb_handlers_msgent *sub_m = upb_handlers_getmsgent(h, f);
-      if (f->type == UPB_TYPE(GROUP)) {
-        sub_m->is_group = true;
-        sub_m->groupnum = upb_inttable_iter_key(i);
-      }
       if (sub_m->jit_parent_field_done_pclabel == UPB_NONE) {
         sub_m->jit_parent_field_done_pclabel = f->jit_submsg_done_pclabel;
       } else {
@@ -569,7 +586,7 @@ void upb_decoder_makejit(upb_decoder *d) {
   uint32_t pclabel_count = 1;
   upb_handlers *h = d->dispatcher.handlers;
   for (int i = 0; i < h->msgs_len; i++)
-    upb_decoder_jit_assignmsglabs(&h->msgs[i], &pclabel_count);
+    upb_decoder_jit_assignmsglabs(h, &h->msgs[i], &pclabel_count);
   for (int i = 0; i < h->msgs_len; i++)
     upb_decoder_jit_assignmsglabs2(h, &h->msgs[i]);
 
@@ -607,6 +624,9 @@ void upb_decoder_makejit(upb_decoder *d) {
         // Don't handle unknown fields yet.
         m->tablearray[j] = d->jit_code + dasm_getpclabel(d, 0);
       }
+    }
+    if (m->endgroup_f) {
+      m->tablearray[m->endgroup_f->number] = d->jit_code + dasm_getpclabel(d, m->endgroup_f->jit_pclabel);
     }
   }
 
