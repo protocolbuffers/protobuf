@@ -58,7 +58,7 @@
 	</Target>
 
 	<!--## Benchmark ##-->
-	<Target Name="_GenerateBenchmarkSource" DependsOnTargets="_Clean">
+	<Target Name="_GenerateBenchmarkSource" DependsOnTargets="_Clean;_Compile">
 		<PropertyGroup>
 			<Args>$(BenchmarkProtosDirectory)\google_size.proto $(BenchmarkProtosDirectory)\google_speed.proto</Args>
 		</PropertyGroup>
