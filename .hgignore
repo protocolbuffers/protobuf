@@ -1,0 +1,5 @@
+glob:build_output/
+glob:build_temp/
+glob:bin/
+glob:obj/
+glob:*.cache
