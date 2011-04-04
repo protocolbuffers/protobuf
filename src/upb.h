@@ -54,9 +54,16 @@ INLINE size_t upb_align_up(size_t val, size_t align) {
 
 // The maximum number of fields that any one .proto type can have.  Note that
 // this is very different than the max field number.  It is hard to imagine a
-// scenario where more than 32k fields (each with its own name and field number)
-// makes sense.
-#define UPB_MAX_FIELDS (1<<15)
+// scenario where more than 2k fields (each with its own name and field number)
+// makes sense.  The .proto file to describe it would be 2000 lines long and
+// contain 2000 unique names.
+//
+// With this limit we can store a has-bit offset in 8 bits (2**8 * 8 = 2048)
+// and we can store a value offset in 16 bits, since the maximum message
+// size is 16,640 bytes (2**8 has-bits + 2048 * 8-byte value).  Note that
+// strings and arrays are not counted in this, only the *pointer* to them is.
+// An individual string or array is unaffected by this 16k byte limit.
+#define UPB_MAX_FIELDS (2048)
 typedef int16_t upb_field_count_t;
 
 // Nested type names are separated by periods.

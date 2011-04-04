@@ -150,11 +150,16 @@ struct _upb_array {
 };
 
 void _upb_array_free(upb_array *a, upb_fielddef *f);
+INLINE upb_valueptr _upb_array_getptrforsize(upb_array *a, size_t type_size,
+                                             uint32_t elem) {
+  upb_valueptr p;
+  p._void = &a->ptr[elem * type_size];
+  return p;
+}
+
 INLINE upb_valueptr _upb_array_getptr(upb_array *a, upb_fielddef *f,
                                       uint32_t elem) {
-  upb_valueptr p;
-  p._void = &a->ptr[elem * upb_types[f->type].size];
-  return p;
+  return _upb_array_getptrforsize(a, upb_types[f->type].size, elem);
 }
 
 upb_array *upb_array_new(void);
@@ -163,7 +168,7 @@ INLINE void upb_array_unref(upb_array *a, upb_fielddef *f) {
   if (a && upb_atomic_unref(&a->refcount)) _upb_array_free(a, f);
 }
 
-void upb_array_recycle(upb_array **arr, upb_fielddef *f);
+void upb_array_recycle(upb_array **arr);
 
 INLINE uint32_t upb_array_len(upb_array *a) {
   return a->len;

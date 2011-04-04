@@ -188,9 +188,11 @@ void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile_
 |// TODO: optimize for 0 (xor) and 32-bits.
 |.macro loadfval, f
 || if (f->fval.val.uint64 == 0) {
-|    xor ARG2_32, ARG2_32
+|    xor     ARG2_32, ARG2_32
+|| } else if (f->fval.val.uint64 < 0xffffffff) {
+|    mov     ARG2_32, f->fval.val.uint64
 || } else {
-|    mov   ARG2_64, f->fval.val.uint64
+|    mov64   ARG2_64, f->fval.val.uint64
 || }
 |.endmacro
 
