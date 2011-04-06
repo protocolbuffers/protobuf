@@ -184,7 +184,12 @@ void upb_reg_jit_gdb(void *addr, size_t size) {
 |  and  edx, 0x7
 |  cmp  ecx, m->max_field_number  // Bounds-check the field.
 |  ja   ->exit_jit                // In the future; could be unknown label
-|  mov  rax, qword [rcx*8 + m->tablearray]  // TODO: support hybrid array/hash tables.
+|| if ((uintptr_t)m->tablearray < 0xffffffff) {
+|    mov  rax, qword [rcx*8 + m->tablearray]  // TODO: support hybrid array/hash tables.
+|| } else {
+|    mov64  rax, (uintptr_t)m->tablearray
+|    mov  rax, qword [rax + rcx*8]
+|| }
 |  jmp  rax  // Dispatch: unpredictable jump.
 |.endmacro
 |
