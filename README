@@ -3,13 +3,18 @@ upb - a minimalist implementation of protocol buffers.
 
 For API documentation, see the header files.
 
-To build:
+To build (the core library is ANSI C and has no dependencies):
 $ make
 
 Other useful targets:
 $ make test
 $ make benchmark
 $ make lua (requires lua libraries to be installed)
+
+The tests and benchmarks have the following dependencies
+(Ubuntu package names in parentheses):
+- Google's protobuf compiler + libraries (protobuf-compiler, libprotobuf-dev)
+- Lua binary and libraries (lua5.1, liblua5.1-dev)
 
 Issue tracking is on Google Code:
   http://code.google.com/p/upb/issues/list

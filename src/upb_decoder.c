@@ -68,6 +68,7 @@ static bool upb_pullbuf(upb_decoder *d) {
   d->ptr = upb_string_getrobuf(d->bufstr);
   d->end = d->buf + upb_string_len(d->bufstr);
   d->jit_end = d->end - 20;
+  upb_string_recycle(&d->tmp);
   upb_string_substr(d->tmp, d->bufstr, 0, 0);
   upb_dstate_setmsgend(d);
   return true;
