@@ -16,6 +16,19 @@
 #include "dynasm/dasm_proto.h"
 #include "dynasm/dasm_x86.h"
 
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
+#endif
+
+// We map into the low 32 bits when we can, but if this is not available
+// (like on OS X) we take what we can get.  It's not required for correctness,
+// it's just a performance thing that makes it more likely that our jumps
+// can be rel32 (i.e. within 32-bits of our pc) instead of the longer
+// sequence required for other jumps (see callp).
+#ifndef MAP_32BIT
+#define MAP_32BIT 0
+#endif
+
 // To debug JIT-ted code with GDB we need to tell GDB about the JIT-ted code
 // at runtime.  GDB 7.x+ has defined an interface for doing this, and these
 // structure/function defintions are copied out of gdb/jit.h
@@ -25,6 +38,8 @@
 // at compile-time and compile it in as a character string.  We can replace
 // a few key constants (address of JIT-ted function and its size) by looking
 // for a few magic numbers and doing a dumb string replacement.
+
+#ifndef __APPLE__
 #include "jit_debug_elf_file.h"
 
 typedef enum
@@ -51,6 +66,39 @@ typedef struct {
 gdb_jit_descriptor __jit_debug_descriptor = {1, GDB_JIT_NOACTION, NULL, NULL};
 
 void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile__(""); }
+
+void upb_reg_jit_gdb(upb_decoder *d, void *addr, size_t size) {
+  // Create debug info.
+  size_t elf_len = src_jit_debug_elf_file_o_len;
+  d->debug_info = malloc(elf_len);
+  memcpy(d->debug_info, src_jit_debug_elf_file_o, elf_len);
+  uint64_t *p = (void*)d->debug_info;
+  for (; (void*)(p+1) <= (void*)d->debug_info + elf_len; ++p) {
+    if (*p == 0x12345678) { *p = (uintptr_t)addr; }
+    if (*p == 0x321) { *p = size; }
+  }
+
+  // Register the JIT-ted code with GDB.
+  gdb_jit_entry *e = malloc(sizeof(gdb_jit_entry));
+  e->next_entry = __jit_debug_descriptor.first_entry;
+  e->prev_entry = NULL;
+  if (e->next_entry) e->next_entry->prev_entry = e;
+  e->symfile_addr = d->debug_info;
+  e->symfile_size = elf_len;
+  __jit_debug_descriptor.first_entry = e;
+  __jit_debug_descriptor.relevant_entry = e;
+  __jit_debug_descriptor.action_flag = GDB_JIT_REGISTER;
+  __jit_debug_register_code();
+}
+
+#else
+
+void upb_reg_jit_gdb(void *addr, size_t size) {
+  (void)addr;
+  (void)size;
+}
+
+#endif
 
 |.arch x64
 |.actionlist upb_jit_actionlist
@@ -584,6 +632,8 @@ void upb_decoder_jit_assignmsglabs2(upb_handlers *h, upb_handlers_msgent *m) {
 }
 
 void upb_decoder_makejit(upb_decoder *d) {
+  d->debug_info = NULL;
+
   // Assign pclabels.
   uint32_t pclabel_count = 1;
   upb_handlers *h = d->dispatcher.handlers;
@@ -609,6 +659,8 @@ void upb_decoder_makejit(upb_decoder *d) {
   d->jit_code = mmap(NULL, d->jit_size, PROT_READ | PROT_WRITE,
                      MAP_32BIT | MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
 
+  upb_reg_jit_gdb(d->jit_code, d->jit_size);
+
   dasm_encode(d, d->jit_code);
 
   // Create dispatch tables.
@@ -631,28 +683,6 @@ void upb_decoder_makejit(upb_decoder *d) {
       m->tablearray[m->endgroup_f->number] = d->jit_code + dasm_getpclabel(d, m->endgroup_f->jit_pclabel);
     }
   }
-
-  // Create debug info.
-  size_t elf_len = src_jit_debug_elf_file_o_len;
-  d->debug_info = malloc(elf_len);
-  memcpy(d->debug_info, src_jit_debug_elf_file_o, elf_len);
-  uint64_t *p = (void*)d->debug_info;
-  for (; (void*)(p+1) <= (void*)d->debug_info + elf_len; ++p) {
-    if (*p == 0x12345678) { *p = (uintptr_t)d->jit_code; }
-    if (*p == 0x321) { *p = d->jit_size; }
-  }
-
-  // Register the JIT-ted code with GDB.
-  gdb_jit_entry *e = malloc(sizeof(gdb_jit_entry));
-  e->next_entry = __jit_debug_descriptor.first_entry;
-  e->prev_entry = NULL;
-  if (e->next_entry) e->next_entry->prev_entry = e;
-  e->symfile_addr = d->debug_info;
-  e->symfile_size = elf_len;
-  __jit_debug_descriptor.first_entry = e;
-  __jit_debug_descriptor.relevant_entry = e;
-  __jit_debug_descriptor.action_flag = GDB_JIT_REGISTER;
-  __jit_debug_register_code();
 
   dasm_free(d);
   free(globals);

@@ -166,11 +166,11 @@ src/upb_def.lo: src/upb_def.c
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $< -fPIC
 
-src/upb_decoder_x86.h: src/jit_debug_elf_file.h
 src/upb_decoder_x86.h: src/upb_decoder_x86.dasc
 	$(E) DYNASM $<
 	$(Q) lua dynasm/dynasm.lua src/upb_decoder_x86.dasc > src/upb_decoder_x86.h
 
+ifneq ($(shell uname), Darwin)
 src/jit_debug_elf_file.o: src/jit_debug_elf_file.s
 	$(E) GAS $<
 	$(Q) gcc -c src/jit_debug_elf_file.s -o src/jit_debug_elf_file.o
@@ -178,6 +178,8 @@ src/jit_debug_elf_file.o: src/jit_debug_elf_file.s
 src/jit_debug_elf_file.h: src/jit_debug_elf_file.o
 	$(E) XXD $<
 	$(Q) xxd -i src/jit_debug_elf_file.o > src/jit_debug_elf_file.h
+src/upb_decoder_x86.h: src/jit_debug_elf_file.h
+endif
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
