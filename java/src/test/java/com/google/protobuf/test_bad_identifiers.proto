@@ -57,7 +57,11 @@ message Deprecated {
 }
 
 message Override {
- optional int32 override = 1;
+  optional int32 override = 1;
+}
+
+message Object {
+  optional int32 object = 1;
 }
 
 service TestConflictingMethodNames {
