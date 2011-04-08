@@ -168,14 +168,14 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private Object $name$_;\n"
+    "private java.lang.Object $name$_;\n"
     "$deprecation$public boolean has$capitalized_name$() {\n"
     "  return $get_has_field_bit_message$;\n"
     "}\n");
 
   printer->Print(variables_,
     "$deprecation$public String get$capitalized_name$() {\n"
-    "  Object ref = $name$_;\n"
+    "  java.lang.Object ref = $name$_;\n"
     "  if (ref instanceof String) {\n"
     "    return (String) ref;\n"
     "  } else {\n"
@@ -189,7 +189,7 @@ GenerateMembers(io::Printer* printer) const {
     "  }\n"
     "}\n"
     "private com.google.protobuf.ByteString get$capitalized_name$Bytes() {\n"
-    "  Object ref = $name$_;\n"
+    "  java.lang.Object ref = $name$_;\n"
     "  if (ref instanceof String) {\n"
     "    com.google.protobuf.ByteString b = \n"
     "        com.google.protobuf.ByteString.copyFromUtf8((String) ref);\n"
@@ -204,14 +204,14 @@ GenerateMembers(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private Object $name$_ $default_init$;\n"
+    "private java.lang.Object $name$_ $default_init$;\n"
     "$deprecation$public boolean has$capitalized_name$() {\n"
     "  return $get_has_field_bit_builder$;\n"
     "}\n");
 
   printer->Print(variables_,
     "$deprecation$public String get$capitalized_name$() {\n"
-    "  Object ref = $name$_;\n"
+    "  java.lang.Object ref = $name$_;\n"
     "  if (!(ref instanceof String)) {\n"
     "    String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();\n"
     "    $name$_ = s;\n"
