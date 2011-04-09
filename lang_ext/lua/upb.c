@@ -585,15 +585,8 @@ static int lupb_symtab_new(lua_State *L) {
   return 1;
 }
 
-static int lupb_getfdsdef(lua_State *L) {
-  upb_msgdef *fdsdef = upb_getfdsdef();  // Gets a ref on fdsdef.
-  lupb_def_getorcreate(L, UPB_UPCAST(fdsdef), true);
-  return 1;
-}
-
 static const struct luaL_Reg lupb_toplevel_m[] = {
   {"symtab", lupb_symtab_new},
-  {"fdsdef", lupb_getfdsdef},
   {NULL, NULL}
 };
 
