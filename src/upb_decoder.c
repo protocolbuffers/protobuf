@@ -249,7 +249,7 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
 #ifdef UPB_USE_JIT_X64
     void (*upb_jit_decode)(upb_decoder *d) = (void*)d->jit_code;
     if (d->jit_code && d->dispatcher.top == d->dispatcher.stack && d->ptr < d->jit_end) {
-      const char *before = d->ptr;
+      //const char *before = d->ptr;
       //fprintf(stderr, "Entering JIT, JIT bytes left: %zd\n", d->jit_end - d->ptr);
       upb_jit_decode(d);
       //fprintf(stderr, "Exiting JIT, parsed %zd bytes\n", d->ptr - before);
