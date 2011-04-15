@@ -67,15 +67,15 @@ gdb_jit_descriptor __jit_debug_descriptor = {1, GDB_JIT_NOACTION, NULL, NULL};
 
 void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile__(""); }
 
-void upb_reg_jit_gdb(upb_decoder *d, void *addr, size_t size) {
+void upb_reg_jit_gdb(upb_decoder *d) {
   // Create debug info.
   size_t elf_len = src_jit_debug_elf_file_o_len;
   d->debug_info = malloc(elf_len);
   memcpy(d->debug_info, src_jit_debug_elf_file_o, elf_len);
   uint64_t *p = (void*)d->debug_info;
   for (; (void*)(p+1) <= (void*)d->debug_info + elf_len; ++p) {
-    if (*p == 0x12345678) { *p = (uintptr_t)addr; }
-    if (*p == 0x321) { *p = size; }
+    if (*p == 0x12345678) { *p = (uintptr_t)d->jit_code; }
+    if (*p == 0x321) { *p = d->jit_size; }
   }
 
   // Register the JIT-ted code with GDB.
@@ -93,9 +93,8 @@ void upb_reg_jit_gdb(upb_decoder *d, void *addr, size_t size) {
 
 #else
 
-void upb_reg_jit_gdb(void *addr, size_t size) {
-  (void)addr;
-  (void)size;
+void upb_reg_jit_gdb(upb_decoder *d) {
+  (void)d
 }
 
 #endif
@@ -664,7 +663,7 @@ void upb_decoder_makejit(upb_decoder *d) {
   d->jit_code = mmap(NULL, d->jit_size, PROT_READ | PROT_WRITE,
                      MAP_32BIT | MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
 
-  upb_reg_jit_gdb(d->jit_code, d->jit_size);
+  upb_reg_jit_gdb(d);
 
   dasm_encode(d, d->jit_code);
 
