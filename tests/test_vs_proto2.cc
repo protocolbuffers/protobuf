@@ -18,6 +18,8 @@
 
 #include MESSAGE_HFILE
 
+size_t string_size;
+
 void compare(const google::protobuf::Message& proto2_msg,
              upb_msg *upb_msg, upb_msgdef *upb_md);
 
@@ -68,6 +70,7 @@ void compare_arrays(const google::protobuf::Reflection *r,
         std::string str = r->GetRepeatedString(proto2_msg, proto2_f, i);
         upb_string *upbstr = upb_value_getstr(v);
         std::string str2(upb_string_getrobuf(upbstr), upb_string_len(upbstr));
+        string_size += upb_string_len(upbstr);
         ASSERT(str == str2);
         break;
       }
@@ -123,6 +126,7 @@ void compare_values(const google::protobuf::Reflection *r,
       std::string str = r->GetString(proto2_msg, proto2_f);
       upb_string *upbstr = upb_value_getstr(v);
       std::string str2(upb_string_getrobuf(upbstr), upb_string_len(upbstr));
+      string_size += upb_string_len(upbstr);
       ASSERT(str == str2);
       break;
     }
@@ -185,7 +189,10 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
     upb_printerr(&status);
     exit(1);
   }
+  string_size = 0;
   compare(*proto2_msg, upb_msg, upb_md);
+  printf("Total size: %d, string size: %zd (%0.2f%%)\n", upb_string_len(str),
+         string_size, (double)string_size / upb_string_len(str) * 100);
   upb_status_uninit(&status);
 }
 

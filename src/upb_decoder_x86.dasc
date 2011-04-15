@@ -94,7 +94,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 #else
 
 void upb_reg_jit_gdb(upb_decoder *d) {
-  (void)d
+  (void)d;
 }
 
 #endif
