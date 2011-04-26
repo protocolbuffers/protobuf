@@ -237,24 +237,20 @@ INLINE bool upb_msg_has(upb_msg *msg, upb_fielddef *f) {
 //    We lazily clear objects if/when we reuse them.
 // 3. inside upb_msg_clear(), overwrite all values to be their default,
 //    and recurse into submessages to set all their values to defaults also.
-// 4. as a hybrid of (1) and (3), make each "set bit" tri-state, where it
-//    can have a value of "unset, but cached sub-message needs to be cleared."
-//    Like (2) we can cache sub-messages and lazily clear, but primitive values
-//    can always be returned straight from the message.
+// 4. as a hybrid of (1) and (3), clear all set bits in upb_msg_clear()
+//    but also overwrite all primitive values to be their defaults.  Only
+//    accessors for non-primitive values (submessage, strings, and arrays)
+//    need to check the has-bits in their accessors -- primitive values can
+//    always be returned straight from the msg.
 //
 // (1) is undesirable, because it prevents us from caching sub-objects.
 // (2) makes clear() cheaper, but makes get() branchier.
-// (3) makes get() less branchy, but makes clear() have worse cache behavior.
-// (4) makes get() differently branchy (only returns default from msgdef if
-//     NON-primitive value is unset), but uses more set bits.  It's questionable
-//     whether it would be a performance improvement.
+// (3) makes get() less branchy, but makes clear() traverse the message graph.
+// (4) is probably the best bang for the buck.
 //
-// For the moment we go with (2).  Google's protobuf does (3), which is likely
-// part of the reason we beat it in some benchmarks.
-//
-// If the branchiness of (2) is too great, this could be mitigated with cmov
-// (both values and the conditional are cheap to calculate, much cheaper than
-// the cost of a misprediction).
+// For the moment upb does (2), but we should implement (4).  Google's protobuf
+// does (3), which is likely part of the reason that even our table-based
+// decoder beats it in some benchmarks.
 
 // For submessages and strings, the returned value is not owned.
 upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f);
