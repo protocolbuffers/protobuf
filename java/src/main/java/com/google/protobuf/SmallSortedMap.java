@@ -411,22 +411,22 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
       this.value = value;
     }
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public K getKey() {
       return key;
     }
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public V getValue() {
       return value;
     }
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public int compareTo(Entry other) {
       return getKey().compareTo(other.getKey());
     }
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public V setValue(V newValue) {
       checkMutable();
       final V oldValue = this.value;
@@ -535,13 +535,13 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     private boolean nextCalledBeforeRemove;
     private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public boolean hasNext() {
       return (pos + 1) < entryList.size() ||
           getOverflowIterator().hasNext();
     }
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public Map.Entry<K, V> next() {
       nextCalledBeforeRemove = true;
       // Always increment pos so that we know whether the last returned value
@@ -552,7 +552,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
       return getOverflowIterator().next();
     }
 
-    @Override
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public void remove() {
       if (!nextCalledBeforeRemove) {
         throw new IllegalStateException("remove() was called before next()");
@@ -589,22 +589,22 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   private static class EmptySet {
 
     private static final Iterator<Object> ITERATOR = new Iterator<Object>() {
-      @Override
+      //@Override (Java 1.6 override semantics, but we must support 1.5)
       public boolean hasNext() {
         return false;
       }
-      @Override
+      //@Override (Java 1.6 override semantics, but we must support 1.5)
       public Object next() {
         throw new NoSuchElementException();
       }
-      @Override
+      //@Override (Java 1.6 override semantics, but we must support 1.5)
       public void remove() {
         throw new UnsupportedOperationException();
       }
     };
 
     private static final Iterable<Object> ITERABLE = new Iterable<Object>() {
-      @Override
+      //@Override (Java 1.6 override semantics, but we must support 1.5)
       public Iterator<Object> iterator() {
         return ITERATOR;
       }

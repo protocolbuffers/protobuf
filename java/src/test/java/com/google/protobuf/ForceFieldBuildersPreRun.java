@@ -41,7 +41,7 @@ package com.google.protobuf;
  */
 public class ForceFieldBuildersPreRun implements Runnable {
 
-  @Override
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
   public void run() {
     GeneratedMessage.enableAlwaysUseFieldBuildersForTesting();
   }

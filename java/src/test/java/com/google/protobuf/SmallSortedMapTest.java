@@ -32,7 +32,6 @@ package com.google.protobuf;
 
 import junit.framework.TestCase;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +45,49 @@ import java.util.TreeSet;
  * @author darick@google.com Darick Tong
  */
 public class SmallSortedMapTest extends TestCase {
+  // java.util.AbstractMap.SimpleEntry is private in JDK 1.5. We re-implement it
+  // here for JDK 1.5 users.
+  private static class SimpleEntry<K, V> implements Map.Entry<K, V> {
+    private final K key;
+    private V value;
+
+    SimpleEntry(K key, V value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    public K getKey() {
+      return key;
+    }
+
+    public V getValue() {
+      return value;
+    }
+
+    public V setValue(V value) {
+      V oldValue = this.value;
+      this.value = value;
+      return oldValue;
+    }
+
+    private static boolean eq(Object o1, Object o2) {
+      return o1 == null ? o2 == null : o1.equals(o2);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof Map.Entry))
+        return false;
+      Map.Entry e = (Map.Entry) o;
+      return eq(key, e.getKey()) && eq(value, e.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+      return ((key == null) ? 0 : key.hashCode()) ^
+          ((value == null) ? 0 : value.hashCode());
+    }
+  }
 
   public void testPutAndGetArrayEntriesOnly() {
     runPutAndGetTest(3);

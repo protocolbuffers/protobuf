@@ -421,7 +421,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       return true;
     }
 
-    @Override
+    //@Override (Java
     public final UnknownFieldSet getUnknownFields() {
       return unknownFields;
     }
@@ -445,7 +445,7 @@ public abstract class GeneratedMessage extends AbstractMessage
      */
     private class BuilderParentImpl implements BuilderParent {
 
-      @Override
+      //@Override (Java 1.6 override semantics, but we must support 1.5)
       public void markDirty() {
         onChanged();
       }
@@ -1130,7 +1130,7 @@ public abstract class GeneratedMessage extends AbstractMessage
     // obtained.
     return new GeneratedExtension<ContainingType, Type>(
         new ExtensionDescriptorRetriever() {
-          @Override
+          //@Override (Java 1.6 override semantics, but we must support 1.5)
           public FieldDescriptor getDescriptor() {
             return scope.getDescriptorForType().getExtensions()
                 .get(descriptorIndex);
@@ -1225,7 +1225,7 @@ public abstract class GeneratedMessage extends AbstractMessage
         throw new IllegalStateException("Already initialized.");
       }
       descriptorRetriever = new ExtensionDescriptorRetriever() {
-          @Override
+          //@Override (Java 1.6 override semantics, but we must support 1.5)
           public FieldDescriptor getDescriptor() {
             return descriptor;
           }
