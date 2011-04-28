@@ -573,7 +573,7 @@ public class RepeatedFieldBuilder
     }
   }
 
-  @Override
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
   public void markDirty() {
     onChanged();
   }
