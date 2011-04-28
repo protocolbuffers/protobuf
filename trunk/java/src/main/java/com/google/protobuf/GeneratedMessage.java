@@ -421,7 +421,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       return true;
     }
 
-    //@Override (Java
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
     public final UnknownFieldSet getUnknownFields() {
       return unknownFields;
     }
