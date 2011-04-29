@@ -40,3 +40,4 @@ copy ..\src\google\protobuf\compiler\parser.h include\google\protobuf\compiler\p
 copy ..\src\google\protobuf\compiler\cpp\cpp_generator.h include\google\protobuf\compiler\cpp\cpp_generator.h
 copy ..\src\google\protobuf\compiler\java\java_generator.h include\google\protobuf\compiler\java\java_generator.h
 copy ..\src\google\protobuf\compiler\python\python_generator.h include\google\protobuf\compiler\python\python_generator.h
+copy ..\src\google\protobuf\compiler\plugin.h include\google\protobuf\compiler\plugin.h
