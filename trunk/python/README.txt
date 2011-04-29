@@ -63,9 +63,9 @@ Installation
      $ python setup.py install
 
    This step may require superuser privileges.
-   NOTE: To use C++ implementation, you need to export the environment variable
-   before this step. See the "C++ Implementation" section below for more
-   details.
+   NOTE: To use C++ implementation, you need to install C++ protobuf runtime
+   library of the same version and export the environment variable before this
+   step. See the "C++ Implementation" section below for more details.
 
 Usage
 =====
@@ -83,7 +83,10 @@ WARNING: This is EXPERIMENTAL and only available for CPython platforms.
 The C++ implementation for Python messages is built as a Python extension to
 improve the overall protobuf Python performance.
 
-To use the C++ implementation, export an environment variable:
+To use the C++ implementation, you need to:
+1) Install the C++ protobuf runtime library, please see instructions in the
+   parent directory.
+2) Export an environment variable:
 
   $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 
