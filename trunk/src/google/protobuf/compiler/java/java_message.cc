@@ -549,6 +549,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     "\n");
 
   printer->Print(
+    "private static final long serialVersionUID = 0L;\n"
     "@java.lang.Override\n"
     "protected java.lang.Object writeReplace()\n"
     "    throws java.io.ObjectStreamException {\n"
