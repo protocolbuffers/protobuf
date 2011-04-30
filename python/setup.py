@@ -118,7 +118,7 @@ if __name__ == '__main__':
         libraries = [ "protobuf" ]))
 
   setup(name = 'protobuf',
-        version = '2.4.1-pre',
+        version = '2.4.1',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         test_suite = 'setup.MakeTestSuite',
