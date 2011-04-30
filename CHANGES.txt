@@ -1,3 +1,22 @@
+2011-05-01 version 2.4.1:
+
+  C++
+  * Fixed the frendship problem for old compilers to make the library now gcc 3
+    compatible again.
+  * Fixed vcprojects/extract_includes.bat to extract compiler/plugin.h.
+
+  Java
+  * Removed usages of JDK 1.6 only features to make the library now JDK 1.5
+    compatible again.
+  * Fixed a bug about negative enum values.
+  * serialVersionUID is now defined in generated messages for java serializing.
+  * Fixed protoc to use java.lang.Object, which makes "Object" now a valid
+    message name again.
+
+  Python
+  * Experimental C++ implementation now requires C++ protobuf library installed.
+    See the README.txt in the python directory for details.
+
 2011-02-02 version 2.4.0:
 
   General
