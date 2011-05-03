@@ -98,6 +98,8 @@
     <Compile Include="TestProtos\UnitTestNoGenericServicesProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestRpcInterop.cs" />
+    <Compile Include="TestRpcGenerator.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="TextFormatTest.cs" />
     <Compile Include="UnknownFieldSetTest.cs" />
@@ -129,7 +131,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

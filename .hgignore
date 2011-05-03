@@ -3,3 +3,6 @@ glob:build_temp/
 glob:bin/
 glob:obj/
 glob:*.cache
+glob:*.suo
+glob:*.user
+glob:_ReSharper*

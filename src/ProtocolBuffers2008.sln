@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\google\protobuf\unittest_mset.proto = ..\protos\google\protobuf\unittest_mset.proto
 		..\protos\google\protobuf\unittest_no_generic_services.proto = ..\protos\google\protobuf\unittest_no_generic_services.proto
 		..\protos\google\protobuf\unittest_optimize_for.proto = ..\protos\google\protobuf\unittest_optimize_for.proto
+		..\protos\extest\unittest_rpc_interop.proto = ..\protos\extest\unittest_rpc_interop.proto
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers", "ProtocolBuffers\ProtocolBuffers.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"

@@ -54,6 +54,20 @@ message CSharpFileOptions {
   // Will ignore the type generations and remove dependencies for the descriptor proto
   // files that declare their package to be "google.protobuf"
   optional bool ignore_google_protobuf = 224 [default = false];
+
+  // Controls how services are generated, GENERIC is the deprecated original implementation
+  // INTERFACE generates service interfaces only, RPCINTEROP generates interfaces and 
+  // implementations using the included Windows RPC interop libarary.
+  optional CSharpServiceType service_generator_type = 225 [default = GENERIC];
+}
+
+enum CSharpServiceType {
+  // Generates the original Java generic service implementations
+  GENERIC = 1;
+  // Generates an interface for the service and nothing else
+  INTERFACE = 2;
+  // Generates an interface for the service and client/server wrappers for the interface
+  IRPCDISPATCH = 3;
 }
 
 extend FileOptions {
@@ -70,4 +84,20 @@ message CSharpFieldOptions {
   // and methods to do with this field, including HasFoo, FooCount,
   // FooList etc.
   optional string property_name = 1;
+}
+
+message CSharpServiceOptions {
+  optional string interface_id = 1;
+}
+
+extend ServiceOptions {
+  optional CSharpServiceOptions csharp_service_options = 1000;
+}
+
+message CSharpMethodOptions {
+  optional int32 dispatch_id = 1;
+}
+
+extend MethodOptions {
+  optional CSharpMethodOptions csharp_method_options = 1000;
 }

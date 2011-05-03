@@ -56,7 +56,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-	  <Reference Include="mscorlib" />
+    <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -84,6 +84,7 @@
     <Compile Include="InvalidOptionsException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceInterfaceGenerator.cs" />
     <Compile Include="SourceGeneratorBase.cs" />
     <Compile Include="SourceGenerators.cs" />
     <Compile Include="UmbrellaClassGenerator.cs" />

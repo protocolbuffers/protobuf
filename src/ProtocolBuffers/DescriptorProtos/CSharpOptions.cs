@@ -12,6 +12,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
       registry.Add(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFileOptions);
       registry.Add(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFieldOptions);
+      registry.Add(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CsharpServiceOptions);
+      registry.Add(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CsharpMethodOptions);
     }
     #endregion
     #region Extensions
@@ -19,6 +21,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions> CSharpFileOptions;
     public const int CSharpFieldOptionsFieldNumber = 1000;
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions> CSharpFieldOptions;
+    public const int CsharpServiceOptionsFieldNumber = 1000;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions> CsharpServiceOptions;
+    public const int CsharpMethodOptionsFieldNumber = 1000;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions> CsharpMethodOptions;
     #endregion
     
     #region Static variables
@@ -26,6 +32,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder> internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_google_protobuf_CSharpFieldOptions__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder> internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_CSharpServiceOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions.Builder> internal__static_google_protobuf_CSharpServiceOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_CSharpMethodOptions__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions.Builder> internal__static_google_protobuf_CSharpMethodOptions__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -37,7 +47,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "6wIKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "uQMKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
           "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
           "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
           "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIEiQKHGV4cGFuZF9u" + 
@@ -45,24 +55,44 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           "CCABKAg6BHRydWUSHAoOZmlsZV9leHRlbnNpb24Y3QEgASgJOgMuY3MSGwoS" + 
           "dW1icmVsbGFfbmFtZXNwYWNlGN4BIAEoCRIcChBvdXRwdXRfZGlyZWN0b3J5" + 
           "GN8BIAEoCToBLhImChZpZ25vcmVfZ29vZ2xlX3Byb3RvYnVmGOABIAEoCDoF" + 
-          "ZmFsc2UiKwoSQ1NoYXJwRmllbGRPcHRpb25zEhUKDXByb3BlcnR5X25hbWUY" + 
-          "ASABKAk6XgoTY3NoYXJwX2ZpbGVfb3B0aW9ucxIcLmdvb2dsZS5wcm90b2J1" + 
-          "Zi5GaWxlT3B0aW9ucxjoByABKAsyIi5nb29nbGUucHJvdG9idWYuQ1NoYXJw" + 
-          "RmlsZU9wdGlvbnM6YQoUY3NoYXJwX2ZpZWxkX29wdGlvbnMSHS5nb29nbGUu" + 
-          "cHJvdG9idWYuRmllbGRPcHRpb25zGOgHIAEoCzIjLmdvb2dsZS5wcm90b2J1" + 
-          "Zi5DU2hhcnBGaWVsZE9wdGlvbnM=");
+          "ZmFsc2USTAoWc2VydmljZV9nZW5lcmF0b3JfdHlwZRjhASABKA4yIi5nb29n" + 
+          "bGUucHJvdG9idWYuQ1NoYXJwU2VydmljZVR5cGU6B0dFTkVSSUMiKwoSQ1No" + 
+          "YXJwRmllbGRPcHRpb25zEhUKDXByb3BlcnR5X25hbWUYASABKAkiLAoUQ1No" + 
+          "YXJwU2VydmljZU9wdGlvbnMSFAoMaW50ZXJmYWNlX2lkGAEgASgJIioKE0NT" + 
+          "aGFycE1ldGhvZE9wdGlvbnMSEwoLZGlzcGF0Y2hfaWQYASABKAUqQQoRQ1No" + 
+          "YXJwU2VydmljZVR5cGUSCwoHR0VORVJJQxABEg0KCUlOVEVSRkFDRRACEhAK" + 
+          "DElSUENESVNQQVRDSBADOl4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29n" + 
+          "bGUucHJvdG9idWYuRmlsZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3Rv" + 
+          "YnVmLkNTaGFycEZpbGVPcHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25z" + 
+          "Eh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29n" + 
+          "bGUucHJvdG9idWYuQ1NoYXJwRmllbGRPcHRpb25zOmcKFmNzaGFycF9zZXJ2" + 
+          "aWNlX29wdGlvbnMSHy5nb29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMY" + 
+          "6AcgASgLMiUuZ29vZ2xlLnByb3RvYnVmLkNTaGFycFNlcnZpY2VPcHRpb25z" + 
+          "OmQKFWNzaGFycF9tZXRob2Rfb3B0aW9ucxIeLmdvb2dsZS5wcm90b2J1Zi5N" + 
+          "ZXRob2RPcHRpb25zGOgHIAEoCzIkLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBN" + 
+          "ZXRob2RPcHRpb25z");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
         internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", });
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", "ServiceGeneratorType", });
         internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
                 new string[] { "PropertyName", });
+        internal__static_google_protobuf_CSharpServiceOptions__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_google_protobuf_CSharpServiceOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions.Builder>(internal__static_google_protobuf_CSharpServiceOptions__Descriptor,
+                new string[] { "InterfaceId", });
+        internal__static_google_protobuf_CSharpMethodOptions__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_google_protobuf_CSharpMethodOptions__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions.Builder>(internal__static_google_protobuf_CSharpMethodOptions__Descriptor,
+                new string[] { "DispatchId", });
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFileOptions = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions>.CreateInstance(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor.Extensions[0]);
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CSharpFieldOptions = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions>.CreateInstance(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor.Extensions[1]);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CsharpServiceOptions = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions>.CreateInstance(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor.Extensions[2]);
+        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.CsharpMethodOptions = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions>.CreateInstance(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor.Extensions[3]);
         return null;
       };
       pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
@@ -73,6 +103,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     #endregion
     
   }
+  #region Enums
+  public enum CSharpServiceType {
+    GENERIC = 1,
+    INTERFACE = 2,
+    IRPCDISPATCH = 3,
+  }
+  
+  #endregion
+  
   #region Messages
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
     private static readonly CSharpFileOptions defaultInstance = new Builder().BuildPartial();
@@ -216,6 +255,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return ignoreGoogleProtobuf_; }
     }
     
+    public const int ServiceGeneratorTypeFieldNumber = 225;
+    private bool hasServiceGeneratorType;
+    private global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.GENERIC;
+    public bool HasServiceGeneratorType {
+      get { return hasServiceGeneratorType; }
+    }
+    public global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType ServiceGeneratorType {
+      get { return serviceGeneratorType_; }
+    }
+    
     public override bool IsInitialized {
       get {
         return true;
@@ -259,6 +308,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       if (HasIgnoreGoogleProtobuf) {
         output.WriteBool(224, IgnoreGoogleProtobuf);
+      }
+      if (HasServiceGeneratorType) {
+        output.WriteEnum(225, (int) ServiceGeneratorType);
       }
       UnknownFields.WriteTo(output);
     }
@@ -305,6 +357,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (HasIgnoreGoogleProtobuf) {
           size += pb::CodedOutputStream.ComputeBoolSize(224, IgnoreGoogleProtobuf);
+        }
+        if (HasServiceGeneratorType) {
+          size += pb::CodedOutputStream.ComputeEnumSize(225, (int) ServiceGeneratorType);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -434,6 +489,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasIgnoreGoogleProtobuf) {
           IgnoreGoogleProtobuf = other.IgnoreGoogleProtobuf;
         }
+        if (other.HasServiceGeneratorType) {
+          ServiceGeneratorType = other.ServiceGeneratorType;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -512,6 +570,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             }
             case 1792: {
               IgnoreGoogleProtobuf = input.ReadBool();
+              break;
+            }
+            case 1800: {
+              int rawValue = input.ReadEnum();
+              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType), rawValue)) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                unknownFields.MergeVarintField(225, (ulong) rawValue);
+              } else {
+                ServiceGeneratorType = (global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType) rawValue;
+              }
               break;
             }
           }
@@ -739,6 +809,24 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.ignoreGoogleProtobuf_ = false;
         return this;
       }
+      
+      public bool HasServiceGeneratorType {
+       get { return result.HasServiceGeneratorType; }
+      }
+      public global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType ServiceGeneratorType {
+        get { return result.ServiceGeneratorType; }
+        set { SetServiceGeneratorType(value); }
+      }
+      public Builder SetServiceGeneratorType(global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType value) {
+        result.hasServiceGeneratorType = true;
+        result.serviceGeneratorType_ = value;
+        return this;
+      }
+      public Builder ClearServiceGeneratorType() {
+        result.hasServiceGeneratorType = false;
+        result.serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.GENERIC;
+        return this;
+      }
     }
     static CSharpFileOptions() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
@@ -957,6 +1045,437 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     static CSharpFieldOptions() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class CSharpServiceOptions : pb::GeneratedMessage<CSharpServiceOptions, CSharpServiceOptions.Builder> {
+    private static readonly CSharpServiceOptions defaultInstance = new Builder().BuildPartial();
+    public static CSharpServiceOptions DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override CSharpServiceOptions DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override CSharpServiceOptions ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpServiceOptions__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<CSharpServiceOptions, CSharpServiceOptions.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpServiceOptions__FieldAccessorTable; }
+    }
+    
+    public const int InterfaceIdFieldNumber = 1;
+    private bool hasInterfaceId;
+    private string interfaceId_ = "";
+    public bool HasInterfaceId {
+      get { return hasInterfaceId; }
+    }
+    public string InterfaceId {
+      get { return interfaceId_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (HasInterfaceId) {
+        output.WriteString(1, InterfaceId);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasInterfaceId) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, InterfaceId);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static CSharpServiceOptions ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static CSharpServiceOptions ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(CSharpServiceOptions prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<CSharpServiceOptions, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      CSharpServiceOptions result = new CSharpServiceOptions();
+      
+      protected override CSharpServiceOptions MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new CSharpServiceOptions();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions.Descriptor; }
+      }
+      
+      public override CSharpServiceOptions DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions.DefaultInstance; }
+      }
+      
+      public override CSharpServiceOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        CSharpServiceOptions returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CSharpServiceOptions) {
+          return MergeFrom((CSharpServiceOptions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CSharpServiceOptions other) {
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceOptions.DefaultInstance) return this;
+        if (other.HasInterfaceId) {
+          InterfaceId = other.InterfaceId;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 10: {
+              InterfaceId = input.ReadString();
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public bool HasInterfaceId {
+        get { return result.HasInterfaceId; }
+      }
+      public string InterfaceId {
+        get { return result.InterfaceId; }
+        set { SetInterfaceId(value); }
+      }
+      public Builder SetInterfaceId(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        result.hasInterfaceId = true;
+        result.interfaceId_ = value;
+        return this;
+      }
+      public Builder ClearInterfaceId() {
+        result.hasInterfaceId = false;
+        result.interfaceId_ = "";
+        return this;
+      }
+    }
+    static CSharpServiceOptions() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
+    }
+  }
+  
+  public sealed partial class CSharpMethodOptions : pb::GeneratedMessage<CSharpMethodOptions, CSharpMethodOptions.Builder> {
+    private static readonly CSharpMethodOptions defaultInstance = new Builder().BuildPartial();
+    public static CSharpMethodOptions DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override CSharpMethodOptions DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override CSharpMethodOptions ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpMethodOptions__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<CSharpMethodOptions, CSharpMethodOptions.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.internal__static_google_protobuf_CSharpMethodOptions__FieldAccessorTable; }
+    }
+    
+    public const int DispatchIdFieldNumber = 1;
+    private bool hasDispatchId;
+    private int dispatchId_ = 0;
+    public bool HasDispatchId {
+      get { return hasDispatchId; }
+    }
+    public int DispatchId {
+      get { return dispatchId_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::CodedOutputStream output) {
+      int size = SerializedSize;
+      if (HasDispatchId) {
+        output.WriteInt32(1, DispatchId);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (HasDispatchId) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, DispatchId);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static CSharpMethodOptions ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(pb::CodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static CSharpMethodOptions ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(CSharpMethodOptions prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    public sealed partial class Builder : pb::GeneratedBuilder<CSharpMethodOptions, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      CSharpMethodOptions result = new CSharpMethodOptions();
+      
+      protected override CSharpMethodOptions MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new CSharpMethodOptions();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions.Descriptor; }
+      }
+      
+      public override CSharpMethodOptions DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions.DefaultInstance; }
+      }
+      
+      public override CSharpMethodOptions BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        CSharpMethodOptions returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is CSharpMethodOptions) {
+          return MergeFrom((CSharpMethodOptions) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(CSharpMethodOptions other) {
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.CSharpMethodOptions.DefaultInstance) return this;
+        if (other.HasDispatchId) {
+          DispatchId = other.DispatchId;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        while (true) {
+          uint tag = input.ReadTag();
+          switch (tag) {
+            case 0: {
+              if (unknownFields != null) {
+                this.UnknownFields = unknownFields.Build();
+              }
+              return this;
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              break;
+            }
+            case 8: {
+              DispatchId = input.ReadInt32();
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      public bool HasDispatchId {
+        get { return result.HasDispatchId; }
+      }
+      public int DispatchId {
+        get { return result.DispatchId; }
+        set { SetDispatchId(value); }
+      }
+      public Builder SetDispatchId(int value) {
+        result.hasDispatchId = true;
+        result.dispatchId_ = value;
+        return this;
+      }
+      public Builder ClearDispatchId() {
+        result.hasDispatchId = false;
+        result.dispatchId_ = 0;
+        return this;
+      }
+    }
+    static CSharpMethodOptions() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
     }
   }

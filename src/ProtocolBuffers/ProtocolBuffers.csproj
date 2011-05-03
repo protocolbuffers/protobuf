@@ -160,6 +160,7 @@
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="IRpcChannel.cs" />
     <Compile Include="IRpcController.cs" />
+    <Compile Include="IRpcDispatch.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="MessageStreamIterator.cs" />
     <Compile Include="MessageStreamWriter.cs" />
