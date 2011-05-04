@@ -64,6 +64,26 @@ message Object {
   optional int32 object = 1;
 }
 
+message String {
+  optional string string = 1;
+}
+
+message Integer {
+  optional int32 integer = 1;
+}
+
+message Long {
+  optional int32 long = 1;
+}
+
+message Float {
+  optional float float = 1;
+}
+
+message Double {
+  optional double double = 1;
+}
+
 service TestConflictingMethodNames {
   rpc Override(TestMessage) returns (TestMessage);
 }

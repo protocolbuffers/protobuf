@@ -162,7 +162,7 @@ void StringFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$boolean has$capitalized_name$();\n"
-    "$deprecation$String get$capitalized_name$();\n");
+    "$deprecation$java.lang.String get$capitalized_name$();\n");
 }
 
 void StringFieldGenerator::
@@ -174,14 +174,14 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
 
   printer->Print(variables_,
-    "$deprecation$public String get$capitalized_name$() {\n"
+    "$deprecation$public java.lang.String get$capitalized_name$() {\n"
     "  java.lang.Object ref = $name$_;\n"
-    "  if (ref instanceof String) {\n"
-    "    return (String) ref;\n"
+    "  if (ref instanceof java.lang.String) {\n"
+    "    return (java.lang.String) ref;\n"
     "  } else {\n"
     "    com.google.protobuf.ByteString bs = \n"
     "        (com.google.protobuf.ByteString) ref;\n"
-    "    String s = bs.toStringUtf8();\n"
+    "    java.lang.String s = bs.toStringUtf8();\n"
     "    if (com.google.protobuf.Internal.isValidUtf8(bs)) {\n"
     "      $name$_ = s;\n"
     "    }\n"
@@ -190,9 +190,10 @@ GenerateMembers(io::Printer* printer) const {
     "}\n"
     "private com.google.protobuf.ByteString get$capitalized_name$Bytes() {\n"
     "  java.lang.Object ref = $name$_;\n"
-    "  if (ref instanceof String) {\n"
+    "  if (ref instanceof java.lang.String) {\n"
     "    com.google.protobuf.ByteString b = \n"
-    "        com.google.protobuf.ByteString.copyFromUtf8((String) ref);\n"
+    "        com.google.protobuf.ByteString.copyFromUtf8(\n"
+    "            (java.lang.String) ref);\n"
     "    $name$_ = b;\n"
     "    return b;\n"
     "  } else {\n"
@@ -210,19 +211,21 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "}\n");
 
   printer->Print(variables_,
-    "$deprecation$public String get$capitalized_name$() {\n"
+    "$deprecation$public java.lang.String get$capitalized_name$() {\n"
     "  java.lang.Object ref = $name$_;\n"
-    "  if (!(ref instanceof String)) {\n"
-    "    String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();\n"
+    "  if (!(ref instanceof java.lang.String)) {\n"
+    "    java.lang.String s = ((com.google.protobuf.ByteString) ref)\n"
+    "        .toStringUtf8();\n"
     "    $name$_ = s;\n"
     "    return s;\n"
     "  } else {\n"
-    "    return (String) ref;\n"
+    "    return (java.lang.String) ref;\n"
     "  }\n"
     "}\n");
 
   printer->Print(variables_,
-    "$deprecation$public Builder set$capitalized_name$(String value) {\n"
+    "$deprecation$public Builder set$capitalized_name$(\n"
+    "    java.lang.String value) {\n"
     "$null_check$"
     "  $set_has_field_bit_builder$;\n"
     "  $name$_ = value;\n"
@@ -322,7 +325,7 @@ GenerateHashCode(io::Printer* printer) const {
 }
 
 string StringFieldGenerator::GetBoxedType() const {
-  return "String";
+  return "java.lang.String";
 }
 
 
@@ -351,9 +354,10 @@ int RepeatedStringFieldGenerator::GetNumBitsForBuilder() const {
 void RepeatedStringFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "$deprecation$java.util.List<String> get$capitalized_name$List();\n"
+    "$deprecation$java.util.List<java.lang.String>\n"
+    "    get$capitalized_name$List();\n"
     "$deprecation$int get$capitalized_name$Count();\n"
-    "$deprecation$String get$capitalized_name$(int index);\n");
+    "$deprecation$java.lang.String get$capitalized_name$(int index);\n");
 }
 
 
@@ -361,14 +365,14 @@ void RepeatedStringFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private com.google.protobuf.LazyStringList $name$_;\n"
-    "$deprecation$public java.util.List<String>\n"
+    "$deprecation$public java.util.List<java.lang.String>\n"
     "    get$capitalized_name$List() {\n"
     "  return $name$_;\n"   // note:  unmodifiable list
     "}\n"
     "$deprecation$public int get$capitalized_name$Count() {\n"
     "  return $name$_.size();\n"
     "}\n"
-    "$deprecation$public String get$capitalized_name$(int index) {\n"
+    "$deprecation$public java.lang.String get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
     "}\n");
 
@@ -406,25 +410,26 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
   printer->Print(variables_,
-    "$deprecation$public java.util.List<String>\n"
+    "$deprecation$public java.util.List<java.lang.String>\n"
     "    get$capitalized_name$List() {\n"
     "  return java.util.Collections.unmodifiableList($name$_);\n"
     "}\n"
     "$deprecation$public int get$capitalized_name$Count() {\n"
     "  return $name$_.size();\n"
     "}\n"
-    "$deprecation$public String get$capitalized_name$(int index) {\n"
+    "$deprecation$public java.lang.String get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
     "}\n"
     "$deprecation$public Builder set$capitalized_name$(\n"
-    "    int index, String value) {\n"
+    "    int index, java.lang.String value) {\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
     "  return this;\n"
     "}\n"
-    "$deprecation$public Builder add$capitalized_name$(String value) {\n"
+    "$deprecation$public Builder add$capitalized_name$(\n"
+    "    java.lang.String value) {\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
@@ -432,7 +437,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  return this;\n"
     "}\n"
     "$deprecation$public Builder addAll$capitalized_name$(\n"
-    "    java.lang.Iterable<String> values) {\n"
+    "    java.lang.Iterable<java.lang.String> values) {\n"
     "  ensure$capitalized_name$IsMutable();\n"
     "  super.addAll(values, $name$_);\n"
     "  $on_changed$\n"
