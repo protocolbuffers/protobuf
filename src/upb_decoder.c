@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "upb_decoder.h"
-#include "upb_varint_decoder.h"
+#include "upb_varint.h"
 
 #ifdef UPB_USE_JIT_X64
 #define Dst_DECL upb_decoder *d

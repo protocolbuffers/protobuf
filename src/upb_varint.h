@@ -4,11 +4,8 @@
  * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
- * A number of routines for varint decoding (we keep them all around to have
- * multiple approaches available for benchmarking).  All of these functions
- * require the buffer to have at least 10 bytes available; if we don't know
- * for sure that there are 10 bytes, then there is only one viable option
- * (branching on every byte).
+ * A number of routines for varint manipulation (we keep them all around to
+ * have multiple approaches available for benchmarking).
  */
 
 #ifndef UPB_VARINT_DECODER_H_
@@ -21,6 +18,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Decoding *******************************************************************/
 
 // All decoding functions return this struct by value.
 typedef struct {
@@ -76,12 +75,21 @@ done:
   return r;
 }
 
+// Given an encoded varint v, returns an integer with a single bit set that
+// indicates the end of the varint.  Subtracting one from this value will
+// yield a mask that leaves only bits that are part of the varint.  Returns
+// 0 if the varint is unterminated.
+INLINE uint64_t upb_get_vstopbit(uint64_t v) {
+  uint64_t cbits = v | 0x7f7f7f7f7f7f7f7fULL;
+  return ~cbits & (cbits+1);
+}
+INLINE uint64_t upb_get_vmask(uint64_t v) { return upb_get_vstopbit(v) - 1; }
+
 // Decodes a varint of at most 8 bytes without branching (except for error).
 INLINE upb_decoderet upb_vdecode_max8_wright(upb_decoderet r) {
   uint64_t b;
   memcpy(&b, r.p, sizeof(b));
-  uint64_t cbits = b | 0x7f7f7f7f7f7f7f7fULL;
-  uint64_t stop_bit = ~cbits & (cbits+1);
+  uint64_t stop_bit = upb_get_vstopbit(b);
   b &= (stop_bit - 1);
   b = ((b & 0x7f007f007f007f00) >> 1) | (b & 0x007f007f007f007f);
   b = ((b & 0xffff0000ffff0000) >> 2) | (b & 0x0000ffff0000ffff);
@@ -100,8 +108,7 @@ INLINE upb_decoderet upb_vdecode_max8_wright(upb_decoderet r) {
 INLINE upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r) {
   uint64_t b;
   memcpy(&b, r.p, sizeof(b));
-  uint64_t cbits = b | 0x7f7f7f7f7f7f7f7fULL;
-  uint64_t stop_bit = ~cbits & (cbits + 1);
+  uint64_t stop_bit = upb_get_vstopbit(b);
   b =  (b & 0x7f7f7f7f7f7f7f7fULL) & (stop_bit - 1);
   b +=       b & 0x007f007f007f007fULL;
   b +=  3 * (b & 0x0000ffff0000ffffULL);
@@ -147,6 +154,31 @@ INLINE upb_decoderet upb_vdecode_fast(const char *p) {
 INLINE upb_decoderet upb_vdecode_max8_fast(upb_decoderet r) {
   return upb_vdecode_max8_massimino(r);
 }
+
+
+/* Encoding *******************************************************************/
+
+INLINE size_t upb_value_size(uint64_t val) {
+#ifdef __GNUC__
+  int high_bit = 63 - __builtin_clzll(val);  // 0-based, undef if val == 0.
+#else
+  int high_bit = 0;
+  uint64_t tmp = val;
+  while(tmp >>= 1) high_bit++;
+#endif
+  return val == 0 ? 1 : high_bit / 8 + 1;
+}
+
+// Currently only works with 32-bit varints.
+INLINE uint64_t upb_vencode(uint32_t val) {
+  uint64_t ret = 0;
+  for (int bitpos = 0; val; bitpos+=8, val >>=7) {
+    if (bitpos > 0) ret |= (1 << (bitpos-1));
+    ret |= (val & 0x7f) << bitpos;
+  }
+  return ret;
+}
+
 
 #ifdef __cplusplus
 }  /* extern "C" */

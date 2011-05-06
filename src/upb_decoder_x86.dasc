@@ -249,28 +249,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.endmacro
 
 #include <stdlib.h>
-#include "upb_varint_decoder.h"
-
-static size_t upb_value_size(uint64_t val) {
-#ifdef __GNUC__
-  int high_bit = 63 - __builtin_clzll(val);  // 0-based, undef if val == 0.
-#else
-  int high_bit = 0;
-  uint64_t tmp = val;
-  while(tmp >>= 1) high_bit++;
-#endif
-  return val == 0 ? 1 : high_bit / 8 + 1;
-}
-
-static uint64_t upb_encode_varint(uint64_t val)
-{
-  uint64_t ret = 0;
-  for (int bitpos = 0; val; bitpos+=8, val >>=7) {
-    if (bitpos > 0) ret |= (1 << (bitpos-1));
-    ret |= (val & 0x7f) << bitpos;
-  }
-  return ret;
-}
+#include "upb_varint.h"
 
 // PTR should point to the beginning of the tag.
 static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_tag,
@@ -493,7 +472,7 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_handlers_msgent *m) {
   for(int i = 0; i < num_keys; i++) {
     uint32_t key = keys[i];
     upb_handlers_fieldent *f = upb_inttable_lookup(&m->fieldtab, key);
-    uint32_t tag = upb_encode_varint(key);
+    uint32_t tag = upb_vencode(key);
     if (last_f) upb_decoder_jit_field(d, last_tag, tag, m, last_f, f);
     last_tag = tag;
     last_f = f;

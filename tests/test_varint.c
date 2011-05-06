@@ -4,7 +4,7 @@
  * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  */
 
-#include "upb_varint_decoder.h"
+#include "upb_varint.h"
 #include "upb_test.h"
 
 static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
