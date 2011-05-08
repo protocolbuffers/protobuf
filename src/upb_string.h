@@ -182,6 +182,11 @@ INLINE void upb_string_recycle(upb_string **_str) {
     str->len = 0;
     _upb_string_release(str);
   } else {
+    //if (!str) {
+    //  printf("!str\n");
+    //}
+    //else if (upb_atomic_read(&str->refcount) != 1) { printf("refcount: %d\n", upb_atomic_read(&str->refcount)); }
+    //else { printf("Some other reason.\n"); }
     upb_string_unref(str);
     *_str = upb_string_new();
   }

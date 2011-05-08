@@ -10,6 +10,7 @@ set -v
 # Generate numbers for baseline.
 rm -rf perf-tmp
 git clone . perf-tmp
+cp perf-tests.sh perf-tmp
 (cd perf-tmp && ./perf-tests.sh upb)
 cp perf-tmp/perf-tests.out perf-tests.baseline
 

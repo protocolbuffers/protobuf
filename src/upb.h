@@ -126,7 +126,6 @@ typedef struct {
   uint8_t align;
   uint8_t size;
   upb_wire_type_t native_wire_type;
-  uint8_t allowed_wire_types;  // For packable fields, also allows delimited.
   uint8_t inmemory_type;    // For example, INT32, SINT32, and SFIXED32 -> INT32
   char *ctype;
 } upb_type_info;
@@ -168,11 +167,11 @@ typedef int32_t upb_strlen_t;
 // The type of a upb_value.  This is like a upb_fieldtype_t, but adds the
 // constant UPB_VALUETYPE_ARRAY to represent an array.
 typedef uint8_t upb_valuetype_t;
+#define UPB_TYPE_ENDGROUP 19  // Need to increase if more real types are added!
 #define UPB_VALUETYPE_ARRAY 32
 #define UPB_VALUETYPE_BYTESRC 32
 #define UPB_VALUETYPE_RAW 33
 #define UPB_VALUETYPE_FIELDDEF 34
-#define UPB_TYPE_ENDGROUP 35
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -230,11 +229,6 @@ UPB_VALUE_ACCESSORS(bytesrc, bytesrc, upb_bytesrc*, UPB_VALUETYPE_BYTESRC);
 UPB_VALUE_ACCESSORS(fielddef, fielddef, upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
 
 extern upb_value UPB_NO_VALUE;
-
-INLINE void upb_value_setraw(upb_value *val, uint64_t cval) {
-  SET_TYPE(val->type, UPB_VALUETYPE_RAW);
-  val->val.uint64 = cval;
-}
 
 INLINE upb_atomic_refcount_t *upb_value_getrefcount(upb_value val) {
   assert(val.type == UPB_TYPE(MESSAGE) ||

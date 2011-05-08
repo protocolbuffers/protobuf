@@ -77,6 +77,7 @@ CORE= \
   src/upb_string.c \
   src/upb_def.c \
   src/upb_msg.c \
+  src/upb_varint.c \
 
 # Common encoders/decoders -- you're almost certain to want these.
 STREAM= \
@@ -211,9 +212,13 @@ SIMPLE_TESTS= \
   tests/test_string \
   tests/test_def \
   tests/test_varint \
-  tests/tests
-#    tests/test_decoder \
-  tests/test_stream \
+  tests/tests \
+
+INTERACTIVE_TESTS= \
+  tests/test_decoder \
+
+#  tests/test_stream \
+
 
 SIMPLE_CXX_TESTS= \
   tests/test_table
@@ -225,7 +230,7 @@ VARIADIC_TESTS= \
 TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS)
 
 
-tests: $(TESTS)
+tests: $(TESTS) $(INTERACTIVE_TESTS)
 $(TESTS): $(LIBUPB)
 tests/tests: tests/test.proto.pb
 

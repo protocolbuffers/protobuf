@@ -75,53 +75,11 @@ done:
   return r;
 }
 
-// Given an encoded varint v, returns an integer with a single bit set that
-// indicates the end of the varint.  Subtracting one from this value will
-// yield a mask that leaves only bits that are part of the varint.  Returns
-// 0 if the varint is unterminated.
-INLINE uint64_t upb_get_vstopbit(uint64_t v) {
-  uint64_t cbits = v | 0x7f7f7f7f7f7f7f7fULL;
-  return ~cbits & (cbits+1);
-}
-INLINE uint64_t upb_get_vmask(uint64_t v) { return upb_get_vstopbit(v) - 1; }
-
 // Decodes a varint of at most 8 bytes without branching (except for error).
-INLINE upb_decoderet upb_vdecode_max8_wright(upb_decoderet r) {
-  uint64_t b;
-  memcpy(&b, r.p, sizeof(b));
-  uint64_t stop_bit = upb_get_vstopbit(b);
-  b &= (stop_bit - 1);
-  b = ((b & 0x7f007f007f007f00) >> 1) | (b & 0x007f007f007f007f);
-  b = ((b & 0xffff0000ffff0000) >> 2) | (b & 0x0000ffff0000ffff);
-  b = ((b & 0xffffffff00000000) >> 4) | (b & 0x00000000ffffffff);
-  if (stop_bit == 0) {
-    // Error: unterminated varint.
-    upb_decoderet err_r = {(void*)0, 0};
-    return err_r;
-  }
-  upb_decoderet my_r = {r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
-                        r.val | (b << 14)};
-  return my_r;
-}
+upb_decoderet upb_vdecode_max8_wright(upb_decoderet r);
 
 // Another implementation of the previous.
-INLINE upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r) {
-  uint64_t b;
-  memcpy(&b, r.p, sizeof(b));
-  uint64_t stop_bit = upb_get_vstopbit(b);
-  b =  (b & 0x7f7f7f7f7f7f7f7fULL) & (stop_bit - 1);
-  b +=       b & 0x007f007f007f007fULL;
-  b +=  3 * (b & 0x0000ffff0000ffffULL);
-  b += 15 * (b & 0x00000000ffffffffULL);
-  if (stop_bit == 0) {
-    // Error: unterminated varint.
-    upb_decoderet err_r = {(void*)0, 0};
-    return err_r;
-  }
-  upb_decoderet my_r = {r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
-                        r.val | (b << 7)};
-  return my_r;
-}
+upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r);
 
 // Template for a function that checks the first two bytes with branching
 // and dispatches 2-10 bytes with a separate function.
@@ -169,8 +127,8 @@ INLINE size_t upb_value_size(uint64_t val) {
   return val == 0 ? 1 : high_bit / 8 + 1;
 }
 
-// Currently only works with 32-bit varints.
-INLINE uint64_t upb_vencode(uint32_t val) {
+// Encodes a 32-bit varint, *not* sign-extended.
+INLINE uint64_t upb_vencode32(uint32_t val) {
   uint64_t ret = 0;
   for (int bitpos = 0; val; bitpos+=8, val >>=7) {
     if (bitpos > 0) ret |= (1 << (bitpos-1));

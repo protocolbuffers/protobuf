@@ -16,20 +16,16 @@ run_with_flags () {
   NAME=$2
 
   make clean
-  echo "$FLAGS -fprofile-generate" > perf-cppflags
-  make upb_benchmarks
-  make benchmark
-
-  make clean_leave_profile
-  echo "$FLAGS -fprofile-use" > perf-cppflags
+  echo "$FLAGS" > perf-cppflags
   make upb_benchmarks
   make benchmark | sed -e "s/^/$NAME./g" | tee -a perf-tests.out
 }
 
-if [ x`uname -m` = xx86_64 ]; then
+#if [ x`uname -m` = xx86_64 ]; then
   run_with_flags "-DNDEBUG -m32" "plain32"
   run_with_flags "-DNDEBUG -fomit-frame-pointer -m32" "omitfp32"
-fi
+#fi
 
 run_with_flags "-DNDEBUG " "plain"
 run_with_flags "-DNDEBUG -fomit-frame-pointer" "omitfp"
+run_with_flags "-DNDEBUG -DUPB_USE_JIT_X64" "jit"

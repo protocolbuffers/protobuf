@@ -88,11 +88,12 @@ upb_sflow_t upb_startsubmsg_nop(void *closure, upb_value fval);
 upb_flow_t upb_endsubmsg_nop(void *closure, upb_value fval);
 upb_flow_t upb_unknownval_nop(void *closure, upb_field_number_t fieldnum,
                                      upb_value val);
-
-typedef struct {
+struct _upb_decoder;
+typedef struct _upb_fieldent {
   bool junk;
   upb_fieldtype_t type;
   bool repeated;
+  bool is_repeated_primitive;
   uint32_t number;
   // For upb_issubmsg(f) only, the index into the msgdef array of the submsg.
   // -1 if unset (indicates that submsg should be skipped).
@@ -106,23 +107,26 @@ typedef struct {
   uint32_t jit_pclabel;
   uint32_t jit_pclabel_notypecheck;
   uint32_t jit_submsg_done_pclabel;
-} upb_handlers_fieldent;
+  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
+} upb_fieldent;
 
-typedef struct _upb_handlers_msgent {
+typedef struct _upb_msgent {
   upb_startmsg_handler_t startmsg;
   upb_endmsg_handler_t endmsg;
   upb_unknownval_handler_t unknownval;
-  // Maps field number -> upb_handlers_fieldent.
+  // Maps field number -> upb_fieldent.
   upb_inttable fieldtab;
   uint32_t jit_startmsg_pclabel;
   uint32_t jit_endofbuf_pclabel;
   uint32_t jit_endofmsg_pclabel;
   uint32_t jit_unknownfield_pclabel;
-  upb_handlers_fieldent *endgroup_f;  // NULL if not a group.
+  bool is_group;
   int32_t jit_parent_field_done_pclabel;
   uint32_t max_field_number;
+  // Currently keyed on field number.  Could also try keying it
+  // on encoded or decoded tag, or on encoded field number.
   void **tablearray;
-} upb_handlers_msgent;
+} upb_msgent;
 
 typedef struct {
   upb_msgdef *msgdef;
@@ -131,10 +135,10 @@ typedef struct {
 
 struct _upb_handlers {
   // Array of msgdefs, [0]=toplevel.
-  upb_handlers_msgent *msgs;
+  upb_msgent *msgs;
   int msgs_len, msgs_size;
   upb_msgdef *toplevel_msgdef;  // We own a ref.
-  upb_handlers_msgent *msgent;
+  upb_msgent *msgent;
   upb_handlers_frame stack[UPB_MAX_TYPE_DEPTH], *top, *limit;
   bool should_jit;
 };
@@ -272,12 +276,11 @@ void upb_handlers_typed_push(upb_handlers *h, upb_field_number_t fieldnum,
                              upb_fieldtype_t type, bool repeated);
 void upb_handlers_typed_pop(upb_handlers *h);
 
-INLINE upb_handlers_msgent *upb_handlers_getmsgent(upb_handlers *h,
-                                                   upb_handlers_fieldent *f) {
+INLINE upb_msgent *upb_handlers_getmsgent(upb_handlers *h, upb_fieldent *f) {
   assert(f->msgent_index != -1);
   return &h->msgs[f->msgent_index];
 }
-upb_handlers_fieldent *upb_handlers_lookup(upb_inttable *dispatch_table, upb_field_number_t fieldnum);
+upb_fieldent *upb_handlers_lookup(upb_inttable *dispatch_table, upb_field_number_t fieldnum);
 
 
 /* upb_dispatcher *************************************************************/
@@ -298,11 +301,12 @@ upb_handlers_fieldent *upb_handlers_lookup(upb_inttable *dispatch_table, upb_fie
 // consumed, like if this is a submessage of a larger stream.
 
 typedef struct {
-  upb_handlers_fieldent *f;
+  upb_fieldent *f;
   void *closure;
   // Relative to the beginning of this buffer.
   // For groups and the top-level: UINT32_MAX.
   uint32_t end_offset;
+  bool is_packed;  // == !upb_issubmsg(f) && end_offset != UPB_REPATEDEND
 } upb_dispatcher_frame;
 
 typedef struct {
@@ -311,7 +315,7 @@ typedef struct {
   upb_handlers *handlers;
 
   // Msg and dispatch table for the current level.
-  upb_handlers_msgent *msgent;
+  upb_msgent *msgent;
   upb_inttable *dispatch_table;
 
   // The number of startsubmsg calls without a corresponding endsubmsg call.
@@ -342,8 +346,6 @@ INLINE bool upb_dispatcher_noframe(upb_dispatcher *d) {
 }
 
 
-typedef upb_handlers_fieldent upb_dispatcher_field;
-
 void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h);
 void upb_dispatcher_reset(upb_dispatcher *d, void *top_closure, uint32_t top_end_offset);
 void upb_dispatcher_uninit(upb_dispatcher *d);
@@ -352,20 +354,20 @@ upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
 void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
 
 // Looks up a field by number for the current message.
-INLINE upb_dispatcher_field *upb_dispatcher_lookup(upb_dispatcher *d,
-                                                   upb_field_number_t n) {
-  return (upb_dispatcher_field*)upb_inttable_fastlookup(
-      d->dispatch_table, n, sizeof(upb_dispatcher_field));
+INLINE upb_fieldent *upb_dispatcher_lookup(upb_dispatcher *d,
+                                           upb_field_number_t n) {
+  return (upb_fieldent*)upb_inttable_fastlookup(
+      d->dispatch_table, n, sizeof(upb_fieldent));
 }
 
 // Dispatches values or submessages -- the client is responsible for having
 // previously looked up the field.
 upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
-                                    upb_dispatcher_field *f,
+                                    upb_fieldent *f,
                                     size_t userval);
 upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
 
-INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, upb_dispatcher_field *f,
+INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, upb_fieldent *f,
                                      upb_value val) {
   if (upb_dispatcher_skipping(d)) return UPB_SKIPSUBMSG;
   upb_flow_t flow = f->cb.value(d->top->closure, f->fval, val);

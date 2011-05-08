@@ -117,12 +117,14 @@ struct _upb_fielddef {
 INLINE bool upb_issubmsgtype(upb_fieldtype_t type) {
   return type == UPB_TYPE(GROUP) || type == UPB_TYPE(MESSAGE);
 }
-INLINE bool upb_issubmsg(upb_fielddef *f) {
-  return upb_issubmsgtype(f->type);
+INLINE bool upb_isstringtype(upb_fieldtype_t type) {
+  return type == UPB_TYPE(STRING) || type == UPB_TYPE(BYTES);
 }
-INLINE bool upb_isstring(upb_fielddef *f) {
-  return f->type == UPB_TYPE(STRING) || f->type == UPB_TYPE(BYTES);
+INLINE bool upb_isprimitivetype(upb_fieldtype_t type) {
+  return !upb_issubmsgtype(type) && !upb_isstringtype(type);
 }
+INLINE bool upb_issubmsg(upb_fielddef *f) { return upb_issubmsgtype(f->type); }
+INLINE bool upb_isstring(upb_fielddef *f) { return upb_isstringtype(f->type); }
 INLINE bool upb_isarray(upb_fielddef *f) {
   return f->label == UPB_LABEL(REPEATED);
 }

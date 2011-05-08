@@ -7,9 +7,10 @@
 
 #include "upb_textprinter.h"
 
+#include <ctype.h>
+#include <float.h>
 #include <inttypes.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 struct _upb_textprinter {
   upb_bytesink *bytesink;
@@ -99,10 +100,12 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
 #define CASE(fmtstr, member) \
     CHECK(upb_bytesink_printf(p->bytesink, &p->status, fmtstr, upb_value_get ## member(val))); break;
   switch(f->type) {
+    // TODO: figure out what we should really be doing for these
+    // floating-point formats.
     case UPB_TYPE(DOUBLE):
-      CASE("%0.f", double);
+      CHECK(upb_bytesink_printf(p->bytesink, &p->status, "%.*g", DBL_DIG, upb_value_getdouble(val))); break;
     case UPB_TYPE(FLOAT):
-      CASE("%0.f", float)
+      CHECK(upb_bytesink_printf(p->bytesink, &p->status, "%.*g", FLT_DIG+2, upb_value_getfloat(val))); break;
     case UPB_TYPE(INT64):
     case UPB_TYPE(SFIXED64):
     case UPB_TYPE(SINT64):

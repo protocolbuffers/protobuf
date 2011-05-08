@@ -207,7 +207,7 @@ static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
                                    upb_dispatcher *d);
 
 static upb_flow_t upb_msg_pushval(upb_value val, upb_fielddef *f,
-                                  upb_dispatcher *d, upb_handlers_fieldent *hf) {
+                                  upb_dispatcher *d, upb_fieldent *hf) {
 #define CHECK_FLOW(x) do { \
   upb_flow_t flow = x; if (flow != UPB_CONTINUE) return flow; \
   } while(0)
@@ -237,7 +237,7 @@ static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
   for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
     upb_fielddef *f = upb_msg_iter_field(i);
     if (!upb_msg_has(msg, f)) continue;
-    upb_handlers_fieldent *hf = upb_dispatcher_lookup(d, f->number);
+    upb_fieldent *hf = upb_dispatcher_lookup(d, f->number);
     if (!hf) continue;
     upb_value val = upb_msg_get(msg, f);
     if (upb_isarray(f)) {
@@ -464,11 +464,12 @@ upb_sflow_t upb_msgsink_startsubmsg_r(void *_m, upb_value _fval) {
 void upb_msg_regdhandlers(upb_handlers *h) {
   upb_register_all(h, NULL, NULL, NULL, NULL, NULL, NULL);
   for (int i = 0; i < h->msgs_len; i++) {
-    upb_handlers_msgent *m = &h->msgs[i];
+    upb_msgent *m = &h->msgs[i];
     upb_inttable_iter iter = upb_inttable_begin(&m->fieldtab);
     for(; !upb_inttable_done(iter);
         iter = upb_inttable_next(&m->fieldtab, iter)) {
-      upb_handlers_fieldent *fe = upb_inttable_iter_value(iter);
+      upb_fieldent *fe = upb_inttable_iter_value(iter);
+      if (fe->type == UPB_TYPE_ENDGROUP) continue;
       upb_fielddef *f = upb_value_getfielddef(fe->fval);
       uint16_t msg_size = 0;
       uint8_t set_flags_bytes = 0;

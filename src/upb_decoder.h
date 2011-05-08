@@ -17,6 +17,7 @@
 #ifndef UPB_DECODER_H_
 #define UPB_DECODER_H_
 
+#include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "upb_stream.h"
@@ -60,6 +61,8 @@ struct _upb_decoder {
   // MIN(end, submsg_end)
   const char *effective_end;
 
+  upb_fieldent *f;
+
   // Where we will store any errors that occur.
   upb_status *status;
 
@@ -72,6 +75,7 @@ struct _upb_decoder {
   char *debug_info;
 
   struct dasm_State *dynasm;
+  sigjmp_buf exitjmp;
 };
 
 // A upb_decoder decodes the binary protocol buffer format, writing the data it
