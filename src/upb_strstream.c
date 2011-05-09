@@ -8,6 +8,7 @@
 #include "upb_strstream.h"
 
 #include <stdlib.h>
+#include "upb_string.h"
 
 
 /* upb_stringsrc **************************************************************/

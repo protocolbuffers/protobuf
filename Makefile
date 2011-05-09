@@ -72,7 +72,7 @@ $(ALLSRC): perf-cppflags
 # The core library.
 CORE= \
   src/upb.c \
-  src/upb_stream.c \
+  src/upb_handlers.c \
   src/upb_table.c \
   src/upb_string.c \
   src/upb_def.c \

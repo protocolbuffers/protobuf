@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-#include "upb_stream.h"
+#include "upb_handlers.h"
 
 
 /* upb_handlers ***************************************************************/

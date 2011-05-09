@@ -11,7 +11,7 @@
 #ifndef UPB_STRSTREAM_H
 #define UPB_STRSTREAM_H
 
-#include "upb_stream.h"
+#include "upb_bytestream.h"
 
 #ifdef __cplusplus
 extern "C" {

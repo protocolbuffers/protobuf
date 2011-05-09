@@ -20,7 +20,7 @@
 #include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "upb_stream.h"
+#include "upb_handlers.h"
 
 #ifdef __cplusplus
 extern "C" {

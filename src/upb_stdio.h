@@ -9,7 +9,7 @@
  */
 
 #include <stdio.h>
-#include "upb_stream.h"
+#include "upb_bytestream.h"
 
 #ifndef UPB_STDIO_H_
 #define UPB_STDIO_H_
@@ -33,8 +33,8 @@ void upb_stdio_reset(upb_stdio *stdio, FILE* file);
 // invalidated by upb_stdio_reset above.  It is perfectly valid to get both
 // a bytesrc and a bytesink for the same stdio if the FILE* is open for reading
 // and writing.
-upb_bytesrc* upb_stdio_bytesrc(upb_stdio *stdio);
-upb_bytesink* upb_stdio_bytesink(upb_stdio *stdio);
+upb_bytesrc *upb_stdio_bytesrc(upb_stdio *stdio);
+upb_bytesink *upb_stdio_bytesink(upb_stdio *stdio);
 
 #ifdef __cplusplus
 }  /* extern "C" */

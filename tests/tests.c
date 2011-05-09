@@ -5,7 +5,7 @@
 #include "upb_def.h"
 #include "upb_glue.h"
 #include "upb_test.h"
-#include "upb_stream.h"
+#include "upb_handlers.h"
 #include "upb_decoder.h"
 
 static upb_symtab *load_test_proto() {

@@ -8,6 +8,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include "upb_bytestream.h"
 #include "upb_decoder.h"
 #include "upb_varint.h"
 

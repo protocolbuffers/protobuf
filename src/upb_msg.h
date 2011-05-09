@@ -18,8 +18,8 @@
 #ifndef UPB_MSG_H
 #define UPB_MSG_H
 
-#include "upb_stream.h"
 #include <stdlib.h>
+#include "upb_handlers.h"
 
 #ifdef __cplusplus
 extern "C" {
