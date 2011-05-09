@@ -40,7 +40,7 @@ static void test_upb_jit() {
 
   upb_handlers h;
   upb_handlers_init(&h, upb_downcast_msgdef(def));
-  upb_register_all(&h, NULL, NULL, &upb_test_onvalue, NULL, NULL, NULL);
+  upb_register_all(&h, NULL, NULL, &upb_test_onvalue, NULL, NULL);
   upb_decoder d;
   upb_decoder_init(&d, &h);
   upb_decoder_uninit(&d);

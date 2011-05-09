@@ -61,7 +61,7 @@ struct _upb_decoder {
   // MIN(end, submsg_end)
   const char *effective_end;
 
-  upb_fieldent *f;
+  upb_fhandlers *f;
 
   // Where we will store any errors that occur.
   upb_status *status;
