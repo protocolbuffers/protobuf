@@ -191,7 +191,6 @@ void upb_textprinter_reghandlers(upb_handlers *h) {
     NULL,  // endmsg
     upb_textprinter_value,
     upb_textprinter_startsubmsg,
-    upb_textprinter_endsubmsg,
-    NULL   // Unknown
+    upb_textprinter_endsubmsg
   );
 }

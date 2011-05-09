@@ -253,8 +253,8 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 
 // PTR should point to the beginning of the tag.
 static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_tag,
-                                  upb_msgent *m,
-                                  upb_fieldent *f, upb_fieldent *next_f) {
+                                  upb_mhandlers *m,
+                                  upb_fhandlers *f, upb_fhandlers *next_f) {
   int tag_size = upb_value_size(tag);
 
   // PC-label for the dispatch table.
@@ -388,7 +388,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |   mov   DECODER->dispatcher.top, rax
     |   mov   FRAME, rax
 
-    upb_msgent *sub_m = upb_handlers_getmsgent(d->dispatcher.handlers, f);
+    upb_mhandlers *sub_m = upb_handlers_getmsgent(d->dispatcher.handlers, f);
     if (sub_m->jit_parent_field_done_pclabel != UPB_MULTIPLE) {
       |  jmp   =>sub_m->jit_startmsg_pclabel;
     } else {
@@ -437,7 +437,7 @@ static int upb_compare_uint32(const void *a, const void *b) {
   return *(uint32_t*)a - *(uint32_t*)b;
 }
 
-static void upb_decoder_jit_msg(upb_decoder *d, upb_msgent *m) {
+static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
   |=>m->jit_startmsg_pclabel:
   // Call startmsg handler (if any):
   if (m->startmsg != upb_startmsg_nop) {
@@ -467,11 +467,11 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_msgent *m) {
   }
   qsort(keys, num_keys, sizeof(uint32_t), &upb_compare_uint32);
 
-  upb_fieldent *last_f = NULL;
+  upb_fhandlers *last_f = NULL;
   uint32_t last_tag = 0;
   for(int i = 0; i < num_keys; i++) {
     uint32_t key = keys[i];
-    upb_fieldent *f = upb_inttable_lookup(&m->fieldtab, key);
+    upb_fhandlers *f = upb_inttable_lookup(&m->fieldtab, key);
     uint32_t tag = upb_vencode32(key);
     if (last_f) upb_decoder_jit_field(d, last_tag, tag, m, last_f, f);
     last_tag = tag;
@@ -553,14 +553,14 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  callp  abort
 }
 
-void upb_decoder_jit_assignfieldlabs(upb_fieldent *f,
+void upb_decoder_jit_assignfieldlabs(upb_fhandlers *f,
                                      uint32_t *pclabel_count) {
   f->jit_pclabel = (*pclabel_count)++;
   f->jit_pclabel_notypecheck = (*pclabel_count)++;
   f->jit_submsg_done_pclabel = (*pclabel_count)++;
 }
 
-void upb_decoder_jit_assignmsglabs(upb_msgent *m, uint32_t *pclabel_count) {
+void upb_decoder_jit_assignmsglabs(upb_mhandlers *m, uint32_t *pclabel_count) {
   m->jit_startmsg_pclabel = (*pclabel_count)++;
   m->jit_endofbuf_pclabel = (*pclabel_count)++;
   m->jit_endofmsg_pclabel = (*pclabel_count)++;
@@ -572,7 +572,7 @@ void upb_decoder_jit_assignmsglabs(upb_msgent *m, uint32_t *pclabel_count) {
       i = upb_inttable_next(&m->fieldtab, i)) {
     uint32_t key = upb_inttable_iter_key(i);
     m->max_field_number = UPB_MAX(m->max_field_number, key);
-    upb_fieldent *f = upb_inttable_iter_value(i);
+    upb_fhandlers *f = upb_inttable_iter_value(i);
     upb_decoder_jit_assignfieldlabs(f, pclabel_count);
   }
   // XXX: Won't work for large field numbers; will need to use a upb_table.
@@ -581,13 +581,13 @@ void upb_decoder_jit_assignmsglabs(upb_msgent *m, uint32_t *pclabel_count) {
 
 // Second pass: for messages that have only one parent, link them to the field
 // from which they are called.
-void upb_decoder_jit_assignmsglabs2(upb_handlers *h, upb_msgent *m) {
+void upb_decoder_jit_assignmsglabs2(upb_handlers *h, upb_mhandlers *m) {
   upb_inttable_iter i;
   for(i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
       i = upb_inttable_next(&m->fieldtab, i)) {
-    upb_fieldent *f = upb_inttable_iter_value(i);
+    upb_fhandlers *f = upb_inttable_iter_value(i);
     if (upb_issubmsgtype(f->type)) {
-      upb_msgent *sub_m = upb_handlers_getmsgent(h, f);
+      upb_mhandlers *sub_m = upb_handlers_getmsgent(h, f);
       if (sub_m->jit_parent_field_done_pclabel == UPB_NONE) {
         sub_m->jit_parent_field_done_pclabel = f->jit_submsg_done_pclabel;
       } else {
@@ -631,9 +631,9 @@ void upb_decoder_makejit(upb_decoder *d) {
 
   // Create dispatch tables.
   for (int i = 0; i < h->msgs_len; i++) {
-    upb_msgent *m = &h->msgs[i];
+    upb_mhandlers *m = &h->msgs[i];
     for (uint32_t j = 0; j <= m->max_field_number; j++) {
-      upb_fieldent *f = NULL;
+      upb_fhandlers *f = NULL;
       for (int k = 0; k < 8; k++) {
         f = upb_inttable_lookup(&m->fieldtab, (j << 3) | k);
         if (f) break;

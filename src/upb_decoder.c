@@ -190,7 +190,7 @@ INLINE void upb_pop(upb_decoder *d) {
   upb_decoder_setmsgend(d);
 }
 
-INLINE void upb_push(upb_decoder *d, upb_fieldent *f, uint32_t end) {
+INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint32_t end) {
   upb_dispatch_startsubmsg(&d->dispatcher, f, end);
   upb_decoder_setmsgend(d);
 }
@@ -203,7 +203,7 @@ INLINE void upb_push(upb_decoder *d, upb_fieldent *f, uint32_t end) {
 // but proto2 does not do this, so we pass.
 
 #define T(type, wt, valtype, convfunc) \
-  INLINE void upb_decode_ ## type(upb_decoder *d, upb_fieldent *f) { \
+  INLINE void upb_decode_ ## type(upb_decoder *d, upb_fhandlers *f) { \
     upb_value val; \
     upb_value_set ## valtype(&val, (convfunc)(upb_decode_ ## wt(d))); \
     upb_dispatch_value(&d->dispatcher, f, val); \
@@ -230,14 +230,14 @@ T(SINT32,   varint,  int32,  upb_zzdec_32)
 T(SINT64,   varint,  int64,  upb_zzdec_64)
 T(STRING,   string,  str,    upb_string*)
 
-static void upb_decode_GROUP(upb_decoder *d, upb_fieldent *f) {
+static void upb_decode_GROUP(upb_decoder *d, upb_fhandlers *f) {
   upb_push(d, f, UPB_GROUPEND);
 }
-static void upb_endgroup(upb_decoder *d, upb_fieldent *f) {
+static void upb_endgroup(upb_decoder *d, upb_fhandlers *f) {
   (void)f;
   upb_pop(d);
 }
-static void upb_decode_MESSAGE(upb_decoder *d, upb_fieldent *f) {
+static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
   upb_push(d, f, upb_decode_varint32(d, true) + (d->ptr - d->buf));
 }
 
@@ -269,10 +269,10 @@ static void upb_decoder_enterjit(upb_decoder *d) {
 #endif
 }
 
-INLINE upb_fieldent *upb_decode_tag(upb_decoder *d) {
+INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
   while (1) {
     uint32_t tag = upb_decode_varint32(d, false);
-    upb_fieldent *f = upb_dispatcher_lookup(&d->dispatcher, tag);
+    upb_fhandlers *f = upb_dispatcher_lookup(&d->dispatcher, tag);
     if (f) {
       d->f = f;
       return f;
@@ -324,7 +324,7 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     while (d->ptr >= d->submsg_end) upb_delimend(d);
     upb_decoder_enterjit(d);
     // if (!d->dispatcher.top->is_packed)
-    upb_fieldent *f = upb_decode_tag(d);
+    upb_fhandlers *f = upb_decode_tag(d);
     f->decode(d, f);
   }
 }
@@ -341,10 +341,10 @@ void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
 
   // Set function pointers for each field's decode function.
   for (int i = 0; i < handlers->msgs_len; i++) {
-    upb_msgent *m = &handlers->msgs[i];
+    upb_mhandlers *m = &handlers->msgs[i];
     for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
         i = upb_inttable_next(&m->fieldtab, i)) {
-      upb_fieldent *f = upb_inttable_iter_value(i);
+      upb_fhandlers *f = upb_inttable_iter_value(i);
       switch (f->type) {
         case UPB_TYPE(INT32):    f->decode = &upb_decode_INT32;    break;
         case UPB_TYPE(INT64):    f->decode = &upb_decode_INT64;    break;
