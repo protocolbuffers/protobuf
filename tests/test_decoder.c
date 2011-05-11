@@ -46,10 +46,10 @@ int main(int argc, char *argv[]) {
   upb_stdio_reset(out, stdout);
 
   upb_handlers handlers;
-  upb_handlers_init(&handlers, m);
+  upb_handlers_init(&handlers);
   upb_textprinter *p = upb_textprinter_new();
   upb_textprinter_reset(p, upb_stdio_bytesink(out), false);
-  upb_textprinter_reghandlers(&handlers);
+  upb_textprinter_reghandlers(&handlers, m);
 
   upb_decoder d;
   upb_decoder_init(&d, &handlers);

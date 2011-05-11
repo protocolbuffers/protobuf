@@ -361,10 +361,10 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
     // Call startsubmsg handler (if any).
-    if (f->cb.startsubmsg != upb_startsubmsg_nop) {
+    if (f->startsubmsg != upb_startsubmsg_nop) {
       // upb_sflow_t startsubmsg(void *closure, upb_value fval)
       |  mov   r12d, ARG3_32
-      |  callp f->cb.startsubmsg
+      |  callp f->startsubmsg
     } else {
       |  mov   rdx, CLOSURE
       |  mov   r12d, ARG3_32
@@ -388,7 +388,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |   mov   DECODER->dispatcher.top, rax
     |   mov   FRAME, rax
 
-    upb_mhandlers *sub_m = upb_handlers_getmsgent(d->dispatcher.handlers, f);
+    upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
     if (sub_m->jit_parent_field_done_pclabel != UPB_MULTIPLE) {
       |  jmp   =>sub_m->jit_startmsg_pclabel;
     } else {
@@ -410,7 +410,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
       |  callp f->endsubmsg
     }
   } else {
-    |  callp  f->cb.value
+    |  callp  f->value
   }
   // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
 
@@ -529,14 +529,14 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  mov   PTR, DECODER->ptr
 
   upb_handlers *h = d->dispatcher.handlers;
-  if (h->msgs[0].jit_parent_field_done_pclabel == UPB_MULTIPLE) {
-    |  call  =>h->msgs[0].jit_startmsg_pclabel
+  if (h->msgs[0]->jit_parent_field_done_pclabel == UPB_MULTIPLE) {
+    |  call  =>h->msgs[0]->jit_startmsg_pclabel
     |  jmp   ->exit_jit
   }
 
   // TODO: push return addresses for re-entry (will be necessary for multiple
   // buffer support).
-  for (int i = 0; i < h->msgs_len; i++) upb_decoder_jit_msg(d, &h->msgs[i]);
+  for (int i = 0; i < h->msgs_len; i++) upb_decoder_jit_msg(d, h->msgs[i]);
 
   |->exit_jit:
   |  pop   rbx
@@ -581,13 +581,13 @@ void upb_decoder_jit_assignmsglabs(upb_mhandlers *m, uint32_t *pclabel_count) {
 
 // Second pass: for messages that have only one parent, link them to the field
 // from which they are called.
-void upb_decoder_jit_assignmsglabs2(upb_handlers *h, upb_mhandlers *m) {
+void upb_decoder_jit_assignmsglabs2(upb_mhandlers *m) {
   upb_inttable_iter i;
   for(i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
       i = upb_inttable_next(&m->fieldtab, i)) {
     upb_fhandlers *f = upb_inttable_iter_value(i);
     if (upb_issubmsgtype(f->type)) {
-      upb_mhandlers *sub_m = upb_handlers_getmsgent(h, f);
+      upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
       if (sub_m->jit_parent_field_done_pclabel == UPB_NONE) {
         sub_m->jit_parent_field_done_pclabel = f->jit_submsg_done_pclabel;
       } else {
@@ -604,12 +604,12 @@ void upb_decoder_makejit(upb_decoder *d) {
   uint32_t pclabel_count = 1;
   upb_handlers *h = d->dispatcher.handlers;
   for (int i = 0; i < h->msgs_len; i++)
-    upb_decoder_jit_assignmsglabs(&h->msgs[i], &pclabel_count);
+    upb_decoder_jit_assignmsglabs(h->msgs[i], &pclabel_count);
   for (int i = 0; i < h->msgs_len; i++)
-    upb_decoder_jit_assignmsglabs2(h, &h->msgs[i]);
+    upb_decoder_jit_assignmsglabs2(h->msgs[i]);
 
-  if (h->msgs[0].jit_parent_field_done_pclabel == UPB_NONE) {
-    h->msgs[0].jit_parent_field_done_pclabel = UPB_TOPLEVEL_ONE;
+  if (h->msgs[0]->jit_parent_field_done_pclabel == UPB_NONE) {
+    h->msgs[0]->jit_parent_field_done_pclabel = UPB_TOPLEVEL_ONE;
   }
 
   void **globals = malloc(UPB_JIT_GLOBAL__MAX * sizeof(*globals));
@@ -631,7 +631,7 @@ void upb_decoder_makejit(upb_decoder *d) {
 
   // Create dispatch tables.
   for (int i = 0; i < h->msgs_len; i++) {
-    upb_mhandlers *m = &h->msgs[i];
+    upb_mhandlers *m = h->msgs[i];
     for (uint32_t j = 0; j <= m->max_field_number; j++) {
       upb_fhandlers *f = NULL;
       for (int k = 0; k < 8; k++) {

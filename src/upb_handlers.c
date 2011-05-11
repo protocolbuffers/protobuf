@@ -97,7 +97,6 @@ static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
                                      void *closure, upb_strtable *mtab) {
   upb_mhandlers *mh = upb_handlers_newmsg(h);
   upb_mtab_ent e = {{m->base.fqname, 0}, mh};
-  printf("Inserting: " UPB_STRFMT "\n", UPB_STRARG(m->base.fqname));
   upb_strtable_insert(mtab, &e.e);
   if (msgreg_cb) msgreg_cb(closure, mh, m);
   upb_msg_iter i;
@@ -108,7 +107,6 @@ static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
       upb_mhandlers *sub_mh;
       upb_mtab_ent *subm_ent;
       // The table lookup is necessary to break the DFS for type cycles.
-      printf("Testing: " UPB_STRFMT "\n", UPB_STRARG(f->def->fqname));
       if ((subm_ent = upb_strtable_lookup(mtab, f->def->fqname)) != NULL) {
         sub_mh = subm_ent->mh;
       } else {
