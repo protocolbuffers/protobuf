@@ -108,33 +108,12 @@ upb_flow_t upb_value_nop(void *closure, upb_value fval, upb_value val);
 upb_sflow_t upb_startsubmsg_nop(void *closure, upb_value fval);
 upb_flow_t upb_endsubmsg_nop(void *closure, upb_value fval);
 
-struct _upb_decoder;
-typedef struct _upb_fieldent {
-  bool junk;
-  upb_fieldtype_t type;
-  bool repeated;
-  bool is_repeated_primitive;
-  uint32_t number;
-  // For upb_issubmsg(f) only, the index into the msgdef array of the submsg.
-  // -1 if unset (indicates that submsg should be skipped).
-  int32_t msgent_index;
-  upb_value fval;
-  union {
-    upb_value_handler *value;
-    upb_startsubmsg_handler *startsubmsg;
-  } cb;
-  upb_endsubmsg_handler *endsubmsg;
-  uint32_t jit_pclabel;
-  uint32_t jit_pclabel_notypecheck;
-  uint32_t jit_submsg_done_pclabel;
-  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
-} upb_fhandlers;
-
-typedef struct _upb_msgent {
+// Structure definitions.  Do not access any fields directly!  Accessors are
+// provided for the fields that may be get/set.
+typedef struct _upb_mhandlers {
   upb_startmsg_handler *startmsg;
   upb_endmsg_handler *endmsg;
-  // Maps field number -> upb_fhandlers.
-  upb_inttable fieldtab;
+  upb_inttable fieldtab;  // Maps field number -> upb_fhandlers.
   uint32_t jit_startmsg_pclabel;
   uint32_t jit_endofbuf_pclabel;
   uint32_t jit_endofmsg_pclabel;
@@ -147,25 +126,33 @@ typedef struct _upb_msgent {
   void **tablearray;
 } upb_mhandlers;
 
-typedef struct {
-  upb_msgdef *msgdef;
-  int msgent_index;
-} upb_handlers_frame;
+struct _upb_decoder;
+typedef struct _upb_fieldent {
+  bool junk;
+  upb_fieldtype_t type;
+  bool repeated;
+  bool is_repeated_primitive;
+  uint32_t number;
+  upb_mhandlers *submsg;  // Must be set iff upb_issubmsgtype(type) == true.
+  upb_value fval;
+  upb_value_handler *value;
+  upb_startsubmsg_handler *startsubmsg;
+  upb_endsubmsg_handler *endsubmsg;
+  uint32_t jit_pclabel;
+  uint32_t jit_pclabel_notypecheck;
+  uint32_t jit_submsg_done_pclabel;
+  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
+} upb_fhandlers;
 
 struct _upb_handlers {
   // Array of msgdefs, [0]=toplevel.
-  upb_mhandlers *msgs;
+  upb_mhandlers **msgs;
   int msgs_len, msgs_size;
-  upb_msgdef *toplevel_msgdef;  // We own a ref.
-  upb_mhandlers *msgent;
-  upb_handlers_frame stack[UPB_MAX_TYPE_DEPTH], *top, *limit;
   bool should_jit;
 };
 typedef struct _upb_handlers upb_handlers;
 
-// The handlers object takes a ref on md.  md can be NULL iff the client calls
-// only upb_*_typed_*() (only upb_symtab should do this).
-void upb_handlers_init(upb_handlers *h, upb_msgdef *md);
+void upb_handlers_init(upb_handlers *h);
 void upb_handlers_uninit(upb_handlers *h);
 
 // The startsubmsg handler needs to also pass a closure to the submsg.
@@ -180,75 +167,84 @@ INLINE upb_sflow_t UPB_SFLOW(upb_flow_t flow, void *closure) {
 #define UPB_CONTINUE_WITH(c) UPB_SFLOW(UPB_CONTINUE, c)
 #define UPB_S_BREAK UPB_SFLOW(UPB_BREAK, NULL)
 
-// Functions to register the above handlers.
-void upb_register_startend(upb_handlers *h, upb_startmsg_handler *startmsg,
-                           upb_endmsg_handler *endmsg);
-void upb_register_value(upb_handlers *h, upb_fielddef *f,
-                        upb_value_handler *value, upb_value fval);
+// Appends a new message to the graph of handlers and returns it.  This message
+// can be obtained later at index upb_handlers_msgcount()-1.  All handlers will
+// be initialized to no-op handlers.
+upb_mhandlers *upb_handlers_newmsg(upb_handlers *h);
+upb_mhandlers *upb_handlers_getmsg(upb_handlers *h, int index);
 
-// To register handlers for a submessage, push the fielddef and pop it
-// when you're done.  This can be used to delegate a submessage to a
-// different processing component which does not need to be aware whether
-// it is at the top level or not.
-void upb_handlers_push(upb_handlers *h, upb_fielddef *f,
-                       upb_startsubmsg_handler *start,
-                       upb_endsubmsg_handler *end, upb_value fval,
-                       bool delegate);
-void upb_handlers_pop(upb_handlers *h, upb_fielddef *f);
+// Creates a new field with the given name and number.  There must not be an
+// existing field with either this name or number or abort() will be called.
+// TODO: this should take a name also.
+upb_fhandlers *upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
+                                      upb_fieldtype_t type, bool repeated);
+// Like the previous but for MESSAGE or GROUP fields.  For GROUP fields, the
+// given submessage must not have any fields with this field number.
+upb_fhandlers *upb_mhandlers_newsubmsgfield(upb_mhandlers *m, uint32_t n,
+                                            upb_fieldtype_t type, bool repeated,
+                                            upb_mhandlers *subm);
 
-// In the case where types are self-recursive or mutually recursive, you can
-// use this function which will link a set of handlers to a set that is
-// already on our stack.  This allows us to handle a tree of arbitrary
-// depth without having to register an arbitrary number of levels of handlers.
-// Returns "true" if the given type is indeed on the stack already and was
-// linked.
+// upb_mhandlers accessors.
+#define UPB_MHANDLERS_ACCESSORS(name, type) \
+  INLINE void upb_mhandlers_set ## name(upb_mhandlers *m, type v){m->name = v;} \
+  INLINE type upb_mhandlers_get ## name(upb_mhandlers *m) { return m->name; }
+UPB_MHANDLERS_ACCESSORS(startmsg, upb_startmsg_handler*);
+UPB_MHANDLERS_ACCESSORS(endmsg, upb_endmsg_handler*);
+
+// upb_fhandlers accessors
+#define UPB_FHANDLERS_ACCESSORS(name, type) \
+  INLINE void upb_fhandlers_set ## name(upb_fhandlers *f, type v){f->name = v;} \
+  INLINE type upb_fhandlers_get ## name(upb_fhandlers *f) { return f->name; }
+UPB_FHANDLERS_ACCESSORS(fval, upb_value)
+UPB_FHANDLERS_ACCESSORS(value, upb_value_handler*)
+UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startsubmsg_handler*)
+UPB_FHANDLERS_ACCESSORS(endsubmsg, upb_endsubmsg_handler*)
+UPB_FHANDLERS_ACCESSORS(submsg, upb_mhandlers*)
+
+// Convenience function for registering handlers for all messages and
+// fields in a msgdef and all its children.  For every registered message
+// "msgreg_cb" will be called with the newly-created mhandlers, and likewise
+// with "fieldreg_cb"
 //
-// If more than one message of this type is on the stack, it chooses the
-// one that is deepest in the tree (if necessary, we could give the caller
-// more control over this).
-bool upb_handlers_link(upb_handlers *h, upb_fielddef *f);
+// See upb_handlers_reghandlerset() below for an example.
+typedef void upb_onmsgreg(void *closure, upb_mhandlers *mh, upb_msgdef *m);
+typedef void upb_onfieldreg(void *closure, upb_fhandlers *mh, upb_fielddef *m);
+upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
+                                      upb_onmsgreg *msgreg_cb,
+                                      upb_onfieldreg *fieldreg_cb,
+                                      void *closure);
 
-// Convenience function for registering the given handler for the given
-// field path.  This will overwrite any startsubmsg handlers that were
-// previously registered along the path.  These can be overwritten again
-// later if desired.
-// TODO: upb_register_path_submsg()?
-void upb_register_path_value(upb_handlers *h, const char *path,
-                             upb_value_handler *value, upb_value fval);
+// Convenience function for registering a set of handlers for all messages and
+// fields in a msgdef and its children, with the fval bound to the upb_fielddef.
+// Any of the handlers may be NULL, in which case no callback will be set and
+// the nop callback will be used.
+typedef struct {
+  upb_startmsg_handler *startmsg;
+  upb_endmsg_handler *endmsg;
+  upb_value_handler *value;
+  upb_startsubmsg_handler *startsubmsg;
+  upb_endsubmsg_handler *endsubmsg;
+} upb_handlerset;
 
-// Convenience function for registering a single set of handlers on every
-// message in our hierarchy.  mvals are bound to upb_msgdef* and fvals are
-// bound to upb_fielddef*.  Any of the handlers can be NULL.
-void upb_register_all(upb_handlers *h, upb_startmsg_handler *start,
-                      upb_endmsg_handler *end,
-                      upb_value_handler *value,
-                      upb_startsubmsg_handler *startsubmsg,
-                      upb_endsubmsg_handler *endsubmsg);
-
-// TODO: for clients that want to increase efficiency by preventing bytesrcs
-// from automatically being converted to strings in the value callback.
-// INLINE void upb_handlers_use_bytesrcs(upb_handlers *h, bool use_bytesrcs);
-
-// Low-level functions -- internal-only.
-void upb_register_typed_value(upb_handlers *h, upb_field_number_t fieldnum,
-                              upb_fieldtype_t type, bool repeated,
-                              upb_value_handler *value, upb_value fval);
-void upb_register_typed_submsg(upb_handlers *h, upb_field_number_t fieldnum,
-                               upb_fieldtype_t type, bool repeated,
-                               upb_startsubmsg_handler *start,
-                               upb_endsubmsg_handler *end,
-                               upb_value fval);
-void upb_handlers_typed_link(upb_handlers *h, upb_field_number_t fieldnum,
-                             upb_fieldtype_t type, bool repeated, int frames);
-void upb_handlers_typed_push(upb_handlers *h, upb_field_number_t fieldnum,
-                             upb_fieldtype_t type, bool repeated);
-void upb_handlers_typed_pop(upb_handlers *h);
-
-INLINE upb_mhandlers *upb_handlers_getmsgent(upb_handlers *h, upb_fhandlers *f) {
-  assert(f->msgent_index != -1);
-  return &h->msgs[f->msgent_index];
+INLINE void upb_onmreg_hset(void *c, upb_mhandlers *mh, upb_msgdef *m) {
+  (void)m;
+  upb_handlerset *hs = (upb_handlerset*)c;
+  if (hs->startmsg) upb_mhandlers_setstartmsg(mh, hs->startmsg);
+  if (hs->endmsg) upb_mhandlers_setendmsg(mh, hs->endmsg);
 }
-upb_fhandlers *upb_handlers_lookup(upb_inttable *dispatch_table, upb_field_number_t fieldnum);
+INLINE void upb_onfreg_hset(void *c, upb_fhandlers *fh, upb_fielddef *f) {
+  upb_handlerset *hs = (upb_handlerset*)c;
+  if (hs->value) upb_fhandlers_setvalue(fh, hs->value);
+  if (hs->startsubmsg) upb_fhandlers_setstartsubmsg(fh, hs->startsubmsg);
+  if (hs->endsubmsg) upb_fhandlers_setendsubmsg(fh, hs->endsubmsg);
+  upb_value val;
+  upb_value_setfielddef(&val, f);
+  upb_fhandlers_setfval(fh, val);
+}
+INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, upb_msgdef *m,
+                                                 upb_handlerset *hs) {
+  return upb_handlers_regmsgdef(h, m, &upb_onmreg_hset, &upb_onfreg_hset, hs);
+}
 
 
 /* upb_dispatcher *************************************************************/
@@ -338,7 +334,7 @@ upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
 INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
                                      upb_value val) {
   if (upb_dispatcher_skipping(d)) return UPB_SKIPSUBMSG;
-  upb_flow_t flow = f->cb.value(d->top->closure, f->fval, val);
+  upb_flow_t flow = f->value(d->top->closure, f->fval, val);
   if (flow != UPB_CONTINUE) {
     d->noframe_depth = d->current_depth + 1;
     d->skip_depth = (flow == UPB_BREAK) ? d->delegated_depth : d->current_depth;

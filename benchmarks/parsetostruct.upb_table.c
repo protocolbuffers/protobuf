@@ -53,8 +53,8 @@ static bool initialize()
   msg = upb_msg_new(def);
 
   upb_stringsrc_init(&strsrc);
-  upb_handlers_init(&h, def);
-  upb_msg_regdhandlers(&h);
+  upb_handlers_init(&h);
+  upb_msg_reghandlers(&h, def);
   upb_decoder_init(&d, &h);
 
   if (!BYREF) {

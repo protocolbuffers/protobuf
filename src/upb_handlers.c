@@ -9,8 +9,6 @@
 #include "upb_handlers.h"
 
 
-/* upb_handlers ***************************************************************/
-
 upb_flow_t upb_startmsg_nop(void *closure) {
   (void)closure;
   return UPB_CONTINUE;
@@ -39,220 +37,162 @@ upb_flow_t upb_endsubmsg_nop(void *closure, upb_value fval) {
   return UPB_CONTINUE;
 }
 
-upb_flow_t upb_unknownval_nop(void *closure, upb_field_number_t fieldnum,
-                              upb_value val) {
-  (void)closure;
-  (void)fieldnum;
-  (void)val;
-  return UPB_CONTINUE;
+
+/* upb_mhandlers **************************************************************/
+
+static upb_mhandlers *upb_mhandlers_new() {
+  upb_mhandlers *m = malloc(sizeof(*m));
+  upb_inttable_init(&m->fieldtab, 8, sizeof(upb_fhandlers));
+  m->startmsg = &upb_startmsg_nop;
+  m->endmsg = &upb_endmsg_nop;
+  m->tablearray = NULL;
+  m->is_group = false;
+  return m;
 }
 
-static void upb_msgent_init(upb_mhandlers *e) {
-  upb_inttable_init(&e->fieldtab, 8, sizeof(upb_fhandlers));
-  e->startmsg = &upb_startmsg_nop;
-  e->endmsg = &upb_endmsg_nop;
-  e->tablearray = NULL;
-  e->is_group = false;
-}
-
-void upb_handlers_init(upb_handlers *h, upb_msgdef *md) {
-  h->msgs_len = 1;
-  h->msgs_size = 4;
-  h->msgs = malloc(h->msgs_size * sizeof(*h->msgs));
-  h->top = &h->stack[0];
-  h->limit = &h->stack[UPB_MAX_TYPE_DEPTH];
-  h->toplevel_msgdef = md;
-  h->should_jit = true;
-  if (md) upb_msgdef_ref(md);
-
-  h->top->msgent_index = 0;
-  h->top->msgdef = md;
-  h->msgent = &h->msgs[0];
-  upb_msgent_init(h->msgent);
-}
-
-void upb_handlers_uninit(upb_handlers *h) {
-  for (int i = 0; i < h->msgs_len; i++) {
-    upb_inttable_free(&h->msgs[i].fieldtab);
-    free(h->msgs[i].tablearray);
-  }
-  free(h->msgs);
-  upb_msgdef_unref(h->toplevel_msgdef);
-}
-
-static upb_fhandlers *upb_handlers_getorcreate_without_fval(
-    upb_handlers *h, upb_field_number_t fieldnum, upb_fieldtype_t type, bool repeated) {
-  uint32_t tag = fieldnum << 3 | upb_types[type].native_wire_type;
-  upb_fhandlers *f = upb_inttable_lookup(&h->msgent->fieldtab, tag);
-  if (!f) {
-    upb_fhandlers new_f = {false, type, repeated,
-        repeated && upb_isprimitivetype(type), fieldnum, -1, UPB_NO_VALUE,
-        {&upb_value_nop}, &upb_endsubmsg_nop, 0, 0, 0, NULL};
-    if (upb_issubmsgtype(type)) new_f.cb.startsubmsg = &upb_startsubmsg_nop;
-    upb_inttable_insert(&h->msgent->fieldtab, tag, &new_f);
-
-    f = upb_inttable_lookup(&h->msgent->fieldtab, tag);
-    assert(f);
-  }
+static upb_fhandlers *_upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
+                                              upb_fieldtype_t type,
+                                              bool repeated) {
+  uint32_t tag = n << 3 | upb_types[type].native_wire_type;
+  upb_fhandlers *f = upb_inttable_lookup(&m->fieldtab, tag);
+  if (f) abort();
+  upb_fhandlers new_f = {false, type, repeated,
+      repeated && upb_isprimitivetype(type), n, NULL, UPB_NO_VALUE,
+      &upb_value_nop, &upb_startsubmsg_nop, &upb_endsubmsg_nop, 0, 0, 0, NULL};
+  if (upb_issubmsgtype(type)) new_f.startsubmsg = &upb_startsubmsg_nop;
+  upb_inttable_insert(&m->fieldtab, tag, &new_f);
+  f = upb_inttable_lookup(&m->fieldtab, tag);
+  assert(f);
   assert(f->type == type);
   return f;
 }
 
-static upb_fhandlers *upb_handlers_getorcreate(
-    upb_handlers *h, upb_field_number_t fieldnum,
-    upb_fieldtype_t type, bool repeated, upb_value fval) {
-  upb_fhandlers *f =
-      upb_handlers_getorcreate_without_fval(h, fieldnum, type, repeated);
-  f->fval = fval;
+upb_fhandlers *upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
+                                      upb_fieldtype_t type, bool repeated) {
+  assert(type != UPB_TYPE(MESSAGE));
+  assert(type != UPB_TYPE(GROUP));
+  return _upb_mhandlers_newfield(m, n, type, repeated);
+}
+
+upb_fhandlers *upb_mhandlers_newsubmsgfield(upb_mhandlers *m, uint32_t n,
+                                            upb_fieldtype_t type, bool repeated,
+                                            upb_mhandlers *subm) {
+  assert(type == UPB_TYPE(MESSAGE) || type == UPB_TYPE(GROUP));
+  assert(subm);
+  upb_fhandlers *f = _upb_mhandlers_newfield(m, n, type, repeated);
+  f->submsg = subm;
+  if (type == UPB_TYPE(GROUP))
+    _upb_mhandlers_newfield(subm, n, UPB_TYPE_ENDGROUP, false);
   return f;
 }
 
-void upb_register_startend(upb_handlers *h, upb_startmsg_handler *startmsg,
-                           upb_endmsg_handler *endmsg) {
-  h->msgent->startmsg = startmsg ? startmsg : &upb_startmsg_nop;
-  h->msgent->endmsg = endmsg ? endmsg : &upb_endmsg_nop;
-}
+typedef struct {
+  upb_strtable_entry e;
+  upb_mhandlers *mh;
+} upb_mtab_ent;
 
-// TODO:
-// void upb_register_unknownval(upb_handlers *h,
-//                              upb_unknownval_handler *unknown);
-// bool upb_handlers_link(upb_handlers *h, upb_fielddef *f);
-// void upb_register_path_value(upb_handlers *h, const char *path,
-//                              upb_value_handler *value, upb_value fval);
-
-void upb_register_all(upb_handlers *h, upb_startmsg_handler *start,
-                      upb_endmsg_handler *end,
-                      upb_value_handler *value,
-                      upb_startsubmsg_handler *startsubmsg,
-                      upb_endsubmsg_handler *endsubmsg) {
-  upb_register_startend(h, start, end);
-  //upb_register_unknownval(h, unknown);
-  upb_msgdef *m = h->top->msgdef;
+static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
+                                     upb_onmsgreg *msgreg_cb,
+                                     upb_onfieldreg *fieldreg_cb,
+                                     void *closure, upb_strtable *mtab) {
+  upb_mhandlers *mh = upb_handlers_newmsg(h);
+  upb_mtab_ent e = {{m->base.fqname, 0}, mh};
+  printf("Inserting: " UPB_STRFMT "\n", UPB_STRARG(m->base.fqname));
+  upb_strtable_insert(mtab, &e.e);
+  if (msgreg_cb) msgreg_cb(closure, mh, m);
   upb_msg_iter i;
   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
     upb_fielddef *f = upb_msg_iter_field(i);
-    upb_value fval;
-    upb_value_setfielddef(&fval, f);
+    upb_fhandlers *fh;
     if (upb_issubmsg(f)) {
-      upb_handlers_push(h, f, startsubmsg, endsubmsg, fval, false);
-      upb_register_all(h, start, end, value, startsubmsg, endsubmsg);
-      upb_handlers_pop(h, f);
+      upb_mhandlers *sub_mh;
+      upb_mtab_ent *subm_ent;
+      // The table lookup is necessary to break the DFS for type cycles.
+      printf("Testing: " UPB_STRFMT "\n", UPB_STRARG(f->def->fqname));
+      if ((subm_ent = upb_strtable_lookup(mtab, f->def->fqname)) != NULL) {
+        sub_mh = subm_ent->mh;
+      } else {
+        sub_mh = upb_regmsg_dfs(h, upb_downcast_msgdef(f->def), msgreg_cb,
+                                fieldreg_cb, closure, mtab);
+      }
+      fh = upb_mhandlers_newsubmsgfield(
+          mh, f->number, f->type, upb_isarray(f), sub_mh);
     } else {
-      upb_register_value(h, f, value, fval);
+      fh = upb_mhandlers_newfield(mh, f->number, f->type, upb_isarray(f));
     }
+    if (fieldreg_cb) fieldreg_cb(closure, fh, f);
   }
+  return mh;
 }
 
-void upb_register_typed_value(upb_handlers *h, upb_field_number_t fieldnum,
-                              upb_fieldtype_t type, bool repeated,
-                              upb_value_handler *value, upb_value fval) {
-  upb_handlers_getorcreate(h, fieldnum, type, repeated, fval)->cb.value =
-      value ? value : &upb_value_nop;
+upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
+                                      upb_onmsgreg *msgreg_cb,
+                                      upb_onfieldreg *fieldreg_cb,
+                                      void *closure) {
+  upb_strtable mtab;
+  upb_strtable_init(&mtab, 8, sizeof(upb_mtab_ent));
+  upb_mhandlers *ret =
+      upb_regmsg_dfs(h, m, msgreg_cb, fieldreg_cb, closure, &mtab);
+  upb_strtable_free(&mtab);
+  return ret;
 }
 
-void upb_register_value(upb_handlers *h, upb_fielddef *f,
-                        upb_value_handler *value, upb_value fval) {
-  assert(f->msgdef == h->top->msgdef);
-  upb_register_typed_value(h, f->number, f->type, upb_isarray(f), value, fval);
+
+/* upb_handlers ***************************************************************/
+
+void upb_handlers_init(upb_handlers *h) {
+  h->msgs_len = 0;
+  h->msgs_size = 4;
+  h->msgs = malloc(h->msgs_size * sizeof(*h->msgs));
+  h->should_jit = true;
 }
 
-void upb_register_typed_submsg(upb_handlers *h, upb_field_number_t fieldnum,
-                               upb_fieldtype_t type, bool repeated,
-                               upb_startsubmsg_handler *start,
-                               upb_endsubmsg_handler *end,
-                               upb_value fval) {
-  upb_fhandlers *f = upb_handlers_getorcreate(h, fieldnum, type, repeated, fval);
-  f->cb.startsubmsg = start ? start : &upb_startsubmsg_nop;
-  f->endsubmsg = end ? end : &upb_endsubmsg_nop;
-}
-
-void upb_handlers_typed_link(upb_handlers *h, upb_field_number_t fieldnum,
-                             upb_fieldtype_t type, bool repeated, int frames) {
-  assert(frames <= (h->top - h->stack));
-  upb_fhandlers *f =
-      upb_handlers_getorcreate_without_fval(h, fieldnum, type, repeated);
-  f->msgent_index = (h->top - frames)->msgent_index;
-}
-
-void upb_handlers_typed_push(upb_handlers *h, upb_field_number_t fieldnum,
-                             upb_fieldtype_t type, bool repeated) {
-  upb_fhandlers *f =
-      upb_handlers_getorcreate_without_fval(h, fieldnum, type, repeated);
-  if (h->top == h->limit) abort();  // TODO: make growable.
-  ++h->top;
-  if (f->msgent_index == -1) {
-    // Need to push a new msgent.
-    if (h->msgs_size == h->msgs_len) {
-      h->msgs_size *= 2;
-      h->msgs = realloc(h->msgs, h->msgs_size * sizeof(*h->msgs));
-    }
-    f->msgent_index = h->msgs_len++;
-    h->msgent = &h->msgs[f->msgent_index];
-    upb_msgent_init(h->msgent);
-  } else {
-    h->msgent = &h->msgs[f->msgent_index];
+void upb_handlers_uninit(upb_handlers *h) {
+  for (int i = 0; i < h->msgs_len; i++) {
+    upb_mhandlers *mh = h->msgs[i];
+    upb_inttable_free(&mh->fieldtab);
+    free(mh->tablearray);
+    free(mh);
   }
-  h->top->msgent_index = f->msgent_index;
-  if (h->toplevel_msgdef) {
-    upb_fielddef *f = upb_msgdef_itof((h->top - 1)->msgdef, fieldnum);
-    assert(f);
-    h->top->msgdef = upb_downcast_msgdef(f->def);
+  free(h->msgs);
+}
+
+upb_mhandlers *upb_handlers_newmsg(upb_handlers *h) {
+  if (h->msgs_len == h->msgs_size) {
+    h->msgs_size *= 2;
+    h->msgs = realloc(h->msgs, h->msgs_size * sizeof(*h->msgs));
   }
-  if (type == UPB_TYPE(GROUP)) {
-    // Insert a fieldent for ENDGROUP so we can easily dispatch endgroup when
-    // we see it in the submessage.
-    // TODO: assert that no other fields in the group are registered with the
-    // same name or number.
-    upb_register_typed_submsg(h, fieldnum, UPB_TYPE_ENDGROUP, false, NULL, NULL,
-                              UPB_NO_VALUE);
-    h->msgent->is_group = true;
-  }
+  upb_mhandlers *mh = upb_mhandlers_new();
+  h->msgs[h->msgs_len++] = mh;
+  return mh;
 }
 
-void upb_handlers_push(upb_handlers *h, upb_fielddef *f,
-                       upb_startsubmsg_handler *start,
-                       upb_endsubmsg_handler *end, upb_value fval,
-                       bool delegate) {
-  assert(f->msgdef == h->top->msgdef);
-  (void)delegate;  // TODO
-  upb_register_typed_submsg(h, f->number, f->type, upb_isarray(f), start, end, fval);
-  upb_handlers_typed_push(h, f->number, f->type, upb_isarray(f));
-}
-
-void upb_handlers_typed_pop(upb_handlers *h) {
-  assert(h->top > h->stack);
-  --h->top;
-  h->msgent = &h->msgs[h->top->msgent_index];
-}
-
-void upb_handlers_pop(upb_handlers *h, upb_fielddef *f) {
-  (void)f; // TODO: Check that this matches the corresponding push.
-  upb_handlers_typed_pop(h);
-}
 
 /* upb_dispatcher *************************************************************/
 
 static upb_fhandlers toplevel_f = {
   false, UPB_TYPE(GROUP), false, false, 0,
-  0, // msgent_index
+  NULL, // submsg
 #ifdef NDEBUG
   {{0}},
 #else
   {{0}, UPB_VALUETYPE_RAW},
 #endif
-  {NULL}, NULL, 0, 0, 0, NULL};
+  NULL, NULL, NULL, 0, 0, 0, NULL};
 
 void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h) {
   d->handlers = h;
-  for (int i = 0; i < h->msgs_len; i++)
-    upb_inttable_compact(&h->msgs[i].fieldtab);
+  for (int i = 0; i < h->msgs_len; i++) {
+    upb_mhandlers *m = h->msgs[i];
+    upb_inttable_compact(&m->fieldtab);
+  }
   d->stack[0].f = &toplevel_f;
   d->limit = &d->stack[UPB_MAX_NESTING];
   upb_status_init(&d->status);
 }
 
 void upb_dispatcher_reset(upb_dispatcher *d, void *top_closure, uint32_t top_end_offset) {
-  d->msgent = &d->handlers->msgs[0];
+  d->msgent = d->handlers->msgs[0];
   d->dispatch_table = &d->msgent->fieldtab;
   d->current_depth = 0;
   d->skip_depth = INT_MAX;
@@ -296,7 +236,7 @@ upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d, upb_fhandlers *f,
                                     size_t userval) {
   ++d->current_depth;
   if (upb_dispatcher_skipping(d)) return UPB_SKIPSUBMSG;
-  upb_sflow_t sflow = f->cb.startsubmsg(d->top->closure, f->fval);
+  upb_sflow_t sflow = f->startsubmsg(d->top->closure, f->fval);
   if (sflow.flow != UPB_CONTINUE) {
     d->noframe_depth = d->current_depth;
     d->skip_depth = (sflow.flow == UPB_BREAK) ?
@@ -315,7 +255,7 @@ upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d, upb_fhandlers *f,
   d->top->end_offset = userval;
   d->top->closure = sflow.closure;
   d->top->is_packed = false;
-  d->msgent = upb_handlers_getmsgent(d->handlers, f);
+  d->msgent = f->submsg;
   d->dispatch_table = &d->msgent->fieldtab;
   return upb_dispatch_startmsg(d);
 }
@@ -329,7 +269,8 @@ upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {
     upb_fhandlers *old_f = d->top->f;
     d->msgent->endmsg(d->top->closure, &d->status);
     --d->top;
-    d->msgent = upb_handlers_getmsgent(d->handlers, d->top->f);
+    d->msgent = d->top->f->submsg;
+    if (!d->msgent) d->msgent = d->handlers->msgs[0];
     d->dispatch_table = &d->msgent->fieldtab;
     d->noframe_depth = INT_MAX;
     if (!upb_dispatcher_skipping(d)) d->skip_depth = INT_MAX;

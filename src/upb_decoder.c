@@ -341,7 +341,7 @@ void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
 
   // Set function pointers for each field's decode function.
   for (int i = 0; i < handlers->msgs_len; i++) {
-    upb_mhandlers *m = &handlers->msgs[i];
+    upb_mhandlers *m = handlers->msgs[i];
     for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
         i = upb_inttable_next(&m->fieldtab, i)) {
       upb_fhandlers *f = upb_inttable_iter_value(i);

@@ -185,12 +185,13 @@ void upb_textprinter_reset(upb_textprinter *p, upb_bytesink *sink,
   p->indent_depth = 0;
 }
 
-void upb_textprinter_reghandlers(upb_handlers *h) {
-  upb_register_all(h,
+upb_mhandlers *upb_textprinter_reghandlers(upb_handlers *h, upb_msgdef *m) {
+  upb_handlerset hset = {
     NULL,  // startmsg
     NULL,  // endmsg
     upb_textprinter_value,
     upb_textprinter_startsubmsg,
     upb_textprinter_endsubmsg
-  );
+  };
+  return upb_handlers_reghandlerset(h, m, &hset);
 }

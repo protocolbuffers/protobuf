@@ -18,8 +18,8 @@ void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
   upb_stringsrc_reset(&strsrc, str);
 
   upb_handlers h;
-  upb_handlers_init(&h, md);
-  upb_msg_regdhandlers(&h);
+  upb_handlers_init(&h);
+  upb_msg_reghandlers(&h, md);
 
   upb_decoder d;
   upb_decoder_init(&d, &h);
@@ -39,8 +39,8 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 
   upb_textprinter *p = upb_textprinter_new();
   upb_handlers h;
-  upb_handlers_init(&h, md);
-  upb_textprinter_reghandlers(&h);
+  upb_handlers_init(&h);
+  upb_textprinter_reghandlers(&h, md);
   upb_textprinter_reset(p, upb_stringsink_bytesink(&strsink), single_line);
 
   upb_status status = UPB_STATUS_INIT;
@@ -60,7 +60,7 @@ void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
   upb_stringsrc_reset(&strsrc, str);
 
   upb_handlers h;
-  upb_handlers_init(&h, NULL);
+  upb_handlers_init(&h);
   upb_defbuilder_reghandlers(&h);
 
   upb_decoder d;

@@ -461,55 +461,49 @@ upb_sflow_t upb_msgsink_startsubmsg_r(void *_m, upb_value _fval) {
   return UPB_CONTINUE_WITH(upb_msg_appendmsg(m, &f, &md));
 }
 
-void upb_msg_regdhandlers(upb_handlers *h) {
-  upb_register_all(h, NULL, NULL, NULL, NULL, NULL);
-  for (int i = 0; i < h->msgs_len; i++) {
-    upb_mhandlers *m = &h->msgs[i];
-    upb_inttable_iter iter = upb_inttable_begin(&m->fieldtab);
-    for(; !upb_inttable_done(iter);
-        iter = upb_inttable_next(&m->fieldtab, iter)) {
-      upb_fhandlers *fe = upb_inttable_iter_value(iter);
-      if (fe->type == UPB_TYPE_ENDGROUP) continue;
-      upb_fielddef *f = upb_value_getfielddef(fe->fval);
-      uint16_t msg_size = 0;
-      uint8_t set_flags_bytes = 0;
-      if (upb_issubmsg(f)) {
-        upb_msgdef *md = upb_downcast_msgdef(f->def);
-        msg_size = md->size;
-        set_flags_bytes = md->set_flags_bytes;
-      }
-      upb_value_setuint64(&fe->fval,
-          upb_msgsink_packfval(f->set_bit_offset, f->set_bit_mask,
-                               f->byte_offset, msg_size, set_flags_bytes));
-#define CASE(upb_type, type) \
-    case UPB_TYPE(upb_type): \
-        fe->cb.value = upb_isarray(f) ? \
-            upb_msgsink_ ## type ## value_r : upb_msgsink_ ## type ## value; \
-        break;
-      switch (f->type) {
-        CASE(DOUBLE,   double)
-        CASE(FLOAT,    float)
-        CASE(INT32,    int32)
-        CASE(INT64,    int64)
-        CASE(UINT32,   uint32)
-        CASE(UINT64,   uint64)
-        CASE(SINT32,   int32)
-        CASE(SINT64,   int64)
-        CASE(FIXED32,  uint32)
-        CASE(FIXED64,  uint64)
-        CASE(SFIXED32, int32)
-        CASE(SFIXED64, int64)
-        CASE(BOOL,     bool)
-        CASE(ENUM,     int32)
-        CASE(STRING,   str)
-        CASE(BYTES,    str)
-#undef CASE
-        case UPB_TYPE(MESSAGE):
-        case UPB_TYPE(GROUP):
-          fe->cb.startsubmsg =
-              upb_isarray(f) ? upb_msgsink_startsubmsg_r : upb_msgsink_startsubmsg;
-          break;
-      }
-    }
+INLINE void upb_msg_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
+  (void)c;
+  uint16_t msg_size = 0;
+  uint8_t set_flags_bytes = 0;
+  if (upb_issubmsg(f)) {
+    upb_msgdef *md = upb_downcast_msgdef(f->def);
+    msg_size = md->size;
+    set_flags_bytes = md->set_flags_bytes;
   }
+  upb_value_setuint64(&fh->fval,
+      upb_msgsink_packfval(f->set_bit_offset, f->set_bit_mask,
+                           f->byte_offset, msg_size, set_flags_bytes));
+#define CASE(upb_type, type) \
+case UPB_TYPE(upb_type): \
+    fh->value = upb_isarray(f) ? \
+        upb_msgsink_ ## type ## value_r : upb_msgsink_ ## type ## value; \
+    break;
+  switch (f->type) {
+    CASE(DOUBLE,   double)
+    CASE(FLOAT,    float)
+    CASE(INT32,    int32)
+    CASE(INT64,    int64)
+    CASE(UINT32,   uint32)
+    CASE(UINT64,   uint64)
+    CASE(SINT32,   int32)
+    CASE(SINT64,   int64)
+    CASE(FIXED32,  uint32)
+    CASE(FIXED64,  uint64)
+    CASE(SFIXED32, int32)
+    CASE(SFIXED64, int64)
+    CASE(BOOL,     bool)
+    CASE(ENUM,     int32)
+    CASE(STRING,   str)
+    CASE(BYTES,    str)
+#undef CASE
+    case UPB_TYPE(MESSAGE):
+    case UPB_TYPE(GROUP):
+      fh->startsubmsg =
+          upb_isarray(f) ? upb_msgsink_startsubmsg_r : upb_msgsink_startsubmsg;
+      break;
+  }
+}
+
+upb_mhandlers *upb_msg_reghandlers(upb_handlers *h, upb_msgdef *m) {
+  return upb_handlers_regmsgdef(h, m, NULL, &upb_msg_onfreg, NULL);
 }

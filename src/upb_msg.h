@@ -277,11 +277,7 @@ INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
 
 // Registers handlers for populating a msg for the given upb_msgdef.
 // The upb_msg itself must be passed as the param to the src.
-void upb_msg_reghandlers(upb_handlers *h, upb_msgdef *md);
-
-// Registers handlers that are suitable for populating a msg of *any*
-// upb_msgdef ("dynamic" handlers).  May be slower than upb_msg_reghandlers().
-void upb_msg_regdhandlers(upb_handlers *h);
+upb_mhandlers *upb_msg_reghandlers(upb_handlers *h, upb_msgdef *md);
 
 void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
                          void *closure, upb_status *status);

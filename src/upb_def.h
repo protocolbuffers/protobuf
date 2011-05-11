@@ -328,6 +328,7 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type);
 struct _upb_defbuilder;
 typedef struct _upb_defbuilder upb_defbuilder;
 struct _upb_handlers;
+struct _upb_handlers;
 
 // Allocates a new defbuilder that will add defs to the given symtab.
 upb_defbuilder *upb_defbuilder_new(upb_symtab *s);
@@ -337,7 +338,7 @@ upb_defbuilder *upb_defbuilder_new(upb_symtab *s);
 //
 // TODO: should this allow redefinition?  Either is possible, but which is
 // more useful?  Maybe it should be an option.
-void upb_defbuilder_reghandlers(struct _upb_handlers *h);
+struct _upb_mhandlers *upb_defbuilder_reghandlers(struct _upb_handlers *h);
 
 
 /* upb_def casts **************************************************************/
