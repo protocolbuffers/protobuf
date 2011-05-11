@@ -82,7 +82,7 @@ static void upb_pullbuf(upb_decoder *d, bool need) {
 
 // Called only from the slow path, this function copies the next "len" bytes
 // from the stream to "data", adjusting the decoder state appropriately.
-static void upb_getbuf(upb_decoder *d, void *data, size_t bytes, bool need) {
+NOINLINE void upb_getbuf(upb_decoder *d, void *data, size_t bytes, bool need) {
   while (1) {
     size_t to_copy = UPB_MIN(bytes, upb_decoder_bufleft(d));
     memcpy(data, d->ptr, to_copy);
@@ -209,8 +209,8 @@ INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint32_t end) {
     upb_dispatch_value(&d->dispatcher, f, val); \
   } \
 
-static double  upb_asdouble(uint64_t n) { return *(double*)&n; }
-static float   upb_asfloat(uint32_t n)  { return *(float*)&n; }
+static double  upb_asdouble(uint64_t n) { double d; memcpy(&d, &n, 8); return d; }
+static float   upb_asfloat(uint32_t n)  { float  f; memcpy(&f, &n, 4); return f; }
 static int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
 static int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
 
