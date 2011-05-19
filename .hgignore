@@ -1,5 +1,10 @@
-glob:build_output/
-glob:build_temp/
-glob:bin/
-glob:obj/
-glob:*.cache
+syntax: glob
+
+build_output/
+build_temp/
+bin/
+obj/
+*.cache
+_ReSharper.*
+*.user
+*.suo
