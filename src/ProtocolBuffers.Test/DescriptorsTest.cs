@@ -77,11 +77,11 @@ namespace Google.ProtocolBuffers {
         Assert.AreEqual(i, file.EnumTypes[i].Index);
       }
 
-      ServiceDescriptor service = TestService.Descriptor;
-      Assert.AreEqual(service, file.Services[0]);
-      Assert.AreEqual(service, file.FindTypeByName<ServiceDescriptor>("TestService"));
-      Assert.IsNull(file.FindTypeByName<ServiceDescriptor>("NoSuchType"));
-      Assert.IsNull(file.FindTypeByName<ServiceDescriptor>("protobuf_unittest.TestService"));
+      ServiceDescriptor service = TestGenericService.Descriptor;
+      Assert.AreEqual(service, UnitTestGenericServices.Descriptor.Services[0]);
+      Assert.AreEqual(service, UnitTestGenericServices.Descriptor.FindTypeByName<ServiceDescriptor>("TestGenericService"));
+      Assert.IsNull(UnitTestGenericServices.Descriptor.FindTypeByName<ServiceDescriptor>("NoSuchType"));
+      Assert.IsNull(UnitTestGenericServices.Descriptor.FindTypeByName<ServiceDescriptor>("protobuf_unittest.TestGenericService"));
       Assert.AreEqual(0, UnitTestImportProtoFile.Descriptor.Services.Count);
       for (int i = 0; i < file.Services.Count; i++) {
         Assert.AreEqual(i, file.Services[i].Index);
@@ -261,11 +261,11 @@ namespace Google.ProtocolBuffers {
 
     [Test]
     public void ServiceDescriptor() {
-      ServiceDescriptor service = TestService.Descriptor;
+      ServiceDescriptor service = TestGenericService.Descriptor;
 
-      Assert.AreEqual("TestService", service.Name);
-      Assert.AreEqual("protobuf_unittest.TestService", service.FullName);
-      Assert.AreEqual(UnitTestProtoFile.Descriptor, service.File);
+      Assert.AreEqual("TestGenericService", service.Name);
+      Assert.AreEqual("protobuf_unittest.TestGenericService", service.FullName);
+      Assert.AreEqual(UnitTestGenericServices.Descriptor, service.File);
 
       Assert.AreEqual(2, service.Methods.Count);
 
@@ -312,7 +312,7 @@ namespace Google.ProtocolBuffers {
         enumType.getOptions().getExtension(UnittestCustomOptions.enumOpt1));
         */
 
-      ServiceDescriptor service = TestServiceWithCustomOptions.Descriptor;
+      ServiceDescriptor service = TestGenericServiceWithCustomOptions.Descriptor;
 
       Assert.IsTrue(service.Options.HasExtension(UnitTestCustomOptionsProtoFile.ServiceOpt1));
       Assert.AreEqual(-9876543210L, service.Options.GetExtension(UnitTestCustomOptionsProtoFile.ServiceOpt1));

@@ -3957,90 +3957,10 @@ namespace Google.ProtocolBuffers.TestProtos {
   #endregion
   
   #region Services
-  public abstract class TestServiceWithCustomOptions : pb::IService {
-    public abstract void Foo(
-        pb::IRpcController controller,
-        global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest request,
-        global::System.Action<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse> done);
-    
-    public static pbd::ServiceDescriptor Descriptor {
-      get { return UnitTestCustomOptionsProtoFile.Descriptor.Services[0]; }
-    }
-    public pbd::ServiceDescriptor DescriptorForType {
-      get { return Descriptor; }
-    }
-    
-    public void CallMethod(
-        pbd::MethodDescriptor method,
-        pb::IRpcController controller,
-        pb::IMessage request,
-        global::System.Action<pb::IMessage> done) {
-      if (method.Service != Descriptor) {
-        throw new global::System.ArgumentException(
-            "Service.CallMethod() given method descriptor for wrong service type.");
-      }
-      switch(method.Index) {
-        case 0:
-          this.Foo(controller, (global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest) request,
-              pb::RpcUtil.SpecializeCallback<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse>(
-              done));
-          return;
-        default:
-          throw new global::System.InvalidOperationException("Can't get here.");
-      }
-    }
-    
-    public pb::IMessage GetRequestPrototype(pbd::MethodDescriptor method) {
-      if (method.Service != Descriptor) {
-        throw new global::System.ArgumentException(
-            "Service.GetRequestPrototype() given method descriptor for wrong service type.");
-      }
-      switch(method.Index) {
-        case 0:
-          return global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest.DefaultInstance;
-        default:
-          throw new global::System.InvalidOperationException("Can't get here.");
-      }
-    }
-    
-    public pb::IMessage GetResponsePrototype(pbd::MethodDescriptor method) {
-      if (method.Service != Descriptor) {
-        throw new global::System.ArgumentException(
-            "Service.GetResponsePrototype() given method descriptor for wrong service type.");
-      }
-      switch(method.Index) {
-        case 0:
-          return global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.DefaultInstance;
-        default:
-          throw new global::System.InvalidOperationException("Can't get here.");
-      }
-    }
-    
-    public static Stub CreateStub(pb::IRpcChannel channel) {
-      return new Stub(channel);
-    }
-    
-    public class Stub : global::Google.ProtocolBuffers.TestProtos.TestServiceWithCustomOptions {
-      internal Stub(pb::IRpcChannel channel) {
-        this.channel = channel;
-      }
-      
-      private readonly pb::IRpcChannel channel;
-      
-      public pb::IRpcChannel Channel {
-        get { return channel; }
-      }
-      
-      public override void Foo(
-          pb::IRpcController controller,
-          global::Google.ProtocolBuffers.TestProtos.CustomOptionFooRequest request,
-          global::System.Action<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse> done) {
-        channel.CallMethod(Descriptor.Methods[0],
-            controller, request, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.DefaultInstance,
-            pb::RpcUtil.GeneralizeCallback<global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.Builder>(done, global::Google.ProtocolBuffers.TestProtos.CustomOptionFooResponse.DefaultInstance));
-      }
-    }
-  }
+  /*
+  * Service generation is now disabled by default, use the following option to enable:
+  * option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;
+  */
   #endregion
   
 }

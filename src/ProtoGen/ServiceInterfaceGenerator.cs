@@ -47,6 +47,9 @@ namespace Google.ProtocolBuffers.ProtoGen {
       : base(descriptor) {
       svcType = descriptor.File.CSharpOptions.ServiceGeneratorType;
       switch (svcType) {
+        case CSharpServiceType.NONE:
+          _generator = new NoServicesGenerator(descriptor);
+          break;
         case CSharpServiceType.GENERIC:
           _generator = new GenericServiceGenerator(descriptor);
           break;
@@ -62,6 +65,19 @@ namespace Google.ProtocolBuffers.ProtoGen {
 
     public void Generate(TextGenerator writer) {
       _generator.Generate(writer);
+    }
+      
+    class NoServicesGenerator : SourceGeneratorBase<ServiceDescriptor>, ISourceGenerator {
+      
+      public NoServicesGenerator(ServiceDescriptor descriptor)
+        : base(descriptor) {
+      }
+      public virtual void Generate(TextGenerator writer) {
+        writer.WriteLine("/*");
+        writer.WriteLine("* Service generation is now disabled by default, use the following option to enable:");
+        writer.WriteLine("* option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;");
+        writer.WriteLine("*/");
+      }
     }
 
     class ServiceInterfaceGenerator : SourceGeneratorBase<ServiceDescriptor>, ISourceGenerator {

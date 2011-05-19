@@ -92,6 +92,7 @@
     <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmptyProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestGenericServices.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />

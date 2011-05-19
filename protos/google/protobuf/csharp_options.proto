@@ -58,10 +58,12 @@ message CSharpFileOptions {
   // Controls how services are generated, GENERIC is the deprecated original implementation
   // INTERFACE generates service interfaces only, RPCINTEROP generates interfaces and 
   // implementations using the included Windows RPC interop libarary.
-  optional CSharpServiceType service_generator_type = 225 [default = GENERIC];
+  optional CSharpServiceType service_generator_type = 225 [default = NONE];
 }
 
 enum CSharpServiceType {
+  // Services are ignored by the generator
+  NONE = 0;
   // Generates the original Java generic service implementations
   GENERIC = 1;
   // Generates an interface for the service and nothing else

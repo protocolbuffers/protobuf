@@ -47,7 +47,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "uQMKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "tgMKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
           "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
           "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
           "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIEiQKHGV4cGFuZF9u" + 
@@ -55,22 +55,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           "CCABKAg6BHRydWUSHAoOZmlsZV9leHRlbnNpb24Y3QEgASgJOgMuY3MSGwoS" + 
           "dW1icmVsbGFfbmFtZXNwYWNlGN4BIAEoCRIcChBvdXRwdXRfZGlyZWN0b3J5" + 
           "GN8BIAEoCToBLhImChZpZ25vcmVfZ29vZ2xlX3Byb3RvYnVmGOABIAEoCDoF" + 
-          "ZmFsc2USTAoWc2VydmljZV9nZW5lcmF0b3JfdHlwZRjhASABKA4yIi5nb29n" + 
-          "bGUucHJvdG9idWYuQ1NoYXJwU2VydmljZVR5cGU6B0dFTkVSSUMiKwoSQ1No" + 
-          "YXJwRmllbGRPcHRpb25zEhUKDXByb3BlcnR5X25hbWUYASABKAkiLAoUQ1No" + 
-          "YXJwU2VydmljZU9wdGlvbnMSFAoMaW50ZXJmYWNlX2lkGAEgASgJIioKE0NT" + 
-          "aGFycE1ldGhvZE9wdGlvbnMSEwoLZGlzcGF0Y2hfaWQYASABKAUqQQoRQ1No" + 
-          "YXJwU2VydmljZVR5cGUSCwoHR0VORVJJQxABEg0KCUlOVEVSRkFDRRACEhAK" + 
-          "DElSUENESVNQQVRDSBADOl4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29n" + 
-          "bGUucHJvdG9idWYuRmlsZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3Rv" + 
-          "YnVmLkNTaGFycEZpbGVPcHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25z" + 
-          "Eh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29n" + 
-          "bGUucHJvdG9idWYuQ1NoYXJwRmllbGRPcHRpb25zOmcKFmNzaGFycF9zZXJ2" + 
-          "aWNlX29wdGlvbnMSHy5nb29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMY" + 
-          "6AcgASgLMiUuZ29vZ2xlLnByb3RvYnVmLkNTaGFycFNlcnZpY2VPcHRpb25z" + 
-          "OmQKFWNzaGFycF9tZXRob2Rfb3B0aW9ucxIeLmdvb2dsZS5wcm90b2J1Zi5N" + 
-          "ZXRob2RPcHRpb25zGOgHIAEoCzIkLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBN" + 
-          "ZXRob2RPcHRpb25z");
+          "ZmFsc2USSQoWc2VydmljZV9nZW5lcmF0b3JfdHlwZRjhASABKA4yIi5nb29n" + 
+          "bGUucHJvdG9idWYuQ1NoYXJwU2VydmljZVR5cGU6BE5PTkUiKwoSQ1NoYXJw" + 
+          "RmllbGRPcHRpb25zEhUKDXByb3BlcnR5X25hbWUYASABKAkiLAoUQ1NoYXJw" + 
+          "U2VydmljZU9wdGlvbnMSFAoMaW50ZXJmYWNlX2lkGAEgASgJIioKE0NTaGFy" + 
+          "cE1ldGhvZE9wdGlvbnMSEwoLZGlzcGF0Y2hfaWQYASABKAUqSwoRQ1NoYXJw" + 
+          "U2VydmljZVR5cGUSCAoETk9ORRAAEgsKB0dFTkVSSUMQARINCglJTlRFUkZB" + 
+          "Q0UQAhIQCgxJUlBDRElTUEFUQ0gQAzpeChNjc2hhcnBfZmlsZV9vcHRpb25z" + 
+          "EhwuZ29vZ2xlLnByb3RvYnVmLkZpbGVPcHRpb25zGOgHIAEoCzIiLmdvb2ds" + 
+          "ZS5wcm90b2J1Zi5DU2hhcnBGaWxlT3B0aW9uczphChRjc2hhcnBfZmllbGRf" + 
+          "b3B0aW9ucxIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMY6AcgASgL" + 
+          "MiMuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZpZWxkT3B0aW9uczpnChZjc2hh" + 
+          "cnBfc2VydmljZV9vcHRpb25zEh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VP" + 
+          "cHRpb25zGOgHIAEoCzIlLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBTZXJ2aWNl" + 
+          "T3B0aW9uczpkChVjc2hhcnBfbWV0aG9kX29wdGlvbnMSHi5nb29nbGUucHJv" + 
+          "dG9idWYuTWV0aG9kT3B0aW9ucxjoByABKAsyJC5nb29nbGUucHJvdG9idWYu" + 
+          "Q1NoYXJwTWV0aG9kT3B0aW9ucw==");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
@@ -105,6 +105,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   #region Enums
   public enum CSharpServiceType {
+    NONE = 0,
     GENERIC = 1,
     INTERFACE = 2,
     IRPCDISPATCH = 3,
@@ -257,7 +258,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int ServiceGeneratorTypeFieldNumber = 225;
     private bool hasServiceGeneratorType;
-    private global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.GENERIC;
+    private global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.NONE;
     public bool HasServiceGeneratorType {
       get { return hasServiceGeneratorType; }
     }
@@ -824,7 +825,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       public Builder ClearServiceGeneratorType() {
         result.hasServiceGeneratorType = false;
-        result.serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.GENERIC;
+        result.serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.NONE;
         return this;
       }
     }

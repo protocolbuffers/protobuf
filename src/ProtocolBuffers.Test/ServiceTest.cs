@@ -50,12 +50,12 @@ namespace Google.ProtocolBuffers {
 
     delegate void Action<T1, T2>(T1 t1, T2 t2);
 
-    private static readonly MethodDescriptor FooDescriptor = TestService.Descriptor.Methods[0];
-    private static readonly MethodDescriptor BarDescriptor = TestService.Descriptor.Methods[1];
+    private static readonly MethodDescriptor FooDescriptor = TestGenericService.Descriptor.Methods[0];
+    private static readonly MethodDescriptor BarDescriptor = TestGenericService.Descriptor.Methods[1];
 
     [Test]
     public void GetRequestPrototype() {
-      TestService service = new TestServiceImpl();
+      TestGenericService service = new TestServiceImpl();
 
       Assert.AreSame(service.GetRequestPrototype(FooDescriptor), FooRequest.DefaultInstance);
       Assert.AreSame(service.GetRequestPrototype(BarDescriptor), BarRequest.DefaultInstance);
@@ -63,7 +63,7 @@ namespace Google.ProtocolBuffers {
 
     [Test]
     public void GetResponsePrototype() {
-      TestService service = new TestServiceImpl();
+      TestGenericService service = new TestServiceImpl();
 
       Assert.AreSame(service.GetResponsePrototype(FooDescriptor), FooResponse.DefaultInstance);
       Assert.AreSame(service.GetResponsePrototype(BarDescriptor), BarResponse.DefaultInstance);
@@ -78,7 +78,7 @@ namespace Google.ProtocolBuffers {
 
       bool fooCalled = false;
 
-      TestService service = new TestServiceImpl((request, responseAction) => {
+      TestGenericService service = new TestServiceImpl((request, responseAction) => {
         Assert.AreSame(fooRequest, request);
         fooCalled = true;
         responseAction(fooResponse);
@@ -116,7 +116,7 @@ namespace Google.ProtocolBuffers {
       MockRepository mocks = new MockRepository();
       IRpcChannel mockChannel = mocks.StrictMock<IRpcChannel>();
       IRpcController mockController = mocks.StrictMock<IRpcController>();
-      TestService service = TestService.CreateStub(mockChannel);
+      TestGenericService service = TestGenericService.CreateStub(mockChannel);
       Action<FooResponse> doneHandler = mocks.StrictMock<Action<FooResponse>>();
 
       using (mocks.Record()) {
@@ -144,7 +144,7 @@ namespace Google.ProtocolBuffers {
 
       bool barCalled = false;
 
-      TestService service = new TestServiceImpl(null, (request, responseAction) => {
+      TestGenericService service = new TestServiceImpl(null, (request, responseAction) => {
         Assert.AreSame(barRequest, request);
         barCalled = true;
         responseAction(barResponse);
@@ -168,7 +168,7 @@ namespace Google.ProtocolBuffers {
     }
     
     
-    class TestServiceImpl : TestService {
+    class TestServiceImpl : TestGenericService {
       private readonly Action<FooRequest, Action<FooResponse>> fooHandler;
       private readonly Action<BarRequest, Action<BarResponse>> barHandler;
       private readonly IRpcController expectedController;
