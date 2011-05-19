@@ -34,6 +34,10 @@
 #define NOINLINE static __attribute__((noinline))
 
 static void upb_decoder_exit(upb_decoder *d) { siglongjmp(d->exitjmp, 1); }
+static void upb_decoder_exit2(void *_d) {
+  upb_decoder *d = _d;
+  upb_decoder_exit(d);
+}
 
 /* Decoding/Buffering of wire types *******************************************/
 
@@ -191,7 +195,7 @@ INLINE void upb_pop(upb_decoder *d) {
 }
 
 INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint32_t end) {
-  upb_dispatch_startsubmsg(&d->dispatcher, f, end);
+  upb_dispatch_startsubmsg(&d->dispatcher, f)->end_offset = end;
   upb_decoder_setmsgend(d);
 }
 
@@ -244,10 +248,9 @@ static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
 
 /* The main decoding loop *****************************************************/
 
-static void upb_unwind(upb_decoder *d) {
-  // TODO.
-  (void)d;
-}
+// Called when a user callback returns something other than UPB_CONTINUE.
+// This should unwind one or more stack frames, skipping the corresponding
+// data in the input.
 
 static void upb_delimend(upb_decoder *d) {
   if (d->ptr > d->submsg_end) {
@@ -329,8 +332,20 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
   }
 }
 
+static void upb_decoder_skip(void *_d, upb_dispatcher_frame *top,
+                             upb_dispatcher_frame *bottom) {
+  (void)top;
+  upb_decoder *d = _d;
+  if (bottom->end_offset == UINT32_MAX) {
+    // TODO: support skipping groups.
+    abort();
+  }
+  d->ptr = d->buf + bottom->end_offset;
+}
+
 void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
-  upb_dispatcher_init(&d->dispatcher, handlers);
+  upb_dispatcher_init(
+      &d->dispatcher, handlers, upb_decoder_skip, upb_decoder_exit2, d);
 #ifdef UPB_USE_JIT_X64
   d->jit_code = NULL;
   if (d->dispatcher.handlers->should_jit) upb_decoder_makejit(d);
@@ -371,7 +386,7 @@ void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure) {
-  upb_dispatcher_reset(&d->dispatcher, closure, UINT32_MAX);
+  upb_dispatcher_reset(&d->dispatcher, closure)->end_offset = UINT32_MAX;
   d->bytesrc = bytesrc;
   d->buf = NULL;
   d->ptr = NULL;

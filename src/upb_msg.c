@@ -208,25 +208,13 @@ static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
 
 static upb_flow_t upb_msg_pushval(upb_value val, upb_fielddef *f,
                                   upb_dispatcher *d, upb_fhandlers *hf) {
-#define CHECK_FLOW(x) do { \
-  upb_flow_t flow = x; if (flow != UPB_CONTINUE) return flow; \
-  } while(0)
-
-// For when a SKIP can be implemented just through an early return.
-#define CHECK_FLOW_LOCAL(x) do { \
-  upb_flow_t flow = x; \
-  if (flow != UPB_CONTINUE) { \
-    if (flow == UPB_SKIPSUBMSG) flow = UPB_CONTINUE; \
-    return flow; \
-  } \
-} while (0)
   if (upb_issubmsg(f)) {
     upb_msg *msg = upb_value_getmsg(val);
-    CHECK_FLOW_LOCAL(upb_dispatch_startsubmsg(d, hf, 0));
-    CHECK_FLOW_LOCAL(upb_msg_dispatch(msg, upb_downcast_msgdef(f->def), d));
-    CHECK_FLOW(upb_dispatch_endsubmsg(d));
+    upb_dispatch_startsubmsg(d, hf);
+    upb_msg_dispatch(msg, upb_downcast_msgdef(f->def), d);
+    upb_dispatch_endsubmsg(d);
   } else {
-    CHECK_FLOW(upb_dispatch_value(d, hf, val));
+    upb_dispatch_value(d, hf, val);
   }
   return UPB_CONTINUE;
 }
@@ -243,22 +231,20 @@ static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
     if (upb_isarray(f)) {
       upb_array *arr = upb_value_getarr(val);
       for (uint32_t j = 0; j < upb_array_len(arr); ++j) {
-        CHECK_FLOW_LOCAL(upb_msg_pushval(upb_array_get(arr, f, j), f, d, hf));
+        upb_msg_pushval(upb_array_get(arr, f, j), f, d, hf);
       }
     } else {
-      CHECK_FLOW_LOCAL(upb_msg_pushval(val, f, d, hf));
+      upb_msg_pushval(val, f, d, hf);
     }
   }
   return UPB_CONTINUE;
-#undef CHECK_FLOW
-#undef CHECK_FLOW_LOCAL
 }
 
 void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
                          void *closure, upb_status *status) {
   upb_dispatcher d;
-  upb_dispatcher_init(&d, h);
-  upb_dispatcher_reset(&d, closure, 0);
+  upb_dispatcher_init(&d, h, NULL, NULL, NULL);
+  upb_dispatcher_reset(&d, closure);
 
   upb_dispatch_startmsg(&d);
   upb_msg_dispatch(msg, md, &d);

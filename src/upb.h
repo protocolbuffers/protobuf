@@ -50,6 +50,7 @@ INLINE size_t upb_align_up(size_t val, size_t align) {
 // At the moment this specifies the size of several statically-sized arrays
 // and therefore setting it high will cause more memory to be used.  Will
 // be replaced by a runtime-configurable limit and dynamically-resizing arrays.
+// TODO: make this a runtime-settable property of upb_handlers.
 #define UPB_MAX_NESTING 64
 
 // The maximum number of fields that any one .proto type can have.  Note that
@@ -64,13 +65,9 @@ INLINE size_t upb_align_up(size_t val, size_t align) {
 // strings and arrays are not counted in this, only the *pointer* to them is.
 // An individual string or array is unaffected by this 16k byte limit.
 #define UPB_MAX_FIELDS (2048)
-typedef int16_t upb_field_count_t;
 
 // Nested type names are separated by periods.
 #define UPB_SYMBOL_SEPARATOR '.'
-
-// This limit is for the longest fully-qualified symbol, eg. foo.bar.MsgType
-#define UPB_SYMBOL_MAXLEN 128
 
 // The longest chain that mutually-recursive types are allowed to form.  For
 // example, this is a type cycle of length 2:
@@ -89,9 +86,6 @@ typedef int16_t upb_field_count_t;
 // avoid blowing the C stack.
 #define UPB_MAX_TYPE_DEPTH 64
 
-// The biggest possible single value is a 10-byte varint.
-#define UPB_MAX_ENCODED_SIZE 10
-
 
 /* Fundamental types and type constants. **************************************/
 
@@ -103,13 +97,7 @@ enum upb_wire_type {
   UPB_WIRE_TYPE_START_GROUP = 3,
   UPB_WIRE_TYPE_END_GROUP   = 4,
   UPB_WIRE_TYPE_32BIT       = 5,
-
-  // This isn't a real wire type, but we use this constant to describe varints
-  // that are expected to be a maximum of 32 bits.
-  UPB_WIRE_TYPE_32BIT_VARINT = 8
 };
-
-typedef uint8_t upb_wire_type_t;
 
 // Type of a field as defined in a .proto file.  eg. string, int32, etc.  The
 // integers that represent this are defined by descriptor.proto.  Note that
@@ -125,7 +113,7 @@ typedef uint8_t upb_fieldtype_t;
 typedef struct {
   uint8_t align;
   uint8_t size;
-  upb_wire_type_t native_wire_type;
+  uint8_t native_wire_type;
   uint8_t inmemory_type;    // For example, INT32, SINT32, and SFIXED32 -> INT32
   char *ctype;
 } upb_type_info;
@@ -133,20 +121,6 @@ typedef struct {
 // A static array of info about all of the field types, indexed by type number.
 extern const upb_type_info upb_types[];
 
-// The number of a field, eg. "optional string foo = 3".
-typedef int32_t upb_field_number_t;
-
-// Label (optional, repeated, required) as defined in a .proto file.  The
-// values of this are defined by google.protobuf.FieldDescriptorProto.Label
-// (from descriptor.proto).
-typedef uint8_t  upb_label_t;
-
-// A scalar (non-string) wire value.  Used only for parsing unknown fields.
-typedef union {
-  uint64_t varint;
-  uint64_t _64bit;
-  uint32_t _32bit;
-} upb_wire_value;
 
 /* Polymorphic values of .proto types *****************************************/
 

@@ -143,7 +143,7 @@ void compare(const google::protobuf::Message& proto2_msg,
   const google::protobuf::Reflection *r = proto2_msg.GetReflection();
   const google::protobuf::Descriptor *d = proto2_msg.GetDescriptor();
 
-  ASSERT((upb_field_count_t)d->field_count() == upb_msgdef_numfields(upb_md));
+  ASSERT(d->field_count() == upb_msgdef_numfields(upb_md));
   upb_msg_iter i;
   for(i = upb_msg_begin(upb_md); !upb_msg_done(i); i = upb_msg_next(upb_md, i)) {
     upb_fielddef *upb_f = upb_msg_iter_field(i);

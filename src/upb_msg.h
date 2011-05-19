@@ -169,7 +169,6 @@ INLINE void upb_array_unref(upb_array *a, upb_fielddef *f) {
 }
 
 void upb_array_recycle(upb_array **arr);
-
 INLINE uint32_t upb_array_len(upb_array *a) {
   return a->len;
 }
@@ -279,8 +278,40 @@ INLINE void upb_msg_clear(upb_msg *msg, upb_msgdef *md) {
 // The upb_msg itself must be passed as the param to the src.
 upb_mhandlers *upb_msg_reghandlers(upb_handlers *h, upb_msgdef *md);
 
-void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
-                         void *closure, upb_status *status);
+
+/* upb_msgvisitor *************************************************************/
+
+// Calls a set of upb_handlers with the contents of a upb_msg.
+typedef struct {
+  upb_fhandlers *fh;
+  upb_fielddef *f;
+  uint16_t msgindex;  // Only when upb_issubmsg(f).
+} upb_msgvisitor_field;
+
+typedef struct {
+  upb_msgvisitor_field *fields;
+  int fields_len;
+} upb_msgvisitor_msg;
+
+typedef struct {
+  uint16_t msgindex;
+  uint16_t fieldindex;
+  uint32_t arrayindex;  // UINT32_MAX if not an array frame.
+} upb_msgvisitor_frame;
+
+typedef struct {
+  upb_msgvisitor_msg *messages;
+  int messages_len;
+  upb_dispatcher dispatcher;
+} upb_msgvisitor;
+
+// Initializes a msgvisitor that will push data from messages of the given
+// msgdef to the given set of handlers.
+void upb_msgvisitor_init(upb_msgvisitor *v, upb_msgdef *md, upb_handlers *h);
+void upb_msgvisitor_uninit(upb_msgvisitor *v);
+
+void upb_msgvisitor_reset(upb_msgvisitor *v, upb_msg *m);
+void upb_msgvisitor_visit(upb_msgvisitor *v, upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */

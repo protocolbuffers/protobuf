@@ -178,7 +178,9 @@ static upb_fhandlers toplevel_f = {
 #endif
   NULL, NULL, NULL, 0, 0, 0, NULL};
 
-void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h) {
+void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
+                         upb_skip_handler *skip, upb_exit_handler *exit,
+                         void *srcclosure) {
   d->handlers = h;
   for (int i = 0; i < h->msgs_len; i++) {
     upb_mhandlers *m = h->msgs[i];
@@ -186,20 +188,18 @@ void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h) {
   }
   d->stack[0].f = &toplevel_f;
   d->limit = &d->stack[UPB_MAX_NESTING];
+  d->skip = skip;
+  d->exit = exit;
+  d->srcclosure = srcclosure;
   upb_status_init(&d->status);
 }
 
-void upb_dispatcher_reset(upb_dispatcher *d, void *top_closure, uint32_t top_end_offset) {
+upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *closure) {
   d->msgent = d->handlers->msgs[0];
   d->dispatch_table = &d->msgent->fieldtab;
-  d->current_depth = 0;
-  d->skip_depth = INT_MAX;
-  d->noframe_depth = INT_MAX;
-  d->delegated_depth = 0;
   d->top = d->stack;
-  d->top->closure = top_closure;
-  d->top->end_offset = top_end_offset;
-  d->top->is_packed = false;
+  d->top->closure = closure;
+  return d->top;
 }
 
 void upb_dispatcher_uninit(upb_dispatcher *d) {
@@ -207,20 +207,9 @@ void upb_dispatcher_uninit(upb_dispatcher *d) {
   upb_status_uninit(&d->status);
 }
 
-void upb_dispatcher_break(upb_dispatcher *d) {
-  assert(d->skip_depth == INT_MAX);
-  assert(d->noframe_depth == INT_MAX);
-  d->noframe_depth = d->current_depth;
-}
-
-upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d) {
+void upb_dispatch_startmsg(upb_dispatcher *d) {
   upb_flow_t flow = d->msgent->startmsg(d->top->closure);
-  if (flow != UPB_CONTINUE) {
-    d->noframe_depth = d->current_depth + 1;
-    d->skip_depth = (flow == UPB_BREAK) ? d->delegated_depth : d->current_depth;
-    return UPB_SKIPSUBMSG;
-  }
-  return UPB_CONTINUE;
+  if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
 }
 
 void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status) {
@@ -230,51 +219,55 @@ void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status) {
   upb_copyerr(status, &d->status);
 }
 
-upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d, upb_fhandlers *f,
-                                    size_t userval) {
-  ++d->current_depth;
-  if (upb_dispatcher_skipping(d)) return UPB_SKIPSUBMSG;
+upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
+                                               upb_fhandlers *f) {
+  if((d->top+1) >= d->limit) {
+    upb_seterr(&d->status, UPB_ERROR, "Nesting too deep.");
+    _upb_dispatcher_unwind(d, UPB_BREAK);
+    return d->top;  // Dummy.
+  }
+
   upb_sflow_t sflow = f->startsubmsg(d->top->closure, f->fval);
   if (sflow.flow != UPB_CONTINUE) {
-    d->noframe_depth = d->current_depth;
-    d->skip_depth = (sflow.flow == UPB_BREAK) ?
-        d->delegated_depth : d->current_depth;
-    return UPB_SKIPSUBMSG;
+    _upb_dispatcher_unwind(d, sflow.flow);
+    return d->top;  // Dummy.
   }
 
   ++d->top;
-  if(d->top >= d->limit) {
-    upb_seterr(&d->status, UPB_ERROR, "Nesting too deep.");
-    d->noframe_depth = d->current_depth;
-    d->skip_depth = d->delegated_depth;
-    return UPB_SKIPSUBMSG;
-  }
   d->top->f = f;
-  d->top->end_offset = userval;
+  d->top->is_sequence = false;
   d->top->closure = sflow.closure;
-  d->top->is_packed = false;
   d->msgent = f->submsg;
   d->dispatch_table = &d->msgent->fieldtab;
-  return upb_dispatch_startmsg(d);
+  upb_dispatch_startmsg(d);
+  return d->top;
 }
 
-upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d) {
-  upb_flow_t flow;
-  if (upb_dispatcher_noframe(d)) {
-    flow = UPB_SKIPSUBMSG;
-  } else {
-    assert(d->top > d->stack);
-    upb_fhandlers *old_f = d->top->f;
-    d->msgent->endmsg(d->top->closure, &d->status);
-    --d->top;
-    d->msgent = d->top->f->submsg;
-    if (!d->msgent) d->msgent = d->handlers->msgs[0];
-    d->dispatch_table = &d->msgent->fieldtab;
-    d->noframe_depth = INT_MAX;
-    if (!upb_dispatcher_skipping(d)) d->skip_depth = INT_MAX;
-    // Deliver like a regular value.
-    flow = old_f->endsubmsg(d->top->closure, old_f->fval);
+upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d) {
+  assert(d->top > d->stack);
+  void *c = d->top->closure;
+  upb_fhandlers *f = d->top->f;
+  --d->top;
+  d->msgent->endmsg(c, &d->status);
+  upb_flow_t flow = f->endsubmsg(d->top->closure, f->fval);
+  d->msgent = d->top->f->submsg ? d->top->f->submsg : d->handlers->msgs[0];
+  d->dispatch_table = &d->msgent->fieldtab;
+  if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
+  return d->top;
+}
+
+bool upb_dispatcher_stackempty(upb_dispatcher *d) {
+  return d->top == d->stack;
+}
+
+void _upb_dispatcher_unwind(upb_dispatcher *d, upb_flow_t flow) {
+  upb_dispatcher_frame *frame = d->top;
+  while (1) {
+    frame->f->submsg->endmsg(frame->closure, &d->status);
+    frame->f->endsubmsg(frame->closure, frame->f->fval);
+    --frame;
+    if (frame < d->stack) { d->exit(d->srcclosure); return; }
+    d->top = frame;
+    if (flow == UPB_SKIPSUBMSG) return;
   }
-  --d->current_depth;
-  return flow;
 }

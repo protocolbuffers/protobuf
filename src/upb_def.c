@@ -886,9 +886,9 @@ static void upb_msgdef_endmsg(void *_b, upb_status *status) {
 
   upb_inttable_compact(&m->itof);
   // Create an ordering over the fields.
-  upb_field_count_t n = upb_msgdef_numfields(m);
+  int n = upb_msgdef_numfields(m);
   upb_fielddef **sorted_fields = malloc(sizeof(upb_fielddef*) * n);
-  upb_field_count_t field = 0;
+  int field = 0;
   upb_msg_iter i;
   for (i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
     sorted_fields[field++] = upb_msg_iter_field(i);
@@ -1020,9 +1020,7 @@ typedef struct {
 static upb_symtab_ent *upb_resolve(upb_strtable *t,
                                    upb_string *base, upb_string *sym)
 {
-  if(upb_string_len(base) + upb_string_len(sym) + 1 >= UPB_SYMBOL_MAXLEN ||
-     upb_string_len(sym) == 0) return NULL;
-
+  if(upb_string_len(sym) == 0) return NULL;
   if(upb_string_getrobuf(sym)[0] == UPB_SYMBOL_SEPARATOR) {
     // Symbols starting with '.' are absolute, so we do a single lookup.
     // Slice to omit the leading '.'

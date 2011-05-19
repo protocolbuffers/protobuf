@@ -151,12 +151,13 @@ static upb_sflow_t upb_textprinter_startsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
   upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
-  CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT " {", UPB_STRARG(f->name)));
-  if(!p->single_line) upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status);
+  bool ret = upb_bytesink_printf(p->bytesink, &p->status,
+                                 UPB_STRFMT " {", UPB_STRARG(f->name));
+  if (!ret) return UPB_SBREAK;
+  if (!p->single_line)
+    upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status);
   p->indent_depth++;
   return UPB_CONTINUE_WITH(_p);
-err:
-  return UPB_S_BREAK;
 }
 
 static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_value fval) {

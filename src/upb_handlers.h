@@ -76,7 +76,7 @@ typedef enum {
 
   // Halt processing permanently (in a non-resumable way).  The endmsg handlers
   // for any currently open messages will be called which can supply a more
-  // specific status message.
+  // specific status message.  No further input data will be consumed.
   UPB_BREAK,
 
   // Skips to the end of the current submessage (or if we are at the top
@@ -87,6 +87,9 @@ typedef enum {
   // be called to perform cleanup and return a status.  Returning
   // UPB_SKIPSUBMSG from a startsubmsg handler will *not* call the startmsg,
   // endmsg, or endsubmsg handlers.
+  //
+  // If UPB_SKIPSUBMSG is called from the top-level message, no further input
+  // data will be consumed.
   UPB_SKIPSUBMSG,
 
   // TODO: Add UPB_SUSPEND, for resumable producers/consumers.
@@ -165,7 +168,7 @@ INLINE upb_sflow_t UPB_SFLOW(upb_flow_t flow, void *closure) {
   return ret;
 }
 #define UPB_CONTINUE_WITH(c) UPB_SFLOW(UPB_CONTINUE, c)
-#define UPB_S_BREAK UPB_SFLOW(UPB_BREAK, NULL)
+#define UPB_SBREAK UPB_SFLOW(UPB_BREAK, NULL)
 
 // Appends a new message to the graph of handlers and returns it.  This message
 // can be obtained later at index upb_handlers_msgcount()-1.  All handlers will
@@ -250,28 +253,32 @@ INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, upb_msgdef *m,
 /* upb_dispatcher *************************************************************/
 
 // upb_dispatcher can be used by sources of data to invoke the appropriate
-// handlers.  It takes care of details such as:
-//   - ensuring all endmsg callbacks (cleanup handlers) are called.
-//   - propagating status all the way back to the top-level message.
-//   - handling UPB_BREAK properly (clients only need to handle UPB_SKIPSUBMSG).
-//   - handling UPB_SKIPSUBMSG if the client doesn't (but this is less
-//     efficient, because then you can't skip the actual work).
-//   - tracking the stack of closures.
-//
-// TODO: it might be best to actually surface UPB_BREAK to clients in the case
-// that the can't efficiently skip the submsg; eg. with groups.  Then the client
-// would know to just unwind the stack without bothering to consume the rest of
-// the input.  On the other hand, it might be important for all the input to be
-// consumed, like if this is a submessage of a larger stream.
+// handlers on a upb_handlers object.  Besides maintaining the runtime stack of
+// closures and handlers, the dispatcher checks the return status of user
+// callbacks and properly handles statuses other than UPB_CONTINUE, invoking
+// "skip" or "exit" handlers on the underlying data source as appropriate.
 
 typedef struct {
   upb_fhandlers *f;
   void *closure;
-  // Relative to the beginning of this buffer.
-  // For groups and the top-level: UINT32_MAX.
+
+  // Members to use as the data source requires.
+  void *srcclosure;
+  uint16_t msgindex;
+  uint16_t fieldindex;
   uint32_t end_offset;
-  bool is_packed;  // == !upb_issubmsg(f) && end_offset != UPB_REPATEDEND
+
+  // Does this frame represent a sequence or a submsg (f might be both).
+  // We only need a single bit here, but this will make each individual
+  // frame grow from 32 to 40 bytes on LP64, which is a bit excessive.
+  bool is_sequence;
 } upb_dispatcher_frame;
+
+// Called when some of the input needs to be skipped.  All frames from
+// top to bottom, inclusive, should be skipped.
+typedef void upb_skip_handler(void *, upb_dispatcher_frame *top,
+                              upb_dispatcher_frame *bottom);
+typedef void upb_exit_handler(void *);
 
 typedef struct {
   upb_dispatcher_frame *top, *limit;
@@ -281,78 +288,43 @@ typedef struct {
   // Msg and dispatch table for the current level.
   upb_mhandlers *msgent;
   upb_inttable *dispatch_table;
-
-  // The number of startsubmsg calls without a corresponding endsubmsg call.
-  int current_depth;
-
-  // For all frames >= skip_depth, we are skipping all values in the submsg.
-  // For all frames >= noframe_depth, we did not even push a frame.
-  // These are INT_MAX when nothing is being skipped.
-  // Invariant: noframe_depth >= skip_depth
-  int skip_depth;
-  int noframe_depth;
-
-  // Depth of stack entries we'll skip if a callback returns UPB_BREAK.
-  int delegated_depth;
+  upb_skip_handler *skip;
+  upb_exit_handler *exit;
+  void *srcclosure;
 
   // Stack.
   upb_status status;
   upb_dispatcher_frame stack[UPB_MAX_NESTING];
 } upb_dispatcher;
 
-INLINE bool upb_dispatcher_skipping(upb_dispatcher *d) {
-  return d->current_depth >= d->skip_depth;
-}
-
-// If true, upb_dispatcher_skipping(d) must also be true.
-INLINE bool upb_dispatcher_noframe(upb_dispatcher *d) {
-  return d->current_depth >= d->noframe_depth;
-}
-
-
-void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h);
-void upb_dispatcher_reset(upb_dispatcher *d, void *top_closure, uint32_t top_end_offset);
+void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
+                         upb_skip_handler *skip, upb_exit_handler *exit,
+                         void *closure);
+upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *topclosure);
 void upb_dispatcher_uninit(upb_dispatcher *d);
 
-upb_flow_t upb_dispatch_startmsg(upb_dispatcher *d);
-void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
+// Tests whether the runtime stack is in the base level message.
+bool upb_dispatcher_stackempty(upb_dispatcher *d);
 
 // Looks up a field by number for the current message.
-INLINE upb_fhandlers *upb_dispatcher_lookup(upb_dispatcher *d,
-                                           upb_field_number_t n) {
+INLINE upb_fhandlers *upb_dispatcher_lookup(upb_dispatcher *d, uint32_t n) {
   return (upb_fhandlers*)upb_inttable_fastlookup(
       d->dispatch_table, n, sizeof(upb_fhandlers));
 }
 
-// Dispatches values or submessages -- the client is responsible for having
-// previously looked up the field.
-upb_flow_t upb_dispatch_startsubmsg(upb_dispatcher *d,
-                                    upb_fhandlers *f,
-                                    size_t userval);
-upb_flow_t upb_dispatch_endsubmsg(upb_dispatcher *d);
+void _upb_dispatcher_unwind(upb_dispatcher *d, upb_flow_t flow);
 
-INLINE upb_flow_t upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
-                                     upb_value val) {
-  if (upb_dispatcher_skipping(d)) return UPB_SKIPSUBMSG;
+// Dispatch functions -- call the user handler and handle errors.
+INLINE void upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
+                               upb_value val) {
   upb_flow_t flow = f->value(d->top->closure, f->fval, val);
-  if (flow != UPB_CONTINUE) {
-    d->noframe_depth = d->current_depth + 1;
-    d->skip_depth = (flow == UPB_BREAK) ? d->delegated_depth : d->current_depth;
-    return UPB_SKIPSUBMSG;
-  }
-  return UPB_CONTINUE;
+  if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
 }
-INLINE upb_flow_t upb_dispatch_unknownval(upb_dispatcher *d, upb_field_number_t n,
-                                          upb_value val) {
-  // TODO.
-  (void)d;
-  (void)n;
-  (void)val;
-  return UPB_CONTINUE;
-}
-INLINE bool upb_dispatcher_stackempty(upb_dispatcher *d) {
-  return d->top == d->stack;
-}
+void upb_dispatch_startmsg(upb_dispatcher *d);
+void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
+upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
+                                               upb_fhandlers *f);
+upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d);
 
 #ifdef __cplusplus
 }  /* extern "C" */

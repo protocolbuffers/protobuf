@@ -78,6 +78,14 @@ struct _upb_decoder {
   sigjmp_buf exitjmp;
 };
 
+// For use in the upb_dispatcher's stack.
+typedef struct {
+  // Relative to the beginning of this buffer.
+  // For groups and the top-level: UINT32_MAX.
+  uint32_t end_offset;
+  bool is_packed;  // == !upb_issubmsg(f) && end_offset != UPB_REPATEDEND
+} upb_decoder_srcdata;
+
 // A upb_decoder decodes the binary protocol buffer format, writing the data it
 // decodes to a upb_sink.
 struct _upb_decoder;

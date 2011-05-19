@@ -175,8 +175,8 @@ typedef struct _upb_msgdef {
 // Hash table entries for looking up fields by name or number.
 typedef struct {
   bool junk;
-  upb_fieldtype_t field_type;
-  upb_wire_type_t native_wire_type;
+  uint8_t field_type;
+  uint8_t native_wire_type;
   upb_fielddef *f;
 } upb_itof_ent;
 typedef struct {
@@ -209,7 +209,7 @@ INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, upb_string *name) {
   return e ? e->f : NULL;
 }
 
-INLINE upb_field_count_t upb_msgdef_numfields(upb_msgdef *m) {
+INLINE int upb_msgdef_numfields(upb_msgdef *m) {
   return upb_strtable_count(&m->ntof);
 }
 
