@@ -1,5 +1,6 @@
 REM @ECHO OFF
 @IF "%1" == "build" GOTO BUILD
+@IF "%1" == "fpush" GOTO FILEPUSH
 @IF "%1" == "push" GOTO PUSH
 GOTO HELP
 
@@ -23,7 +24,9 @@ goto EXIT
 hg commit -m "version %2"
 hg tag %2
 hg push
-SET GOOGLEUPLOAD=C:\Python25\python.exe %~dp0\googlecode_upload.py --project protobuf-csharp-port --user "%3" --password "%4"
+
+:FILEPUSH
+SET GOOGLEUPLOAD=python.exe %~dp0\googlecode_upload.py --project protobuf-csharp-port --user "%3" --password "%4"
 
 %GOOGLEUPLOAD% --labels Type-Source,Featured --summary "Version %2 source" %~dp0\%2\protobuf-csharp-port-%2-source.zip
 %GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries (all configurations)" %~dp0\%2\protobuf-csharp-port-%2-full-binaries.zip

@@ -1,6 +1,4 @@
-
-<!-- saved from url=(0068)http://support.googlecode.com/svn/trunk/scripts/googlecode_upload.py -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#!/usr/bin/env python
+#!/usr/bin/env python
 #
 # Copyright 2006, 2007 Google Inc. All Rights Reserved.
 # Author: danderson@google.com (David Anderson)
@@ -170,7 +168,7 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
     tries: How many attempts to make.
   """
 
-  while tries &gt; 0:
+  while tries > 0:
     if user_name is None:
       # Read username if not specified or loaded from svn config, or on
       # subsequent tries.
@@ -221,9 +219,9 @@ def main():
     parser.error('File summary is missing.')
   elif not options.project:
     parser.error('Project name is missing.')
-  elif len(args) &lt; 1:
+  elif len(args) < 1:
     parser.error('File to upload not provided.')
-  elif len(args) &gt; 1:
+  elif len(args) > 1:
     parser.error('Only one file may be specified.')
 
   file_path = args[0]
@@ -248,4 +246,3 @@ def main():
 
 if __name__ == '__main__':
   sys.exit(main())
-</pre></body></html>
