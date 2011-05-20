@@ -39,15 +39,16 @@ namespace Google.ProtocolBuffers.Descriptors {
   /// Defined specifically for the <see cref="FieldType" /> enumeration,
   /// this allows each field type to specify the mapped type and wire type.
   /// </summary>
+  [CLSCompliant(false)]
   [AttributeUsage(AttributeTargets.Field)]
-  internal sealed class FieldMappingAttribute : Attribute {
-    internal FieldMappingAttribute(MappedType mappedType, WireFormat.WireType wireType) {
+  public sealed class FieldMappingAttribute : Attribute {
+    public FieldMappingAttribute(MappedType mappedType, WireFormat.WireType wireType) {
       MappedType = mappedType;
       WireType = wireType;
     }
 
-    internal MappedType MappedType { get; private set; }
-    internal WireFormat.WireType WireType { get; private set; }
+    public MappedType MappedType { get; private set; }
+    public WireFormat.WireType WireType { get; private set; }
 
 
     /// <summary>

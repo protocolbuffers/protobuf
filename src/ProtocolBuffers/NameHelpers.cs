@@ -100,7 +100,7 @@ namespace Google.ProtocolBuffers {
     /// Attempts to strip a suffix from a string, returning whether
     /// or not the suffix was actually present.
     /// </summary>
-    internal static bool StripSuffix(ref string text, string suffix) {
+    public static bool StripSuffix(ref string text, string suffix) {
       if (text.EndsWith(suffix)) {
         text = text.Substring(0, text.Length - suffix.Length);
         return true;

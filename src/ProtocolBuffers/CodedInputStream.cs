@@ -66,7 +66,7 @@ namespace Google.ProtocolBuffers {
 
     internal const int DefaultRecursionLimit = 64;
     internal const int DefaultSizeLimit = 64 << 20; // 64MB
-    internal const int BufferSize = 4096;
+    public const int BufferSize = 4096;
     
     /// <summary>
     /// The total number of bytes read before the current buffer. The
@@ -490,7 +490,9 @@ namespace Google.ProtocolBuffers {
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    internal static uint ReadRawVarint32(Stream input) {
+    [CLSCompliant(false)]
+    public static uint ReadRawVarint32(Stream input)
+    {
       int result = 0;
       int offset = 0;
       for (; offset < 32; offset += 7) {

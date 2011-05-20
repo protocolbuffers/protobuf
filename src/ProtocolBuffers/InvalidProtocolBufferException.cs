@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers {
       : base(message) {
     }
 
-    internal static InvalidProtocolBufferException TruncatedMessage() {
+    public static InvalidProtocolBufferException TruncatedMessage() {
       return new InvalidProtocolBufferException(
         "While parsing a protocol message, the input ended unexpectedly " +
         "in the middle of a field.  This could mean either than the " +

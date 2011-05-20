@@ -225,23 +225,25 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    internal static ulong ParseUInt64(string text) {
+    [CLSCompliant(false)]
+    public static ulong ParseUInt64(string text) {
       return (ulong) ParseInteger(text, false, true);
     }
 
-    internal static long ParseInt64(string text) {
+    public static long ParseInt64(string text) {
       return ParseInteger(text, true, true);
     }
 
-    internal static uint ParseUInt32(string text) {
+    [CLSCompliant(false)]
+    public static uint ParseUInt32(string text) {
       return (uint) ParseInteger(text, false, false);
     }
 
-    internal static int ParseInt32(string text) {
+    public static int ParseInt32(string text) {
       return (int) ParseInteger(text, true, false);
     }
 
-    internal static float ParseFloat(string text) {
+    public static float ParseFloat(string text) {
       switch (text) {
         case "-inf":
         case "-infinity":
@@ -261,7 +263,7 @@ namespace Google.ProtocolBuffers {
       }
     }
 
-    internal static double ParseDouble(string text) {
+    public static double ParseDouble(string text) {
       switch (text) {
         case "-inf":
         case "-infinity":
@@ -363,7 +365,7 @@ namespace Google.ProtocolBuffers {
     /// Unescapes a text string as escaped using <see cref="EscapeText(string)" />.
     /// Two-digit hex escapes (starting with "\x" are also recognised.
     /// </summary>
-    internal static string UnescapeText(string input) {
+    public static string UnescapeText(string input) {
       return UnescapeBytes(input).ToStringUtf8();
     }
 
@@ -372,7 +374,7 @@ namespace Google.ProtocolBuffers {
     /// The string is first encoded as UTF-8, then each byte escaped individually.
     /// The returned value is guaranteed to be entirely ASCII.
     /// </summary>
-    internal static string EscapeText(string input) {
+    public static string EscapeText(string input) {
       return EscapeBytes(ByteString.CopyFromUtf8(input));
     }
 
@@ -385,7 +387,7 @@ namespace Google.ProtocolBuffers {
     /// using 3-digit octal sequences.
     /// The returned value is guaranteed to be entirely ASCII.
     /// </summary>
-    internal static String EscapeBytes(ByteString input) {
+    public static String EscapeBytes(ByteString input) {
       StringBuilder builder = new StringBuilder(input.Length);
       foreach (byte b in input) {
         switch (b) {
@@ -418,7 +420,7 @@ namespace Google.ProtocolBuffers {
     /// <summary>
     /// Performs string unescaping from C style (octal, hex, form feeds, tab etc) into a byte string.
     /// </summary>
-    internal static ByteString UnescapeBytes(string input) {
+    public static ByteString UnescapeBytes(string input) {
       byte[] result = new byte[input.Length];
       int pos = 0;
       for (int i = 0; i < input.Length; i++) {
