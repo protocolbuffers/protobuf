@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\google\protobuf\unittest_enormous_descriptor.proto = ..\protos\google\protobuf\unittest_enormous_descriptor.proto
 		..\protos\extest\unittest_extras_full.proto = ..\protos\extest\unittest_extras_full.proto
 		..\protos\extest\unittest_extras_lite.proto = ..\protos\extest\unittest_extras_lite.proto
+		..\protos\extest\unittest_generic_services.proto = ..\protos\extest\unittest_generic_services.proto
 		..\protos\google\protobuf\unittest_import.proto = ..\protos\google\protobuf\unittest_import.proto
 		..\protos\google\protobuf\unittest_import_lite.proto = ..\protos\google\protobuf\unittest_import_lite.proto
 		..\protos\google\protobuf\unittest_lite.proto = ..\protos\google\protobuf\unittest_lite.proto
@@ -25,7 +26,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\google\protobuf\unittest_mset.proto = ..\protos\google\protobuf\unittest_mset.proto
 		..\protos\google\protobuf\unittest_no_generic_services.proto = ..\protos\google\protobuf\unittest_no_generic_services.proto
 		..\protos\google\protobuf\unittest_optimize_for.proto = ..\protos\google\protobuf\unittest_optimize_for.proto
-		..\protos\extest\unittest_generic_services.proto = ..\protos\extest\unittest_generic_services.proto
 		..\protos\extest\unittest_rpc_interop.proto = ..\protos\extest\unittest_rpc_interop.proto
 	EndProjectSection
 EndProject
@@ -61,6 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{66ED1950
 		..\build\Common.targets = ..\build\Common.targets
 		..\build\GenerateCompletePackage.bat = ..\build\GenerateCompletePackage.bat
 		..\build\GenerateReleasePackage.bat = ..\build\GenerateReleasePackage.bat
+		..\build\PublishRelease.bat = ..\build\PublishRelease.bat
 		..\build\RunBenchmarks.bat = ..\build\RunBenchmarks.bat
 	EndProjectSection
 EndProject
