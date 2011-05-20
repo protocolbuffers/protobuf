@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
@@ -74,9 +74,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Google.ProtocolBuffers.snk" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractBuilderLite.cs" />

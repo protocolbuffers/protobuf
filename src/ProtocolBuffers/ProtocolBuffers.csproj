@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -186,9 +186,6 @@
     <Compile Include="UnknownField.cs" />
     <Compile Include="UnknownFieldSet.cs" />
     <Compile Include="WireFormat.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Google.ProtocolBuffers.snk" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

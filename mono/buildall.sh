@@ -9,6 +9,7 @@ NUNIT_OPTIONS=-noshadow
 
 SRC=../src
 LIB=../lib
+KEYFILE=../keys/Google.ProtocolBuffers.snk
 
 rm -rf bin
 mkdir bin
@@ -18,19 +19,19 @@ mkdir bin
 cp -f $LIB/{Rhino.Mocks.dll,nunit.framework.dll} bin
 
 echo Building main library
-gmcs -target:library -out:bin/Google.ProtocolBuffers.dll `find $SRC/ProtocolBuffers -name '*.cs'` -keyfile:$SRC/ProtocolBuffers/Properties/Google.ProtocolBuffers.snk
+gmcs -target:library -out:bin/Google.ProtocolBuffers.dll `find $SRC/ProtocolBuffers -name '*.cs'` -keyfile:$KEYFILE
 
 echo Building main library tests
-gmcs -target:library -out:bin/Google.ProtocolBuffers.Test.dll `find $SRC/ProtocolBuffers.Test -name '*.cs'` -keyfile:$SRC/ProtocolBuffers.Test/Properties/Google.ProtocolBuffers.Test.snk -r:bin/Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:$LIB/Rhino.Mocks.dll
+gmcs -target:library -out:bin/Google.ProtocolBuffers.Test.dll `find $SRC/ProtocolBuffers.Test -name '*.cs'` -keyfile:$KEYFILE -r:bin/Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:$LIB/Rhino.Mocks.dll
 
 echo Running main library tests
 mono $NUNIT bin/Google.ProtocolBuffers.Test.dll $NUNIT_OPTIONS
 
 echo Building ProtoGen
-gmcs -target:exe -out:bin/ProtoGen.exe `find $SRC/ProtoGen -name '*.cs'` -keyfile:$SRC/ProtoGen/Properties/Google.ProtocolBuffers.ProtoGen.snk -r:bin/Google.ProtocolBuffers.dll
+gmcs -target:exe -out:bin/ProtoGen.exe `find $SRC/ProtoGen -name '*.cs'` -keyfile:$KEYFILE -r:bin/Google.ProtocolBuffers.dll
 
 echo Building ProtoGen tests
-gmcs -target:library -out:bin/Google.ProtocolBuffers.ProtoGen.Test.dll `find $SRC/ProtoGen.Test -name '*.cs'` -keyfile:$SRC/ProtoGen.Test/Properties/Google.ProtocolBuffers.ProtoGen.Test.snk -r:bin/Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:bin/ProtoGen.exe
+gmcs -target:library -out:bin/Google.ProtocolBuffers.ProtoGen.Test.dll `find $SRC/ProtoGen.Test -name '*.cs'` -keyfile:$KEYFILE -r:bin/Google.ProtocolBuffers.dll -r:$LIB/nunit.framework.dll -r:bin/ProtoGen.exe
 
 echo Running ProtoGen tests
 mono $NUNIT bin/Google.ProtocolBuffers.ProtoGen.Test.dll $NUNIT_OPTIONS

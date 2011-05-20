@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.ProtoGen.Test.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -83,9 +83,6 @@
       <Project>{250ADE34-82FD-4BAE-86D5-985FBE589C4A}</Project>
       <Name>ProtoGen</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Google.ProtocolBuffers.ProtoGen.Test.snk" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

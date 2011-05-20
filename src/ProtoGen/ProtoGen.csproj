@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\Google.ProtocolBuffers.ProtoGen.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -91,7 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Properties\Google.ProtocolBuffers.ProtoGen.snk" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">

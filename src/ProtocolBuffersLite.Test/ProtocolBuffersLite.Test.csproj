@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\ProtocolBuffers.Test\Properties\Google.ProtocolBuffers.Test.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
@@ -65,11 +65,6 @@
     <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\ProtocolBuffers.Test\Properties\Google.ProtocolBuffers.Test.snk">
-      <Link>Properties\Google.ProtocolBuffers.Test.snk</Link>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffersLite.csproj">
