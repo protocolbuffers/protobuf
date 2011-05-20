@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,13 +31,15 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
-namespace Google.ProtocolBuffers.ProtoGen {
-
-  /// <summary>
-  /// Helpers to resolve class names etc.
-  /// </summary>
-  internal static class Helpers {
-  }
+namespace Google.ProtocolBuffers.ProtoGen
+{
+    /// <summary>
+    /// Helpers to resolve class names etc.
+    /// </summary>
+    internal static class Helpers
+    {
+    }
 }

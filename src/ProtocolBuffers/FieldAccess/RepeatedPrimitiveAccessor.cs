@@ -33,112 +33,128 @@ using System;
 using System.Collections;
 using System.Reflection;
 
-namespace Google.ProtocolBuffers.FieldAccess {
-  /// <summary>
-  /// Accessor for a repeated field of type int, ByteString etc.
-  /// </summary>
-  internal class RepeatedPrimitiveAccessor<TMessage, TBuilder> : IFieldAccessor<TMessage, TBuilder>
-      where TMessage : IMessage<TMessage, TBuilder>
-      where TBuilder : IBuilder<TMessage, TBuilder> {
-
-    private readonly Type clrType;
-    private readonly Func<TMessage, object> getValueDelegate;
-    private readonly Func<TBuilder, IBuilder> clearDelegate;
-    private readonly Action<TBuilder, object> addValueDelegate;
-    private readonly Func<TBuilder, object> getRepeatedWrapperDelegate;
-    private readonly Func<TMessage, int> countDelegate;
-    private readonly MethodInfo getElementMethod;
-    private readonly MethodInfo setElementMethod;
-
-    // Replacement for Type.EmptyTypes which apparently isn't available on the compact framework
-    internal static readonly Type[] EmptyTypes = new Type[0];
-
+namespace Google.ProtocolBuffers.FieldAccess
+{
     /// <summary>
-    /// The CLR type of the field (int, the enum type, ByteString, the message etc).
-    /// This is taken from the return type of the method used to retrieve a single
-    /// value.
+    /// Accessor for a repeated field of type int, ByteString etc.
     /// </summary>
-    protected Type ClrType {
-      get { return clrType; }
-    }
+    internal class RepeatedPrimitiveAccessor<TMessage, TBuilder> : IFieldAccessor<TMessage, TBuilder>
+        where TMessage : IMessage<TMessage, TBuilder>
+        where TBuilder : IBuilder<TMessage, TBuilder>
+    {
+        private readonly Type clrType;
+        private readonly Func<TMessage, object> getValueDelegate;
+        private readonly Func<TBuilder, IBuilder> clearDelegate;
+        private readonly Action<TBuilder, object> addValueDelegate;
+        private readonly Func<TBuilder, object> getRepeatedWrapperDelegate;
+        private readonly Func<TMessage, int> countDelegate;
+        private readonly MethodInfo getElementMethod;
+        private readonly MethodInfo setElementMethod;
 
-    internal RepeatedPrimitiveAccessor(string name) {      
-      PropertyInfo messageProperty = typeof(TMessage).GetProperty(name + "List");
-      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name + "List");
-      PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count");
-      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, EmptyTypes);
-      getElementMethod = typeof(TMessage).GetMethod("Get" + name, new Type[] { typeof(int) });
-      clrType = getElementMethod.ReturnType;
-      MethodInfo addMethod = typeof(TBuilder).GetMethod("Add" + name, new Type[] { ClrType });
-      setElementMethod = typeof(TBuilder).GetMethod("Set" + name, new Type[] { typeof(int), ClrType });
-      if (messageProperty == null 
-          || builderProperty == null 
-          || countProperty == null
-          || clearMethod == null
-          || addMethod == null
-          || getElementMethod == null
-          || setElementMethod == null) {
-        throw new ArgumentException("Not all required properties/methods available");
-      }
-      clearDelegate = (Func<TBuilder, IBuilder>)Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null, clearMethod);
-      countDelegate = (Func<TMessage, int>)Delegate.CreateDelegate
-          (typeof(Func<TMessage, int>), null, countProperty.GetGetMethod());
-      getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
-      addValueDelegate = ReflectionUtil.CreateDowncastDelegateIgnoringReturn<TBuilder>(addMethod);
-      getRepeatedWrapperDelegate = ReflectionUtil.CreateUpcastDelegate<TBuilder>(builderProperty.GetGetMethod());
-    }
+        // Replacement for Type.EmptyTypes which apparently isn't available on the compact framework
+        internal static readonly Type[] EmptyTypes = new Type[0];
 
-    public bool Has(TMessage message) {
-      throw new InvalidOperationException();
-    }
-    
-    public virtual IBuilder CreateBuilder() {
-      throw new InvalidOperationException();
-    }
+        /// <summary>
+        /// The CLR type of the field (int, the enum type, ByteString, the message etc).
+        /// This is taken from the return type of the method used to retrieve a single
+        /// value.
+        /// </summary>
+        protected Type ClrType
+        {
+            get { return clrType; }
+        }
 
-    public virtual object GetValue(TMessage message) {
-      return getValueDelegate(message);
-    }
+        internal RepeatedPrimitiveAccessor(string name)
+        {
+            PropertyInfo messageProperty = typeof (TMessage).GetProperty(name + "List");
+            PropertyInfo builderProperty = typeof (TBuilder).GetProperty(name + "List");
+            PropertyInfo countProperty = typeof (TMessage).GetProperty(name + "Count");
+            MethodInfo clearMethod = typeof (TBuilder).GetMethod("Clear" + name, EmptyTypes);
+            getElementMethod = typeof (TMessage).GetMethod("Get" + name, new Type[] {typeof (int)});
+            clrType = getElementMethod.ReturnType;
+            MethodInfo addMethod = typeof (TBuilder).GetMethod("Add" + name, new Type[] {ClrType});
+            setElementMethod = typeof (TBuilder).GetMethod("Set" + name, new Type[] {typeof (int), ClrType});
+            if (messageProperty == null
+                || builderProperty == null
+                || countProperty == null
+                || clearMethod == null
+                || addMethod == null
+                || getElementMethod == null
+                || setElementMethod == null)
+            {
+                throw new ArgumentException("Not all required properties/methods available");
+            }
+            clearDelegate =
+                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof (Func<TBuilder, IBuilder>), null, clearMethod);
+            countDelegate = (Func<TMessage, int>) Delegate.CreateDelegate
+                                                      (typeof (Func<TMessage, int>), null, countProperty.GetGetMethod());
+            getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
+            addValueDelegate = ReflectionUtil.CreateDowncastDelegateIgnoringReturn<TBuilder>(addMethod);
+            getRepeatedWrapperDelegate = ReflectionUtil.CreateUpcastDelegate<TBuilder>(builderProperty.GetGetMethod());
+        }
 
-    public void SetValue(TBuilder builder, object value) {
-      // Add all the elements individually.  This serves two purposes:
-      // 1) Verifies that each element has the correct type.
-      // 2) Insures that the caller cannot modify the list later on and
-      //    have the modifications be reflected in the message.
-      Clear(builder);
-      foreach (object element in (IEnumerable) value) {
-        AddRepeated(builder, element);
-      }
-    }
+        public bool Has(TMessage message)
+        {
+            throw new InvalidOperationException();
+        }
 
-    public void Clear(TBuilder builder) {
-      clearDelegate(builder);
-    }
+        public virtual IBuilder CreateBuilder()
+        {
+            throw new InvalidOperationException();
+        }
 
-    public int GetRepeatedCount(TMessage message) {
-      return countDelegate(message);
-    }
+        public virtual object GetValue(TMessage message)
+        {
+            return getValueDelegate(message);
+        }
 
-    public virtual object GetRepeatedValue(TMessage message, int index) {
-      return getElementMethod.Invoke(message, new object[] {index } );
-    }
+        public void SetValue(TBuilder builder, object value)
+        {
+            // Add all the elements individually.  This serves two purposes:
+            // 1) Verifies that each element has the correct type.
+            // 2) Insures that the caller cannot modify the list later on and
+            //    have the modifications be reflected in the message.
+            Clear(builder);
+            foreach (object element in (IEnumerable) value)
+            {
+                AddRepeated(builder, element);
+            }
+        }
 
-    public virtual void SetRepeated(TBuilder builder, int index, object value) {
-      ThrowHelper.ThrowIfNull(value, "value");
-      setElementMethod.Invoke(builder, new object[] { index, value });
-    }
+        public void Clear(TBuilder builder)
+        {
+            clearDelegate(builder);
+        }
 
-    public virtual void AddRepeated(TBuilder builder, object value) {
-      ThrowHelper.ThrowIfNull(value, "value");
-      addValueDelegate(builder, value);
-    }
+        public int GetRepeatedCount(TMessage message)
+        {
+            return countDelegate(message);
+        }
 
-    /// <summary>
-    /// The builder class's accessor already builds a read-only wrapper for
-    /// us, which is exactly what we want.
-    /// </summary>
-    public object GetRepeatedWrapper(TBuilder builder) {
-      return getRepeatedWrapperDelegate(builder);
+        public virtual object GetRepeatedValue(TMessage message, int index)
+        {
+            return getElementMethod.Invoke(message, new object[] {index});
+        }
+
+        public virtual void SetRepeated(TBuilder builder, int index, object value)
+        {
+            ThrowHelper.ThrowIfNull(value, "value");
+            setElementMethod.Invoke(builder, new object[] {index, value});
+        }
+
+        public virtual void AddRepeated(TBuilder builder, object value)
+        {
+            ThrowHelper.ThrowIfNull(value, "value");
+            addValueDelegate(builder, value);
+        }
+
+        /// <summary>
+        /// The builder class's accessor already builds a read-only wrapper for
+        /// us, which is exactly what we want.
+        /// </summary>
+        public object GetRepeatedWrapper(TBuilder builder)
+        {
+            return getRepeatedWrapperDelegate(builder);
+        }
     }
-  }
 }

@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,29 +31,35 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
 using Google.ProtocolBuffers.Descriptors;
 
-namespace Google.ProtocolBuffers {
+namespace Google.ProtocolBuffers
+{
+    /// <summary>
+    /// Generated extension for a singular field.
+    /// </remarks>
+    public sealed class GeneratedSingleExtension<TExtension> : GeneratedExtensionBase<TExtension>
+    {
+        internal GeneratedSingleExtension(FieldDescriptor descriptor) : base(descriptor, typeof (TExtension))
+        {
+        }
 
-  /// <summary>
-  /// Generated extension for a singular field.
-  /// </remarks>
-  public sealed class GeneratedSingleExtension<TExtension> : GeneratedExtensionBase<TExtension>  {
-    internal GeneratedSingleExtension(FieldDescriptor descriptor) : base(descriptor, typeof(TExtension)) {
-    }
+        public static GeneratedSingleExtension<TExtension> CreateInstance(FieldDescriptor descriptor)
+        {
+            if (descriptor.IsRepeated)
+            {
+                throw new ArgumentException("Must call GeneratedRepeateExtension.CreateInstance() for repeated types.");
+            }
+            return new GeneratedSingleExtension<TExtension>(descriptor);
+        }
 
-    public static GeneratedSingleExtension<TExtension> CreateInstance(FieldDescriptor descriptor) {
-      if (descriptor.IsRepeated) {
-        throw new ArgumentException("Must call GeneratedRepeateExtension.CreateInstance() for repeated types.");
-      }
-      return new GeneratedSingleExtension<TExtension>(descriptor);
+        public override object FromReflectionType(object value)
+        {
+            return base.SingularFromReflectionType(value);
+        }
     }
-
-    public override object FromReflectionType(object value) {
-      return base.SingularFromReflectionType(value);
-    }
-  }
 }

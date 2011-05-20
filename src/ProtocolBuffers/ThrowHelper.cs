@@ -1,4 +1,5 @@
 ﻿#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,44 +31,53 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
 using System.Collections.Generic;
 
-namespace Google.ProtocolBuffers {
-  /// <summary>
-  /// Helper methods for throwing exceptions
-  /// </summary>
-  public static class ThrowHelper {
-
+namespace Google.ProtocolBuffers
+{
     /// <summary>
-    /// Throws an ArgumentNullException if the given value is null.
+    /// Helper methods for throwing exceptions
     /// </summary>
-    public static void ThrowIfNull(object value, string name) {
-      if (value == null) {
-        throw new ArgumentNullException(name);
-      }
-    }
-
-    /// <summary>
-    /// Throws an ArgumentNullException if the given value is null.
-    /// </summary>
-    public static void ThrowIfNull(object value) {
-      if (value == null) {
-        throw new ArgumentNullException();
-      }
-    }
-
-    /// <summary>
-    /// Throws an ArgumentNullException if the given value or any element within it is null.
-    /// </summary>
-    public static void ThrowIfAnyNull<T>(IEnumerable<T> sequence) {
-      foreach (T t in sequence) {
-        if (t == null) {
-          throw new ArgumentNullException();
+    public static class ThrowHelper
+    {
+        /// <summary>
+        /// Throws an ArgumentNullException if the given value is null.
+        /// </summary>
+        public static void ThrowIfNull(object value, string name)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(name);
+            }
         }
-      }
+
+        /// <summary>
+        /// Throws an ArgumentNullException if the given value is null.
+        /// </summary>
+        public static void ThrowIfNull(object value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException();
+            }
+        }
+
+        /// <summary>
+        /// Throws an ArgumentNullException if the given value or any element within it is null.
+        /// </summary>
+        public static void ThrowIfAnyNull<T>(IEnumerable<T> sequence)
+        {
+            foreach (T t in sequence)
+            {
+                if (t == null)
+                {
+                    throw new ArgumentNullException();
+                }
+            }
+        }
     }
-  }
 }

@@ -1,4 +1,5 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,88 +31,103 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Google.ProtocolBuffers {
-  /// <summary>
-  /// All generated protocol message builder classes extend this class. It implements
-  /// most of the IBuilder interface using reflection. Users can ignore this class
-  /// as an implementation detail.
-  /// </summary>
-  public abstract class GeneratedBuilderLite<TMessage, TBuilder> : AbstractBuilderLite<TMessage, TBuilder>
-    where TMessage : GeneratedMessageLite<TMessage, TBuilder>
-    where TBuilder : GeneratedBuilderLite<TMessage, TBuilder> {
-
+namespace Google.ProtocolBuffers
+{
     /// <summary>
-    /// Returns the message being built at the moment.
+    /// All generated protocol message builder classes extend this class. It implements
+    /// most of the IBuilder interface using reflection. Users can ignore this class
+    /// as an implementation detail.
     /// </summary>
-    protected abstract TMessage MessageBeingBuilt { get; }
+    public abstract class GeneratedBuilderLite<TMessage, TBuilder> : AbstractBuilderLite<TMessage, TBuilder>
+        where TMessage : GeneratedMessageLite<TMessage, TBuilder>
+        where TBuilder : GeneratedBuilderLite<TMessage, TBuilder>
+    {
+        /// <summary>
+        /// Returns the message being built at the moment.
+        /// </summary>
+        protected abstract TMessage MessageBeingBuilt { get; }
 
-    public override TBuilder MergeFrom(IMessageLite other) {
-      //do nothing, Lite runtime does not support cross-message merges
-      return ThisBuilder;
-    }
-
-    public abstract TBuilder MergeFrom(TMessage other);
-
-    public override bool IsInitialized {
-      get { return MessageBeingBuilt.IsInitialized; }
-    }
-
-    /// <summary>
-    /// Adds all of the specified values to the given collection.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">Any element of the list is null</exception>
-    protected void AddRange<T>(IEnumerable<T> source, IList<T> destination) {
-      ThrowHelper.ThrowIfNull(source);
-      // We only need to check this for nullable types.
-      if (default(T) == null) {
-        ThrowHelper.ThrowIfAnyNull(source);
-      }
-      List<T> list = destination as List<T>;
-      if (list != null) {
-        list.AddRange(source);
-      } else {
-        foreach (T element in source) {
-          destination.Add(element);
+        public override TBuilder MergeFrom(IMessageLite other)
+        {
+            //do nothing, Lite runtime does not support cross-message merges
+            return ThisBuilder;
         }
-      }
-    }
 
-    /// <summary>
-    /// Called by derived classes to parse an unknown field.
-    /// </summary>
-    /// <returns>true unless the tag is an end-group tag</returns>
-    [CLSCompliant(false)]
-    protected virtual bool ParseUnknownField(CodedInputStream input, 
-                                     ExtensionRegistry extensionRegistry, uint tag) {
-      return input.SkipField(tag);
-    }
+        public abstract TBuilder MergeFrom(TMessage other);
 
-    /// <summary>
-    /// Like Build(), but will wrap UninitializedMessageException in
-    /// InvalidProtocolBufferException.
-    /// </summary>
-    public TMessage BuildParsed() {
-      if (!IsInitialized) {
-        throw new UninitializedMessageException(MessageBeingBuilt).AsInvalidProtocolBufferException();
-      }
-      return BuildPartial();
-    }
+        public override bool IsInitialized
+        {
+            get { return MessageBeingBuilt.IsInitialized; }
+        }
 
-    /// <summary>
-    /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
-    /// </summary>
-    public override TMessage Build() {
-      // If the message is null, we'll throw a more appropriate exception in BuildPartial.
-      if (MessageBeingBuilt != null && !IsInitialized) {
-        throw new UninitializedMessageException(MessageBeingBuilt);
-      }
-      return BuildPartial();
+        /// <summary>
+        /// Adds all of the specified values to the given collection.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Any element of the list is null</exception>
+        protected void AddRange<T>(IEnumerable<T> source, IList<T> destination)
+        {
+            ThrowHelper.ThrowIfNull(source);
+            // We only need to check this for nullable types.
+            if (default(T) == null)
+            {
+                ThrowHelper.ThrowIfAnyNull(source);
+            }
+            List<T> list = destination as List<T>;
+            if (list != null)
+            {
+                list.AddRange(source);
+            }
+            else
+            {
+                foreach (T element in source)
+                {
+                    destination.Add(element);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called by derived classes to parse an unknown field.
+        /// </summary>
+        /// <returns>true unless the tag is an end-group tag</returns>
+        [CLSCompliant(false)]
+        protected virtual bool ParseUnknownField(CodedInputStream input,
+                                                 ExtensionRegistry extensionRegistry, uint tag)
+        {
+            return input.SkipField(tag);
+        }
+
+        /// <summary>
+        /// Like Build(), but will wrap UninitializedMessageException in
+        /// InvalidProtocolBufferException.
+        /// </summary>
+        public TMessage BuildParsed()
+        {
+            if (!IsInitialized)
+            {
+                throw new UninitializedMessageException(MessageBeingBuilt).AsInvalidProtocolBufferException();
+            }
+            return BuildPartial();
+        }
+
+        /// <summary>
+        /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
+        /// </summary>
+        public override TMessage Build()
+        {
+            // If the message is null, we'll throw a more appropriate exception in BuildPartial.
+            if (MessageBeingBuilt != null && !IsInitialized)
+            {
+                throw new UninitializedMessageException(MessageBeingBuilt);
+            }
+            return BuildPartial();
+        }
     }
-  }
 }

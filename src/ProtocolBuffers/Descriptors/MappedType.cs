@@ -30,21 +30,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace Google.ProtocolBuffers.Descriptors {
-  /// <summary>
-  /// Type as it's mapped onto a .NET type.
-  /// </summary>
-  public enum MappedType {
-    Int32,
-    Int64,
-    UInt32,
-    UInt64,
-    Single,
-    Double,
-    Boolean,
-    String,
-    ByteString,
-    Message,
-    Enum
-  }
+namespace Google.ProtocolBuffers.Descriptors
+{
+    /// <summary>
+    /// Type as it's mapped onto a .NET type.
+    /// </summary>
+    public enum MappedType
+    {
+        Int32,
+        Int64,
+        UInt32,
+        UInt64,
+        Single,
+        Double,
+        Boolean,
+        String,
+        ByteString,
+        Message,
+        Enum
+    }
 }

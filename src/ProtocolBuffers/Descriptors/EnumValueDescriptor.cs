@@ -31,29 +31,33 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using Google.ProtocolBuffers.DescriptorProtos;
 
-namespace Google.ProtocolBuffers.Descriptors {
-  
-  /// <summary>
-  /// Descriptor for a single enum value within an enum in a .proto file.
-  /// </summary>
-  public sealed class EnumValueDescriptor : IndexedDescriptorBase<EnumValueDescriptorProto, EnumValueOptions>, IEnumLite {
+namespace Google.ProtocolBuffers.Descriptors
+{
+    /// <summary>
+    /// Descriptor for a single enum value within an enum in a .proto file.
+    /// </summary>
+    public sealed class EnumValueDescriptor : IndexedDescriptorBase<EnumValueDescriptorProto, EnumValueOptions>,
+                                              IEnumLite
+    {
+        private readonly EnumDescriptor enumDescriptor;
 
-    private readonly EnumDescriptor enumDescriptor;
+        internal EnumValueDescriptor(EnumValueDescriptorProto proto, FileDescriptor file,
+                                     EnumDescriptor parent, int index)
+            : base(proto, file, parent.FullName + "." + proto.Name, index)
+        {
+            enumDescriptor = parent;
+            file.DescriptorPool.AddSymbol(this);
+            file.DescriptorPool.AddEnumValueByNumber(this);
+        }
 
-    internal EnumValueDescriptor(EnumValueDescriptorProto proto, FileDescriptor file,
-        EnumDescriptor parent, int index) 
-        : base (proto, file, parent.FullName + "." + proto.Name, index) {
-      enumDescriptor = parent;
-      file.DescriptorPool.AddSymbol(this);
-      file.DescriptorPool.AddEnumValueByNumber(this);
+        public int Number
+        {
+            get { return Proto.Number; }
+        }
+
+        public EnumDescriptor EnumDescriptor
+        {
+            get { return enumDescriptor; }
+        }
     }
-
-    public int Number {
-      get { return Proto.Number; }
-    }
-
-    public EnumDescriptor EnumDescriptor {
-      get { return enumDescriptor; }
-    }
-  }
 }

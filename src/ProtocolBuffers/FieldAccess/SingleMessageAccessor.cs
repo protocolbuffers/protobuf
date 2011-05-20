@@ -32,51 +32,58 @@
 using System;
 using System.Reflection;
 
-namespace Google.ProtocolBuffers.FieldAccess {
-  /// <summary>
-  /// Accessor for fields representing a non-repeated message value.
-  /// </summary>
-  internal sealed class SingleMessageAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
-      where TMessage : IMessage<TMessage, TBuilder>
-      where TBuilder : IBuilder<TMessage, TBuilder> {
-
+namespace Google.ProtocolBuffers.FieldAccess
+{
     /// <summary>
-    /// The static method to create a builder for the property type. For example,
-    /// in a message type "Foo", a field called "bar" might be of type "Baz". This
-    /// method is Baz.CreateBuilder.
+    /// Accessor for fields representing a non-repeated message value.
     /// </summary>
-    private readonly Func<IBuilder> createBuilderDelegate;
+    internal sealed class SingleMessageAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
+        where TMessage : IMessage<TMessage, TBuilder>
+        where TBuilder : IBuilder<TMessage, TBuilder>
+    {
+        /// <summary>
+        /// The static method to create a builder for the property type. For example,
+        /// in a message type "Foo", a field called "bar" might be of type "Baz". This
+        /// method is Baz.CreateBuilder.
+        /// </summary>
+        private readonly Func<IBuilder> createBuilderDelegate;
 
-    internal SingleMessageAccessor(string name) : base(name) {
-      MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", EmptyTypes);
-      if (createBuilderMethod == null) {
-        throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);
-      }
-      createBuilderDelegate = ReflectionUtil.CreateStaticUpcastDelegate(createBuilderMethod);
-    }
+        internal SingleMessageAccessor(string name) : base(name)
+        {
+            MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", EmptyTypes);
+            if (createBuilderMethod == null)
+            {
+                throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);
+            }
+            createBuilderDelegate = ReflectionUtil.CreateStaticUpcastDelegate(createBuilderMethod);
+        }
 
-    /// <summary>
-    /// Creates a message of the appropriate CLR type from the given value,
-    /// which may already be of the right type or may be a dynamic message.
-    /// </summary>
-    private object CoerceType(object value) {
-      ThrowHelper.ThrowIfNull(value, "value");
-      // If it's already of the right type, we're done
-      if (ClrType.IsInstanceOfType(value)) {
-        return value;
-      }
-      
-      // No... so let's create a builder of the right type, and merge the value in.
-      IMessageLite message = (IMessageLite) value;
-      return CreateBuilder().WeakMergeFrom(message).WeakBuild();
-    }
+        /// <summary>
+        /// Creates a message of the appropriate CLR type from the given value,
+        /// which may already be of the right type or may be a dynamic message.
+        /// </summary>
+        private object CoerceType(object value)
+        {
+            ThrowHelper.ThrowIfNull(value, "value");
+            // If it's already of the right type, we're done
+            if (ClrType.IsInstanceOfType(value))
+            {
+                return value;
+            }
 
-    public override void SetValue(TBuilder builder, object value) {
-      base.SetValue(builder, CoerceType(value));
-    }
+            // No... so let's create a builder of the right type, and merge the value in.
+            IMessageLite message = (IMessageLite) value;
+            return CreateBuilder().WeakMergeFrom(message).WeakBuild();
+        }
 
-    public override IBuilder CreateBuilder() {
-      return createBuilderDelegate();
+        public override void SetValue(TBuilder builder, object value)
+        {
+            base.SetValue(builder, CoerceType(value));
+        }
+
+        public override IBuilder CreateBuilder()
+        {
+            return createBuilderDelegate();
+        }
     }
-  }
 }

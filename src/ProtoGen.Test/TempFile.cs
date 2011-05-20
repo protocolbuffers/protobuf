@@ -1,27 +1,29 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 namespace Google.ProtocolBuffers.ProtoGen
 {
-    class ProtoFile : TempFile
+    internal class ProtoFile : TempFile
     {
         public ProtoFile(string filename, string contents)
             : base(filename, contents)
         {
         }
     }
-    class TempFile : IDisposable
+
+    internal class TempFile : IDisposable
     {
         private string tempFile;
 
-        public static TempFile Attach(string path) 
+        public static TempFile Attach(string path)
         {
             return new TempFile(path, null);
         }
 
-        protected TempFile(string filename, string contents) {
+        protected TempFile(string filename, string contents)
+        {
             tempFile = filename;
             if (contents != null)
             {
@@ -34,7 +36,10 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
         }
 
-        public string TempPath { get { return tempFile; } }
+        public string TempPath
+        {
+            get { return tempFile; }
+        }
 
         public void ChangeExtension(string ext)
         {

@@ -1,4 +1,5 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,48 +31,57 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers {
-  [TestFixture]
-  public class MessageUtilTest {
+namespace Google.ProtocolBuffers
+{
+    [TestFixture]
+    public class MessageUtilTest
+    {
+        [Test]
+        [ExpectedException(typeof (ArgumentNullException))]
+        public void NullTypeName()
+        {
+            MessageUtil.GetDefaultMessage((string) null);
+        }
 
-    [Test]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void NullTypeName() {
-      MessageUtil.GetDefaultMessage((string)null);
-    }
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void InvalidTypeName()
+        {
+            MessageUtil.GetDefaultMessage("invalidtypename");
+        }
 
-    [Test]
-    [ExpectedException(typeof(ArgumentException))]
-    public void InvalidTypeName() {
-      MessageUtil.GetDefaultMessage("invalidtypename");
-    }
+        [Test]
+        public void ValidTypeName()
+        {
+            Assert.AreSame(TestAllTypes.DefaultInstance,
+                           MessageUtil.GetDefaultMessage(typeof (TestAllTypes).AssemblyQualifiedName));
+        }
 
-    [Test]
-    public void ValidTypeName() {
-      Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes).AssemblyQualifiedName));
-    }
+        [Test]
+        [ExpectedException(typeof (ArgumentNullException))]
+        public void NullType()
+        {
+            MessageUtil.GetDefaultMessage((Type) null);
+        }
 
-    [Test]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void NullType() {
-      MessageUtil.GetDefaultMessage((Type)null);
-    }
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void NonMessageType()
+        {
+            MessageUtil.GetDefaultMessage(typeof (string));
+        }
 
-    [Test]
-    [ExpectedException(typeof(ArgumentException))]
-    public void NonMessageType() {
-      MessageUtil.GetDefaultMessage(typeof(string));
+        [Test]
+        public void ValidType()
+        {
+            Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof (TestAllTypes)));
+        }
     }
-
-    [Test]
-    public void ValidType() {
-      Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
-    }
-  }
 }

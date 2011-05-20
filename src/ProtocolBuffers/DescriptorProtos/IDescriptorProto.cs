@@ -29,24 +29,24 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-namespace Google.ProtocolBuffers.DescriptorProtos {
-
-  /// <summary>
-  /// Interface implemented by all DescriptorProtos. The generator doesn't
-  /// emit the interface implementation claim, so PartialClasses.cs contains
-  /// partial class declarations for each of them.
-  /// </summary>
-  /// <typeparam name="TOptions">The associated options protocol buffer type</typeparam>
-  public interface IDescriptorProto<TOptions> {
-
+namespace Google.ProtocolBuffers.DescriptorProtos
+{
     /// <summary>
-    /// The brief name of the descriptor's target.
+    /// Interface implemented by all DescriptorProtos. The generator doesn't
+    /// emit the interface implementation claim, so PartialClasses.cs contains
+    /// partial class declarations for each of them.
     /// </summary>
-    string Name { get; }
+    /// <typeparam name="TOptions">The associated options protocol buffer type</typeparam>
+    public interface IDescriptorProto<TOptions>
+    {
+        /// <summary>
+        /// The brief name of the descriptor's target.
+        /// </summary>
+        string Name { get; }
 
-    /// <summary>
-    /// The options for this descriptor.
-    /// </summary>
-    TOptions Options { get; }
-  }
+        /// <summary>
+        /// The options for this descriptor.
+        /// </summary>
+        TOptions Options { get; }
+    }
 }

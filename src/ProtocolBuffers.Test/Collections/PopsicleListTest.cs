@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,71 +31,80 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
 using NUnit.Framework;
 
-delegate void Action();
+internal delegate void Action();
 
+namespace Google.ProtocolBuffers.Collections
+{
+    [TestFixture]
+    public class PopsicleListTest
+    {
+        [Test]
+        public void MutatingOperationsOnFrozenList()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            list.MakeReadOnly();
+            AssertNotSupported(() => list.Add(""));
+            AssertNotSupported(() => list.Clear());
+            AssertNotSupported(() => list.Insert(0, ""));
+            AssertNotSupported(() => list.Remove(""));
+            AssertNotSupported(() => list.RemoveAt(0));
+            AssertNotSupported(() => list.Add(new[] {"", ""}));
+        }
 
-namespace Google.ProtocolBuffers.Collections {
-  [TestFixture]
-  public class PopsicleListTest {
+        [Test]
+        public void NonMutatingOperationsOnFrozenList()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            list.MakeReadOnly();
+            Assert.IsFalse(list.Contains(""));
+            Assert.AreEqual(0, list.Count);
+            list.CopyTo(new string[5], 0);
+            list.GetEnumerator();
+            Assert.AreEqual(-1, list.IndexOf(""));
+            Assert.IsTrue(list.IsReadOnly);
+        }
 
-    [Test]
-    public void MutatingOperationsOnFrozenList() {
-      PopsicleList<string> list = new PopsicleList<string>();
-      list.MakeReadOnly();
-      AssertNotSupported(() => list.Add(""));
-      AssertNotSupported(() => list.Clear());
-      AssertNotSupported(() => list.Insert(0, ""));
-      AssertNotSupported(() => list.Remove(""));
-      AssertNotSupported(() => list.RemoveAt(0));
-      AssertNotSupported(() => list.Add(new[] {"", ""}));
+        [Test]
+        public void MutatingOperationsOnFluidList()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            list.Add("");
+            list.Clear();
+            list.Insert(0, "");
+            list.Remove("");
+            list.Add("x"); // Just to make the next call valid
+            list.RemoveAt(0);
+        }
+
+        [Test]
+        public void NonMutatingOperationsOnFluidList()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            Assert.IsFalse(list.Contains(""));
+            Assert.AreEqual(0, list.Count);
+            list.CopyTo(new string[5], 0);
+            list.GetEnumerator();
+            Assert.AreEqual(-1, list.IndexOf(""));
+            Assert.IsFalse(list.IsReadOnly);
+        }
+
+        private static void AssertNotSupported(Action action)
+        {
+            try
+            {
+                action();
+                Assert.Fail("Expected NotSupportedException");
+            }
+            catch (NotSupportedException)
+            {
+                // Expected
+            }
+        }
     }
-
-    [Test]
-    public void NonMutatingOperationsOnFrozenList() {
-      PopsicleList<string> list = new PopsicleList<string>();
-      list.MakeReadOnly();
-      Assert.IsFalse(list.Contains(""));
-      Assert.AreEqual(0, list.Count);
-      list.CopyTo(new string[5], 0);
-      list.GetEnumerator();
-      Assert.AreEqual(-1, list.IndexOf(""));
-      Assert.IsTrue(list.IsReadOnly);
-    }
-
-    [Test]
-    public void MutatingOperationsOnFluidList() {
-      PopsicleList<string> list = new PopsicleList<string>();
-      list.Add("");
-      list.Clear();
-      list.Insert(0, "");
-      list.Remove("");
-      list.Add("x"); // Just to make the next call valid
-      list.RemoveAt(0);
-    }
-
-    [Test]
-    public void NonMutatingOperationsOnFluidList() {
-      PopsicleList<string> list = new PopsicleList<string>();
-      Assert.IsFalse(list.Contains(""));
-      Assert.AreEqual(0, list.Count);
-      list.CopyTo(new string[5], 0);
-      list.GetEnumerator();
-      Assert.AreEqual(-1, list.IndexOf(""));
-      Assert.IsFalse(list.IsReadOnly);
-    }
-
-    private static void AssertNotSupported(Action action) {
-      try {
-        action();
-        Assert.Fail("Expected NotSupportedException");
-      } catch (NotSupportedException) {
-        // Expected
-      }
-    }
-  }
 }

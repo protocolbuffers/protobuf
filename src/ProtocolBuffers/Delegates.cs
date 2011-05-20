@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,22 +31,30 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System.IO;
 
-namespace Google.ProtocolBuffers {
-  /// <summary>
-  /// Delegate to return a stream when asked, used by MessageStreamIterator.
-  /// </summary>
-  public delegate Stream StreamProvider();
+namespace Google.ProtocolBuffers
+{
+    /// <summary>
+    /// Delegate to return a stream when asked, used by MessageStreamIterator.
+    /// </summary>
+    public delegate Stream StreamProvider();
 
-  // These delegate declarations mirror the ones in .NET 3.5 for the sake of familiarity.
-  internal delegate TResult Func<TResult>();
-  internal delegate TResult Func<T, TResult>(T arg);
-  internal delegate TResult Func<T1, T2, TResult>(T1 arg1, T2 arg2);
-  internal delegate TResult Func<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3);
-  internal delegate TResult Func<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
-  internal delegate void Action();
-  internal delegate void Action<T1, T2>(T1 arg1, T2 arg2);
+    // These delegate declarations mirror the ones in .NET 3.5 for the sake of familiarity.
+    internal delegate TResult Func<TResult>();
+
+    internal delegate TResult Func<T, TResult>(T arg);
+
+    internal delegate TResult Func<T1, T2, TResult>(T1 arg1, T2 arg2);
+
+    internal delegate TResult Func<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3);
+
+    internal delegate TResult Func<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+
+    internal delegate void Action();
+
+    internal delegate void Action<T1, T2>(T1 arg1, T2 arg2);
 }

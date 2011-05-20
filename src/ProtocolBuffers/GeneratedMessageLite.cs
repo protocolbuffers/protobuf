@@ -1,4 +1,5 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -38,95 +40,134 @@ using System.Collections;
 using System.Globalization;
 using Google.ProtocolBuffers.Descriptors;
 
-namespace Google.ProtocolBuffers {
-
-  /// <summary>
-  /// All generated protocol message classes extend this class. It implements
-  /// most of the IMessage interface using reflection. Users
-  /// can ignore this class as an implementation detail.
-  /// </summary>
-  public abstract class GeneratedMessageLite<TMessage, TBuilder> : AbstractMessageLite<TMessage, TBuilder>
-    where TMessage : GeneratedMessageLite<TMessage, TBuilder>
-    where TBuilder : GeneratedBuilderLite<TMessage, TBuilder> {
-
-    protected abstract TMessage ThisMessage { get; }
-
-    public sealed override string ToString() {
-      using (System.IO.StringWriter wtr = new System.IO.StringWriter()) {
-        PrintTo(wtr);
-        return wtr.ToString();
-      }
-    }
-
+namespace Google.ProtocolBuffers
+{
     /// <summary>
-    /// PrintTo() helper methods for Lite Runtime
+    /// All generated protocol message classes extend this class. It implements
+    /// most of the IMessage interface using reflection. Users
+    /// can ignore this class as an implementation detail.
     /// </summary>
-    protected static void PrintField<T>(string name, IList<T> value, System.IO.TextWriter writer) {
-      foreach (T item in value)
-        PrintField(name, true, (object)item, writer);
-    }
-    /// <summary>
-    /// PrintTo() helper methods for Lite Runtime
-    /// </summary>
-    protected static void PrintField(string name, bool hasValue, object value, System.IO.TextWriter writer) {
-      if (!hasValue) return;
-      if (value is IMessageLite) {
-        writer.WriteLine("{0} {{", name);
-        ((IMessageLite)value).PrintTo(writer);
-        writer.WriteLine("}");
-      } else if (value is ByteString || value is String) {
-        writer.Write("{0}: \"", name);
-        if(value is String)
-          EscapeBytes( System.Text.Encoding.UTF8.GetBytes((string)value), writer);
-        else
-          EscapeBytes(((ByteString)value), writer);
-        writer.WriteLine("\"");
-      } else if (value is bool) {
-        writer.WriteLine("{0}: {1}", name, (bool)value ? "true" : "false");
-      } else if (value is IEnumLite) {
-        writer.WriteLine("{0}: {1}", name, ((IEnumLite)value).Name);
-      }
-      else {
-        writer.WriteLine("{0}: {1}", name, ((IConvertible)value).ToString(CultureInfo.InvariantCulture));
-      }
-    }
+    public abstract class GeneratedMessageLite<TMessage, TBuilder> : AbstractMessageLite<TMessage, TBuilder>
+        where TMessage : GeneratedMessageLite<TMessage, TBuilder>
+        where TBuilder : GeneratedBuilderLite<TMessage, TBuilder>
+    {
+        protected abstract TMessage ThisMessage { get; }
 
-    /// <summary>
-    /// COPIED from TextFormat
-    /// Escapes bytes in the format used in protocol buffer text format, which
-    /// is the same as the format used for C string literals.  All bytes
-    /// that are not printable 7-bit ASCII characters are escaped, as well as
-    /// backslash, single-quote, and double-quote characters.  Characters for
-    /// which no defined short-hand escape sequence is defined will be escaped
-    /// using 3-digit octal sequences.
-    /// The returned value is guaranteed to be entirely ASCII.
-    /// </summary>
-    private static void EscapeBytes(IEnumerable<byte> input, System.IO.TextWriter writer) {
-      foreach (byte b in input) {
-        switch (b) {
-          // C# does not use \a or \v
-          case 0x07: writer.Write("\\a"); break;
-          case (byte)'\b': writer.Write("\\b"); break;
-          case (byte)'\f': writer.Write("\\f"); break;
-          case (byte)'\n': writer.Write("\\n"); break;
-          case (byte)'\r': writer.Write("\\r"); break;
-          case (byte)'\t': writer.Write("\\t"); break;
-          case 0x0b: writer.Write("\\v"); break;
-          case (byte)'\\': writer.Write("\\\\"); break;
-          case (byte)'\'': writer.Write("\\\'"); break;
-          case (byte)'"': writer.Write("\\\""); break;
-          default:
-            if (b >= 0x20 && b < 128) {
-              writer.Write((char)b);
-            } else {
-              writer.Write('\\');
-              writer.Write((char)('0' + ((b >> 6) & 3)));
-              writer.Write((char)('0' + ((b >> 3) & 7)));
-              writer.Write((char)('0' + (b & 7)));
+        public override sealed string ToString()
+        {
+            using (System.IO.StringWriter wtr = new System.IO.StringWriter())
+            {
+                PrintTo(wtr);
+                return wtr.ToString();
             }
-            break;
         }
-      }
+
+        /// <summary>
+        /// PrintTo() helper methods for Lite Runtime
+        /// </summary>
+        protected static void PrintField<T>(string name, IList<T> value, System.IO.TextWriter writer)
+        {
+            foreach (T item in value)
+                PrintField(name, true, (object) item, writer);
+        }
+
+        /// <summary>
+        /// PrintTo() helper methods for Lite Runtime
+        /// </summary>
+        protected static void PrintField(string name, bool hasValue, object value, System.IO.TextWriter writer)
+        {
+            if (!hasValue) return;
+            if (value is IMessageLite)
+            {
+                writer.WriteLine("{0} {{", name);
+                ((IMessageLite) value).PrintTo(writer);
+                writer.WriteLine("}");
+            }
+            else if (value is ByteString || value is String)
+            {
+                writer.Write("{0}: \"", name);
+                if (value is String)
+                    EscapeBytes(System.Text.Encoding.UTF8.GetBytes((string) value), writer);
+                else
+                    EscapeBytes(((ByteString) value), writer);
+                writer.WriteLine("\"");
+            }
+            else if (value is bool)
+            {
+                writer.WriteLine("{0}: {1}", name, (bool) value ? "true" : "false");
+            }
+            else if (value is IEnumLite)
+            {
+                writer.WriteLine("{0}: {1}", name, ((IEnumLite) value).Name);
+            }
+            else
+            {
+                writer.WriteLine("{0}: {1}", name, ((IConvertible) value).ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        /// <summary>
+        /// COPIED from TextFormat
+        /// Escapes bytes in the format used in protocol buffer text format, which
+        /// is the same as the format used for C string literals.  All bytes
+        /// that are not printable 7-bit ASCII characters are escaped, as well as
+        /// backslash, single-quote, and double-quote characters.  Characters for
+        /// which no defined short-hand escape sequence is defined will be escaped
+        /// using 3-digit octal sequences.
+        /// The returned value is guaranteed to be entirely ASCII.
+        /// </summary>
+        private static void EscapeBytes(IEnumerable<byte> input, System.IO.TextWriter writer)
+        {
+            foreach (byte b in input)
+            {
+                switch (b)
+                {
+                        // C# does not use \a or \v
+                    case 0x07:
+                        writer.Write("\\a");
+                        break;
+                    case (byte) '\b':
+                        writer.Write("\\b");
+                        break;
+                    case (byte) '\f':
+                        writer.Write("\\f");
+                        break;
+                    case (byte) '\n':
+                        writer.Write("\\n");
+                        break;
+                    case (byte) '\r':
+                        writer.Write("\\r");
+                        break;
+                    case (byte) '\t':
+                        writer.Write("\\t");
+                        break;
+                    case 0x0b:
+                        writer.Write("\\v");
+                        break;
+                    case (byte) '\\':
+                        writer.Write("\\\\");
+                        break;
+                    case (byte) '\'':
+                        writer.Write("\\\'");
+                        break;
+                    case (byte) '"':
+                        writer.Write("\\\"");
+                        break;
+                    default:
+                        if (b >= 0x20 && b < 128)
+                        {
+                            writer.Write((char) b);
+                        }
+                        else
+                        {
+                            writer.Write('\\');
+                            writer.Write((char) ('0' + ((b >> 6) & 3)));
+                            writer.Write((char) ('0' + ((b >> 3) & 7)));
+                            writer.Write((char) ('0' + (b & 7)));
+                        }
+                        break;
+                }
+            }
+        }
     }
-  }
 }

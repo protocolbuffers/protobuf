@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
@@ -39,11 +39,14 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.TestProtos;
 
-namespace Google.ProtocolBuffers {
+namespace Google.ProtocolBuffers
+{
     [TestFixture]
-    public class MissingFieldAndExtensionTest {
+    public class MissingFieldAndExtensionTest
+    {
         [Test]
-        public void TestRecoverMissingExtensions() {
+        public void TestRecoverMissingExtensions()
+        {
             const int optionalInt32 = 12345678;
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
             builder.SetExtension(UnitTestProtoFile.OptionalInt32Extension, optionalInt32);
@@ -88,7 +91,8 @@ namespace Google.ProtocolBuffers {
         }
 
         [Test]
-        public void TestRecoverMissingFields() {
+        public void TestRecoverMissingFields()
+        {
             TestMissingFieldsA msga = TestMissingFieldsA.CreateBuilder()
                 .SetId(1001)
                 .SetName("Name")
@@ -101,7 +105,8 @@ namespace Google.ProtocolBuffers {
             Assert.AreEqual("Name", msgb.Name);
             Assert.IsFalse(msgb.HasWebsite);
             Assert.AreEqual(1, msgb.UnknownFields.FieldDictionary.Count);
-            Assert.AreEqual("missing@field.value", msgb.UnknownFields[TestMissingFieldsA.EmailFieldNumber].LengthDelimitedList[0].ToStringUtf8());
+            Assert.AreEqual("missing@field.value",
+                            msgb.UnknownFields[TestMissingFieldsA.EmailFieldNumber].LengthDelimitedList[0].ToStringUtf8());
 
             //serializes exactly the same (at least for this simple example)
             Assert.AreEqual(msga.ToByteArray(), msgb.ToByteArray());
@@ -126,7 +131,9 @@ namespace Google.ProtocolBuffers {
             Assert.AreEqual("Name", copya.Name);
             Assert.AreEqual("missing@field.value", copya.Email);
             Assert.AreEqual(1, copya.UnknownFields.FieldDictionary.Count);
-            Assert.AreEqual("http://new.missing.field", copya.UnknownFields[TestMissingFieldsB.WebsiteFieldNumber].LengthDelimitedList[0].ToStringUtf8());
+            Assert.AreEqual("http://new.missing.field",
+                            copya.UnknownFields[TestMissingFieldsB.WebsiteFieldNumber].LengthDelimitedList[0].
+                                ToStringUtf8());
 
             //Lastly we can even still trip back to type B and see all fields:
             TestMissingFieldsB copyb = TestMissingFieldsB.ParseFrom(copya.ToByteArray());
@@ -135,12 +142,17 @@ namespace Google.ProtocolBuffers {
             Assert.AreEqual("Name", copyb.Name);
             Assert.AreEqual("http://new.missing.field", copyb.Website);
             Assert.AreEqual(1, copyb.UnknownFields.FieldDictionary.Count);
-            Assert.AreEqual("missing@field.value", copyb.UnknownFields[TestMissingFieldsA.EmailFieldNumber].LengthDelimitedList[0].ToStringUtf8());
+            Assert.AreEqual("missing@field.value",
+                            copyb.UnknownFields[TestMissingFieldsA.EmailFieldNumber].LengthDelimitedList[0].ToStringUtf8
+                                ());
         }
 
         [Test]
-        public void TestRecoverMissingMessage() {
-            TestMissingFieldsA.Types.SubA suba = TestMissingFieldsA.Types.SubA.CreateBuilder().SetCount(3).AddValues("a").AddValues("b").AddValues("c").Build();
+        public void TestRecoverMissingMessage()
+        {
+            TestMissingFieldsA.Types.SubA suba =
+                TestMissingFieldsA.Types.SubA.CreateBuilder().SetCount(3).AddValues("a").AddValues("b").AddValues("c").
+                    Build();
             TestMissingFieldsA msga = TestMissingFieldsA.CreateBuilder()
                 .SetId(1001)
                 .SetName("Name")
@@ -152,7 +164,10 @@ namespace Google.ProtocolBuffers {
             Assert.AreEqual(1001, msgb.Id);
             Assert.AreEqual("Name", msgb.Name);
             Assert.AreEqual(1, msgb.UnknownFields.FieldDictionary.Count);
-            Assert.AreEqual(suba.ToString(), TestMissingFieldsA.Types.SubA.ParseFrom(msgb.UnknownFields[TestMissingFieldsA.TestAFieldNumber].LengthDelimitedList[0]).ToString());
+            Assert.AreEqual(suba.ToString(),
+                            TestMissingFieldsA.Types.SubA.ParseFrom(
+                                msgb.UnknownFields[TestMissingFieldsA.TestAFieldNumber].LengthDelimitedList[0]).ToString
+                                ());
 
             //serializes exactly the same (at least for this simple example)
             Assert.AreEqual(msga.ToByteArray(), msgb.ToByteArray());
@@ -166,7 +181,8 @@ namespace Google.ProtocolBuffers {
             Assert.AreEqual(suba, copya.TestA);
 
             //Now we modify B... and try again
-            TestMissingFieldsB.Types.SubB subb = TestMissingFieldsB.Types.SubB.CreateBuilder().AddValues("test-b").Build();
+            TestMissingFieldsB.Types.SubB subb =
+                TestMissingFieldsB.Types.SubB.CreateBuilder().AddValues("test-b").Build();
             msgb = msgb.ToBuilder().SetTestB(subb).Build();
             //Does B still have the missing field?
             Assert.AreEqual(1, msgb.UnknownFields.FieldDictionary.Count);
@@ -178,7 +194,8 @@ namespace Google.ProtocolBuffers {
             Assert.AreEqual("Name", copya.Name);
             Assert.AreEqual(suba, copya.TestA);
             Assert.AreEqual(1, copya.UnknownFields.FieldDictionary.Count);
-            Assert.AreEqual(subb.ToByteArray(), copya.UnknownFields[TestMissingFieldsB.TestBFieldNumber].LengthDelimitedList[0].ToByteArray());
+            Assert.AreEqual(subb.ToByteArray(),
+                            copya.UnknownFields[TestMissingFieldsB.TestBFieldNumber].LengthDelimitedList[0].ToByteArray());
 
             //Lastly we can even still trip back to type B and see all fields:
             TestMissingFieldsB copyb = TestMissingFieldsB.ParseFrom(copya.ToByteArray());
@@ -190,7 +207,8 @@ namespace Google.ProtocolBuffers {
         }
 
         [Test]
-        public void TestRestoreFromOtherType() {
+        public void TestRestoreFromOtherType()
+        {
             TestInteropPerson person = TestInteropPerson.CreateBuilder()
                 .SetId(123)
                 .SetName("abc")
@@ -198,8 +216,11 @@ namespace Google.ProtocolBuffers {
                 .AddRangeCodes(new[] {1, 2, 3})
                 .AddPhone(TestInteropPerson.Types.PhoneNumber.CreateBuilder().SetNumber("555-1234").Build())
                 .AddPhone(TestInteropPerson.Types.PhoneNumber.CreateBuilder().SetNumber("555-5678").Build())
-                .AddAddresses(TestInteropPerson.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland").SetState("NA").SetZip(12345).Build())
-                .SetExtension(UnitTestExtrasFullProtoFile.EmployeeId, TestInteropEmployeeId.CreateBuilder().SetNumber("123").Build())
+                .AddAddresses(
+                    TestInteropPerson.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland").
+                        SetState("NA").SetZip(12345).Build())
+                .SetExtension(UnitTestExtrasFullProtoFile.EmployeeId,
+                              TestInteropEmployeeId.CreateBuilder().SetNumber("123").Build())
                 .Build();
             Assert.IsTrue(person.IsInitialized);
 

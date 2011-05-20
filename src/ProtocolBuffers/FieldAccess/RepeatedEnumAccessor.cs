@@ -34,44 +34,50 @@ using System.Collections.Generic;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 
-namespace Google.ProtocolBuffers.FieldAccess {
+namespace Google.ProtocolBuffers.FieldAccess
+{
+    /// <summary>
+    /// Accessor for a repeated enum field.
+    /// </summary>
+    internal sealed class RepeatedEnumAccessor<TMessage, TBuilder> : RepeatedPrimitiveAccessor<TMessage, TBuilder>
+        where TMessage : IMessage<TMessage, TBuilder>
+        where TBuilder : IBuilder<TMessage, TBuilder>
+    {
+        private readonly EnumDescriptor enumDescriptor;
 
-  /// <summary>
-  /// Accessor for a repeated enum field.
-  /// </summary>
-  internal sealed class RepeatedEnumAccessor<TMessage, TBuilder> : RepeatedPrimitiveAccessor<TMessage, TBuilder>
-      where TMessage : IMessage<TMessage, TBuilder>
-      where TBuilder : IBuilder<TMessage, TBuilder> {
+        internal RepeatedEnumAccessor(FieldDescriptor field, string name) : base(name)
+        {
+            enumDescriptor = field.EnumType;
+        }
 
-    private readonly EnumDescriptor enumDescriptor;
+        public override object GetValue(TMessage message)
+        {
+            List<EnumValueDescriptor> ret = new List<EnumValueDescriptor>();
+            foreach (int rawValue in (IEnumerable) base.GetValue(message))
+            {
+                ret.Add(enumDescriptor.FindValueByNumber(rawValue));
+            }
+            return Lists.AsReadOnly(ret);
+        }
 
-    internal RepeatedEnumAccessor(FieldDescriptor field, string name) : base(name) {
-      enumDescriptor = field.EnumType;
+        public override object GetRepeatedValue(TMessage message, int index)
+        {
+            // Note: This relies on the fact that the CLR allows unboxing from an enum to
+            // its underlying value
+            int rawValue = (int) base.GetRepeatedValue(message, index);
+            return enumDescriptor.FindValueByNumber(rawValue);
+        }
+
+        public override void AddRepeated(TBuilder builder, object value)
+        {
+            ThrowHelper.ThrowIfNull(value, "value");
+            base.AddRepeated(builder, ((EnumValueDescriptor) value).Number);
+        }
+
+        public override void SetRepeated(TBuilder builder, int index, object value)
+        {
+            ThrowHelper.ThrowIfNull(value, "value");
+            base.SetRepeated(builder, index, ((EnumValueDescriptor) value).Number);
+        }
     }
-
-    public override object GetValue(TMessage message) {
-      List<EnumValueDescriptor> ret = new List<EnumValueDescriptor>();
-      foreach (int rawValue in (IEnumerable) base.GetValue(message)) {
-        ret.Add(enumDescriptor.FindValueByNumber(rawValue));
-      }
-      return Lists.AsReadOnly(ret);
-    }
-
-    public override object GetRepeatedValue(TMessage message, int index) {
-      // Note: This relies on the fact that the CLR allows unboxing from an enum to
-      // its underlying value
-      int rawValue = (int) base.GetRepeatedValue(message, index);
-      return enumDescriptor.FindValueByNumber(rawValue);
-    }
-
-    public override void AddRepeated(TBuilder builder, object value) {
-      ThrowHelper.ThrowIfNull(value, "value");
-      base.AddRepeated(builder, ((EnumValueDescriptor)value).Number);
-    }
-
-    public override void SetRepeated(TBuilder builder, int index, object value) {
-      ThrowHelper.ThrowIfNull(value, "value");
-      base.SetRepeated(builder, index, ((EnumValueDescriptor) value).Number);
-    }
-  }
 }

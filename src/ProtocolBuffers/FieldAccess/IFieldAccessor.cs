@@ -30,62 +30,66 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace Google.ProtocolBuffers.FieldAccess {
+namespace Google.ProtocolBuffers.FieldAccess
+{
+    /// <summary>
+    /// Allows fields to be reflectively accessed in a smart manner.
+    /// The property descriptors for each field are created once and then cached.
+    /// In addition, this interface holds knowledge of repeated fields, builders etc.
+    /// </summary>
+    internal interface IFieldAccessor<TMessage, TBuilder>
+        where TMessage : IMessage<TMessage, TBuilder>
+        where TBuilder : IBuilder<TMessage, TBuilder>
+    {
+        /// <summary>
+        /// Indicates whether the specified message contains the field.
+        /// </summary>
+        bool Has(TMessage message);
 
-  /// <summary>
-  /// Allows fields to be reflectively accessed in a smart manner.
-  /// The property descriptors for each field are created once and then cached.
-  /// In addition, this interface holds knowledge of repeated fields, builders etc.
-  /// </summary>
-  internal interface IFieldAccessor<TMessage, TBuilder>
-      where TMessage : IMessage<TMessage, TBuilder>
-      where TBuilder : IBuilder<TMessage, TBuilder> {
+        /// <summary>
+        /// Gets the count of the repeated field in the specified message.
+        /// </summary>
+        int GetRepeatedCount(TMessage message);
 
-    /// <summary>
-    /// Indicates whether the specified message contains the field.
-    /// </summary>
-    bool Has(TMessage message);
+        /// <summary>
+        /// Clears the field in the specified builder.
+        /// </summary>
+        /// <param name="builder"></param>
+        void Clear(TBuilder builder);
 
-    /// <summary>
-    /// Gets the count of the repeated field in the specified message.
-    /// </summary>
-    int GetRepeatedCount(TMessage message);
+        /// <summary>
+        /// Creates a builder for the type of this field (which must be a message field).
+        /// </summary>
+        IBuilder CreateBuilder();
 
-    /// <summary>
-    /// Clears the field in the specified builder.
-    /// </summary>
-    /// <param name="builder"></param>
-    void Clear(TBuilder builder);
+        /// <summary>
+        /// Accessor for single fields
+        /// </summary>
+        object GetValue(TMessage message);
 
-    /// <summary>
-    /// Creates a builder for the type of this field (which must be a message field).
-    /// </summary>
-    IBuilder CreateBuilder();
+        /// <summary>
+        /// Mutator for single fields
+        /// </summary>
+        void SetValue(TBuilder builder, object value);
 
-    /// <summary>
-    /// Accessor for single fields
-    /// </summary>
-    object GetValue(TMessage message);
-    /// <summary>
-    /// Mutator for single fields
-    /// </summary>
-    void SetValue(TBuilder builder, object value);
+        /// <summary>
+        /// Accessor for repeated fields
+        /// </summary>
+        object GetRepeatedValue(TMessage message, int index);
 
-    /// <summary>
-    /// Accessor for repeated fields
-    /// </summary>
-    object GetRepeatedValue(TMessage message, int index);
-    /// <summary>
-    /// Mutator for repeated fields
-    /// </summary>
-    void SetRepeated(TBuilder builder, int index, object value);
-    /// <summary>
-    /// Adds the specified value to the field in the given builder.
-    /// </summary>
-    void AddRepeated(TBuilder builder, object value);
-    /// <summary>
-    /// Returns a read-only wrapper around the value of a repeated field.
-    /// </summary>
-    object GetRepeatedWrapper(TBuilder builder);
-  }
+        /// <summary>
+        /// Mutator for repeated fields
+        /// </summary>
+        void SetRepeated(TBuilder builder, int index, object value);
+
+        /// <summary>
+        /// Adds the specified value to the field in the given builder.
+        /// </summary>
+        void AddRepeated(TBuilder builder, object value);
+
+        /// <summary>
+        /// Returns a read-only wrapper around the value of a repeated field.
+        /// </summary>
+        object GetRepeatedWrapper(TBuilder builder);
+    }
 }

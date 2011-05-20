@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,25 +31,31 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using Google.ProtocolBuffers.Descriptors;
 
-namespace Google.ProtocolBuffers.ProtoGen {
-  internal class EnumGenerator : SourceGeneratorBase<EnumDescriptor>, ISourceGenerator {
-    internal EnumGenerator(EnumDescriptor descriptor) : base(descriptor) {
-    }
+namespace Google.ProtocolBuffers.ProtoGen
+{
+    internal class EnumGenerator : SourceGeneratorBase<EnumDescriptor>, ISourceGenerator
+    {
+        internal EnumGenerator(EnumDescriptor descriptor) : base(descriptor)
+        {
+        }
 
-    // TODO(jonskeet): Write out enum descriptors? Can be retrieved from file...
-    public void Generate(TextGenerator writer) {
-      writer.WriteLine("{0} enum {1} {{", ClassAccessLevel, Descriptor.Name);
-      writer.Indent();
-      foreach (EnumValueDescriptor value in Descriptor.Values) {
-        writer.WriteLine("{0} = {1},", value.Name, value.Number);
-      }
-      writer.Outdent();
-      writer.WriteLine("}");
-      writer.WriteLine();
+        // TODO(jonskeet): Write out enum descriptors? Can be retrieved from file...
+        public void Generate(TextGenerator writer)
+        {
+            writer.WriteLine("{0} enum {1} {{", ClassAccessLevel, Descriptor.Name);
+            writer.Indent();
+            foreach (EnumValueDescriptor value in Descriptor.Values)
+            {
+                writer.WriteLine("{0} = {1},", value.Name, value.Number);
+            }
+            writer.Outdent();
+            writer.WriteLine("}");
+            writer.WriteLine();
+        }
     }
-  }
 }

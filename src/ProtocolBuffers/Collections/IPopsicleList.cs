@@ -1,4 +1,4 @@
-﻿// Protocol Buffers - Google's data interchange format
+// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
 // Original C++/Java/Python code:
@@ -31,18 +31,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System.Collections.Generic;
 
-namespace Google.ProtocolBuffers.Collections {
-  /// <summary>
-  /// A list which has an Add method which accepts an IEnumerable[T].
-  /// This allows whole collections to be added easily using collection initializers.
-  /// It causes a potential overload confusion if T : IEnumerable[T], but in
-  /// practice that won't happen in protocol buffers.
-  /// </summary>
-  /// <remarks>This is only currently implemented by PopsicleList, and it's likely
-  /// to stay that way - hence the name. More genuinely descriptive names are
-  /// horribly ugly. (At least, the ones the author could think of...)</remarks>
-  /// <typeparam name="T">The element type of the list</typeparam>
-  public interface IPopsicleList<T> : IList<T> {
-    void Add(IEnumerable<T> collection);
-  }
+namespace Google.ProtocolBuffers.Collections
+{
+    /// <summary>
+    /// A list which has an Add method which accepts an IEnumerable[T].
+    /// This allows whole collections to be added easily using collection initializers.
+    /// It causes a potential overload confusion if T : IEnumerable[T], but in
+    /// practice that won't happen in protocol buffers.
+    /// </summary>
+    /// <remarks>This is only currently implemented by PopsicleList, and it's likely
+    /// to stay that way - hence the name. More genuinely descriptive names are
+    /// horribly ugly. (At least, the ones the author could think of...)</remarks>
+    /// <typeparam name="T">The element type of the list</typeparam>
+    public interface IPopsicleList<T> : IList<T>
+    {
+        void Add(IEnumerable<T> collection);
+    }
 }

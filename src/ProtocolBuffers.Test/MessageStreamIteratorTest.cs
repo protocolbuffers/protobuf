@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System.Collections.Generic;
@@ -38,46 +40,52 @@ using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 using NestedMessage = Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage;
 
-namespace Google.ProtocolBuffers {
-  [TestFixture]
-  public class MessageStreamIteratorTest {
+namespace Google.ProtocolBuffers
+{
+    [TestFixture]
+    public class MessageStreamIteratorTest
+    {
+        [Test]
+        public void ThreeMessagesInMemory()
+        {
+            MemoryStream stream = new MemoryStream(MessageStreamWriterTest.ThreeMessageData);
+            IEnumerable<NestedMessage> iterator = MessageStreamIterator<NestedMessage>.FromStreamProvider(() => stream);
+            List<NestedMessage> messages = new List<NestedMessage>(iterator);
 
-    [Test]
-    public void ThreeMessagesInMemory() {
-      MemoryStream stream = new MemoryStream(MessageStreamWriterTest.ThreeMessageData);      
-      IEnumerable<NestedMessage> iterator = MessageStreamIterator<NestedMessage>.FromStreamProvider(() => stream);
-      List<NestedMessage> messages = new List<NestedMessage>(iterator);
-
-      Assert.AreEqual(3, messages.Count);
-      Assert.AreEqual(5, messages[0].Bb);
-      Assert.AreEqual(1500, messages[1].Bb);
-      Assert.IsFalse(messages[2].HasBb);
-    }
-
-    [Test]
-    public void ManyMessagesShouldNotTriggerSizeAlert() {
-      int messageSize = TestUtil.GetAllSet().SerializedSize;
-      // Enough messages to trigger the alert unless we've reset the size
-      // Note that currently we need to make this big enough to copy two whole buffers,
-      // as otherwise when we refill the buffer the second type, the alert triggers instantly.
-      int correctCount = (CodedInputStream.BufferSize * 2) / messageSize + 1;
-      using (MemoryStream stream = new MemoryStream()) {
-        MessageStreamWriter<TestAllTypes> writer = new MessageStreamWriter<TestAllTypes>(stream);
-        for (int i = 0; i < correctCount; i++) {
-          writer.Write(TestUtil.GetAllSet());
+            Assert.AreEqual(3, messages.Count);
+            Assert.AreEqual(5, messages[0].Bb);
+            Assert.AreEqual(1500, messages[1].Bb);
+            Assert.IsFalse(messages[2].HasBb);
         }
-        writer.Flush();
 
-        stream.Position = 0;
+        [Test]
+        public void ManyMessagesShouldNotTriggerSizeAlert()
+        {
+            int messageSize = TestUtil.GetAllSet().SerializedSize;
+            // Enough messages to trigger the alert unless we've reset the size
+            // Note that currently we need to make this big enough to copy two whole buffers,
+            // as otherwise when we refill the buffer the second type, the alert triggers instantly.
+            int correctCount = (CodedInputStream.BufferSize*2)/messageSize + 1;
+            using (MemoryStream stream = new MemoryStream())
+            {
+                MessageStreamWriter<TestAllTypes> writer = new MessageStreamWriter<TestAllTypes>(stream);
+                for (int i = 0; i < correctCount; i++)
+                {
+                    writer.Write(TestUtil.GetAllSet());
+                }
+                writer.Flush();
 
-        int count = 0;
-        foreach (var message in MessageStreamIterator<TestAllTypes>.FromStreamProvider(() => stream)
-          .WithSizeLimit(CodedInputStream.BufferSize * 2)) {
-          count++;
-          TestUtil.AssertAllFieldsSet(message);
+                stream.Position = 0;
+
+                int count = 0;
+                foreach (var message in MessageStreamIterator<TestAllTypes>.FromStreamProvider(() => stream)
+                    .WithSizeLimit(CodedInputStream.BufferSize*2))
+                {
+                    count++;
+                    TestUtil.AssertAllFieldsSet(message);
+                }
+                Assert.AreEqual(correctCount, count);
+            }
         }
-        Assert.AreEqual(correctCount, count);
-      }
     }
-  }
 }

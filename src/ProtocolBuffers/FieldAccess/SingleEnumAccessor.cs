@@ -31,40 +31,44 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using Google.ProtocolBuffers.Descriptors;
 
-namespace Google.ProtocolBuffers.FieldAccess {
-  /// <summary>
-  /// Accessor for fields representing a non-repeated enum value.
-  /// </summary>
-  internal sealed class SingleEnumAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
-      where TMessage : IMessage<TMessage, TBuilder>
-      where TBuilder : IBuilder<TMessage, TBuilder> {
-
-    private readonly EnumDescriptor enumDescriptor;
-
-    internal SingleEnumAccessor(FieldDescriptor field, string name) : base(name) {
-      enumDescriptor = field.EnumType;
-    }
-
+namespace Google.ProtocolBuffers.FieldAccess
+{
     /// <summary>
-    /// Returns an EnumValueDescriptor representing the value in the builder.
-    /// Note that if an enum has multiple values for the same number, the descriptor
-    /// for the first value with that number will be returned.
+    /// Accessor for fields representing a non-repeated enum value.
     /// </summary>
-    public override object GetValue(TMessage message) {
-      // Note: This relies on the fact that the CLR allows unboxing from an enum to
-      // its underlying value
-      int rawValue = (int) base.GetValue(message);
-      return enumDescriptor.FindValueByNumber(rawValue);
-    }
+    internal sealed class SingleEnumAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
+        where TMessage : IMessage<TMessage, TBuilder>
+        where TBuilder : IBuilder<TMessage, TBuilder>
+    {
+        private readonly EnumDescriptor enumDescriptor;
 
-    /// <summary>
-    /// Sets the value as an enum (via an int) in the builder,
-    /// from an EnumValueDescriptor parameter.
-    /// </summary>
-    public override void SetValue(TBuilder builder, object value) {
-      ThrowHelper.ThrowIfNull(value, "value");
-      EnumValueDescriptor valueDescriptor = (EnumValueDescriptor) value;
-      base.SetValue(builder, valueDescriptor.Number);
+        internal SingleEnumAccessor(FieldDescriptor field, string name) : base(name)
+        {
+            enumDescriptor = field.EnumType;
+        }
+
+        /// <summary>
+        /// Returns an EnumValueDescriptor representing the value in the builder.
+        /// Note that if an enum has multiple values for the same number, the descriptor
+        /// for the first value with that number will be returned.
+        /// </summary>
+        public override object GetValue(TMessage message)
+        {
+            // Note: This relies on the fact that the CLR allows unboxing from an enum to
+            // its underlying value
+            int rawValue = (int) base.GetValue(message);
+            return enumDescriptor.FindValueByNumber(rawValue);
+        }
+
+        /// <summary>
+        /// Sets the value as an enum (via an int) in the builder,
+        /// from an EnumValueDescriptor parameter.
+        /// </summary>
+        public override void SetValue(TBuilder builder, object value)
+        {
+            ThrowHelper.ThrowIfNull(value, "value");
+            EnumValueDescriptor valueDescriptor = (EnumValueDescriptor) value;
+            base.SetValue(builder, valueDescriptor.Number);
+        }
     }
-  }
 }

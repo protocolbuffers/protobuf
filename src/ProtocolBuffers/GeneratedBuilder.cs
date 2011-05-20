@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -38,173 +40,207 @@ using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.FieldAccess;
 
-namespace Google.ProtocolBuffers {
-  /// <summary>
-  /// All generated protocol message builder classes extend this class. It implements
-  /// most of the IBuilder interface using reflection. Users can ignore this class
-  /// as an implementation detail.
-  /// </summary>
-  public abstract class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder<TMessage, TBuilder>
-      where TMessage : GeneratedMessage <TMessage, TBuilder>
-      where TBuilder : GeneratedBuilder<TMessage, TBuilder> {
-
+namespace Google.ProtocolBuffers
+{
     /// <summary>
-    /// Returns the message being built at the moment.
+    /// All generated protocol message builder classes extend this class. It implements
+    /// most of the IBuilder interface using reflection. Users can ignore this class
+    /// as an implementation detail.
     /// </summary>
-    protected abstract TMessage MessageBeingBuilt { get; }
+    public abstract class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder<TMessage, TBuilder>
+        where TMessage : GeneratedMessage<TMessage, TBuilder>
+        where TBuilder : GeneratedBuilder<TMessage, TBuilder>
+    {
+        /// <summary>
+        /// Returns the message being built at the moment.
+        /// </summary>
+        protected abstract TMessage MessageBeingBuilt { get; }
 
-    protected internal FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors {
-      get { return MessageBeingBuilt.FieldAccessorsFromBuilder; }
-    }
-
-    public override bool IsInitialized {
-      get { return MessageBeingBuilt.IsInitialized; }
-    }
-
-    public override IDictionary<FieldDescriptor, object> AllFields {
-      get { return MessageBeingBuilt.AllFields; }
-    }
-
-    public override object this[FieldDescriptor field] {
-      get {
-        // For repeated fields, the underlying list object is still modifiable at this point.
-        // Make sure not to expose the modifiable list to the caller.
-        return field.IsRepeated
-          ? InternalFieldAccessors[field].GetRepeatedWrapper(ThisBuilder)
-          : MessageBeingBuilt[field];
-      }
-      set {
-        InternalFieldAccessors[field].SetValue(ThisBuilder, value);
-      }
-    }
-
-    /// <summary>
-    /// Adds all of the specified values to the given collection.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">Any element of the list is null</exception>
-    protected void AddRange<T>(IEnumerable<T> source, IList<T> destination) {
-      ThrowHelper.ThrowIfNull(source);
-      // We only need to check this for nullable types.
-      if (default(T) == null) {
-        ThrowHelper.ThrowIfAnyNull(source);
-      }
-      List<T> list = destination as List<T>;
-      if (list != null) {
-        list.AddRange(source);
-      } else {
-        foreach (T element in source) {
-          destination.Add(element);
+        protected internal FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors
+        {
+            get { return MessageBeingBuilt.FieldAccessorsFromBuilder; }
         }
-      }
-    }
 
-    /// <summary>
-    /// Called by derived classes to parse an unknown field.
-    /// </summary>
-    /// <returns>true unless the tag is an end-group tag</returns>
-    [CLSCompliant(false)]
-    protected virtual bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
-                                     ExtensionRegistry extensionRegistry, uint tag) {
-      return unknownFields.MergeFieldFrom(tag, input);
-    }
-
-    public override MessageDescriptor DescriptorForType {
-      get { return MessageBeingBuilt.DescriptorForType; }
-    }
-
-    public override int GetRepeatedFieldCount(FieldDescriptor field) {
-      return MessageBeingBuilt.GetRepeatedFieldCount(field);
-    }
-
-    public override object this[FieldDescriptor field, int index] {
-      get { return MessageBeingBuilt[field, index]; }
-      set { InternalFieldAccessors[field].SetRepeated(ThisBuilder, index, value); }
-    }
-
-    public override bool HasField(FieldDescriptor field) {
-      return MessageBeingBuilt.HasField(field);
-    }
-
-    public override IBuilder CreateBuilderForField(FieldDescriptor field) {
-      return InternalFieldAccessors[field].CreateBuilder();
-    }
-
-    public override TBuilder ClearField(FieldDescriptor field) {
-      InternalFieldAccessors[field].Clear(ThisBuilder);
-      return ThisBuilder;
-    }
-
-    public override TBuilder MergeFrom(TMessage other) {
-      if (other.DescriptorForType != InternalFieldAccessors.Descriptor) {
-        throw new ArgumentException("Message type mismatch");
-      }
-
-      foreach (KeyValuePair<FieldDescriptor, object> entry in other.AllFields) {
-        FieldDescriptor field = entry.Key;
-        if (field.IsRepeated) {
-          // Concatenate repeated fields
-          foreach (object element in (IEnumerable)entry.Value) {
-            AddRepeatedField(field, element);
-          }
-        } else if (field.MappedType == MappedType.Message && HasField(field)) {
-          // Merge singular embedded messages
-          IMessageLite oldValue = (IMessageLite)this[field];
-          this[field] = oldValue.WeakCreateBuilderForType()
-              .WeakMergeFrom(oldValue)
-              .WeakMergeFrom((IMessageLite)entry.Value)
-              .WeakBuildPartial();
-        } else {
-          // Just overwrite
-          this[field] = entry.Value;
+        public override bool IsInitialized
+        {
+            get { return MessageBeingBuilt.IsInitialized; }
         }
-      }
 
-      //Fix for unknown fields not merging, see java's AbstractMessage.Builder<T> line 236
-      MergeUnknownFields(other.UnknownFields);
+        public override IDictionary<FieldDescriptor, object> AllFields
+        {
+            get { return MessageBeingBuilt.AllFields; }
+        }
 
-      return ThisBuilder;
+        public override object this[FieldDescriptor field]
+        {
+            get
+            {
+                // For repeated fields, the underlying list object is still modifiable at this point.
+                // Make sure not to expose the modifiable list to the caller.
+                return field.IsRepeated
+                           ? InternalFieldAccessors[field].GetRepeatedWrapper(ThisBuilder)
+                           : MessageBeingBuilt[field];
+            }
+            set { InternalFieldAccessors[field].SetValue(ThisBuilder, value); }
+        }
+
+        /// <summary>
+        /// Adds all of the specified values to the given collection.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Any element of the list is null</exception>
+        protected void AddRange<T>(IEnumerable<T> source, IList<T> destination)
+        {
+            ThrowHelper.ThrowIfNull(source);
+            // We only need to check this for nullable types.
+            if (default(T) == null)
+            {
+                ThrowHelper.ThrowIfAnyNull(source);
+            }
+            List<T> list = destination as List<T>;
+            if (list != null)
+            {
+                list.AddRange(source);
+            }
+            else
+            {
+                foreach (T element in source)
+                {
+                    destination.Add(element);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called by derived classes to parse an unknown field.
+        /// </summary>
+        /// <returns>true unless the tag is an end-group tag</returns>
+        [CLSCompliant(false)]
+        protected virtual bool ParseUnknownField(CodedInputStream input, UnknownFieldSet.Builder unknownFields,
+                                                 ExtensionRegistry extensionRegistry, uint tag)
+        {
+            return unknownFields.MergeFieldFrom(tag, input);
+        }
+
+        public override MessageDescriptor DescriptorForType
+        {
+            get { return MessageBeingBuilt.DescriptorForType; }
+        }
+
+        public override int GetRepeatedFieldCount(FieldDescriptor field)
+        {
+            return MessageBeingBuilt.GetRepeatedFieldCount(field);
+        }
+
+        public override object this[FieldDescriptor field, int index]
+        {
+            get { return MessageBeingBuilt[field, index]; }
+            set { InternalFieldAccessors[field].SetRepeated(ThisBuilder, index, value); }
+        }
+
+        public override bool HasField(FieldDescriptor field)
+        {
+            return MessageBeingBuilt.HasField(field);
+        }
+
+        public override IBuilder CreateBuilderForField(FieldDescriptor field)
+        {
+            return InternalFieldAccessors[field].CreateBuilder();
+        }
+
+        public override TBuilder ClearField(FieldDescriptor field)
+        {
+            InternalFieldAccessors[field].Clear(ThisBuilder);
+            return ThisBuilder;
+        }
+
+        public override TBuilder MergeFrom(TMessage other)
+        {
+            if (other.DescriptorForType != InternalFieldAccessors.Descriptor)
+            {
+                throw new ArgumentException("Message type mismatch");
+            }
+
+            foreach (KeyValuePair<FieldDescriptor, object> entry in other.AllFields)
+            {
+                FieldDescriptor field = entry.Key;
+                if (field.IsRepeated)
+                {
+                    // Concatenate repeated fields
+                    foreach (object element in (IEnumerable) entry.Value)
+                    {
+                        AddRepeatedField(field, element);
+                    }
+                }
+                else if (field.MappedType == MappedType.Message && HasField(field))
+                {
+                    // Merge singular embedded messages
+                    IMessageLite oldValue = (IMessageLite) this[field];
+                    this[field] = oldValue.WeakCreateBuilderForType()
+                        .WeakMergeFrom(oldValue)
+                        .WeakMergeFrom((IMessageLite) entry.Value)
+                        .WeakBuildPartial();
+                }
+                else
+                {
+                    // Just overwrite
+                    this[field] = entry.Value;
+                }
+            }
+
+            //Fix for unknown fields not merging, see java's AbstractMessage.Builder<T> line 236
+            MergeUnknownFields(other.UnknownFields);
+
+            return ThisBuilder;
+        }
+
+        public override TBuilder MergeUnknownFields(UnknownFieldSet unknownFields)
+        {
+            if (unknownFields != UnknownFieldSet.DefaultInstance)
+            {
+                TMessage result = MessageBeingBuilt;
+                result.SetUnknownFields(UnknownFieldSet.CreateBuilder(result.UnknownFields)
+                                            .MergeFrom(unknownFields)
+                                            .Build());
+            }
+            return ThisBuilder;
+        }
+
+        public override TBuilder AddRepeatedField(FieldDescriptor field, object value)
+        {
+            InternalFieldAccessors[field].AddRepeated(ThisBuilder, value);
+            return ThisBuilder;
+        }
+
+        /// <summary>
+        /// Like Build(), but will wrap UninitializedMessageException in
+        /// InvalidProtocolBufferException.
+        /// </summary>
+        public TMessage BuildParsed()
+        {
+            if (!IsInitialized)
+            {
+                throw new UninitializedMessageException(MessageBeingBuilt).AsInvalidProtocolBufferException();
+            }
+            return BuildPartial();
+        }
+
+        /// <summary>
+        /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
+        /// </summary>
+        public override TMessage Build()
+        {
+            // If the message is null, we'll throw a more appropriate exception in BuildPartial.
+            if (MessageBeingBuilt != null && !IsInitialized)
+            {
+                throw new UninitializedMessageException(MessageBeingBuilt);
+            }
+            return BuildPartial();
+        }
+
+        public override UnknownFieldSet UnknownFields
+        {
+            get { return MessageBeingBuilt.UnknownFields; }
+            set { MessageBeingBuilt.SetUnknownFields(value); }
+        }
     }
-
-    public override TBuilder MergeUnknownFields(UnknownFieldSet unknownFields) {
-      if (unknownFields != UnknownFieldSet.DefaultInstance) {
-        TMessage result = MessageBeingBuilt;
-        result.SetUnknownFields(UnknownFieldSet.CreateBuilder(result.UnknownFields)
-            .MergeFrom(unknownFields)
-            .Build());
-      }
-      return ThisBuilder;
-    }
-
-    public override TBuilder AddRepeatedField(FieldDescriptor field, object value) {
-      InternalFieldAccessors[field].AddRepeated(ThisBuilder, value);
-      return ThisBuilder;
-    }
-
-    /// <summary>
-    /// Like Build(), but will wrap UninitializedMessageException in
-    /// InvalidProtocolBufferException.
-    /// </summary>
-    public TMessage BuildParsed() {
-      if (!IsInitialized) {
-        throw new UninitializedMessageException(MessageBeingBuilt).AsInvalidProtocolBufferException();
-      }
-      return BuildPartial();
-    }
-
-    /// <summary>
-    /// Implementation of <see cref="IBuilder{TMessage, TBuilder}.Build" />.
-    /// </summary>
-    public override TMessage Build() {
-      // If the message is null, we'll throw a more appropriate exception in BuildPartial.
-      if (MessageBeingBuilt != null && !IsInitialized) {
-        throw new UninitializedMessageException(MessageBeingBuilt);
-      }
-      return BuildPartial();
-    }
-
-    public override UnknownFieldSet UnknownFields {
-      get { return MessageBeingBuilt.UnknownFields; }
-      set { MessageBeingBuilt.SetUnknownFields(value); }
-    }
-  }
 }

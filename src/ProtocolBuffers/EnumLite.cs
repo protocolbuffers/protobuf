@@ -1,4 +1,5 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -38,79 +40,94 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 
-namespace Google.ProtocolBuffers {
-
-  ///<summary>
-  ///Interface for an enum value or value descriptor, to be used in FieldSet.
-  ///The lite library stores enum values directly in FieldSets but the full
-  ///library stores EnumValueDescriptors in order to better support reflection.
-  ///</summary>
-  public interface IEnumLite {
-    int Number { get; }
-    string Name { get; }
-  }
-
-  ///<summary>
-  ///Interface for an object which maps integers to {@link EnumLite}s.
-  ///{@link Descriptors.EnumDescriptor} implements this interface by mapping
-  ///numbers to {@link Descriptors.EnumValueDescriptor}s.  Additionally,
-  ///every generated enum type has a static method internalGetValueMap() which
-  ///returns an implementation of this type that maps numbers to enum values.
-  ///</summary>
-  public interface IEnumLiteMap<T> : IEnumLiteMap
-    where T : IEnumLite {
-    new T FindValueByNumber(int number);
-  }
-
-  public interface IEnumLiteMap {
-    bool IsValidValue(IEnumLite value);
-    IEnumLite FindValueByNumber(int number);
-  }
-
-  public class EnumLiteMap<TEnum> : IEnumLiteMap<IEnumLite>
-    where TEnum : struct, IComparable, IFormattable {
-    
-    struct EnumValue : IEnumLite {
-      readonly TEnum value;
-      public EnumValue(TEnum value) {
-        this.value = value;
-      }
-      int IEnumLite.Number {
-        get { return Convert.ToInt32(value); }
-      }
-      string IEnumLite.Name {
-        get { return value.ToString(); }
-      }
+namespace Google.ProtocolBuffers
+{
+    ///<summary>
+    ///Interface for an enum value or value descriptor, to be used in FieldSet.
+    ///The lite library stores enum values directly in FieldSets but the full
+    ///library stores EnumValueDescriptors in order to better support reflection.
+    ///</summary>
+    public interface IEnumLite
+    {
+        int Number { get; }
+        string Name { get; }
     }
 
-    private readonly SortedList<int, IEnumLite> items;
+    ///<summary>
+    ///Interface for an object which maps integers to {@link EnumLite}s.
+    ///{@link Descriptors.EnumDescriptor} implements this interface by mapping
+    ///numbers to {@link Descriptors.EnumValueDescriptor}s.  Additionally,
+    ///every generated enum type has a static method internalGetValueMap() which
+    ///returns an implementation of this type that maps numbers to enum values.
+    ///</summary>
+    public interface IEnumLiteMap<T> : IEnumLiteMap
+        where T : IEnumLite
+    {
+        new T FindValueByNumber(int number);
+    }
 
-    public EnumLiteMap() {
-      items = new SortedList<int, IEnumLite>();
+    public interface IEnumLiteMap
+    {
+        bool IsValidValue(IEnumLite value);
+        IEnumLite FindValueByNumber(int number);
+    }
+
+    public class EnumLiteMap<TEnum> : IEnumLiteMap<IEnumLite>
+        where TEnum : struct, IComparable, IFormattable
+    {
+        private struct EnumValue : IEnumLite
+        {
+            private readonly TEnum value;
+
+            public EnumValue(TEnum value)
+            {
+                this.value = value;
+            }
+
+            int IEnumLite.Number
+            {
+                get { return Convert.ToInt32(value); }
+            }
+
+            string IEnumLite.Name
+            {
+                get { return value.ToString(); }
+            }
+        }
+
+        private readonly SortedList<int, IEnumLite> items;
+
+        public EnumLiteMap()
+        {
+            items = new SortedList<int, IEnumLite>();
 #if SILVERLIGHT2
-      // Silverlight doesn't support Enum.GetValues
-      // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
-      foreach (FieldInfo fi in typeof(TEnum).GetFields(BindingFlags.Static | BindingFlags.Public)) {
-        TEnum evalue = (TEnum) fi.GetValue(null);        
-        items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
-      }
+            // Silverlight doesn't support Enum.GetValues
+            // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
+            foreach (FieldInfo fi in typeof (TEnum).GetFields(BindingFlags.Static | BindingFlags.Public))
+            {
+                TEnum evalue = (TEnum) fi.GetValue(null);
+                items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
+            }
 #else
       foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
         items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
 #endif
-    }
+        }
 
-    IEnumLite IEnumLiteMap.FindValueByNumber(int number) {
-      return FindValueByNumber(number);
-    }
+        IEnumLite IEnumLiteMap.FindValueByNumber(int number)
+        {
+            return FindValueByNumber(number);
+        }
 
-    public IEnumLite FindValueByNumber(int number) {
-      IEnumLite val;
-      return items.TryGetValue(number, out val) ? val : null;
-    }
+        public IEnumLite FindValueByNumber(int number)
+        {
+            IEnumLite val;
+            return items.TryGetValue(number, out val) ? val : null;
+        }
 
-    public bool IsValidValue(IEnumLite value) {
-      return items.ContainsKey(value.Number);
+        public bool IsValidValue(IEnumLite value)
+        {
+            return items.ContainsKey(value.Number);
+        }
     }
-  }
 }

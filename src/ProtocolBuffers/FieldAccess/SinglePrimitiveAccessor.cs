@@ -32,89 +32,108 @@
 using System;
 using System.Reflection;
 
-namespace Google.ProtocolBuffers.FieldAccess {
-  /// <summary>
-  /// Access for a non-repeated field of a "primitive" type (i.e. not another message or an enum).
-  /// </summary>
-  internal class SinglePrimitiveAccessor<TMessage, TBuilder> : IFieldAccessor<TMessage, TBuilder>
-      where TMessage : IMessage<TMessage, TBuilder>
-      where TBuilder : IBuilder<TMessage, TBuilder> {
-
-    private readonly Type clrType;
-    private readonly Func<TMessage, object> getValueDelegate;
-    private readonly Action<TBuilder, object> setValueDelegate;
-    private readonly Func<TMessage, bool> hasDelegate;
-    private readonly Func<TBuilder, IBuilder> clearDelegate;
-
-    internal static readonly Type[] EmptyTypes = new Type[0];
-
+namespace Google.ProtocolBuffers.FieldAccess
+{
     /// <summary>
-    /// The CLR type of the field (int, the enum type, ByteString, the message etc).
-    /// As declared by the property.
+    /// Access for a non-repeated field of a "primitive" type (i.e. not another message or an enum).
     /// </summary>
-    protected Type ClrType {
-      get { return clrType; }
-    }
+    internal class SinglePrimitiveAccessor<TMessage, TBuilder> : IFieldAccessor<TMessage, TBuilder>
+        where TMessage : IMessage<TMessage, TBuilder>
+        where TBuilder : IBuilder<TMessage, TBuilder>
+    {
+        private readonly Type clrType;
+        private readonly Func<TMessage, object> getValueDelegate;
+        private readonly Action<TBuilder, object> setValueDelegate;
+        private readonly Func<TMessage, bool> hasDelegate;
+        private readonly Func<TBuilder, IBuilder> clearDelegate;
 
-    internal SinglePrimitiveAccessor(string name) {
-      PropertyInfo messageProperty = typeof(TMessage).GetProperty(name);
-      PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name);
-      if (builderProperty == null) builderProperty = typeof(TBuilder).GetProperty(name);
-      PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
-      MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, EmptyTypes);
-      if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null) {
-        throw new ArgumentException("Not all required properties/methods available");
-      }
-      clrType = messageProperty.PropertyType;
-      hasDelegate = (Func<TMessage, bool>)Delegate.CreateDelegate(typeof(Func<TMessage, bool>), null, hasProperty.GetGetMethod());
-      clearDelegate = (Func<TBuilder, IBuilder>)Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null ,clearMethod);
-      getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
-      setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
-    }
+        internal static readonly Type[] EmptyTypes = new Type[0];
 
-    public bool Has(TMessage message) {
-      return hasDelegate(message);
-    }
+        /// <summary>
+        /// The CLR type of the field (int, the enum type, ByteString, the message etc).
+        /// As declared by the property.
+        /// </summary>
+        protected Type ClrType
+        {
+            get { return clrType; }
+        }
 
-    public void Clear(TBuilder builder) {
-      clearDelegate(builder);
-    }
+        internal SinglePrimitiveAccessor(string name)
+        {
+            PropertyInfo messageProperty = typeof (TMessage).GetProperty(name);
+            PropertyInfo builderProperty = typeof (TBuilder).GetProperty(name);
+            if (builderProperty == null) builderProperty = typeof (TBuilder).GetProperty(name);
+            PropertyInfo hasProperty = typeof (TMessage).GetProperty("Has" + name);
+            MethodInfo clearMethod = typeof (TBuilder).GetMethod("Clear" + name, EmptyTypes);
+            if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null)
+            {
+                throw new ArgumentException("Not all required properties/methods available");
+            }
+            clrType = messageProperty.PropertyType;
+            hasDelegate =
+                (Func<TMessage, bool>)
+                Delegate.CreateDelegate(typeof (Func<TMessage, bool>), null, hasProperty.GetGetMethod());
+            clearDelegate =
+                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof (Func<TBuilder, IBuilder>), null, clearMethod);
+            getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
+            setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
+        }
 
-    /// <summary>
-    /// Only valid for message types - this implementation throws InvalidOperationException.
-    /// </summary>
-    public virtual IBuilder CreateBuilder() {
-      throw new InvalidOperationException();
-    }
+        public bool Has(TMessage message)
+        {
+            return hasDelegate(message);
+        }
 
-    public virtual object GetValue(TMessage message) {
-      return getValueDelegate(message);
-    }
+        public void Clear(TBuilder builder)
+        {
+            clearDelegate(builder);
+        }
 
-    public virtual void SetValue(TBuilder builder, object value) {
-      setValueDelegate(builder, value);
-    }
+        /// <summary>
+        /// Only valid for message types - this implementation throws InvalidOperationException.
+        /// </summary>
+        public virtual IBuilder CreateBuilder()
+        {
+            throw new InvalidOperationException();
+        }
 
-    #region Methods only related to repeated values
-    public int GetRepeatedCount(TMessage message) {
-      throw new InvalidOperationException();
-    }
+        public virtual object GetValue(TMessage message)
+        {
+            return getValueDelegate(message);
+        }
 
-    public object GetRepeatedValue(TMessage message, int index) {
-      throw new InvalidOperationException();
-    }
+        public virtual void SetValue(TBuilder builder, object value)
+        {
+            setValueDelegate(builder, value);
+        }
 
-    public void SetRepeated(TBuilder builder, int index, object value) {
-      throw new InvalidOperationException();
-    }
+        #region Methods only related to repeated values
 
-    public void AddRepeated(TBuilder builder, object value) {
-      throw new InvalidOperationException();
-    }
+        public int GetRepeatedCount(TMessage message)
+        {
+            throw new InvalidOperationException();
+        }
 
-    public object GetRepeatedWrapper(TBuilder builder) {
-      throw new InvalidOperationException();
+        public object GetRepeatedValue(TMessage message, int index)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public void SetRepeated(TBuilder builder, int index, object value)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public void AddRepeated(TBuilder builder, object value)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public object GetRepeatedWrapper(TBuilder builder)
+        {
+            throw new InvalidOperationException();
+        }
+
+        #endregion
     }
-    #endregion
-  }
 }

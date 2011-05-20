@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -37,34 +39,39 @@ using System.Collections.Generic;
 using System.Text;
 using Google.ProtocolBuffers.Collections;
 
-namespace Google.ProtocolBuffers.ProtoGen {
-  /// <summary>
-  /// Exception thrown to indicate that the options passed were invalid.
-  /// </summary>
-  public sealed class InvalidOptionsException : Exception {
-
-    private readonly IList<string> reasons;
-
+namespace Google.ProtocolBuffers.ProtoGen
+{
     /// <summary>
-    /// An immutable list of reasons why the options were invalid.
+    /// Exception thrown to indicate that the options passed were invalid.
     /// </summary>
-    public IList<string> Reasons {
-      get { return reasons; }
-    }
+    public sealed class InvalidOptionsException : Exception
+    {
+        private readonly IList<string> reasons;
 
-    public InvalidOptionsException(IList<string> reasons) 
-        : base(BuildMessage(reasons)) {
-      this.reasons = Lists.AsReadOnly(reasons);
-    }
+        /// <summary>
+        /// An immutable list of reasons why the options were invalid.
+        /// </summary>
+        public IList<string> Reasons
+        {
+            get { return reasons; }
+        }
 
-    private static string BuildMessage(IEnumerable<string> reasons) {
-      StringBuilder builder = new StringBuilder("Invalid options:");
-      builder.AppendLine();
-      foreach (string reason in reasons) {
-        builder.Append("  ");
-        builder.AppendLine(reason);
-      }
-      return builder.ToString();
+        public InvalidOptionsException(IList<string> reasons)
+            : base(BuildMessage(reasons))
+        {
+            this.reasons = Lists.AsReadOnly(reasons);
+        }
+
+        private static string BuildMessage(IEnumerable<string> reasons)
+        {
+            StringBuilder builder = new StringBuilder("Invalid options:");
+            builder.AppendLine();
+            foreach (string reason in reasons)
+            {
+                builder.Append("  ");
+                builder.AppendLine(reason);
+            }
+            return builder.ToString();
+        }
     }
-  }
 }

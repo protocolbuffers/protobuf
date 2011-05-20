@@ -32,78 +32,90 @@
 using System.Collections.Generic;
 using Google.ProtocolBuffers.DescriptorProtos;
 
-namespace Google.ProtocolBuffers.Descriptors {
-
-  /// <summary>
-  /// Descriptor for an enum type in a .proto file.
-  /// </summary>
-  public sealed class EnumDescriptor : IndexedDescriptorBase<EnumDescriptorProto, EnumOptions>, IEnumLiteMap<EnumValueDescriptor> {
-
-    private readonly MessageDescriptor containingType;
-    private readonly IList<EnumValueDescriptor> values;
-
-    internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index)
-        : base(proto, file, ComputeFullName(file, parent, proto.Name), index) {
-      containingType = parent;
-
-      if (proto.ValueCount == 0) {
-        // We cannot allow enums with no values because this would mean there
-        // would be no valid default value for fields of this type.
-        throw new DescriptorValidationException(this, "Enums must contain at least one value.");
-      }
-      
-      values = DescriptorUtil.ConvertAndMakeReadOnly(proto.ValueList,
-          (value, i) => new EnumValueDescriptor(value, file, this, i));
-
-      File.DescriptorPool.AddSymbol(this);
-    }
-
-    /// <value>
-    /// If this is a nested type, get the outer descriptor, otherwise null.
-    /// </value>
-    public MessageDescriptor ContainingType {
-      get { return containingType; }
-    }
-
-    /// <value>
-    /// An unmodifiable list of defined value descriptors for this enum.
-    /// </value>
-    public IList<EnumValueDescriptor> Values {
-      get { return values; }
-    }
-
+namespace Google.ProtocolBuffers.Descriptors
+{
     /// <summary>
-    /// Logic moved from FieldSet to continue current behavior
+    /// Descriptor for an enum type in a .proto file.
     /// </summary>
-    public bool IsValidValue(IEnumLite value) {
-      return value is EnumValueDescriptor && ((EnumValueDescriptor)value).EnumDescriptor == this;
-    }
+    public sealed class EnumDescriptor : IndexedDescriptorBase<EnumDescriptorProto, EnumOptions>,
+                                         IEnumLiteMap<EnumValueDescriptor>
+    {
+        private readonly MessageDescriptor containingType;
+        private readonly IList<EnumValueDescriptor> values;
 
-    /// <summary>
-    /// Finds an enum value by number. If multiple enum values have the
-    /// same number, this returns the first defined value with that number.
-    /// </summary>
-    public EnumValueDescriptor FindValueByNumber(int number) {
-      return File.DescriptorPool.FindEnumValueByNumber(this, number);
-    }
+        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index)
+            : base(proto, file, ComputeFullName(file, parent, proto.Name), index)
+        {
+            containingType = parent;
 
-    IEnumLite IEnumLiteMap.FindValueByNumber(int number) {
-      return FindValueByNumber(number);
-    }
-    /// <summary>
-    /// Finds an enum value by name.
-    /// </summary>
-    /// <param name="name">The unqualified name of the value (e.g. "FOO").</param>
-    /// <returns>The value's descriptor, or null if not found.</returns>
-    public EnumValueDescriptor FindValueByName(string name) {
-      return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
-    }
+            if (proto.ValueCount == 0)
+            {
+                // We cannot allow enums with no values because this would mean there
+                // would be no valid default value for fields of this type.
+                throw new DescriptorValidationException(this, "Enums must contain at least one value.");
+            }
 
-    internal override void ReplaceProto(EnumDescriptorProto newProto) {
-      base.ReplaceProto(newProto);
-      for (int i = 0; i < values.Count; i++) {
-        values[i].ReplaceProto(newProto.GetValue(i));
-      }
+            values = DescriptorUtil.ConvertAndMakeReadOnly(proto.ValueList,
+                                                           (value, i) => new EnumValueDescriptor(value, file, this, i));
+
+            File.DescriptorPool.AddSymbol(this);
+        }
+
+        /// <value>
+        /// If this is a nested type, get the outer descriptor, otherwise null.
+        /// </value>
+        public MessageDescriptor ContainingType
+        {
+            get { return containingType; }
+        }
+
+        /// <value>
+        /// An unmodifiable list of defined value descriptors for this enum.
+        /// </value>
+        public IList<EnumValueDescriptor> Values
+        {
+            get { return values; }
+        }
+
+        /// <summary>
+        /// Logic moved from FieldSet to continue current behavior
+        /// </summary>
+        public bool IsValidValue(IEnumLite value)
+        {
+            return value is EnumValueDescriptor && ((EnumValueDescriptor) value).EnumDescriptor == this;
+        }
+
+        /// <summary>
+        /// Finds an enum value by number. If multiple enum values have the
+        /// same number, this returns the first defined value with that number.
+        /// </summary>
+        public EnumValueDescriptor FindValueByNumber(int number)
+        {
+            return File.DescriptorPool.FindEnumValueByNumber(this, number);
+        }
+
+        IEnumLite IEnumLiteMap.FindValueByNumber(int number)
+        {
+            return FindValueByNumber(number);
+        }
+
+        /// <summary>
+        /// Finds an enum value by name.
+        /// </summary>
+        /// <param name="name">The unqualified name of the value (e.g. "FOO").</param>
+        /// <returns>The value's descriptor, or null if not found.</returns>
+        public EnumValueDescriptor FindValueByName(string name)
+        {
+            return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
+        }
+
+        internal override void ReplaceProto(EnumDescriptorProto newProto)
+        {
+            base.ReplaceProto(newProto);
+            for (int i = 0; i < values.Count; i++)
+            {
+                values[i].ReplaceProto(newProto.GetValue(i));
+            }
+        }
     }
-  }
 }

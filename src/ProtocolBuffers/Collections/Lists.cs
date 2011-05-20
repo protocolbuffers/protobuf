@@ -32,68 +32,79 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Google.ProtocolBuffers.Collections {
-
-  /// <summary>
-  /// Utility non-generic class for calling into Lists{T} using type inference.
-  /// </summary>
-  public static class Lists {
-
+namespace Google.ProtocolBuffers.Collections
+{
     /// <summary>
-    /// Returns a read-only view of the specified list.
+    /// Utility non-generic class for calling into Lists{T} using type inference.
     /// </summary>
-    public static IList<T> AsReadOnly<T>(IList<T> list) {
-      return Lists<T>.AsReadOnly(list);
-    }
-
-    public static bool Equals<T>(IList<T> left, IList<T> right) {
-      if (left == right) {
-        return true;
-      }
-      if (left == null || right == null) {
-        return false;
-      }
-      if (left.Count != right.Count) {
-        return false;
-      }
-      IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
-      for (int i = 0; i < left.Count; i++) {
-        if (!comparer.Equals(left[i], right[i])) {
-          return false;
+    public static class Lists
+    {
+        /// <summary>
+        /// Returns a read-only view of the specified list.
+        /// </summary>
+        public static IList<T> AsReadOnly<T>(IList<T> list)
+        {
+            return Lists<T>.AsReadOnly(list);
         }
-      }
-      return true;
+
+        public static bool Equals<T>(IList<T> left, IList<T> right)
+        {
+            if (left == right)
+            {
+                return true;
+            }
+            if (left == null || right == null)
+            {
+                return false;
+            }
+            if (left.Count != right.Count)
+            {
+                return false;
+            }
+            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            for (int i = 0; i < left.Count; i++)
+            {
+                if (!comparer.Equals(left[i], right[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static int GetHashCode<T>(IList<T> list)
+        {
+            int hash = 31;
+            foreach (T element in list)
+            {
+                hash = hash*29 + element.GetHashCode();
+            }
+            return hash;
+        }
     }
-
-    public static int GetHashCode<T>(IList<T> list) {
-      int hash = 31;
-      foreach (T element in list) {
-        hash = hash * 29 + element.GetHashCode();
-      }
-      return hash;
-    }
-  }
-
-  /// <summary>
-  /// Utility class for dealing with lists.
-  /// </summary>
-  public static class Lists<T> {
-
-    static readonly ReadOnlyCollection<T> empty = new ReadOnlyCollection<T>(new T[0]);
 
     /// <summary>
-    /// Returns an immutable empty list.
+    /// Utility class for dealing with lists.
     /// </summary>
-    public static ReadOnlyCollection<T> Empty {
-      get { return empty; }
-    }
+    public static class Lists<T>
+    {
+        private static readonly ReadOnlyCollection<T> empty = new ReadOnlyCollection<T>(new T[0]);
 
-    /// <summary>
-    /// Returns either the original reference if it's already read-only,
-    /// or a new ReadOnlyCollection wrapping the original list.
-    /// </summary>
-    public static IList<T> AsReadOnly(IList<T> list) {
-      return list.IsReadOnly ? list : new ReadOnlyCollection<T>(list);
+        /// <summary>
+        /// Returns an immutable empty list.
+        /// </summary>
+        public static ReadOnlyCollection<T> Empty
+        {
+            get { return empty; }
+        }
+
+        /// <summary>
+        /// Returns either the original reference if it's already read-only,
+        /// or a new ReadOnlyCollection wrapping the original list.
+        /// </summary>
+        public static IList<T> AsReadOnly(IList<T> list)
+        {
+            return list.IsReadOnly ? list : new ReadOnlyCollection<T>(list);
+        }
     }
-  }
 }

@@ -1,4 +1,5 @@
 #region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,6 +31,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
 
 using System;
@@ -37,40 +39,50 @@ using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 using System.Collections;
 
-namespace Google.ProtocolBuffers {
-  /// <summary>
-  /// Class used to represent repeat extensions in generated classes.
-  /// </summary>
-  public sealed class GeneratedRepeatExtension<TExtensionElement> : GeneratedExtensionBase<IList<TExtensionElement>> {
-    private GeneratedRepeatExtension(FieldDescriptor field) : base(field, typeof(TExtensionElement)) {
-    }
-
-    public static GeneratedExtensionBase<IList<TExtensionElement>> CreateInstance(FieldDescriptor descriptor) {
-      if (!descriptor.IsRepeated) {
-        throw new ArgumentException("Must call GeneratedRepeatExtension.CreateInstance() for repeated types.");
-      }
-      return new GeneratedRepeatExtension<TExtensionElement>(descriptor);
-    }
-
+namespace Google.ProtocolBuffers
+{
     /// <summary>
-    /// Converts the list to the right type.
-    /// TODO(jonskeet): Check where this is used, and whether we need to convert
-    /// for primitive types.
+    /// Class used to represent repeat extensions in generated classes.
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public override object FromReflectionType(object value) {
-      if (Descriptor.MappedType == MappedType.Message ||
-          Descriptor.MappedType == MappedType.Enum) {
-        // Must convert the whole list.
-        List<TExtensionElement> result = new List<TExtensionElement>();
-        foreach (object element in (IEnumerable) value) {
-          result.Add((TExtensionElement) SingularFromReflectionType(element));
+    public sealed class GeneratedRepeatExtension<TExtensionElement> : GeneratedExtensionBase<IList<TExtensionElement>>
+    {
+        private GeneratedRepeatExtension(FieldDescriptor field) : base(field, typeof (TExtensionElement))
+        {
         }
-        return result;
-      } else {
-        return value;
-      }
+
+        public static GeneratedExtensionBase<IList<TExtensionElement>> CreateInstance(FieldDescriptor descriptor)
+        {
+            if (!descriptor.IsRepeated)
+            {
+                throw new ArgumentException("Must call GeneratedRepeatExtension.CreateInstance() for repeated types.");
+            }
+            return new GeneratedRepeatExtension<TExtensionElement>(descriptor);
+        }
+
+        /// <summary>
+        /// Converts the list to the right type.
+        /// TODO(jonskeet): Check where this is used, and whether we need to convert
+        /// for primitive types.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public override object FromReflectionType(object value)
+        {
+            if (Descriptor.MappedType == MappedType.Message ||
+                Descriptor.MappedType == MappedType.Enum)
+            {
+                // Must convert the whole list.
+                List<TExtensionElement> result = new List<TExtensionElement>();
+                foreach (object element in (IEnumerable) value)
+                {
+                    result.Add((TExtensionElement) SingularFromReflectionType(element));
+                }
+                return result;
+            }
+            else
+            {
+                return value;
+            }
+        }
     }
-  }
 }

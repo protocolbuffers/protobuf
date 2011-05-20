@@ -1,4 +1,5 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
@@ -30,7 +31,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #endregion
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -45,7 +48,9 @@ namespace Google.ProtocolBuffers.ProtoGen
     public partial class TestPreprocessing
     {
         private static readonly string TempPath = Path.Combine(Path.GetTempPath(), "proto-gen-test");
-        private const string DefaultProto = @"
+
+        private const string DefaultProto =
+            @"
 package nunit.simple;
 // Test a very simple message.
 message MyMessage {
@@ -53,7 +58,9 @@ message MyMessage {
 }";
 
         #region TestFixture SetUp/TearDown
+
         private static readonly string OriginalWorkingDirectory = Environment.CurrentDirectory;
+
         [TestFixtureSetUp]
         public virtual void Setup()
         {
@@ -71,9 +78,12 @@ message MyMessage {
                 Directory.Delete(TempPath, true);
             }
         }
+
         #endregion
+
         #region Helper Methods RunProtoGen / RunCsc
-        void RunProtoGen(int expect, params string[] args)
+
+        private void RunProtoGen(int expect, params string[] args)
         {
             TextWriter tout = Console.Out, terr = Console.Error;
             StringWriter temp = new StringWriter();
@@ -101,10 +111,13 @@ message MyMessage {
                 args.Add("/debug-");
                 args.Add(String.Format(@"""/out:{0}""", tempDll.TempPath));
                 args.Add("/r:System.dll");
-                args.Add(String.Format(@"""/r:{0}""", typeof (Google.ProtocolBuffers.DescriptorProtos.DescriptorProto).Assembly.Location));
+                args.Add(String.Format(@"""/r:{0}""",
+                                       typeof (Google.ProtocolBuffers.DescriptorProtos.DescriptorProto).Assembly.
+                                           Location));
                 args.AddRange(sources);
 
-                string exe = Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe");
+                string exe = Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(),
+                                          "csc.exe");
                 ProcessStartInfo psi = new ProcessStartInfo(exe);
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
@@ -130,6 +143,7 @@ message MyMessage {
                 return asm;
             }
         }
+
         #endregion
 
         // *******************************************************************
@@ -148,21 +162,25 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithConflictingType()
         {
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 package nunit.simple;
 // Test a very simple message.
-message " + test + @" {
+message " +
+                                                test + @" {
   optional string name = 1;
 } "))
             {
@@ -170,11 +188,12 @@ message " + test + @" {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple." + test, true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.Proto." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithNamespace()
         {
@@ -187,11 +206,12 @@ message " + test + @" {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithUmbrellaClassName()
         {
@@ -204,11 +224,12 @@ message " + test + @" {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.MyUmbrellaClassname", true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithNestedClass()
         {
@@ -221,11 +242,12 @@ message " + test + @" {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple." + test + "+MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithExpandedNsDirectories()
         {
@@ -238,23 +260,27 @@ message " + test + @" {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileDisablingClsComplianceFlags()
         {
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 package nunit.simple;
 // Test a very simple message.
 message MyMessage {
   optional uint32 name = 1;
-} "))
+} ")
+                )
             {
                 //CS3021: Warning as Error: xx does not need a CLSCompliant attribute because the assembly does not have a CLSCompliant attribute
                 RunProtoGen(0, proto.TempPath);
@@ -264,11 +290,12 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath, "/warnaserror+");
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithNewExtension()
         {
@@ -281,11 +308,12 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithUmbrellaNamespace()
         {
@@ -298,11 +326,12 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.MyUmbrella.Namespace." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithIgnoredUmbrellaNamespaceDueToNesting()
         {
@@ -315,21 +344,25 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple." + test + "+MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithExplicitEmptyUmbrellaNamespace()
         {
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 package nunit.simple;
 // Test a very simple message.
-message " + test + @" {
+message " +
+                                                test + @" {
   optional string name = 1;
 } "))
             {
@@ -339,6 +372,7 @@ message " + test + @" {
                 RunCsc(1, source.TempPath);
             }
         }
+
         [Test]
         public void TestProtoFileWithNewOutputFolder()
         {
@@ -353,21 +387,25 @@ message " + test + @" {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileAndIgnoreGoogleProtobuf()
         {
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 import ""google/protobuf/csharp_options.proto"";
 option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
-" + DefaultProto))
+" +
+                                                DefaultProto))
             {
                 string google = Path.Combine(TempPath, "google\\protobuf");
                 Directory.CreateDirectory(google);
@@ -383,21 +421,25 @@ option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithoutIgnoreGoogleProtobuf()
         {
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 import ""google/protobuf/csharp_options.proto"";
 option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
-" + DefaultProto))
+" +
+                                                DefaultProto))
             {
                 string google = Path.Combine(TempPath, "google\\protobuf");
                 Directory.CreateDirectory(google);
@@ -422,7 +464,9 @@ option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 import ""google/protobuf/csharp_options.proto"";
 option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
 
@@ -430,7 +474,8 @@ package nunit.simple;
 // Test a very simple message.
 message MyMessage {
   optional string name = 1;
-} "))
+} ")
+                )
             {
                 string google = Path.Combine(TempPath, "google\\protobuf");
                 Directory.CreateDirectory(google);
@@ -448,18 +493,21 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileWithIncludeImportsAndIgnoreGoogleProtobuf()
         {
             string test = new StackFrame(false).GetMethod().Name;
             Setup();
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 import ""google/protobuf/csharp_options.proto"";
 option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
 
@@ -467,7 +515,8 @@ package nunit.simple;
 // Test a very simple message.
 message MyMessage {
   optional string name = 1;
-} "))
+} ")
+                )
             {
                 string google = Path.Combine(TempPath, "google\\protobuf");
                 Directory.CreateDirectory(google);
@@ -483,11 +532,12 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
         }
+
         [Test]
         public void TestProtoFileKeepingTheProtoBuffer()
         {
@@ -495,23 +545,27 @@ message MyMessage {
             Setup();
             using (TempFile protobuf = TempFile.Attach(test + ".pb"))
             using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (ProtoFile proto = new ProtoFile(test + ".proto", @"
+            using (
+                ProtoFile proto = new ProtoFile(test + ".proto",
+                                                @"
 package nunit.simple;
 // Test a very simple message.
 message MyMessage {
   optional string name = 1;
-} "))
+} ")
+                )
             {
                 RunProtoGen(0, proto.TempPath, "--descriptor_set_out=" + protobuf.TempPath);
                 Assert.IsTrue(File.Exists(protobuf.TempPath), "Missing: " + protobuf.TempPath);
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
         }
+
         //Seems the --proto_path or -I option is non-functional for me.  Maybe others have luck?
         [Test, Ignore("http://code.google.com/p/protobuf/issues/detail?id=40")]
         public void TestProtoFileInDifferentDirectory()
@@ -526,7 +580,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -541,54 +595,67 @@ message MyMessage {
         {
             Setup();
             using (TempFile source1 = TempFile.Attach("MyMessage.cs"))
-            using (ProtoFile proto1 = new ProtoFile("MyMessage.proto", @"
+            using (
+                ProtoFile proto1 = new ProtoFile("MyMessage.proto",
+                                                 @"
 package nunit.simple;
 // Test a very simple message.
 message MyMessage {
   optional string name = 1;
-}"))
+}")
+                )
             using (TempFile source2 = TempFile.Attach("MyMessageList.cs"))
-            using (ProtoFile proto2 = new ProtoFile("MyMessageList.proto", @"
+            using (
+                ProtoFile proto2 = new ProtoFile("MyMessageList.proto",
+                                                 @"
 package nunit.simple;
 import ""MyMessage.proto"";
 // Test a very simple message.
 message MyMessageList {
   repeated MyMessage messages = 1;
-}"))
+}")
+                )
             {
                 RunProtoGen(0, proto1.TempPath, proto2.TempPath);
                 Assembly a = RunCsc(0, source1.TempPath, source2.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t1 = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t1), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t1), "Expect an IMessage");
                 //assert that the message type is in the expected namespace
                 Type t2 = a.GetType("nunit.simple.MyMessageList", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t2), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t2), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.Proto.MyMessage", true, true);
                 a.GetType("nunit.simple.Proto.MyMessageList", true, true);
             }
         }
+
         [Test]
         public void TestOneProtoFileWithBufferFile()
         {
             Setup();
             using (TempFile source1 = TempFile.Attach("MyMessage.cs"))
             using (TempFile protobuf = TempFile.Attach("MyMessage.pb"))
-            using (ProtoFile proto1 = new ProtoFile("MyMessage.proto", @"
+            using (
+                ProtoFile proto1 = new ProtoFile("MyMessage.proto",
+                                                 @"
 package nunit.simple;
 // Test a very simple message.
 message MyMessage {
   optional string name = 1;
-}"))
+}")
+                )
             using (TempFile source2 = TempFile.Attach("MyMessageList.cs"))
-            using (ProtoFile proto2 = new ProtoFile("MyMessageList.proto", @"
+            using (
+                ProtoFile proto2 = new ProtoFile("MyMessageList.proto",
+                                                 @"
 package nunit.simple;
 import ""MyMessage.proto"";
 // Test a very simple message.
 message MyMessageList {
   repeated MyMessage messages = 1;
-}"))
+}")
+                )
             {
                 //build the proto buffer for MyMessage
                 RunProtoGen(0, proto1.TempPath, "--descriptor_set_out=" + protobuf.TempPath);
@@ -597,10 +664,10 @@ message MyMessageList {
                 Assembly a = RunCsc(0, source1.TempPath, source2.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t1 = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t1), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t1), "Expect an IMessage");
                 //assert that the message type is in the expected namespace
                 Type t2 = a.GetType("nunit.simple.MyMessageList", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t2), "Expect an IMessage");
+                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t2), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.Proto.MyMessage", true, true);
                 a.GetType("nunit.simple.Proto.MyMessageList", true, true);
