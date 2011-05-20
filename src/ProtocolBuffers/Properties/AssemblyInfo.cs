@@ -68,22 +68,19 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyFileVersion("2.3.0.277")]
 #endif
 
-[assembly:InternalsVisibleTo("Google.ProtocolBuffers.Test,PublicKey="+
-"00240000048000009400000006020000002400005253413100040000010001008179f2dd31a648"+
-"2a2359dbe33e53701167a888e7c369a9ae3210b64f93861d8a7d286447e58bc167e3d99483beda"+
-"72f738140072bb69990bc4f98a21365de2c105e848974a3d210e938b0a56103c0662901efd6b78"+
-"0ee6dbe977923d46a8fda18fb25c65dd73b149a5cd9f3100668b56649932dadd8cf5be52eb1dce"+
-"ad5cedbf")]
-[assembly: InternalsVisibleTo("Google.ProtocolBuffersLite.Test,PublicKey=" +
-"00240000048000009400000006020000002400005253413100040000010001008179f2dd31a648" +
-"2a2359dbe33e53701167a888e7c369a9ae3210b64f93861d8a7d286447e58bc167e3d99483beda" +
-"72f738140072bb69990bc4f98a21365de2c105e848974a3d210e938b0a56103c0662901efd6b78" +
-"0ee6dbe977923d46a8fda18fb25c65dd73b149a5cd9f3100668b56649932dadd8cf5be52eb1dce" +
-"ad5cedbf")]
-[assembly: InternalsVisibleTo("ProtoGen,PublicKey=" +
-"00240000048000009400000006020000002400005253413100040000010001006d739020e13bdc" +
-"038e86fa8aa5e1b13aae65d3ae79d622816c6067ab5b6955be50cc887130117582349208c13a55" +
-"5e09a6084558f989ccde66094f07822808d3a9b922b0e85b912070032e90bb35360be7efb7982b" +
-"702d7a5c6ed1e21d8ca587b4f4c9d2b81210d3641cc75f506cdfc628ac5453ff0a6886986c981d" +
-"12245bc7")]
+[assembly: InternalsVisibleTo("Google.ProtocolBuffers.Test,PublicKey=" + Google.ProtocolBuffers.Properties.KnownKeys.PublishedKey)]
+[assembly: InternalsVisibleTo("Google.ProtocolBuffersLite.Test,PublicKey=" + Google.ProtocolBuffers.Properties.KnownKeys.PublishedKey)]
+
 [assembly: CLSCompliant(true)]
+
+namespace Google.ProtocolBuffers.Properties
+{
+    class KnownKeys
+    {
+        public const string PublishedKey = @"00240000048000009400000006020000002400005253413100040000110000003b4611704c5379" +
+                                            "39c3e0fbe9447dd6fa5462507f9dd4fd9fbf0712457e415b037da6d2c4eb5d2c7d29c86380af68" +
+                                            "7cf400401bb183f2a70bd3b631c1fcb7db8aa66c766694a9fb53fa765df6303104da8c978f3b6d" +
+                                            "53909cd30685b8bc9922c726cd82b5995e9e2cfca6df7a2d189d851492e49f4b76f269ce6dfd08" +
+                                            "c34a7d98";
+    }
+}

@@ -37,6 +37,9 @@ using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen {
+
+  public delegate TResult Func<T, TResult>(T arg);
+
   internal static class SourceGenerators {
 
     private static readonly Dictionary<Type, Func<IDescriptor, ISourceGenerator>> GeneratorFactories = new Dictionary<Type, Func<IDescriptor, ISourceGenerator>> {

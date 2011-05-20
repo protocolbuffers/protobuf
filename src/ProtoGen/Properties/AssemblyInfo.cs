@@ -34,9 +34,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("2.3.0.277")]
 [assembly: AssemblyVersion("2.3.0.277")]
 [assembly: AssemblyFileVersion("2.3.0.277")]
-[assembly: InternalsVisibleTo("Google.ProtocolBuffers.ProtoGen.Test,PublicKey=" +
-"0024000004800000940000000602000000240000525341310004000001000100cf43741ffc3e65" +
-"c85707245e144e90f1bb82f20d1b1555846008d4d5d5c9270a980350dcb1ddd40fcdde13c2780c" +
-"75c9057123daa5613cb6551e2b8bd2254e8f84b3893369869e5119b752442aef7156c4defc489b" +
-"96c44ff801fe8d94199e048f8ff414813c9c811a029bcd697040700dc66982539e9b368cb5e725" +
-"feed60f2")]
+

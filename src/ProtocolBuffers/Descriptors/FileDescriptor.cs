@@ -81,7 +81,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// Allows a file descriptor to be configured with a set of external options, e.g. from the
     /// command-line arguments to protogen.
     /// </summary>
-    internal void ConfigureWithDefaultOptions(CSharpFileOptions options) {
+    public void ConfigureWithDefaultOptions(CSharpFileOptions options) {
       csharpFileOptions = BuildOrFakeWithDefaultOptions(options);
     }
 

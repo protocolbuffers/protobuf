@@ -35,6 +35,9 @@
 using System;
 using NUnit.Framework;
 
+delegate void Action();
+
+
 namespace Google.ProtocolBuffers.Collections {
   [TestFixture]
   public class PopsicleListTest {

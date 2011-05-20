@@ -52,13 +52,13 @@ namespace Google.ProtocolBuffers {
 
 #region Fixed sizes.
     // TODO(jonskeet): Move these somewhere else. They're messy. Consider making FieldType a smarter kind of enum
-    internal const int Fixed32Size = 4;
-    internal const int Fixed64Size = 8;
-    internal const int SFixed32Size = 4;
-    internal const int SFixed64Size = 8;
-    internal const int FloatSize = 4;
-    internal const int DoubleSize = 8;
-    internal const int BoolSize = 1;
+    public const int Fixed32Size = 4;
+    public const int Fixed64Size = 8;
+    public const int SFixed32Size = 4;
+    public const int SFixed64Size = 8;
+    public const int FloatSize = 4;
+    public const int DoubleSize = 8;
+    public const int BoolSize = 1;
 #endregion
 
     [CLSCompliant(false)]

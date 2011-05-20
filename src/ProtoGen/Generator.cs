@@ -124,7 +124,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
     /// Note: this method is internal rather than private to allow testing.
     /// </summary>
     /// <exception cref="DependencyResolutionException">Not all dependencies could be resolved.</exception>
-    internal static IList<FileDescriptor> ConvertDescriptors(CSharpFileOptions options, params FileDescriptorSet[] descriptorProtos) {
+    public static IList<FileDescriptor> ConvertDescriptors(CSharpFileOptions options, params FileDescriptorSet[] descriptorProtos) {
       // Simple strategy: Keep going through the list of protos to convert, only doing ones where
       // we've already converted all the dependencies, until we get to a stalemate
       List<FileDescriptorProto> fileList = new List<FileDescriptorProto>();

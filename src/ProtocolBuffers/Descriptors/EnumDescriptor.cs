@@ -95,7 +95,7 @@ namespace Google.ProtocolBuffers.Descriptors {
     /// </summary>
     /// <param name="name">The unqualified name of the value (e.g. "FOO").</param>
     /// <returns>The value's descriptor, or null if not found.</returns>
-    internal EnumValueDescriptor FindValueByName(string name) {
+    public EnumValueDescriptor FindValueByName(string name) {
       return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
     }
 

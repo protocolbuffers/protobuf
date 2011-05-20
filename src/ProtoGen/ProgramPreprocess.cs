@@ -11,7 +11,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
   /// --descriptor_set_out= is specified the proto buffer file is kept, otherwise it will be removed
   /// after code generation.
   /// </summary>
-  internal class ProgramPreprocess {
+  public class ProgramPreprocess {
     private static int Main(string[] args) {
       try {
         return Environment.ExitCode = Run(args);
@@ -22,7 +22,7 @@ namespace Google.ProtocolBuffers.ProtoGen {
       }
     }
 
-    internal static int Run(params string[] args) {
+    public static int Run(params string[] args) {
       bool deleteFile = false;
       string tempFile = null;
       int result;

@@ -39,13 +39,13 @@ namespace Google.ProtocolBuffers {
   /// <summary>
   /// Helpers for converting names to pascal case etc.
   /// </summary>
-  internal class NameHelpers {
+  public class NameHelpers {
 
-    internal static string UnderscoresToPascalCase(string input) {
+    public static string UnderscoresToPascalCase(string input) {
       return UnderscoresToPascalOrCamelCase(input, true);
     }
 
-    internal static string UnderscoresToCamelCase(string input) {
+    public static string UnderscoresToCamelCase(string input) {
       return UnderscoresToPascalOrCamelCase(input, false);
     }
 
