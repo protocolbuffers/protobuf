@@ -97,7 +97,7 @@ void _upb_array_free(upb_array *arr, upb_fielddef *f) {
   if (upb_elem_ismm(f)) {
     // Need to release refs on sub-objects.
     upb_valuetype_t type = upb_elem_valuetype(f);
-    for (upb_arraylen_t i = 0; i < arr->size; i++) {
+    for (int32_t i = 0; i < arr->size; i++) {
       upb_valueptr p = _upb_array_getptr(arr, f, i);
       upb_elem_unref(upb_value_read(p, type), f);
     }
@@ -117,7 +117,8 @@ void __attribute__((noinline)) upb_array_doresize(
 }
 
 void upb_array_resizefortypesize(upb_array *arr, size_t type_size,
-                                 upb_arraylen_t len) {
+                                 int32_t len) {
+  assert(len >= 0);
   if (arr->size < len) upb_array_doresize(arr, type_size, len);
   arr->len = len;
 }
@@ -312,18 +313,6 @@ static uint64_t upb_msgsink_packfval(uint8_t has_offset, uint8_t has_mask,
   return ret;
 }
 
-upb_valueptr __attribute__((noinline)) upb_array_recycleorresize(
-    upb_msg *m, upb_msgsink_fval fval, size_t type_size) {
-  upb_array **arr = (void*)&m->data[fval.val_offset];
-  if (!(m->data[fval.has_offset] & fval.has_mask)) {
-    upb_array_recycle(arr);
-    m->data[fval.has_offset] |= fval.has_mask;
-  }
-  upb_arraylen_t len = upb_array_len(*arr);
-  upb_array_resizefortypesize(*arr, type_size, len+1);
-  return _upb_array_getptrforsize(*arr, type_size, len);
-}
-
 #define SCALAR_VALUE_CB_PAIR(type, ctype)                                     \
   upb_flow_t upb_msgsink_ ## type ## value(void *_m, upb_value _fval,         \
                                                   upb_value val) {            \
@@ -334,25 +323,13 @@ upb_valueptr __attribute__((noinline)) upb_array_recycleorresize(
     return UPB_CONTINUE;                                                      \
   }                                                                           \
                                                                               \
-  upb_flow_t upb_msgsink_ ## type ## value_r(void *_m, upb_value _fval,       \
-                                                    upb_value val) {          \
-    upb_msg *m = _m;                                                          \
-    upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);                    \
-    upb_array *arr = *(upb_array**)&m->data[fval.val_offset];                 \
-    if (!(m->data[fval.has_offset] & fval.has_mask)) {                        \
-      if(arr && upb_atomic_only(&arr->refcount)) {                            \
-        m->data[fval.has_offset] |= fval.has_mask;                            \
-        arr->len = 0;                                                         \
-      } else {                                                                \
-        goto slow;                                                            \
-      }                                                                       \
-    } else if (arr->len == arr->size) goto slow;                              \
+  upb_flow_t upb_msgsink_ ## type ## value_r(void *_a, upb_value _fval,       \
+                                             upb_value val) {                 \
+    (void)_fval;                                                              \
+    upb_array *arr = _a;                                                      \
+    upb_array_resizefortypesize(arr, sizeof(ctype), arr->len+1);              \
     upb_valueptr p = _upb_array_getptrforsize(arr, sizeof(ctype),             \
-                                              arr->len++);                    \
-    *(ctype*)p._void = upb_value_get ## type(val);                            \
-    return UPB_CONTINUE;                                                      \
-  slow:                                                                       \
-    p = upb_array_recycleorresize(m, fval, sizeof(ctype));                    \
+                                              arr->len-1);                    \
     *(ctype*)p._void = upb_value_get ## type(val);                            \
     return UPB_CONTINUE;                                                      \
   }                                                                           \
@@ -364,6 +341,17 @@ SCALAR_VALUE_CB_PAIR(int64, int64_t)
 SCALAR_VALUE_CB_PAIR(uint32, uint32_t)
 SCALAR_VALUE_CB_PAIR(uint64, uint64_t)
 SCALAR_VALUE_CB_PAIR(bool, bool)
+
+upb_sflow_t upb_msgsink_startseq(void *_m, upb_value _fval) {
+  upb_msg *m = _m;
+  upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
+  upb_array **arr = (upb_array**)&m->data[fval.val_offset];
+  if (!(m->data[fval.has_offset] & fval.has_mask)) {
+    upb_array_recycle(arr);
+    m->data[fval.has_offset] |= fval.has_mask;
+  }
+  return UPB_CONTINUE_WITH(*arr);
+}
 
 upb_flow_t upb_msgsink_strvalue(void *_m, upb_value _fval, upb_value val) {
   upb_msg *m = _m;
@@ -388,29 +376,14 @@ upb_flow_t upb_msgsink_strvalue(void *_m, upb_value _fval, upb_value val) {
   return UPB_CONTINUE;
 }
 
-upb_flow_t upb_msgsink_strvalue_r(void *_m, upb_value _fval,
+upb_flow_t upb_msgsink_strvalue_r(void *_a, upb_value _fval,
                                   upb_value val) {
-  upb_msg *m = _m;
-  upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
-  upb_array *arr = *(upb_array**)&m->data[fval.val_offset];
-  if (!(m->data[fval.has_offset] & fval.has_mask)) {
-    if(arr && upb_atomic_only(&arr->refcount)) {
-      m->data[fval.has_offset] |= fval.has_mask;
-      arr->len = 0;
-    } else {
-      goto slow;
-    }
-  } else if (arr->len == arr->size) goto slow;
-  ++arr->len;
+  upb_array *arr = _a;
+  (void)_fval;
+  upb_array_resizefortypesize(arr, sizeof(void*), arr->len+1);
   upb_valueptr p = _upb_array_getptrforsize(arr, sizeof(void*),
-                                            upb_array_len(arr));
+                                            upb_array_len(arr)-1);
   upb_string *src = upb_value_getstr(val);
-  upb_string_recycle(p.str);
-  upb_string_substr(*p.str, src, 0, upb_string_len(src));
-  return UPB_CONTINUE;
-slow:
-  p = upb_array_recycleorresize(m, fval, sizeof(void*));
-  src = upb_value_getstr(val);
   upb_string_recycle(p.str);
   upb_string_substr(*p.str, src, 0, upb_string_len(src));
   return UPB_CONTINUE;
@@ -418,8 +391,9 @@ slow:
 
 
 upb_sflow_t upb_msgsink_startsubmsg(void *_m, upb_value _fval) {
-  upb_msg *m = _m;
+  upb_msg *msg = _m;
   upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
+
   upb_msgdef md;
   md.size = fval.msg_size;
   md.set_flags_bytes = fval.set_flags_bytes;
@@ -429,12 +403,20 @@ upb_sflow_t upb_msgsink_startsubmsg(void *_m, upb_value _fval) {
   f.label = UPB_LABEL(OPTIONAL);  // Just not repeated.
   f.type = UPB_TYPE(MESSAGE);
   f.byte_offset = fval.val_offset;
-  return UPB_CONTINUE_WITH(upb_msg_appendmsg(m, &f, &md));
+
+  upb_msg **subm = _upb_msg_getptr(msg, &f).msg;
+  if (!upb_msg_has(msg, &f)) {
+    upb_msg_recycle(subm, &md);
+    upb_msg_sethas(msg, &f);
+  }
+  return UPB_CONTINUE_WITH(*subm);
 }
 
-upb_sflow_t upb_msgsink_startsubmsg_r(void *_m, upb_value _fval) {
-  upb_msg *m = _m;
+upb_sflow_t upb_msgsink_startsubmsg_r(void *_a, upb_value _fval) {
+  upb_array *a = _a;
+  assert(a != NULL);
   upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
+
   upb_msgdef md;
   md.size = fval.msg_size;
   md.set_flags_bytes = fval.set_flags_bytes;
@@ -444,7 +426,12 @@ upb_sflow_t upb_msgsink_startsubmsg_r(void *_m, upb_value _fval) {
   f.label = UPB_LABEL(REPEATED);
   f.type = UPB_TYPE(MESSAGE);
   f.byte_offset = fval.val_offset;
-  return UPB_CONTINUE_WITH(upb_msg_appendmsg(m, &f, &md));
+
+  upb_arraylen_t oldlen = upb_array_len(a);
+  upb_array_resize(a, &f, oldlen + 1);
+  upb_valueptr p = _upb_array_getptr(a, &f, oldlen);
+  upb_msg_recycle(p.msg, &md);
+  return UPB_CONTINUE_WITH(*p.msg);
 }
 
 INLINE void upb_msg_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
@@ -459,10 +446,11 @@ INLINE void upb_msg_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
   upb_value_setuint64(&fh->fval,
       upb_msgsink_packfval(f->set_bit_offset, f->set_bit_mask,
                            f->byte_offset, msg_size, set_flags_bytes));
+  if (fh->repeated) upb_fhandlers_setstartseq(fh, upb_msgsink_startseq);
 #define CASE(upb_type, type) \
 case UPB_TYPE(upb_type): \
-    fh->value = upb_isarray(f) ? \
-        upb_msgsink_ ## type ## value_r : upb_msgsink_ ## type ## value; \
+    upb_fhandlers_setvalue(fh, upb_isarray(f) ? \
+        upb_msgsink_ ## type ## value_r : upb_msgsink_ ## type ## value); \
     break;
   switch (f->type) {
     CASE(DOUBLE,   double)
@@ -484,8 +472,8 @@ case UPB_TYPE(upb_type): \
 #undef CASE
     case UPB_TYPE(MESSAGE):
     case UPB_TYPE(GROUP):
-      fh->startsubmsg =
-          upb_isarray(f) ? upb_msgsink_startsubmsg_r : upb_msgsink_startsubmsg;
+      upb_fhandlers_setstartsubmsg(fh,
+          upb_isarray(f) ? upb_msgsink_startsubmsg_r : upb_msgsink_startsubmsg);
       break;
   }
 }

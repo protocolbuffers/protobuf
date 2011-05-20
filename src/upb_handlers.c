@@ -26,12 +26,12 @@ upb_flow_t upb_value_nop(void *closure, upb_value fval, upb_value val) {
   return UPB_CONTINUE;
 }
 
-upb_sflow_t upb_startsubmsg_nop(void *closure, upb_value fval) {
+upb_sflow_t upb_startfield_nop(void *closure, upb_value fval) {
   (void)fval;
   return UPB_CONTINUE_WITH(closure);
 }
 
-upb_flow_t upb_endsubmsg_nop(void *closure, upb_value fval) {
+upb_flow_t upb_endfield_nop(void *closure, upb_value fval) {
   (void)closure;
   (void)fval;
   return UPB_CONTINUE;
@@ -57,9 +57,11 @@ static upb_fhandlers *_upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
   upb_fhandlers *f = upb_inttable_lookup(&m->fieldtab, tag);
   if (f) abort();
   upb_fhandlers new_f = {false, type, repeated,
-      repeated && upb_isprimitivetype(type), n, NULL, UPB_NO_VALUE,
-      &upb_value_nop, &upb_startsubmsg_nop, &upb_endsubmsg_nop, 0, 0, 0, NULL};
-  if (upb_issubmsgtype(type)) new_f.startsubmsg = &upb_startsubmsg_nop;
+      repeated && upb_isprimitivetype(type), n, m, NULL, UPB_NO_VALUE,
+      &upb_value_nop,
+      &upb_startfield_nop, &upb_endfield_nop,
+      &upb_startfield_nop, &upb_endfield_nop,
+      0, 0, 0, NULL};
   upb_inttable_insert(&m->fieldtab, tag, &new_f);
   f = upb_inttable_lookup(&m->fieldtab, tag);
   assert(f);
@@ -170,13 +172,13 @@ upb_mhandlers *upb_handlers_newmsg(upb_handlers *h) {
 
 static upb_fhandlers toplevel_f = {
   false, UPB_TYPE(GROUP), false, false, 0,
-  NULL, // submsg
+  NULL, NULL, // submsg
 #ifdef NDEBUG
   {{0}},
 #else
   {{0}, UPB_VALUETYPE_RAW},
 #endif
-  NULL, NULL, NULL, 0, 0, 0, NULL};
+  NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL};
 
 void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
                          upb_skip_handler *skip, upb_exit_handler *exit,
@@ -199,6 +201,7 @@ upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *closure) {
   d->dispatch_table = &d->msgent->fieldtab;
   d->top = d->stack;
   d->top->closure = closure;
+  d->top->is_sequence = false;
   return d->top;
 }
 
@@ -219,8 +222,59 @@ void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status) {
   upb_copyerr(status, &d->status);
 }
 
+void indent(upb_dispatcher *d) {
+  for (int i = 0; i < (d->top - d->stack); i++) printf(" ");
+}
+
+void indentm1(upb_dispatcher *d) {
+  for (int i = 0; i < (d->top - d->stack - 1); i++) printf(" ");
+}
+
+upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
+                                            upb_fhandlers *f) {
+  //indent(d);
+  //printf("START SEQ: %d\n", f->number);
+  if((d->top+1) >= d->limit) {
+    upb_seterr(&d->status, UPB_ERROR, "Nesting too deep.");
+    _upb_dispatcher_unwind(d, UPB_BREAK);
+    return d->top;  // Dummy.
+  }
+
+  upb_sflow_t sflow = f->startseq(d->top->closure, f->fval);
+  if (sflow.flow != UPB_CONTINUE) {
+    _upb_dispatcher_unwind(d, sflow.flow);
+    return d->top;  // Dummy.
+  }
+
+  ++d->top;
+  d->top->f = f;
+  d->top->is_sequence = true;
+  d->top->closure = sflow.closure;
+  return d->top;
+}
+
+upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d) {
+  //indentm1(d);
+  //printf("END SEQ\n");
+  assert(d->top > d->stack);
+  assert(d->top->is_sequence);
+  upb_fhandlers *f = d->top->f;
+  --d->top;
+  upb_flow_t flow = f->endseq(d->top->closure, f->fval);
+  if (flow != UPB_CONTINUE) {
+    printf("YO, UNWINDING!\n");
+    _upb_dispatcher_unwind(d, flow);
+    return d->top;  // Dummy.
+  }
+  d->msgent = d->top->f->submsg ? d->top->f->submsg : d->handlers->msgs[0];
+  d->dispatch_table = &d->msgent->fieldtab;
+  return d->top;
+}
+
 upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
                                                upb_fhandlers *f) {
+  //indent(d);
+  //printf("START SUBMSG: %d\n", f->number);
   if((d->top+1) >= d->limit) {
     upb_seterr(&d->status, UPB_ERROR, "Nesting too deep.");
     _upb_dispatcher_unwind(d, UPB_BREAK);
@@ -244,14 +298,16 @@ upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
 }
 
 upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d) {
+  //indentm1(d);
+  //printf("END SUBMSG\n");
   assert(d->top > d->stack);
-  void *c = d->top->closure;
+  assert(!d->top->is_sequence);
   upb_fhandlers *f = d->top->f;
-  --d->top;
-  d->msgent->endmsg(c, &d->status);
-  upb_flow_t flow = f->endsubmsg(d->top->closure, f->fval);
-  d->msgent = d->top->f->submsg ? d->top->f->submsg : d->handlers->msgs[0];
+  d->msgent->endmsg(d->top->closure, &d->status);
+  d->msgent = d->top->f->msg;
   d->dispatch_table = &d->msgent->fieldtab;
+  --d->top;
+  upb_flow_t flow = f->endsubmsg(d->top->closure, f->fval);
   if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
   return d->top;
 }

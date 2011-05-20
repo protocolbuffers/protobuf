@@ -68,6 +68,17 @@ extern "C" {
 //     return UPB_CONTINUE;
 //   }
 //
+//   static upb_sflow_t startseqmsg(void *closure, upb_value fval) {
+//     // Called when a sequence (repeated field) begins.  The second element
+//     // of the return value is the closure for the sequence.
+//     return UPB_CONTINUE_WITH(closure);
+//   }
+//
+//   static upb_flow_t endeqvoid *closure, upb_value fval) {
+//     // Called when a sequence ends.
+//     return UPB_CONTINUE;
+//   }
+//
 // All handlers except the endmsg handler return a value from this enum, to
 // control whether parsing will continue or not.
 typedef enum {
@@ -100,16 +111,16 @@ typedef struct _upb_sflow upb_sflow_t;
 typedef upb_flow_t (upb_startmsg_handler)(void *c);
 typedef void (upb_endmsg_handler)(void *c, upb_status *status);
 typedef upb_flow_t (upb_value_handler)(void *c, upb_value fval, upb_value val);
-typedef upb_sflow_t (upb_startsubmsg_handler)(void *closure, upb_value fval);
-typedef upb_flow_t (upb_endsubmsg_handler)(void *closure, upb_value fval);
+typedef upb_sflow_t (upb_startfield_handler)(void *closure, upb_value fval);
+typedef upb_flow_t (upb_endfield_handler)(void *closure, upb_value fval);
 
 // No-op implementations of all of the above handlers.  Use these instead of
 // rolling your own -- the JIT can recognize these and optimize away the call.
 upb_flow_t upb_startmsg_nop(void *closure);
 void upb_endmsg_nop(void *closure, upb_status *status);
 upb_flow_t upb_value_nop(void *closure, upb_value fval, upb_value val);
-upb_sflow_t upb_startsubmsg_nop(void *closure, upb_value fval);
-upb_flow_t upb_endsubmsg_nop(void *closure, upb_value fval);
+upb_sflow_t upb_startfield_nop(void *closure, upb_value fval);
+upb_flow_t upb_endfield_nop(void *closure, upb_value fval);
 
 // Structure definitions.  Do not access any fields directly!  Accessors are
 // provided for the fields that may be get/set.
@@ -136,11 +147,14 @@ typedef struct _upb_fieldent {
   bool repeated;
   bool is_repeated_primitive;
   uint32_t number;
+  upb_mhandlers *msg;
   upb_mhandlers *submsg;  // Must be set iff upb_issubmsgtype(type) == true.
   upb_value fval;
   upb_value_handler *value;
-  upb_startsubmsg_handler *startsubmsg;
-  upb_endsubmsg_handler *endsubmsg;
+  upb_startfield_handler *startsubmsg;
+  upb_endfield_handler *endsubmsg;
+  upb_startfield_handler *startseq;
+  upb_endfield_handler *endseq;
   uint32_t jit_pclabel;
   uint32_t jit_pclabel_notypecheck;
   uint32_t jit_submsg_done_pclabel;
@@ -200,8 +214,10 @@ UPB_MHANDLERS_ACCESSORS(endmsg, upb_endmsg_handler*);
   INLINE type upb_fhandlers_get ## name(upb_fhandlers *f) { return f->name; }
 UPB_FHANDLERS_ACCESSORS(fval, upb_value)
 UPB_FHANDLERS_ACCESSORS(value, upb_value_handler*)
-UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startsubmsg_handler*)
-UPB_FHANDLERS_ACCESSORS(endsubmsg, upb_endsubmsg_handler*)
+UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startfield_handler*)
+UPB_FHANDLERS_ACCESSORS(endsubmsg, upb_endfield_handler*)
+UPB_FHANDLERS_ACCESSORS(startseq, upb_startfield_handler*)
+UPB_FHANDLERS_ACCESSORS(endseq, upb_endfield_handler*)
 UPB_FHANDLERS_ACCESSORS(submsg, upb_mhandlers*)
 
 // Convenience function for registering handlers for all messages and
@@ -225,8 +241,10 @@ typedef struct {
   upb_startmsg_handler *startmsg;
   upb_endmsg_handler *endmsg;
   upb_value_handler *value;
-  upb_startsubmsg_handler *startsubmsg;
-  upb_endsubmsg_handler *endsubmsg;
+  upb_startfield_handler *startsubmsg;
+  upb_endfield_handler *endsubmsg;
+  upb_startfield_handler *startseq;
+  upb_endfield_handler *endseq;
 } upb_handlerset;
 
 INLINE void upb_onmreg_hset(void *c, upb_mhandlers *mh, upb_msgdef *m) {
@@ -240,6 +258,8 @@ INLINE void upb_onfreg_hset(void *c, upb_fhandlers *fh, upb_fielddef *f) {
   if (hs->value) upb_fhandlers_setvalue(fh, hs->value);
   if (hs->startsubmsg) upb_fhandlers_setstartsubmsg(fh, hs->startsubmsg);
   if (hs->endsubmsg) upb_fhandlers_setendsubmsg(fh, hs->endsubmsg);
+  if (hs->startseq) upb_fhandlers_setstartseq(fh, hs->startseq);
+  if (hs->endseq) upb_fhandlers_setendseq(fh, hs->endseq);
   upb_value val;
   upb_value_setfielddef(&val, f);
   upb_fhandlers_setfval(fh, val);
@@ -325,6 +345,9 @@ void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
 upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
                                                upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d);
+upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
+                                               upb_fhandlers *f);
+upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d);
 
 #ifdef __cplusplus
 }  /* extern "C" */

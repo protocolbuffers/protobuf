@@ -12,6 +12,10 @@
 #include "upb_decoder.h"
 #include "upb_varint.h"
 
+// Used for frames that have no specific end offset: groups, repeated primitive
+// fields inside groups, and the top-level message.
+#define UPB_NONDELIMITED UINT32_MAX
+
 #ifdef UPB_USE_JIT_X64
 #define Dst_DECL upb_decoder *d
 #define Dst_REF (d->dynasm)
@@ -19,11 +23,6 @@
 #include "dynasm/dasm_proto.h"
 #include "upb_decoder_x86.h"
 #endif
-
-// A group continues until an END_GROUP tag is seen.
-#define UPB_GROUPEND UINT32_MAX
-// A non-packed repeated field ends when a diff. field is seen (or submsg end).
-#define UPB_REPEATEDEND (UINT32_MAX-1)
 
 // It's unfortunate that we have to micro-manage the compiler this way,
 // especially since this tuning is necessarily specific to one hardware
@@ -54,7 +53,7 @@ size_t upb_decoder_offset(upb_decoder *d) {
 
 static void upb_decoder_setmsgend(upb_decoder *d) {
   uint32_t end = d->dispatcher.top->end_offset;
-  d->submsg_end = (end == UINT32_MAX) ? (void*)UINTPTR_MAX : d->buf + end;
+  d->submsg_end = (end == UPB_NONDELIMITED) ? (void*)UINTPTR_MAX : d->buf + end;
 }
 
 // Pulls the next buffer from the bytesrc.  Should be called only when the
@@ -72,7 +71,7 @@ static void upb_pullbuf(upb_decoder *d, bool need) {
   if (last_buf_len != -1) {
     d->buf_stream_offset += last_buf_len;
     for (upb_dispatcher_frame *f = d->dispatcher.stack; f <= d->dispatcher.top; ++f)
-      if (f->end_offset != UINT32_MAX)
+      if (f->end_offset != UPB_NONDELIMITED)
         f->end_offset -= last_buf_len;
   }
   d->buf = upb_string_getrobuf(d->bufstr);
@@ -186,14 +185,6 @@ INLINE upb_string *upb_decode_string(upb_decoder *d) {
   return d->tmp;
 }
 
-INLINE void upb_pop(upb_decoder *d) {
-  //if (d->dispatcher.top->end_offset == UPB_REPEATEDEND)
-  //  upb_dispatch_endseq(&d->dispatcher);
-  d->f = d->dispatcher.top->f;
-  upb_dispatch_endsubmsg(&d->dispatcher);
-  upb_decoder_setmsgend(d);
-}
-
 INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint32_t end) {
   upb_dispatch_startsubmsg(&d->dispatcher, f)->end_offset = end;
   upb_decoder_setmsgend(d);
@@ -235,11 +226,12 @@ T(SINT64,   varint,  int64,  upb_zzdec_64)
 T(STRING,   string,  str,    upb_string*)
 
 static void upb_decode_GROUP(upb_decoder *d, upb_fhandlers *f) {
-  upb_push(d, f, UPB_GROUPEND);
+  upb_push(d, f, UPB_NONDELIMITED);
 }
 static void upb_endgroup(upb_decoder *d, upb_fhandlers *f) {
   (void)f;
-  upb_pop(d);
+  upb_dispatch_endsubmsg(&d->dispatcher);
+  upb_decoder_setmsgend(d);
 }
 static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
   upb_push(d, f, upb_decode_varint32(d, true) + (d->ptr - d->buf));
@@ -257,7 +249,13 @@ static void upb_delimend(upb_decoder *d) {
     upb_seterr(d->status, UPB_ERROR, "Bad submessage end.");
     upb_decoder_exit(d);
   }
-  upb_pop(d);
+
+  if (d->dispatcher.top->is_sequence) {
+    upb_dispatch_endseq(&d->dispatcher);
+  } else {
+    upb_dispatch_endsubmsg(&d->dispatcher);
+  }
+  upb_decoder_setmsgend(d);
 }
 
 static void upb_decoder_enterjit(upb_decoder *d) {
@@ -276,10 +274,25 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
   while (1) {
     uint32_t tag = upb_decode_varint32(d, false);
     upb_fhandlers *f = upb_dispatcher_lookup(&d->dispatcher, tag);
-    if (f) {
-      d->f = f;
-      return f;
+
+    // There are no explicit "startseq" or "endseq" markers in protobuf
+    // streams, so we have to infer them by noticing when a repeated field
+    // starts or ends.
+    if (d->dispatcher.top->is_sequence && d->dispatcher.top->f != f) {
+      upb_dispatch_endseq(&d->dispatcher);
+      upb_decoder_setmsgend(d);
     }
+    if (f && f->repeated && d->dispatcher.top->f != f) {
+      // TODO: support packed.
+      assert(upb_issubmsgtype(f->type) || upb_isstringtype(f->type) ||
+             (tag & 0x7) != UPB_WIRE_TYPE_DELIMITED);
+      uint32_t end = d->dispatcher.top->end_offset;
+      upb_dispatch_startseq(&d->dispatcher, f)->end_offset = end;
+      upb_decoder_setmsgend(d);
+    }
+    if (f) return f;
+
+    // Unknown field.
     switch (tag & 0x7) {
       case UPB_WIRE_TYPE_VARINT:    upb_decode_varint(d); break;
       case UPB_WIRE_TYPE_32BIT:     upb_decoder_advance(d, 4); break;
@@ -291,20 +304,10 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
     // TODO: deliver to unknown field callback.
     while (d->ptr >= d->submsg_end) upb_delimend(d);
   }
-
-  // Have to handle both packed and non-packed sequences of primitives.
-  //if (d->dispatcher.top->end_offset == UPB_REPEATEDEND && d->f != f) {
-  //  upb_dispatch_endseq(&d->dispatcher);
-  //} else if (f->is_repeated_primitive) {
-  //  if ((tag & 0x7) == UPB_WIRE_TYPE_DELIMITED) {
-  //    upb_pushseq(d, f, upb_decode_varint32(d, true) + (d->ptr - d->buf));
-  //  } else if (d->f != f) {
-  //    upb_dispatch_startseq(d, f, UPB_REPEATEDEND);
-  //  }
-  //}
 }
 
 void upb_decoder_onexit(upb_decoder *d) {
+  if (d->dispatcher.top->is_sequence) upb_dispatch_endseq(&d->dispatcher);
   if (d->status->code == UPB_EOF && upb_dispatcher_stackempty(&d->dispatcher)) {
     // Normal end-of-file.
     upb_clearerr(d->status);
@@ -336,7 +339,7 @@ static void upb_decoder_skip(void *_d, upb_dispatcher_frame *top,
                              upb_dispatcher_frame *bottom) {
   (void)top;
   upb_decoder *d = _d;
-  if (bottom->end_offset == UINT32_MAX) {
+  if (bottom->end_offset == UPB_NONDELIMITED) {
     // TODO: support skipping groups.
     abort();
   }
@@ -386,7 +389,7 @@ void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure) {
-  upb_dispatcher_reset(&d->dispatcher, closure)->end_offset = UINT32_MAX;
+  upb_dispatcher_reset(&d->dispatcher, closure)->end_offset = UPB_NONDELIMITED;
   d->bytesrc = bytesrc;
   d->buf = NULL;
   d->ptr = NULL;

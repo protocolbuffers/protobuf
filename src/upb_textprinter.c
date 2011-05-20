@@ -192,7 +192,9 @@ upb_mhandlers *upb_textprinter_reghandlers(upb_handlers *h, upb_msgdef *m) {
     NULL,  // endmsg
     upb_textprinter_value,
     upb_textprinter_startsubmsg,
-    upb_textprinter_endsubmsg
+    upb_textprinter_endsubmsg,
+    NULL,  // startseq
+    NULL,  // endseq
   };
   return upb_handlers_reghandlerset(h, m, &hset);
 }

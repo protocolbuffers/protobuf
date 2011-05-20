@@ -144,14 +144,15 @@ typedef uint32_t upb_arraylen_t;
 struct _upb_array {
   upb_atomic_refcount_t refcount;
   // "len" and "size" are measured in elements, not bytes.
-  upb_arraylen_t len;
-  upb_arraylen_t size;
+  int32_t len;
+  int32_t size;
   char *ptr;
 };
 
 void _upb_array_free(upb_array *a, upb_fielddef *f);
 INLINE upb_valueptr _upb_array_getptrforsize(upb_array *a, size_t type_size,
-                                             uint32_t elem) {
+                                             int32_t elem) {
+  assert(elem >= 0);
   upb_valueptr p;
   p._void = &a->ptr[elem * type_size];
   return p;

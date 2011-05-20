@@ -285,6 +285,18 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   |  cmp  edx, (tag & 0x7)
   |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
   |=>f->jit_pclabel_notypecheck:
+  if (f->repeated) {
+    if (f->startseq != upb_startfield_nop) {
+      |  mov   ARG1_64, CLOSURE
+      |  loadfval f
+      |  callp f->startseq
+    } else {
+      |  mov   rdx, CLOSURE
+    }
+    |  mov   esi, FRAME->end_offset
+    |  pushframe  f, rdx, esi, true
+  }
+
   |1:  // Label for repeating this field.
 
   // Decode the value into arg 3 for the callback.
@@ -382,7 +394,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
     // Call startsubmsg handler (if any).
-    if (f->startsubmsg != upb_startsubmsg_nop) {
+    if (f->startsubmsg != upb_startfield_nop) {
       // upb_sflow_t startsubmsg(void *closure, upb_value fval)
       |  mov   r12d, ARG3_32
       |  callp f->startsubmsg
@@ -396,7 +408,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
       |   add   esi, r12d   // = (d->ptr - d->buf) + delim_len
     } else {
       assert(f->type == UPB_TYPE(GROUP));
-      |   mov   esi, -1U
+      |   mov   esi, UPB_NONDELIMITED
     }
     |  pushframe  f, rdx, esi, false
 
@@ -411,7 +423,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |   popframe
 
     // Call endsubmsg handler (if any).
-    if (f->endsubmsg != upb_endsubmsg_nop) {
+    if (f->endsubmsg != upb_endfield_nop) {
       // upb_flow_t endsubmsg(void *closure, upb_value fval);
       |  mov   ARG1_64, CLOSURE
       |  loadfval  f
@@ -428,6 +440,12 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   if (f->repeated) {
     |  checktag  tag
     |  je  <1
+    |  popframe
+    if (f->endseq != upb_endfield_nop) {
+      |  mov   ARG1_64, CLOSURE
+      |  loadfval f
+      |  callp f->endseq
+    }
   }
   if (next_tag != 0) {
     |  checktag  next_tag
