@@ -6,6 +6,7 @@ REM @ECHO OFF
 @GOTO HELP
 
 :VERSION
+IF NOT EXIST "%~dp0\..\build_temp\" MD "%~dp0\..\build_temp\"
 hg log -l 1 --template "Revision: {rev}" > %~dp0\..\build_temp\revision.txt
 CMD.exe /Q /C "CD %~dp0\.. && lib\StampVersion.exe /major:2 /minor:3 /build:0 /revision:build_temp\revision.txt"
 @TYPE src\ProtocolBuffers\Properties\AssemblyInfo.cs | FIND "AssemblyFileVersion"
