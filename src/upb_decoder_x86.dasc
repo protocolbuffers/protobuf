@@ -192,6 +192,27 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |  jmp  rax  // Dispatch: unpredictable jump.
 |.endmacro
 |
+|// Push a stack frame (not the CPU stack, the upb_decoder stack).
+|.macro pushframe, f, closure_, end_offset_, is_sequence_
+|  lea   rax, [FRAME + sizeof(upb_dispatcher_frame)]  // rax for shorter addressing.
+|  cmp   rax, qword DECODER->dispatcher.limit
+|  jae   ->exit_jit  // Frame stack overflow.
+|  mov   qword FRAME:rax->f, f
+|  mov   qword FRAME:rax->closure, closure_
+|  mov   dword FRAME:rax->end_offset, end_offset_
+|  mov   byte FRAME:rax->is_sequence, is_sequence_
+|  mov   CLOSURE, rdx
+|  mov   DECODER->dispatcher.top, rax
+|  mov   FRAME, rax
+|.endmacro
+|
+|.macro popframe
+|  sub   FRAME, sizeof(upb_dispatcher_frame)
+|  mov   DECODER->dispatcher.top, FRAME
+|  setmsgend  m
+|  mov   CLOSURE, FRAME->closure
+|.endmacro
+|
 |.macro setmsgend, m
 |    mov    rsi, DECODER->jit_end
 || if (m->is_group) {
@@ -369,24 +390,15 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
       |  mov   rdx, CLOSURE
       |  mov   r12d, ARG3_32
     }
-    // Push a stack frame (not the CPU stack, the upb_decoder stack).
-    |   lea   rax, [FRAME + sizeof(upb_dispatcher_frame)]  // rax for shorter addressing.
-    |   cmp   rax, qword DECODER->dispatcher.limit
-    |   jae   ->exit_jit  // Frame stack overflow.
-    |   mov   qword FRAME:rax->f, f
-    |   mov   qword FRAME:rax->closure, rdx
     if (f->type == UPB_TYPE(MESSAGE)) {
       |   mov   rsi, PTR
       |   sub   rsi, DECODER->buf
-      |   add   r12d, esi
-      |   mov   dword FRAME:rax->end_offset, r12d   // = (d->ptr - d->buf) + delim_len
+      |   add   esi, r12d   // = (d->ptr - d->buf) + delim_len
     } else {
       assert(f->type == UPB_TYPE(GROUP));
-      |   mov   dword FRAME:rax->end_offset, -1U
+      |   mov   esi, -1U
     }
-    |   mov   CLOSURE, rdx
-    |   mov   DECODER->dispatcher.top, rax
-    |   mov   FRAME, rax
+    |  pushframe  f, rdx, esi, false
 
     upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
     if (sub_m->jit_parent_field_done_pclabel != UPB_MULTIPLE) {
@@ -396,11 +408,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     }
 
     |=>f->jit_submsg_done_pclabel:
-    // Pop a stack frame.
-    |   sub   FRAME, sizeof(upb_dispatcher_frame)
-    |   mov   DECODER->dispatcher.top, FRAME
-    |   setmsgend  m
-    |   mov   CLOSURE, FRAME->closure
+    |   popframe
 
     // Call endsubmsg handler (if any).
     if (f->endsubmsg != upb_endsubmsg_nop) {
