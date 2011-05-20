@@ -6,6 +6,9 @@ using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.Examples.AddressBook {
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public static partial class AddressBookProtos {
   
     #region Extension registration
@@ -66,6 +69,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
   }
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
     private static readonly Person defaultInstance = new Builder().BuildPartial();
     public static Person DefaultInstance {
@@ -89,13 +95,21 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public static class Types {
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public enum PhoneType {
         MOBILE = 0,
         HOME = 1,
         WORK = 2,
       }
       
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
         private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
         public static PhoneNumber DefaultInstance {
@@ -212,6 +226,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
         public sealed partial class Builder : pb::GeneratedBuilder<PhoneNumber, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -497,6 +514,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<Person, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -713,6 +733,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
     private static readonly AddressBook defaultInstance = new Builder().BuildPartial();
     public static AddressBook DefaultInstance {
@@ -817,6 +840,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<AddressBook, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

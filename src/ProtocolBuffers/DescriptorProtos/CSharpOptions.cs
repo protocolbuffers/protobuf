@@ -6,6 +6,9 @@ using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.DescriptorProtos {
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public static partial class CSharpOptions {
   
     #region Extension registration
@@ -104,6 +107,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
   }
   #region Enums
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public enum CSharpServiceType {
     NONE = 0,
     GENERIC = 1,
@@ -114,6 +119,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   #endregion
   
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
     private static readonly CSharpFileOptions defaultInstance = new Builder().BuildPartial();
     public static CSharpFileOptions DefaultInstance {
@@ -405,6 +413,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpFileOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -834,6 +845,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpFieldOptions : pb::GeneratedMessage<CSharpFieldOptions, CSharpFieldOptions.Builder> {
     private static readonly CSharpFieldOptions defaultInstance = new Builder().BuildPartial();
     public static CSharpFieldOptions DefaultInstance {
@@ -933,6 +947,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpFieldOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1050,6 +1067,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpServiceOptions : pb::GeneratedMessage<CSharpServiceOptions, CSharpServiceOptions.Builder> {
     private static readonly CSharpServiceOptions defaultInstance = new Builder().BuildPartial();
     public static CSharpServiceOptions DefaultInstance {
@@ -1149,6 +1169,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpServiceOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1266,6 +1289,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpMethodOptions : pb::GeneratedMessage<CSharpMethodOptions, CSharpMethodOptions.Builder> {
     private static readonly CSharpMethodOptions defaultInstance = new Builder().BuildPartial();
     public static CSharpMethodOptions DefaultInstance {
@@ -1365,6 +1391,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpMethodOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

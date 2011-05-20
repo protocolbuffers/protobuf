@@ -53,6 +53,9 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void Generate(TextGenerator writer)
         {
+            writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+            writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
             writer.WriteLine("{0} abstract class {1} : pb::IService {{", ClassAccessLevel, Descriptor.Name);
             writer.Indent();
 
@@ -151,6 +154,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("  return new Stub(channel);");
             writer.WriteLine("}");
             writer.WriteLine();
+            writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+            writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
             writer.WriteLine("{0} class Stub : {1} {{", ClassAccessLevel, GetClassName(Descriptor));
             writer.Indent();
             writer.WriteLine("internal Stub(pb::IRpcChannel channel) {");

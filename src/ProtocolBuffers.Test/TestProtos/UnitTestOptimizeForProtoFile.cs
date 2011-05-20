@@ -6,6 +6,9 @@ using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public static partial class UnitTestOptimizeForProtoFile {
   
     #region Extension registration
@@ -76,6 +79,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestOptimizedForSize : pb::ExtendableMessage<TestOptimizedForSize, TestOptimizedForSize.Builder> {
     private static readonly TestOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestOptimizedForSize DefaultInstance {
@@ -159,6 +165,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::ExtendableBuilder<TestOptimizedForSize, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -257,6 +266,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRequiredOptimizedForSize : pb::GeneratedMessage<TestRequiredOptimizedForSize, TestRequiredOptimizedForSize.Builder> {
     private static readonly TestRequiredOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestRequiredOptimizedForSize DefaultInstance {
@@ -326,6 +338,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestRequiredOptimizedForSize, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -388,6 +403,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestOptionalOptimizedForSize : pb::GeneratedMessage<TestOptionalOptimizedForSize, TestOptionalOptimizedForSize.Builder> {
     private static readonly TestOptionalOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestOptionalOptimizedForSize DefaultInstance {
@@ -457,6 +475,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestOptionalOptimizedForSize, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

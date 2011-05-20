@@ -6,6 +6,9 @@ using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public static partial class UnitTestCustomOptionsProtoFile {
   
     #region Extension registration
@@ -381,6 +384,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Enums
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public enum MethodOpt1 {
     METHODOPT1_VAL1 = 1,
     METHODOPT1_VAL2 = 2,
@@ -389,6 +394,9 @@ namespace Google.ProtocolBuffers.TestProtos {
   #endregion
   
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessageWithCustomOptions : pb::GeneratedMessage<TestMessageWithCustomOptions, TestMessageWithCustomOptions.Builder> {
     private static readonly TestMessageWithCustomOptions defaultInstance = new Builder().BuildPartial();
     public static TestMessageWithCustomOptions DefaultInstance {
@@ -412,7 +420,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public static class Types {
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public enum AnEnum {
         ANENUM_VAL1 = 1,
         ANENUM_VAL2 = 2,
@@ -498,6 +511,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestMessageWithCustomOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -615,6 +631,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionFooRequest : pb::GeneratedMessage<CustomOptionFooRequest, CustomOptionFooRequest.Builder> {
     private static readonly CustomOptionFooRequest defaultInstance = new Builder().BuildPartial();
     public static CustomOptionFooRequest DefaultInstance {
@@ -698,6 +717,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CustomOptionFooRequest, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -789,6 +811,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionFooResponse : pb::GeneratedMessage<CustomOptionFooResponse, CustomOptionFooResponse.Builder> {
     private static readonly CustomOptionFooResponse defaultInstance = new Builder().BuildPartial();
     public static CustomOptionFooResponse DefaultInstance {
@@ -872,6 +897,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CustomOptionFooResponse, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -963,6 +991,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DummyMessageContainingEnum : pb::GeneratedMessage<DummyMessageContainingEnum, DummyMessageContainingEnum.Builder> {
     private static readonly DummyMessageContainingEnum defaultInstance = new Builder().BuildPartial();
     public static DummyMessageContainingEnum DefaultInstance {
@@ -986,7 +1017,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public static class Types {
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public enum TestEnumType {
         TEST_OPTION_ENUM_TYPE1 = 22,
         TEST_OPTION_ENUM_TYPE2 = -23,
@@ -1056,6 +1092,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<DummyMessageContainingEnum, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1147,6 +1186,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DummyMessageInvalidAsOptionType : pb::GeneratedMessage<DummyMessageInvalidAsOptionType, DummyMessageInvalidAsOptionType.Builder> {
     private static readonly DummyMessageInvalidAsOptionType defaultInstance = new Builder().BuildPartial();
     public static DummyMessageInvalidAsOptionType DefaultInstance {
@@ -1230,6 +1272,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<DummyMessageInvalidAsOptionType, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1321,6 +1366,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionMinIntegerValues : pb::GeneratedMessage<CustomOptionMinIntegerValues, CustomOptionMinIntegerValues.Builder> {
     private static readonly CustomOptionMinIntegerValues defaultInstance = new Builder().BuildPartial();
     public static CustomOptionMinIntegerValues DefaultInstance {
@@ -1404,6 +1452,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CustomOptionMinIntegerValues, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1495,6 +1546,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionMaxIntegerValues : pb::GeneratedMessage<CustomOptionMaxIntegerValues, CustomOptionMaxIntegerValues.Builder> {
     private static readonly CustomOptionMaxIntegerValues defaultInstance = new Builder().BuildPartial();
     public static CustomOptionMaxIntegerValues DefaultInstance {
@@ -1578,6 +1632,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CustomOptionMaxIntegerValues, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1669,6 +1726,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionOtherValues : pb::GeneratedMessage<CustomOptionOtherValues, CustomOptionOtherValues.Builder> {
     private static readonly CustomOptionOtherValues defaultInstance = new Builder().BuildPartial();
     public static CustomOptionOtherValues DefaultInstance {
@@ -1752,6 +1812,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<CustomOptionOtherValues, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1843,6 +1906,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SettingRealsFromPositiveInts : pb::GeneratedMessage<SettingRealsFromPositiveInts, SettingRealsFromPositiveInts.Builder> {
     private static readonly SettingRealsFromPositiveInts defaultInstance = new Builder().BuildPartial();
     public static SettingRealsFromPositiveInts DefaultInstance {
@@ -1926,6 +1992,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<SettingRealsFromPositiveInts, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2017,6 +2086,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SettingRealsFromNegativeInts : pb::GeneratedMessage<SettingRealsFromNegativeInts, SettingRealsFromNegativeInts.Builder> {
     private static readonly SettingRealsFromNegativeInts defaultInstance = new Builder().BuildPartial();
     public static SettingRealsFromNegativeInts DefaultInstance {
@@ -2100,6 +2172,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<SettingRealsFromNegativeInts, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2191,6 +2266,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOptionType1 : pb::ExtendableMessage<ComplexOptionType1, ComplexOptionType1.Builder> {
     private static readonly ComplexOptionType1 defaultInstance = new Builder().BuildPartial();
     public static ComplexOptionType1 DefaultInstance {
@@ -2326,6 +2404,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::ExtendableBuilder<ComplexOptionType1, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2493,6 +2574,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOptionType2 : pb::ExtendableMessage<ComplexOptionType2, ComplexOptionType2.Builder> {
     private static readonly ComplexOptionType2 defaultInstance = new Builder().BuildPartial();
     public static ComplexOptionType2 DefaultInstance {
@@ -2516,7 +2600,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public static class Types {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ComplexOptionType4 : pb::GeneratedMessage<ComplexOptionType4, ComplexOptionType4.Builder> {
         private static readonly ComplexOptionType4 defaultInstance = new Builder().BuildPartial();
         public static ComplexOptionType4 DefaultInstance {
@@ -2618,6 +2708,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
         public sealed partial class Builder : pb::GeneratedBuilder<ComplexOptionType4, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -2853,6 +2946,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::ExtendableBuilder<ComplexOptionType2, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3066,6 +3162,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOptionType3 : pb::GeneratedMessage<ComplexOptionType3, ComplexOptionType3.Builder> {
     private static readonly ComplexOptionType3 defaultInstance = new Builder().BuildPartial();
     public static ComplexOptionType3 DefaultInstance {
@@ -3089,7 +3188,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public static class Types {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ComplexOptionType5 : pb::GeneratedMessage<ComplexOptionType5, ComplexOptionType5.Builder> {
         private static readonly ComplexOptionType5 defaultInstance = new Builder().BuildPartial();
         public static ComplexOptionType5 DefaultInstance {
@@ -3189,6 +3294,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           return (Builder) new Builder().MergeFrom(prototype);
         }
         
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
         public sealed partial class Builder : pb::GeneratedBuilder<ComplexOptionType5, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -3401,6 +3509,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<ComplexOptionType3, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3565,6 +3676,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOpt6 : pb::GeneratedMessage<ComplexOpt6, ComplexOpt6.Builder> {
     private static readonly ComplexOpt6 defaultInstance = new Builder().BuildPartial();
     public static ComplexOpt6 DefaultInstance {
@@ -3664,6 +3778,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<ComplexOpt6, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3780,6 +3897,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class VariousComplexOptions : pb::GeneratedMessage<VariousComplexOptions, VariousComplexOptions.Builder> {
     private static readonly VariousComplexOptions defaultInstance = new Builder().BuildPartial();
     public static VariousComplexOptions DefaultInstance {
@@ -3863,6 +3983,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilder<VariousComplexOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

@@ -105,6 +105,8 @@ namespace Google.ProtocolBuffers.ProtoGen
                     writer.WriteLine("[global::System.Runtime.InteropServices.GuidAttribute(\"{0}\")]",
                                      new Guid(options.InterfaceId));
                 }
+                writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+                writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
                 writer.WriteLine("{0} partial interface I{1} {{", ClassAccessLevel, Descriptor.Name);
                 writer.Indent();
 
@@ -142,6 +144,9 @@ namespace Google.ProtocolBuffers.ProtoGen
                 {
                     if (Descriptor.File.CSharpOptions.ClsCompliance)
                         writer.WriteLine("[global::System.CLSCompliant(false)]");
+                    writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+                    writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+                    writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
                     writer.WriteLine("{0} partial class {1} : I{1}, pb::IRpcDispatch, global::System.IDisposable {{",
                                      ClassAccessLevel, Descriptor.Name);
                     writer.Indent();
@@ -186,6 +191,9 @@ namespace Google.ProtocolBuffers.ProtoGen
                 {
                     if (Descriptor.File.CSharpOptions.ClsCompliance)
                         writer.WriteLine("[global::System.CLSCompliant(false)]");
+                    writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+                    writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+                    writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
                     writer.WriteLine("public partial class Dispatch : pb::IRpcDispatch, global::System.IDisposable {");
                     writer.Indent();
                     writer.WriteLine("private readonly bool dispose;");
@@ -234,6 +242,9 @@ namespace Google.ProtocolBuffers.ProtoGen
                 {
                     if (Descriptor.File.CSharpOptions.ClsCompliance)
                         writer.WriteLine("[global::System.CLSCompliant(false)]");
+                    writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+                    writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+                    writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
                     writer.WriteLine(
                         "public partial class ServerStub : pb::IRpcServerStub, global::System.IDisposable {");
                     writer.Indent();

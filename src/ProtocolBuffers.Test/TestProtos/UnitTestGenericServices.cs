@@ -6,6 +6,9 @@ using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public static partial class UnitTestGenericServices {
   
     #region Extension registration
@@ -55,6 +58,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Services
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public abstract class TestGenericService : pb::IService {
     public abstract void Foo(
         pb::IRpcController controller,
@@ -131,6 +137,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return new Stub(channel);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public class Stub : global::Google.ProtocolBuffers.TestProtos.TestGenericService {
       internal Stub(pb::IRpcChannel channel) {
         this.channel = channel;
@@ -161,6 +170,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
   }
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public abstract class TestGenericServiceWithCustomOptions : pb::IService {
     public abstract void Foo(
         pb::IRpcController controller,
@@ -224,6 +236,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return new Stub(channel);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public class Stub : global::Google.ProtocolBuffers.TestProtos.TestGenericServiceWithCustomOptions {
       internal Stub(pb::IRpcChannel channel) {
         this.channel = channel;

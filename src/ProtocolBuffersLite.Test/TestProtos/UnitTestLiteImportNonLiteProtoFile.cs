@@ -6,6 +6,9 @@ using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public static partial class UnitTestLiteImportNonLiteProtoFile {
   
     #region Extension registration
@@ -23,6 +26,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestLiteImportsNonlite : pb::GeneratedMessageLite<TestLiteImportsNonlite, TestLiteImportsNonlite.Builder> {
     private static readonly TestLiteImportsNonlite defaultInstance = new Builder().BuildPartial();
     public static TestLiteImportsNonlite DefaultInstance {
@@ -131,6 +137,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       return (Builder) new Builder().MergeFrom(prototype);
     }
     
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
     public sealed partial class Builder : pb::GeneratedBuilderLite<TestLiteImportsNonlite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

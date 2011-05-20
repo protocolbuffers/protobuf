@@ -138,6 +138,9 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void Generate(TextGenerator writer)
         {
+            writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+            writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
             writer.WriteLine("{0} sealed partial class {1} : pb::{2}Message{3}<{1}, {1}.Builder> {{",
                              ClassAccessLevel, ClassName,
                              Descriptor.Proto.ExtensionRangeCount > 0 ? "Extendable" : "Generated",
@@ -181,6 +184,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             if (Descriptor.EnumTypes.Count + Descriptor.NestedTypes.Count > 0)
             {
                 writer.WriteLine("#region Nested types");
+                writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+                writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+                writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
                 writer.WriteLine("public static class Types {");
                 writer.Indent();
                 WriteChildren(writer, null, Descriptor.EnumTypes);
@@ -484,6 +490,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("  return (Builder) new Builder().MergeFrom(prototype);");
             writer.WriteLine("}");
             writer.WriteLine();
+            writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
+            writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
             writer.WriteLine("{0} sealed partial class Builder : pb::{2}Builder{3}<{1}, Builder> {{",
                              ClassAccessLevel, ClassName,
                              Descriptor.Proto.ExtensionRangeCount > 0 ? "Extendable" : "Generated", RuntimeSuffix);
