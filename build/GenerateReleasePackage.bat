@@ -11,4 +11,3 @@ IF ERRORLEVEL 1 GOTO END
 %WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild build.csproj /m /t:GeneratePackage /p:PackageName=ReleaseBinaries.zip /p:Platform="Any CPU"
 
 :END
-PAUSE

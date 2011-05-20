@@ -62,10 +62,10 @@ using System.Runtime.CompilerServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.9.0.0")]
+// [assembly: AssemblyVersion("2.3.0.277")]
+[assembly: AssemblyVersion("2.3.0.277")]
 #if !COMPACT_FRAMEWORK_35
-[assembly: AssemblyFileVersion("0.9.0.0")]
+[assembly: AssemblyFileVersion("2.3.0.277")]
 #endif
 
 [assembly:InternalsVisibleTo("Google.ProtocolBuffers.Test,PublicKey="+
