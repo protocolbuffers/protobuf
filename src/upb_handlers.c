@@ -50,9 +50,9 @@ static upb_mhandlers *upb_mhandlers_new() {
   return m;
 }
 
-static upb_fhandlers *_upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
-                                              upb_fieldtype_t type,
-                                              bool repeated) {
+static upb_fhandlers *_upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
+                                                  upb_fieldtype_t type,
+                                                  bool repeated) {
   uint32_t tag = n << 3 | upb_types[type].native_wire_type;
   upb_fhandlers *f = upb_inttable_lookup(&m->fieldtab, tag);
   if (f) abort();
@@ -69,72 +69,24 @@ static upb_fhandlers *_upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
   return f;
 }
 
-upb_fhandlers *upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
-                                      upb_fieldtype_t type, bool repeated) {
+upb_fhandlers *upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
+                                          upb_fieldtype_t type, bool repeated) {
   assert(type != UPB_TYPE(MESSAGE));
   assert(type != UPB_TYPE(GROUP));
-  return _upb_mhandlers_newfield(m, n, type, repeated);
+  return _upb_mhandlers_newfhandlers(m, n, type, repeated);
 }
 
-upb_fhandlers *upb_mhandlers_newsubmsgfield(upb_mhandlers *m, uint32_t n,
-                                            upb_fieldtype_t type, bool repeated,
-                                            upb_mhandlers *subm) {
+upb_fhandlers *upb_mhandlers_newfhandlers_subm(upb_mhandlers *m, uint32_t n,
+                                               upb_fieldtype_t type,
+                                               bool repeated,
+                                               upb_mhandlers *subm) {
   assert(type == UPB_TYPE(MESSAGE) || type == UPB_TYPE(GROUP));
   assert(subm);
-  upb_fhandlers *f = _upb_mhandlers_newfield(m, n, type, repeated);
+  upb_fhandlers *f = _upb_mhandlers_newfhandlers(m, n, type, repeated);
   f->submsg = subm;
   if (type == UPB_TYPE(GROUP))
-    _upb_mhandlers_newfield(subm, n, UPB_TYPE_ENDGROUP, false);
+    _upb_mhandlers_newfhandlers(subm, n, UPB_TYPE_ENDGROUP, false);
   return f;
-}
-
-typedef struct {
-  upb_strtable_entry e;
-  upb_mhandlers *mh;
-} upb_mtab_ent;
-
-static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
-                                     upb_onmsgreg *msgreg_cb,
-                                     upb_onfieldreg *fieldreg_cb,
-                                     void *closure, upb_strtable *mtab) {
-  upb_mhandlers *mh = upb_handlers_newmsg(h);
-  upb_mtab_ent e = {{m->base.fqname, 0}, mh};
-  upb_strtable_insert(mtab, &e.e);
-  if (msgreg_cb) msgreg_cb(closure, mh, m);
-  upb_msg_iter i;
-  for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
-    upb_fielddef *f = upb_msg_iter_field(i);
-    upb_fhandlers *fh;
-    if (upb_issubmsg(f)) {
-      upb_mhandlers *sub_mh;
-      upb_mtab_ent *subm_ent;
-      // The table lookup is necessary to break the DFS for type cycles.
-      if ((subm_ent = upb_strtable_lookup(mtab, f->def->fqname)) != NULL) {
-        sub_mh = subm_ent->mh;
-      } else {
-        sub_mh = upb_regmsg_dfs(h, upb_downcast_msgdef(f->def), msgreg_cb,
-                                fieldreg_cb, closure, mtab);
-      }
-      fh = upb_mhandlers_newsubmsgfield(
-          mh, f->number, f->type, upb_isarray(f), sub_mh);
-    } else {
-      fh = upb_mhandlers_newfield(mh, f->number, f->type, upb_isarray(f));
-    }
-    if (fieldreg_cb) fieldreg_cb(closure, fh, f);
-  }
-  return mh;
-}
-
-upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
-                                      upb_onmsgreg *msgreg_cb,
-                                      upb_onfieldreg *fieldreg_cb,
-                                      void *closure) {
-  upb_strtable mtab;
-  upb_strtable_init(&mtab, 8, sizeof(upb_mtab_ent));
-  upb_mhandlers *ret =
-      upb_regmsg_dfs(h, m, msgreg_cb, fieldreg_cb, closure, &mtab);
-  upb_strtable_free(&mtab);
-  return ret;
 }
 
 
@@ -157,7 +109,7 @@ void upb_handlers_uninit(upb_handlers *h) {
   free(h->msgs);
 }
 
-upb_mhandlers *upb_handlers_newmsg(upb_handlers *h) {
+upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h) {
   if (h->msgs_len == h->msgs_size) {
     h->msgs_size *= 2;
     h->msgs = realloc(h->msgs, h->msgs_size * sizeof(*h->msgs));
@@ -165,6 +117,55 @@ upb_mhandlers *upb_handlers_newmsg(upb_handlers *h) {
   upb_mhandlers *mh = upb_mhandlers_new();
   h->msgs[h->msgs_len++] = mh;
   return mh;
+}
+
+typedef struct {
+  upb_strtable_entry e;
+  upb_mhandlers *mh;
+} upb_mtab_ent;
+
+static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
+                                     upb_onmsgreg *msgreg_cb,
+                                     upb_onfieldreg *fieldreg_cb,
+                                     void *closure, upb_strtable *mtab) {
+  upb_mhandlers *mh = upb_handlers_newmhandlers(h);
+  upb_mtab_ent e = {{m->base.fqname, 0}, mh};
+  upb_strtable_insert(mtab, &e.e);
+  if (msgreg_cb) msgreg_cb(closure, mh, m);
+  upb_msg_iter i;
+  for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
+    upb_fielddef *f = upb_msg_iter_field(i);
+    upb_fhandlers *fh;
+    if (upb_issubmsg(f)) {
+      upb_mhandlers *sub_mh;
+      upb_mtab_ent *subm_ent;
+      // The table lookup is necessary to break the DFS for type cycles.
+      if ((subm_ent = upb_strtable_lookup(mtab, f->def->fqname)) != NULL) {
+        sub_mh = subm_ent->mh;
+      } else {
+        sub_mh = upb_regmsg_dfs(h, upb_downcast_msgdef(f->def), msgreg_cb,
+                                fieldreg_cb, closure, mtab);
+      }
+      fh = upb_mhandlers_newfhandlers_subm(
+          mh, f->number, f->type, upb_isarray(f), sub_mh);
+    } else {
+      fh = upb_mhandlers_newfhandlers(mh, f->number, f->type, upb_isarray(f));
+    }
+    if (fieldreg_cb) fieldreg_cb(closure, fh, f);
+  }
+  return mh;
+}
+
+upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
+                                      upb_onmsgreg *msgreg_cb,
+                                      upb_onfieldreg *fieldreg_cb,
+                                      void *closure) {
+  upb_strtable mtab;
+  upb_strtable_init(&mtab, 8, sizeof(upb_mtab_ent));
+  upb_mhandlers *ret =
+      upb_regmsg_dfs(h, m, msgreg_cb, fieldreg_cb, closure, &mtab);
+  upb_strtable_free(&mtab);
+  return ret;
 }
 
 

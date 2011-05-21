@@ -187,19 +187,20 @@ INLINE upb_sflow_t UPB_SFLOW(upb_flow_t flow, void *closure) {
 // Appends a new message to the graph of handlers and returns it.  This message
 // can be obtained later at index upb_handlers_msgcount()-1.  All handlers will
 // be initialized to no-op handlers.
-upb_mhandlers *upb_handlers_newmsg(upb_handlers *h);
-upb_mhandlers *upb_handlers_getmsg(upb_handlers *h, int index);
+upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h);
+upb_mhandlers *upb_handlers_getmhandlers(upb_handlers *h, int index);
 
 // Creates a new field with the given name and number.  There must not be an
 // existing field with either this name or number or abort() will be called.
 // TODO: this should take a name also.
-upb_fhandlers *upb_mhandlers_newfield(upb_mhandlers *m, uint32_t n,
-                                      upb_fieldtype_t type, bool repeated);
+upb_fhandlers *upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
+                                          upb_fieldtype_t type, bool repeated);
 // Like the previous but for MESSAGE or GROUP fields.  For GROUP fields, the
 // given submessage must not have any fields with this field number.
-upb_fhandlers *upb_mhandlers_newsubmsgfield(upb_mhandlers *m, uint32_t n,
-                                            upb_fieldtype_t type, bool repeated,
-                                            upb_mhandlers *subm);
+upb_fhandlers *upb_mhandlers_newfhandlers_subm(upb_mhandlers *m, uint32_t n,
+                                               upb_fieldtype_t type,
+                                               bool repeated,
+                                               upb_mhandlers *subm);
 
 // upb_mhandlers accessors.
 #define UPB_MHANDLERS_ACCESSORS(name, type) \
