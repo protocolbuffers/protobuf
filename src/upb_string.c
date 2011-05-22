@@ -35,7 +35,7 @@ upb_string *upb_string_new() {
   str->size = 0;
 #endif
   str->src = NULL;
-  upb_atomic_refcount_init(&str->refcount, 1);
+  upb_atomic_init(&str->refcount, 1);
   return str;
 }
 

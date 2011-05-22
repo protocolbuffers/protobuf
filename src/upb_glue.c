@@ -17,13 +17,13 @@ void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str);
 
-  upb_handlers h;
-  upb_handlers_init(&h);
-  upb_msg_reghandlers(&h, md);
+  upb_handlers *h = upb_handlers_new();
+  upb_msg_reghandlers(h, md);
 
   upb_decoder d;
-  upb_decoder_init(&d, &h);
+  upb_decoder_init(&d, h);
   upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), msg);
+  upb_handlers_unref(h);
 
   upb_decoder_decode(&d, status);
 
@@ -38,13 +38,12 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
   upb_stringsink_reset(&strsink, str);
 
   upb_textprinter *p = upb_textprinter_new();
-  upb_handlers h;
-  upb_handlers_init(&h);
-  upb_textprinter_reghandlers(&h, md);
+  upb_handlers *h = upb_handlers_new();
+  upb_textprinter_reghandlers(h, md);
   upb_textprinter_reset(p, upb_stringsink_bytesink(&strsink), single_line);
 
   upb_status status = UPB_STATUS_INIT;
-  upb_msg_runhandlers(msg, md, &h, p, &status);
+  upb_msg_runhandlers(msg, md, h, p, &status);
   // None of {upb_msg_runhandlers, upb_textprinter, upb_stringsink} should be
   // capable of returning an error.
   assert(upb_ok(&status));
@@ -52,6 +51,7 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 
   upb_stringsink_uninit(&strsink);
   upb_textprinter_free(p);
+  upb_handlers_unref(h);
 }
 
 void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
@@ -59,12 +59,12 @@ void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str);
 
-  upb_handlers h;
-  upb_handlers_init(&h);
-  upb_defbuilder_reghandlers(&h);
+  upb_handlers *h = upb_handlers_new();
+  upb_defbuilder_reghandlers(h);
 
   upb_decoder d;
-  upb_decoder_init(&d, &h);
+  upb_decoder_init(&d, h);
+  upb_handlers_unref(h);
   upb_defbuilder *b = upb_defbuilder_new(symtab);
   upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), b);
 

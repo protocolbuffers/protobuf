@@ -56,7 +56,7 @@ typedef int8_t upb_deftype_t;
 
 typedef struct {
   upb_string *fqname;  // Fully qualified.
-  upb_atomic_refcount_t refcount;
+  upb_atomic_t refcount;
   upb_deftype_t type;
 
   // The is_cyclic flag could go in upb_msgdef instead of here, because only
@@ -110,7 +110,7 @@ struct _upb_fielddef {
 
   // For the case of an enum or a submessage, points to the def for that type.
   upb_def *def;
-  upb_atomic_refcount_t refcount;
+  upb_atomic_t refcount;
 };
 
 // A variety of tests about the type of a field.
@@ -159,7 +159,7 @@ INLINE bool upb_elem_ismm(upb_fielddef *f) {
 // Structure that describes a single .proto message type.
 typedef struct _upb_msgdef {
   upb_def base;
-  upb_atomic_refcount_t cycle_refcount;
+  upb_atomic_t cycle_refcount;
   uint32_t size;
   uint32_t set_flags_bytes;
 
@@ -283,7 +283,7 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
 // Clients add definitions to the symtab by supplying descriptors (as defined
 // in descriptor.proto) via the upb_stream interface.
 struct _upb_symtab {
-  upb_atomic_refcount_t refcount;
+  upb_atomic_t refcount;
   upb_rwlock_t lock;       // Protects all members except the refcount.
   upb_strtable symtab;     // The symbol table.
   upb_msgdef *fds_msgdef;  // Msgdef for google.protobuf.FileDescriptorSet.

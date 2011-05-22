@@ -59,7 +59,7 @@ extern "C" {
 // the associated functions.
 struct _upb_string {
   // The string's refcount.
-  upb_atomic_refcount_t refcount;
+  upb_atomic_t refcount;
 
   // The pointer to our currently active data.  This may be memory we own
   // or a pointer into memory we don't own.

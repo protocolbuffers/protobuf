@@ -142,7 +142,7 @@ INLINE void upb_value_write(upb_valueptr ptr, upb_value val,
 
 typedef uint32_t upb_arraylen_t;
 struct _upb_array {
-  upb_atomic_refcount_t refcount;
+  upb_atomic_t refcount;
   // "len" and "size" are measured in elements, not bytes.
   int32_t len;
   int32_t size;
@@ -192,7 +192,7 @@ INLINE upb_value upb_array_get(upb_array *arr, upb_fielddef *f,
 // 2. you would want the msg to own a ref on its msgdef, but this would require
 //    an atomic operation for every message create or destroy!
 struct _upb_msg {
-  upb_atomic_refcount_t refcount;
+  upb_atomic_t refcount;
   uint8_t data[4];  // We allocate the appropriate amount per message.
 };
 

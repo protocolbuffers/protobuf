@@ -38,7 +38,7 @@ static void upb_elem_free(upb_value v, upb_fielddef *f) {
 
 static void upb_elem_unref(upb_value v, upb_fielddef *f) {
   assert(upb_elem_ismm(f));
-  upb_atomic_refcount_t *refcount = upb_value_getrefcount(v);
+  upb_atomic_t *refcount = upb_value_getrefcount(v);
   if (refcount && upb_atomic_unref(refcount))
     upb_elem_free(v, f);
 }
@@ -53,7 +53,7 @@ static void upb_field_free(upb_value v, upb_fielddef *f) {
 
 static void upb_field_unref(upb_value v, upb_fielddef *f) {
   assert(upb_field_ismm(f));
-  upb_atomic_refcount_t *refcount = upb_value_getrefcount(v);
+  upb_atomic_t *refcount = upb_value_getrefcount(v);
   if (refcount && upb_atomic_unref(refcount))
     upb_field_free(v, f);
 }
@@ -63,7 +63,7 @@ static void upb_field_unref(upb_value v, upb_fielddef *f) {
 
 upb_array *upb_array_new(void) {
   upb_array *arr = malloc(sizeof(*arr));
-  upb_atomic_refcount_init(&arr->refcount, 1);
+  upb_atomic_init(&arr->refcount, 1);
   arr->size = 0;
   arr->len = 0;
   arr->ptr = NULL;
@@ -134,7 +134,7 @@ upb_msg *upb_msg_new(upb_msgdef *md) {
   upb_msg *msg = malloc(md->size);
   // Clear all set bits and cached pointers.
   memset(msg, 0, md->size);
-  upb_atomic_refcount_init(&msg->refcount, 1);
+  upb_atomic_init(&msg->refcount, 1);
   return msg;
 }
 
@@ -178,7 +178,7 @@ void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
     upb_field_unref(oldval, f);
 
     // Ref the new value.
-    upb_atomic_refcount_t *refcount = upb_value_getrefcount(val);
+    upb_atomic_t *refcount = upb_value_getrefcount(val);
     if (refcount) upb_atomic_ref(refcount);
   }
   upb_msg_sethas(msg, f);
@@ -194,7 +194,7 @@ upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
       upb_msg *m = upb_msg_new(md);
       // Copy all set bits and values, except the refcount.
       memcpy(m , upb_value_getmsg(val), md->size);
-      upb_atomic_refcount_init(&m->refcount, 0); // The msg will take a ref.
+      upb_atomic_init(&m->refcount, 0); // The msg will take a ref.
       upb_value_setmsg(&val, m);
     }
     upb_msg_set(msg, f, val);

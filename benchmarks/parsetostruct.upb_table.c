@@ -12,7 +12,6 @@ static upb_msgdef *def;
 static upb_msg *msg;
 static upb_stringsrc strsrc;
 static upb_decoder d;
-static upb_handlers h;
 
 static bool initialize()
 {
@@ -53,9 +52,10 @@ static bool initialize()
   msg = upb_msg_new(def);
 
   upb_stringsrc_init(&strsrc);
-  upb_handlers_init(&h);
-  upb_msg_reghandlers(&h, def);
-  upb_decoder_init(&d, &h);
+  upb_handlers *handlers = upb_handlers_new();
+  upb_msg_reghandlers(handlers, def);
+  upb_decoder_init(&d, handlers);
+  upb_handlers_unref(handlers);
 
   if (!BYREF) {
     // Pretend the input string is stack-allocated, which will force its data

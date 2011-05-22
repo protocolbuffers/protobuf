@@ -9,42 +9,13 @@
 #include "upb_handlers.h"
 
 
-upb_flow_t upb_startmsg_nop(void *closure) {
-  (void)closure;
-  return UPB_CONTINUE;
-}
-
-void upb_endmsg_nop(void *closure, upb_status *status) {
-  (void)closure;
-  (void)status;
-}
-
-upb_flow_t upb_value_nop(void *closure, upb_value fval, upb_value val) {
-  (void)closure;
-  (void)fval;
-  (void)val;
-  return UPB_CONTINUE;
-}
-
-upb_sflow_t upb_startfield_nop(void *closure, upb_value fval) {
-  (void)fval;
-  return UPB_CONTINUE_WITH(closure);
-}
-
-upb_flow_t upb_endfield_nop(void *closure, upb_value fval) {
-  (void)closure;
-  (void)fval;
-  return UPB_CONTINUE;
-}
-
-
 /* upb_mhandlers **************************************************************/
 
 static upb_mhandlers *upb_mhandlers_new() {
   upb_mhandlers *m = malloc(sizeof(*m));
   upb_inttable_init(&m->fieldtab, 8, sizeof(upb_fhandlers));
-  m->startmsg = &upb_startmsg_nop;
-  m->endmsg = &upb_endmsg_nop;
+  m->startmsg = NULL;
+  m->endmsg = NULL;
   m->tablearray = NULL;
   m->is_group = false;
   return m;
@@ -57,11 +28,8 @@ static upb_fhandlers *_upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
   upb_fhandlers *f = upb_inttable_lookup(&m->fieldtab, tag);
   if (f) abort();
   upb_fhandlers new_f = {false, type, repeated,
-      repeated && upb_isprimitivetype(type), n, m, NULL, UPB_NO_VALUE,
-      &upb_value_nop,
-      &upb_startfield_nop, &upb_endfield_nop,
-      &upb_startfield_nop, &upb_endfield_nop,
-      0, 0, 0, NULL};
+      repeated && upb_isprimitivetype(type), UPB_ATOMIC_INIT(0),
+      n, m, NULL, UPB_NO_VALUE, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL};
   upb_inttable_insert(&m->fieldtab, tag, &new_f);
   f = upb_inttable_lookup(&m->fieldtab, tag);
   assert(f);
@@ -92,21 +60,29 @@ upb_fhandlers *upb_mhandlers_newfhandlers_subm(upb_mhandlers *m, uint32_t n,
 
 /* upb_handlers ***************************************************************/
 
-void upb_handlers_init(upb_handlers *h) {
+upb_handlers *upb_handlers_new() {
+  upb_handlers *h = malloc(sizeof(*h));
+  upb_atomic_init(&h->refcount, 1);
   h->msgs_len = 0;
   h->msgs_size = 4;
   h->msgs = malloc(h->msgs_size * sizeof(*h->msgs));
   h->should_jit = true;
+  return h;
 }
 
-void upb_handlers_uninit(upb_handlers *h) {
-  for (int i = 0; i < h->msgs_len; i++) {
-    upb_mhandlers *mh = h->msgs[i];
-    upb_inttable_free(&mh->fieldtab);
-    free(mh->tablearray);
-    free(mh);
+void upb_handlers_ref(upb_handlers *h) { upb_atomic_ref(&h->refcount); }
+
+void upb_handlers_unref(upb_handlers *h) {
+  if (upb_atomic_unref(&h->refcount)) {
+    for (int i = 0; i < h->msgs_len; i++) {
+      upb_mhandlers *mh = h->msgs[i];
+      upb_inttable_free(&mh->fieldtab);
+      free(mh->tablearray);
+      free(mh);
+    }
+    free(h->msgs);
+    free(h);
   }
-  free(h->msgs);
 }
 
 upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h) {
@@ -172,7 +148,7 @@ upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
 /* upb_dispatcher *************************************************************/
 
 static upb_fhandlers toplevel_f = {
-  false, UPB_TYPE(GROUP), false, false, 0,
+  false, UPB_TYPE(GROUP), false, false, UPB_ATOMIC_INIT(0), 0,
   NULL, NULL, // submsg
 #ifdef NDEBUG
   {{0}},
@@ -185,6 +161,7 @@ void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
                          upb_skip_handler *skip, upb_exit_handler *exit,
                          void *srcclosure) {
   d->handlers = h;
+  upb_handlers_ref(h);
   for (int i = 0; i < h->msgs_len; i++) {
     upb_mhandlers *m = h->msgs[i];
     upb_inttable_compact(&m->fieldtab);
@@ -207,18 +184,19 @@ upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *closure) {
 }
 
 void upb_dispatcher_uninit(upb_dispatcher *d) {
-  upb_handlers_uninit(d->handlers);
+  upb_handlers_unref(d->handlers);
   upb_status_uninit(&d->status);
 }
 
 void upb_dispatch_startmsg(upb_dispatcher *d) {
-  upb_flow_t flow = d->msgent->startmsg(d->top->closure);
+  upb_flow_t flow = UPB_CONTINUE;
+  if (d->msgent->startmsg) d->msgent->startmsg(d->top->closure);
   if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
 }
 
 void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status) {
   assert(d->top == d->stack);
-  d->msgent->endmsg(d->top->closure, &d->status);
+  if (d->msgent->endmsg) d->msgent->endmsg(d->top->closure, &d->status);
   // TODO: should we avoid this copy by passing client's status obj to cbs?
   upb_copyerr(status, &d->status);
 }
@@ -241,7 +219,8 @@ upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
     return d->top;  // Dummy.
   }
 
-  upb_sflow_t sflow = f->startseq(d->top->closure, f->fval);
+  upb_sflow_t sflow = UPB_CONTINUE_WITH(d->top->closure);
+  if (f->startseq) sflow = f->startseq(d->top->closure, f->fval);
   if (sflow.flow != UPB_CONTINUE) {
     _upb_dispatcher_unwind(d, sflow.flow);
     return d->top;  // Dummy.
@@ -261,7 +240,8 @@ upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d) {
   assert(d->top->is_sequence);
   upb_fhandlers *f = d->top->f;
   --d->top;
-  upb_flow_t flow = f->endseq(d->top->closure, f->fval);
+  upb_flow_t flow = UPB_CONTINUE;
+  if (f->endseq) flow = f->endseq(d->top->closure, f->fval);
   if (flow != UPB_CONTINUE) {
     printf("YO, UNWINDING!\n");
     _upb_dispatcher_unwind(d, flow);
@@ -282,7 +262,8 @@ upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
     return d->top;  // Dummy.
   }
 
-  upb_sflow_t sflow = f->startsubmsg(d->top->closure, f->fval);
+  upb_sflow_t sflow = UPB_CONTINUE_WITH(d->top->closure);
+  if (f->startsubmsg) sflow = f->startsubmsg(d->top->closure, f->fval);
   if (sflow.flow != UPB_CONTINUE) {
     _upb_dispatcher_unwind(d, sflow.flow);
     return d->top;  // Dummy.
@@ -304,11 +285,12 @@ upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d) {
   assert(d->top > d->stack);
   assert(!d->top->is_sequence);
   upb_fhandlers *f = d->top->f;
-  d->msgent->endmsg(d->top->closure, &d->status);
+  if (d->msgent->endmsg) d->msgent->endmsg(d->top->closure, &d->status);
   d->msgent = d->top->f->msg;
   d->dispatch_table = &d->msgent->fieldtab;
   --d->top;
-  upb_flow_t flow = f->endsubmsg(d->top->closure, f->fval);
+  upb_flow_t flow = UPB_CONTINUE;
+  if (f->endsubmsg) f->endsubmsg(d->top->closure, f->fval);
   if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
   return d->top;
 }

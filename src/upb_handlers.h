@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-/* upb_handlers ***************************************************************/
+/* Handlers protocol definition ***********************************************/
 
 // A upb_handlers object represents a graph of handlers.  Each message can have
 // a set of handlers as well as a set of fields which themselves have handlers.
@@ -106,25 +106,79 @@ typedef enum {
   // TODO: Add UPB_SUSPEND, for resumable producers/consumers.
 } upb_flow_t;
 
+// The startsubmsg handler needs to also pass a closure to the submsg.
+typedef struct {
+  upb_flow_t flow;
+  void *closure;
+} upb_sflow_t;
+
+INLINE upb_sflow_t UPB_SFLOW(upb_flow_t flow, void *closure) {
+  upb_sflow_t ret = {flow, closure};
+  return ret;
+}
+#define UPB_CONTINUE_WITH(c) UPB_SFLOW(UPB_CONTINUE, c)
+#define UPB_SBREAK UPB_SFLOW(UPB_BREAK, NULL)
+
 // Typedefs for all of the handler functions defined above.
-typedef struct _upb_sflow upb_sflow_t;
 typedef upb_flow_t (upb_startmsg_handler)(void *c);
 typedef void (upb_endmsg_handler)(void *c, upb_status *status);
 typedef upb_flow_t (upb_value_handler)(void *c, upb_value fval, upb_value val);
 typedef upb_sflow_t (upb_startfield_handler)(void *closure, upb_value fval);
 typedef upb_flow_t (upb_endfield_handler)(void *closure, upb_value fval);
 
-// No-op implementations of all of the above handlers.  Use these instead of
-// rolling your own -- the JIT can recognize these and optimize away the call.
-upb_flow_t upb_startmsg_nop(void *closure);
-void upb_endmsg_nop(void *closure, upb_status *status);
-upb_flow_t upb_value_nop(void *closure, upb_value fval, upb_value val);
-upb_sflow_t upb_startfield_nop(void *closure, upb_value fval);
-upb_flow_t upb_endfield_nop(void *closure, upb_value fval);
 
-// Structure definitions.  Do not access any fields directly!  Accessors are
-// provided for the fields that may be get/set.
+/* upb_fhandlers **************************************************************/
+
+// A upb_fhandlers object represents the set of handlers associated with one
+// specific message field.
+struct _upb_decoder;
+struct _upb_mhandlers;
+typedef struct _upb_fieldent {
+  bool junk;
+  upb_fieldtype_t type;
+  bool repeated;
+  bool is_repeated_primitive;
+  upb_atomic_t refcount;
+  uint32_t number;
+  struct _upb_mhandlers *msg;
+  struct _upb_mhandlers *submsg;  // Set iff upb_issubmsgtype(type) == true.
+  upb_value fval;
+  upb_value_handler *value;
+  upb_startfield_handler *startsubmsg;
+  upb_endfield_handler *endsubmsg;
+  upb_startfield_handler *startseq;
+  upb_endfield_handler *endseq;
+  uint32_t jit_pclabel;
+  uint32_t jit_pclabel_notypecheck;
+  uint32_t jit_submsg_done_pclabel;
+  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
+} upb_fhandlers;
+
+// fhandlers are created as part of a upb_handlers instance, but can be ref'd
+// and unref'd to prolong the life of the handlers.
+void upb_fhandlers_ref(upb_fhandlers *m);
+void upb_fhandlers_unref(upb_fhandlers *m);
+
+// upb_fhandlers accessors
+#define UPB_FHANDLERS_ACCESSORS(name, type) \
+  INLINE void upb_fhandlers_set ## name(upb_fhandlers *f, type v){f->name = v;} \
+  INLINE type upb_fhandlers_get ## name(upb_fhandlers *f) { return f->name; }
+UPB_FHANDLERS_ACCESSORS(fval, upb_value)
+UPB_FHANDLERS_ACCESSORS(value, upb_value_handler*)
+UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startfield_handler*)
+UPB_FHANDLERS_ACCESSORS(endsubmsg, upb_endfield_handler*)
+UPB_FHANDLERS_ACCESSORS(startseq, upb_startfield_handler*)
+UPB_FHANDLERS_ACCESSORS(endseq, upb_endfield_handler*)
+UPB_FHANDLERS_ACCESSORS(submsg, struct _upb_mhandlers*)
+
+
+/* upb_mhandlers **************************************************************/
+
+// A upb_mhandlers object represents the set of handlers associated with a
+// message in the graph of messages.
+
 typedef struct _upb_mhandlers {
+  upb_atomic_t refcount;
   upb_startmsg_handler *startmsg;
   upb_endmsg_handler *endmsg;
   upb_inttable fieldtab;  // Maps field number -> upb_fhandlers.
@@ -140,55 +194,10 @@ typedef struct _upb_mhandlers {
   void **tablearray;
 } upb_mhandlers;
 
-struct _upb_decoder;
-typedef struct _upb_fieldent {
-  bool junk;
-  upb_fieldtype_t type;
-  bool repeated;
-  bool is_repeated_primitive;
-  uint32_t number;
-  upb_mhandlers *msg;
-  upb_mhandlers *submsg;  // Must be set iff upb_issubmsgtype(type) == true.
-  upb_value fval;
-  upb_value_handler *value;
-  upb_startfield_handler *startsubmsg;
-  upb_endfield_handler *endsubmsg;
-  upb_startfield_handler *startseq;
-  upb_endfield_handler *endseq;
-  uint32_t jit_pclabel;
-  uint32_t jit_pclabel_notypecheck;
-  uint32_t jit_submsg_done_pclabel;
-  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
-} upb_fhandlers;
-
-struct _upb_handlers {
-  // Array of msgdefs, [0]=toplevel.
-  upb_mhandlers **msgs;
-  int msgs_len, msgs_size;
-  bool should_jit;
-};
-typedef struct _upb_handlers upb_handlers;
-
-void upb_handlers_init(upb_handlers *h);
-void upb_handlers_uninit(upb_handlers *h);
-
-// The startsubmsg handler needs to also pass a closure to the submsg.
-struct _upb_sflow {
-  upb_flow_t flow;
-  void *closure;
-};
-INLINE upb_sflow_t UPB_SFLOW(upb_flow_t flow, void *closure) {
-  upb_sflow_t ret = {flow, closure};
-  return ret;
-}
-#define UPB_CONTINUE_WITH(c) UPB_SFLOW(UPB_CONTINUE, c)
-#define UPB_SBREAK UPB_SFLOW(UPB_BREAK, NULL)
-
-// Appends a new message to the graph of handlers and returns it.  This message
-// can be obtained later at index upb_handlers_msgcount()-1.  All handlers will
-// be initialized to no-op handlers.
-upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h);
-upb_mhandlers *upb_handlers_getmhandlers(upb_handlers *h, int index);
+// mhandlers are created as part of a upb_handlers instance, but can be ref'd
+// and unref'd to prolong the life of the handlers.
+void upb_mhandlers_ref(upb_mhandlers *m);
+void upb_mhandlers_unref(upb_mhandlers *m);
 
 // Creates a new field with the given name and number.  There must not be an
 // existing field with either this name or number or abort() will be called.
@@ -209,17 +218,26 @@ upb_fhandlers *upb_mhandlers_newfhandlers_subm(upb_mhandlers *m, uint32_t n,
 UPB_MHANDLERS_ACCESSORS(startmsg, upb_startmsg_handler*);
 UPB_MHANDLERS_ACCESSORS(endmsg, upb_endmsg_handler*);
 
-// upb_fhandlers accessors
-#define UPB_FHANDLERS_ACCESSORS(name, type) \
-  INLINE void upb_fhandlers_set ## name(upb_fhandlers *f, type v){f->name = v;} \
-  INLINE type upb_fhandlers_get ## name(upb_fhandlers *f) { return f->name; }
-UPB_FHANDLERS_ACCESSORS(fval, upb_value)
-UPB_FHANDLERS_ACCESSORS(value, upb_value_handler*)
-UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startfield_handler*)
-UPB_FHANDLERS_ACCESSORS(endsubmsg, upb_endfield_handler*)
-UPB_FHANDLERS_ACCESSORS(startseq, upb_startfield_handler*)
-UPB_FHANDLERS_ACCESSORS(endseq, upb_endfield_handler*)
-UPB_FHANDLERS_ACCESSORS(submsg, upb_mhandlers*)
+
+/* upb_handlers ***************************************************************/
+
+struct _upb_handlers {
+  upb_atomic_t refcount;
+  upb_mhandlers **msgs;  // Array of msgdefs, [0]=toplevel.
+  int msgs_len, msgs_size;
+  bool should_jit;
+};
+typedef struct _upb_handlers upb_handlers;
+
+upb_handlers *upb_handlers_new();
+void upb_handlers_ref(upb_handlers *h);
+void upb_handlers_unref(upb_handlers *h);
+
+// Appends a new message to the graph of handlers and returns it.  This message
+// can be obtained later at index upb_handlers_msgcount()-1.  All handlers will
+// be initialized to no-op handlers.
+upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h);
+upb_mhandlers *upb_handlers_getmhandlers(upb_handlers *h, int index);
 
 // Convenience function for registering handlers for all messages and
 // fields in a msgdef and all its children.  For every registered message
@@ -338,16 +356,15 @@ void _upb_dispatcher_unwind(upb_dispatcher *d, upb_flow_t flow);
 // Dispatch functions -- call the user handler and handle errors.
 INLINE void upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
                                upb_value val) {
-  upb_flow_t flow = f->value(d->top->closure, f->fval, val);
+  upb_flow_t flow = UPB_CONTINUE;
+  if (f->value) flow = f->value(d->top->closure, f->fval, val);
   if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
 }
 void upb_dispatch_startmsg(upb_dispatcher *d);
 void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
-upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
-                                               upb_fhandlers *f);
+upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d, upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d);
-upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
-                                               upb_fhandlers *f);
+upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d, upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d);
 
 #ifdef __cplusplus

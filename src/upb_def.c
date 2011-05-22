@@ -172,7 +172,7 @@ static void upb_def_init(upb_def *def, upb_deftype type) {
   def->is_cyclic = 0;  // We detect this later, after resolving refs.
   def->search_depth = 0;
   def->fqname = NULL;
-  upb_atomic_refcount_init(&def->refcount, 1);
+  upb_atomic_init(&def->refcount, 1);
 }
 
 static void upb_def_uninit(upb_def *def) {
@@ -868,7 +868,7 @@ static upb_flow_t upb_msgdef_startmsg(void *_b) {
   upb_defbuilder *b = _b;
   upb_msgdef *m = malloc(sizeof(*m));
   upb_def_init(&m->base, UPB_DEF_MSG);
-  upb_atomic_refcount_init(&m->cycle_refcount, 0);
+  upb_atomic_init(&m->cycle_refcount, 0);
   upb_inttable_init(&m->itof, 4, sizeof(upb_itof_ent));
   upb_strtable_init(&m->ntof, 4, sizeof(upb_ntof_ent));
   m->default_message = NULL;
@@ -898,7 +898,7 @@ static void upb_msgdef_endmsg(void *_b, upb_status *status) {
 
   // Assign offsets in the msg.
   m->set_flags_bytes = upb_div_round_up(n, 8);
-  m->size = sizeof(upb_atomic_refcount_t) + m->set_flags_bytes;
+  m->size = sizeof(upb_atomic_t) + m->set_flags_bytes;
 
   size_t max_align = 0;
   for (int i = 0; i < n; i++) {
@@ -926,7 +926,7 @@ static void upb_msgdef_endmsg(void *_b, upb_status *status) {
     // whole must be a multiple of the greatest alignment of any member.
     size_t offset = upb_align_up(m->size, align);
     // Offsets are relative to the end of the refcount.
-    f->byte_offset = offset - sizeof(upb_atomic_refcount_t);
+    f->byte_offset = offset - sizeof(upb_atomic_t);
     m->size = offset + size;
     max_align = UPB_MAX(max_align, align);
   }
@@ -1242,7 +1242,7 @@ err:
 upb_symtab *upb_symtab_new()
 {
   upb_symtab *s = malloc(sizeof(*s));
-  upb_atomic_refcount_init(&s->refcount, 1);
+  upb_atomic_init(&s->refcount, 1);
   upb_rwlock_init(&s->lock);
   upb_strtable_init(&s->symtab, 16, sizeof(upb_symtab_ent));
   s->fds_msgdef = NULL;

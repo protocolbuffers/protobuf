@@ -286,7 +286,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
   |=>f->jit_pclabel_notypecheck:
   if (f->repeated) {
-    if (f->startseq != upb_startfield_nop) {
+    if (f->startseq) {
       |  mov   ARG1_64, CLOSURE
       |  loadfval f
       |  callp f->startseq
@@ -394,7 +394,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
     // Call startsubmsg handler (if any).
-    if (f->startsubmsg != upb_startfield_nop) {
+    if (f->startsubmsg) {
       // upb_sflow_t startsubmsg(void *closure, upb_value fval)
       |  mov   r12d, ARG3_32
       |  callp f->startsubmsg
@@ -423,7 +423,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |   popframe
 
     // Call endsubmsg handler (if any).
-    if (f->endsubmsg != upb_endfield_nop) {
+    if (f->endsubmsg) {
       // upb_flow_t endsubmsg(void *closure, upb_value fval);
       |  mov   ARG1_64, CLOSURE
       |  loadfval  f
@@ -441,7 +441,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |  checktag  tag
     |  je  <1
     |  popframe
-    if (f->endseq != upb_endfield_nop) {
+    if (f->endseq) {
       |  mov   ARG1_64, CLOSURE
       |  loadfval f
       |  callp f->endseq
@@ -466,7 +466,7 @@ static int upb_compare_uint32(const void *a, const void *b) {
 static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
   |=>m->jit_startmsg_pclabel:
   // Call startmsg handler (if any):
-  if (m->startmsg != upb_startmsg_nop) {
+  if (m->startmsg) {
     // upb_flow_t startmsg(void *closure);
     |  mov   ARG1_64, FRAME->closure
     |  callp m->startmsg
@@ -520,7 +520,7 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
 
   |=>m->jit_endofmsg_pclabel:
   // We are at end-of-submsg: call endmsg handler (if any):
-  if (m->endmsg != upb_endmsg_nop) {
+  if (m->endmsg) {
     // void endmsg(void *closure, upb_status *status) {
     |  mov   ARG1_64, FRAME->closure
     |  lea   ARG2_64, DECODER->dispatcher.status

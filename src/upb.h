@@ -162,7 +162,7 @@ typedef struct {
     upb_bytesrc *bytesrc;
     upb_msg *msg;
     upb_array *arr;
-    upb_atomic_refcount_t *refcount;
+    upb_atomic_t *refcount;
     upb_fielddef *fielddef;
     void *_void;
   } val;
@@ -204,7 +204,7 @@ UPB_VALUE_ACCESSORS(fielddef, fielddef, upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
 
 extern upb_value UPB_NO_VALUE;
 
-INLINE upb_atomic_refcount_t *upb_value_getrefcount(upb_value val) {
+INLINE upb_atomic_t *upb_value_getrefcount(upb_value val) {
   assert(val.type == UPB_TYPE(MESSAGE) ||
          val.type == UPB_TYPE(STRING) ||
          val.type == UPB_VALUETYPE_ARRAY);

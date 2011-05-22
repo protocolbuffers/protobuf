@@ -39,33 +39,17 @@ extern "C" {
 
 typedef struct {
   int v;
-} upb_atomic_refcount_t;
+} upb_atomic_t;
 
-INLINE void upb_atomic_refcount_init(upb_atomic_refcount_t *a, int val) {
-  a->v = val;
-}
+#define UPB_ATOMIC_INIT(x) {x}
 
-INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
-  return a->v++ == 0;
-}
-
-INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
-  return --a->v == 0;
-}
-
-INLINE int upb_atomic_read(upb_atomic_refcount_t *a) {
-  return a->v;
-}
-
-INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int val) {
+INLINE void upb_atomic_init(upb_atomic_t *a, int val) { a->v = val; }
+INLINE bool upb_atomic_ref(upb_atomic_t *a) { return a->v++ == 0; }
+INLINE bool upb_atomic_unref(upb_atomic_t *a) { return --a->v == 0; }
+INLINE int upb_atomic_read(upb_atomic_t *a) { return a->v; }
+INLINE bool upb_atomic_add(upb_atomic_t *a, int val) {
   a->v += val;
   return a->v == 0;
-}
-
-INLINE int upb_atomic_fetch_and_add(upb_atomic_refcount_t *a, int val) {
-  int ret = a->v;
-  a->v += val;
-  return ret;
 }
 
 #endif
@@ -82,26 +66,26 @@ INLINE int upb_atomic_fetch_and_add(upb_atomic_refcount_t *a, int val) {
 
 typedef struct {
   volatile int v;
-} upb_atomic_refcount_t;
+} upb_atomic_t;
 
-INLINE void upb_atomic_refcount_init(upb_atomic_refcount_t *a, int val) {
+INLINE void upb_atomic_init(upb_atomic_t *a, int val) {
   a->v = val;
   __sync_synchronize();   /* Ensure the initialized value is visible. */
 }
 
-INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
+INLINE bool upb_atomic_ref(upb_atomic_t *a) {
   return __sync_fetch_and_add(&a->v, 1) == 0;
 }
 
-INLINE bool upb_atomic_add(upb_atomic_refcount_t *a, int n) {
+INLINE bool upb_atomic_add(upb_atomic_t *a, int n) {
   return __sync_add_and_fetch(&a->v, n) == 0;
 }
 
-INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
+INLINE bool upb_atomic_unref(upb_atomic_t *a) {
   return __sync_sub_and_fetch(&a->v, 1) == 0;
 }
 
-INLINE bool upb_atomic_read(upb_atomic_refcount_t *a) {
+INLINE bool upb_atomic_read(upb_atomic_t *a) {
   return __sync_fetch_and_add(&a->v, 0);
 }
 
@@ -112,17 +96,17 @@ INLINE bool upb_atomic_read(upb_atomic_refcount_t *a) {
 
 typedef struct {
   volatile LONG val;
-} upb_atomic_refcount_t;
+} upb_atomic_t;
 
-INLINE void upb_atomic_refcount_init(upb_atomic_refcount_t *a, int val) {
+INLINE void upb_atomic_init(upb_atomic_t *a, int val) {
   InterlockedExchange(&a->val, val);
 }
 
-INLINE bool upb_atomic_ref(upb_atomic_refcount_t *a) {
+INLINE bool upb_atomic_ref(upb_atomic_t *a) {
   return InterlockedIncrement(&a->val) == 1;
 }
 
-INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
+INLINE bool upb_atomic_unref(upb_atomic_t *a) {
   return InterlockedDecrement(&a->val) == 0;
 }
 
@@ -131,7 +115,7 @@ INLINE bool upb_atomic_unref(upb_atomic_refcount_t *a) {
        Implement them or compile with UPB_THREAD_UNSAFE.
 #endif
 
-INLINE bool upb_atomic_only(upb_atomic_refcount_t *a) {
+INLINE bool upb_atomic_only(upb_atomic_t *a) {
   return upb_atomic_read(a) == 1;
 }
 

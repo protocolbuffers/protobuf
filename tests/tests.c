@@ -38,15 +38,15 @@ static void test_upb_jit() {
   upb_string_unref(symname);
   ASSERT(def);
 
-  upb_handlers h;
-  upb_handlers_init(&h);
+  upb_handlers *h = upb_handlers_new();
   upb_handlerset hset = {NULL, NULL, &upb_test_onvalue, NULL, NULL, NULL, NULL};
-  upb_handlers_reghandlerset(&h, upb_downcast_msgdef(def), &hset);
+  upb_handlers_reghandlerset(h, upb_downcast_msgdef(def), &hset);
   upb_decoder d;
-  upb_decoder_init(&d, &h);
+  upb_decoder_init(&d, h);
   upb_decoder_uninit(&d);
   upb_symtab_unref(s);
   upb_def_unref(def);
+  upb_handlers_unref(h);
 }
 
 static void test_upb_symtab() {

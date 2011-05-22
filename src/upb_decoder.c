@@ -399,10 +399,10 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure) {
 }
 
 void upb_decoder_uninit(upb_decoder *d) {
-  upb_dispatcher_uninit(&d->dispatcher);
   upb_string_unref(d->bufstr);
   upb_string_unref(d->tmp);
 #ifdef UPB_USE_JIT_X64
   if (d->dispatcher.handlers->should_jit) upb_decoder_freejit(d);
 #endif
+  upb_dispatcher_uninit(&d->dispatcher);
 }

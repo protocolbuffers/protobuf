@@ -10,7 +10,6 @@ static upb_string *input_str;
 static upb_msgdef *def;
 static upb_decoder decoder;
 static upb_stringsrc stringsrc;
-upb_handlers handlers;
 
 static upb_sflow_t startsubmsg(void *_m, upb_value fval) {
   (void)_m;
@@ -61,11 +60,12 @@ static bool initialize()
     return false;
   }
 
-  upb_handlers_init(&handlers);
+  upb_handlers *handlers = upb_handlers_new();
   // Cause all messages to be read, but do nothing when they are.
   upb_handlerset hset = {NULL, NULL, value, startsubmsg, NULL, NULL, NULL};
-  upb_handlers_reghandlerset(&handlers, def, &hset);
-  upb_decoder_init(&decoder, &handlers);
+  upb_handlers_reghandlerset(handlers, def, &hset);
+  upb_decoder_init(&decoder, handlers);
+  upb_handlers_unref(handlers);
   upb_stringsrc_init(&stringsrc);
   return true;
 }
