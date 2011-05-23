@@ -14,6 +14,9 @@ namespace Google.ProtocolBuffers.ProtoGen
     /// </summary>
     public class ProgramPreprocess
     {
+        const string ProtocExecutable = "protoc.exe";
+        const string ProtocDirectoryArg = "--protoc_dir=";
+
         private static int Main(string[] args)
         {
             try
@@ -38,6 +41,8 @@ namespace Google.ProtocolBuffers.ProtoGen
                 List<string> protocArgs = new List<string>();
                 List<string> protoGenArgs = new List<string>();
 
+                string protocFile = GuessProtocFile(args);
+
                 foreach (string arg in args)
                 {
                     doHelp |= StringComparer.OrdinalIgnoreCase.Equals(arg, "/?");
@@ -59,7 +64,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                     Console.WriteLine();
                     try
                     {
-                        RunProtoc("--help");
+                        RunProtoc(protocFile, "--help");
                     }
                     catch (Exception ex)
                     {
@@ -71,11 +76,19 @@ namespace Google.ProtocolBuffers.ProtoGen
                         "PROTOGEN.exe: The following options are used to specify defaults for code generation.");
                     Console.WriteLine();
                     Program.Main(new string[0]);
+                    Console.WriteLine();
+                    Console.WriteLine("The following option enables PROTOGEN.exe to find PROTOC.exe");
+                    Console.WriteLine("{0}<directory containing protoc.exe>", ProtocDirectoryArg);
                     return 0;
                 }
 
                 foreach (string arg in args)
                 {
+                    if (arg.StartsWith(ProtocDirectoryArg))
+                    {
+                        // Handled earlier
+                        continue;
+                    }
                     if (arg.StartsWith("--"))
                     {
                         protocArgs.Add(arg);
@@ -100,7 +113,7 @@ namespace Google.ProtocolBuffers.ProtoGen
 
                 if (tempFile != null)
                 {
-                    result = RunProtoc(protocArgs.ToArray());
+                    result = RunProtoc(protocFile, protocArgs.ToArray());
                     if (result != 0)
                     {
                         return result;
@@ -119,29 +132,44 @@ namespace Google.ProtocolBuffers.ProtoGen
             return result;
         }
 
-        private static int RunProtoc(params string[] args)
+        /// <summary>
+        /// Tries to work out where protoc is based on command line arguments, the current
+        /// directory, the directory containing protogen, and the path.
+        /// </summary>
+        /// <returns>The path to protoc.exe, or null if it can't be found.</returns>
+        private static string GuessProtocFile(params string[] args)
         {
-            const string protoc = "protoc.exe";
-            string exePath = protoc;
-
             // Why oh why is this not in System.IO.Path or Environment...?
             List<string> searchPath = new List<string>();
+            foreach (string arg in args)
+            {
+                if (arg.StartsWith("--protoc_dir="))
+                {
+                    searchPath.Add(arg.Substring(ProtocDirectoryArg.Length));
+                }
+            }
             searchPath.Add(Environment.CurrentDirectory);
             searchPath.Add(AppDomain.CurrentDomain.BaseDirectory);
             searchPath.AddRange((Environment.GetEnvironmentVariable("PATH") ?? String.Empty).Split(Path.PathSeparator));
 
             foreach (string path in searchPath)
             {
-                if (File.Exists(exePath = Path.Combine(path, protoc)))
+                string exeFile = Path.Combine(path, ProtocExecutable); 
+                if (File.Exists(exeFile))
                 {
-                    break;
+                    return exeFile;
                 }
             }
+            return null;
+        }
 
-            if (!File.Exists(exePath))
+        private static int RunProtoc(string exeFile, params string[] args)
+        {
+            if (exeFile == null)
             {
-                throw new FileNotFoundException("Unable to locate " + protoc +
-                                                " make sure it is in the PATH, cwd, or exe dir.");
+                throw new FileNotFoundException(
+                    "Unable to locate " + ProtocExecutable +
+                    " make sure it is in the PATH, cwd, or exe dir, or use --protoc_dir=...");
             }
 
             for (int i = 0; i < args.Length; i++)
@@ -152,7 +180,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 }
             }
 
-            ProcessStartInfo psi = new ProcessStartInfo(exePath);
+            ProcessStartInfo psi = new ProcessStartInfo(exeFile);
             psi.Arguments = String.Join(" ", args);
             psi.RedirectStandardError = true;
             psi.RedirectStandardInput = false;

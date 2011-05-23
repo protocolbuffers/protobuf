@@ -27,6 +27,8 @@
   <Target Name="_GenerateSource">
     <Exec Command="$(ProtocExePath) --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb @(Protos->'%(RelativeDir)%(Filename)%(Extension)', ' ')" WorkingDirectory="$(BuildTempDirectory)" />
     <Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(BuildTempDirectory)" />
+    <!-- Generate the AddressBookProtos.cs directly -->
+    <Exec Command="$(ProtogenExePath) --protoc_dir=$(LibDirectory) --proto_path=$(ProtosDirectory) $(ProtosDirectory)\tutorial\addressbook.proto -namespace=Google.ProtocolBuffers.Examples.AddressBook -umbrella_classname=AddressBookProtos" WorkingDirectory="$(BuildTempDirectory)" />
   </Target>
 
   <Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">

@@ -54,9 +54,8 @@
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_mset.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_no_generic_services.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
-    <Protos Include="$(ProtosDirectory)\tutorial\addressbook.proto" />
 
-        <!-- Main protos -->
+    <!-- Main protos -->
     <GeneratedSource Include="$(BuildTempDirectory)\CSharpOptions.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
     </GeneratedSource>
@@ -64,7 +63,7 @@
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
     </GeneratedSource>
         
-        <!-- Address book sample -->
+    <!-- Address book sample -->
     <GeneratedSource Include="$(BuildTempDirectory)\AddressBookProtos.cs">
       <TargetDirectory>$(SourceDirectory)\AddressBook</TargetDirectory>
     </GeneratedSource>

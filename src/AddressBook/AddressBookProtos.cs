@@ -31,16 +31,13 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
     static AddressBookProtos() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "Chp0dXRvcmlhbC9hZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaJGdvb2ds" + 
-          "ZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byLaAQoGUGVyc29uEgwK" + 
-          "BG5hbWUYASACKAkSCgoCaWQYAiACKAUSDQoFZW1haWwYAyABKAkSKwoFcGhv" + 
-          "bmUYBCADKAsyHC50dXRvcmlhbC5QZXJzb24uUGhvbmVOdW1iZXIaTQoLUGhv" + 
-          "bmVOdW1iZXISDgoGbnVtYmVyGAEgAigJEi4KBHR5cGUYAiABKA4yGi50dXRv" + 
-          "cmlhbC5QZXJzb24uUGhvbmVUeXBlOgRIT01FIisKCVBob25lVHlwZRIKCgZN" + 
-          "T0JJTEUQABIICgRIT01FEAESCAoEV09SSxACIi8KC0FkZHJlc3NCb29rEiAK" + 
-          "BnBlcnNvbhgBIAMoCzIQLnR1dG9yaWFsLlBlcnNvbkJFSAHCPkAKK0dvb2ds" + 
-          "ZS5Qcm90b2NvbEJ1ZmZlcnMuRXhhbXBsZXMuQWRkcmVzc0Jvb2sSEUFkZHJl" + 
-          "c3NCb29rUHJvdG9z");
+          "Chp0dXRvcmlhbC9hZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi2gEKBlBl" + 
+          "cnNvbhIMCgRuYW1lGAEgAigJEgoKAmlkGAIgAigFEg0KBWVtYWlsGAMgASgJ" + 
+          "EisKBXBob25lGAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVy" + 
+          "Gk0KC1Bob25lTnVtYmVyEg4KBm51bWJlchgBIAIoCRIuCgR0eXBlGAIgASgO" + 
+          "MhoudHV0b3JpYWwuUGVyc29uLlBob25lVHlwZToESE9NRSIrCglQaG9uZVR5" + 
+          "cGUSCgoGTU9CSUxFEAASCAoESE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNz" + 
+          "Qm9vaxIgCgZwZXJzb24YASADKAsyEC50dXRvcmlhbC5QZXJzb25CAkgB");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_tutorial_Person__Descriptor = Descriptor.MessageTypes[0];
@@ -55,14 +52,10 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         internal__static_tutorial_AddressBook__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder>(internal__static_tutorial_AddressBook__Descriptor,
                 new string[] { "Person", });
-        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
-        RegisterAllExtensions(registry);
-        global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
-        return registry;
+        return null;
       };
       pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
-          global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, 
           }, assigner);
     }
     #endregion
