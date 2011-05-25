@@ -220,10 +220,15 @@ message MethodDescriptorProto {
 //   through 99999.  It is up to you to ensure that you do not use the
 //   same number for multiple options.
 // * For options which will be published and used publicly by multiple
-//   independent entities, e-mail kenton@google.com to reserve extension
-//   numbers.  Simply tell me how many you need and I'll send you back a
-//   set of numbers to use -- there's no need to explain how you intend to
-//   use them.  If this turns out to be popular, a web service will be set up
+//   independent entities, e-mail protobuf-global-extension-registry@google.com
+//   to reserve extension numbers. Simply provide your project name (e.g.
+//   Object-C plugin) and your porject website (if available) -- there's no need
+//   to explain how you intend to use them. Usually you only need one extension
+//   number. You can declare multiple options with only one extension number by
+//   putting them in a sub-message. See the Custom Options section of the docs
+//   for examples:
+//   http://code.google.com/apis/protocolbuffers/docs/proto.html#options
+//   If this turns out to be popular, a web service will be set up
 //   to automatically assign option numbers.
 
 
