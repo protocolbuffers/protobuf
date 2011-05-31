@@ -216,8 +216,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 
                     writer.WriteLine(
                         "public TMessage CallMethod<TMessage, TBuilder>(string methodName, pb::IMessageLite request, pb::IBuilderLite<TMessage, TBuilder> response)");
-                    writer.WriteLine("  where TMessage : IMessageLite<TMessage, TBuilder>");
-                    writer.WriteLine("  where TBuilder : IBuilderLite<TMessage, TBuilder> {");
+                    writer.WriteLine("  where TMessage : pb::IMessageLite<TMessage, TBuilder>");
+                    writer.WriteLine("  where TBuilder : pb::IBuilderLite<TMessage, TBuilder> {");
                     writer.Indent();
                     writer.WriteLine("switch(methodName) {");
                     writer.Indent();
@@ -230,7 +230,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                             GetClassName(method.InputType));
                     }
                     writer.WriteLine(
-                        "default: throw new global::System.MissingMethodException(typeof(ISearchService).FullName, methodName);");
+                        "default: throw new global::System.MissingMethodException(typeof(I{0}).FullName, methodName);", Descriptor.Name);
                     writer.Outdent();
                     writer.WriteLine("}"); //end switch
                     writer.Outdent();
@@ -287,7 +287,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                             method.Name, GetClassName(method.InputType), GetClassName(method.OutputType));
                     }
                     writer.WriteLine(
-                        "default: throw new global::System.MissingMethodException(typeof(ISearchService).FullName, methodName);");
+                        "default: throw new global::System.MissingMethodException(typeof(I{0}).FullName, methodName);", Descriptor.Name);
                     writer.Outdent();
                     writer.WriteLine("}"); //end switch
                     writer.Outdent();

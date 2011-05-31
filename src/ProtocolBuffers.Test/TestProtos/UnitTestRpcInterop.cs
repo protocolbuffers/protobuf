@@ -1208,8 +1208,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public TMessage CallMethod<TMessage, TBuilder>(string methodName, pb::IMessageLite request, pb::IBuilderLite<TMessage, TBuilder> response)
-        where TMessage : IMessageLite<TMessage, TBuilder>
-        where TBuilder : IBuilderLite<TMessage, TBuilder> {
+        where TMessage : pb::IMessageLite<TMessage, TBuilder>
+        where TBuilder : pb::IBuilderLite<TMessage, TBuilder> {
         switch(methodName) {
           case "Search": return response.MergeFrom(implementation.Search((global::Google.ProtocolBuffers.TestProtos.SearchRequest)request)).Build();
           case "RefineSearch": return response.MergeFrom(implementation.RefineSearch((global::Google.ProtocolBuffers.TestProtos.RefineSearchRequest)request)).Build();
