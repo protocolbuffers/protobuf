@@ -58,7 +58,7 @@ namespace Google.ProtocolBuffers
     /// TODO(jonskeet): Consider whether recursion and size limits shouldn't be readonly,
     /// set at construction time.
     /// </remarks>
-    public sealed class CodedInputStream
+    public sealed partial class CodedInputStream
     {
         private readonly byte[] buffer;
         private int bufferSize;
@@ -353,7 +353,7 @@ namespace Google.ProtocolBuffers
             else
             {
                 // Slow path:  Build a byte array first then copy it.
-                return ByteString.CopyFrom(ReadRawBytes(size));
+                return ByteString.AttachBytes(ReadRawBytes(size));
             }
         }
 

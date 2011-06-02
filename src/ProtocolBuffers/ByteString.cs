@@ -52,6 +52,14 @@ namespace Google.ProtocolBuffers
         private readonly byte[] bytes;
 
         /// <summary>
+        /// Internal use only.  Ensure that the provided array is not mutated and belongs to this instance.
+        /// </summary>
+        internal static ByteString AttachBytes(byte[] bytes)
+        {
+            return new ByteString(bytes);
+        }
+
+        /// <summary>
         /// Constructs a new ByteString from the given byte array. The array is
         /// *not* copied, and must not be modified after this constructor is called.
         /// </summary>
@@ -236,6 +244,27 @@ namespace Google.ProtocolBuffers
             {
                 get { return output; }
             }
+        }
+
+        internal void WriteTo(CodedOutputStream outputStream)
+        {
+            outputStream.WriteRawBytes(bytes, 0, bytes.Length);
+        }
+
+        /// <summary>
+        /// Copies the entire byte array to the destination array provided at the offset specified.
+        /// </summary>
+        public void CopyTo(Array array, int position)
+        {
+            Array.Copy(bytes, 0, array, position, bytes.Length);
+        }
+
+        /// <summary>
+        /// Writes the entire byte array to the provided stream
+        /// </summary>
+        public void WriteTo(System.IO.Stream outputStream)
+        {
+            outputStream.Write(bytes, 0, bytes.Length);
         }
     }
 }

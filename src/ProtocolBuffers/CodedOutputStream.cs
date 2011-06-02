@@ -54,7 +54,7 @@ namespace Google.ProtocolBuffers
     /// methods are taken from the protocol buffer type names, not .NET types.
     /// (Hence WriteFloat instead of WriteSingle, and WriteBool instead of WriteBoolean.)
     /// </remarks>
-    public sealed class CodedOutputStream
+    public sealed partial class CodedOutputStream
     {
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
@@ -257,11 +257,9 @@ namespace Google.ProtocolBuffers
 
         public void WriteBytes(int fieldNumber, ByteString value)
         {
-            // TODO(jonskeet): Optimise this! (No need to copy the bytes twice.)
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            byte[] bytes = value.ToByteArray();
-            WriteRawVarint32((uint) bytes.Length);
-            WriteRawBytes(bytes);
+            WriteRawVarint32((uint)value.Length);
+            value.WriteTo(this);
         }
 
         [CLSCompliant(false)]
@@ -564,10 +562,8 @@ namespace Google.ProtocolBuffers
 
         public void WriteBytesNoTag(ByteString value)
         {
-            // TODO(jonskeet): Optimise this! (No need to copy the bytes twice.)
-            byte[] bytes = value.ToByteArray();
-            WriteRawVarint32((uint) bytes.Length);
-            WriteRawBytes(bytes);
+            WriteRawVarint32((uint)value.Length);
+            value.WriteTo(this);
         }
 
         [CLSCompliant(false)]
