@@ -446,12 +446,13 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public void WriteDoubleNoTag(double value)
         {
-            // TODO(jonskeet): Test this on different endiannesses
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
-            byte[] bytes = BitConverter.GetBytes(value);
-            WriteRawBytes(bytes, 0, 8);
+            byte[] rawBytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian) 
+                Array.Reverse(rawBytes);
+            WriteRawBytes(rawBytes, 0, 8);
 #else
-      WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
+            WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
 #endif
         }
 
@@ -460,10 +461,10 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public void WriteFloatNoTag(float value)
         {
-            // TODO(jonskeet): Test this on different endiannesses
             byte[] rawBytes = BitConverter.GetBytes(value);
-            uint asInteger = BitConverter.ToUInt32(rawBytes, 0);
-            WriteRawLittleEndian32(asInteger);
+            if (!BitConverter.IsLittleEndian) 
+                Array.Reverse(rawBytes);
+            WriteRawBytes(rawBytes, 0, 4);
         }
 
         /// <summary>
