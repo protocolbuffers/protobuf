@@ -404,8 +404,8 @@ namespace Google.ProtocolBuffers
                 "1:2: Extension \"nosuchext\" not found in the ExtensionRegistry.",
                 "[nosuchext]: 123");
             AssertParseError(
-                "1:20: Extension \"protobuf_unittest.optional_int32_extension\" does " +
-                "not extend message type \"protobuf_unittest.TestAllTypes\".",
+                "1:20: Extension \"protobuf_unittest.optional_int32_extension\" " +
+                "not found in the ExtensionRegistry.",
                 "[protobuf_unittest.optional_int32_extension]: 123");
             AssertParseError(
                 "1:1: Message type \"protobuf_unittest.TestAllTypes\" has no field " +

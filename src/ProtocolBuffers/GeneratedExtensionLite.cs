@@ -74,6 +74,18 @@ namespace Google.ProtocolBuffers
             this.defaultValue = defaultValue;
         }
 
+        public string Name
+        {
+            get 
+            {
+                string name = fullName;
+                int offset = name.LastIndexOf('.');
+                if (offset >= 0)
+                    name = name.Substring(offset);
+                return name;
+            }
+        }
+
         public string FullName
         {
             get { return fullName; }

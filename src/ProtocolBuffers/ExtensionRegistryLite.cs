@@ -36,6 +36,7 @@
 
 using System.Collections.Generic;
 using System;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
 {
@@ -92,36 +93,38 @@ namespace Google.ProtocolBuffers
     /// </remarks>
     public sealed partial class ExtensionRegistry
     {
-        private readonly IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber;
+        class ExtensionByNameMap : Dictionary<object, Dictionary<string, IGeneratedExtensionLite>> { }
+        class ExtensionByIdMap : Dictionary<ExtensionIntPair, IGeneratedExtensionLite> { }
+
+        private static readonly ExtensionRegistry empty = new ExtensionRegistry(
+            new ExtensionByNameMap(),
+            new ExtensionByIdMap(),
+            true);
+
+        private readonly ExtensionByNameMap extensionsByName;
+        private readonly ExtensionByIdMap extensionsByNumber;
+
         private readonly bool readOnly;
 
-        private ExtensionRegistry(IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber,
-                                  bool readOnly)
+        private ExtensionRegistry(ExtensionByNameMap byName, ExtensionByIdMap byNumber, bool readOnly)
         {
-            this.extensionsByNumber = extensionsByNumber;
+            this.extensionsByName = byName;
+            this.extensionsByNumber = byNumber;
             this.readOnly = readOnly;
         }
-
-#if LITE
-        private static readonly ExtensionRegistry empty = new ExtensionRegistry(
-            new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(),
-            true);
 
         /// <summary>
         /// Construct a new, empty instance.
         /// </summary>
         public static ExtensionRegistry CreateInstance()
         {
-            return new ExtensionRegistry(
-                new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(), false);
+            return new ExtensionRegistry(new ExtensionByNameMap(), new ExtensionByIdMap(), false);
         }
 
         public ExtensionRegistry AsReadOnly()
         {
-            return new ExtensionRegistry(extensionsByNumber, true);
+            return new ExtensionRegistry(extensionsByName, extensionsByNumber, true);
         }
-
-#endif
 
         /// <summary>
         /// Get the unmodifiable singleton empty instance.
@@ -145,6 +148,18 @@ namespace Google.ProtocolBuffers
             }
         }
 
+        public IGeneratedExtensionLite FindByName(IMessageLite defaultInstanceOfType, string fieldName)
+        { return FindExtensionByName(defaultInstanceOfType, fieldName); }
+
+        IGeneratedExtensionLite FindExtensionByName(object forwhat, string fieldName)
+        {
+            IGeneratedExtensionLite extension = null;
+            Dictionary<string, IGeneratedExtensionLite> map;
+            if (extensionsByName.TryGetValue(forwhat, out map) && map.TryGetValue(fieldName, out extension))
+                return extension;
+            return null;
+        }
+
         /// <summary>
         /// Add an extension from a generated file to the registry.
         /// </summary>
@@ -154,9 +169,13 @@ namespace Google.ProtocolBuffers
             {
                 throw new InvalidOperationException("Cannot add entries to a read-only extension registry");
             }
-            extensionsByNumber.Add(
-                new ExtensionIntPair(extension.ContainingType, extension.Number),
-                extension);
+            extensionsByNumber.Add(new ExtensionIntPair(extension.ContainingType, extension.Number), extension);
+
+            Dictionary<string, IGeneratedExtensionLite> map;
+            if (!extensionsByName.TryGetValue(extension.ContainingType, out map))
+                extensionsByName.Add(extension.ContainingType, map = new Dictionary<string, IGeneratedExtensionLite>());
+            map[extension.Descriptor.Name] = extension;
+            map[extension.Descriptor.FullName] = extension;
         }
 
         /// <summary>
@@ -176,7 +195,7 @@ namespace Google.ProtocolBuffers
 
             public override int GetHashCode()
             {
-                return msgType.GetHashCode()*((1 << 16) - 1) + number;
+                return msgType.GetHashCode() * ((1 << 16) - 1) + number;
             }
 
             public override bool Equals(object obj)
@@ -185,7 +204,7 @@ namespace Google.ProtocolBuffers
                 {
                     return false;
                 }
-                return Equals((ExtensionIntPair) obj);
+                return Equals((ExtensionIntPair)obj);
             }
 
             public bool Equals(ExtensionIntPair other)

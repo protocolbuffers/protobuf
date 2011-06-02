@@ -93,53 +93,27 @@ namespace Google.ProtocolBuffers
     /// </remarks>
     public sealed partial class ExtensionRegistry
     {
-#if !LITE
-        private static readonly ExtensionRegistry empty = new ExtensionRegistry(
-            new Dictionary<string, ExtensionInfo>(),
-            new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(),
-            true);
-
-        private readonly IDictionary<string, ExtensionInfo> extensionsByName;
-
-        private ExtensionRegistry(IDictionary<String, ExtensionInfo> extensionsByName,
-                                  IDictionary<ExtensionIntPair, IGeneratedExtensionLite> extensionsByNumber,
-                                  bool readOnly)
-            : this(extensionsByNumber, readOnly)
-        {
-            this.extensionsByName = extensionsByName;
-        }
-
-        /// <summary>
-        /// Construct a new, empty instance.
-        /// </summary>
-        public static ExtensionRegistry CreateInstance()
-        {
-            return new ExtensionRegistry(new Dictionary<string, ExtensionInfo>(),
-                                         new Dictionary<ExtensionIntPair, IGeneratedExtensionLite>(), false);
-        }
-
-        public ExtensionRegistry AsReadOnly()
-        {
-            return new ExtensionRegistry(extensionsByName, extensionsByNumber, true);
-        }
-#endif
-
         /// <summary>
         /// Finds an extension by fully-qualified field name, in the
         /// proto namespace, i.e. result.Descriptor.FullName will match
         /// <paramref name="fullName"/> if a match is found. A null
         /// reference is returned if the extension can't be found.
         /// </summary>
+        [Obsolete("Please use the FindByName method instead.", true)]
         public ExtensionInfo this[string fullName]
         {
             get
             {
-                ExtensionInfo ret;
-                extensionsByName.TryGetValue(fullName, out ret);
-                return ret;
+                foreach (IGeneratedExtensionLite ext in extensionsByNumber.Values)
+                {
+                    if (StringComparer.Ordinal.Equals(ext.Descriptor.FullName, fullName))
+                        return ext as ExtensionInfo;
+                }
+                return null;
             }
         }
 
+#if !LITE
         /// <summary>
         /// Finds an extension by containing type and field number.
         /// A null reference is returned if the extension can't be found.
@@ -153,6 +127,12 @@ namespace Google.ProtocolBuffers
                 return ret as ExtensionInfo;
             }
         }
+
+        public ExtensionInfo FindByName(MessageDescriptor containingType, string fieldName)
+        {
+            return FindExtensionByName(containingType, fieldName) as ExtensionInfo;
+        }
+#endif
 
         /// <summary>
         /// Add an extension from a generated file to the registry.
@@ -210,9 +190,8 @@ namespace Google.ProtocolBuffers
                                             + "regular (non-extension) field.");
             }
 
-            extensionsByName[extension.Descriptor.FullName] = extension;
-            extensionsByNumber[new ExtensionIntPair(extension.Descriptor.ContainingType,
-                                                    extension.Descriptor.FieldNumber)] = extension;
+            IGeneratedExtensionLite liteExtension = extension;
+            Add(liteExtension);
 
             FieldDescriptor field = extension.Descriptor;
             if (field.ContainingType.Options.MessageSetWireFormat
@@ -223,7 +202,9 @@ namespace Google.ProtocolBuffers
                 // This is an extension of a MessageSet type defined within the extension
                 // type's own scope. For backwards-compatibility, allow it to be looked
                 // up by type name.
-                extensionsByName[field.MessageType.FullName] = extension;
+                Dictionary<string, IGeneratedExtensionLite> map;
+                if (extensionsByName.TryGetValue(liteExtension.ContainingType, out map))
+                    map[field.MessageType.FullName] = extension;
             }
         }
     }

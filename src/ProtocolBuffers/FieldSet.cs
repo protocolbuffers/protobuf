@@ -50,6 +50,7 @@ namespace Google.ProtocolBuffers
         bool IsExtension { get; }
         bool MessageSetWireFormat { get; } //field.ContainingType.Options.MessageSetWireFormat
         int FieldNumber { get; }
+        string Name { get; }
         string FullName { get; }
         IEnumLiteMap EnumType { get; }
         FieldType FieldType { get; }

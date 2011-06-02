@@ -34,6 +34,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TrackFileAccess>false</TrackFileAccess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -74,6 +75,14 @@
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="Collections\PopsicleListTest.cs" />
+    <Compile Include="CompatTests\BinaryCompatibilityTests.cs" />
+    <Compile Include="CompatTests\CompatibilityTests.cs" />
+    <Compile Include="CompatTests\TestResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TestResources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CompatTests\TextCompatibilityTests.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="Descriptors\MessageDescriptorTest.cs" />
@@ -93,6 +102,8 @@
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmptyProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestGenericServices.cs" />
+    <Compile Include="TestProtos\UnitTestGoogleSizeProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestGoogleSpeedProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
@@ -100,6 +111,7 @@
     <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestRpcInterop.cs" />
+    <Compile Include="TestProtos\UnitTestXmlSerializerTestProtoFile.cs" />
     <Compile Include="TestRpcGenerator.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="TextFormatTest.cs" />
@@ -128,6 +140,16 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CompatTests\google_message1.dat" />
+    <None Include="CompatTests\google_message2.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CompatTests\TestResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TestResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />

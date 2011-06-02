@@ -91,7 +91,12 @@ namespace Google.ProtocolBuffers
 
         public byte[] ToByteArray()
         {
-            return (byte[]) bytes.Clone();
+            return (byte[])bytes.Clone();
+        }
+
+        public string ToBase64()
+        {
+            return Convert.ToBase64String(bytes);
         }
 
         /// <summary>

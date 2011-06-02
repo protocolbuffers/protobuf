@@ -75,7 +75,7 @@ namespace Google.ProtocolBuffers
 
         object IGeneratedExtensionLite.ContainingType
         {
-            get { return Descriptor; }
+            get { return Descriptor.ContainingType; }
         }
 
         IMessageLite IGeneratedExtensionLite.MessageDefaultInstance

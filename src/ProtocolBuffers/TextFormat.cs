@@ -166,14 +166,22 @@ namespace Google.ProtocolBuffers
         {
             switch (field.FieldType)
             {
+                // The Float and Double types must specify the "r" format to preserve their precision, otherwise,
+                // the double to/from string will trim the precision to 6 places.  As with other numeric formats
+                // below, always use the invariant culture so it's predictable.
+                case FieldType.Float:
+                    generator.Print(((float)value).ToString("r", CultureInfo.InvariantCulture));
+                    break;
+                case FieldType.Double:
+                    generator.Print(((double)value).ToString("r", CultureInfo.InvariantCulture));
+                    break;
+
                 case FieldType.Int32:
                 case FieldType.Int64:
                 case FieldType.SInt32:
                 case FieldType.SInt64:
                 case FieldType.SFixed32:
                 case FieldType.SFixed64:
-                case FieldType.Float:
-                case FieldType.Double:
                 case FieldType.UInt32:
                 case FieldType.UInt64:
                 case FieldType.Fixed32:
@@ -670,7 +678,7 @@ namespace Google.ProtocolBuffers
                     name.Append(tokenizer.ConsumeIdentifier());
                 }
 
-                extension = extensionRegistry[name.ToString()];
+                extension = extensionRegistry.FindByName(type, name.ToString());
 
                 if (extension == null)
                 {

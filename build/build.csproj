@@ -38,6 +38,7 @@
 
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_full.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_extras_xmltest.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_generic_services.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_rpc_interop.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\descriptor.proto" />
@@ -54,6 +55,8 @@
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_mset.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_no_generic_services.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
+    <Protos Include="$(ProtosDirectory)\google\test\google_size.proto" />
+    <Protos Include="$(ProtosDirectory)\google\test\google_speed.proto" />
 
     <!-- Main protos -->
     <GeneratedSource Include="$(BuildTempDirectory)\CSharpOptions.cs">
@@ -68,6 +71,9 @@
       <TargetDirectory>$(SourceDirectory)\AddressBook</TargetDirectory>
     </GeneratedSource>
     <!-- Unit test -->
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestXmlSerializerTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestCSharpOptionsProtoFile.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
@@ -108,6 +114,9 @@
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestExtrasFullProtoFile.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestExtrasLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestImportLiteProtoFile.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
@@ -123,7 +132,13 @@
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestProtoFile.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
-  
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestGoogleSizeProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestGoogleSpeedProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+
     <TestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
     <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffersLite.Test.dll" />
     <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffersMixedLite.Test.dll" />

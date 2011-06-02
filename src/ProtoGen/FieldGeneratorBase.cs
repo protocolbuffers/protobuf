@@ -133,7 +133,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                         }
                         if (UseLiteRuntime && Descriptor.DefaultValue is ByteString)
                         {
-                            string temp = Convert.ToBase64String(((ByteString) Descriptor.DefaultValue).ToByteArray());
+                            string temp = (((ByteString) Descriptor.DefaultValue).ToBase64());
                             return String.Format("ByteString.FromBase64(\"{0}\")", temp);
                         }
                         return string.Format("(pb::ByteString) {0}.Descriptor.Fields[{1}].DefaultValue",
