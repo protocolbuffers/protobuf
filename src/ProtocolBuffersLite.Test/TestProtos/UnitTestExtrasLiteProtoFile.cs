@@ -101,10 +101,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasD) {
-        output.WriteInt32(1, D);
+        output.WriteInt32(1, "d", D);
       }
       if (HasEn) {
-        output.WriteEnum(2, (int) En);
+        output.WriteEnum(2, "en", (int) En, En.ToString());
       }
     }
     
@@ -395,10 +395,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasNumber) {
-            output.WriteString(1, Number);
+            output.WriteString(1, "number", Number);
           }
           if (HasType) {
-            output.WriteEnum(2, (int) Type);
+            output.WriteEnum(2, "type", (int) Type, Type.ToString());
           }
         }
         
@@ -694,19 +694,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasAddress) {
-            output.WriteString(1, Address);
+            output.WriteString(1, "address", Address);
           }
           if (HasAddress2) {
-            output.WriteString(2, Address2);
+            output.WriteString(2, "address2", Address2);
           }
           if (HasCity) {
-            output.WriteString(3, City);
+            output.WriteString(3, "city", City);
           }
           if (HasState) {
-            output.WriteString(4, State);
+            output.WriteString(4, "state", State);
           }
           if (HasZip) {
-            output.WriteFixed32(5, Zip);
+            output.WriteFixed32(5, "zip", Zip);
           }
         }
         
@@ -1101,26 +1101,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       pb::ExtendableMessageLite<TestInteropPersonLite, TestInteropPersonLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasName) {
-        output.WriteString(1, Name);
+        output.WriteString(1, "name", Name);
       }
       if (HasId) {
-        output.WriteInt32(2, Id);
+        output.WriteInt32(2, "id", Id);
       }
       if (HasEmail) {
-        output.WriteString(3, Email);
+        output.WriteString(3, "email", Email);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber element in PhoneList) {
-        output.WriteMessage(4, element);
+      if (phone_.Count > 0) {
+        output.WriteMessageArray(4, "phone", phone_);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses element in AddressesList) {
-        output.WriteGroup(5, element);
+      if (addresses_.Count > 0) {
+        output.WriteGroupArray(5, "addresses", addresses_);
       }
       if (codes_.Count > 0) {
-        output.WriteRawVarint32(82);
-        output.WriteRawVarint32((uint) codesMemoizedSerializedSize);
-        foreach (int element in codes_) {
-          output.WriteInt32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Int32, 10, "codes", codesMemoizedSerializedSize, codes_);
       }
       extensionWriter.WriteUntil(200, output);
     }
@@ -1576,7 +1572,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasNumber) {
-        output.WriteString(1, Number);
+        output.WriteString(1, "number", Number);
       }
     }
     

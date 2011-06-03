@@ -166,13 +166,13 @@ namespace Google.ProtocolBuffers
                     {
                         foreach (object element in valueList)
                         {
-                            output.WriteField(field.FieldType, field.FieldNumber, element);
+                            output.WriteField(field.FieldType, field.FieldNumber, field.Name, element);
                         }
                     }
                 }
                 else
                 {
-                    output.WriteField(field.FieldType, field.FieldNumber, entry.Value);
+                    output.WriteField(field.FieldType, field.FieldNumber, field.Name, entry.Value);
                 }
             }
 

@@ -141,19 +141,23 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
             if (Descriptor.IsPacked)
-            {
-                writer.WriteLine("output.WriteRawVarint32({0});", WireFormat.MakeTag(Descriptor));
-                writer.WriteLine("output.WriteRawVarint32((uint) {0}MemoizedSerializedSize);", Name);
-                writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
-                writer.WriteLine("  output.Write{0}NoTag(element);", CapitalizedTypeName);
-                writer.WriteLine("}");
-            }
+                writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}MemoizedSerializedSize, {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
             else
-            {
-                writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
-                writer.WriteLine("  output.Write{0}({1}, element);", CapitalizedTypeName, Number);
-                writer.WriteLine("}");
-            }
+                writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
+            //if (Descriptor.IsPacked)
+            //{
+            //    writer.WriteLine("output.WriteRawVarint32({0});", WireFormat.MakeTag(Descriptor));
+            //    writer.WriteLine("output.WriteRawVarint32((uint) {0}MemoizedSerializedSize);", Name);
+            //    writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
+            //    writer.WriteLine("  output.Write{0}NoTag(element);", CapitalizedTypeName);
+            //    writer.WriteLine("}");
+            //}
+            //else
+            //{
+            //    writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
+            //    writer.WriteLine("  output.Write{0}({1}, element);", CapitalizedTypeName, Number);
+            //    writer.WriteLine("}");
+            //}
             writer.Outdent();
             writer.WriteLine("}");
         }

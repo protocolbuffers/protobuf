@@ -326,7 +326,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasMessageSet) {
-        output.WriteMessage(1, MessageSet);
+        output.WriteMessage(1, "message_set", MessageSet);
       }
       UnknownFields.WriteTo(output);
     }
@@ -572,7 +572,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasI) {
-        output.WriteInt32(15, I);
+        output.WriteInt32(15, "i", I);
       }
       UnknownFields.WriteTo(output);
     }
@@ -795,7 +795,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasStr) {
-        output.WriteString(25, Str);
+        output.WriteString(25, "str", Str);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1059,10 +1059,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasTypeId) {
-            output.WriteInt32(2, TypeId);
+            output.WriteInt32(2, "type_id", TypeId);
           }
           if (HasMessage) {
-            output.WriteBytes(3, Message);
+            output.WriteBytes(3, "message", Message);
           }
           UnknownFields.WriteTo(output);
         }
@@ -1291,8 +1291,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
-      foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
-        output.WriteGroup(1, element);
+      if (item_.Count > 0) {
+        output.WriteGroupArray(1, "item", item_);
       }
       UnknownFields.WriteTo(output);
     }

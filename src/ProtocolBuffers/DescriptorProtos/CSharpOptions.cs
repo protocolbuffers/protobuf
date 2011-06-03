@@ -283,43 +283,43 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasNamespace) {
-        output.WriteString(1, Namespace);
+        output.WriteString(1, "namespace", Namespace);
       }
       if (HasUmbrellaClassname) {
-        output.WriteString(2, UmbrellaClassname);
+        output.WriteString(2, "umbrella_classname", UmbrellaClassname);
       }
       if (HasPublicClasses) {
-        output.WriteBool(3, PublicClasses);
+        output.WriteBool(3, "public_classes", PublicClasses);
       }
       if (HasMultipleFiles) {
-        output.WriteBool(4, MultipleFiles);
+        output.WriteBool(4, "multiple_files", MultipleFiles);
       }
       if (HasNestClasses) {
-        output.WriteBool(5, NestClasses);
+        output.WriteBool(5, "nest_classes", NestClasses);
       }
       if (HasCodeContracts) {
-        output.WriteBool(6, CodeContracts);
+        output.WriteBool(6, "code_contracts", CodeContracts);
       }
       if (HasExpandNamespaceDirectories) {
-        output.WriteBool(7, ExpandNamespaceDirectories);
+        output.WriteBool(7, "expand_namespace_directories", ExpandNamespaceDirectories);
       }
       if (HasClsCompliance) {
-        output.WriteBool(8, ClsCompliance);
+        output.WriteBool(8, "cls_compliance", ClsCompliance);
       }
       if (HasFileExtension) {
-        output.WriteString(221, FileExtension);
+        output.WriteString(221, "file_extension", FileExtension);
       }
       if (HasUmbrellaNamespace) {
-        output.WriteString(222, UmbrellaNamespace);
+        output.WriteString(222, "umbrella_namespace", UmbrellaNamespace);
       }
       if (HasOutputDirectory) {
-        output.WriteString(223, OutputDirectory);
+        output.WriteString(223, "output_directory", OutputDirectory);
       }
       if (HasIgnoreGoogleProtobuf) {
-        output.WriteBool(224, IgnoreGoogleProtobuf);
+        output.WriteBool(224, "ignore_google_protobuf", IgnoreGoogleProtobuf);
       }
       if (HasServiceGeneratorType) {
-        output.WriteEnum(225, (int) ServiceGeneratorType);
+        output.WriteEnum(225, "service_generator_type", (int) ServiceGeneratorType, ServiceGeneratorType.ToString());
       }
       UnknownFields.WriteTo(output);
     }
@@ -889,7 +889,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasPropertyName) {
-        output.WriteString(1, PropertyName);
+        output.WriteString(1, "property_name", PropertyName);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1111,7 +1111,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasInterfaceId) {
-        output.WriteString(1, InterfaceId);
+        output.WriteString(1, "interface_id", InterfaceId);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1333,7 +1333,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasDispatchId) {
-        output.WriteInt32(1, DispatchId);
+        output.WriteInt32(1, "dispatch_id", DispatchId);
       }
       UnknownFields.WriteTo(output);
     }

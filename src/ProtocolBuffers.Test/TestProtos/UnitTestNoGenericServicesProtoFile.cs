@@ -121,7 +121,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
       int size = SerializedSize;
       pb::ExtendableMessage<TestMessage, TestMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasA) {
-        output.WriteInt32(1, A);
+        output.WriteInt32(1, "a", A);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);

@@ -103,7 +103,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if (Has{0}) {{", PropertyName);
-            writer.WriteLine("  output.Write{0}({1}, {2});", CapitalizedTypeName, Number, PropertyName);
+            writer.WriteLine("  output.Write{0}({1}, \"{3}\", {2});", CapitalizedTypeName, Number, PropertyName, Descriptor.Name);
             writer.WriteLine("}");
         }
 

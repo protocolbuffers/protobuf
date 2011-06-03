@@ -180,12 +180,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (options_.Count > 0) {
-        foreach (int element in options_) {
-          output.WriteEnum(3, element);
-        }
+        output.WriteArray(pbd::FieldType.Enum, 3, "options", options_);
       }
       if (HasBinary) {
-        output.WriteBytes(4, Binary);
+        output.WriteBytes(4, "binary", Binary);
       }
       UnknownFields.WriteTo(output);
     }
@@ -681,12 +679,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (options_.Count > 0) {
-            foreach (int element in options_) {
-              output.WriteEnum(3, element);
-            }
+            output.WriteArray(pbd::FieldType.Enum, 3, "options", options_);
           }
           if (HasBinary) {
-            output.WriteBytes(4, Binary);
+            output.WriteBytes(4, "binary", Binary);
           }
           UnknownFields.WriteTo(output);
         }
@@ -1006,30 +1002,26 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       pb::ExtendableMessage<TestXmlMessage, TestXmlMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasChild) {
-        output.WriteMessage(1, Child);
+        output.WriteMessage(1, "child", Child);
       }
       if (numbers_.Count > 0) {
-        foreach (int element in numbers_) {
-          output.WriteInt32(2, element);
-        }
+        output.WriteArray(pbd::FieldType.Int32, 2, "numbers", numbers_);
       }
       if (HasText) {
-        output.WriteString(3, Text);
+        output.WriteString(3, "text", Text);
       }
       if (HasValid) {
-        output.WriteBool(5, Valid);
+        output.WriteBool(5, "valid", Valid);
       }
       if (HasNumber) {
-        output.WriteInt64(6, Number);
+        output.WriteInt64(6, "number", Number);
       }
       extensionWriter.WriteUntil(200, output);
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestXmlMessage.Types.Children element in ChildrenList) {
-        output.WriteGroup(401, element);
+      if (children_.Count > 0) {
+        output.WriteGroupArray(401, "children", children_);
       }
       if (textlines_.Count > 0) {
-        foreach (string element in textlines_) {
-          output.WriteString(700, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 700, "textlines", textlines_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1498,7 +1490,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasNumber) {
-        output.WriteInt32(1, Number);
+        output.WriteInt32(1, "number", Number);
       }
       UnknownFields.WriteTo(output);
     }

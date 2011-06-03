@@ -59,7 +59,7 @@ namespace Google.ProtocolBuffers
 
         public void Write(T message)
         {
-            codedOutput.WriteMessage(1, message);
+            codedOutput.WriteMessage(1, "item", message);
         }
 
         public void Flush()

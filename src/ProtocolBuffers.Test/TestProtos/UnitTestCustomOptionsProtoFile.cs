@@ -453,7 +453,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
-        output.WriteString(1, Field1);
+        output.WriteString(1, "field1", Field1);
       }
       UnknownFields.WriteTo(output);
     }
@@ -2332,13 +2332,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       pb::ExtendableMessage<ComplexOptionType1, ComplexOptionType1.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasFoo) {
-        output.WriteInt32(1, Foo);
+        output.WriteInt32(1, "foo", Foo);
       }
       if (HasFoo2) {
-        output.WriteInt32(2, Foo2);
+        output.WriteInt32(2, "foo2", Foo2);
       }
       if (HasFoo3) {
-        output.WriteInt32(3, Foo3);
+        output.WriteInt32(3, "foo3", Foo3);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -2650,7 +2650,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasWaldo) {
-            output.WriteInt32(1, Waldo);
+            output.WriteInt32(1, "waldo", Waldo);
           }
           UnknownFields.WriteTo(output);
         }
@@ -2874,13 +2874,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       pb::ExtendableMessage<ComplexOptionType2, ComplexOptionType2.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasBar) {
-        output.WriteMessage(1, Bar);
+        output.WriteMessage(1, "bar", Bar);
       }
       if (HasBaz) {
-        output.WriteInt32(2, Baz);
+        output.WriteInt32(2, "baz", Baz);
       }
       if (HasFred) {
-        output.WriteMessage(3, Fred);
+        output.WriteMessage(3, "fred", Fred);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -3236,7 +3236,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasPlugh) {
-            output.WriteInt32(3, Plugh);
+            output.WriteInt32(3, "plugh", Plugh);
           }
           UnknownFields.WriteTo(output);
         }
@@ -3445,10 +3445,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasQux) {
-        output.WriteInt32(1, Qux);
+        output.WriteInt32(1, "qux", Qux);
       }
       if (HasComplexOptionType5) {
-        output.WriteGroup(2, ComplexOptionType5);
+        output.WriteGroup(2, "complexoptiontype5", ComplexOptionType5);
       }
       UnknownFields.WriteTo(output);
     }
@@ -3720,7 +3720,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasXyzzy) {
-        output.WriteInt32(7593951, Xyzzy);
+        output.WriteInt32(7593951, "xyzzy", Xyzzy);
       }
       UnknownFields.WriteTo(output);
     }

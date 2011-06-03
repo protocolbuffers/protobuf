@@ -582,129 +582,127 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
-        output.WriteString(1, Field1);
+        output.WriteString(1, "field1", Field1);
       }
       if (HasField2) {
-        output.WriteInt32(2, Field2);
+        output.WriteInt32(2, "field2", Field2);
       }
       if (HasField3) {
-        output.WriteInt32(3, Field3);
+        output.WriteInt32(3, "field3", Field3);
       }
       if (HasField4) {
-        output.WriteString(4, Field4);
+        output.WriteString(4, "field4", Field4);
       }
       if (field5_.Count > 0) {
-        foreach (ulong element in field5_) {
-          output.WriteFixed64(5, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed64, 5, "field5", field5_);
       }
       if (HasField6) {
-        output.WriteInt32(6, Field6);
+        output.WriteInt32(6, "field6", Field6);
       }
       if (HasField7) {
-        output.WriteString(7, Field7);
+        output.WriteString(7, "field7", Field7);
       }
       if (HasField9) {
-        output.WriteString(9, Field9);
+        output.WriteString(9, "field9", Field9);
       }
       if (HasField12) {
-        output.WriteBool(12, Field12);
+        output.WriteBool(12, "field12", Field12);
       }
       if (HasField13) {
-        output.WriteBool(13, Field13);
+        output.WriteBool(13, "field13", Field13);
       }
       if (HasField14) {
-        output.WriteBool(14, Field14);
+        output.WriteBool(14, "field14", Field14);
       }
       if (HasField15) {
-        output.WriteMessage(15, Field15);
+        output.WriteMessage(15, "field15", Field15);
       }
       if (HasField16) {
-        output.WriteInt32(16, Field16);
+        output.WriteInt32(16, "field16", Field16);
       }
       if (HasField17) {
-        output.WriteBool(17, Field17);
+        output.WriteBool(17, "field17", Field17);
       }
       if (HasField18) {
-        output.WriteString(18, Field18);
+        output.WriteString(18, "field18", Field18);
       }
       if (HasField22) {
-        output.WriteInt64(22, Field22);
+        output.WriteInt64(22, "field22", Field22);
       }
       if (HasField23) {
-        output.WriteInt32(23, Field23);
+        output.WriteInt32(23, "field23", Field23);
       }
       if (HasField24) {
-        output.WriteBool(24, Field24);
+        output.WriteBool(24, "field24", Field24);
       }
       if (HasField25) {
-        output.WriteInt32(25, Field25);
+        output.WriteInt32(25, "field25", Field25);
       }
       if (HasField29) {
-        output.WriteInt32(29, Field29);
+        output.WriteInt32(29, "field29", Field29);
       }
       if (HasField30) {
-        output.WriteBool(30, Field30);
+        output.WriteBool(30, "field30", Field30);
       }
       if (HasField59) {
-        output.WriteBool(59, Field59);
+        output.WriteBool(59, "field59", Field59);
       }
       if (HasField60) {
-        output.WriteInt32(60, Field60);
+        output.WriteInt32(60, "field60", Field60);
       }
       if (HasField67) {
-        output.WriteInt32(67, Field67);
+        output.WriteInt32(67, "field67", Field67);
       }
       if (HasField68) {
-        output.WriteInt32(68, Field68);
+        output.WriteInt32(68, "field68", Field68);
       }
       if (HasField78) {
-        output.WriteBool(78, Field78);
+        output.WriteBool(78, "field78", Field78);
       }
       if (HasField80) {
-        output.WriteBool(80, Field80);
+        output.WriteBool(80, "field80", Field80);
       }
       if (HasField81) {
-        output.WriteBool(81, Field81);
+        output.WriteBool(81, "field81", Field81);
       }
       if (HasField100) {
-        output.WriteInt32(100, Field100);
+        output.WriteInt32(100, "field100", Field100);
       }
       if (HasField101) {
-        output.WriteInt32(101, Field101);
+        output.WriteInt32(101, "field101", Field101);
       }
       if (HasField102) {
-        output.WriteString(102, Field102);
+        output.WriteString(102, "field102", Field102);
       }
       if (HasField103) {
-        output.WriteString(103, Field103);
+        output.WriteString(103, "field103", Field103);
       }
       if (HasField104) {
-        output.WriteInt32(104, Field104);
+        output.WriteInt32(104, "field104", Field104);
       }
       if (HasField128) {
-        output.WriteInt32(128, Field128);
+        output.WriteInt32(128, "field128", Field128);
       }
       if (HasField129) {
-        output.WriteString(129, Field129);
+        output.WriteString(129, "field129", Field129);
       }
       if (HasField130) {
-        output.WriteInt32(130, Field130);
+        output.WriteInt32(130, "field130", Field130);
       }
       if (HasField131) {
-        output.WriteInt32(131, Field131);
+        output.WriteInt32(131, "field131", Field131);
       }
       if (HasField150) {
-        output.WriteInt32(150, Field150);
+        output.WriteInt32(150, "field150", Field150);
       }
       if (HasField271) {
-        output.WriteInt32(271, Field271);
+        output.WriteInt32(271, "field271", Field271);
       }
       if (HasField272) {
-        output.WriteInt32(272, Field272);
+        output.WriteInt32(272, "field272", Field272);
       }
       if (HasField280) {
-        output.WriteInt32(280, Field280);
+        output.WriteInt32(280, "field280", Field280);
       }
       UnknownFields.WriteTo(output);
     }
@@ -2287,64 +2285,64 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
-        output.WriteInt32(1, Field1);
+        output.WriteInt32(1, "field1", Field1);
       }
       if (HasField2) {
-        output.WriteInt32(2, Field2);
+        output.WriteInt32(2, "field2", Field2);
       }
       if (HasField3) {
-        output.WriteInt32(3, Field3);
+        output.WriteInt32(3, "field3", Field3);
       }
       if (HasField12) {
-        output.WriteBool(12, Field12);
+        output.WriteBool(12, "field12", Field12);
       }
       if (HasField13) {
-        output.WriteInt64(13, Field13);
+        output.WriteInt64(13, "field13", Field13);
       }
       if (HasField14) {
-        output.WriteInt64(14, Field14);
+        output.WriteInt64(14, "field14", Field14);
       }
       if (HasField15) {
-        output.WriteString(15, Field15);
+        output.WriteString(15, "field15", Field15);
       }
       if (HasField16) {
-        output.WriteInt32(16, Field16);
+        output.WriteInt32(16, "field16", Field16);
       }
       if (HasField19) {
-        output.WriteInt32(19, Field19);
+        output.WriteInt32(19, "field19", Field19);
       }
       if (HasField20) {
-        output.WriteBool(20, Field20);
+        output.WriteBool(20, "field20", Field20);
       }
       if (HasField21) {
-        output.WriteFixed64(21, Field21);
+        output.WriteFixed64(21, "field21", Field21);
       }
       if (HasField22) {
-        output.WriteInt32(22, Field22);
+        output.WriteInt32(22, "field22", Field22);
       }
       if (HasField23) {
-        output.WriteBool(23, Field23);
+        output.WriteBool(23, "field23", Field23);
       }
       if (HasField28) {
-        output.WriteBool(28, Field28);
+        output.WriteBool(28, "field28", Field28);
       }
       if (HasField203) {
-        output.WriteFixed32(203, Field203);
+        output.WriteFixed32(203, "field203", Field203);
       }
       if (HasField204) {
-        output.WriteInt32(204, Field204);
+        output.WriteInt32(204, "field204", Field204);
       }
       if (HasField205) {
-        output.WriteString(205, Field205);
+        output.WriteString(205, "field205", Field205);
       }
       if (HasField206) {
-        output.WriteBool(206, Field206);
+        output.WriteBool(206, "field206", Field206);
       }
       if (HasField207) {
-        output.WriteUInt64(207, Field207);
+        output.WriteUInt64(207, "field207", Field207);
       }
       if (HasField300) {
-        output.WriteUInt64(300, Field300);
+        output.WriteUInt64(300, "field300", Field300);
       }
       UnknownFields.WriteTo(output);
     }
@@ -3296,58 +3294,52 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasField5) {
-            output.WriteInt32(5, Field5);
+            output.WriteInt32(5, "field5", Field5);
           }
           if (HasField11) {
-            output.WriteFloat(11, Field11);
+            output.WriteFloat(11, "field11", Field11);
           }
           if (HasField12) {
-            output.WriteString(12, Field12);
+            output.WriteString(12, "field12", Field12);
           }
           if (HasField13) {
-            output.WriteString(13, Field13);
+            output.WriteString(13, "field13", Field13);
           }
           if (field14_.Count > 0) {
-            foreach (string element in field14_) {
-              output.WriteString(14, element);
-            }
+            output.WriteArray(pbd::FieldType.String, 14, "field14", field14_);
           }
           if (HasField15) {
-            output.WriteUInt64(15, Field15);
+            output.WriteUInt64(15, "field15", Field15);
           }
           if (HasField16) {
-            output.WriteString(16, Field16);
+            output.WriteString(16, "field16", Field16);
           }
           if (HasField20) {
-            output.WriteInt32(20, Field20);
+            output.WriteInt32(20, "field20", Field20);
           }
           if (field22_.Count > 0) {
-            foreach (string element in field22_) {
-              output.WriteString(22, element);
-            }
+            output.WriteArray(pbd::FieldType.String, 22, "field22", field22_);
           }
           if (HasField24) {
-            output.WriteString(24, Field24);
+            output.WriteString(24, "field24", Field24);
           }
           if (HasField26) {
-            output.WriteFloat(26, Field26);
+            output.WriteFloat(26, "field26", Field26);
           }
           if (HasField27) {
-            output.WriteString(27, Field27);
+            output.WriteString(27, "field27", Field27);
           }
           if (HasField28) {
-            output.WriteInt32(28, Field28);
+            output.WriteInt32(28, "field28", Field28);
           }
           if (HasField29) {
-            output.WriteString(29, Field29);
+            output.WriteString(29, "field29", Field29);
           }
           if (HasField31) {
-            output.WriteMessage(31, Field31);
+            output.WriteMessage(31, "field31", Field31);
           }
           if (field73_.Count > 0) {
-            foreach (int element in field73_) {
-              output.WriteInt32(73, element);
-            }
+            output.WriteArray(pbd::FieldType.Int32, 73, "field73", field73_);
           }
           UnknownFields.WriteTo(output);
         }
@@ -4341,100 +4333,94 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
-        output.WriteString(1, Field1);
+        output.WriteString(1, "field1", Field1);
       }
       if (HasField2) {
-        output.WriteBytes(2, Field2);
+        output.WriteBytes(2, "field2", Field2);
       }
       if (HasField3) {
-        output.WriteInt64(3, Field3);
+        output.WriteInt64(3, "field3", Field3);
       }
       if (HasField4) {
-        output.WriteInt64(4, Field4);
+        output.WriteInt64(4, "field4", Field4);
       }
       if (HasField6) {
-        output.WriteString(6, Field6);
+        output.WriteString(6, "field6", Field6);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1 element in Group1List) {
-        output.WriteGroup(10, element);
+      if (group1_.Count > 0) {
+        output.WriteGroupArray(10, "group1", group1_);
       }
       if (HasField21) {
-        output.WriteInt32(21, Field21);
+        output.WriteInt32(21, "field21", Field21);
       }
       if (HasField25) {
-        output.WriteFloat(25, Field25);
+        output.WriteFloat(25, "field25", Field25);
       }
       if (HasField30) {
-        output.WriteInt64(30, Field30);
+        output.WriteInt64(30, "field30", Field30);
       }
       if (HasField63) {
-        output.WriteInt32(63, Field63);
+        output.WriteInt32(63, "field63", Field63);
       }
       if (HasField71) {
-        output.WriteInt32(71, Field71);
+        output.WriteInt32(71, "field71", Field71);
       }
       if (HasField75) {
-        output.WriteBool(75, Field75);
+        output.WriteBool(75, "field75", Field75);
       }
       if (HasField109) {
-        output.WriteInt32(109, Field109);
+        output.WriteInt32(109, "field109", Field109);
       }
       if (field127_.Count > 0) {
-        foreach (string element in field127_) {
-          output.WriteString(127, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 127, "field127", field127_);
       }
       if (field128_.Count > 0) {
-        foreach (string element in field128_) {
-          output.WriteString(128, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 128, "field128", field128_);
       }
       if (HasField129) {
-        output.WriteInt32(129, Field129);
+        output.WriteInt32(129, "field129", Field129);
       }
       if (field130_.Count > 0) {
-        foreach (long element in field130_) {
-          output.WriteInt64(130, element);
-        }
+        output.WriteArray(pbd::FieldType.Int64, 130, "field130", field130_);
       }
       if (HasField131) {
-        output.WriteInt64(131, Field131);
+        output.WriteInt64(131, "field131", Field131);
       }
       if (HasField205) {
-        output.WriteBool(205, Field205);
+        output.WriteBool(205, "field205", Field205);
       }
       if (HasField206) {
-        output.WriteBool(206, Field206);
+        output.WriteBool(206, "field206", Field206);
       }
       if (HasField210) {
-        output.WriteInt32(210, Field210);
+        output.WriteInt32(210, "field210", Field210);
       }
       if (HasField211) {
-        output.WriteInt32(211, Field211);
+        output.WriteInt32(211, "field211", Field211);
       }
       if (HasField212) {
-        output.WriteInt32(212, Field212);
+        output.WriteInt32(212, "field212", Field212);
       }
       if (HasField213) {
-        output.WriteInt32(213, Field213);
+        output.WriteInt32(213, "field213", Field213);
       }
       if (HasField216) {
-        output.WriteInt32(216, Field216);
+        output.WriteInt32(216, "field216", Field216);
       }
       if (HasField217) {
-        output.WriteInt32(217, Field217);
+        output.WriteInt32(217, "field217", Field217);
       }
       if (HasField218) {
-        output.WriteInt32(218, Field218);
+        output.WriteInt32(218, "field218", Field218);
       }
       if (HasField220) {
-        output.WriteInt32(220, Field220);
+        output.WriteInt32(220, "field220", Field220);
       }
       if (HasField221) {
-        output.WriteInt32(221, Field221);
+        output.WriteInt32(221, "field221", Field221);
       }
       if (HasField222) {
-        output.WriteFloat(222, Field222);
+        output.WriteFloat(222, "field222", Field222);
       }
       UnknownFields.WriteTo(output);
     }
@@ -5639,37 +5625,37 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
-        output.WriteFloat(1, Field1);
+        output.WriteFloat(1, "field1", Field1);
       }
       if (HasField2) {
-        output.WriteFloat(2, Field2);
+        output.WriteFloat(2, "field2", Field2);
       }
       if (HasField3) {
-        output.WriteFloat(3, Field3);
+        output.WriteFloat(3, "field3", Field3);
       }
       if (HasField4) {
-        output.WriteBool(4, Field4);
+        output.WriteBool(4, "field4", Field4);
       }
       if (HasField5) {
-        output.WriteBool(5, Field5);
+        output.WriteBool(5, "field5", Field5);
       }
       if (HasField6) {
-        output.WriteBool(6, Field6);
+        output.WriteBool(6, "field6", Field6);
       }
       if (HasField7) {
-        output.WriteBool(7, Field7);
+        output.WriteBool(7, "field7", Field7);
       }
       if (HasField8) {
-        output.WriteFloat(8, Field8);
+        output.WriteFloat(8, "field8", Field8);
       }
       if (HasField9) {
-        output.WriteBool(9, Field9);
+        output.WriteBool(9, "field9", Field9);
       }
       if (HasField10) {
-        output.WriteFloat(10, Field10);
+        output.WriteFloat(10, "field10", Field10);
       }
       if (HasField11) {
-        output.WriteInt64(11, Field11);
+        output.WriteInt64(11, "field11", Field11);
       }
       UnknownFields.WriteTo(output);
     }

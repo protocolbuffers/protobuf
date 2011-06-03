@@ -470,7 +470,7 @@ namespace Google.ProtocolBuffers
         {
             if (field.IsExtension && field.MessageSetWireFormat)
             {
-                output.WriteMessageSetExtension(field.FieldNumber, (IMessageLite) value);
+                output.WriteMessageSetExtension(field.FieldNumber, field.Name, (IMessageLite)value);
             }
             else
             {
@@ -497,13 +497,13 @@ namespace Google.ProtocolBuffers
                     {
                         foreach (object element in valueList)
                         {
-                            output.WriteField(field.FieldType, field.FieldNumber, element);
+                            output.WriteField(field.FieldType, field.FieldNumber, field.Name, element);
                         }
                     }
                 }
                 else
                 {
-                    output.WriteField(field.FieldType, field.FieldNumber, value);
+                    output.WriteField(field.FieldType, field.FieldNumber, field.Name, value);
                 }
             }
         }

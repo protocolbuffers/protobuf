@@ -123,9 +123,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (criteria_.Count > 0) {
-        foreach (string element in criteria_) {
-          output.WriteString(1, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -403,10 +401,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasUrl) {
-            output.WriteString(1, Url);
+            output.WriteString(1, "url", Url);
           }
           if (HasName) {
-            output.WriteString(2, Name);
+            output.WriteString(2, "name", Name);
           }
           UnknownFields.WriteTo(output);
         }
@@ -639,8 +637,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
-      foreach (global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem element in ResultsList) {
-        output.WriteMessage(1, element);
+      if (results_.Count > 0) {
+        output.WriteMessageArray(1, "results", results_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -898,12 +896,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (criteria_.Count > 0) {
-        foreach (string element in criteria_) {
-          output.WriteString(1, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);
       }
       if (HasPreviousResults) {
-        output.WriteMessage(2, PreviousResults);
+        output.WriteMessage(2, "previous_results", PreviousResults);
       }
       UnknownFields.WriteTo(output);
     }

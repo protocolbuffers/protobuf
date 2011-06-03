@@ -118,13 +118,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasNormal) {
-        output.WriteString(1, Normal);
+        output.WriteString(1, "normal", Normal);
       }
       if (HasOptionsMessage_) {
-        output.WriteString(2, OptionsMessage_);
+        output.WriteString(2, "options_message", OptionsMessage_);
       }
       if (HasCustomName) {
-        output.WriteString(3, CustomName);
+        output.WriteString(3, "customized", CustomName);
       }
       UnknownFields.WriteTo(output);
     }

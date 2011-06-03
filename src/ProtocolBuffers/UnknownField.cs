@@ -60,6 +60,7 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public sealed class UnknownField
     {
+        public const string UnknownFieldName = "unknown_field";
         private static readonly UnknownField defaultInstance = CreateBuilder().Build();
         private readonly ReadOnlyCollection<ulong> varintList;
         private readonly ReadOnlyCollection<uint> fixed32List;
@@ -177,24 +178,24 @@ namespace Google.ProtocolBuffers
         {
             foreach (ulong value in varintList)
             {
-                output.WriteUInt64(fieldNumber, value);
+                output.WriteUInt64(fieldNumber, UnknownFieldName, value);
             }
             foreach (uint value in fixed32List)
             {
-                output.WriteFixed32(fieldNumber, value);
+                output.WriteFixed32(fieldNumber, UnknownFieldName, value);
             }
             foreach (ulong value in fixed64List)
             {
-                output.WriteFixed64(fieldNumber, value);
+                output.WriteFixed64(fieldNumber, UnknownFieldName, value);
             }
             foreach (ByteString value in lengthDelimitedList)
             {
-                output.WriteBytes(fieldNumber, value);
+                output.WriteBytes(fieldNumber, UnknownFieldName, value);
             }
             foreach (UnknownFieldSet value in groupList)
             {
 #pragma warning disable 0612
-                output.WriteUnknownGroup(fieldNumber, value);
+                output.WriteUnknownGroup(fieldNumber, UnknownFieldName, value);
 #pragma warning restore 0612
             }
         }

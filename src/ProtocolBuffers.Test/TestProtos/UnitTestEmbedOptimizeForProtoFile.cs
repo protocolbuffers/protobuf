@@ -120,10 +120,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasOptionalMessage) {
-        output.WriteMessage(1, OptionalMessage);
+        output.WriteMessage(1, "optional_message", OptionalMessage);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize element in RepeatedMessageList) {
-        output.WriteMessage(2, element);
+      if (repeatedMessage_.Count > 0) {
+        output.WriteMessageArray(2, "repeated_message", repeatedMessage_);
       }
       UnknownFields.WriteTo(output);
     }

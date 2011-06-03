@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasD) {
-        output.WriteInt32(1, D);
+        output.WriteInt32(1, "d", D);
       }
     }
     

@@ -1106,7 +1106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasBb) {
-            output.WriteInt32(1, Bb);
+            output.WriteInt32(1, "bb", Bb);
           }
           UnknownFields.WriteTo(output);
         }
@@ -1327,7 +1327,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasA) {
-            output.WriteInt32(17, A);
+            output.WriteInt32(17, "a", A);
           }
           UnknownFields.WriteTo(output);
         }
@@ -1548,7 +1548,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasA) {
-            output.WriteInt32(47, A);
+            output.WriteInt32(47, "a", A);
           }
           UnknownFields.WriteTo(output);
         }
@@ -2481,248 +2481,208 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasOptionalInt32) {
-        output.WriteInt32(1, OptionalInt32);
+        output.WriteInt32(1, "optional_int32", OptionalInt32);
       }
       if (HasOptionalInt64) {
-        output.WriteInt64(2, OptionalInt64);
+        output.WriteInt64(2, "optional_int64", OptionalInt64);
       }
       if (HasOptionalUint32) {
-        output.WriteUInt32(3, OptionalUint32);
+        output.WriteUInt32(3, "optional_uint32", OptionalUint32);
       }
       if (HasOptionalUint64) {
-        output.WriteUInt64(4, OptionalUint64);
+        output.WriteUInt64(4, "optional_uint64", OptionalUint64);
       }
       if (HasOptionalSint32) {
-        output.WriteSInt32(5, OptionalSint32);
+        output.WriteSInt32(5, "optional_sint32", OptionalSint32);
       }
       if (HasOptionalSint64) {
-        output.WriteSInt64(6, OptionalSint64);
+        output.WriteSInt64(6, "optional_sint64", OptionalSint64);
       }
       if (HasOptionalFixed32) {
-        output.WriteFixed32(7, OptionalFixed32);
+        output.WriteFixed32(7, "optional_fixed32", OptionalFixed32);
       }
       if (HasOptionalFixed64) {
-        output.WriteFixed64(8, OptionalFixed64);
+        output.WriteFixed64(8, "optional_fixed64", OptionalFixed64);
       }
       if (HasOptionalSfixed32) {
-        output.WriteSFixed32(9, OptionalSfixed32);
+        output.WriteSFixed32(9, "optional_sfixed32", OptionalSfixed32);
       }
       if (HasOptionalSfixed64) {
-        output.WriteSFixed64(10, OptionalSfixed64);
+        output.WriteSFixed64(10, "optional_sfixed64", OptionalSfixed64);
       }
       if (HasOptionalFloat) {
-        output.WriteFloat(11, OptionalFloat);
+        output.WriteFloat(11, "optional_float", OptionalFloat);
       }
       if (HasOptionalDouble) {
-        output.WriteDouble(12, OptionalDouble);
+        output.WriteDouble(12, "optional_double", OptionalDouble);
       }
       if (HasOptionalBool) {
-        output.WriteBool(13, OptionalBool);
+        output.WriteBool(13, "optional_bool", OptionalBool);
       }
       if (HasOptionalString) {
-        output.WriteString(14, OptionalString);
+        output.WriteString(14, "optional_string", OptionalString);
       }
       if (HasOptionalBytes) {
-        output.WriteBytes(15, OptionalBytes);
+        output.WriteBytes(15, "optional_bytes", OptionalBytes);
       }
       if (HasOptionalGroup) {
-        output.WriteGroup(16, OptionalGroup);
+        output.WriteGroup(16, "optionalgroup", OptionalGroup);
       }
       if (HasOptionalNestedMessage) {
-        output.WriteMessage(18, OptionalNestedMessage);
+        output.WriteMessage(18, "optional_nested_message", OptionalNestedMessage);
       }
       if (HasOptionalForeignMessage) {
-        output.WriteMessage(19, OptionalForeignMessage);
+        output.WriteMessage(19, "optional_foreign_message", OptionalForeignMessage);
       }
       if (HasOptionalImportMessage) {
-        output.WriteMessage(20, OptionalImportMessage);
+        output.WriteMessage(20, "optional_import_message", OptionalImportMessage);
       }
       if (HasOptionalNestedEnum) {
-        output.WriteEnum(21, (int) OptionalNestedEnum);
+        output.WriteEnum(21, "optional_nested_enum", (int) OptionalNestedEnum, OptionalNestedEnum.ToString());
       }
       if (HasOptionalForeignEnum) {
-        output.WriteEnum(22, (int) OptionalForeignEnum);
+        output.WriteEnum(22, "optional_foreign_enum", (int) OptionalForeignEnum, OptionalForeignEnum.ToString());
       }
       if (HasOptionalImportEnum) {
-        output.WriteEnum(23, (int) OptionalImportEnum);
+        output.WriteEnum(23, "optional_import_enum", (int) OptionalImportEnum, OptionalImportEnum.ToString());
       }
       if (HasOptionalStringPiece) {
-        output.WriteString(24, OptionalStringPiece);
+        output.WriteString(24, "optional_string_piece", OptionalStringPiece);
       }
       if (HasOptionalCord) {
-        output.WriteString(25, OptionalCord);
+        output.WriteString(25, "optional_cord", OptionalCord);
       }
       if (repeatedInt32_.Count > 0) {
-        foreach (int element in repeatedInt32_) {
-          output.WriteInt32(31, element);
-        }
+        output.WriteArray(pbd::FieldType.Int32, 31, "repeated_int32", repeatedInt32_);
       }
       if (repeatedInt64_.Count > 0) {
-        foreach (long element in repeatedInt64_) {
-          output.WriteInt64(32, element);
-        }
+        output.WriteArray(pbd::FieldType.Int64, 32, "repeated_int64", repeatedInt64_);
       }
       if (repeatedUint32_.Count > 0) {
-        foreach (uint element in repeatedUint32_) {
-          output.WriteUInt32(33, element);
-        }
+        output.WriteArray(pbd::FieldType.UInt32, 33, "repeated_uint32", repeatedUint32_);
       }
       if (repeatedUint64_.Count > 0) {
-        foreach (ulong element in repeatedUint64_) {
-          output.WriteUInt64(34, element);
-        }
+        output.WriteArray(pbd::FieldType.UInt64, 34, "repeated_uint64", repeatedUint64_);
       }
       if (repeatedSint32_.Count > 0) {
-        foreach (int element in repeatedSint32_) {
-          output.WriteSInt32(35, element);
-        }
+        output.WriteArray(pbd::FieldType.SInt32, 35, "repeated_sint32", repeatedSint32_);
       }
       if (repeatedSint64_.Count > 0) {
-        foreach (long element in repeatedSint64_) {
-          output.WriteSInt64(36, element);
-        }
+        output.WriteArray(pbd::FieldType.SInt64, 36, "repeated_sint64", repeatedSint64_);
       }
       if (repeatedFixed32_.Count > 0) {
-        foreach (uint element in repeatedFixed32_) {
-          output.WriteFixed32(37, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed32, 37, "repeated_fixed32", repeatedFixed32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        foreach (ulong element in repeatedFixed64_) {
-          output.WriteFixed64(38, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed64, 38, "repeated_fixed64", repeatedFixed64_);
       }
       if (repeatedSfixed32_.Count > 0) {
-        foreach (int element in repeatedSfixed32_) {
-          output.WriteSFixed32(39, element);
-        }
+        output.WriteArray(pbd::FieldType.SFixed32, 39, "repeated_sfixed32", repeatedSfixed32_);
       }
       if (repeatedSfixed64_.Count > 0) {
-        foreach (long element in repeatedSfixed64_) {
-          output.WriteSFixed64(40, element);
-        }
+        output.WriteArray(pbd::FieldType.SFixed64, 40, "repeated_sfixed64", repeatedSfixed64_);
       }
       if (repeatedFloat_.Count > 0) {
-        foreach (float element in repeatedFloat_) {
-          output.WriteFloat(41, element);
-        }
+        output.WriteArray(pbd::FieldType.Float, 41, "repeated_float", repeatedFloat_);
       }
       if (repeatedDouble_.Count > 0) {
-        foreach (double element in repeatedDouble_) {
-          output.WriteDouble(42, element);
-        }
+        output.WriteArray(pbd::FieldType.Double, 42, "repeated_double", repeatedDouble_);
       }
       if (repeatedBool_.Count > 0) {
-        foreach (bool element in repeatedBool_) {
-          output.WriteBool(43, element);
-        }
+        output.WriteArray(pbd::FieldType.Bool, 43, "repeated_bool", repeatedBool_);
       }
       if (repeatedString_.Count > 0) {
-        foreach (string element in repeatedString_) {
-          output.WriteString(44, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 44, "repeated_string", repeatedString_);
       }
       if (repeatedBytes_.Count > 0) {
-        foreach (pb::ByteString element in repeatedBytes_) {
-          output.WriteBytes(45, element);
-        }
+        output.WriteArray(pbd::FieldType.Bytes, 45, "repeated_bytes", repeatedBytes_);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup element in RepeatedGroupList) {
-        output.WriteGroup(46, element);
+      if (repeatedGroup_.Count > 0) {
+        output.WriteGroupArray(46, "repeatedgroup", repeatedGroup_);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage element in RepeatedNestedMessageList) {
-        output.WriteMessage(48, element);
+      if (repeatedNestedMessage_.Count > 0) {
+        output.WriteMessageArray(48, "repeated_nested_message", repeatedNestedMessage_);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in RepeatedForeignMessageList) {
-        output.WriteMessage(49, element);
+      if (repeatedForeignMessage_.Count > 0) {
+        output.WriteMessageArray(49, "repeated_foreign_message", repeatedForeignMessage_);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ImportMessage element in RepeatedImportMessageList) {
-        output.WriteMessage(50, element);
+      if (repeatedImportMessage_.Count > 0) {
+        output.WriteMessageArray(50, "repeated_import_message", repeatedImportMessage_);
       }
       if (repeatedNestedEnum_.Count > 0) {
-        foreach (int element in repeatedNestedEnum_) {
-          output.WriteEnum(51, element);
-        }
+        output.WriteArray(pbd::FieldType.Enum, 51, "repeated_nested_enum", repeatedNestedEnum_);
       }
       if (repeatedForeignEnum_.Count > 0) {
-        foreach (int element in repeatedForeignEnum_) {
-          output.WriteEnum(52, element);
-        }
+        output.WriteArray(pbd::FieldType.Enum, 52, "repeated_foreign_enum", repeatedForeignEnum_);
       }
       if (repeatedImportEnum_.Count > 0) {
-        foreach (int element in repeatedImportEnum_) {
-          output.WriteEnum(53, element);
-        }
+        output.WriteArray(pbd::FieldType.Enum, 53, "repeated_import_enum", repeatedImportEnum_);
       }
       if (repeatedStringPiece_.Count > 0) {
-        foreach (string element in repeatedStringPiece_) {
-          output.WriteString(54, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 54, "repeated_string_piece", repeatedStringPiece_);
       }
       if (repeatedCord_.Count > 0) {
-        foreach (string element in repeatedCord_) {
-          output.WriteString(55, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 55, "repeated_cord", repeatedCord_);
       }
       if (HasDefaultInt32) {
-        output.WriteInt32(61, DefaultInt32);
+        output.WriteInt32(61, "default_int32", DefaultInt32);
       }
       if (HasDefaultInt64) {
-        output.WriteInt64(62, DefaultInt64);
+        output.WriteInt64(62, "default_int64", DefaultInt64);
       }
       if (HasDefaultUint32) {
-        output.WriteUInt32(63, DefaultUint32);
+        output.WriteUInt32(63, "default_uint32", DefaultUint32);
       }
       if (HasDefaultUint64) {
-        output.WriteUInt64(64, DefaultUint64);
+        output.WriteUInt64(64, "default_uint64", DefaultUint64);
       }
       if (HasDefaultSint32) {
-        output.WriteSInt32(65, DefaultSint32);
+        output.WriteSInt32(65, "default_sint32", DefaultSint32);
       }
       if (HasDefaultSint64) {
-        output.WriteSInt64(66, DefaultSint64);
+        output.WriteSInt64(66, "default_sint64", DefaultSint64);
       }
       if (HasDefaultFixed32) {
-        output.WriteFixed32(67, DefaultFixed32);
+        output.WriteFixed32(67, "default_fixed32", DefaultFixed32);
       }
       if (HasDefaultFixed64) {
-        output.WriteFixed64(68, DefaultFixed64);
+        output.WriteFixed64(68, "default_fixed64", DefaultFixed64);
       }
       if (HasDefaultSfixed32) {
-        output.WriteSFixed32(69, DefaultSfixed32);
+        output.WriteSFixed32(69, "default_sfixed32", DefaultSfixed32);
       }
       if (HasDefaultSfixed64) {
-        output.WriteSFixed64(70, DefaultSfixed64);
+        output.WriteSFixed64(70, "default_sfixed64", DefaultSfixed64);
       }
       if (HasDefaultFloat) {
-        output.WriteFloat(71, DefaultFloat);
+        output.WriteFloat(71, "default_float", DefaultFloat);
       }
       if (HasDefaultDouble) {
-        output.WriteDouble(72, DefaultDouble);
+        output.WriteDouble(72, "default_double", DefaultDouble);
       }
       if (HasDefaultBool) {
-        output.WriteBool(73, DefaultBool);
+        output.WriteBool(73, "default_bool", DefaultBool);
       }
       if (HasDefaultString) {
-        output.WriteString(74, DefaultString);
+        output.WriteString(74, "default_string", DefaultString);
       }
       if (HasDefaultBytes) {
-        output.WriteBytes(75, DefaultBytes);
+        output.WriteBytes(75, "default_bytes", DefaultBytes);
       }
       if (HasDefaultNestedEnum) {
-        output.WriteEnum(81, (int) DefaultNestedEnum);
+        output.WriteEnum(81, "default_nested_enum", (int) DefaultNestedEnum, DefaultNestedEnum.ToString());
       }
       if (HasDefaultForeignEnum) {
-        output.WriteEnum(82, (int) DefaultForeignEnum);
+        output.WriteEnum(82, "default_foreign_enum", (int) DefaultForeignEnum, DefaultForeignEnum.ToString());
       }
       if (HasDefaultImportEnum) {
-        output.WriteEnum(83, (int) DefaultImportEnum);
+        output.WriteEnum(83, "default_import_enum", (int) DefaultImportEnum, DefaultImportEnum.ToString());
       }
       if (HasDefaultStringPiece) {
-        output.WriteString(84, DefaultStringPiece);
+        output.WriteString(84, "default_string_piece", DefaultStringPiece);
       }
       if (HasDefaultCord) {
-        output.WriteString(85, DefaultCord);
+        output.WriteString(85, "default_cord", DefaultCord);
       }
       UnknownFields.WriteTo(output);
     }
@@ -5399,7 +5359,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasDeprecatedInt32) {
-        output.WriteInt32(1, DeprecatedInt32);
+        output.WriteInt32(1, "deprecated_int32", DeprecatedInt32);
       }
       UnknownFields.WriteTo(output);
     }
@@ -5620,7 +5580,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasC) {
-        output.WriteInt32(1, C);
+        output.WriteInt32(1, "c", C);
       }
       UnknownFields.WriteTo(output);
     }
@@ -6026,7 +5986,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteInt32(17, A);
+        output.WriteInt32(17, "a", A);
       }
       UnknownFields.WriteTo(output);
     }
@@ -6247,7 +6207,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteInt32(47, A);
+        output.WriteInt32(47, "a", A);
       }
       UnknownFields.WriteTo(output);
     }
@@ -6977,103 +6937,103 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteInt32(1, A);
+        output.WriteInt32(1, "a", A);
       }
       if (HasDummy2) {
-        output.WriteInt32(2, Dummy2);
+        output.WriteInt32(2, "dummy2", Dummy2);
       }
       if (HasB) {
-        output.WriteInt32(3, B);
+        output.WriteInt32(3, "b", B);
       }
       if (HasDummy4) {
-        output.WriteInt32(4, Dummy4);
+        output.WriteInt32(4, "dummy4", Dummy4);
       }
       if (HasDummy5) {
-        output.WriteInt32(5, Dummy5);
+        output.WriteInt32(5, "dummy5", Dummy5);
       }
       if (HasDummy6) {
-        output.WriteInt32(6, Dummy6);
+        output.WriteInt32(6, "dummy6", Dummy6);
       }
       if (HasDummy7) {
-        output.WriteInt32(7, Dummy7);
+        output.WriteInt32(7, "dummy7", Dummy7);
       }
       if (HasDummy8) {
-        output.WriteInt32(8, Dummy8);
+        output.WriteInt32(8, "dummy8", Dummy8);
       }
       if (HasDummy9) {
-        output.WriteInt32(9, Dummy9);
+        output.WriteInt32(9, "dummy9", Dummy9);
       }
       if (HasDummy10) {
-        output.WriteInt32(10, Dummy10);
+        output.WriteInt32(10, "dummy10", Dummy10);
       }
       if (HasDummy11) {
-        output.WriteInt32(11, Dummy11);
+        output.WriteInt32(11, "dummy11", Dummy11);
       }
       if (HasDummy12) {
-        output.WriteInt32(12, Dummy12);
+        output.WriteInt32(12, "dummy12", Dummy12);
       }
       if (HasDummy13) {
-        output.WriteInt32(13, Dummy13);
+        output.WriteInt32(13, "dummy13", Dummy13);
       }
       if (HasDummy14) {
-        output.WriteInt32(14, Dummy14);
+        output.WriteInt32(14, "dummy14", Dummy14);
       }
       if (HasDummy15) {
-        output.WriteInt32(15, Dummy15);
+        output.WriteInt32(15, "dummy15", Dummy15);
       }
       if (HasDummy16) {
-        output.WriteInt32(16, Dummy16);
+        output.WriteInt32(16, "dummy16", Dummy16);
       }
       if (HasDummy17) {
-        output.WriteInt32(17, Dummy17);
+        output.WriteInt32(17, "dummy17", Dummy17);
       }
       if (HasDummy18) {
-        output.WriteInt32(18, Dummy18);
+        output.WriteInt32(18, "dummy18", Dummy18);
       }
       if (HasDummy19) {
-        output.WriteInt32(19, Dummy19);
+        output.WriteInt32(19, "dummy19", Dummy19);
       }
       if (HasDummy20) {
-        output.WriteInt32(20, Dummy20);
+        output.WriteInt32(20, "dummy20", Dummy20);
       }
       if (HasDummy21) {
-        output.WriteInt32(21, Dummy21);
+        output.WriteInt32(21, "dummy21", Dummy21);
       }
       if (HasDummy22) {
-        output.WriteInt32(22, Dummy22);
+        output.WriteInt32(22, "dummy22", Dummy22);
       }
       if (HasDummy23) {
-        output.WriteInt32(23, Dummy23);
+        output.WriteInt32(23, "dummy23", Dummy23);
       }
       if (HasDummy24) {
-        output.WriteInt32(24, Dummy24);
+        output.WriteInt32(24, "dummy24", Dummy24);
       }
       if (HasDummy25) {
-        output.WriteInt32(25, Dummy25);
+        output.WriteInt32(25, "dummy25", Dummy25);
       }
       if (HasDummy26) {
-        output.WriteInt32(26, Dummy26);
+        output.WriteInt32(26, "dummy26", Dummy26);
       }
       if (HasDummy27) {
-        output.WriteInt32(27, Dummy27);
+        output.WriteInt32(27, "dummy27", Dummy27);
       }
       if (HasDummy28) {
-        output.WriteInt32(28, Dummy28);
+        output.WriteInt32(28, "dummy28", Dummy28);
       }
       if (HasDummy29) {
-        output.WriteInt32(29, Dummy29);
+        output.WriteInt32(29, "dummy29", Dummy29);
       }
       if (HasDummy30) {
-        output.WriteInt32(30, Dummy30);
+        output.WriteInt32(30, "dummy30", Dummy30);
       }
       if (HasDummy31) {
-        output.WriteInt32(31, Dummy31);
+        output.WriteInt32(31, "dummy31", Dummy31);
       }
       if (HasDummy32) {
-        output.WriteInt32(32, Dummy32);
+        output.WriteInt32(32, "dummy32", Dummy32);
       }
       if (HasC) {
-        output.WriteInt32(33, C);
+        output.WriteInt32(33, "c", C);
       }
       UnknownFields.WriteTo(output);
     }
@@ -8218,13 +8178,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasOptionalMessage) {
-        output.WriteMessage(1, OptionalMessage);
+        output.WriteMessage(1, "optional_message", OptionalMessage);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestRequired element in RepeatedMessageList) {
-        output.WriteMessage(2, element);
+      if (repeatedMessage_.Count > 0) {
+        output.WriteMessageArray(2, "repeated_message", repeatedMessage_);
       }
       if (HasDummy) {
-        output.WriteInt32(3, Dummy);
+        output.WriteInt32(3, "dummy", Dummy);
       }
       UnknownFields.WriteTo(output);
     }
@@ -8547,7 +8507,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasForeignNested) {
-        output.WriteMessage(1, ForeignNested);
+        output.WriteMessage(1, "foreign_nested", ForeignNested);
       }
       UnknownFields.WriteTo(output);
     }
@@ -9353,10 +9313,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteInt32(1, A);
+        output.WriteInt32(1, "a", A);
       }
       if (HasBb) {
-        output.WriteInt32(268435455, Bb);
+        output.WriteInt32(268435455, "bb", Bb);
       }
       UnknownFields.WriteTo(output);
     }
@@ -9615,10 +9575,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteMessage(1, A);
+        output.WriteMessage(1, "a", A);
       }
       if (HasI) {
-        output.WriteInt32(2, I);
+        output.WriteInt32(2, "i", I);
       }
       UnknownFields.WriteTo(output);
     }
@@ -9890,7 +9850,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasBb) {
-        output.WriteMessage(1, Bb);
+        output.WriteMessage(1, "bb", Bb);
       }
       UnknownFields.WriteTo(output);
     }
@@ -10144,10 +10104,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteMessage(1, A);
+        output.WriteMessage(1, "a", A);
       }
       if (HasOptionalInt32) {
-        output.WriteInt32(2, OptionalInt32);
+        output.WriteInt32(2, "optional_int32", OptionalInt32);
       }
       UnknownFields.WriteTo(output);
     }
@@ -10449,7 +10409,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasA) {
-            output.WriteInt32(1, A);
+            output.WriteInt32(1, "a", A);
           }
           UnknownFields.WriteTo(output);
         }
@@ -10670,7 +10630,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasA) {
-            output.WriteInt32(1, A);
+            output.WriteInt32(1, "a", A);
           }
           UnknownFields.WriteTo(output);
         }
@@ -10889,13 +10849,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
-        output.WriteInt32(1, A);
+        output.WriteInt32(1, "a", A);
       }
       if (HasFoo) {
-        output.WriteGroup(2, Foo);
+        output.WriteGroup(2, "foo", Foo);
       }
       if (HasBar) {
-        output.WriteGroup(3, Bar);
+        output.WriteGroup(3, "bar", Bar);
       }
       UnknownFields.WriteTo(output);
     }
@@ -11262,12 +11222,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (nestedmessageRepeatedInt32_.Count > 0) {
-            foreach (int element in nestedmessageRepeatedInt32_) {
-              output.WriteInt32(1, element);
-            }
+            output.WriteArray(pbd::FieldType.Int32, 1, "nestedmessage_repeated_int32", nestedmessageRepeatedInt32_);
           }
-          foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in NestedmessageRepeatedForeignmessageList) {
-            output.WriteMessage(2, element);
+          if (nestedmessageRepeatedForeignmessage_.Count > 0) {
+            output.WriteMessageArray(2, "nestedmessage_repeated_foreignmessage", nestedmessageRepeatedForeignmessage_);
           }
           UnknownFields.WriteTo(output);
         }
@@ -11531,7 +11489,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasOptionalNestedMessage) {
-        output.WriteMessage(1, OptionalNestedMessage);
+        output.WriteMessage(1, "optional_nested_message", OptionalNestedMessage);
       }
       UnknownFields.WriteTo(output);
     }
@@ -11897,50 +11855,40 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasPrimitiveField) {
-        output.WriteInt32(1, PrimitiveField);
+        output.WriteInt32(1, "PrimitiveField", PrimitiveField);
       }
       if (HasStringField) {
-        output.WriteString(2, StringField);
+        output.WriteString(2, "StringField", StringField);
       }
       if (HasEnumField) {
-        output.WriteEnum(3, (int) EnumField);
+        output.WriteEnum(3, "EnumField", (int) EnumField, EnumField.ToString());
       }
       if (HasMessageField) {
-        output.WriteMessage(4, MessageField);
+        output.WriteMessage(4, "MessageField", MessageField);
       }
       if (HasStringPieceField) {
-        output.WriteString(5, StringPieceField);
+        output.WriteString(5, "StringPieceField", StringPieceField);
       }
       if (HasCordField) {
-        output.WriteString(6, CordField);
+        output.WriteString(6, "CordField", CordField);
       }
       if (repeatedPrimitiveField_.Count > 0) {
-        foreach (int element in repeatedPrimitiveField_) {
-          output.WriteInt32(7, element);
-        }
+        output.WriteArray(pbd::FieldType.Int32, 7, "RepeatedPrimitiveField", repeatedPrimitiveField_);
       }
       if (repeatedStringField_.Count > 0) {
-        foreach (string element in repeatedStringField_) {
-          output.WriteString(8, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 8, "RepeatedStringField", repeatedStringField_);
       }
       if (repeatedEnumField_.Count > 0) {
-        foreach (int element in repeatedEnumField_) {
-          output.WriteEnum(9, element);
-        }
+        output.WriteArray(pbd::FieldType.Enum, 9, "RepeatedEnumField", repeatedEnumField_);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in RepeatedMessageFieldList) {
-        output.WriteMessage(10, element);
+      if (repeatedMessageField_.Count > 0) {
+        output.WriteMessageArray(10, "RepeatedMessageField", repeatedMessageField_);
       }
       if (repeatedStringPieceField_.Count > 0) {
-        foreach (string element in repeatedStringPieceField_) {
-          output.WriteString(11, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 11, "RepeatedStringPieceField", repeatedStringPieceField_);
       }
       if (repeatedCordField_.Count > 0) {
-        foreach (string element in repeatedCordField_) {
-          output.WriteString(12, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 12, "RepeatedCordField", repeatedCordField_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -12634,15 +12582,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       pb::ExtendableMessage<TestFieldOrderings, TestFieldOrderings.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasMyInt) {
-        output.WriteInt64(1, MyInt);
+        output.WriteInt64(1, "my_int", MyInt);
       }
       extensionWriter.WriteUntil(11, output);
       if (HasMyString) {
-        output.WriteString(11, MyString);
+        output.WriteString(11, "my_string", MyString);
       }
       extensionWriter.WriteUntil(101, output);
       if (HasMyFloat) {
-        output.WriteFloat(101, MyFloat);
+        output.WriteFloat(101, "my_float", MyFloat);
       }
       UnknownFields.WriteTo(output);
     }
@@ -13104,61 +13052,61 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasEscapedBytes) {
-        output.WriteBytes(1, EscapedBytes);
+        output.WriteBytes(1, "escaped_bytes", EscapedBytes);
       }
       if (HasLargeUint32) {
-        output.WriteUInt32(2, LargeUint32);
+        output.WriteUInt32(2, "large_uint32", LargeUint32);
       }
       if (HasLargeUint64) {
-        output.WriteUInt64(3, LargeUint64);
+        output.WriteUInt64(3, "large_uint64", LargeUint64);
       }
       if (HasSmallInt32) {
-        output.WriteInt32(4, SmallInt32);
+        output.WriteInt32(4, "small_int32", SmallInt32);
       }
       if (HasSmallInt64) {
-        output.WriteInt64(5, SmallInt64);
+        output.WriteInt64(5, "small_int64", SmallInt64);
       }
       if (HasUtf8String) {
-        output.WriteString(6, Utf8String);
+        output.WriteString(6, "utf8_string", Utf8String);
       }
       if (HasZeroFloat) {
-        output.WriteFloat(7, ZeroFloat);
+        output.WriteFloat(7, "zero_float", ZeroFloat);
       }
       if (HasOneFloat) {
-        output.WriteFloat(8, OneFloat);
+        output.WriteFloat(8, "one_float", OneFloat);
       }
       if (HasSmallFloat) {
-        output.WriteFloat(9, SmallFloat);
+        output.WriteFloat(9, "small_float", SmallFloat);
       }
       if (HasNegativeOneFloat) {
-        output.WriteFloat(10, NegativeOneFloat);
+        output.WriteFloat(10, "negative_one_float", NegativeOneFloat);
       }
       if (HasNegativeFloat) {
-        output.WriteFloat(11, NegativeFloat);
+        output.WriteFloat(11, "negative_float", NegativeFloat);
       }
       if (HasLargeFloat) {
-        output.WriteFloat(12, LargeFloat);
+        output.WriteFloat(12, "large_float", LargeFloat);
       }
       if (HasSmallNegativeFloat) {
-        output.WriteFloat(13, SmallNegativeFloat);
+        output.WriteFloat(13, "small_negative_float", SmallNegativeFloat);
       }
       if (HasInfDouble) {
-        output.WriteDouble(14, InfDouble);
+        output.WriteDouble(14, "inf_double", InfDouble);
       }
       if (HasNegInfDouble) {
-        output.WriteDouble(15, NegInfDouble);
+        output.WriteDouble(15, "neg_inf_double", NegInfDouble);
       }
       if (HasNanDouble) {
-        output.WriteDouble(16, NanDouble);
+        output.WriteDouble(16, "nan_double", NanDouble);
       }
       if (HasInfFloat) {
-        output.WriteFloat(17, InfFloat);
+        output.WriteFloat(17, "inf_float", InfFloat);
       }
       if (HasNegInfFloat) {
-        output.WriteFloat(18, NegInfFloat);
+        output.WriteFloat(18, "neg_inf_float", NegInfFloat);
       }
       if (HasNanFloat) {
-        output.WriteFloat(19, NanFloat);
+        output.WriteFloat(19, "nan_float", NanFloat);
       }
       UnknownFields.WriteTo(output);
     }
@@ -13889,7 +13837,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasData) {
-        output.WriteString(1, Data);
+        output.WriteString(1, "data", Data);
       }
       UnknownFields.WriteTo(output);
     }
@@ -14111,7 +14059,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasData) {
-        output.WriteBytes(1, Data);
+        output.WriteBytes(1, "data", Data);
       }
       UnknownFields.WriteTo(output);
     }
@@ -14513,102 +14461,46 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (packedInt32_.Count > 0) {
-        output.WriteRawVarint32(722);
-        output.WriteRawVarint32((uint) packedInt32MemoizedSerializedSize);
-        foreach (int element in packedInt32_) {
-          output.WriteInt32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Int32, 90, "packed_int32", packedInt32MemoizedSerializedSize, packedInt32_);
       }
       if (packedInt64_.Count > 0) {
-        output.WriteRawVarint32(730);
-        output.WriteRawVarint32((uint) packedInt64MemoizedSerializedSize);
-        foreach (long element in packedInt64_) {
-          output.WriteInt64NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Int64, 91, "packed_int64", packedInt64MemoizedSerializedSize, packedInt64_);
       }
       if (packedUint32_.Count > 0) {
-        output.WriteRawVarint32(738);
-        output.WriteRawVarint32((uint) packedUint32MemoizedSerializedSize);
-        foreach (uint element in packedUint32_) {
-          output.WriteUInt32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.UInt32, 92, "packed_uint32", packedUint32MemoizedSerializedSize, packedUint32_);
       }
       if (packedUint64_.Count > 0) {
-        output.WriteRawVarint32(746);
-        output.WriteRawVarint32((uint) packedUint64MemoizedSerializedSize);
-        foreach (ulong element in packedUint64_) {
-          output.WriteUInt64NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.UInt64, 93, "packed_uint64", packedUint64MemoizedSerializedSize, packedUint64_);
       }
       if (packedSint32_.Count > 0) {
-        output.WriteRawVarint32(754);
-        output.WriteRawVarint32((uint) packedSint32MemoizedSerializedSize);
-        foreach (int element in packedSint32_) {
-          output.WriteSInt32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.SInt32, 94, "packed_sint32", packedSint32MemoizedSerializedSize, packedSint32_);
       }
       if (packedSint64_.Count > 0) {
-        output.WriteRawVarint32(762);
-        output.WriteRawVarint32((uint) packedSint64MemoizedSerializedSize);
-        foreach (long element in packedSint64_) {
-          output.WriteSInt64NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.SInt64, 95, "packed_sint64", packedSint64MemoizedSerializedSize, packedSint64_);
       }
       if (packedFixed32_.Count > 0) {
-        output.WriteRawVarint32(770);
-        output.WriteRawVarint32((uint) packedFixed32MemoizedSerializedSize);
-        foreach (uint element in packedFixed32_) {
-          output.WriteFixed32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Fixed32, 96, "packed_fixed32", packedFixed32MemoizedSerializedSize, packedFixed32_);
       }
       if (packedFixed64_.Count > 0) {
-        output.WriteRawVarint32(778);
-        output.WriteRawVarint32((uint) packedFixed64MemoizedSerializedSize);
-        foreach (ulong element in packedFixed64_) {
-          output.WriteFixed64NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Fixed64, 97, "packed_fixed64", packedFixed64MemoizedSerializedSize, packedFixed64_);
       }
       if (packedSfixed32_.Count > 0) {
-        output.WriteRawVarint32(786);
-        output.WriteRawVarint32((uint) packedSfixed32MemoizedSerializedSize);
-        foreach (int element in packedSfixed32_) {
-          output.WriteSFixed32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.SFixed32, 98, "packed_sfixed32", packedSfixed32MemoizedSerializedSize, packedSfixed32_);
       }
       if (packedSfixed64_.Count > 0) {
-        output.WriteRawVarint32(794);
-        output.WriteRawVarint32((uint) packedSfixed64MemoizedSerializedSize);
-        foreach (long element in packedSfixed64_) {
-          output.WriteSFixed64NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.SFixed64, 99, "packed_sfixed64", packedSfixed64MemoizedSerializedSize, packedSfixed64_);
       }
       if (packedFloat_.Count > 0) {
-        output.WriteRawVarint32(802);
-        output.WriteRawVarint32((uint) packedFloatMemoizedSerializedSize);
-        foreach (float element in packedFloat_) {
-          output.WriteFloatNoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Float, 100, "packed_float", packedFloatMemoizedSerializedSize, packedFloat_);
       }
       if (packedDouble_.Count > 0) {
-        output.WriteRawVarint32(810);
-        output.WriteRawVarint32((uint) packedDoubleMemoizedSerializedSize);
-        foreach (double element in packedDouble_) {
-          output.WriteDoubleNoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Double, 101, "packed_double", packedDoubleMemoizedSerializedSize, packedDouble_);
       }
       if (packedBool_.Count > 0) {
-        output.WriteRawVarint32(818);
-        output.WriteRawVarint32((uint) packedBoolMemoizedSerializedSize);
-        foreach (bool element in packedBool_) {
-          output.WriteBoolNoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Bool, 102, "packed_bool", packedBoolMemoizedSerializedSize, packedBool_);
       }
       if (packedEnum_.Count > 0) {
-        output.WriteRawVarint32(826);
-        output.WriteRawVarint32((uint) packedEnumMemoizedSerializedSize);
-        foreach (int element in packedEnum_) {
-          output.WriteEnumNoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.Enum, 103, "packed_enum", packedEnumMemoizedSerializedSize, packedEnum_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -15682,74 +15574,46 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (unpackedInt32_.Count > 0) {
-        foreach (int element in unpackedInt32_) {
-          output.WriteInt32(90, element);
-        }
+        output.WriteArray(pbd::FieldType.Int32, 90, "unpacked_int32", unpackedInt32_);
       }
       if (unpackedInt64_.Count > 0) {
-        foreach (long element in unpackedInt64_) {
-          output.WriteInt64(91, element);
-        }
+        output.WriteArray(pbd::FieldType.Int64, 91, "unpacked_int64", unpackedInt64_);
       }
       if (unpackedUint32_.Count > 0) {
-        foreach (uint element in unpackedUint32_) {
-          output.WriteUInt32(92, element);
-        }
+        output.WriteArray(pbd::FieldType.UInt32, 92, "unpacked_uint32", unpackedUint32_);
       }
       if (unpackedUint64_.Count > 0) {
-        foreach (ulong element in unpackedUint64_) {
-          output.WriteUInt64(93, element);
-        }
+        output.WriteArray(pbd::FieldType.UInt64, 93, "unpacked_uint64", unpackedUint64_);
       }
       if (unpackedSint32_.Count > 0) {
-        foreach (int element in unpackedSint32_) {
-          output.WriteSInt32(94, element);
-        }
+        output.WriteArray(pbd::FieldType.SInt32, 94, "unpacked_sint32", unpackedSint32_);
       }
       if (unpackedSint64_.Count > 0) {
-        foreach (long element in unpackedSint64_) {
-          output.WriteSInt64(95, element);
-        }
+        output.WriteArray(pbd::FieldType.SInt64, 95, "unpacked_sint64", unpackedSint64_);
       }
       if (unpackedFixed32_.Count > 0) {
-        foreach (uint element in unpackedFixed32_) {
-          output.WriteFixed32(96, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed32, 96, "unpacked_fixed32", unpackedFixed32_);
       }
       if (unpackedFixed64_.Count > 0) {
-        foreach (ulong element in unpackedFixed64_) {
-          output.WriteFixed64(97, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed64, 97, "unpacked_fixed64", unpackedFixed64_);
       }
       if (unpackedSfixed32_.Count > 0) {
-        foreach (int element in unpackedSfixed32_) {
-          output.WriteSFixed32(98, element);
-        }
+        output.WriteArray(pbd::FieldType.SFixed32, 98, "unpacked_sfixed32", unpackedSfixed32_);
       }
       if (unpackedSfixed64_.Count > 0) {
-        foreach (long element in unpackedSfixed64_) {
-          output.WriteSFixed64(99, element);
-        }
+        output.WriteArray(pbd::FieldType.SFixed64, 99, "unpacked_sfixed64", unpackedSfixed64_);
       }
       if (unpackedFloat_.Count > 0) {
-        foreach (float element in unpackedFloat_) {
-          output.WriteFloat(100, element);
-        }
+        output.WriteArray(pbd::FieldType.Float, 100, "unpacked_float", unpackedFloat_);
       }
       if (unpackedDouble_.Count > 0) {
-        foreach (double element in unpackedDouble_) {
-          output.WriteDouble(101, element);
-        }
+        output.WriteArray(pbd::FieldType.Double, 101, "unpacked_double", unpackedDouble_);
       }
       if (unpackedBool_.Count > 0) {
-        foreach (bool element in unpackedBool_) {
-          output.WriteBool(102, element);
-        }
+        output.WriteArray(pbd::FieldType.Bool, 102, "unpacked_bool", unpackedBool_);
       }
       if (unpackedEnum_.Count > 0) {
-        foreach (int element in unpackedEnum_) {
-          output.WriteEnum(103, element);
-        }
+        output.WriteArray(pbd::FieldType.Enum, 103, "unpacked_enum", unpackedEnum_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -16769,7 +16633,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override void WriteTo(pb::CodedOutputStream output) {
           int size = SerializedSize;
           if (HasDynamicField) {
-            output.WriteInt32(2100, DynamicField);
+            output.WriteInt32(2100, "dynamic_field", DynamicField);
           }
           UnknownFields.WriteTo(output);
         }
@@ -17034,31 +16898,25 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (HasScalarExtension) {
-        output.WriteFixed32(2000, ScalarExtension);
+        output.WriteFixed32(2000, "scalar_extension", ScalarExtension);
       }
       if (HasEnumExtension) {
-        output.WriteEnum(2001, (int) EnumExtension);
+        output.WriteEnum(2001, "enum_extension", (int) EnumExtension, EnumExtension.ToString());
       }
       if (HasDynamicEnumExtension) {
-        output.WriteEnum(2002, (int) DynamicEnumExtension);
+        output.WriteEnum(2002, "dynamic_enum_extension", (int) DynamicEnumExtension, DynamicEnumExtension.ToString());
       }
       if (HasMessageExtension) {
-        output.WriteMessage(2003, MessageExtension);
+        output.WriteMessage(2003, "message_extension", MessageExtension);
       }
       if (HasDynamicMessageExtension) {
-        output.WriteMessage(2004, DynamicMessageExtension);
+        output.WriteMessage(2004, "dynamic_message_extension", DynamicMessageExtension);
       }
       if (repeatedExtension_.Count > 0) {
-        foreach (string element in repeatedExtension_) {
-          output.WriteString(2005, element);
-        }
+        output.WriteArray(pbd::FieldType.String, 2005, "repeated_extension", repeatedExtension_);
       }
       if (packedExtension_.Count > 0) {
-        output.WriteRawVarint32(16050);
-        output.WriteRawVarint32((uint) packedExtensionMemoizedSerializedSize);
-        foreach (int element in packedExtension_) {
-          output.WriteSInt32NoTag(element);
-        }
+        output.WritePackedArray(pbd::FieldType.SInt32, 2006, "packed_extension", packedExtensionMemoizedSerializedSize, packedExtension_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -17617,34 +17475,22 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::CodedOutputStream output) {
       int size = SerializedSize;
       if (repeatedFixed32_.Count > 0) {
-        foreach (uint element in repeatedFixed32_) {
-          output.WriteFixed32(12, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed32, 12, "repeated_fixed32", repeatedFixed32_);
       }
       if (repeatedInt32_.Count > 0) {
-        foreach (int element in repeatedInt32_) {
-          output.WriteInt32(13, element);
-        }
+        output.WriteArray(pbd::FieldType.Int32, 13, "repeated_int32", repeatedInt32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        foreach (ulong element in repeatedFixed64_) {
-          output.WriteFixed64(2046, element);
-        }
+        output.WriteArray(pbd::FieldType.Fixed64, 2046, "repeated_fixed64", repeatedFixed64_);
       }
       if (repeatedInt64_.Count > 0) {
-        foreach (long element in repeatedInt64_) {
-          output.WriteInt64(2047, element);
-        }
+        output.WriteArray(pbd::FieldType.Int64, 2047, "repeated_int64", repeatedInt64_);
       }
       if (repeatedFloat_.Count > 0) {
-        foreach (float element in repeatedFloat_) {
-          output.WriteFloat(262142, element);
-        }
+        output.WriteArray(pbd::FieldType.Float, 262142, "repeated_float", repeatedFloat_);
       }
       if (repeatedUint64_.Count > 0) {
-        foreach (ulong element in repeatedUint64_) {
-          output.WriteUInt64(262143, element);
-        }
+        output.WriteArray(pbd::FieldType.UInt64, 262143, "repeated_uint64", repeatedUint64_);
       }
       UnknownFields.WriteTo(output);
     }
