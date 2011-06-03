@@ -120,7 +120,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (criteria_.Count > 0) {
         output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);
@@ -398,7 +398,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasUrl) {
             output.WriteString(1, "url", Url);
@@ -635,10 +635,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (results_.Count > 0) {
-        output.WriteMessageArray(1, "results", results_);
+        output.WriteArray(pbd::FieldType.Message, 1, "results", results_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -893,7 +893,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (criteria_.Count > 0) {
         output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);

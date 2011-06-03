@@ -280,7 +280,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasNamespace) {
         output.WriteString(1, "namespace", Namespace);
@@ -886,7 +886,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasPropertyName) {
         output.WriteString(1, "property_name", PropertyName);
@@ -1108,7 +1108,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasInterfaceId) {
         output.WriteString(1, "interface_id", InterfaceId);
@@ -1330,7 +1330,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasDispatchId) {
         output.WriteInt32(1, "dispatch_id", DispatchId);

@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers
 
         public abstract bool IsInitialized { get; }
 
-        public abstract void WriteTo(CodedOutputStream output);
+        public abstract void WriteTo(ICodedOutputStream output);
 
         public abstract int SerializedSize { get; }
 
@@ -71,7 +71,7 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Serializes the message to a ByteString. This is a trivial wrapper
-        /// around WriteTo(CodedOutputStream).
+        /// around WriteTo(ICodedOutputStream).
         /// </summary>
         public ByteString ToByteString()
         {
@@ -82,7 +82,7 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Serializes the message to a byte array. This is a trivial wrapper
-        /// around WriteTo(CodedOutputStream).
+        /// around WriteTo(ICodedOutputStream).
         /// </summary>
         public byte[] ToByteArray()
         {

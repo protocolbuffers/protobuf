@@ -117,7 +117,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<TestMessage, TestMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasA) {

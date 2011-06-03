@@ -1,6 +1,9 @@
 using System;
 using Google.ProtocolBuffers.Descriptors;
 
+//Disable warning CS3010: CLS-compliant interfaces must have only CLS-compliant members
+#pragma warning disable 3010
+
 namespace Google.ProtocolBuffers
 {
     public interface ICodedOutputStream
@@ -73,8 +76,7 @@ namespace Google.ProtocolBuffers
         void WriteSInt32(int fieldNumber, string fieldName, int value);
         void WriteSInt64(int fieldNumber, string fieldName, long value);
         void WriteMessageSetExtension(int fieldNumber, string fieldName, IMessageLite value);
-        void WriteMessageArray(int fieldNumber, string fieldName, System.Collections.IEnumerable list);
-        void WriteGroupArray(int fieldNumber, string fieldName, System.Collections.IEnumerable list);
+        void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value);
         void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list);
         void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list);
         void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, int calculatedSize, System.Collections.IEnumerable list);

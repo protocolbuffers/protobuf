@@ -152,7 +152,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasNumber) {
             output.WriteString(1, "number", Number);
@@ -428,7 +428,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
@@ -440,7 +440,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         output.WriteString(3, "email", Email);
       }
       if (phone_.Count > 0) {
-        output.WriteMessageArray(4, "phone", phone_);
+        output.WriteArray(pbd::FieldType.Message, 4, "phone", phone_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -772,10 +772,10 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (person_.Count > 0) {
-        output.WriteMessageArray(1, "person", person_);
+        output.WriteArray(pbd::FieldType.Message, 1, "person", person_);
       }
       UnknownFields.WriteTo(output);
     }

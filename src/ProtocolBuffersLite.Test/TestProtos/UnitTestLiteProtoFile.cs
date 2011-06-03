@@ -1113,7 +1113,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasBb) {
             output.WriteInt32(1, "bb", Bb);
@@ -1328,7 +1328,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasA) {
             output.WriteInt32(17, "a", A);
@@ -1543,7 +1543,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasA) {
             output.WriteInt32(47, "a", A);
@@ -2478,7 +2478,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasOptionalInt32) {
         output.WriteInt32(1, "optional_int32", OptionalInt32);
@@ -2598,16 +2598,16 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteArray(pbd::FieldType.Bytes, 45, "repeated_bytes", repeatedBytes_);
       }
       if (repeatedGroup_.Count > 0) {
-        output.WriteGroupArray(46, "repeatedgroup", repeatedGroup_);
+        output.WriteArray(pbd::FieldType.Group, 46, "repeatedgroup", repeatedGroup_);
       }
       if (repeatedNestedMessage_.Count > 0) {
-        output.WriteMessageArray(48, "repeated_nested_message", repeatedNestedMessage_);
+        output.WriteArray(pbd::FieldType.Message, 48, "repeated_nested_message", repeatedNestedMessage_);
       }
       if (repeatedForeignMessage_.Count > 0) {
-        output.WriteMessageArray(49, "repeated_foreign_message", repeatedForeignMessage_);
+        output.WriteArray(pbd::FieldType.Message, 49, "repeated_foreign_message", repeatedForeignMessage_);
       }
       if (repeatedImportMessage_.Count > 0) {
-        output.WriteMessageArray(50, "repeated_import_message", repeatedImportMessage_);
+        output.WriteArray(pbd::FieldType.Message, 50, "repeated_import_message", repeatedImportMessage_);
       }
       if (repeatedNestedEnum_.Count > 0) {
         output.WriteArray(pbd::FieldType.Enum, 51, "repeated_nested_enum", repeatedNestedEnum_);
@@ -5587,7 +5587,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasC) {
         output.WriteInt32(1, "c", C);
@@ -5982,7 +5982,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (packedInt32_.Count > 0) {
         output.WritePackedArray(pbd::FieldType.Int32, 90, "packed_int32", packedInt32MemoizedSerializedSize, packedInt32_);
@@ -6991,7 +6991,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessageLite<TestAllExtensionsLite, TestAllExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -7179,7 +7179,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
         output.WriteInt32(17, "a", A);
@@ -7394,7 +7394,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasA) {
         output.WriteInt32(47, "a", A);
@@ -7600,7 +7600,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessageLite<TestPackedExtensionsLite, TestPackedExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -7780,7 +7780,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
     }
     
@@ -7961,7 +7961,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasDeprecatedField) {
         output.WriteInt32(1, "deprecated_field", DeprecatedField);

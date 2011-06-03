@@ -98,7 +98,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasD) {
         output.WriteInt32(1, "d", D);
@@ -392,7 +392,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasNumber) {
             output.WriteString(1, "number", Number);
@@ -691,7 +691,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasAddress) {
             output.WriteString(1, "address", Address);
@@ -1097,7 +1097,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessageLite<TestInteropPersonLite, TestInteropPersonLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasName) {
@@ -1110,10 +1110,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(3, "email", Email);
       }
       if (phone_.Count > 0) {
-        output.WriteMessageArray(4, "phone", phone_);
+        output.WriteArray(pbd::FieldType.Message, 4, "phone", phone_);
       }
       if (addresses_.Count > 0) {
-        output.WriteGroupArray(5, "addresses", addresses_);
+        output.WriteArray(pbd::FieldType.Group, 5, "addresses", addresses_);
       }
       if (codes_.Count > 0) {
         output.WritePackedArray(pbd::FieldType.Int32, 10, "codes", codesMemoizedSerializedSize, codes_);
@@ -1569,7 +1569,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasNumber) {
         output.WriteString(1, "number", Number);

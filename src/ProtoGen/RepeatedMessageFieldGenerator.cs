@@ -137,7 +137,13 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
-            writer.WriteLine("output.Write{0}Array({1}, \"{3}\", {2}_);", MessageOrGroup, Number, Name, Descriptor.Name);
+
+            // Arrays of message types do not currently support 'packed' storage
+            //if (Descriptor.IsPacked)
+            //    writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}MemoizedSerializedSize, {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
+            //else
+            writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
+
             //writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
             //writer.WriteLine("  output.Write{0}({1}, element);", MessageOrGroup, Number);
             //writer.WriteLine("}");

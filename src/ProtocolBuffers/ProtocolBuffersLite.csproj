@@ -56,16 +56,16 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Silverlight2|AnyCPU'">
-	  <DebugType>pdbonly</DebugType>
-	  <Optimize>true</Optimize>
-	  <OutputPath>bin\Release_Silverlight2\</OutputPath>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release_Silverlight2\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-	  <DefineConstants>TRACE;SILVERLIGHT2;LITE</DefineConstants>
-	  <ErrorReport>prompt</ErrorReport>
-	  <WarningLevel>4</WarningLevel>
-	  <NoStdLib>true</NoStdLib>
-	  <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <DefineConstants>TRACE;SILVERLIGHT2;LITE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="AbstractBuilderLite.cs" />
     <Compile Include="AbstractMessageLite.cs" />
+    <Compile Include="CodedOutputStream.ComputeSize.cs" />
     <Compile Include="Collections\Dictionaries.cs" />
     <Compile Include="Collections\Enumerables.cs" />
     <Compile Include="Collections\IPopsicleList.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="GeneratedBuilderLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
     <Compile Include="GeneratedMessageLite.cs" />
+    <Compile Include="ICodedOutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />

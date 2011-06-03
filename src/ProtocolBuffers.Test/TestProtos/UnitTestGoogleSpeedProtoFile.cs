@@ -579,7 +579,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
         output.WriteString(1, "field1", Field1);
@@ -2282,7 +2282,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
         output.WriteInt32(1, "field1", Field1);
@@ -3291,7 +3291,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasField5) {
             output.WriteInt32(5, "field5", Field5);
@@ -4330,7 +4330,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
         output.WriteString(1, "field1", Field1);
@@ -4348,7 +4348,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(6, "field6", Field6);
       }
       if (group1_.Count > 0) {
-        output.WriteGroupArray(10, "group1", group1_);
+        output.WriteArray(pbd::FieldType.Group, 10, "group1", group1_);
       }
       if (HasField21) {
         output.WriteInt32(21, "field21", Field21);
@@ -5622,7 +5622,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasField1) {
         output.WriteFloat(1, "field1", Field1);

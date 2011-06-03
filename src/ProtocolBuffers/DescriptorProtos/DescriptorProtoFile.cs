@@ -273,10 +273,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (file_.Count > 0) {
-        output.WriteMessageArray(1, "file", file_);
+        output.WriteArray(pbd::FieldType.Message, 1, "file", file_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -612,7 +612,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
@@ -624,16 +624,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteArray(pbd::FieldType.String, 3, "dependency", dependency_);
       }
       if (messageType_.Count > 0) {
-        output.WriteMessageArray(4, "message_type", messageType_);
+        output.WriteArray(pbd::FieldType.Message, 4, "message_type", messageType_);
       }
       if (enumType_.Count > 0) {
-        output.WriteMessageArray(5, "enum_type", enumType_);
+        output.WriteArray(pbd::FieldType.Message, 5, "enum_type", enumType_);
       }
       if (service_.Count > 0) {
-        output.WriteMessageArray(6, "service", service_);
+        output.WriteArray(pbd::FieldType.Message, 6, "service", service_);
       }
       if (extension_.Count > 0) {
-        output.WriteMessageArray(7, "extension", extension_);
+        output.WriteArray(pbd::FieldType.Message, 7, "extension", extension_);
       }
       if (HasOptions) {
         output.WriteMessage(8, "options", Options);
@@ -1223,7 +1223,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasStart) {
             output.WriteInt32(1, "start", Start);
@@ -1538,25 +1538,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
       }
       if (field_.Count > 0) {
-        output.WriteMessageArray(2, "field", field_);
+        output.WriteArray(pbd::FieldType.Message, 2, "field", field_);
       }
       if (nestedType_.Count > 0) {
-        output.WriteMessageArray(3, "nested_type", nestedType_);
+        output.WriteArray(pbd::FieldType.Message, 3, "nested_type", nestedType_);
       }
       if (enumType_.Count > 0) {
-        output.WriteMessageArray(4, "enum_type", enumType_);
+        output.WriteArray(pbd::FieldType.Message, 4, "enum_type", enumType_);
       }
       if (extensionRange_.Count > 0) {
-        output.WriteMessageArray(5, "extension_range", extensionRange_);
+        output.WriteArray(pbd::FieldType.Message, 5, "extension_range", extensionRange_);
       }
       if (extension_.Count > 0) {
-        output.WriteMessageArray(6, "extension", extension_);
+        output.WriteArray(pbd::FieldType.Message, 6, "extension", extension_);
       }
       if (HasOptions) {
         output.WriteMessage(7, "options", Options);
@@ -2196,7 +2196,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
@@ -2705,13 +2705,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
       }
       if (value_.Count > 0) {
-        output.WriteMessageArray(2, "value", value_);
+        output.WriteArray(pbd::FieldType.Message, 2, "value", value_);
       }
       if (HasOptions) {
         output.WriteMessage(3, "options", Options);
@@ -3058,7 +3058,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
@@ -3393,13 +3393,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
       }
       if (method_.Count > 0) {
-        output.WriteMessageArray(2, "method", method_);
+        output.WriteArray(pbd::FieldType.Message, 2, "method", method_);
       }
       if (HasOptions) {
         output.WriteMessage(3, "options", Options);
@@ -3756,7 +3756,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasName) {
         output.WriteString(1, "name", Name);
@@ -4188,7 +4188,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<FileOptions, FileOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasJavaPackage) {
@@ -4213,7 +4213,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteBool(18, "py_generic_services", PyGenericServices);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -4689,7 +4689,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<MessageOptions, MessageOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasMessageSetWireFormat) {
@@ -4699,7 +4699,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteBool(2, "no_standard_descriptor_accessor", NoStandardDescriptorAccessor);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5061,7 +5061,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<FieldOptions, FieldOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (HasCtype) {
@@ -5077,7 +5077,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(9, "experimental_map_key", ExperimentalMapKey);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5448,11 +5448,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<EnumOptions, EnumOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5702,11 +5702,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5956,11 +5956,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -6210,11 +6210,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<MethodOptions, MethodOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -6500,7 +6500,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasNamePart_) {
             output.WriteString(1, "name_part", NamePart_);
@@ -6787,10 +6787,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (name_.Count > 0) {
-        output.WriteMessageArray(2, "name", name_);
+        output.WriteArray(pbd::FieldType.Message, 2, "name", name_);
       }
       if (HasIdentifierValue) {
         output.WriteString(3, "identifier_value", IdentifierValue);

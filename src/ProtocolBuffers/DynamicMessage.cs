@@ -246,7 +246,7 @@ namespace Google.ProtocolBuffers
             get { return fields.IsInitializedWithRespectTo(type.Fields); }
         }
 
-        public override void WriteTo(CodedOutputStream output)
+        public override void WriteTo(ICodedOutputStream output)
         {
             fields.WriteTo(output);
             if (type.Options.MessageSetWireFormat)

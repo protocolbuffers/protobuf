@@ -174,7 +174,7 @@ namespace Google.ProtocolBuffers
         /// Serializes the field, including the field number, and writes it to
         /// <paramref name="output"/>.
         /// </summary>
-        public void WriteTo(int fieldNumber, CodedOutputStream output)
+        public void WriteTo(int fieldNumber, ICodedOutputStream output)
         {
             foreach (ulong value in varintList)
             {
@@ -238,11 +238,11 @@ namespace Google.ProtocolBuffers
         /// </summary>
         /// <param name="fieldNumber"></param>
         /// <param name="output"></param>
-        public void WriteAsMessageSetExtensionTo(int fieldNumber, CodedOutputStream output)
+        public void WriteAsMessageSetExtensionTo(int fieldNumber, ICodedOutputStream output)
         {
             foreach (ByteString value in lengthDelimitedList)
             {
-                output.WriteRawMessageSetExtension(fieldNumber, value);
+                output.WriteMessageSetExtension(fieldNumber, UnknownFieldName, value);
             }
         }
 

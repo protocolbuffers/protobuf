@@ -64,7 +64,7 @@ namespace Google.ProtocolBuffers
         /// of the message before the data, then making sure you limit the input to
         /// that size when receiving the data. Alternatively, use WriteDelimitedTo(Stream).
         /// </remarks>
-        void WriteTo(CodedOutputStream output);
+        void WriteTo(ICodedOutputStream output);
 
         /// <summary>
         /// Like WriteTo(Stream) but writes the size of the message as a varint before
@@ -115,19 +115,19 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Serializes the message to a ByteString. This is a trivial wrapper
-        /// around WriteTo(CodedOutputStream).
+        /// around WriteTo(ICodedOutputStream).
         /// </summary>
         ByteString ToByteString();
 
         /// <summary>
         /// Serializes the message to a byte array. This is a trivial wrapper
-        /// around WriteTo(CodedOutputStream).
+        /// around WriteTo(ICodedOutputStream).
         /// </summary>
         byte[] ToByteArray();
 
         /// <summary>
         /// Serializes the message and writes it to the given stream.
-        /// This is just a wrapper around WriteTo(CodedOutputStream). This
+        /// This is just a wrapper around WriteTo(ICodedOutputStream). This
         /// does not flush or close the stream.
         /// </summary>
         /// <param name="output"></param>

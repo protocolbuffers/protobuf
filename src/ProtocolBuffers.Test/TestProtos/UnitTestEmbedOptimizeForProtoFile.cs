@@ -117,13 +117,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasOptionalMessage) {
         output.WriteMessage(1, "optional_message", OptionalMessage);
       }
       if (repeatedMessage_.Count > 0) {
-        output.WriteMessageArray(2, "repeated_message", repeatedMessage_);
+        output.WriteArray(pbd::FieldType.Message, 2, "repeated_message", repeatedMessage_);
       }
       UnknownFields.WriteTo(output);
     }

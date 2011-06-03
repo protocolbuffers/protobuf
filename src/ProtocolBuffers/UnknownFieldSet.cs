@@ -124,7 +124,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Serializes the set and writes it to <paramref name="output"/>.
         /// </summary>
-        public void WriteTo(CodedOutputStream output)
+        public void WriteTo(ICodedOutputStream output)
         {
             foreach (KeyValuePair<int, UnknownField> entry in fields)
             {
@@ -168,7 +168,7 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Serializes the message to a ByteString and returns it. This is
-        /// just a trivial wrapper around WriteTo(CodedOutputStream).
+        /// just a trivial wrapper around WriteTo(ICodedOutputStream).
         /// </summary>
         /// <returns></returns>
         public ByteString ToByteString()
@@ -180,7 +180,7 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Serializes the message to a byte array and returns it. This is
-        /// just a trivial wrapper around WriteTo(CodedOutputStream).
+        /// just a trivial wrapper around WriteTo(ICodedOutputStream).
         /// </summary>
         /// <returns></returns>
         public byte[] ToByteArray()
@@ -194,7 +194,7 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Serializes the message and writes it to <paramref name="output"/>. This is
-        /// just a trivial wrapper around WriteTo(CodedOutputStream).
+        /// just a trivial wrapper around WriteTo(ICodedOutputStream).
         /// </summary>
         /// <param name="output"></param>
         public void WriteTo(Stream output)
@@ -208,7 +208,7 @@ namespace Google.ProtocolBuffers
         /// Serializes the set and writes it to <paramref name="output"/> using
         /// the MessageSet wire format.
         /// </summary>
-        public void WriteAsMessageSetTo(CodedOutputStream output)
+        public void WriteAsMessageSetTo(ICodedOutputStream output)
         {
             foreach (KeyValuePair<int, UnknownField> entry in fields)
             {

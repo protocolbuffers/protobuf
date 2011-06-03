@@ -129,7 +129,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<TestMessageSet, TestMessageSet.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -323,7 +323,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasMessageSet) {
         output.WriteMessage(1, "message_set", MessageSet);
@@ -569,7 +569,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasI) {
         output.WriteInt32(15, "i", I);
@@ -792,7 +792,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (HasStr) {
         output.WriteString(25, "str", Str);
@@ -1056,7 +1056,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         
-        public override void WriteTo(pb::CodedOutputStream output) {
+        public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
           if (HasTypeId) {
             output.WriteInt32(2, "type_id", TypeId);
@@ -1289,10 +1289,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     
-    public override void WriteTo(pb::CodedOutputStream output) {
+    public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       if (item_.Count > 0) {
-        output.WriteGroupArray(1, "item", item_);
+        output.WriteArray(pbd::FieldType.Group, 1, "item", item_);
       }
       UnknownFields.WriteTo(output);
     }

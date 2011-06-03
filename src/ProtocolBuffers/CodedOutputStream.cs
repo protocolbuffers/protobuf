@@ -308,24 +308,12 @@ namespace Google.ProtocolBuffers
             WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
         }
 
-        public void WriteRawMessageSetExtension(int fieldNumber, ByteString value)
+        public void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value)
         {
             WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
             WriteUInt32(WireFormat.MessageSetField.TypeID, "type_id", (uint) fieldNumber);
             WriteBytes(WireFormat.MessageSetField.Message, "message", value);
             WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
-        }
-
-        public void WriteMessageArray(int fieldNumber, string fieldName, System.Collections.IEnumerable list)
-        {
-            foreach (IMessageLite msg in list)
-                WriteMessage(fieldNumber, fieldName, msg);
-        }
-
-        public void WriteGroupArray(int fieldNumber, string fieldName, System.Collections.IEnumerable list)
-        {
-            foreach (IMessageLite msg in list)
-                WriteGroup(fieldNumber, fieldName, msg);
         }
 
         public void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list)

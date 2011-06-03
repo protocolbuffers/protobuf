@@ -230,7 +230,7 @@ namespace Google.ProtocolBuffers
                 }
             }
 
-            public void WriteUntil(int end, CodedOutputStream output)
+            public void WriteUntil(int end, ICodedOutputStream output)
             {
                 while (next != null && next.Value.Key.FieldNumber < end)
                 {

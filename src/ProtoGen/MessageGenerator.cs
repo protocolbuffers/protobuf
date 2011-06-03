@@ -291,7 +291,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             List<ExtensionRange> sortedExtensions = new List<ExtensionRange>(Descriptor.Proto.ExtensionRangeList);
             sortedExtensions.Sort((r1, r2) => (r1.Start.CompareTo(r2.Start)));
 
-            writer.WriteLine("public override void WriteTo(pb::CodedOutputStream output) {");
+            writer.WriteLine("public override void WriteTo(pb::ICodedOutputStream output) {");
             writer.Indent();
             // Make sure we've computed the serialized length, so that packed fields are generated correctly.
             writer.WriteLine("int size = SerializedSize;");

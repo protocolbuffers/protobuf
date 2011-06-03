@@ -455,7 +455,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// See <see cref="IMessageLite.WriteTo(CodedOutputStream)" />.
         /// </summary>
-        public void WriteTo(CodedOutputStream output)
+        public void WriteTo(ICodedOutputStream output)
         {
             foreach (KeyValuePair<IFieldDescriptorLite, object> entry in fields)
             {
@@ -466,7 +466,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a single field to a CodedOutputStream.
         /// </summary>
-        public void WriteField(IFieldDescriptorLite field, Object value, CodedOutputStream output)
+        public void WriteField(IFieldDescriptorLite field, Object value, ICodedOutputStream output)
         {
             if (field.IsExtension && field.MessageSetWireFormat)
             {
@@ -478,28 +478,30 @@ namespace Google.ProtocolBuffers
                 {
                     IEnumerable valueList = (IEnumerable) value;
                     if (field.IsPacked)
-                    {
-                        output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
-                        // Compute the total data size so the length can be written.
-                        int dataSize = 0;
-                        foreach (object element in valueList)
-                        {
-                            dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
-                        }
-                        output.WriteRawVarint32((uint) dataSize);
-                        // Write the data itself, without any tags.
-                        foreach (object element in valueList)
-                        {
-                            output.WriteFieldNoTag(field.FieldType, element);
-                        }
-                    }
+                        output.WritePackedArray(field.FieldType, field.FieldNumber, field.Name, valueList);
+                    //{
+                    //    output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
+                    //    // Compute the total data size so the length can be written.
+                    //    int dataSize = 0;
+                    //    foreach (object element in valueList)
+                    //    {
+                    //        dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
+                    //    }
+                    //    output.WriteRawVarint32((uint) dataSize);
+                    //    // Write the data itself, without any tags.
+                    //    foreach (object element in valueList)
+                    //    {
+                    //        output.WriteFieldNoTag(field.FieldType, element);
+                    //    }
+                    //}
                     else
-                    {
-                        foreach (object element in valueList)
-                        {
-                            output.WriteField(field.FieldType, field.FieldNumber, field.Name, element);
-                        }
-                    }
+                        output.WriteArray(field.FieldType, field.FieldNumber, field.Name, valueList);
+                    //{
+                    //    foreach (object element in valueList)
+                    //    {
+                    //        output.WriteField(field.FieldType, field.FieldNumber, field.Name, element);
+                    //    }
+                    //}
                 }
                 else
                 {
