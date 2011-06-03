@@ -1234,7 +1234,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -1458,7 +1458,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -1682,7 +1682,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -3337,7 +3337,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -5499,7 +5499,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -5723,7 +5723,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -5933,7 +5933,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -6135,7 +6135,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -6359,7 +6359,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -6566,7 +6566,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -7383,7 +7383,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -8358,7 +8358,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -8671,7 +8671,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -8899,7 +8899,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -9087,7 +9087,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -9277,7 +9277,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -9498,7 +9498,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -9763,7 +9763,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -10032,7 +10032,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -10298,7 +10298,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -10597,7 +10597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -10821,7 +10821,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -11061,7 +11061,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -11435,7 +11435,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -11689,7 +11689,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -12190,7 +12190,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -12810,7 +12810,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -13423,7 +13423,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -14049,7 +14049,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -14274,7 +14274,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -14909,7 +14909,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -15984,7 +15984,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -16620,7 +16620,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -16860,7 +16860,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  throw InvalidProtocolBufferException.InvalidTag();
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -17197,7 +17197,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -17783,7 +17783,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -18161,7 +18161,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -18344,7 +18344,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -18527,7 +18527,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -18710,7 +18710,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              throw InvalidProtocolBufferException.InvalidTag();
+              throw pb::InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {

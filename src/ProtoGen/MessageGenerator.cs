@@ -629,7 +629,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             //    writer.WriteLine("  }");
             //}
             //writer.WriteLine("  return this;");
-            writer.WriteLine("  throw InvalidProtocolBufferException.InvalidTag();");
+            writer.WriteLine("  throw pb::InvalidProtocolBufferException.InvalidTag();");
             writer.WriteLine("}");
             writer.WriteLine("default: {");
             writer.WriteLine("  if (pb::WireFormat.IsEndGroupTag(tag)) {");
