@@ -168,7 +168,7 @@ namespace Google.ProtocolBuffers
             if (unknown)
             {
                 // Unknown field or wrong wire type.  Skip.
-                return input.SkipField(tag);
+                return input.SkipField();
             }
 
             if (packed)

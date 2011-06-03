@@ -615,19 +615,21 @@ namespace Google.ProtocolBuffers.ProtoGen
             {
                 writer.WriteLine("pb::UnknownFieldSet.Builder unknownFields = null;");
             }
-            writer.WriteLine("while (true) {");
+            writer.WriteLine("uint tag;");
+            writer.WriteLine("string field_name;");
+            writer.WriteLine("while (input.ReadTag(out tag, out field_name)) {");
             writer.Indent();
-            writer.WriteLine("uint tag = input.ReadTag();");
             writer.WriteLine("switch (tag) {");
             writer.Indent();
             writer.WriteLine("case 0: {"); // 0 signals EOF / limit reached
-            if (!UseLiteRuntime)
-            {
-                writer.WriteLine("  if (unknownFields != null) {");
-                writer.WriteLine("    this.UnknownFields = unknownFields.Build();");
-                writer.WriteLine("  }");
-            }
-            writer.WriteLine("  return this;");
+            //if (!UseLiteRuntime)
+            //{
+            //    writer.WriteLine("  if (unknownFields != null) {");
+            //    writer.WriteLine("    this.UnknownFields = unknownFields.Build();");
+            //    writer.WriteLine("  }");
+            //}
+            //writer.WriteLine("  return this;");
+            writer.WriteLine("  throw InvalidProtocolBufferException.InvalidTag();");
             writer.WriteLine("}");
             writer.WriteLine("default: {");
             writer.WriteLine("  if (pb::WireFormat.IsEndGroupTag(tag)) {");
@@ -663,6 +665,14 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             writer.Outdent();
             writer.WriteLine("}");
+            writer.WriteLine();
+            if (!UseLiteRuntime)
+            {
+                writer.WriteLine("if (unknownFields != null) {");
+                writer.WriteLine("  this.UnknownFields = unknownFields.Build();");
+                writer.WriteLine("}");
+            }
+            writer.WriteLine("return this;");
             writer.Outdent();
             writer.WriteLine("}");
             writer.WriteLine();

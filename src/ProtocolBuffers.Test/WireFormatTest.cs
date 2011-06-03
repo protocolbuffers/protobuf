@@ -173,17 +173,13 @@ namespace Google.ProtocolBuffers
             CodedInputStream input = data.CreateCodedInput();
             uint previousTag = 0;
 
-            while (true)
+            uint tag;
+            string name;
+            while (input.ReadTag(out tag, out name))
             {
-                uint tag = input.ReadTag();
-                if (tag == 0)
-                {
-                    break;
-                }
-
                 Assert.IsTrue(tag > previousTag);
                 previousTag = tag;
-                input.SkipField(tag);
+                input.SkipField();
             }
         }
 

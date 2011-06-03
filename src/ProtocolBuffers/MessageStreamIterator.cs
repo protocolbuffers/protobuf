@@ -219,13 +219,14 @@ namespace Google.ProtocolBuffers
                 CodedInputStream input = CodedInputStream.CreateInstance(stream);
                 input.SetSizeLimit(sizeLimit);
                 uint tag;
-                while ((tag = input.ReadTag()) != 0)
+                string name;
+                while (input.ReadTag(out tag, out name))
                 {
-                    if (tag != ExpectedTag)
-                    {
+                    if ((tag == 0 && name == "item") || (tag == ExpectedTag))
+                        yield return messageReader(input, extensionRegistry);
+                    else
                         throw InvalidProtocolBufferException.InvalidMessageStreamTag();
-                    }
-                    yield return messageReader(input, extensionRegistry);
+
                     input.ResetSizeCounter();
                 }
             }

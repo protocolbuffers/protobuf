@@ -101,7 +101,7 @@ namespace Google.ProtocolBuffers
         protected virtual bool ParseUnknownField(CodedInputStream input,
                                                  ExtensionRegistry extensionRegistry, uint tag)
         {
-            return input.SkipField(tag);
+            return input.SkipField();
         }
 
         /// <summary>

@@ -1250,11 +1250,12 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-            while (true) {
-              uint tag = input.ReadTag();
+            uint tag;
+            string field_name;
+            while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  return this;
+                  throw InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -1269,6 +1270,8 @@ namespace Google.ProtocolBuffers.TestProtos {
                 }
               }
             }
+            
+            return this;
           }
           
           
@@ -1465,11 +1468,12 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-            while (true) {
-              uint tag = input.ReadTag();
+            uint tag;
+            string field_name;
+            while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  return this;
+                  throw InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -1484,6 +1488,8 @@ namespace Google.ProtocolBuffers.TestProtos {
                 }
               }
             }
+            
+            return this;
           }
           
           
@@ -1680,11 +1686,12 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-            while (true) {
-              uint tag = input.ReadTag();
+            uint tag;
+            string field_name;
+            while (input.ReadTag(out tag, out field_name)) {
               switch (tag) {
                 case 0: {
-                  return this;
+                  throw InvalidProtocolBufferException.InvalidTag();
                 }
                 default: {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -1699,6 +1706,8 @@ namespace Google.ProtocolBuffers.TestProtos {
                 }
               }
             }
+            
+            return this;
           }
           
           
@@ -3607,11 +3616,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -3958,6 +3968,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
       
@@ -5724,11 +5736,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -5743,6 +5756,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
       
@@ -6430,11 +6445,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -6575,6 +6591,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
       
@@ -7123,11 +7141,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -7138,6 +7157,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
     }
@@ -7316,11 +7337,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -7335,6 +7357,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
       
@@ -7531,11 +7555,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -7550,6 +7575,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
       
@@ -7732,11 +7759,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -7747,6 +7775,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
     }
@@ -7905,11 +7935,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -7920,6 +7951,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
     }
@@ -8098,11 +8131,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        while (true) {
-          uint tag = input.ReadTag();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
           switch (tag) {
             case 0: {
-              return this;
+              throw InvalidProtocolBufferException.InvalidTag();
             }
             default: {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
@@ -8117,6 +8151,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
           }
         }
+        
+        return this;
       }
       
       

@@ -162,29 +162,40 @@ namespace Google.ProtocolBuffers
         #endregion
 
         #region Reading of tags etc
-
+        
         /// <summary>
-        /// Attempt to read a field tag, returning 0 if we have reached the end
-        /// of the input data. Protocol message parsers use this to read tags,
-        /// since a protocol message may legally end wherever a tag occurs, and
-        /// zero is not a valid tag number.
+        /// Attempt to read a field tag, returning false if we have reached the end
+        /// of the input data.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// If fieldTag is non-zero and ReadTag returns true then the value in fieldName
+        /// may or may not be populated.  However, if fieldTag is zero and ReadTag returns
+        /// true, then fieldName should be populated with a non-null field name.
+        /// </para><para>
+        /// In other words if ReadTag returns true then either fieldTag will be non-zero OR
+        /// fieldName will be non-zero.  In some cases both may be populated, however the
+        /// builders will always prefer the fieldTag over fieldName.
+        /// </para>
+        /// </remarks>
         [CLSCompliant(false)]
-        public uint ReadTag()
+        public bool ReadTag(out uint fieldTag, out string fieldName)
         {
+            fieldName = null;
+
             if (IsAtEnd)
             {
-                lastTag = 0;
-                return 0;
+                lastTag = fieldTag = 0;
+                return false;
             }
 
-            lastTag = ReadRawVarint32();
+            lastTag = fieldTag = ReadRawVarint32();
             if (lastTag == 0)
             {
                 // If we actually read zero, that's not a valid tag.
                 throw InvalidProtocolBufferException.InvalidTag();
             }
-            return lastTag;
+            return true;
         }
 
         /// <summary>
@@ -1030,8 +1041,9 @@ namespace Google.ProtocolBuffers
         /// <returns>false if the tag is an end-group tag, in which case
         /// nothing is skipped. Otherwise, returns true.</returns>
         [CLSCompliant(false)]
-        public bool SkipField(uint tag)
+        public bool SkipField()
         {
+            uint tag = lastTag;
             switch (WireFormat.GetTagWireType(tag))
             {
                 case WireFormat.WireType.Varint:
@@ -1065,10 +1077,11 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public void SkipMessage()
         {
-            while (true)
+            uint tag;
+            string name;
+            while (ReadTag(out tag, out name))
             {
-                uint tag = ReadTag();
-                if (tag == 0 || !SkipField(tag))
+                if (!SkipField())
                 {
                     return;
                 }

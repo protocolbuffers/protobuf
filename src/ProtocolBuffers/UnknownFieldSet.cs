@@ -419,13 +419,19 @@ namespace Google.ProtocolBuffers
             /// </summary>
             public Builder MergeFrom(CodedInputStream input)
             {
-                while (true)
+                uint tag;
+                string name;
+                while (input.ReadTag(out tag, out name))
                 {
-                    uint tag = input.ReadTag();
-                    if (tag == 0 || !MergeFieldFrom(tag, input))
+                    if (tag == 0)
                     {
+                        if (input.SkipField())
+                            continue; //can't merge unknown without field tag
                         break;
                     }
+
+                    if(!MergeFieldFrom(tag, input))
+                        break;
                 }
                 return this;
             }
@@ -581,11 +587,14 @@ namespace Google.ProtocolBuffers
 
             internal void MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry, IBuilder builder)
             {
-                while (true)
+                uint tag;
+                string name;
+                while (input.ReadTag(out tag, out name))
                 {
-                    uint tag = input.ReadTag();
                     if (tag == 0)
                     {
+                        if (input.SkipField())
+                            continue; //can't merge unknown without field tag
                         break;
                     }
 
@@ -765,11 +774,14 @@ namespace Google.ProtocolBuffers
                 IBuilderLite subBuilder = null;
                 FieldDescriptor field = null;
 
-                while (true)
+                uint tag;
+                string name;
+                while (input.ReadTag(out tag, out name))
                 {
-                    uint tag = input.ReadTag();
                     if (tag == 0)
                     {
+                        if (input.SkipField())
+                            continue; //can't merge unknown without field tag
                         break;
                     }
 
@@ -833,7 +845,7 @@ namespace Google.ProtocolBuffers
                     else
                     {
                         // Unknown tag.  Skip it.
-                        if (!input.SkipField(tag))
+                        if (!input.SkipField())
                         {
                             break; // end of group
                         }

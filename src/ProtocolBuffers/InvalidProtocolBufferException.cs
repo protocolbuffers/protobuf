@@ -71,7 +71,7 @@ namespace Google.ProtocolBuffers
                 "CodedInputStream encountered a malformed varint.");
         }
 
-        internal static InvalidProtocolBufferException InvalidTag()
+        public static InvalidProtocolBufferException InvalidTag()
         {
             return new InvalidProtocolBufferException(
                 "Protocol message contained an invalid tag (zero).");

@@ -283,16 +283,16 @@ namespace Google.ProtocolBuffers
             CodedInputStream input2 = CodedInputStream.CreateInstance(rawBytes);
             UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder();
 
-            while (true)
+            uint tag;
+            string name;
+            while (input1.ReadTag(out tag, out name))
             {
-                uint tag = input1.ReadTag();
-                Assert.AreEqual(tag, input2.ReadTag());
-                if (tag == 0)
-                {
-                    break;
-                }
+                uint tag2;
+                Assert.IsTrue(input2.ReadTag(out tag2, out name));
+                Assert.AreEqual(tag, tag2);
+
                 unknownFields.MergeFieldFrom(tag, input1);
-                input2.SkipField(tag);
+                input2.SkipField();
             }
         }
 
@@ -355,7 +355,10 @@ namespace Google.ProtocolBuffers
             ms.Position = 0;
 
             CodedInputStream input = CodedInputStream.CreateInstance(ms);
-            Assert.AreEqual(tag, input.ReadTag());
+            uint testtag;
+            string ignore;
+            Assert.IsTrue(input.ReadTag(out testtag, out ignore));
+            Assert.AreEqual(tag, testtag);
 
             try
             {
@@ -497,7 +500,12 @@ namespace Google.ProtocolBuffers
             ms.Position = 0;
 
             CodedInputStream input = CodedInputStream.CreateInstance(ms);
-            Assert.AreEqual(tag, input.ReadTag());
+
+            uint testtag;
+            string ignored;
+
+            Assert.IsTrue(input.ReadTag(out testtag, out ignored));
+            Assert.AreEqual(tag, testtag);
             string text = input.ReadString();
             Assert.AreEqual('\ufffd', text[0]);
         }
