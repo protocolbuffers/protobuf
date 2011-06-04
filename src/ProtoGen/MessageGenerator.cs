@@ -423,11 +423,11 @@ namespace Google.ProtocolBuffers.ProtoGen
                 ClassName);
             writer.WriteLine("  return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();");
             writer.WriteLine("}");
-            writer.WriteLine("public static {0} ParseFrom(pb::CodedInputStream input) {{", ClassName);
+            writer.WriteLine("public static {0} ParseFrom(pb::ICodedInputStream input) {{", ClassName);
             writer.WriteLine("  return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();");
             writer.WriteLine("}");
             writer.WriteLine(
-                "public static {0} ParseFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {{",
+                "public static {0} ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {{",
                 ClassName);
             writer.WriteLine("  return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();");
             writer.WriteLine("}");
@@ -604,12 +604,12 @@ namespace Google.ProtocolBuffers.ProtoGen
             List<FieldDescriptor> sortedFields = new List<FieldDescriptor>(Descriptor.Fields);
             sortedFields.Sort((f1, f2) => f1.FieldNumber.CompareTo(f2.FieldNumber));
 
-            writer.WriteLine("public override Builder MergeFrom(pb::CodedInputStream input) {");
+            writer.WriteLine("public override Builder MergeFrom(pb::ICodedInputStream input) {");
             writer.WriteLine("  return MergeFrom(input, pb::ExtensionRegistry.Empty);");
             writer.WriteLine("}");
             writer.WriteLine();
             writer.WriteLine(
-                "public override Builder MergeFrom(pb::CodedInputStream input, pb::ExtensionRegistry extensionRegistry) {");
+                "public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {");
             writer.Indent();
             if (!UseLiteRuntime)
             {

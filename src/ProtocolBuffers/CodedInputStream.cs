@@ -58,7 +58,7 @@ namespace Google.ProtocolBuffers
     /// TODO(jonskeet): Consider whether recursion and size limits shouldn't be readonly,
     /// set at construction time.
     /// </remarks>
-    public sealed partial class CodedInputStream
+    public sealed partial class CodedInputStream : ICodedInputStream
     {
         private readonly byte[] buffer;
         private int bufferSize;

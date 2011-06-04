@@ -251,7 +251,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Parses an UnknownFieldSet from the given input.
         /// </summary>
-        public static UnknownFieldSet ParseFrom(CodedInputStream input)
+        public static UnknownFieldSet ParseFrom(ICodedInputStream input)
         {
             return CreateBuilder().MergeFrom(input).Build();
         }
@@ -417,7 +417,7 @@ namespace Google.ProtocolBuffers
             /// Parse an entire message from <paramref name="input"/> and merge
             /// its fields into this set.
             /// </summary>
-            public Builder MergeFrom(CodedInputStream input)
+            public Builder MergeFrom(ICodedInputStream input)
             {
                 uint tag;
                 string name;
@@ -444,7 +444,7 @@ namespace Google.ProtocolBuffers
             /// <param name="input">The coded input stream containing the field</param>
             /// <returns>false if the tag is an "end group" tag, true otherwise</returns>
             [CLSCompliant(false)]
-            public bool MergeFieldFrom(uint tag, CodedInputStream input)
+            public bool MergeFieldFrom(uint tag, ICodedInputStream input)
             {
                 int number = WireFormat.GetTagFieldNumber(tag);
                 switch (WireFormat.GetTagWireType(tag))
@@ -496,7 +496,7 @@ namespace Google.ProtocolBuffers
             /// <summary>
             /// Parses <paramref name="input"/> as an UnknownFieldSet and merge it
             /// with the set being built. This is just a small wrapper around
-            /// MergeFrom(CodedInputStream).
+            /// MergeFrom(ICodedInputStream).
             /// </summary>
             public Builder MergeFrom(Stream input)
             {
@@ -509,7 +509,7 @@ namespace Google.ProtocolBuffers
             /// <summary>
             /// Parses <paramref name="data"/> as an UnknownFieldSet and merge it
             /// with the set being built. This is just a small wrapper around
-            /// MergeFrom(CodedInputStream).
+            /// MergeFrom(ICodedInputStream).
             /// </summary>
             public Builder MergeFrom(ByteString data)
             {
@@ -522,7 +522,7 @@ namespace Google.ProtocolBuffers
             /// <summary>
             /// Parses <paramref name="data"/> as an UnknownFieldSet and merge it
             /// with the set being built. This is just a small wrapper around
-            /// MergeFrom(CodedInputStream).
+            /// MergeFrom(ICodedInputStream).
             /// </summary>
             public Builder MergeFrom(byte[] data)
             {
@@ -601,7 +601,7 @@ namespace Google.ProtocolBuffers
                 return this;
             }
 
-            internal void MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry, IBuilder builder)
+            internal void MergeFrom(ICodedInputStream input, ExtensionRegistry extensionRegistry, IBuilder builder)
             {
                 uint tag;
                 string name;
@@ -623,7 +623,7 @@ namespace Google.ProtocolBuffers
             }
 
             /// <summary>
-            /// Like <see cref="MergeFrom(CodedInputStream, ExtensionRegistry, IBuilder)" />
+            /// Like <see cref="MergeFrom(ICodedInputStream, ExtensionRegistry, IBuilder)" />
             /// but parses a single field.
             /// </summary>
             /// <param name="input">The input to read the field from</param>
@@ -631,7 +631,7 @@ namespace Google.ProtocolBuffers
             /// <param name="builder">Builder to merge field into, if it's a known field</param>
             /// <param name="tag">The tag, which should already have been read from the input</param>
             /// <returns>true unless the tag is an end-group tag</returns>
-            internal bool MergeFieldFrom(CodedInputStream input,
+            internal bool MergeFieldFrom(ICodedInputStream input,
                                          ExtensionRegistry extensionRegistry, IBuilder builder, uint tag, string fieldName)
             {
                 MessageDescriptor type = builder.DescriptorForType;
@@ -753,7 +753,7 @@ namespace Google.ProtocolBuffers
             /// <summary>
             /// Called by MergeFieldFrom to parse a MessageSet extension.
             /// </summary>
-            private void MergeMessageSetExtensionFromCodedStream(CodedInputStream input,
+            private void MergeMessageSetExtensionFromCodedStream(ICodedInputStream input,
                                                                  ExtensionRegistry extensionRegistry, IBuilder builder)
             {
                 MessageDescriptor type = builder.DescriptorForType;
@@ -779,6 +779,7 @@ namespace Google.ProtocolBuffers
                 IBuilderLite subBuilder = null;
                 FieldDescriptor field = null;
 
+                uint lastTag = WireFormat.MessageSetTag.ItemStart;
                 uint tag;
                 string name;
                 while (input.ReadTag(out tag, out name))
@@ -790,6 +791,7 @@ namespace Google.ProtocolBuffers
                         break;
                     }
 
+                    lastTag = tag;
                     if (tag == WireFormat.MessageSetTag.TypeID)
                     {
                         typeId = 0;
@@ -855,7 +857,8 @@ namespace Google.ProtocolBuffers
                     }
                 }
 
-                input.CheckLastTagWas(WireFormat.MessageSetTag.ItemEnd);
+                if (lastTag != WireFormat.MessageSetTag.ItemEnd)
+                    throw InvalidProtocolBufferException.InvalidEndTag();
 
                 if (subBuilder != null)
                 {
@@ -890,12 +893,12 @@ namespace Google.ProtocolBuffers
                 return MergeFrom(data);
             }
 
-            IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input)
+            IBuilderLite IBuilderLite.WeakMergeFrom(ICodedInputStream input)
             {
                 return MergeFrom(input);
             }
 
-            IBuilderLite IBuilderLite.WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry)
+            IBuilderLite IBuilderLite.WeakMergeFrom(ICodedInputStream input, ExtensionRegistry registry)
             {
                 return MergeFrom(input);
             }

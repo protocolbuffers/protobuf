@@ -133,7 +133,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         /// <returns>true unless the tag is an end-group tag</returns>
         [CLSCompliant(false)]
-        protected override bool ParseUnknownField(CodedInputStream input,
+        protected override bool ParseUnknownField(ICodedInputStream input,
                                                   ExtensionRegistry extensionRegistry, uint tag, string fieldName)
         {
             FieldSet extensions = MessageBeingBuilt.Extensions;

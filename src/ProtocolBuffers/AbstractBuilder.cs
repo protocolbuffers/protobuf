@@ -159,7 +159,7 @@ namespace Google.ProtocolBuffers
             return ThisBuilder;
         }
 
-        public override TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry)
+        public override TBuilder MergeFrom(ICodedInputStream input, ExtensionRegistry extensionRegistry)
         {
             UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder(UnknownFields);
             unknownFields.MergeFrom(input, extensionRegistry, this);
@@ -209,12 +209,12 @@ namespace Google.ProtocolBuffers
             return MergeFrom(message);
         }
 
-        IBuilder IBuilder.WeakMergeFrom(CodedInputStream input)
+        IBuilder IBuilder.WeakMergeFrom(ICodedInputStream input)
         {
             return MergeFrom(input);
         }
 
-        IBuilder IBuilder.WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry)
+        IBuilder IBuilder.WeakMergeFrom(ICodedInputStream input, ExtensionRegistry registry)
         {
             return MergeFrom(input, registry);
         }

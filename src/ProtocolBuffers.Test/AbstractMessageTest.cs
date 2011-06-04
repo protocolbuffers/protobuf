@@ -465,7 +465,7 @@ namespace Google.ProtocolBuffers
                     return this;
                 }
 
-                public override Builder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry)
+                public override Builder MergeFrom(ICodedInputStream input, ExtensionRegistry extensionRegistry)
                 {
                     wrappedBuilder.WeakMergeFrom(input, extensionRegistry);
                     return this;

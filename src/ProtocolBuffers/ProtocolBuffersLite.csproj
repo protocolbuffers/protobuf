@@ -95,6 +95,7 @@
     <Compile Include="GeneratedBuilderLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
     <Compile Include="GeneratedMessageLite.cs" />
+    <Compile Include="ICodedInputStream.cs" />
     <Compile Include="ICodedOutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />

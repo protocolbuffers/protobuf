@@ -164,6 +164,7 @@
     <Compile Include="IBuilderLite.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ICodedInputStream.cs" />
     <Compile Include="ICodedOutputStream.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="IMessageLite.cs" />

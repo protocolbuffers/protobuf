@@ -128,8 +128,8 @@ namespace Google.ProtocolBuffers
         IBuilder WeakMergeFrom(IMessage message);
         new IBuilder WeakMergeFrom(ByteString data);
         new IBuilder WeakMergeFrom(ByteString data, ExtensionRegistry registry);
-        new IBuilder WeakMergeFrom(CodedInputStream input);
-        new IBuilder WeakMergeFrom(CodedInputStream input, ExtensionRegistry registry);
+        new IBuilder WeakMergeFrom(ICodedInputStream input);
+        new IBuilder WeakMergeFrom(ICodedInputStream input, ExtensionRegistry registry);
         new IMessage WeakBuild();
         new IMessage WeakBuildPartial();
         new IBuilder WeakClone();
@@ -203,15 +203,15 @@ namespace Google.ProtocolBuffers
         /// Use BuildPartial to build, which ignores missing required fields.
         /// </list>
         /// </remarks>
-        new TBuilder MergeFrom(CodedInputStream input);
+        new TBuilder MergeFrom(ICodedInputStream input);
 
         /// <summary>
-        /// Like MergeFrom(CodedInputStream), but also parses extensions.
+        /// Like MergeFrom(ICodedInputStream), but also parses extensions.
         /// The extensions that you want to be able to parse must be registered
         /// in <paramref name="extensionRegistry"/>. Extensions not in the registry
         /// will be treated as unknown fields.
         /// </summary>
-        new TBuilder MergeFrom(CodedInputStream input, ExtensionRegistry extensionRegistry);
+        new TBuilder MergeFrom(ICodedInputStream input, ExtensionRegistry extensionRegistry);
 
         /// <summary>
         /// Get's the message's type's default instance.
@@ -260,35 +260,35 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Parse <paramref name="data"/> as a message of this type and merge
         /// it with the message being built. This is just a small wrapper around
-        /// MergeFrom(CodedInputStream).
+        /// MergeFrom(ICodedInputStream).
         /// </summary>
         new TBuilder MergeFrom(ByteString data);
 
         /// <summary>
         /// Parse <paramref name="data"/> as a message of this type and merge
         /// it with the message being built. This is just a small wrapper around
-        /// MergeFrom(CodedInputStream, extensionRegistry).
+        /// MergeFrom(ICodedInputStream, extensionRegistry).
         /// </summary>
         new TBuilder MergeFrom(ByteString data, ExtensionRegistry extensionRegistry);
 
         /// <summary>
         /// Parse <paramref name="data"/> as a message of this type and merge
         /// it with the message being built. This is just a small wrapper around
-        /// MergeFrom(CodedInputStream).
+        /// MergeFrom(ICodedInputStream).
         /// </summary>
         new TBuilder MergeFrom(byte[] data);
 
         /// <summary>
         /// Parse <paramref name="data"/> as a message of this type and merge
         /// it with the message being built. This is just a small wrapper around
-        /// MergeFrom(CodedInputStream, extensionRegistry).
+        /// MergeFrom(ICodedInputStream, extensionRegistry).
         /// </summary>
         new TBuilder MergeFrom(byte[] data, ExtensionRegistry extensionRegistry);
 
         /// <summary>
         /// Parse <paramref name="input"/> as a message of this type and merge
         /// it with the message being built. This is just a small wrapper around
-        /// MergeFrom(CodedInputStream). Note that this method always reads
+        /// MergeFrom(ICodedInputStream). Note that this method always reads
         /// the entire input (unless it throws an exception). If you want it to
         /// stop earlier, you will need to wrap the input in a wrapper
         /// stream which limits reading. Or, use IMessage.WriteDelimitedTo(Stream)
@@ -300,7 +300,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Parse <paramref name="input"/> as a message of this type and merge
         /// it with the message being built. This is just a small wrapper around
-        /// MergeFrom(CodedInputStream, extensionRegistry).
+        /// MergeFrom(ICodedInputStream, extensionRegistry).
         /// </summary>
         new TBuilder MergeFrom(Stream input, ExtensionRegistry extensionRegistry);
 
